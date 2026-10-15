@@ -1,9 +1,9 @@
 version: 1
 goal_id: operational-integrity-fixes
 objective: Resolve the fourteen supplied operational integrity defects with focused regression coverage.
-status: blocked
+status: active
 started_at: '2026-10-15T16:35:32Z'
-updated_at: '2026-10-15T18:01:22Z'
+updated_at: '2026-10-15T18:14:49Z'
 active_task_descriptor: .codex/memory/tasks/operational-integrity-fixes.yml
 progress_inventory:
 - id: offline-retention
@@ -118,12 +118,10 @@ progress_inventory:
   - tests/Meridian.Setup.Tests/InstallationTransactionTests.cs
   updated_at: '2026-10-15T18:01:22Z'
 next_actions:
-- Obtain explicit user approval to push the final local commits and open a draft PR in rodoHasArrived/Meridian-main.
-- After approval, publish the feature branch, create and attach the draft PR, and verify required GitHub
-  Actions including the Windows lane.
-open_questions:
-- Automatic approval review rejected draft PR creation because publishing the diff and operational details
-  to GitHub requires explicit user authorization.
+- Push the final feature branch and create and attach the authorized draft PR in rodoHasArrived/Meridian-main.
+- Verify required GitHub Actions for the published head, including available Windows validation, and report
+  any blockers.
+open_questions: []
 promotion_candidates: []
 validation_results:
   code_commit: 7ad3ec5ab
@@ -144,3 +142,5 @@ validation_results:
     skipped: 0
   native_windows: Not run in this Linux environment; setup helpers and production-source WPF probes passed.
   github_actions: Pending publication approval and pull request creation.
+publication_authorization: User explicitly approved pushing the final commits and opening a draft pull
+  request in this chat.
