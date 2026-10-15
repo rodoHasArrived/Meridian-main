@@ -74,7 +74,10 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     private static readonly string[] ExpectedFlatKeys =
     [
         "schemaVersion",
+        SecurityTermsEnvelope.FormatKey,
+        SecurityTermsEnvelope.AssetClassTermsVersionKey,
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlattenedFromMarkerProperty,
+        SecurityTermsEnvelope.RetainedEconomicTermsKey,
         "maturityDate", "issueDate", "effectiveDate",
         "couponType", "couponRate", "paymentFrequency", "dayCount",
         "accrualStartDate",
@@ -110,7 +113,7 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
             []);
 
         var emitted = PropertyNames(SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection).EconomicTerms)
-            .Where(name => name != "schemaVersion")
+            .Where(name => !SecurityTermsEnvelope.IsReservedKey(name))
             .ToArray();
 
         emitted.Should().BeEquivalentTo(
@@ -201,6 +204,39 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
             flattened.TryGetProperty(field.Name, out _)
                 .Should().BeFalse($"{module}.{field.Name} is dropped by the v2 → v1 bridge");
         }
+    }
+
+    [Theory]
+    [InlineData("redemption")]
+    [InlineData("call")]
+    [InlineData("auction")]
+    [InlineData("sweep")]
+    [InlineData("financing")]
+    [InlineData("issuer")]
+    [InlineData("equityBehavior")]
+    [InlineData("fund")]
+    [InlineData("structuredProduct")]
+    public void Convert_DroppedModule_IsRetainedVerbatimBesideTheFlatKeys(string module)
+    {
+        // The flat family cannot place the module, but the bridge keeps the whole source document,
+        // so nothing the economic payload carried is lost.
+        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(FullEconomicTerms).Payload;
+
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(flattened, out var retained).Should().BeTrue();
+        System.Text.Json.Nodes.JsonNode.DeepEquals(
+                System.Text.Json.Nodes.JsonNode.Parse(retained.GetProperty(module).GetRawText()),
+                System.Text.Json.Nodes.JsonNode.Parse(FullEconomicTerms.GetProperty(module).GetRawText()))
+            .Should().BeTrue($"the {module} module must be retained verbatim");
+    }
+
+    [Fact]
+    public void Convert_DeclaresTheFlatFormat_SoTheOutputNeverReadsAsEconomic()
+    {
+        var flattened = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(FullEconomicTerms).Payload;
+
+        flattened.GetProperty(SecurityTermsEnvelope.FormatKey).GetString().Should().Be(SecurityTermsFormats.Flat);
+        SecurityTermsEnvelope.ResolveFormat(flattened).Should().Be(SecurityTermsFormats.Flat);
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument(flattened).Should().BeFalse();
     }
 
     [Theory]

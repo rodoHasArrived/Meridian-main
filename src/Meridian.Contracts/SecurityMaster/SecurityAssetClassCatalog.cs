@@ -564,6 +564,13 @@ public static class SecurityAssetClassCatalog
 /// must not be admitted here: an importer cannot invent a maturity or a strike, and defaulting one
 /// would mint a governed record on a fabricated economic fact.
 /// </param>
+/// <param name="TermsVersion">
+/// The current version of this asset class's flat terms contract, stamped onto every flat payload
+/// as <see cref="SecurityTermsEnvelope.AssetClassTermsVersionKey"/>. Bump it when the class's term
+/// fields change shape (a renamed key, a changed type); readers refuse payloads stamped with a
+/// newer version than they know, rather than silently dropping the newer fields. Versions are
+/// per asset class, so evolving one class never reserves or collides with another's numbers.
+/// </param>
 public sealed record SecurityAssetClassDescriptor(
     string AssetClass,
     bool SupportsCashflowScheduleByDefault,
@@ -576,7 +583,8 @@ public sealed record SecurityAssetClassDescriptor(
     bool SupportsProfileBackedTerms = false,
     IReadOnlyList<string>? Aliases = null,
     string? AccountingInstrumentClass = null,
-    bool SupportsIdentifierOnlyImport = false);
+    bool SupportsIdentifierOnlyImport = false,
+    int TermsVersion = SecurityTermsEnvelope.DefaultAssetClassTermsVersion);
 
 /// <summary>
 /// The closed vocabulary of accounting-slice instrument classes a Security Master record can post

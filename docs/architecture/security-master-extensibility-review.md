@@ -5710,3 +5710,31 @@ path; retained regular/v1 calculations and governed v2 posting refusal remain un
 Shared schedule validation (#3126) and
 explicit payload-family discrimination (#3127) remain separately scoped. Review threads and human
 acceptance are not inferred from these code corrections or from automated review.
+
+## Resolution pass — 2026-10-15 (asset-class extensibility review)
+
+The 2026-10-15 review found the Security Master core sound but each asset class hand-wired into
+15–18 string-keyed places, with versioning, projection, lot, audit and convention gaps. Its top
+five priorities are being landed as separate, individually green pull requests. This section is
+the running status.
+
+### Priority 2 — terms and event versioning
+
+| Finding | What landed |
+| --- | --- |
+| One integer `schemaVersion` slot holds two payload formats, so flat version 2 can never be used | Every terms payload now declares its family in `termsFormat` (`flat`, `economic`, `customProfile`; `SecurityTermsFormats`). The domain serializer stamps flat payloads, the economic adapter stamps economic documents, and the bridge stamps its output. `SecurityTermsEnvelope.ResolveFormat` and `SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument` dispatch on the declaration first and fall back to the historical shape rule only for untagged (pre-existing) payloads. A tagged flat payload stamped `schemaVersion: 2` is never routed through the economic bridge. `ReservedForEconomicTerms` still guards untagged legacy payloads. |
+| No version per asset class | `SecurityAssetClassDescriptor.TermsVersion` (default 1) is stamped onto every flat payload as `assetClassTermsVersion`. The read mapping refuses a payload stamped newer than the node's contract for that class, and refuses an economic-format document in the asset-specific slot, with a precise message instead of a silent drop. Versions are per class, so evolving one class never reserves another's numbers. |
+| `security_events` has no payload version | Migration `039_security_master_event_payload_version.sql` adds `payload_type` and `payload_version` (NOT NULL, backfilled from metadata, else by the same shape rule replay used). `SecurityMasterEventEnvelope` carries both; the store records them on every append; `SecurityMasterMapping.FromEventEnvelope` refuses unknown families and versions newer than the node supports before decoding (`SecurityMasterEventPayloads`). |
+| Economic → flat conversion drops call, redemption, issuer, fund and structured-credit data | Both bridge conversions keep the complete source document under `retainedEconomicTerms`. `SecurityEconomicDefinitionAdapter.ToEconomicRecord` folds it back (flat values win; retained values fill only absent modules, absent fields and empty schedules), and the amend and deactivate paths carry it across the domain-codec re-serialization. A replay-then-amend cycle therefore writes the original call schedule, redemption and other module data into the next event instead of erasing it. |
+
+Envelope keys (`schemaVersion`, `termsFormat`, `assetClassTermsVersion`, `retainedEconomicTerms`
+and the flattening marker) are `SecurityTermsEnvelope.ReservedKeys`: excluded from term-schema key
+comparisons, refused by the field-edit validator, and reserved in the custom-profile validators.
+
+**Validation.** `SecurityTermsVersioningTests` (new), the updated bridge coverage and round-trip
+guards, and the Security Master unit suite (2,215 tests) pass. The Security Master PostgreSQL
+integration suite passes against a local PostgreSQL 16 with migration 039 applied. Schema-control
+`snapshot`/`promote` regenerated the manifests and `verify` passed against a fresh database.
+
+**Still open from this priority.** Retiring the legacy flat record fields (accounting first) is
+tracked with priority 1's registry work below.

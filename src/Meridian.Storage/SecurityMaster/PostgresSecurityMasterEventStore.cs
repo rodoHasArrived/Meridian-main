@@ -54,7 +54,9 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                     correlation_id,
                     causation_id,
                     payload,
-                    metadata)
+                    metadata,
+                    payload_type,
+                    payload_version)
                 values (
                     @security_id,
                     @stream_version,
@@ -64,8 +66,14 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                     @correlation_id,
                     @causation_id,
                     @payload::jsonb,
-                    @metadata::jsonb);
+                    @metadata::jsonb,
+                    @payload_type,
+                    @payload_version);
                 """;
+
+            // Every appended event records its payload family and version in first-class columns
+            // so replay and audit dispatch on a declared version rather than on the payload's shape.
+            var payloadDescriptor = SecurityMasterEventPayloads.Resolve(@event);
 
             command.Parameters.AddWithValue("security_id", @event.SecurityId);
             command.Parameters.AddWithValue("stream_version", @event.StreamVersion);
@@ -80,6 +88,8 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
             command.Parameters.AddWithValue(
                 "metadata",
                 JsonSerializer.Serialize(@event.Metadata, SecurityMasterJsonContext.HighPerformanceOptions));
+            command.Parameters.AddWithValue("payload_type", payloadDescriptor.PayloadType);
+            command.Parameters.AddWithValue("payload_version", payloadDescriptor.PayloadVersion);
 
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
@@ -103,7 +113,9 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                    correlation_id,
                    causation_id,
                    payload::text,
-                   metadata::text
+                   metadata::text,
+                   payload_type,
+                   payload_version
             from {Qualified("security_events")}
             where security_id = @security_id
             order by stream_version;
@@ -128,7 +140,9 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                    correlation_id,
                    causation_id,
                    payload::text,
-                   metadata::text
+                   metadata::text,
+                   payload_type,
+                   payload_version
             from {Qualified("security_events")}
             where global_sequence > @sequence
             order by global_sequence
@@ -195,7 +209,9 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 reader.IsDBNull(6) ? null : reader.GetGuid(6),
                 reader.IsDBNull(7) ? null : reader.GetGuid(7),
                 JsonDocument.Parse(reader.GetString(8)).RootElement.Clone(),
-                JsonDocument.Parse(reader.GetString(9)).RootElement.Clone()));
+                JsonDocument.Parse(reader.GetString(9)).RootElement.Clone(),
+                reader.IsDBNull(10) ? null : reader.GetString(10),
+                reader.IsDBNull(11) ? null : reader.GetInt32(11)));
         }
 
         return results;

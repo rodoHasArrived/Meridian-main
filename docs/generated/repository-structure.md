@@ -4668,6 +4668,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterSchemaVersions.cs
 │   │   │   ├── SecurityQueries.cs
 │   │   │   ├── SecurityTermReader.cs
+│   │   │   ├── SecurityTermsEnvelope.cs
 │   │   │   ├── SecurityValidationDtos.cs
 │   │   │   ├── StructuredCashFlowTerms.cs
 │   │   │   └── StructuredCashFlowTermsResolver.cs
@@ -6503,7 +6504,8 @@ Meridian-main
 │   │   │   │   ├── 035_security_master_price_selection_receipts.sql
 │   │   │   │   ├── 036_security_master_workbench_generations.sql
 │   │   │   │   ├── 037_security_master_close_price_snapshots.sql
-│   │   │   │   └── 038_security_master_alias_revisions.sql
+│   │   │   │   ├── 038_security_master_alias_revisions.sql
+│   │   │   │   └── 039_security_master_event_payload_version.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -11007,6 +11009,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
 │   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
 │   │   │   ├── SecurityTermsProjectionRegistryTests.cs
+│   │   │   ├── SecurityTermsVersioningTests.cs
 │   │   │   ├── SecurityValidationServiceTests.cs
 │   │   │   └── SwapLegRoundTripTests.cs
 │   │   ├── Serialization

@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "1773cf97b599983c60ee52f1e119a648a71b594d84ea386cdfa3caec2969eedf",
+  "database_fingerprint": "efd1843fc6c366e9252b82e1e4f81c528c062b6f2e388d2438d04d818f1ca637",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -8546,6 +8546,18 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "86181ff76e01540b54a5ba1db113f3b8229b64c116d7b8e5064b163e1a23a96e",
+      "kind": "normal",
+      "source": "security_master.security_events_payload_version_check on security_master.security_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_events.payload_version",
+      "target_kind": "table column",
+      "target_name": "security_events",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "bef8d46ce9f3f864d3e032293c5c45e6a9e5197dfeef76b12a24cff978b7cb43",
       "kind": "normal",
       "source": "security_master.security_identifiers_security_id_fkey on security_master.security_identifiers",
@@ -16681,6 +16693,14 @@
       "object": "column:security_master.security_events.payload"
     },
     {
+      "fingerprint": "c7bb03a4232c947bfb4b39ab06adad82886957b75e41c6245aa9f4459417128d",
+      "object": "column:security_master.security_events.payload_type"
+    },
+    {
+      "fingerprint": "57aa3926185c852ebe9cbbbfdc0134f62144d78293e4419c95e0cefa3a1661aa",
+      "object": "column:security_master.security_events.payload_version"
+    },
+    {
       "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
       "object": "column:security_master.security_events.security_id"
     },
@@ -17715,6 +17735,14 @@
     {
       "fingerprint": "d0a593e3bdd7e57d384d4d2b53d925745939a94b492a291ed56ea52ab74764f1",
       "object": "comment:column:security_master.security_alias_revisions.history_available_from"
+    },
+    {
+      "fingerprint": "8d90a1d9d965dae90865ec9382f3cf0e72ae2ce203ead303725e5eda7035a290",
+      "object": "comment:column:security_master.security_events.payload_type"
+    },
+    {
+      "fingerprint": "1b1ec7d1c8e917b9b739e9ea1671773f7f35bb297cf2d8c4ca2010f845e00b8d",
+      "object": "comment:column:security_master.security_events.payload_version"
     },
     {
       "fingerprint": "e353fc2489a851eee521dc0eb5642400b10e4d0ea8ff9333be6e179093ac6bef",
@@ -20155,6 +20183,10 @@
     {
       "fingerprint": "6b8e1b2ff04281ccdfdbf01a886d17323ab94177f20baac29807d09fbb940750",
       "object": "constraint:security_master.security_close_price_snapshots.security_close_price_snapshots_version_check"
+    },
+    {
+      "fingerprint": "d937a4a7f59c06547c8600857cfc8751c21b7fbe63a272a0ec26599c68871bc9",
+      "object": "constraint:security_master.security_events.security_events_payload_version_check"
     },
     {
       "fingerprint": "aaac00f8d63d11c1c13c30e0576f31898ee0dfa231ea4dd5e6567255b9a830fc",
@@ -23189,6 +23221,10 @@
       "object": "dependency:security_master.security_close_price_snapshots_version_check on security_master.security_close_price_snapshots->security_master.security_close_price_snapshots.version:normal"
     },
     {
+      "fingerprint": "86181ff76e01540b54a5ba1db113f3b8229b64c116d7b8e5064b163e1a23a96e",
+      "object": "dependency:security_master.security_events_payload_version_check on security_master.security_events->security_master.security_events.payload_version:normal"
+    },
+    {
       "fingerprint": "bef8d46ce9f3f864d3e032293c5c45e6a9e5197dfeef76b12a24cff978b7cb43",
       "object": "dependency:security_master.security_identifiers_security_id_fkey on security_master.security_identifiers->security_master.securities.security_id:normal"
     },
@@ -25037,6 +25073,10 @@
       "object": "index:security_master.ix_security_cashflow_sources_source_kind"
     },
     {
+      "fingerprint": "447b5afab77264d1243fd3c1cd2ccbb050eedd258dfdbe1bc28a41ab2a71f20a",
+      "object": "index:security_master.ix_security_events_payload_type_version"
+    },
+    {
       "fingerprint": "66eb0842be7619ff6a0f2cdef1cf63fd288be1e1ef2dbc381d8fb2adbacfe614",
       "object": "index:security_master.ix_security_events_security_id_sequence"
     },
@@ -26301,7 +26341,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "4a51b16935ff9f26c1f15d0a0a5bc7bde1a7294a0f511cb694305865cb6192f9",
+      "fingerprint": "ff79b16c518a3c15213433ecefc7cccc965287f530beaa583970160dd3118994",
       "object": "schema:security_master"
     },
     {
@@ -26997,7 +27037,7 @@
       "object": "table:security_master.security_close_price_snapshots"
     },
     {
-      "fingerprint": "34b01b698a6c76a025bb9151ab7d1a7fdea4f3a0b9d966b62682d38a5bc23bbf",
+      "fingerprint": "3e60257c940e8778b43cb68ff44007a26ac5b7cb36d1243ee36e02873c5c23f5",
       "object": "table:security_master.security_events"
     },
     {
@@ -120653,6 +120693,18 @@
           "object_type": "column"
         },
         {
+          "comment": "Payload family of the event (SecurityEconomicDefinition or the legacy SecurityProjection). Replay refuses unknown families.",
+          "fingerprint": "8d90a1d9d965dae90865ec9382f3cf0e72ae2ce203ead303725e5eda7035a290",
+          "object": "security_master.security_events.payload_type",
+          "object_type": "column"
+        },
+        {
+          "comment": "Schema version of the payload family. Replay refuses versions newer than the node supports.",
+          "fingerprint": "1b1ec7d1c8e917b9b739e9ea1671773f7f35bb297cf2d8c4ca2010f845e00b8d",
+          "object": "security_master.security_events.payload_version",
+          "object_type": "column"
+        },
+        {
           "comment": "Covenants declared by a projected direct loan, in terms-document order (ordinal). Threshold is text because the canonical covenant term is written prose (\"4.5x\"), not a number.",
           "fingerprint": "d399b9d84a3b9df22253a6932e06bf3f5cb85a9d5bc820d539fe64449dd0c441",
           "object": "security_master.direct_loan_covenant_projection",
@@ -123308,6 +123360,18 @@
           "target_schema": "security_master"
         },
         {
+          "fingerprint": "86181ff76e01540b54a5ba1db113f3b8229b64c116d7b8e5064b163e1a23a96e",
+          "kind": "normal",
+          "source": "security_master.security_events_payload_version_check on security_master.security_events",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_events.payload_version",
+          "target_kind": "table column",
+          "target_name": "security_events",
+          "target_schema": "security_master"
+        },
+        {
           "fingerprint": "bef8d46ce9f3f864d3e032293c5c45e6a9e5197dfeef76b12a24cff978b7cb43",
           "kind": "normal",
           "source": "security_master.security_identifiers_security_id_fkey on security_master.security_identifiers",
@@ -123720,7 +123784,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "4a51b16935ff9f26c1f15d0a0a5bc7bde1a7294a0f511cb694305865cb6192f9",
+      "fingerprint": "ff79b16c518a3c15213433ecefc7cccc965287f530beaa583970160dd3118994",
       "foreign_tables": [],
       "functions": [
         {
@@ -148640,10 +148704,62 @@
               "security_labels": [],
               "type_name": "jsonb",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": "Payload family of the event (SecurityEconomicDefinition or the legacy SecurityProjection). Replay refuses unknown families.",
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "c7bb03a4232c947bfb4b39ab06adad82886957b75e41c6245aa9f4459417128d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload_type",
+              "nullable": false,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Schema version of the payload family. Replay refuses versions newer than the node supports.",
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "57aa3926185c852ebe9cbbbfdc0134f62144d78293e4419c95e0cefa3a1661aa",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload_version",
+              "nullable": false,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "payload_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (payload_version >= 1)",
+              "delete_action": null,
+              "fingerprint": "d937a4a7f59c06547c8600857cfc8751c21b7fbe63a272a0ec26599c68871bc9",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_events_payload_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "global_sequence"
@@ -148688,10 +148804,33 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "34b01b698a6c76a025bb9151ab7d1a7fdea4f3a0b9d966b62682d38a5bc23bbf",
+          "fingerprint": "3e60257c940e8778b43cb68ff44007a26ac5b7cb36d1243ee36e02873c5c23f5",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_security_events_payload_type_version ON security_master.security_events USING btree (payload_type, payload_version)",
+              "expression": null,
+              "fingerprint": "447b5afab77264d1243fd3c1cd2ccbb050eedd258dfdbe1bc28a41ab2a71f20a",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "payload_type",
+                "payload_version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_security_events_payload_type_version",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE INDEX ix_security_events_security_id_sequence ON security_master.security_events USING btree (security_id, stream_version)",
@@ -182384,10 +182523,62 @@
               "security_labels": [],
               "type_name": "jsonb",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": "Payload family of the event (SecurityEconomicDefinition or the legacy SecurityProjection). Replay refuses unknown families.",
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "c7bb03a4232c947bfb4b39ab06adad82886957b75e41c6245aa9f4459417128d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload_type",
+              "nullable": false,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Schema version of the payload family. Replay refuses versions newer than the node supports.",
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "57aa3926185c852ebe9cbbbfdc0134f62144d78293e4419c95e0cefa3a1661aa",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload_version",
+              "nullable": false,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "payload_version"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (payload_version >= 1)",
+              "delete_action": null,
+              "fingerprint": "d937a4a7f59c06547c8600857cfc8751c21b7fbe63a272a0ec26599c68871bc9",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_events_payload_version_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "global_sequence"
@@ -182432,10 +182623,33 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "34b01b698a6c76a025bb9151ab7d1a7fdea4f3a0b9d966b62682d38a5bc23bbf",
+          "fingerprint": "3e60257c940e8778b43cb68ff44007a26ac5b7cb36d1243ee36e02873c5c23f5",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_security_events_payload_type_version ON security_master.security_events USING btree (payload_type, payload_version)",
+              "expression": null,
+              "fingerprint": "447b5afab77264d1243fd3c1cd2ccbb050eedd258dfdbe1bc28a41ab2a71f20a",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "payload_type",
+                "payload_version"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_security_events_payload_type_version",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE INDEX ix_security_events_security_id_sequence ON security_master.security_events USING btree (security_id, stream_version)",
