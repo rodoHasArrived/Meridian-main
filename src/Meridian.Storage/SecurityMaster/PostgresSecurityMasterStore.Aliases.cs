@@ -116,6 +116,7 @@ public sealed partial class PostgresSecurityMasterStore
                   on f.alias_id = r.alias_id and f.revision = 1
                 where r.security_id = @security_id
                   and r.recorded_at <= @recorded_as_of
+                  and (r.history_available_from is null or r.history_available_from <= @recorded_as_of)
                 order by r.alias_id, r.revision desc
             ) latest
             where not latest.is_retired
@@ -261,7 +262,8 @@ public sealed partial class PostgresSecurityMasterStore
 
     /// <summary>
     /// Appends the next revision for <paramref name="alias"/>. The first revision is recorded at the
-    /// alias creation time, matching the backfill in migration 036; later revisions are recorded at the
+    /// alias creation time; migration 037 also marks pre-existing aliases with a separate history
+    /// availability boundary, since their pre-migration corrections are unknown. Later revisions are recorded at the
     /// database transaction time, kept strictly after the previous revision so revision order and
     /// recorded order cannot disagree.
     /// </summary>

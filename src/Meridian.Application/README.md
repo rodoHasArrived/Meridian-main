@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-14
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Application
@@ -41,9 +41,15 @@ the chart path separately from the durable ledger account; posting requires inde
 
 PostgreSQL composition registers the canonical-symbol seeder and its security-ID lookup as one
 singleton. Failed post-write reseeds retry with bounded backoff and coalesced requests until success
-or service cancellation. Lazy-mode reseeding reads durable membership without populating the cache,
-so reconnects can discover missed creations. Preferred-equity replay without retained flat terms
-refuses incomplete economic reconstruction instead of silently changing classification.
+or service cancellation. Production reseeding reads durable membership without populating a lazy cache,
+so reconnects can discover missed creations and incomplete cache warmup cannot withdraw valid names.
+Startup seeds even when cache preloading and notifications
+are disabled, and failed startup or periodic reseeds retry. Create, amend and deactivation install
+their committed projection and request reseeding before optional snapshot work; request cancellation
+after the projection commit cannot skip that coherence step. A later snapshot failure can still
+fail the request after commit, so callers must reread durable state before retrying.
+Equity replay without retained flat terms refuses economic-only reconstruction: the old economic
+family cannot distinguish common, preferred and convertible preferred shares reliably.
 
 Security Master event replay that lacks retained flat terms flattens the economic-terms document onto
 the record's asset class, so carried values land at that class's declared keys. The Postgres
@@ -57,6 +63,11 @@ reread in the background with backoff, since the node ignores its own notificati
 reseeds are serialized and reconcile Security-Master-owned aliases and non-override provider mappings
 for cached security IDs, including the ISIN/CUSIP/FIGI/SEDOL identifiers Security Master supplies;
 operator/provider authority outside that ownership remains intact.
+Strict historical identifier reads use `GetRecordedByIdentifierAsOfAsync`: the recorded cutoff
+selects retained event state and alias revisions, and the separate effective cutoff selects identifier
+validity. Missing or ambiguous retained identity returns no match. The compatibility identifier API
+can use later alias corrections and stable-identity fallbacks. Alias baselines imported by migration
+037 are available only from the migration observation onward; earlier alias history is unknown.
 Primary-host storage composition supplies deferred Security Master and book-position resolvers to
 the PostgreSQL journal store. Deferred resolution preserves the shared singleton authorities while
 avoiding the journal/position constructor cycle; absent durable authority fails closed at posting.

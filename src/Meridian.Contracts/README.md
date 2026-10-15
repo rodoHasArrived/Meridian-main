@@ -6,15 +6,21 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-13
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Contracts
 
-The class-aware economic replay bridge refuses preferred-equity fallback when the legacy flat
-payload is missing. The economic family cannot recover the complete preferred/convertible
-classification and terms. Retained flat payloads remain authoritative and replay unchanged;
+The class-aware economic replay bridge refuses Equity fallback when the legacy flat payload is
+missing. The old economic family cannot reliably distinguish common, preferred and convertible
+preferred shares or recover their complete terms. Retained flat payloads remain authoritative and replay unchanged;
 historical incomplete events require authoritative terms recovery.
+
+`GetRecordedByIdentifierAsOfAsync` separates the recording cutoff from identifier validity and
+resolves only retained event identifiers and alias revisions. It returns no match for missing or
+ambiguous historical identity and never substitutes current projections. Compatibility lookups can
+use later alias corrections. Backfilled pre-037 aliases have an explicit history-availability
+boundary; omission before that boundary is missing evidence, not proof that the alias never existed.
 
 Canonical acquisition facts and lot instructions retain an explicit `OpenLotDirection` while
 quantities remain non-negative. Historical `Long` is the omitted zero value, preserving existing

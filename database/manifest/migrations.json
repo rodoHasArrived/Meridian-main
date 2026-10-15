@@ -325,6 +325,15 @@
       "sha256": "7557305b13360bfd1c7a0ca28be1c8ce43ccd4e67dae4f540713348b466cc398"
     },
     {
+      "filename": "037_security_master_alias_revisions.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 37,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/037_security_master_alias_revisions.sql",
+      "schema": "security_master",
+      "sha256": "63e3cfa29070bcd9de6471cc57d558eb2b092df7bde00092bfbf65ec3a0541cf"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1118,7 +1127,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "e0aa8be07e5f0ba45fdb3818c6da669bc17117f9b4d650f35605c93e39392191",
+  "fingerprint": "fb5b6bbad958cea542b9ff045e06495358c4510c20ea8497e2651327771d2315",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1356,9 +1365,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 124,
+    "files": 125,
     "migration_sets": 10,
-    "waivers": 15,
+    "waivers": 16,
     "warnings": 0
   },
   "waivers": [
@@ -1458,6 +1467,13 @@
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/035_security_master_price_selection_receipts.sql",
       "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects deletion of immutable pricing-selection receipts; no data is truncated. PostgreSQL regression coverage attempts update, delete, and truncate and verifies that the original receipt remains replayable.",
       "review_after": "2027-03-22",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/037_security_master_alias_revisions.sql",
+      "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects deletion of the append-only alias revision history; no data is truncated. PostgreSQL regression coverage attempts update, delete, and truncate and verifies that the revision is retained.",
+      "review_after": "2027-04-10",
       "rule_id": "migration-truncate"
     },
     {

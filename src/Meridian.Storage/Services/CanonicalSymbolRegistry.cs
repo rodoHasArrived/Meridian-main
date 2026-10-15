@@ -13,9 +13,11 @@ namespace Meridian.Storage.Services;
 public sealed class CanonicalSymbolRegistry :
     ICanonicalSymbolRegistry,
     ICanonicalSymbolRegistrySecurityMasterWriter,
+    ISecurityMasterLegacyIdentifierCleanupWriter,
     ICanonicalSymbolRegistryMigrationWriter
 {
     private readonly ISymbolRegistryService _registryService;
+    private readonly object _resolverRebuildLock = new();
 
     /// <summary>
     /// Fast reverse-lookup from any known identifier string to canonical symbol.
@@ -127,6 +129,30 @@ public sealed class CanonicalSymbolRegistry :
         RebuildResolverCache();
         return count;
     }
+
+    /// <inheritdoc />
+    public Task<string> GetLegacyIdentifierCleanupFingerprintAsync(CancellationToken ct = default)
+        => GetLegacyCleanupWriter().GetLegacyIdentifierCleanupFingerprintAsync(ct);
+
+    /// <inheritdoc />
+    public Task<SecurityMasterLegacyIdentifierCleanupValidation> ValidateLegacyIdentifierCleanupAsync(
+        SecurityMasterLegacyIdentifierCleanupManifest manifest,
+        CancellationToken ct = default)
+        => GetLegacyCleanupWriter().ValidateLegacyIdentifierCleanupAsync(manifest, ct);
+
+    /// <inheritdoc />
+    public async Task<SecurityMasterLegacyIdentifierCleanupReceipt> ApplyLegacyIdentifierCleanupAsync(
+        SecurityMasterLegacyIdentifierCleanupValidation validation,
+        CancellationToken ct = default)
+    {
+        var receipt = await GetLegacyCleanupWriter().ApplyLegacyIdentifierCleanupAsync(validation, ct).ConfigureAwait(false);
+        RebuildResolverCache();
+        return receipt;
+    }
+
+    private ISecurityMasterLegacyIdentifierCleanupWriter GetLegacyCleanupWriter()
+        => _registryService as ISecurityMasterLegacyIdentifierCleanupWriter
+           ?? throw new InvalidOperationException("The symbol registry store does not support evidence-bound legacy identifier cleanup.");
 
     /// <inheritdoc />
     public async Task<int> ApplyMigrationAsync(
@@ -337,6 +363,16 @@ public sealed class CanonicalSymbolRegistry :
     /// Rebuilds the unified resolver cache from the current registry state.
     /// </summary>
     private void RebuildResolverCache()
+    {
+        // Read, build and publish as one ordered operation. Otherwise a slow rebuild can
+        // publish an older snapshot after a later reconciliation withdrew its aliases.
+        lock (_resolverRebuildLock)
+        {
+            RebuildResolverCacheLocked();
+        }
+    }
+
+    private void RebuildResolverCacheLocked()
     {
         var resolverCache = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -550,6 +586,7 @@ public sealed class CanonicalSymbolRegistry :
         {
             Canonical = entry.Canonical,
             SecurityId = entry.SecurityId,
+            SecurityMasterOwnsCanonical = entry.SecurityMasterOwnsCanonical,
             DisplayName = entry.DisplayName,
             Aliases = aliases,
             AliasDefinitions = entry.Aliases.Select(alias => new CanonicalSymbolAliasDefinition(

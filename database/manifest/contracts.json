@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "7070d16e1897bc75459de8f375f9ac28623f0425bc2fd34172f23dcf9958241a",
+      "fingerprint": "dc679637ce2e1c1e6cbcf00bbdf7f1b64641e630a739690412dd57c2efaa6b02",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -477,12 +477,18 @@
         "Meridian.Contracts.Catalog.DirectoryStatistics",
         "Meridian.Contracts.Catalog.ICanonicalSymbolRegistry",
         "Meridian.Contracts.Catalog.ICanonicalSymbolRegistryMigrationWriter",
+        "Meridian.Contracts.Catalog.ICanonicalSymbolRegistrySecurityMasterWriter",
         "Meridian.Contracts.Catalog.IdentifierIndex",
         "Meridian.Contracts.Catalog.IndexedFileEntry",
+        "Meridian.Contracts.Catalog.ISecurityMasterLegacyIdentifierCleanupWriter",
         "Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader",
         "Meridian.Contracts.Catalog.ProviderSymbolDefinition",
         "Meridian.Contracts.Catalog.ProviderSymbolMetadata",
         "Meridian.Contracts.Catalog.SchemaReference",
+        "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem",
+        "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest",
+        "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt",
+        "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupValidation",
         "Meridian.Contracts.Catalog.SequenceRange",
         "Meridian.Contracts.Catalog.StorageCatalog",
         "Meridian.Contracts.Catalog.SymbolAlias",
@@ -3968,7 +3974,7 @@
       ]
     }
   ],
-  "fingerprint": "1ea3b81163cedab160f8ccf3896c142d9f7785afa30cbcab96db7ef3f3a34a41",
+  "fingerprint": "ef77e5e32a15b3d5be75d764caa65fda459139f7f2269acafc553781d658f824",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4530,7 +4536,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "048ba801fe7fa49c6f0ce5c75626dc4814d1647ca6728d918faf3b1ce366419d",
+      "fingerprint": "c2b19f8e1825e54c1137ce0dcd299d7720cd3757804a72da6e0b6458ca948433",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Catalog",
       "object_ids": [
@@ -4548,12 +4554,18 @@
         "Meridian.Contracts.Catalog.DirectoryStatistics",
         "Meridian.Contracts.Catalog.ICanonicalSymbolRegistry",
         "Meridian.Contracts.Catalog.ICanonicalSymbolRegistryMigrationWriter",
+        "Meridian.Contracts.Catalog.ICanonicalSymbolRegistrySecurityMasterWriter",
         "Meridian.Contracts.Catalog.IdentifierIndex",
         "Meridian.Contracts.Catalog.IndexedFileEntry",
+        "Meridian.Contracts.Catalog.ISecurityMasterLegacyIdentifierCleanupWriter",
         "Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader",
         "Meridian.Contracts.Catalog.ProviderSymbolDefinition",
         "Meridian.Contracts.Catalog.ProviderSymbolMetadata",
         "Meridian.Contracts.Catalog.SchemaReference",
+        "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem",
+        "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest",
+        "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt",
+        "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupValidation",
         "Meridian.Contracts.Catalog.SequenceRange",
         "Meridian.Contracts.Catalog.StorageCatalog",
         "Meridian.Contracts.Catalog.SymbolAlias",
@@ -5942,7 +5954,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "ce8548f7091df46fd62fa5562fad15981ec23d2a5ceff6cbc680347b5f4a1410",
+      "fingerprint": "7df563976e72298d6a2be52acb242629a75959b566e1c2946497c62304552493",
       "mapped_schemas": [
         "security_master"
       ],
@@ -70214,7 +70226,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "1322b9a59e2b5de784f7a62d5981df636d4ae6c16b361286260637abe8022782",
+      "fingerprint": "b8012f38167d37bb7a617aaadd7b25cd59640678401a5dfa118b0e992a7a0a0a",
       "full_name": "Meridian.Contracts.Catalog.CanonicalSymbolAliasDefinition",
       "id": "Meridian.Contracts.Catalog.CanonicalSymbolAliasDefinition",
       "kind": "record",
@@ -70231,7 +70243,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 252,
+          "source_line": 275,
           "type": "string"
         },
         {
@@ -70246,7 +70258,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 257,
+          "source_line": 280,
           "type": "bool"
         },
         {
@@ -70261,7 +70273,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 254,
+          "source_line": 277,
           "type": "string?"
         },
         {
@@ -70276,7 +70288,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 253,
+          "source_line": 276,
           "type": "string?"
         },
         {
@@ -70291,7 +70303,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 255,
+          "source_line": 278,
           "type": "DateTimeOffset?"
         },
         {
@@ -70306,7 +70318,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 256,
+          "source_line": 279,
           "type": "DateTimeOffset?"
         }
       ],
@@ -70316,12 +70328,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.CanonicalSymbolAliasDefinition",
       "references": [],
       "source": {
-        "line": 251,
+        "line": 274,
         "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 251,
+          "line": 274,
           "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
         }
       ],
@@ -70337,7 +70349,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "5e67cb2cfdf503ab9203bd3d0361367072514f1f04f2caf814c384e9c4a5ab1d",
+      "fingerprint": "766c6f543e2249bef272c53fe56321809a582d1ccf1de3018cb2df1d2f6b0dc6",
       "full_name": "Meridian.Contracts.Catalog.CanonicalSymbolDefinition",
       "id": "Meridian.Contracts.Catalog.CanonicalSymbolDefinition",
       "kind": "class",
@@ -70354,7 +70366,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<CanonicalSymbolAliasDefinition>",
-          "source_line": 175,
+          "source_line": 198,
           "type": "IReadOnlyList<CanonicalSymbolAliasDefinition>"
         },
         {
@@ -70368,7 +70380,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 169,
+          "source_line": 192,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -70382,7 +70394,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "string",
-          "source_line": 188,
+          "source_line": 211,
           "type": "string"
         },
         {
@@ -70396,7 +70408,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "string",
-          "source_line": 150,
+          "source_line": 165,
           "type": "string"
         },
         {
@@ -70410,7 +70422,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 224,
+          "source_line": 247,
           "type": "string?"
         },
         {
@@ -70424,7 +70436,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 236,
+          "source_line": 259,
           "type": "string?"
         },
         {
@@ -70438,7 +70450,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 200,
+          "source_line": 223,
           "type": "string?"
         },
         {
@@ -70452,7 +70464,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 230,
+          "source_line": 253,
           "type": "string?"
         },
         {
@@ -70466,7 +70478,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 162,
+          "source_line": 185,
           "type": "string?"
         },
         {
@@ -70480,7 +70492,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 194,
+          "source_line": 217,
           "type": "string?"
         },
         {
@@ -70494,7 +70506,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 218,
+          "source_line": 241,
           "type": "string?"
         },
         {
@@ -70508,7 +70520,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 212,
+          "source_line": 235,
           "type": "string?"
         },
         {
@@ -70522,7 +70534,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyDictionary<string, ProviderSymbolDefinition>",
-          "source_line": 181,
+          "source_line": 204,
           "type": "IReadOnlyDictionary<string, ProviderSymbolDefinition>"
         },
         {
@@ -70536,8 +70548,22 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "Guid?",
-          "source_line": 156,
+          "source_line": 171,
           "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": "securityMasterOwnsCanonical",
+          "key_type": null,
+          "name": "SecurityMasterOwnsCanonical",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "bool",
+          "source_line": 179,
+          "type": "bool"
         },
         {
           "collection": false,
@@ -70550,7 +70576,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 206,
+          "source_line": 229,
           "type": "string?"
         }
       ],
@@ -70563,12 +70589,12 @@
         "Meridian.Contracts.Catalog.ProviderSymbolDefinition"
       ],
       "source": {
-        "line": 143,
+        "line": 158,
         "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 143,
+          "line": 158,
           "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
         }
       ],
@@ -71162,7 +71188,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "eed5d0cd56f62a60b8a3a1b28d915eef079eafa7c8cea31259777ef7efe852ba",
+      "fingerprint": "e387f76da864ac72688b395e7d3391431c3e9c4984b334e2bd28854a43467e94",
       "full_name": "Meridian.Contracts.Catalog.CorporateActionRef",
       "id": "Meridian.Contracts.Catalog.CorporateActionRef",
       "kind": "class",
@@ -71179,7 +71205,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 376,
+          "source_line": 391,
           "type": "string?"
         },
         {
@@ -71193,7 +71219,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "DateTime",
-          "source_line": 370,
+          "source_line": 385,
           "type": "DateTime"
         },
         {
@@ -71207,7 +71233,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 382,
+          "source_line": 397,
           "type": "string?"
         },
         {
@@ -71221,7 +71247,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 388,
+          "source_line": 403,
           "type": "string?"
         },
         {
@@ -71235,7 +71261,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "string",
-          "source_line": 364,
+          "source_line": 379,
           "type": "string"
         }
       ],
@@ -71245,12 +71271,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.CorporateActionRef",
       "references": [],
       "source": {
-        "line": 358,
+        "line": 373,
         "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 358,
+          "line": 373,
           "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
         }
       ],
@@ -71900,6 +71926,39 @@
     },
     {
       "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "ac4fe6647ac53123ee7b1f6a62a8617d865acf208cb9851d07717ca4dac92b2c",
+      "full_name": "Meridian.Contracts.Catalog.ICanonicalSymbolRegistrySecurityMasterWriter",
+      "id": "Meridian.Contracts.Catalog.ICanonicalSymbolRegistrySecurityMasterWriter",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "ICanonicalSymbolRegistrySecurityMasterWriter",
+      "namespace": "Meridian.Contracts.Catalog",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Catalog.ICanonicalSymbolRegistrySecurityMasterWriter",
+      "references": [],
+      "source": {
+        "line": 140,
+        "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
+      },
+      "sources": [
+        {
+          "line": 140,
+          "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "class",
       "containing_type": null,
       "contract_sets": [
@@ -71908,7 +71967,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "bc8df63f16c57cedde126933c207632f564e8758aa8c08d2d15a3117d497d0ac",
+      "fingerprint": "834c37235609bdf10fc878824642d4552e36c5ad9f1fa6c49c10d18e80f276b4",
       "full_name": "Meridian.Contracts.Catalog.IdentifierIndex",
       "id": "Meridian.Contracts.Catalog.IdentifierIndex",
       "kind": "class",
@@ -71925,7 +71984,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "Dictionary<string, string>",
-          "source_line": 412,
+          "source_line": 427,
           "type": "Dictionary<string, string>"
         },
         {
@@ -71939,7 +71998,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "Dictionary<string, string>",
-          "source_line": 406,
+          "source_line": 421,
           "type": "Dictionary<string, string>"
         },
         {
@@ -71953,7 +72012,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "Dictionary<string, string>",
-          "source_line": 400,
+          "source_line": 415,
           "type": "Dictionary<string, string>"
         },
         {
@@ -71967,7 +72026,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "Dictionary<string, string>",
-          "source_line": 418,
+          "source_line": 433,
           "type": "Dictionary<string, string>"
         }
       ],
@@ -71977,12 +72036,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.IdentifierIndex",
       "references": [],
       "source": {
-        "line": 394,
+        "line": 409,
         "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 394,
+          "line": 409,
           "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
         }
       ],
@@ -72354,7 +72413,40 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "dc4fdd8106a0b3202382feeee4a007fbf3f40ddffa7f2a4e981631fbac486b72",
+      "fingerprint": "da79cb8d1f653804092746048e421d94f59288abf21a3fa51195f7170e16ca7d",
+      "full_name": "Meridian.Contracts.Catalog.ISecurityMasterLegacyIdentifierCleanupWriter",
+      "id": "Meridian.Contracts.Catalog.ISecurityMasterLegacyIdentifierCleanupWriter",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "ISecurityMasterLegacyIdentifierCleanupWriter",
+      "namespace": "Meridian.Contracts.Catalog",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Catalog.ISecurityMasterLegacyIdentifierCleanupWriter",
+      "references": [],
+      "source": {
+        "line": 54,
+        "path": "src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs"
+      },
+      "sources": [
+        {
+          "line": 54,
+          "path": "src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "7775cbfbec0dbcb147f24fa63172c6fff2e085f959fb7d2acb6267e280ccddf3",
       "full_name": "Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader",
       "id": "Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader",
       "kind": "interface",
@@ -72366,12 +72458,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader",
       "references": [],
       "source": {
-        "line": 302,
+        "line": 330,
         "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 302,
+          "line": 330,
           "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
         }
       ],
@@ -72387,7 +72479,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "c045827d42a8370da7d9a3322bb63691300c8c03c1fda58195ca4b76b1d6c13e",
+      "fingerprint": "37a3bc3abf31824309e4a95cee76826071393f7cd368ea565fdc1be66999e3ae",
       "full_name": "Meridian.Contracts.Catalog.ProviderSymbolDefinition",
       "id": "Meridian.Contracts.Catalog.ProviderSymbolDefinition",
       "kind": "record",
@@ -72405,7 +72497,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 245,
+          "source_line": 268,
           "type": "bool"
         },
         {
@@ -72420,7 +72512,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 244,
+          "source_line": 267,
           "type": "string"
         },
         {
@@ -72434,7 +72526,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 243,
+          "source_line": 266,
           "type": "string"
         },
         {
@@ -72449,7 +72541,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 246,
+          "source_line": 269,
           "type": "DateTimeOffset?"
         }
       ],
@@ -72459,12 +72551,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.ProviderSymbolDefinition",
       "references": [],
       "source": {
-        "line": 242,
+        "line": 265,
         "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 242,
+          "line": 265,
           "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
         }
       ],
@@ -72480,7 +72572,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "a40283c884e4b69b6e5ae4a9f7dfadd970c7d837ede14630dacd6a5eedbe21b7",
+      "fingerprint": "079b119605b06ca7578527c40d46655214f06ae063e53d55156816fb80dc078d",
       "full_name": "Meridian.Contracts.Catalog.ProviderSymbolMetadata",
       "id": "Meridian.Contracts.Catalog.ProviderSymbolMetadata",
       "kind": "class",
@@ -72497,7 +72589,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 192,
+          "source_line": 207,
           "type": "bool"
         },
         {
@@ -72511,7 +72603,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "string",
-          "source_line": 189,
+          "source_line": 204,
           "type": "string"
         },
         {
@@ -72525,7 +72617,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "DateTimeOffset",
-          "source_line": 195,
+          "source_line": 210,
           "type": "DateTimeOffset"
         }
       ],
@@ -72535,12 +72627,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.ProviderSymbolMetadata",
       "references": [],
       "source": {
-        "line": 186,
+        "line": 201,
         "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 186,
+          "line": 201,
           "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
         }
       ],
@@ -72646,6 +72738,403 @@
         {
           "line": 297,
           "path": "src/Meridian.Contracts/Catalog/StorageCatalog.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "98da819bcfc31df2b0c5621cfdf6240aac655e7d49032ad2d05e2bdcdfdac49c",
+      "full_name": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem",
+      "id": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EvidenceReference",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 17,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExpectedAliasSource",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 16,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IdentifierKind",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityIdentifierKind",
+          "source_line": 14,
+          "type": "SecurityIdentifierKind"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IdentifierValue",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 15,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 13,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TypedIdentifierEvidenceReference",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 18,
+          "type": "string?"
+        }
+      ],
+      "name": "SecurityMasterLegacyIdentifierCleanupItem",
+      "namespace": "Meridian.Contracts.Catalog",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityIdentifierKind"
+      ],
+      "source": {
+        "line": 12,
+        "path": "src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs"
+      },
+      "sources": [
+        {
+          "line": 12,
+          "path": "src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "5e365c8fc933e88898bb4af4ffde7f0418b7febd289d3fa016ccc834cabb1153",
+      "full_name": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest",
+      "id": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CleanupId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 25,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "SecurityMasterLegacyIdentifierCleanupItem",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Items",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<SecurityMasterLegacyIdentifierCleanupItem>",
+          "source_line": 27,
+          "type": "IReadOnlyList<SecurityMasterLegacyIdentifierCleanupItem>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RegistryFingerprint",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 26,
+          "type": "string"
+        }
+      ],
+      "name": "SecurityMasterLegacyIdentifierCleanupManifest",
+      "namespace": "Meridian.Contracts.Catalog",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest",
+      "references": [
+        "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem"
+      ],
+      "source": {
+        "line": 24,
+        "path": "src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs"
+      },
+      "sources": [
+        {
+          "line": 24,
+          "path": "src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "47bf41d9c6f26a2e8df03cfbf61079a2a24f15a627545a3a0a1389597eac220e",
+      "full_name": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt",
+      "id": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AppliedAtUtc",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateTimeOffset",
+          "source_line": 46,
+          "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ClearedIdentifiers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 48,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Manifest",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityMasterLegacyIdentifierCleanupManifest",
+          "source_line": 44,
+          "type": "SecurityMasterLegacyIdentifierCleanupManifest"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ManifestFingerprint",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 45,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RemovedAliases",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 47,
+          "type": "int"
+        }
+      ],
+      "name": "SecurityMasterLegacyIdentifierCleanupReceipt",
+      "namespace": "Meridian.Contracts.Catalog",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt",
+      "references": [
+        "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest"
+      ],
+      "source": {
+        "line": 43,
+        "path": "src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs"
+      },
+      "sources": [
+        {
+          "line": 43,
+          "path": "src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "e6fdee42754dfed3bfc0a4e85d65f9ffb352b2e8e674c82e697d1e00c66dfd4f",
+      "full_name": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupValidation",
+      "id": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupValidation",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ClearedIdentifiers",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 37,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Manifest",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityMasterLegacyIdentifierCleanupManifest",
+          "source_line": 34,
+          "type": "SecurityMasterLegacyIdentifierCleanupManifest"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ManifestFingerprint",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 35,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RemovedAliases",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 36,
+          "type": "int"
+        }
+      ],
+      "name": "SecurityMasterLegacyIdentifierCleanupValidation",
+      "namespace": "Meridian.Contracts.Catalog",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupValidation",
+      "references": [
+        "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest"
+      ],
+      "source": {
+        "line": 33,
+        "path": "src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs"
+      },
+      "sources": [
+        {
+          "line": 33,
+          "path": "src/Meridian.Contracts/Catalog/SecurityMasterLegacyIdentifierCleanup.cs"
         }
       ],
       "type_parameters": []
@@ -72987,7 +73476,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "8d93bc8c161e64e6f665f277540d7bc3fc6a8d68aa87a622bf41ea1b967f912c",
+      "fingerprint": "6b317c6c4665ae0c781d650b7f702d63e378a020419b34e8927aef19effdbcff",
       "full_name": "Meridian.Contracts.Catalog.SymbolAlias",
       "id": "Meridian.Contracts.Catalog.SymbolAlias",
       "kind": "class",
@@ -73004,7 +73493,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "string",
-          "source_line": 207,
+          "source_line": 222,
           "type": "string"
         },
         {
@@ -73018,7 +73507,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 232,
+          "source_line": 247,
           "type": "bool"
         },
         {
@@ -73032,7 +73521,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 220,
+          "source_line": 235,
           "type": "string?"
         },
         {
@@ -73046,7 +73535,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 213,
+          "source_line": 228,
           "type": "string?"
         },
         {
@@ -73060,7 +73549,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 226,
+          "source_line": 241,
           "type": "string?"
         },
         {
@@ -73074,7 +73563,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "DateTime?",
-          "source_line": 238,
+          "source_line": 253,
           "type": "DateTime?"
         },
         {
@@ -73088,7 +73577,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "DateTime?",
-          "source_line": 244,
+          "source_line": 259,
           "type": "DateTime?"
         }
       ],
@@ -73098,12 +73587,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.SymbolAlias",
       "references": [],
       "source": {
-        "line": 201,
+        "line": 216,
         "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 201,
+          "line": 216,
           "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
         }
       ],
@@ -73324,7 +73813,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "9f5325e20083e4e7f7a634bf724a5c5f5d01ccedd23b2ef89ef0914b6376f56a",
+      "fingerprint": "4fcba7423c72a652c2df45d5916d44acce2a66c4395820f8b94168cb30b66a60",
       "full_name": "Meridian.Contracts.Catalog.SymbolClassification",
       "id": "Meridian.Contracts.Catalog.SymbolClassification",
       "kind": "class",
@@ -73341,7 +73830,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string[]?",
-          "source_line": 352,
+          "source_line": 367,
           "type": "string[]?"
         },
         {
@@ -73355,7 +73844,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 334,
+          "source_line": 349,
           "type": "string?"
         },
         {
@@ -73369,7 +73858,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 328,
+          "source_line": 343,
           "type": "string?"
         },
         {
@@ -73383,7 +73872,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 346,
+          "source_line": 361,
           "type": "string?"
         },
         {
@@ -73397,7 +73886,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 322,
+          "source_line": 337,
           "type": "string?"
         },
         {
@@ -73411,7 +73900,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 340,
+          "source_line": 355,
           "type": "string?"
         }
       ],
@@ -73421,12 +73910,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.SymbolClassification",
       "references": [],
       "source": {
-        "line": 316,
+        "line": 331,
         "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 316,
+          "line": 331,
           "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
         }
       ],
@@ -73442,7 +73931,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "2dba6c5aab98067e73100d23a18bda603629480e7b62a9347a148275de4da662",
+      "fingerprint": "a2194e82c4b318306cd7b83489cb0a3f89e37e195808d73a4e94d95a7a704916",
       "full_name": "Meridian.Contracts.Catalog.SymbolIdentifiers",
       "id": "Meridian.Contracts.Catalog.SymbolIdentifiers",
       "kind": "class",
@@ -73459,7 +73948,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 304,
+          "source_line": 319,
           "type": "string?"
         },
         {
@@ -73473,7 +73962,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 292,
+          "source_line": 307,
           "type": "string?"
         },
         {
@@ -73487,7 +73976,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 268,
+          "source_line": 283,
           "type": "string?"
         },
         {
@@ -73501,7 +73990,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 286,
+          "source_line": 301,
           "type": "string?"
         },
         {
@@ -73515,7 +74004,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 262,
+          "source_line": 277,
           "type": "string?"
         },
         {
@@ -73529,7 +74018,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 256,
+          "source_line": 271,
           "type": "string?"
         },
         {
@@ -73543,7 +74032,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 298,
+          "source_line": 313,
           "type": "string?"
         },
         {
@@ -73557,7 +74046,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 310,
+          "source_line": 325,
           "type": "string?"
         },
         {
@@ -73571,7 +74060,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 280,
+          "source_line": 295,
           "type": "string?"
         },
         {
@@ -73585,7 +74074,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 274,
+          "source_line": 289,
           "type": "string?"
         }
       ],
@@ -73595,12 +74084,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.SymbolIdentifiers",
       "references": [],
       "source": {
-        "line": 250,
+        "line": 265,
         "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 250,
+          "line": 265,
           "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
         }
       ],
@@ -73616,7 +74105,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "0c436415ebdb9ffaf63ba2622090327acf5121bb836846721d3b42abbecb7edb",
+      "fingerprint": "cb38022716d05bb4c0287e2f1c6fe3c8a76ac78c44317097e396a4d5696ce030",
       "full_name": "Meridian.Contracts.Catalog.SymbolLookupResult",
       "id": "Meridian.Contracts.Catalog.SymbolLookupResult",
       "kind": "class",
@@ -73633,7 +74122,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 496,
+          "source_line": 511,
           "type": "string?"
         },
         {
@@ -73647,7 +74136,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "SymbolRegistryEntry?",
-          "source_line": 502,
+          "source_line": 517,
           "type": "SymbolRegistryEntry?"
         },
         {
@@ -73661,7 +74150,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 478,
+          "source_line": 493,
           "type": "bool"
         },
         {
@@ -73675,7 +74164,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 490,
+          "source_line": 505,
           "type": "string?"
         },
         {
@@ -73689,7 +74178,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "string",
-          "source_line": 484,
+          "source_line": 499,
           "type": "string"
         },
         {
@@ -73703,7 +74192,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string[]?",
-          "source_line": 508,
+          "source_line": 523,
           "type": "string[]?"
         }
       ],
@@ -73715,12 +74204,12 @@
         "Meridian.Contracts.Catalog.SymbolRegistryEntry"
       ],
       "source": {
-        "line": 472,
+        "line": 487,
         "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 472,
+          "line": 487,
           "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
         }
       ],
@@ -73736,7 +74225,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "1bb6d38b4764eacad000156b12487283027ed2a2fa253e6fa634d3ff48fe2486",
+      "fingerprint": "c9997f4a9437c932b245aabd4bc971f4eb1c46c00a104926f322c7067775f367",
       "full_name": "Meridian.Contracts.Catalog.SymbolMappingSources",
       "id": "Meridian.Contracts.Catalog.SymbolMappingSources",
       "kind": "class",
@@ -73748,12 +74237,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.SymbolMappingSources",
       "references": [],
       "source": {
-        "line": 262,
+        "line": 285,
         "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 262,
+          "line": 285,
           "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
         }
       ],
@@ -73769,7 +74258,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "e5899bf244b1f186f3cd15695178c837518daa9b05eca07f05b2e4e585f388d1",
+      "fingerprint": "4244ec2cd4f81f2e28744cb87cc9deb6fcc39a39bc0d8a97369891b58ca7bd80",
       "full_name": "Meridian.Contracts.Catalog.SymbolRegistry",
       "id": "Meridian.Contracts.Catalog.SymbolRegistry",
       "kind": "class",
@@ -73830,6 +74319,20 @@
           "raw_type": "DateTime",
           "source_line": 27,
           "type": "DateTime"
+        },
+        {
+          "collection": true,
+          "collection_kind": "map",
+          "element_type": "SecurityMasterLegacyIdentifierCleanupReceipt",
+          "json_ignored": false,
+          "json_name": "legacyIdentifierCleanupReceipts",
+          "key_type": "string",
+          "name": "LegacyIdentifierCleanupReceipts",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "Dictionary<string, SecurityMasterLegacyIdentifierCleanupReceipt>",
+          "source_line": 72,
+          "type": "Dictionary<string, SecurityMasterLegacyIdentifierCleanupReceipt>"
         },
         {
           "collection": true,
@@ -73908,6 +74411,7 @@
       "qualified_name": "Meridian.Contracts.Catalog.SymbolRegistry",
       "references": [
         "Meridian.Contracts.Catalog.IdentifierIndex",
+        "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt",
         "Meridian.Contracts.Catalog.SymbolRegistryEntry",
         "Meridian.Contracts.Catalog.SymbolRegistryStatistics"
       ],
@@ -73933,7 +74437,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "b46b5bfae9ddaa89bbe717912a8b48e375102383a8b1046da5f2b1da0e3c6847",
+      "fingerprint": "fcda7943f1bdebe794a2e7f9fa278eabae439fdde83724e01661ca48ed4be4f6",
       "full_name": "Meridian.Contracts.Catalog.SymbolRegistryEntry",
       "id": "Meridian.Contracts.Catalog.SymbolRegistryEntry",
       "kind": "class",
@@ -73950,7 +74454,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "List<SymbolAlias>",
-          "source_line": 119,
+          "source_line": 134,
           "type": "List<SymbolAlias>"
         },
         {
@@ -73964,7 +74468,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "string",
-          "source_line": 95,
+          "source_line": 110,
           "type": "string"
         },
         {
@@ -73978,7 +74482,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "string",
-          "source_line": 83,
+          "source_line": 90,
           "type": "string"
         },
         {
@@ -73992,7 +74496,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "SymbolClassification?",
-          "source_line": 144,
+          "source_line": 159,
           "type": "SymbolClassification?"
         },
         {
@@ -74006,7 +74510,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "List<CorporateActionRef>?",
-          "source_line": 150,
+          "source_line": 165,
           "type": "List<CorporateActionRef>?"
         },
         {
@@ -74020,7 +74524,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 113,
+          "source_line": 128,
           "type": "string?"
         },
         {
@@ -74034,7 +74538,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "DateTime",
-          "source_line": 156,
+          "source_line": 171,
           "type": "DateTime"
         },
         {
@@ -74048,7 +74552,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 107,
+          "source_line": 122,
           "type": "string?"
         },
         {
@@ -74062,7 +74566,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "DateTime?",
-          "source_line": 174,
+          "source_line": 189,
           "type": "DateTime?"
         },
         {
@@ -74076,7 +74580,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 89,
+          "source_line": 104,
           "type": "string?"
         },
         {
@@ -74090,7 +74594,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 101,
+          "source_line": 116,
           "type": "string?"
         },
         {
@@ -74104,7 +74608,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "SymbolIdentifiers",
-          "source_line": 125,
+          "source_line": 140,
           "type": "SymbolIdentifiers"
         },
         {
@@ -74118,7 +74622,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 168,
+          "source_line": 183,
           "type": "bool"
         },
         {
@@ -74132,7 +74636,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "DateTime",
-          "source_line": 162,
+          "source_line": 177,
           "type": "DateTime"
         },
         {
@@ -74146,7 +74650,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "Dictionary<string, string>?",
-          "source_line": 180,
+          "source_line": 195,
           "type": "Dictionary<string, string>?"
         },
         {
@@ -74160,7 +74664,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "Dictionary<string, ProviderSymbolMetadata>",
-          "source_line": 138,
+          "source_line": 153,
           "type": "Dictionary<string, ProviderSymbolMetadata>"
         },
         {
@@ -74174,7 +74678,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "Dictionary<string, string>",
-          "source_line": 131,
+          "source_line": 146,
           "type": "Dictionary<string, string>"
         },
         {
@@ -74188,8 +74692,22 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "Guid?",
-          "source_line": 77,
+          "source_line": 84,
           "type": "Guid?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": "securityMasterOwnsCanonical",
+          "key_type": null,
+          "name": "SecurityMasterOwnsCanonical",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "bool",
+          "source_line": 98,
+          "type": "bool"
         }
       ],
       "name": "SymbolRegistryEntry",
@@ -74204,12 +74722,12 @@
         "Meridian.Contracts.Catalog.SymbolIdentifiers"
       ],
       "source": {
-        "line": 71,
+        "line": 78,
         "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 71,
+          "line": 78,
           "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
         }
       ],
@@ -74225,7 +74743,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "3d6dd38e32160c6f7ad788079d9bc81b9e5d06f978b8977dbaccb50ba431a471",
+      "fingerprint": "6878923d23b488f13a22bb3b4a96ee46068b883644238108b4e0dfe5896bfdd8",
       "full_name": "Meridian.Contracts.Catalog.SymbolRegistryStatistics",
       "id": "Meridian.Contracts.Catalog.SymbolRegistryStatistics",
       "kind": "class",
@@ -74242,7 +74760,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "int",
-          "source_line": 436,
+          "source_line": 451,
           "type": "int"
         },
         {
@@ -74256,7 +74774,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "Dictionary<string, int>",
-          "source_line": 460,
+          "source_line": 475,
           "type": "Dictionary<string, int>"
         },
         {
@@ -74270,7 +74788,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "Dictionary<string, int>",
-          "source_line": 466,
+          "source_line": 481,
           "type": "Dictionary<string, int>"
         },
         {
@@ -74284,7 +74802,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "int",
-          "source_line": 442,
+          "source_line": 457,
           "type": "int"
         },
         {
@@ -74298,7 +74816,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "int",
-          "source_line": 454,
+          "source_line": 469,
           "type": "int"
         },
         {
@@ -74312,7 +74830,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "int",
-          "source_line": 448,
+          "source_line": 463,
           "type": "int"
         },
         {
@@ -74326,7 +74844,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "int",
-          "source_line": 430,
+          "source_line": 445,
           "type": "int"
         }
       ],
@@ -74336,12 +74854,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.SymbolRegistryStatistics",
       "references": [],
       "source": {
-        "line": 424,
+        "line": 439,
         "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 424,
+          "line": 439,
           "path": "src/Meridian.Contracts/Catalog/SymbolRegistry.cs"
         }
       ],
@@ -74357,7 +74875,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "dcc7b8de2d48ee01a8d7aac7064f674adfc26d93b126df8be4dbe611735e499f",
+      "fingerprint": "732ee11c2b3ad37a712e732fc5f44c3a989f9740912ed8cb1414b0526fe6f3c3",
       "full_name": "Meridian.Contracts.Catalog.SymbolResolutionMismatch",
       "id": "Meridian.Contracts.Catalog.SymbolResolutionMismatch",
       "kind": "record",
@@ -74374,7 +74892,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 294,
+          "source_line": 322,
           "type": "string?"
         },
         {
@@ -74388,7 +74906,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 291,
+          "source_line": 319,
           "type": "string"
         },
         {
@@ -74402,7 +74920,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 290,
+          "source_line": 318,
           "type": "string"
         },
         {
@@ -74416,7 +74934,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 293,
+          "source_line": 321,
           "type": "string?"
         },
         {
@@ -74430,7 +74948,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 296,
+          "source_line": 324,
           "type": "DateTimeOffset"
         },
         {
@@ -74444,7 +74962,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 295,
+          "source_line": 323,
           "type": "Guid?"
         },
         {
@@ -74458,7 +74976,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 292,
+          "source_line": 320,
           "type": "string"
         }
       ],
@@ -74468,12 +74986,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.SymbolResolutionMismatch",
       "references": [],
       "source": {
-        "line": 289,
+        "line": 317,
         "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 289,
+          "line": 317,
           "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
         }
       ],
@@ -74492,23 +75010,23 @@
         {
           "explicit_value": false,
           "name": "Legacy",
-          "source_line": 279,
+          "source_line": 307,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Compare",
-          "source_line": 281,
+          "source_line": 309,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Canonical",
-          "source_line": 283,
+          "source_line": 311,
           "value": null
         }
       ],
-      "fingerprint": "7f6f2317fde107b8ccd64966ced1d126611459be60df95454c9cd053f1129cc4",
+      "fingerprint": "f8a4d936b15d633d28676b6bbc9daa084992a3d3339501ee8a007a223f4d9ab3",
       "full_name": "Meridian.Contracts.Catalog.SymbolResolutionMode",
       "id": "Meridian.Contracts.Catalog.SymbolResolutionMode",
       "kind": "enum",
@@ -74520,12 +75038,12 @@
       "qualified_name": "Meridian.Contracts.Catalog.SymbolResolutionMode",
       "references": [],
       "source": {
-        "line": 276,
+        "line": 304,
         "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
       },
       "sources": [
         {
-          "line": 276,
+          "line": 304,
           "path": "src/Meridian.Contracts/Catalog/ICanonicalSymbolRegistry.cs"
         }
       ],
@@ -233854,7 +234372,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "a89e900871b7c437314ec49f94f36841ccf8e35b986c33978e2f87621eab734a",
+      "fingerprint": "864e3571fccd2236a1b5580c0383b6ef4ef6295b458fe3398195046107a6507b",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "kind": "class",
@@ -233868,12 +234386,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "references": [],
       "source": {
-        "line": 211,
+        "line": 474,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 211,
+          "line": 474,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -233894,7 +234412,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ac82525e2297c1e8c79c4f261161adacf8e50bc2478d6b97b127f0f157cd4148",
+      "fingerprint": "5027dd7dd183bb9b154640f8a96a6b7c04db72f865871f7a32685cab9d55abfd",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
       "kind": "class",
@@ -233913,7 +234431,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "SecurityAssetSpecificTermsUpcasterPipeline",
-          "source_line": 255,
+          "source_line": 529,
           "type": "SecurityAssetSpecificTermsUpcasterPipeline"
         }
       ],
@@ -233926,12 +234444,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms"
       ],
       "source": {
-        "line": 252,
+        "line": 526,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 252,
+          "line": 526,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -235181,7 +235699,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "6af53d5584ef68eaa75987c25e854b370e0c14a279b9b7c08f72e47b2d3ccbaa",
+      "fingerprint": "91cbcc7e0cee835c543ebfe7a28ac9bf48520083f16402609027f4d1d6b5068e",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
       "id": "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
       "kind": "class",
@@ -235200,7 +235718,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 44,
+          "source_line": 48,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -235214,7 +235732,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 52,
+          "source_line": 56,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -235228,7 +235746,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 60,
+          "source_line": 64,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -235242,7 +235760,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
-          "source_line": 33,
+          "source_line": 37,
           "type": "SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster"
         }
       ],
@@ -235255,12 +235773,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms"
       ],
       "source": {
-        "line": 30,
+        "line": 34,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 30,
+          "line": 34,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -237168,7 +237686,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ca9d7d58549a0bdba8fa5b1177b94dece5c2dd9d0ab1967ada3d56f45cd05ea6",
+      "fingerprint": "147dd8766284c35107d198b3dadeb5ee70f24f4e368ed63e1cedc80c5ac9f42d",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityMasterOptions",
       "id": "Meridian.Contracts.SecurityMaster.SecurityMasterOptions",
       "kind": "class",
@@ -237202,6 +237720,20 @@
           "origin": "property",
           "raw_type": "bool",
           "source_line": 9,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProjectionCacheNotificationsEnabled",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "bool",
+          "source_line": 31,
           "type": "bool"
         },
         {

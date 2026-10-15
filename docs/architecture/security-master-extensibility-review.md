@@ -5640,3 +5640,40 @@ These corrections do not resolve review threads or establish human acceptance. I
 Security Master and schema reviews remain required. Full preferred-term recovery and unattributed
 legacy-alias cleanup are not claimed as implemented. PostgreSQL and CI results must be tied to the
 published refreshed head, not the historical PR-body measurements.
+
+## Acceptance repair — 2026-10-15 (PR #3131)
+
+The acceptance scope is code and isolated database rehearsal. Production deployment, writer drain,
+independent human schema/Storage approval and operator acceptance remain pending. The
+[governed-edit rollout runbook](../operators/security-master-governed-edit-rollout.md) records the
+merged #3130 evidence and the required target-environment receipts. External approval persistence
+and downstream publication still have separate transaction and reconciliation boundaries.
+
+The current #3131 refresh was `93701d7c`, rather than the earlier `41a30be8` snapshot. It is now
+integrated with main `2083befe`. Generation migration 036 remains byte-for-byte unchanged, and
+alias history remains 037. A backfilled alias revision preserves creation facts but also carries
+`history_available_from`: its current contents cannot establish knowledge from before migration.
+Recorded reads filter that availability boundary before selecting the latest revision. Missing
+pre-migration alias history is unavailable evidence, not proof that no alias existed.
+
+| Review topic | Implemented contract |
+| --- | --- |
+| Historical identifier lookup | Additive `GetRecordedByIdentifierAsOfAsync` resolves retained event identifiers and alias revisions using an explicit recorded cutoff and a separate effective cutoff. Missing or ambiguous identity returns no match; current projections and legacy primary-identity fallbacks are excluded. Recorded by-ID reads also retain aliases when the current projection is absent. The compatibility APIs keep their existing mixed semantics: recorded terms can carry aliases corrected later. |
+| Equity replay | Economic-only Equity reconstruction refuses because the old family cannot prove common versus preferred or convertible preferred classification. Retained flat payloads replay unchanged. Reconstructing missing preferred economics still requires authoritative retained terms; no partial envelope is invented. |
+| Identifier propagation | Production composition supplies one seeder/ID-lookup singleton. Failed local reseeds retry. Startup seeding works without preloading or notifications, and reads authoritative membership independently of cache completeness. Local create, amend and deactivate install committed cache state and request reseeding before optional post-commit work. |
+| Canonical ownership | Persisted Security Master canonical provenance supports ticker rename and removal of withdrawn entries whose remaining authority is exclusively Security Master. Proven owned IDs absent from the authoritative snapshot are reconciled across restart. Independent aliases, provider overrides and unattributed legacy authority are preserved. Resolver snapshot rebuilds serialize publication. |
+| Legacy identifiers | Normal reconciliation never infers ownership from a matching typed value or inferred alias source. Explicit cleanup uses an exact evidence-bound manifest, registry fingerprint, dry-run counts and atomic persisted receipt; typed-field removal needs separate evidence. A changed registry requires renewed review, and exact retries replay the retained receipt. |
+
+Legacy cleanup is an optional maintenance capability on `ISecurityMasterLegacyIdentifierCleanupWriter`.
+Capture its registry fingerprint, create a manifest selecting each exact SecurityId, identifier
+kind/value, expected alias source and retained origin evidence, then call
+`ValidateLegacyIdentifierCleanupAsync`. Review its selections and counts before passing that result
+to `ApplyLegacyIdentifierCleanupAsync`. Omit typed-field evidence to preserve a matching typed
+identifier. The receipt records the requested cleanup and its evidence references; it does not
+establish independent approval. This rehearsal applies no cleanup to a production registry.
+
+Current seeding evaluates identifier validity at the seed timestamp. Automatic activation/expiry
+solely from clock passage, with no mutation or reseed, remains a follow-up; deployments needing
+that behavior must retain an appropriate refresh policy. Shared schedule validation (#3126) and
+explicit payload-family discrimination (#3127) remain separately scoped. Review threads and human
+acceptance are not inferred from these code corrections or from automated review.

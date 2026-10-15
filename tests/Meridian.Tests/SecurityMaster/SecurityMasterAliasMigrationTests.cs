@@ -49,8 +49,10 @@ public sealed class SecurityMasterAliasMigrationTests
         (await fixture.ScalarAsync($"select checksum from {fixture.Schema}.schema_migrations where filename = '{AliasMigration}'"))
             .Should().Be(Sha256Digest.ComputeUtf8(fixture.AliasSql));
         (await fixture.ScalarAsync($"select count(*) from {fixture.Schema}.security_alias_revisions r join {fixture.Schema}.security_aliases a using(alias_id) " +
-            "where r.revision = 1 and r.alias_value = a.alias_value and r.recorded_at = a.created_at and r.recorded_by = a.created_by and not r.is_retired"))
+            "where r.revision = 1 and r.alias_value = a.alias_value and r.recorded_at = a.created_at and r.recorded_by = a.created_by " +
+            "and r.history_available_from is not null and r.history_available_from > r.recorded_at and not r.is_retired"))
             .Should().Be("1");
+        var aliasHistory = await fixture.ScalarAsync($"select to_jsonb(r)::text from {fixture.Schema}.security_alias_revisions r");
         foreach (var mutation in new[] { "update {0}.security_alias_revisions set reason = 'rewrite'", "delete from {0}.security_alias_revisions", "truncate {0}.security_alias_revisions" })
         {
             var mutate = () => fixture.ScalarAsync(string.Format(System.Globalization.CultureInfo.InvariantCulture, mutation, fixture.Schema));
@@ -61,6 +63,7 @@ public sealed class SecurityMasterAliasMigrationTests
         (await fixture.ReceiptsAsync()).Should().Be(upgradedReceipts);
         (await fixture.HistoryAsync()).Should().Be(history);
         (await fixture.ScalarAsync($"select count(*) from {fixture.Schema}.security_alias_revisions")).Should().Be("1");
+        (await fixture.ScalarAsync($"select to_jsonb(r)::text from {fixture.Schema}.security_alias_revisions r")).Should().Be(aliasHistory);
     }
 
     private sealed class Fixture(PostgresTestServer server, string scripts, string schema, string aliasSql) : IAsyncDisposable

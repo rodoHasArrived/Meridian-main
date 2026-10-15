@@ -81,6 +81,9 @@ instances, apply migration 036 through the normal migration runner, then start t
 Mixed old/new writers are not covered, because old binaries do not acquire the generation fence.
 The additive table can remain during a binary rollback, but the multi-instance guarantee is then lost.
 No production migration or operator acceptance is implied by this change.
+Use the [governed edit rollout procedure](../operators/security-master-governed-edit-rollout.md)
+to collect the independent review, writer-drain, migration, reconciliation and operator-acceptance
+receipts. Missing production evidence stays pending even after merge and successful CI.
 
 `SecurityMasterGovernedConcurrencyPostgresTests` forces two independent services to overlap at the
 PostgreSQL lock, then verifies incompatible-date rejection, approval exclusion during patch/draft

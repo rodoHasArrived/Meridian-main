@@ -94,7 +94,8 @@ public sealed class SecurityMasterAggregateRebuilder
         Guid securityId,
         DateTimeOffset asOfUtc,
         SecurityProjectionRecord? projectionWithAliases,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        IReadOnlyList<SecurityAliasDto>? aliasesRecordedAtCutoff = null)
     {
         var events = await _eventStore.LoadAsync(securityId, ct).ConfigureAwait(false);
         SecurityEconomicDefinitionRecord? rebuilt = null;
@@ -103,8 +104,8 @@ public sealed class SecurityMasterAggregateRebuilder
             rebuilt = SecurityMasterMapping.FromEconomicPayload(@event.Payload);
         }
 
-        var aliasesAsOf = projectionWithAliases?.Aliases
-            .Where(alias => alias.CreatedAt <= asOfUtc
+        var aliasesAsOf = (aliasesRecordedAtCutoff ?? projectionWithAliases?.Aliases)
+            ?.Where(alias => alias.CreatedAt <= asOfUtc
                             && alias.ValidFrom <= asOfUtc
                             && (!alias.ValidTo.HasValue || alias.ValidTo.Value > asOfUtc))
             .ToArray();

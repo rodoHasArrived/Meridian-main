@@ -36,63 +36,73 @@ public sealed class SecurityMasterProjectionWarmupService : IHostedService, IDis
         _seedService = seedService;
     }
 
+    /// <summary>First delay after startup or periodic refresh failure; doubles up to a minute.</summary>
+    internal TimeSpan RefreshRetryDelay { get; init; } = TimeSpan.FromSeconds(5);
+
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        if (!_options.PreloadProjectionCache)
-        {
-            _logger.LogDebug("Security Master projection cache pre-warm is disabled (PreloadProjectionCache=false).");
-            return;
-        }
-
-        _logger.LogInformation("Warming Security Master projection cache on startup...");
-
+        var refreshFailed = false;
         try
         {
-            await _projectionService.WarmAsync(cancellationToken).ConfigureAwait(false);
-
-            // Seed the canonical symbol registry from the freshly-populated projection cache.
-            if (_seedService is not null)
-            {
-                await _seedService.SeedAsync(cancellationToken).ConfigureAwait(false);
-            }
+            await RefreshAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            _logger.LogWarning("Security Master projection cache warm-up was cancelled during startup.");
+            refreshFailed = true;
+            _logger.LogWarning("Security Master projection/identifier initialization was cancelled during startup.");
         }
         catch (Exception ex)
         {
-            // Log and continue — a warm cache is a performance optimisation, not a hard requirement.
-            _logger.LogError(ex, "Security Master projection cache warm-up failed; queries will hit the database directly.");
+            refreshFailed = true;
+            // Queries can read the store while initialization recovers. Identifier seeding is
+            // required even in lazy-cache, single-node deployments without a notification listener.
+            _logger.LogError(ex, "Security Master projection/identifier initialization failed; retrying in the background.");
         }
-        finally
+
+        if (refreshFailed || _options.ProjectionCacheRefreshMinutes > 0)
         {
-            // The periodic refresh starts even when the initial warm failed: the loop is exactly
-            // what recovers a cold cache once the store becomes reachable.
-            if (_options.ProjectionCacheRefreshMinutes > 0)
-            {
-                _refreshLoop = Task.Run(() => RunPeriodicRefreshAsync(_refreshCts.Token), CancellationToken.None);
-            }
+            var refreshToken = _refreshCts.Token;
+            _refreshLoop = Task.Run(() => RunRefreshLoopAsync(refreshFailed, refreshToken), CancellationToken.None);
         }
     }
 
-    private async Task RunPeriodicRefreshAsync(CancellationToken ct)
+    private async Task RefreshAsync(CancellationToken ct)
     {
-        var interval = TimeSpan.FromMinutes(_options.ProjectionCacheRefreshMinutes);
-        _logger.LogInformation(
-            "Security Master projection cache periodic re-warm enabled every {Minutes} minute(s) as a backstop to cross-node change notifications.",
-            _options.ProjectionCacheRefreshMinutes);
-        using var timer = new PeriodicTimer(interval);
-        while (true)
+        if (_options.PreloadProjectionCache)
+        {
+            await _projectionService.WarmAsync(ct).ConfigureAwait(false);
+        }
+        else
+        {
+            _logger.LogDebug("Security Master projection cache pre-warm is disabled (PreloadProjectionCache=false).");
+        }
+
+        // In lazy mode the seeder reads durable membership without populating the cache. Skipping
+        // this step would leave the canonical registry and security-ID lookup empty until a write
+        // or notification, neither of which is guaranteed in a single-node deployment.
+        if (_seedService is not null)
+        {
+            await _seedService.SeedAsync(ct).ConfigureAwait(false);
+        }
+    }
+
+    private async Task RunRefreshLoopAsync(bool retryPending, CancellationToken ct)
+    {
+        var retryDelay = RefreshRetryDelay;
+        while (!ct.IsCancellationRequested)
         {
             try
             {
-                if (!await timer.WaitForNextTickAsync(ct).ConfigureAwait(false))
+                if (!retryPending && _options.ProjectionCacheRefreshMinutes <= 0)
                 {
                     return;
                 }
 
-                await _projectionService.WarmAsync(ct).ConfigureAwait(false);
+                await Task.Delay(retryPending ? retryDelay : TimeSpan.FromMinutes(_options.ProjectionCacheRefreshMinutes), ct)
+                    .ConfigureAwait(false);
+                await RefreshAsync(ct).ConfigureAwait(false);
+                retryPending = false;
+                retryDelay = RefreshRetryDelay;
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -100,8 +110,9 @@ public sealed class SecurityMasterProjectionWarmupService : IHostedService, IDis
             }
             catch (Exception ex)
             {
-                // A failed refresh keeps serving the previous complete set; the next tick retries.
-                _logger.LogWarning(ex, "Security Master projection cache periodic re-warm failed; retrying on the next interval.");
+                retryPending = true;
+                _logger.LogWarning(ex, "Security Master projection/identifier refresh failed; retrying with backoff.");
+                retryDelay = TimeSpan.FromMilliseconds(Math.Min(retryDelay.TotalMilliseconds * 2, 60_000));
             }
         }
     }
@@ -123,5 +134,9 @@ public sealed class SecurityMasterProjectionWarmupService : IHostedService, IDis
         }
     }
 
-    public void Dispose() => _refreshCts.Dispose();
+    public void Dispose()
+    {
+        _refreshCts.Cancel();
+        _refreshCts.Dispose();
+    }
 }

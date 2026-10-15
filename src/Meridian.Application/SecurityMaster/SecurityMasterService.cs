@@ -145,6 +145,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
             await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
             await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
+            OnProjectionCommitted(projection);
             // A governed field that just changed invalidates any prior conflict-resolution attribution
             // for that path: the recorded winner no longer supplied the current value. Changed paths
             // are computed independently of cross-source conflict creation — the previous winner
@@ -156,8 +157,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             var changedGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(
                 currentProjection, projection, _assetProfileCatalog);
             await TryRetireStaleFieldResolutionProvenanceAsync(
-                changedGovernedFields, request.SecurityId, projection.Version, ct).ConfigureAwait(false);
-            await TryRecordCanonicalFieldAttributionAsync(changedGovernedFields, projection, ct).ConfigureAwait(false);
+                changedGovernedFields, request.SecurityId, projection.Version, _serviceCts.Token).ConfigureAwait(false);
+            await TryRecordCanonicalFieldAttributionAsync(changedGovernedFields, projection, _serviceCts.Token).ConfigureAwait(false);
         }
         finally
         {
@@ -167,13 +168,13 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // refreshing them before AppendAsync's ExpectedVersion check could mutate the governed
         // conflict queue for an amendment the event store then rejects. Best-effort — a failed
         // sweep leaves conflicts Open, where the resolve-time guard reconciles them lazily.
-        await TryReconcileOpenFieldConflictsAsync(projection, ct).ConfigureAwait(false);
+        await TryReconcileOpenFieldConflictsAsync(projection, _serviceCts.Token).ConfigureAwait(false);
         // The snapshot and identifier-conflict steps are post-commit too: the event append and
         // projection upsert are durable, so a canceled request token must not surface a canceled
-        // amendment (the retry would fail concurrency on the advanced version) nor skip the
-        // cache/registry updates below.
-        await SaveSnapshotIfNeededAsync(economic, CancellationToken.None).ConfigureAwait(false);
-        await TryRecordConflictsAsync(projection, request.SecurityId, CancellationToken.None).ConfigureAwait(false);
+        // amendment (the retry would fail concurrency on the advanced version). Local cache and
+        // registry coherence has already been scheduled at the projection commit boundary.
+        await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
+        await TryRecordConflictsAsync(projection, request.SecurityId, _serviceCts.Token).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action re-fetch so that updated identifiers
         // (e.g. ticker changes after a merger rename) are reflected in the backfill history.
@@ -198,10 +199,6 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 }
             }, ct2);
         }
-
-        // Keep the in-memory projection cache and canonical registry consistent with the DB write.
-        _projectionCache?.Upsert(projection);
-        TryReseedRegistryInBackground();
 
         return SecurityMasterMapping.ToDetail(projection);
     }
@@ -274,12 +271,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-        await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
-
-        // Keep the in-memory projection cache coherent with the durable write, matching the
-        // create/amend paths — without this a deactivated security kept reading Active from the
-        // warm cache until the next full re-warm.
-        _projectionCache?.Upsert(projection);
+        OnProjectionCommitted(projection);
+        await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
     }
 
     public Task<SecurityAliasDto> UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default)
@@ -323,16 +316,17 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [envelope], ct).ConfigureAwait(false);
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
+        OnProjectionCommitted(projection);
         // Creation is the first canonical write of every governed field the record supplies, so it
         // seeds the per-field attribution the same way an amend does — diffed against an empty
         // baseline instead of a previous revision, and immediately after the projection write to
         // minimize the unattributed window.
         var seededGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(
             CreateEmptyGovernedBaseline(projection), projection, _assetProfileCatalog);
-        await TryRecordCanonicalFieldAttributionAsync(seededGovernedFields, projection, ct).ConfigureAwait(false);
-        await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
+        await TryRecordCanonicalFieldAttributionAsync(seededGovernedFields, projection, _serviceCts.Token).ConfigureAwait(false);
+        await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
 
-        await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
+        await TryRecordConflictsAsync(projection, request.SecurityId, _serviceCts.Token).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action backfill for the newly-created security so
         // that historical corp action data is available immediately for backtesting.
@@ -358,11 +352,18 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             }, ct2);
         }
 
-        // Keep the in-memory projection cache and canonical registry consistent with the DB write.
+        return SecurityMasterMapping.ToDetail(projection);
+    }
+
+    /// <summary>
+    /// Install local coherence as soon as the projection is durable. Later snapshot or lineage
+    /// failures cannot skip this node's update, and request cancellation cannot cancel its reseed.
+    /// This node ignores its own projection notification, so it cannot rely on the listener to heal.
+    /// </summary>
+    private void OnProjectionCommitted(SecurityProjectionRecord projection)
+    {
         _projectionCache?.Upsert(projection);
         TryReseedRegistryInBackground();
-
-        return SecurityMasterMapping.ToDetail(projection);
     }
 
     /// <summary>First delay before retrying a failed post-commit alias cache refresh; doubles up to a minute.</summary>

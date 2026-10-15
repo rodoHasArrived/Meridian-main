@@ -140,9 +140,10 @@ public interface ICanonicalSymbolRegistryMigrationWriter
 public interface ICanonicalSymbolRegistrySecurityMasterWriter
 {
     /// <summary>
-    /// Replaces Security Master aliases and non-override provider mappings for the supplied
-    /// security IDs only. Definitions describe active securities; an ID without a definition
-    /// withdraws its Security Master mappings. Other sources and securities are preserved.
+    /// Replaces Security Master identifiers, aliases, canonical tickers and non-override provider
+    /// mappings for the supplied security IDs only. Definitions describe active securities; an ID
+    /// without a definition withdraws its Security Master mappings and removes its canonical entry
+    /// only when no independent authority remains. Unknown legacy provenance is preserved.
     /// </summary>
     Task<int> ReconcileSecurityMasterAsync(
         IReadOnlyCollection<Guid> securityIds,
@@ -168,6 +169,14 @@ public sealed class CanonicalSymbolDefinition
     /// </summary>
     [JsonPropertyName("securityId")]
     public Guid? SecurityId { get; init; }
+
+    /// <summary>
+    /// Read-model provenance: true when only Security Master retains the canonical ticker.
+    /// Ordinary registration cannot assert ownership; reconciliation establishes this value.
+    /// </summary>
+    [JsonPropertyName("securityMasterOwnsCanonical")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool SecurityMasterOwnsCanonical { get; init; }
 
     /// <summary>
     /// Human-readable display name (e.g., "Apple Inc.").

@@ -50,6 +50,20 @@ internal static class SecurityEconomicDefinitionAdapter
             ? economic.TypeName
             : economic.LegacyAssetClass;
 
+        if (economic.LegacyAssetSpecificTerms is null
+            && (HasPreferredClassification(economic)
+                || string.Equals(legacyAssetClass, "Equity", StringComparison.OrdinalIgnoreCase)
+                || (string.Equals(economic.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(legacyAssetClass, "PrivateCompanyEquity", StringComparison.OrdinalIgnoreCase))))
+        {
+            // Structural Common metadata cannot establish the original equity classification, even
+            // when every preferred module is absent. Also refuse incomplete imported equity whose
+            // TypeName/LegacyAssetClass cannot select the known flat Equity family.
+            throw new InvalidOperationException(
+                "Equity economic replay requires retained legacy asset-specific terms; " +
+                "the economic payload cannot reconstruct the complete classification and preferred/convertible terms.");
+        }
+
         // The legacy slot expects the flat v1 asset-specific-terms family. The retained v1 payload is
         // the authoritative copy and is used whenever the record carries it. When only the structured
         // v2 economic-terms document exists — a stored event written without
@@ -84,6 +98,24 @@ internal static class SecurityEconomicDefinitionAdapter
             economic.EffectiveTo,
             economic.Identifiers,
             aliases ?? Array.Empty<SecurityAliasDto>());
+    }
+
+    private static bool HasPreferredClassification(SecurityEconomicDefinitionRecord economic)
+    {
+        static bool IsPreferredLabel(string? value)
+            => value is not null && (value.Equals("PreferredEquity", StringComparison.OrdinalIgnoreCase)
+                                     || value.Equals("PreferredShare", StringComparison.OrdinalIgnoreCase)
+                                     || value.Equals("Preferred", StringComparison.OrdinalIgnoreCase)
+                                     || value.Equals("ConvertiblePreferred", StringComparison.OrdinalIgnoreCase));
+
+        return IsPreferredLabel(economic.AssetFamily)
+               || IsPreferredLabel(economic.SubType)
+               || IsPreferredLabel(economic.TypeName)
+               || (economic.Classification.ValueKind == JsonValueKind.Object
+                   && economic.Classification.EnumerateObject().Any(property =>
+                       property.Name is "assetFamily" or "subType" or "typeName" or "classification"
+                       && property.Value.ValueKind == JsonValueKind.String
+                       && IsPreferredLabel(property.Value.GetString())));
     }
 
     private static JsonElement BuildClassificationJson(SecurityEconomicDefinition definition)

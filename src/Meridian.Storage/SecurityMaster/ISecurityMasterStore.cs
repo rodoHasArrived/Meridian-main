@@ -29,6 +29,8 @@ public interface ISecurityMasterStore
     /// (transaction time): for each alias, the latest revision recorded at or before the cutoff,
     /// omitting aliases not yet recorded or already retired by then. <c>CreatedBy</c>/<c>CreatedAt</c>
     /// carry the alias's original creation facts. Valid-time filtering is left to the caller.
+    /// Pre-existing aliases whose revision history began at migration 037 are omitted for earlier
+    /// cutoffs: their prior values are unavailable, and an empty result cannot certify no aliases existed.
     /// </summary>
     Task<IReadOnlyList<SecurityAliasDto>> GetAliasesRecordedAsOfAsync(
         Guid securityId,

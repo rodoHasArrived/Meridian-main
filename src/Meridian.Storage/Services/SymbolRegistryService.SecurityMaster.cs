@@ -33,18 +33,11 @@ public sealed partial class SymbolRegistryService
             var candidate = JsonSerializer.Deserialize(json, MarketDataJsonContext.Default.SymbolRegistry)
                 ?? throw new InvalidDataException("Unable to clone the retained symbol registry.");
             var incomingBySecurityId = incoming.ToDictionary(entry => entry.SecurityId!.Value);
-            foreach (var entry in candidate.Symbols.Values)
+            foreach (var (canonical, entry) in candidate.Symbols.ToArray())
             {
                 ct.ThrowIfCancellationRequested();
                 if (entry.SecurityId is not Guid id || !scope.Contains(id))
                     continue;
-
-                // Source is authority, not a spelling heuristic. In particular, never infer
-                // ownership of an operator/legacy/provider alias from a ticker suffix.
-                if (incomingBySecurityId.TryGetValue(id, out var supplied))
-                {
-                    ClaimLegacySecurityMasterIdentifierAliases(entry, supplied.Identifiers);
-                }
 
                 // Only aliases emitted from a Security Master identifier field prove that the
                 // matching typed identifier came from Security Master; an ordinary alias sharing
@@ -64,6 +57,37 @@ public sealed partial class SymbolRegistryService
                         entry.ProviderSymbolMetadata.Remove(provider);
                     }
                 }
+
+                if (!incomingBySecurityId.TryGetValue(id, out var supplied))
+                {
+                    if (entry.SecurityMasterOwnsCanonical && !HasIndependentAuthority(entry))
+                        candidate.Symbols.Remove(canonical);
+                    continue;
+                }
+
+                var currentCanonical = supplied.Canonical.Trim().ToUpperInvariant();
+                if (!entry.Canonical.Equals(currentCanonical, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (candidate.Symbols.ContainsKey(currentCanonical))
+                        throw new InvalidOperationException($"Canonical symbol '{currentCanonical}' is already registered to a different instrument.");
+
+                    // Reconciliation follows durable identity to the new primary ticker. A previous
+                    // independently registered canonical remains an alias with that authority; an old
+                    // Security Master ticker survives only if its current alias history supplies it.
+                    if (!entry.SecurityMasterOwnsCanonical)
+                    {
+                        entry.Aliases.Add(new SymbolAlias
+                        {
+                            Alias = entry.Canonical,
+                            Source = SymbolMappingSources.Registry,
+                            Type = "ticker"
+                        });
+                    }
+                    candidate.Symbols.Remove(canonical);
+                    entry.Canonical = currentCanonical;
+                    entry.SecurityMasterOwnsCanonical = true;
+                    candidate.Symbols[currentCanonical] = entry;
+                }
             }
 
             var indexes = BuildIndexesAndCaches(candidate);
@@ -71,6 +95,7 @@ public sealed partial class SymbolRegistryService
             {
                 ct.ThrowIfCancellationRequested();
                 entry.Canonical = entry.Canonical.Trim().ToUpperInvariant();
+                entry.SecurityMasterOwnsCanonical = true;
                 NormalizeEntry(entry);
                 var registered = RegisterEntry(candidate, indexes.SecurityIdCache, entry, merge: true, _log);
                 // The merge only fills empty identifiers; an identifier Security Master supplies
@@ -99,46 +124,20 @@ public sealed partial class SymbolRegistryService
         }
     }
 
-    // Sources the pre-reconciliation seed inferred from an identifier alias's spelling.
-    private static readonly HashSet<string> LegacyIdentifierAliasSources =
-        new(["isin", "figi", "manual"], StringComparer.OrdinalIgnoreCase);
-
-    /// <summary>
-    /// One-way upgrade of registries seeded before identifier aliases carried Security Master
-    /// provenance: that seed wrote each identifier both as the typed identifier and as a plain alias
-    /// whose source was inferred from its spelling. Spelling alone cannot tell that copy from a plain
-    /// alias another caller added, so an alias is claimed only for an identifier kind Security Master
-    /// supplies in this reconciliation, where Security Master is authoritative for the typed field
-    /// anyway: an inferred-source, providerless alias equal to the entry's typed value of that kind.
-    /// A kind Security Master does not supply is never claimed, so another authority's identifier
-    /// and alias survive. Aliases with explicit provenance (operator, provider, registry) are never
-    /// claimed.
-    /// </summary>
-    private static void ClaimLegacySecurityMasterIdentifierAliases(SymbolRegistryEntry entry, SymbolIdentifiers supplied)
-    {
-        var identifiers = entry.Identifiers;
-        var claimable = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        AddWhenSupplied(identifiers.Isin, supplied.Isin);
-        AddWhenSupplied(identifiers.Cusip, supplied.Cusip);
-        AddWhenSupplied(identifiers.Figi, supplied.Figi);
-        AddWhenSupplied(identifiers.Sedol, supplied.Sedol);
-        foreach (var alias in entry.Aliases)
-        {
-            if (alias.Source is { } source
-                && LegacyIdentifierAliasSources.Contains(source)
-                && string.IsNullOrWhiteSpace(alias.Provider)
-                && claimable.Contains(alias.Alias))
-            {
-                alias.Source = SymbolMappingSources.SecurityMasterIdentifier;
-            }
-        }
-
-        void AddWhenSupplied(string? current, string? suppliedValue)
-        {
-            if (!string.IsNullOrWhiteSpace(current) && !string.IsNullOrWhiteSpace(suppliedValue))
-                claimable.Add(current);
-        }
-    }
+    // Unknown legacy alias ownership is never inferred from spelling or a matching typed field.
+    // The opt-in legacy cleanup capability requires a reviewed, exact evidence-bound manifest.
+    private static bool HasIndependentAuthority(SymbolRegistryEntry entry)
+        => entry.Aliases.Count > 0 || entry.ProviderSymbols.Count > 0
+           || !string.IsNullOrWhiteSpace(entry.Identifiers.Isin)
+           || !string.IsNullOrWhiteSpace(entry.Identifiers.Cusip)
+           || !string.IsNullOrWhiteSpace(entry.Identifiers.Figi)
+           || !string.IsNullOrWhiteSpace(entry.Identifiers.Sedol)
+           || !string.IsNullOrWhiteSpace(entry.Identifiers.CompositeFigi)
+           || !string.IsNullOrWhiteSpace(entry.Identifiers.ShareClassFigi)
+           || !string.IsNullOrWhiteSpace(entry.Identifiers.Cik)
+           || !string.IsNullOrWhiteSpace(entry.Identifiers.Lei)
+           || !string.IsNullOrWhiteSpace(entry.Identifiers.BloombergId)
+           || !string.IsNullOrWhiteSpace(entry.Identifiers.Ric);
 
     /// <summary>
     /// Clears the Security Master-governed identifiers (ISIN, CUSIP, FIGI, SEDOL) whose value the

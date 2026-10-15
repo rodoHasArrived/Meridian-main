@@ -1,7 +1,9 @@
 -- Append-only alias revision history. security_aliases remains the current-state row used by
 -- identifier resolution and posting authority; every recorded change to an alias appends a revision
 -- here first. Recorded-as-of reads select the latest revision recorded at or before the cutoff, so a
--- correction made today cannot change what an older as-of view reports.
+-- correction made today cannot change what an older as-of view reports. Pre-migration alias
+-- revisions were not retained: the current-row backfill is available only from this migration,
+-- and an earlier recorded-as-of lookup has unknown alias history, not evidence of no aliases.
 create table if not exists __SCHEMA__.security_alias_revisions (
     alias_id uuid not null,
     revision integer not null,
@@ -19,6 +21,7 @@ create table if not exists __SCHEMA__.security_alias_revisions (
     is_retired boolean not null default false,
     recorded_by text not null,
     recorded_at timestamptz not null,
+    history_available_from timestamptz null,
     primary key (alias_id, revision),
     constraint security_alias_revisions_revision_check check (revision >= 1)
 );
@@ -27,17 +30,20 @@ create index if not exists ix_security_alias_revisions_security_recorded
     on __SCHEMA__.security_alias_revisions (security_id, alias_id, recorded_at);
 
 comment on table __SCHEMA__.security_alias_revisions is
-    'Append-only Security Master alias revisions. Revision 1 carries the alias creation facts; later revisions record corrections or retirement with the recording actor and timestamp, and recorded-as-of alias reads select the latest revision recorded at or before the cutoff.';
+    'Append-only Security Master alias revisions. Recorded-as-of reads select the latest available revision at or before the cutoff. Pre-migration current-row baselines retain their creation metadata but are available only from history_available_from; earlier alias history is unknown.';
+comment on column __SCHEMA__.security_alias_revisions.history_available_from is
+    'Earliest recorded cutoff supported by a migrated current-row baseline; null for revisions recorded after history retention began. This boundary does not reconstruct discarded pre-migration revisions.';
 
--- Existing aliases become revision 1, recorded when the alias was created. This matches the
--- recorded-as-of filter that previously read created_at from the current row.
+-- Existing aliases become revision 1 with retained creation metadata. The current row may already
+-- contain corrections whose prior revisions are lost, so it must not fabricate pre-migration
+-- recorded knowledge. Normal append writes omit this marker and retain their actual recorded_at.
 insert into __SCHEMA__.security_alias_revisions (
     alias_id, revision, security_id, alias_kind, alias_value, normalized_alias_value,
     provider, normalized_provider, scope, reason, valid_from, valid_to, is_enabled, is_retired,
-    recorded_by, recorded_at)
+    recorded_by, recorded_at, history_available_from)
 select alias_id, 1, security_id, alias_kind, alias_value, normalized_alias_value,
        provider, normalized_provider, scope, reason, valid_from, valid_to, is_enabled, false,
-       created_by, created_at
+       created_by, created_at, now()
 from __SCHEMA__.security_aliases
 on conflict (alias_id, revision) do nothing;
 

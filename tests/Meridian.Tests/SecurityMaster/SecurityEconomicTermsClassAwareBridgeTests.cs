@@ -158,15 +158,49 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         replay.Should().Throw<InvalidOperationException>().WithMessage("*complete classification*");
     }
 
+    [Theory]
+    [InlineData("Preferred")]
+    [InlineData("ConvertiblePreferred")]
+    public void PreferredReplay_RefusesMissingEconomicsEvenWhenNoPreferredModuleSurvives(string classification)
+    {
+        var payload = System.Text.Json.Nodes.JsonNode.Parse(JsonSerializer.Serialize(
+            SecurityAssetTermsSchemaRoundTripTests.FullPayloads["Equity"]))!;
+        payload["classification"] = classification;
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain("Equity",
+            JsonSerializer.SerializeToElement(payload));
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Equity", original)) with
+        {
+            LegacyAssetSpecificTerms = null,
+            AssetFamily = "PreferredEquity",
+            SubType = "PreferredShare",
+            Classification = JsonSerializer.SerializeToElement(new
+            {
+                assetClass = "Equity", assetFamily = "PreferredEquity", subType = "PreferredShare", classification
+            }),
+            EconomicTerms = JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = 2,
+                equityBehavior = new { shareClass = "A" }
+            })
+        };
+
+        Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(economic);
+        replay.Should().Throw<InvalidOperationException>().WithMessage("*requires retained legacy*");
+    }
+
     [Fact]
-    public void CommonEquityReplay_RemainsAvailableWithoutPreferredEconomics()
+    public void CommonEquityReplay_RequiresRetainedTerms_BecauseStructuralMetadataDoesNotProveCommon()
     {
         var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain("Equity",
             new { shareClass = "A", classification = "Common", votingRightsCat = "FullVoting" });
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Equity", original));
-        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
-        rebuilt.AssetSpecificTerms.GetProperty("shareClass").GetString().Should().Be("A");
+        SecurityEconomicDefinitionAdapter.ToProjection(economic).AssetSpecificTerms.GetRawText()
+            .Should().Be(original.GetRawText());
+        Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+        replay.Should().Throw<InvalidOperationException>().WithMessage("*complete classification*",
+            "legacy preferred equities carry the same structural Common metadata, so absence of preferred clues is ambiguous");
     }
 
     [Fact]

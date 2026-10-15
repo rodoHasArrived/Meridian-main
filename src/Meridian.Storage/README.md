@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-14
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Storage
@@ -39,6 +39,19 @@ folding as the migration runner. Parallel passport reads
 serialize their commands on that connection. Independent stores and application instances use the
 database fence; in-memory compositions retain their local gate. Deploy with all old writers drained,
 as described in [the rollout contract](../../docs/domain/security.md#governed-edit-concurrency).
+
+Migration 037 adds append-only alias revisions after the immutable generation migration 036.
+Its imported alias baseline retains creation facts and records when historical values first became
+available; strict recorded-time reads do not present that baseline before the migration observation.
+Fresh-install and populated through-036 upgrade tests cover rollback, retry and restart receipts.
+
+Symbol registry reconciliation persists canonical ownership for new Security Master entries, follows
+primary ticker changes, and withdraws names whose remaining authority is exclusively Security Master.
+Independent aliases and provider overrides remain retained. Unknown legacy identifier ownership is
+never inferred from matching text: `ISecurityMasterLegacyIdentifierCleanupWriter` validates an
+explicit evidence-bound manifest against a registry fingerprint before atomically applying it and
+retaining an idempotent receipt. Resolver rebuilds serialize their read/build/publication step so an
+older rebuild cannot restore a superseded alias after a newer reconciliation.
 
 New WAL segments use `MDCWAL02|2` with BLAKE3-256 over length-framed, canonically
 PackBits-encoded fields. Existing `MDCWAL01|1` segments retain SHA-256 validation.

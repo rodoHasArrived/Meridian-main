@@ -575,7 +575,8 @@ public sealed partial class SymbolRegistryService :
             if (entry.SecurityId is Guid securityId &&
                 entriesBySecurityId.TryGetValue(securityId, out var identityEntry))
             {
-                AddCanonicalTickerAlias(identityEntry, entry.Canonical);
+                AddCanonicalTickerAlias(identityEntry, entry.Canonical,
+                    entry.SecurityMasterOwnsCanonical ? SymbolMappingSources.SecurityMaster : SymbolMappingSources.Registry);
                 MergeEntry(identityEntry, entry, _log);
                 _log.Warning(
                     "Collapsed duplicate canonical symbol {DuplicateCanonical} into {RetainedCanonical} for SecurityId {SecurityId}",
@@ -708,7 +709,8 @@ public sealed partial class SymbolRegistryService :
                     $"SecurityId '{incoming.SecurityId}' is retained under '{identityEntry.Canonical}'.");
             }
 
-            AddCanonicalTickerAlias(identityEntry, incoming.Canonical);
+            AddCanonicalTickerAlias(identityEntry, incoming.Canonical,
+                incoming.SecurityMasterOwnsCanonical ? SymbolMappingSources.SecurityMaster : SymbolMappingSources.Registry);
             MergeEntry(identityEntry, incoming, log);
             return identityEntry;
         }
@@ -718,6 +720,8 @@ public sealed partial class SymbolRegistryService :
             if (merge)
             {
                 MergeEntry(canonicalEntry, incoming, log);
+                // A registration outside reconciliation independently retains this spelling.
+                canonicalEntry.SecurityMasterOwnsCanonical &= incoming.SecurityMasterOwnsCanonical;
                 return canonicalEntry;
             }
 
@@ -744,12 +748,13 @@ public sealed partial class SymbolRegistryService :
         return registry.Symbols.Values.FirstOrDefault(entry => entry.SecurityId == securityId);
     }
 
-    private static void AddCanonicalTickerAlias(SymbolRegistryEntry entry, string canonicalTicker)
+    private static void AddCanonicalTickerAlias(SymbolRegistryEntry entry, string canonicalTicker, string source)
     {
         if (string.IsNullOrWhiteSpace(canonicalTicker) ||
             canonicalTicker.Equals(entry.Canonical, StringComparison.OrdinalIgnoreCase) ||
             entry.Aliases.Any(alias =>
                 string.IsNullOrWhiteSpace(alias.Provider) &&
+                string.Equals(alias.Source, source, StringComparison.OrdinalIgnoreCase) &&
                 alias.Alias.Equals(canonicalTicker, StringComparison.OrdinalIgnoreCase)))
         {
             return;
@@ -758,7 +763,7 @@ public sealed partial class SymbolRegistryService :
         entry.Aliases.Add(new SymbolAlias
         {
             Alias = canonicalTicker.Trim().ToUpperInvariant(),
-            Source = SymbolMappingSources.SecurityMaster,
+            Source = source,
             Type = "ticker",
             IsActive = true
         });

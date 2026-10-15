@@ -108,7 +108,7 @@ public sealed class SecurityMasterSymbolReconciliationTests : IDisposable
     }
 
     [Fact]
-    public async Task IdentifierAliasFromThePreReconciliationSeed_IsClaimedAndReconciled()
+    public async Task ProvenanceFreeIdentifierAlias_IsPreservedUntilExplicitEvidenceBasedCleanup()
     {
         var registry = new CanonicalSymbolRegistry(new SymbolRegistryService(_directory));
         var id = Guid.NewGuid();
@@ -124,9 +124,144 @@ public sealed class SecurityMasterSymbolReconciliationTests : IDisposable
 
         await registry.ReconcileSecurityMasterAsync([id], [IdentifierDefinition(id, isin: "US0000000002")]);
 
-        registry.ResolveToCanonical("US0000000001").Should().BeNull("the legacy identifier alias was the seed's copy");
+        registry.ResolveToCanonical("US0000000001").Should().Be("SMTEST", "a legacy seed alias is indistinguishable from a manually registered alias");
         registry.ResolveToCanonical("US0000000002").Should().Be("SMTEST");
         registry.ResolveToCanonical("LEGACYOP").Should().Be("SMTEST", "a non-identifier alias is not claimed");
+    }
+
+    [Fact]
+    public async Task PrimaryTickerRename_AlignsCanonicalIdentityAndResolvers_AfterReload()
+    {
+        var store = new SymbolRegistryService(_directory);
+        var registry = new CanonicalSymbolRegistry(store);
+        var id = Guid.NewGuid();
+        await registry.ReconcileSecurityMasterAsync([id], [Definition(id, "OLD", "OLD.PROVIDER", SymbolMappingSources.SecurityMaster)]);
+
+        await registry.ReconcileSecurityMasterAsync([id], [Definition(id, "NEW", "NEW.PROVIDER", SymbolMappingSources.SecurityMaster)]);
+
+        registry.ResolveToCanonical("NEW").Should().Be("NEW");
+        registry.ResolveToCanonical("NEW.PROVIDER").Should().Be("NEW");
+        registry.ResolveToCanonical("OLD").Should().BeNull("the current snapshot supplies no retained historical alias");
+        registry.ResolveToCanonical("OLD.PROVIDER").Should().BeNull();
+        registry.GetAll().Should().ContainSingle().Which.SecurityId.Should().Be(id);
+        registry.GetDefinition("NEW")!.SecurityMasterOwnsCanonical.Should().BeTrue();
+        store.LookupSymbol("NEW").CanonicalSymbol.Should().Be("NEW");
+
+        var reloaded = new SymbolRegistryService(_directory);
+        await reloaded.InitializeAsync();
+        var reloadedRegistry = new CanonicalSymbolRegistry(reloaded);
+        reloadedRegistry.ResolveToCanonical("NEW").Should().Be("NEW");
+        reloadedRegistry.ResolveToCanonical("OLD").Should().BeNull();
+        reloadedRegistry.GetAll().Where(entry => entry.SecurityId == id)
+            .Should().ContainSingle().Which.Canonical.Should().Be("NEW");
+    }
+
+    [Fact]
+    public async Task Rename_PreservesAnIndependentlyRegisteredCanonicalAsAnAlias()
+    {
+        var registry = new CanonicalSymbolRegistry(new SymbolRegistryService(_directory));
+        var id = Guid.NewGuid();
+        await registry.RegisterAsync(new CanonicalSymbolDefinition { Canonical = "OPERATOR.OLD", SecurityId = id });
+
+        await registry.ReconcileSecurityMasterAsync([id], [Definition(id, "CURRENT", "CURRENT.PROVIDER", SymbolMappingSources.SecurityMaster)]);
+
+        registry.ResolveToCanonical("OPERATOR.OLD").Should().Be("CURRENT");
+        registry.ResolveToCanonical("CURRENT").Should().Be("CURRENT");
+        registry.GetDefinition("CURRENT")!.AliasDefinitions.Should().Contain(alias =>
+            alias.Alias == "OPERATOR.OLD" && alias.Source == SymbolMappingSources.Registry);
+
+        await registry.ReconcileSecurityMasterAsync([id], []);
+        registry.ResolveToCanonical("CURRENT.PROVIDER").Should().BeNull();
+        registry.ResolveToCanonical("OPERATOR.OLD").Should().Be("CURRENT", "independent registry authority survives withdrawal");
+    }
+
+    [Fact]
+    public async Task WithdrawnSecurityMasterOnlySecurity_RemovesTheCanonicalAndAllOwnedMappings()
+    {
+        var store = new SymbolRegistryService(_directory);
+        var registry = new CanonicalSymbolRegistry(store);
+        var id = Guid.NewGuid();
+        await registry.ReconcileSecurityMasterAsync([id], [IdentifierDefinition(id, "US0000000001")]);
+
+        await registry.ReconcileSecurityMasterAsync([id], []);
+
+        registry.ResolveToCanonical("SMTEST").Should().BeNull();
+        registry.ResolveToCanonical("US0000000001").Should().BeNull();
+        registry.GetAll().Should().BeEmpty();
+        store.LookupSymbol("SMTEST").Found.Should().BeFalse();
+        var reloaded = new SymbolRegistryService(_directory);
+        await reloaded.InitializeAsync();
+        reloaded.LookupSymbol("SMTEST").Found.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task IndependentRegistrationOfSeededCanonical_RetainsItAfterWithdrawal()
+    {
+        var registry = new CanonicalSymbolRegistry(new SymbolRegistryService(_directory));
+        var id = Guid.NewGuid();
+        await registry.ReconcileSecurityMasterAsync([id], [IdentifierDefinition(id, "US0000000001")]);
+        await registry.RegisterAsync(new CanonicalSymbolDefinition { Canonical = "SMTEST", SecurityId = id });
+
+        await registry.ReconcileSecurityMasterAsync([id], []);
+
+        registry.ResolveToCanonical("SMTEST").Should().Be("SMTEST");
+        registry.ResolveToCanonical("US0000000001").Should().BeNull();
+        registry.GetDefinition("SMTEST")!.SecurityMasterOwnsCanonical.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task IndependentlyRegisteredAlternativeTicker_RetainsItAfterWithdrawal()
+    {
+        var registry = new CanonicalSymbolRegistry(new SymbolRegistryService(_directory));
+        var id = Guid.NewGuid();
+        await registry.ReconcileSecurityMasterAsync([id], [IdentifierDefinition(id, "US0000000001")]);
+        await registry.RegisterAsync(new CanonicalSymbolDefinition { Canonical = "OPERATOR.ALT", SecurityId = id });
+
+        await registry.ReconcileSecurityMasterAsync([id], []);
+
+        registry.ResolveToCanonical("OPERATOR.ALT").Should().Be("SMTEST");
+        registry.GetDefinition("SMTEST")!.AliasDefinitions.Should().Contain(alias =>
+            alias.Alias == "OPERATOR.ALT" && alias.Source == SymbolMappingSources.Registry);
+    }
+
+    [Fact]
+    public async Task RenameIntoAnotherIdentity_RefusesWithoutChangingDiskOrResolvers()
+    {
+        var registry = new CanonicalSymbolRegistry(new SymbolRegistryService(_directory));
+        var id = Guid.NewGuid();
+        var otherId = Guid.NewGuid();
+        await registry.ReconcileSecurityMasterAsync([id, otherId],
+            [Definition(id, "FIRST", "FIRST.ALIAS", SymbolMappingSources.SecurityMaster),
+                Definition(otherId, "SECOND", "SECOND.ALIAS", SymbolMappingSources.SecurityMaster)]);
+        var path = Path.Combine(_directory, "_catalog", "symbols.json");
+        var original = await File.ReadAllTextAsync(path);
+
+        var rename = () => registry.ReconcileSecurityMasterAsync([id],
+            [Definition(id, "SECOND", "CONFLICT", SymbolMappingSources.SecurityMaster)]);
+
+        await rename.Should().ThrowAsync<InvalidOperationException>();
+        (await File.ReadAllTextAsync(path)).Should().Be(original);
+        registry.ResolveToCanonical("FIRST.ALIAS").Should().Be("FIRST");
+        registry.ResolveToCanonical("SECOND.ALIAS").Should().Be("SECOND");
+        registry.ResolveToCanonical("CONFLICT").Should().BeNull();
+    }
+
+    [Fact]
+    public async Task UnknownCanonicalProvenance_DefaultsToIndependentAuthority()
+    {
+        var store = new SymbolRegistryService(_directory);
+        var registry = new CanonicalSymbolRegistry(store);
+        var id = Guid.NewGuid();
+        await registry.RegisterAsync(new CanonicalSymbolDefinition { Canonical = "LEGACY", SecurityId = id });
+        var path = Path.Combine(_directory, "_catalog", "symbols.json");
+        (await File.ReadAllTextAsync(path)).Should().NotContain("securityMasterOwnsCanonical");
+        var reloaded = new SymbolRegistryService(_directory);
+        await reloaded.InitializeAsync();
+        registry = new CanonicalSymbolRegistry(reloaded);
+
+        await registry.ReconcileSecurityMasterAsync([id], []);
+
+        registry.ResolveToCanonical("LEGACY").Should().Be("LEGACY");
     }
 
     [Fact]

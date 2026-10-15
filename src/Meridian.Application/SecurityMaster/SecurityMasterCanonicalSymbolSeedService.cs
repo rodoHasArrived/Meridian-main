@@ -48,7 +48,10 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
         _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         _registry = registry ?? throw new ArgumentNullException(nameof(registry));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _authoritativeStore = options?.PreloadProjectionCache == false ? store : null;
+        // Registry withdrawal requires complete membership even if startup cache warming failed.
+        // A supplied store is authoritative in every cache mode; optional cache-only hosts retain
+        // their original contract and must supply a complete snapshot themselves.
+        _authoritativeStore = store;
     }
 
     /// <summary>
@@ -60,7 +63,7 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
         if (string.IsNullOrWhiteSpace(canonicalTicker))
             return null;
 
-        return _tickerToSecurityId.TryGetValue(canonicalTicker, out var id) ? id : null;
+        return _tickerToSecurityId.TryGetValue(canonicalTicker.Trim(), out var id) ? id : null;
     }
 
     /// <summary>
@@ -81,18 +84,47 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
         }
     }
 
+    private IReadOnlyCollection<Guid> GetReconciliationScope(IReadOnlyCollection<SecurityProjectionRecord> snapshot)
+    {
+        if (_authoritativeStore is null)
+        {
+            // Optional cache-only hosts cannot prove complete membership. Reconcile only the IDs
+            // their snapshot actually supplies; absence cannot withdraw another retained ID.
+            return snapshot.Select(record => record.SecurityId).Distinct().ToArray();
+        }
+
+        // Durable membership can shrink while this process is stopped. Include retained registry
+        // provenance as well as current IDs so a deleted security withdraws its owned mappings on
+        // the first seed after restart. An ID or matching spelling alone never proves ownership.
+        return snapshot.Select(record => record.SecurityId)
+            .Concat(_registry.GetAll()
+                .Where(definition => definition.SecurityId.HasValue
+                    && (definition.SecurityMasterOwnsCanonical
+                        || definition.AliasDefinitions.Any(alias => IsSecurityMasterSource(alias.Source))
+                        || definition.ProviderSymbols.Values.Any(provider => !provider.IsOverride
+                            && IsSecurityMasterSource(provider.Source))))
+                .Select(definition => definition.SecurityId!.Value))
+            .Distinct()
+            .ToArray();
+    }
+
+    private static bool IsSecurityMasterSource(string? source)
+        => string.Equals(source, SymbolMappingSources.SecurityMaster, StringComparison.OrdinalIgnoreCase)
+           || string.Equals(source, SymbolMappingSources.SecurityMasterIdentifier, StringComparison.OrdinalIgnoreCase);
+
     private async Task ReconcileSnapshotAsync(CancellationToken ct)
     {
         // Capture only after taking the gate: a slow earlier seed must never overwrite a
         // later projection refresh with an older snapshot.
-        // Lazy cache membership is not authoritative: a creation may have been committed while
-        // LISTEN was disconnected. Seed from durable membership without warming the lazy cache.
+        // Cache membership is not authoritative during failed startup warming or a disconnected
+        // listener. Seed from durable membership without changing whether the host warms its cache.
         var snapshot = _authoritativeStore is null
             ? _cache.Snapshot()
             : await _authoritativeStore.LoadAllAsync(ct).ConfigureAwait(false);
 
         var definitions = new List<CanonicalSymbolDefinition>(snapshot.Count);
         var reverseMap = new Dictionary<string, Guid>(snapshot.Count, StringComparer.OrdinalIgnoreCase);
+        var now = DateTimeOffset.UtcNow;
 
         foreach (var record in snapshot)
         {
@@ -101,15 +133,22 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
             if (record.Status == SecurityStatusDto.Inactive)
                 continue;
 
-            var ticker = record.PrimaryIdentifierValue;
+            var ticker = record.PrimaryIdentifierValue?.Trim();
             if (string.IsNullOrWhiteSpace(ticker))
                 continue;
+
+            // The canonical registry normalizes tickers. Detect conflicts under that same key
+            // before publishing anything, including in hosts implementing only the base registry.
+            if (reverseMap.TryGetValue(ticker, out var incumbentId) && incumbentId != record.SecurityId)
+            {
+                throw new InvalidOperationException(
+                    $"Canonical ticker '{ticker}' is assigned to multiple active Security Master IDs; resolve the identifier conflict before reseeding.");
+            }
 
             // Build the alias list from provider-specific symbols and standard identifiers.
             var aliases = new List<string>();
             var aliasDefinitions = new List<CanonicalSymbolAliasDefinition>();
             var providerSymbols = new Dictionary<string, ProviderSymbolDefinition>(StringComparer.OrdinalIgnoreCase);
-            var now = DateTimeOffset.UtcNow;
             foreach (var alias in record.Aliases)
             {
                 if (string.IsNullOrWhiteSpace(alias.AliasValue))
@@ -145,6 +184,29 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
             string? isin = null, cusip = null, figi = null, sedol = null;
             foreach (var id in record.Identifiers)
             {
+                if (id.Kind is not (SecurityIdentifierKind.Isin or SecurityIdentifierKind.Cusip
+                    or SecurityIdentifierKind.Figi or SecurityIdentifierKind.Sedol)
+                    || string.IsNullOrWhiteSpace(id.Value))
+                {
+                    continue;
+                }
+
+                var isCurrent = id.ValidFrom <= now && (id.ValidTo is null || id.ValidTo > now);
+                // Retain the window for audit/history, but only current identifiers may resolve
+                // through the live registry or populate its standard-identifier indexes.
+                aliasDefinitions.Add(new CanonicalSymbolAliasDefinition(
+                    id.Value,
+                    // The typed-identifier marker asserts this seed supplied the indexed field.
+                    // Inactive history owns its alias only; claiming the field would let a later
+                    // reseed clear an independently supplied identifier with the same spelling.
+                    Source: isCurrent ? SymbolMappingSources.SecurityMasterIdentifier : SymbolMappingSources.SecurityMaster,
+                    Provider: null,
+                    ValidFrom: id.ValidFrom,
+                    ValidTo: id.ValidTo,
+                    IsActive: isCurrent));
+                if (!isCurrent)
+                    continue;
+
                 switch (id.Kind)
                 {
                     case SecurityIdentifierKind.Isin:
@@ -159,24 +221,10 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
                     case SecurityIdentifierKind.Sedol:
                         sedol = id.Value;
                         break;
-                    default:
-                        continue;
                 }
 
-                if (string.IsNullOrWhiteSpace(id.Value))
-                    continue;
-
-                // Identifier aliases are Security Master-owned like the record's own aliases, so
-                // reconciliation drops a corrected or removed identifier instead of keeping it as
-                // an alias whose source was only inferred from its spelling.
+                // Reconciliation owns this alias, so correction or removal withdraws it.
                 aliases.Add(id.Value);
-                aliasDefinitions.Add(new CanonicalSymbolAliasDefinition(
-                    id.Value,
-                    Source: SymbolMappingSources.SecurityMasterIdentifier,
-                    Provider: null,
-                    ValidFrom: null,
-                    ValidTo: null,
-                    IsActive: true));
             }
 
             definitions.Add(new CanonicalSymbolDefinition
@@ -202,7 +250,7 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
         // so the reverse lookup below is still populated in that host.
         var registered = _registry is ICanonicalSymbolRegistrySecurityMasterWriter writer
             ? await writer.ReconcileSecurityMasterAsync(
-                snapshot.Select(record => record.SecurityId).ToArray(), definitions, ct).ConfigureAwait(false)
+                GetReconciliationScope(snapshot), definitions, ct).ConfigureAwait(false)
             : await _registry.RegisterBatchAsync(definitions, ct).ConfigureAwait(false);
 
         // Atomically replace the reverse lookup so readers immediately see the new map.
