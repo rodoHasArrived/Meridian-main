@@ -14,6 +14,47 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
 {
     private static readonly DateTimeOffset T0 = new(2026, 10, 15, 0, 0, 0, TimeSpan.Zero);
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ClockOnlyRenewal_SelectsCurrentAliasHistory_InEitherInputOrder_WithoutProjectionWrites(bool reverse)
+    {
+        await using var host = new Host();
+        SecurityAliasDto[] aliases =
+        [
+            Alias(host.Id, "RENEWED", T0.AddDays(-2), T0.AddDays(-1)),
+            Alias(host.Id, "RENEWED", T0.AddSeconds(10), T0.AddSeconds(20)),
+            Alias(host.Id, "VENDOR.RENEWED", T0.AddDays(-2), T0.AddDays(-1), "vendor"),
+            Alias(host.Id, "VENDOR.RENEWED", T0.AddSeconds(10), T0.AddSeconds(20), "vendor")
+        ];
+        if (reverse)
+            Array.Reverse(aliases);
+        host.Record = host.Record with { Aliases = aliases };
+        var retainedRecord = host.Record;
+        await host.StartAsync();
+        await host.WaitForTimerAsync(T0.AddSeconds(10));
+        host.Registry.ResolveToCanonical("RENEWED").Should().BeNull();
+        host.Registry.TryResolveWithProvider("VENDOR.RENEWED", "vendor").Should().BeNull();
+
+        host.Clock.Advance(TimeSpan.FromSeconds(10));
+
+        await UntilAsync(() => host.Registry.ResolveToCanonical("RENEWED") == "VALIDITY");
+        host.Registry.TryResolveWithProvider("VENDOR.RENEWED", "vendor").Should().Be("VALIDITY");
+        host.Registry.GetProviderSymbol("VALIDITY", "vendor").Should().Be("VENDOR.RENEWED");
+        host.Registry.GetDefinition("VALIDITY")!.AliasDefinitions.Should().Contain(alias =>
+            alias.Alias == "RENEWED" && alias.IsActive && alias.ValidFrom == T0.AddSeconds(10) && alias.ValidTo == T0.AddSeconds(20));
+        await host.WaitForTimerAsync(T0.AddSeconds(20));
+
+        host.Clock.Advance(TimeSpan.FromSeconds(10));
+
+        await UntilAsync(() => host.Registry.ResolveToCanonical("RENEWED") is null
+            && host.Registry.GetProviderSymbol("VALIDITY", "vendor") is null);
+        host.Registry.TryResolveWithProvider("VENDOR.RENEWED", "vendor").Should().BeNull();
+        host.Record.Should().BeSameAs(retainedRecord, "the two transitions require no projection mutation");
+        host.Reads.Should().Be(3);
+        host.Cache.Snapshot().Should().BeEmpty();
+    }
+
     [Fact]
     public async Task ClockOnlyBoundaries_ActivateAndExpireAliasesProviderMappingsAndTypedIdentifiers_WithDefaultLazyOptions()
     {

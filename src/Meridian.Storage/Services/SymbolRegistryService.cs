@@ -827,7 +827,19 @@ public sealed partial class SymbolRegistryService :
             .GroupBy(
                 static alias => $"{alias.Provider}\u001f{alias.Alias}\u001f{alias.Source}",
                 StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
+            // This is the live registry projection, not the authoritative alias history.
+            // Prefer the caller's active representative so expired/disabled windows cannot
+            // hide a renewed alias. The seeder owns the clock decision; never reevaluate it
+            // against the registry host's wall clock. Ties are deterministic across load order.
+            .OrderBy(static group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group
+                .OrderByDescending(static alias => alias.IsActive)
+                .ThenByDescending(static alias => alias.ValidFrom ?? DateTime.MinValue)
+                .ThenByDescending(static alias => alias.ValidTo ?? DateTime.MaxValue)
+                .ThenBy(static alias => alias.Alias, StringComparer.Ordinal)
+                .ThenBy(static alias => alias.Source, StringComparer.Ordinal)
+                .ThenBy(static alias => alias.Type, StringComparer.Ordinal)
+                .First())
             .ToList();
 
         var providerSymbols = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

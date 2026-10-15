@@ -11154,6 +11154,7 @@ Meridian-main
 │   │   │   ├── StorageSearchServiceTests.cs
 │   │   │   ├── StorageSinkRegistryTests.cs
 │   │   │   ├── StrictTenantMutationPostgresTests.cs
+│   │   │   ├── SymbolAliasRepresentativeTests.cs
 │   │   │   ├── SymbolRegistryServiceTests.cs
 │   │   │   ├── TenantCutoverInspectorTests.cs
 │   │   │   ├── TenantLowerIndexMigrationTests.cs

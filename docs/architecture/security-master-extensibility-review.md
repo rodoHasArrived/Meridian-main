@@ -5676,6 +5676,10 @@ establish independent approval. This rehearsal applies no cleanup to a productio
 Seeding evaluates validity at its timestamp and records the next enabled alias or standard-identifier
 boundary. The existing hosted lifecycle wakes for that boundary and reseeds without warming a lazy
 cache. A successful write seed can advance its deadline; transient failures retain retry behavior.
+Rich alias candidates reach one shared registry normalization rule that prefers a supplied active
+representative for each normalized spelling/provider/source identity. Expired, disabled or future
+windows cannot mask a currently valid renewal. That live projection retains the representative's
+provenance and window; complete recorded history remains in the append-only alias revision store.
 Shared schedule validation (#3126) and
 explicit payload-family discrimination (#3127) remain separately scoped. Review threads and human
 acceptance are not inferred from these code corrections or from automated review.

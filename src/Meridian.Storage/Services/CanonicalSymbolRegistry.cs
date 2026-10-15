@@ -505,7 +505,7 @@ public sealed class CanonicalSymbolRegistry :
         var aliases = definition.Aliases
             .Where(a => !definition.AliasDefinitions.Any(alias =>
                 string.IsNullOrWhiteSpace(alias.Provider)
-                && alias.Alias.Equals(a, StringComparison.OrdinalIgnoreCase)))
+                && alias.Alias.Trim().Equals(a.Trim(), StringComparison.OrdinalIgnoreCase)))
             .Select(a => new SymbolAlias
             {
                 Alias = a,
@@ -520,12 +520,8 @@ public sealed class CanonicalSymbolRegistry :
             var provider = string.IsNullOrWhiteSpace(alias.Provider)
                 ? null
                 : NormalizeProvider(alias.Provider);
-            if (aliases.Any(existing =>
-                    existing.Alias.Equals(alias.Alias, StringComparison.OrdinalIgnoreCase)
-                    && string.Equals(existing.Provider, provider, StringComparison.OrdinalIgnoreCase)
-                    && string.Equals(existing.Source, alias.Source, StringComparison.OrdinalIgnoreCase)))
-                continue;
-
+            // Keep every rich candidate until the store normalizes the shared live projection.
+            // Taking the first window here can discard a later currently active renewal.
             aliases.Add(new SymbolAlias
             {
                 Alias = alias.Alias,
