@@ -62,6 +62,18 @@ the browser neither falls back to sample state nor infers approval or claims an 
 Changing scope discards previous rows and ignores late responses. Focused coverage lives in
 `RecurringJournalQueue.test.tsx` and `recurring-journals.api.test.ts`.
 
+Payment approvals use the selected Accounting `entityId` for pending-payment, bank-evidence,
+approval, and rejection requests. Without an entity selection the queue waits for scope.
+Changing entity clears pending decisions and prior evidence; late reads and submitted-decision
+completions cannot refresh or annotate the new entity. Request boundary coverage lives in
+`banking-payments.api.test.ts` and interaction coverage in `accounting-screen.payment-approvals.test.tsx`.
+
+Cash Ladder binds balances, thresholds, scenarios, and drill selections to the selected account.
+Changing accounts resets controls and clears evidence immediately. Scenario and threshold requests
+also hide prior projection evidence until the current request succeeds; failed or superseded
+requests cannot restore earlier balances. Delayed-switch, failure, and accessibility coverage lives
+in `cash-ladder-screen.test.tsx`.
+
 The stable test runner retains eight files per batch, two Vitest workers and process recycling.
 Fresh JSON test evidence is written under `artifacts/test-results/browser/` at repository root.
 Missing results, zero passing discovery or missing selected files fail the run. Counts, skips,
