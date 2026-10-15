@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 1 of 4
 
-Objects 1-80 of 260. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 271. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -86,6 +86,14 @@ classDiagram
         +string IdempotencyKey
         +Guid ProjectionId
         +string Reason
+    }
+    class Meridian_Contracts_SecurityMaster_ApproveSecurityClosePriceSetRequest["ApproveSecurityClosePriceSetRequest"] {
+        +string AccountId
+        +string BookId
+        +string Rationale
+        +string Reviewer
+        +Guid SnapshotId
+        +DateOnly ValuationDate
     }
     class Meridian_Contracts_SecurityMaster_AssetOperationsCapabilitySet["AssetOperationsCapabilitySet"] {
     }
@@ -519,8 +527,6 @@ classDiagram
         +CorporateActionProcessingCaseDto Case
         +CorporateActionProcessingOptionDto Option
         +bool Replayed
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionStates["CorporateActionProcessingOptionStates"] {
     }
     Meridian_Contracts_SecurityMaster_AcceptCorporateActionSourceProposalRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
     Meridian_Contracts_SecurityMaster_AddCorporateActionEvidenceRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto

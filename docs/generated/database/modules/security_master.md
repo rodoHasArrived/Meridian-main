@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 91
-- Functions/procedures: 3
-- Triggers: 5
+- Relations: 93
+- Functions/procedures: 5
+- Triggers: 11
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -855,6 +855,23 @@ erDiagram
         text client_confirmed_by
         timestamp_with_time_zone client_confirmed_at
     }
+    security_master_security_close_price_approvals {
+        uuid snapshot_id PK,FK
+        text payload
+        character_64_ payload_sha256
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_security_close_price_snapshots {
+        uuid snapshot_id PK
+        text account_id FK
+        text book_id FK
+        date valuation_date FK
+        integer version
+        uuid corrects_snapshot_id FK
+        text payload
+        character_64_ payload_sha256
+        timestamp_with_time_zone recorded_at
+    }
     security_master_security_events {
         bigint global_sequence PK
         uuid security_id
@@ -1248,6 +1265,8 @@ erDiagram
     security_master_securities ||--o{ security_master_security_pricing_hierarchy : "security_pricing_hierarchy_security_id_fkey"
     security_master_securities ||--o{ security_master_security_pricing_hierarchy_history : "security_pricing_hierarchy_history_security_id_fkey"
     security_master_securities ||--o{ security_master_security_raw_prices : "security_raw_prices_security_id_fkey"
+    security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_approvals : "security_close_price_approvals_snapshot_id_fkey"
+    security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_snapshots : "security_close_price_snapshot_corrects_snapshot_id_account_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_position_report_line : "servicer_position_report_line_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_statement_import_batch : "servicer_statement_import_batch_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_transaction_report_line : "servicer_transaction_report_line_servicer_report_batch_id_fkey"
@@ -1323,6 +1342,8 @@ erDiagram
 | `securities` | table | 21 | `security_id` | 0 | 4 | - |
 | `security_aliases` | table | 14 | `alias_id` | 1 | 3 | - |
 | `security_cashflow_source_assignments` | table | 6 | `security_id` | 1 | 2 | - |
+| `security_close_price_approvals` | table | 4 | `snapshot_id` | 1 | 1 | Immutable independent review receipt bound to the exact close price snapshot SHA-256. |
+| `security_close_price_snapshots` | table | 9 | `snapshot_id` | 1 | 4 | Immutable exact account/book/date price-set versions retaining selected receipts, quote units, overrides, source rows and blockers. |
 | `security_events` | table | 10 | `global_sequence` | 0 | 3 | - |
 | `security_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_field_provenance` | table | 10 | `security_id`, `field_path`, `origin` | 0 | 2 | - |
