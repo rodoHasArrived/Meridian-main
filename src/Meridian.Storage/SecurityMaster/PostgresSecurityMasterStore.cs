@@ -69,6 +69,13 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                 (store, c, t, r, ct) => store.WriteTermsProjectionAsync(descriptor, c, t, r, ct)))
     ];
 
+    /// <summary>
+    /// The asset classes projected by a specialized writer. Locked to the classes the asset-class
+    /// registry declares <see cref="SecurityTermsProjectionKind.Specialized"/>.
+    /// </summary>
+    internal static IReadOnlyList<string> SpecializedProjectionAssetClasses { get; } =
+        HandWrittenProjectionWriters.Select(static writer => writer.AssetClass).ToArray();
+
     /// <summary>The asset classes that have a dedicated relational projection, in fan-out order.</summary>
     internal static IReadOnlyList<string> ProjectedAssetClasses { get; } =
         ProjectionWriters.Select(static writer => writer.AssetClass).ToArray();

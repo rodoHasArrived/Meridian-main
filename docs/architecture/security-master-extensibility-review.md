@@ -5738,3 +5738,12 @@ integration suite passes against a local PostgreSQL 16 with migration 039 applie
 
 **Still open from this priority.** Retiring the legacy flat record fields (accounting first) is
 tracked with priority 1's registry work below.
+
+### Priority 1 — one asset-class registry
+
+| Finding | What landed |
+| --- | --- |
+| ~190 asset-class branches across 39 files held in ~6 parallel tables | `SecurityAssetClassRegistry` is the single composition point: each `SecurityAssetClassDefinition` joins the one descriptor table (`SecurityAssetClassCatalog`) and the one term schema (`SecurityAssetTermsSchema`) and derives UI hints from the fields. The descriptor now owns lot behaviour (`LotUnit`, `LotMultiplierTermKey`), cash-flow behaviour (`CashFlowBehavior`), projection kind (`ProjectionKind`) and terms version alongside identifiers, accounting class and capabilities. |
+| Parallel tables drifted apart | `UsesFaceValueLots` and `SupportsCashflowScheduleByDefault` are no longer maintained flags; they are derived from `LotUnit` and `CashFlowBehavior` (the derived sets are pinned by test). Face-value, calculated-schedule, identifier-only-import, ops-capable and projection-kind class lists are all generated from the registry. |
+| No guard that the tables cover the F# asset-kind union | `SecurityAssetClassRegistryCoverageTests` reflects over every case of the F# `SecurityKind` union and requires exactly one registry definition per case, and locks the F# `AssetClassRegistry`, the term schema, the validator registry, the declarative projection registry and the specialized projection writers to the registry. Every scalar UI hint path is checked against the governed field-edit validator. |
+| UI has no schema to build forms from | `GET /api/security-master/asset-classes` and `/asset-classes/{assetClass}` return each definition with its fields, editor kinds, groups, labels, vocabularies and behaviour. |

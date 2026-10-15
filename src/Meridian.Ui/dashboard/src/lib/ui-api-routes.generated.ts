@@ -293,6 +293,8 @@ export const UI_API_ROUTES = {
   SecurityMasterValidation: "/api/security-master/{securityId:guid}/validation",
   SecurityMasterResolve: "/api/security-master/resolve",
   SecurityMasterSearch: "/api/security-master/search",
+  SecurityMasterAssetClasses: "/api/security-master/asset-classes",
+  SecurityMasterAssetClassDefinition: "/api/security-master/asset-classes/{assetClass}",
   SecurityMasterAssetProfiles: "/api/security-master/asset-profiles",
   SecurityMasterAssetProfilePromotionCandidates: "/api/security-master/asset-profiles/promotion-candidates",
   SecurityMasterAssetProfileLineage: "/api/security-master/asset-profiles/{profileId}/lineage",
