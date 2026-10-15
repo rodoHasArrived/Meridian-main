@@ -391,6 +391,7 @@ Meridian-main
 │   │   │   └── README.md
 │   │   ├── goals
 │   │   │   ├── example.yml
+│   │   │   ├── operational-integrity-fixes.yml
 │   │   │   ├── README.md
 │   │   │   └── reporting-p0-completion.yml
 │   │   ├── repo
@@ -404,6 +405,7 @@ Meridian-main
 │   │   │   └── README.md
 │   │   ├── tasks
 │   │   │   ├── example.yml
+│   │   │   ├── operational-integrity-fixes.yml
 │   │   │   ├── README.md
 │   │   │   └── reporting-p0-completion.yml
 │   │   ├── index.yml
@@ -4022,6 +4024,7 @@ Meridian-main
 │   │   │   ├── InMemoryDirectLendingService.cs
 │   │   │   ├── InMemoryDirectLendingService.Workflows.cs
 │   │   │   ├── LoanAccountingProjector.cs
+│   │   │   ├── LoanPortfolioSummaryBuilder.cs
 │   │   │   ├── PostgresDirectLendingCommandService.cs
 │   │   │   ├── PostgresDirectLendingQueryService.cs
 │   │   │   └── PostgresDirectLendingService.cs
@@ -5089,6 +5092,7 @@ Meridian-main
 │   │   ├── Meridian.Execution.csproj
 │   │   ├── OrderManagementSystem.AccountingHandoff.cs
 │   │   ├── OrderManagementSystem.Audit.cs
+│   │   ├── OrderManagementSystem.BrokerageLimits.cs
 │   │   ├── OrderManagementSystem.Cancellation.cs
 │   │   ├── OrderManagementSystem.ChildOrders.cs
 │   │   ├── OrderManagementSystem.cs
@@ -5979,6 +5983,7 @@ Meridian-main
 │   │   │   ├── AccountReconciliationChecks.cs
 │   │   │   ├── AccountReconciliationResolution.cs
 │   │   │   ├── BankStatementClosingBalanceAuthority.cs
+│   │   │   ├── BankStatementEvidenceUnavailableException.cs
 │   │   │   ├── FundAccountStatementValidation.cs
 │   │   │   ├── IFundAccountService.cs
 │   │   │   ├── InMemoryFundAccountService.cs
@@ -6158,7 +6163,8 @@ Meridian-main
 │   │   ├── Meridian.Setup.csproj
 │   │   ├── PayloadPackage.cs
 │   │   ├── Program.cs
-│   │   └── README.md
+│   │   ├── README.md
+│   │   └── SetupTransactionLease.cs
 │   ├── Meridian.Storage
 │   │   ├── Archival
 │   │   │   ├── ArchivalStorageService.cs
@@ -6577,6 +6583,7 @@ Meridian-main
 │   │   │   ├── DataQualityService.cs
 │   │   │   ├── DataReplacementCostEstimator.cs
 │   │   │   ├── EventBuffer.cs
+│   │   │   ├── FileMaintenanceService.Compression.cs
 │   │   │   ├── FileMaintenanceService.cs
 │   │   │   ├── FilePermissionsService.cs
 │   │   │   ├── JsonlPositionSnapshotStore.cs
@@ -7203,6 +7210,7 @@ Meridian-main
 │   │   │   │   │   ├── api.corporate-actions.test.ts
 │   │   │   │   │   ├── api.development-modes.test.ts
 │   │   │   │   │   ├── api.extensibility.test.ts
+│   │   │   │   │   ├── api.historical-integrity.test.ts
 │   │   │   │   │   ├── api.operations-continuity.test.ts
 │   │   │   │   │   ├── api.private-capital.test.ts
 │   │   │   │   │   ├── api.reconciliation.test.ts
@@ -7698,6 +7706,7 @@ Meridian-main
 │   │   │   │   │   └── workspace-workbench-shell.css
 │   │   │   │   ├── test
 │   │   │   │   │   ├── fixtures
+│   │   │   │   │   │   ├── loan-portfolio.host.json
 │   │   │   │   │   │   └── quant-run-response.json
 │   │   │   │   │   ├── fixtures.ts
 │   │   │   │   │   ├── ledger-amount-proof-fixtures.ts
@@ -10384,6 +10393,7 @@ Meridian-main
 │   │   │   ├── MultiCurrency
 │   │   │   │   └── InMemoryFxRateProviderTests.cs
 │   │   │   ├── AlpacaStreamedFillLoopTests.cs
+│   │   │   ├── BrokerageExecutionAdmissionLimitTests.cs
 │   │   │   ├── BrokerageExecutionReconciliationServiceTests.cs
 │   │   │   ├── BrokerageExecutionRegistrationRecoveryTests.cs
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
@@ -10803,6 +10813,7 @@ Meridian-main
 │   │   ├── PortfolioRecords
 │   │   │   └── FundAccounts
 │   │   │       ├── BankStatementClosingBalanceAuthorityTests.cs
+│   │   │       ├── FundAccountReadServiceParityTests.cs
 │   │   │       ├── FundAccountServiceContractTests.cs
 │   │   │       ├── FundAccountServiceTests.cs
 │   │   │       ├── InMemoryFundAccountServiceContractTests.cs
@@ -11036,6 +11047,7 @@ Meridian-main
 │   │   │   ├── Ledger
 │   │   │   │   └── RetainedPostingEquivalenceTests.cs
 │   │   │   ├── Maintenance
+│   │   │   │   ├── ScheduledArchiveMaintenanceServiceTests.Compression.cs
 │   │   │   │   └── ScheduledArchiveMaintenanceServiceTests.cs
 │   │   │   ├── Operations
 │   │   │   │   └── FileOperationalCaseHistoryStoreTests.cs
@@ -11384,6 +11396,7 @@ Meridian-main
 │   │   │   ├── LedgerAndCompliancePermissionSplitTests.cs
 │   │   │   ├── LedgerDisposalTaxEndpointTests.cs
 │   │   │   ├── LedgerDisposalTaxReadServiceTests.cs
+│   │   │   ├── LedgerMarkToMarketCarryingValueSourceTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceSuccessorTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.cs
 │   │   │   ├── LedgerReportingAuthoritativeSourceTests.SuccessorOriginIntegrity.cs
@@ -11391,6 +11404,7 @@ Meridian-main
 │   │   │   ├── LegacyReportingRouteRetirementEndpointTests.cs
 │   │   │   ├── LiveBrokeragePortfolioSyncServiceTests.cs
 │   │   │   ├── LiveTradingEngineHostRegistrationTests.cs
+│   │   │   ├── LoanPortfolioWireContractTests.cs
 │   │   │   ├── ManualJournalMutationRecoveryStoreTests.cs
 │   │   │   ├── MarginControlCenterReadServiceTests.cs
 │   │   │   ├── OmsIntegrationServiceTests.cs
@@ -11503,9 +11517,11 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.IBResults.cs
 │   │   │   ├── WorkstationEndpointsTests.Infrastructure.cs
 │   │   │   ├── WorkstationEndpointsTests.JournalAutomation.cs
+│   │   │   ├── WorkstationEndpointsTests.LateAdjustmentAuthority.cs
 │   │   │   ├── WorkstationEndpointsTests.LedgerAuditActor.cs
 │   │   │   ├── WorkstationEndpointsTests.LedgerRoleReachability.cs
 │   │   │   ├── WorkstationEndpointsTests.MarkPreview.cs
+│   │   │   ├── WorkstationEndpointsTests.MetricTransport.cs
 │   │   │   ├── WorkstationEndpointsTests.OpenLotBackfill.cs
 │   │   │   ├── WorkstationEndpointsTests.PostingActorBoundary.cs
 │   │   │   ├── WorkstationEndpointsTests.ProviderIntegrations.cs

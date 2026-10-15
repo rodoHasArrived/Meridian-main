@@ -3796,6 +3796,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.LoanPortfolioSummaryDto"
     },
     {
@@ -17980,6 +17986,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:direct-lending-contracts",
+      "target": "contract:Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:direct-lending-contracts",
       "target": "contract:Meridian.Contracts.DirectLending.LoanPortfolioSummaryDto"
     },
     {
@@ -26747,6 +26759,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.DirectLending.LoanContractDetailDto",
       "target": "contract:Meridian.Contracts.DirectLending.LoanTermsVersionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto",
+      "target": "contract:Meridian.Contracts.DirectLending.CurrencyCode"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.LoanPortfolioSummaryDto",
+      "target": "contract:Meridian.Contracts.DirectLending.CurrencyCode"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.DirectLending.LoanPortfolioSummaryDto",
+      "target": "contract:Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto"
     },
     {
       "kind": "contract-reference",
@@ -49662,7 +49692,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "3ff2876e81ffdd0bf9030ee5f31082a8d68a57dcb0a2643134f132b86c3e6f04",
+  "fingerprint": "4450324afe79ce36a01bdef365a02cf58a7b2d081280f0ddf9214197168f9258",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -53506,6 +53536,12 @@
       "id": "contract:Meridian.Contracts.DirectLending.LoanEventLineageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.DirectLending.LoanEventLineageDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.DirectLending.LoanPortfolioCurrencyTotalsDto"
     },
     {
       "classification": "dto",
@@ -72643,11 +72679,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3274,
-    "contract_set_memberships": 3860,
-    "edges": 8251,
+    "contract_references": 3277,
+    "contract_set_memberships": 3862,
+    "edges": 8256,
     "foreign_keys": 139,
     "logical_references": 6,
-    "nodes": 3983
+    "nodes": 3984
   }
 }
