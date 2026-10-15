@@ -136,6 +136,10 @@ public sealed class SubscriptionOrchestrator
                 }
             }
 
+            // Keep attempts separate from successful IDs: a provider can return zero or a
+            // negative ID without throwing, and the next Apply must still retry that request.
+            var locallyAttemptedSymbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             // Apply desired set
             foreach (var kvp in desired)
             {
@@ -190,6 +194,7 @@ public sealed class SubscriptionOrchestrator
 
                         try
                         {
+                            locallyAttemptedSymbols.Add(symbol);
                             var id = _ib.SubscribeTrades(sc);
                             if (id > 0)
                                 _optionSubs[symbol] = id;
@@ -219,6 +224,7 @@ public sealed class SubscriptionOrchestrator
 
                         try
                         {
+                            locallyAttemptedSymbols.Add(symbol);
                             var id = _ib.SubscribeMarketDepth(sc);
                             if (id > 0)
                                 _depthSubs[symbol] = id;
@@ -256,6 +262,7 @@ public sealed class SubscriptionOrchestrator
 
                         try
                         {
+                            locallyAttemptedSymbols.Add(symbol);
                             var id = _ib.SubscribeTrades(sc);
                             if (id > 0)
                                 _tradeSubs[symbol] = id;
@@ -281,12 +288,13 @@ public sealed class SubscriptionOrchestrator
                 }
             }
 
-            // Scope freshness to subscriptions owned by this process. Failed local attempts
-            // retain their sentinel IDs and must still age into violations; another owner's
-            // subscriptions and deliberately disabled symbols must not page this instance.
+            // Scope freshness to subscriptions owned or attempted by this process. Failed
+            // attempts, including nonpositive IDs, must still age into violations; another
+            // owner's subscriptions and deliberately disabled symbols must not page here.
             _freshness?.SynchronizeSymbols(desired.Values
                 .Where(s => (s.SubscribeTrades || s.SubscribeDepth) &&
-                    (_tradeSubs.ContainsKey(s.Symbol.Trim()) || _depthSubs.ContainsKey(s.Symbol.Trim()) || _optionSubs.ContainsKey(s.Symbol.Trim())))
+                    (locallyAttemptedSymbols.Contains(s.Symbol.Trim()) || _tradeSubs.ContainsKey(s.Symbol.Trim()) ||
+                        _depthSubs.ContainsKey(s.Symbol.Trim()) || _optionSubs.ContainsKey(s.Symbol.Trim())))
                 .Select(s => s.Symbol.Trim()));
 
             _lastConfig.Clear();

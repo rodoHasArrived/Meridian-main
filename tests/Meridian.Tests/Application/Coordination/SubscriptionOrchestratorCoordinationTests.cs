@@ -161,6 +161,56 @@ public sealed class SubscriptionOrchestratorCoordinationTests
         monitor.GetSnapshot().NoDataSymbols.Should().Be(2, "re-enabled subscriptions receive a fresh startup grace");
     }
 
+    [Theory]
+    [InlineData("trades", -1)]
+    [InlineData("trades", 0)]
+    [InlineData("depth", -1)]
+    [InlineData("depth", 0)]
+    [InlineData("options", -1)]
+    [InlineData("options", 0)]
+    public async Task ApplyAsync_NonpositiveSubscriptionId_RemainsMonitoredAndRetryable(string kind, int failedId)
+    {
+        var clock = new SubscriptionClock(new DateTimeOffset(2026, 10, 12, 14, 0, 0, TimeSpan.Zero));
+        using var monitor = new DataFreshnessSlaMonitor(new SlaConfig
+        {
+            DefaultFreshnessThresholdSeconds = 10,
+            CheckIntervalSeconds = 3600,
+            SkipOutsideMarketHours = false
+        }, clock);
+        var publisher = new TestMarketEventPublisher();
+        var client = new TrackingMarketDataClient { SubscriptionResultOverride = failedId };
+        var orchestrator = new SubscriptionOrchestrator(new MarketDepthCollector(publisher),
+            new TradeDataCollector(publisher), client, "tracking", freshness: monitor);
+        var config = new AppConfig(Symbols:
+        [
+            new SymbolConfig("SPY", SubscribeTrades: kind != "depth", SubscribeDepth: kind == "depth",
+                SecurityType: kind == "options" ? "OPT" : "STK")
+        ]);
+
+        await orchestrator.ApplyAsync(config);
+        monitor.GetSymbolStatus("SPY")!.State.Should().Be(SlaState.NoData);
+        orchestrator.ActiveSubscriptionCount.Should().Be(0, "failed IDs must not prevent later retries");
+        client.SubscriptionAttempts.Should().Be(1);
+        clock.Advance(TimeSpan.FromSeconds(21));
+        monitor.CurrentViolations.Should().Be(1, "a configured feed must not vanish when its provider declines the subscription");
+
+        // Another decline must retry, preserving the original missing-event age.
+        await orchestrator.ApplyAsync(config);
+        client.SubscriptionAttempts.Should().Be(2);
+        monitor.CurrentViolations.Should().Be(1);
+        client.SubscriptionResultOverride = null;
+        await orchestrator.ApplyAsync(config);
+        client.SubscriptionAttempts.Should().Be(3);
+        orchestrator.ActiveSubscriptionCount.Should().Be(1);
+        monitor.CurrentViolations.Should().Be(1, "a subscription ID alone is not evidence of event delivery");
+        monitor.RecordEvent("SPY");
+        monitor.CurrentViolations.Should().Be(0);
+
+        await orchestrator.ApplyAsync(config with { Symbols = [] });
+        monitor.RecordEvent("SPY");
+        monitor.GetSnapshot().TotalSymbols.Should().Be(0);
+    }
+
     private sealed class SubscriptionClock(DateTimeOffset now) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => now;
@@ -195,6 +245,8 @@ public sealed class SubscriptionOrchestratorCoordinationTests
         private readonly Dictionary<int, string> _tradeSubscriptionIds = new();
         private readonly Dictionary<int, string> _depthSubscriptionIds = new();
 
+        public int? SubscriptionResultOverride { get; set; }
+        public int SubscriptionAttempts { get; private set; }
         public bool IsEnabled => true;
         public bool IsConnected { get; private set; }
         public string ProviderId => "tracking";
@@ -220,6 +272,9 @@ public sealed class SubscriptionOrchestratorCoordinationTests
 
         public int SubscribeMarketDepth(SymbolConfig cfg)
         {
+            SubscriptionAttempts++;
+            if (SubscriptionResultOverride is { } result)
+                return result;
             var id = Interlocked.Increment(ref _nextId);
             _depthSubscriptionIds[id] = cfg.Symbol;
             return id;
@@ -232,6 +287,9 @@ public sealed class SubscriptionOrchestratorCoordinationTests
 
         public int SubscribeTrades(SymbolConfig cfg)
         {
+            SubscriptionAttempts++;
+            if (SubscriptionResultOverride is { } result)
+                return result;
             var id = Interlocked.Increment(ref _nextId);
             _tradeSubscriptionIds[id] = cfg.Symbol;
             return id;
