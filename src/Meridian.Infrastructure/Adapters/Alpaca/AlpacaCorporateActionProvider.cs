@@ -46,15 +46,18 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
+    private readonly ICredentialContext? _credentials;
     private readonly ILogger<AlpacaCorporateActionProvider> _logger;
 
     public AlpacaCorporateActionProvider(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
-        ILogger<AlpacaCorporateActionProvider> logger)
+        ILogger<AlpacaCorporateActionProvider> logger,
+        ICredentialContext? credentials = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _credentials = credentials;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -66,12 +69,12 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(ticker);
 
-        var keyId = _configuration["ALPACA_KEY_ID"]
+        var keyId = _credentials is not null ? _credentials.Get("ALPACA_KEY_ID") : _configuration["ALPACA_KEY_ID"]
                     ?? _configuration["APCA_API_KEY_ID"]
                     ?? Environment.GetEnvironmentVariable("ALPACA_KEY_ID")
                     ?? Environment.GetEnvironmentVariable("APCA_API_KEY_ID");
 
-        var secretKey = _configuration["ALPACA_SECRET_KEY"]
+        var secretKey = _credentials is not null ? _credentials.Get("ALPACA_SECRET_KEY") : _configuration["ALPACA_SECRET_KEY"]
                         ?? _configuration["APCA_API_SECRET_KEY"]
                         ?? Environment.GetEnvironmentVariable("ALPACA_SECRET_KEY")
                         ?? Environment.GetEnvironmentVariable("APCA_API_SECRET_KEY");

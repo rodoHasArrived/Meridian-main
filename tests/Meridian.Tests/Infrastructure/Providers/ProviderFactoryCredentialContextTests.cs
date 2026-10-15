@@ -538,7 +538,7 @@ public sealed class ProviderFactoryCredentialContextTests
         env.SetProcessAndUser("APCA_API_KEY_ID", "apca-alpaca-key");
         env.SetProcessAndUser("APCA_API_SECRET_KEY", "apca-alpaca-secret");
 
-        var resolver = new TrackingCredentialResolver();
+        var resolver = new EnvironmentCredentialResolver();
         var factory = new ProviderFactory(
             new AppConfig(
                 Backfill: new BackfillConfig(

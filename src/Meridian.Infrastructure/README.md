@@ -46,6 +46,15 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+Provider construction preserves the credential resolver's selected record, including missing,
+removed and deleted fields. Stored records cannot be overlaid by module settings; selected module
+sidecars cannot borrow missing fields from environment mappings. Alpaca historical, streaming,
+search, options, corporate-action and brokerage factories retain this ownership. Brokerage REST
+and trade-update reconnects share the resolved credential snapshot and its retained environment.
+Corporate-action adapters receive the resolved context explicitly, while legacy direct construction
+still supports environment lookup. `ProviderFactoryCredentialIsolationTests` exercises actual
+adapter construction and outbound request credentials across rotation, deletion and owner scopes.
+
 Canonical statement imports stream JSON to an exclusive temporary file, force its contents to
 disk, then publish with a no-overwrite rename and the host-supplied `IAtomicFileWriter`
 directory-sync policy. Caller

@@ -11,6 +11,18 @@ last_reviewed: 2026-10-11
 
 # src/Meridian.Ui/dashboard
 
+Payment approvals forward the selected entity on pending-payment, bank-evidence, approval, and
+rejection requests. Removing or changing entity scope clears the queue, decision notes and pending
+confirmation; aborted reads or decisions cannot restore the previous entity's state. No entity
+means no payment request. Fetch-level coverage lives in `banking-payments.api.test.ts`, alongside
+scope-switch coverage in `accounting-screen.payment-approvals.test.tsx`.
+
+Cash Ladder treats each account as a separate projection session. Account changes clear projection
+balances, scenario, threshold edits, and drill selection immediately. Results and drill selections
+also belong to the exact scenario/threshold request, so delayed or failed reads cannot present an
+old projection as current evidence. `cash-ladder-screen.test.tsx` covers delayed switches, failures,
+account round trips, and return to aggregate scope.
+
 The generated `api-routes.ts` catalog includes exact account-owned ledger-book oversight routes
 for cash continuity, reviewed close prices and cash forecasts. Regenerate it from shared
 `UiApiRoutes` and rebuild the tracked workstation bundle when those routes change; server-owned
