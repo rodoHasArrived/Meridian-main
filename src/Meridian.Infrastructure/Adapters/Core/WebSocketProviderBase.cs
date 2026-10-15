@@ -151,11 +151,7 @@ public abstract class WebSocketProviderBase :
         await _connectionManager.ConnectAsync(
             _wsUri,
             configureSocket: ConfigureWebSocket,
-            initializeConnection: async token =>
-            {
-                await AuthenticateAsync(token).ConfigureAwait(false);
-                _connectionManager.StartReceiveLoop(HandleMessageAsync);
-            },
+            initializeConnection: InitializeConnectionAsync,
             ct: ct).ConfigureAwait(false);
 
         MigrationDiagnostics.IncStreamingFactoryHit(ProviderId);
@@ -220,8 +216,8 @@ public abstract class WebSocketProviderBase :
     protected abstract Task HandleMessageAsync(string message);
 
     /// <summary>
-    /// Re-subscribes to all active symbols after a reconnection.
-    /// Called automatically when the connection manager reconnects successfully.
+    /// Replays all active symbols during initial connection and reconnection.
+    /// Failures must propagate so the connection cannot be reported ready.
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
     protected abstract Task ResubscribeAsync(CancellationToken ct);
@@ -239,7 +235,7 @@ public abstract class WebSocketProviderBase :
     /// <summary>
     /// Sends a text message through the WebSocket connection.
     /// </summary>
-    protected Task SendAsync(string message, CancellationToken ct = default)
+    protected virtual Task SendAsync(string message, CancellationToken ct = default)
         => _connectionManager.SendAsync(message, ct);
 
     /// <summary>
@@ -257,7 +253,12 @@ public abstract class WebSocketProviderBase :
     protected void RecordActivity()
         => _connectionManager.RecordPongReceived();
 
-
+    private async Task InitializeConnectionAsync(CancellationToken ct)
+    {
+        await AuthenticateAsync(ct).ConfigureAwait(false);
+        await ResubscribeAsync(ct).ConfigureAwait(false);
+        _connectionManager.StartReceiveLoop(HandleMessageAsync);
+    }
 
     private async Task OnConnectionLostAsync()
     {
@@ -271,11 +272,8 @@ public abstract class WebSocketProviderBase :
             configureSocket: ConfigureWebSocket,
             initializeConnection: async token =>
             {
-                await AuthenticateAsync(token).ConfigureAwait(false);
-                _connectionManager.StartReceiveLoop(HandleMessageAsync);
-                await ResubscribeAsync(token).ConfigureAwait(false);
-
                 MigrationDiagnostics.IncResubscribeAttempt();
+                await InitializeConnectionAsync(token).ConfigureAwait(false);
                 MigrationDiagnostics.IncResubscribeSuccess();
             },
             ct: CancellationToken.None).ConfigureAwait(false);

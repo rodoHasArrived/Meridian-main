@@ -235,6 +235,7 @@ public sealed class WebSocketHeartbeat : IAsyncDisposable
     private readonly TimeSpan _pingInterval;
     private readonly TimeSpan _pongTimeout;
     private readonly ILogger _log;
+    private readonly Func<ReadOnlyMemory<byte>, WebSocketMessageType, CancellationToken, ValueTask> _sendAsync;
     private readonly CancellationTokenSource _cts = new();
     private readonly Task _heartbeatTask;
     private DateTimeOffset _lastPongReceived = DateTimeOffset.UtcNow;
@@ -256,8 +257,19 @@ public sealed class WebSocketHeartbeat : IAsyncDisposable
         ClientWebSocket ws,
         TimeSpan? pingInterval = null,
         TimeSpan? pongTimeout = null)
+        : this(ws, pingInterval, pongTimeout, sendAsync: null)
+    {
+    }
+
+    internal WebSocketHeartbeat(
+        ClientWebSocket ws,
+        TimeSpan? pingInterval,
+        TimeSpan? pongTimeout,
+        Func<ReadOnlyMemory<byte>, WebSocketMessageType, CancellationToken, ValueTask>? sendAsync)
     {
         _ws = ws ?? throw new ArgumentNullException(nameof(ws));
+        _sendAsync = sendAsync ?? ((payload, messageType, token) =>
+            _ws.SendAsync(payload, messageType, endOfMessage: true, token));
         _pingInterval = pingInterval ?? TimeSpan.FromSeconds(30);
         _pongTimeout = pongTimeout ?? TimeSpan.FromSeconds(10);
         _log = LoggingSetup.ForContext<WebSocketHeartbeat>();
@@ -287,10 +299,9 @@ public sealed class WebSocketHeartbeat : IAsyncDisposable
                 try
                 {
                     var pingPayload = BitConverter.GetBytes(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
-                    await _ws.SendAsync(
+                    await _sendAsync(
                         pingPayload,
                         WebSocketMessageType.Binary,
-                        endOfMessage: true,
                         _cts.Token).ConfigureAwait(false);
                     Interlocked.Increment(ref _pingsSent);
                 }
