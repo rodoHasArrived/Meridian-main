@@ -5,8 +5,11 @@ using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Operations;
+using Meridian.Contracts.Workstation;
 using Meridian.Execution.Adapters;
 using Meridian.Execution.Events;
+using Meridian.Execution.Interfaces;
 using Meridian.Execution.Live;
 using Meridian.Execution.Services;
 using Meridian.Execution;
@@ -17,6 +20,7 @@ using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Meridian.Storage.Operations;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using ExecutionSdk = Meridian.Execution.Sdk;
@@ -146,6 +150,108 @@ public sealed class LiveTradingEngineTests
 
         var recorded = await ((IStrategyRepository)repository).GetRunByIdAsync(run.RunId);
         recorded!.EndedAt.Should().BeNull("host shutdown must leave the run open so a restarted engine resumes it");
+    }
+
+    [Theory]
+    [InlineData(false, null)]
+    [InlineData(false, StrategyRunStatus.Running)]
+    [InlineData(true, null)]
+    public async Task StopBeforeActivation_CancelsStartupWithoutInvokingCleanup(bool operatorStop, StrategyRunStatus? retainedStatus)
+    {
+        using var history = new RunHistoryFixture();
+        var repository = new StrategyRunStore(history.Store);
+        var strategy = new BeforeActivationLiveStrategy();
+        var catalog = new LiveStrategyCatalog().Register(strategy.StrategyId, _ => strategy);
+        await using var engine = CreateEngine(repository, new LiveMarketEventHub(),
+            new LiveMarketDataCache(), new RecordingOrderManager(50m), catalog);
+        var run = CreatePaperRun(strategy.StrategyId, new Dictionary<string, string> { ["symbols"] = "MSFT" }) with
+        {
+            TerminalStatus = retainedStatus
+        };
+        await repository.RecordRunAsync(run);
+        (await engine.TryLaunchAsync(run)).Launched.Should().BeTrue();
+        await strategy.StartEntered.Task.WaitAsync(WaitBudget);
+
+        var stop = operatorStop ? engine.StopRunWithOutcomeAsync(run.RunId) : null;
+        Task shutdown = stop is null ? engine.DisposeAsync().AsTask() : stop;
+        try
+        {
+            await strategy.StartCancelled.Task.WaitAsync(WaitBudget);
+        }
+        finally
+        {
+            strategy.ReleaseStart.TrySetResult();
+        }
+        await shutdown.WaitAsync(WaitBudget);
+
+        var recorded = await new StrategyRunStore(history.Store).GetRunByIdAsync(run.RunId);
+        recorded.Should().NotBeNull();
+        if (operatorStop)
+        {
+            (await stop!)!.State.Should().Be(OperationTerminalState.Succeeded);
+            recorded!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            recorded.TerminalStatus.Should().Be(StrategyRunStatus.Stopped);
+            recorded.EndedAt.Should().NotBeNull();
+            recorded.Metrics.Should().NotBeNull();
+            recorded.LifecycleFacts.Should().BeEmpty("the strategy never entered a state that emits stopped facts");
+            var events = await history.Store.ReadAsync(new OperationalCaseHistoryQuery { CaseId = $"strategy-run:{run.RunId}" });
+            events.Select(record => record.EventType).Should().ContainInOrder("StartRequested", "StopRequested", "Completed");
+        }
+        else
+        {
+            recorded!.EndedAt.Should().BeNull("host cancellation before activation must leave the run resumable");
+            recorded.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.StartRequested);
+
+            var resumedStrategy = new BuyAndHoldLiveStrategy(strategy.StrategyId);
+            var resumedCatalog = new LiveStrategyCatalog().Register(strategy.StrategyId, _ => resumedStrategy);
+            var resumedFeed = new LiveMarketEventHub();
+            await using var resumedEngine = CreateEngine(new StrategyRunStore(history.Store), resumedFeed,
+                new LiveMarketDataCache(), new RecordingOrderManager(50m), resumedCatalog);
+            if (retainedStatus is null)
+            {
+                (await resumedEngine.ResumePendingRunsAsync()).Should().Be(1);
+            }
+            else
+            {
+                (await resumedEngine.TryLaunchAsync(recorded)).Launched.Should().BeTrue();
+            }
+            await WaitUntilAsync(() => resumedFeed.ActiveSubscriptionCount == 1 || !resumedEngine.ActiveRunIds.Contains(run.RunId));
+            var resumed = await new StrategyRunStore(history.Store).GetRunByIdAsync(run.RunId);
+            resumed!.ExceptionMessage.Should().BeNull();
+            resumedFeed.ActiveSubscriptionCount.Should().Be(1);
+            resumedEngine.ActiveRunIds.Should().Contain(run.RunId);
+            (await resumedEngine.StopRunWithOutcomeAsync(run.RunId))!.State.Should().Be(OperationTerminalState.Succeeded);
+            var events = await history.Store.ReadAsync(new OperationalCaseHistoryQuery { CaseId = $"strategy-run:{run.RunId}" });
+            events.Should().ContainSingle(record => record.EventType == "StartRequested",
+                "the resumed session must join the retained activation intent");
+        }
+        recorded!.ExceptionMessage.Should().BeNull();
+        strategy.Status.Should().Be(StrategyStatus.Registered);
+        strategy.FinishedCalls.Should().Be(0);
+        strategy.StopCalls.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task EngineShutdown_CancellingPartialStartup_RetainsCleanupFailure()
+    {
+        using var history = new RunHistoryFixture();
+        var repository = new StrategyRunStore(history.Store);
+        var strategy = new CancellingWarmupLiveStrategy();
+        var catalog = new LiveStrategyCatalog().Register(strategy.StrategyId, _ => strategy);
+        await using var engine = CreateEngine(repository, new LiveMarketEventHub(),
+            new LiveMarketDataCache(), new RecordingOrderManager(50m), catalog);
+        var run = CreatePaperRun(strategy.StrategyId, new Dictionary<string, string> { ["symbols"] = "MSFT" });
+        await repository.RecordRunAsync(run);
+        (await engine.TryLaunchAsync(run)).Launched.Should().BeTrue();
+        await strategy.WarmupEntered.Task.WaitAsync(WaitBudget);
+
+        await engine.DisposeAsync().AsTask().WaitAsync(WaitBudget);
+
+        var retained = await new StrategyRunStore(history.Store).GetRunByIdAsync(run.RunId);
+        retained!.TerminalStatus.Should().Be(StrategyRunStatus.Failed);
+        retained.ExceptionMessage.Should().Contain("partial startup cleanup failed");
+        strategy.Status.Should().Be(StrategyStatus.Faulted);
+        strategy.StopCalls.Should().Be(1);
     }
 
     [Fact]
@@ -645,7 +751,7 @@ public sealed class LiveTradingEngineTests
     }
 
     private static LiveTradingEngine CreateEngine(
-        InMemoryRunRepository repository,
+        IStrategyRepository repository,
         ILiveMarketEventFeed feed,
         LiveMarketDataCache cache,
         ExecutionSdk.IOrderManager orderManager,
@@ -869,6 +975,70 @@ public sealed class LiveTradingEngineTests
 
         // Give the session loop a moment to finish routing after the condition flips.
         await Task.Delay(50);
+    }
+
+    private sealed class BeforeActivationLiveStrategy : LiveStrategyBase, IStrategyLifecycle
+    {
+        public override string Name => "Before activation";
+        public override string StrategyId => "before-activation";
+        public TaskCompletionSource StartEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource StartCancelled { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource ReleaseStart { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public int FinishedCalls { get; private set; }
+        public int StopCalls { get; private set; }
+
+        async Task IStrategyLifecycle.StartAsync(IExecutionContext context, CancellationToken ct)
+        {
+            using var registration = ct.Register(() => StartCancelled.TrySetResult());
+            StartEntered.TrySetResult();
+            await ReleaseStart.Task;
+            // Exercise LiveStrategyBase's real pre-activation lifecycle gate with an
+            // already-cancelled token, rather than making a test adapter throw itself.
+            await base.StartAsync(context, ct);
+        }
+
+        public override void OnFinished(IBacktestContext context) => FinishedCalls++;
+
+        protected override Task OnStoppedAsync(CancellationToken ct)
+        {
+            StopCalls++;
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class CancellingWarmupLiveStrategy : LiveStrategyBase
+    {
+        public override string Name => "Cancelling warmup";
+        public override string StrategyId => "cancelling-warmup";
+        public TaskCompletionSource WarmupEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public int StopCalls { get; private set; }
+
+        protected override async Task OnStartingAsync(IExecutionContext context, CancellationToken ct)
+        {
+            WarmupEntered.TrySetResult();
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+        }
+
+        protected override Task OnStoppedAsync(CancellationToken ct)
+        {
+            StopCalls++;
+            throw new InvalidOperationException("partial startup cleanup failed");
+        }
+    }
+
+    private sealed class RunHistoryFixture : IDisposable
+    {
+        private readonly string _dataRoot = Path.Combine(Path.GetTempPath(), $"engine-startup-stop-{Guid.NewGuid():N}");
+
+        public RunHistoryFixture()
+        {
+            Directory.CreateDirectory(_dataRoot);
+            Store = new FileOperationalCaseHistoryStore(_dataRoot);
+        }
+
+        public FileOperationalCaseHistoryStore Store { get; }
+
+        public void Dispose() => Directory.Delete(_dataRoot, recursive: true);
     }
 
     private sealed class InMemoryRunRepository : IStrategyRepository

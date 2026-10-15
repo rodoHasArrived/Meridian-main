@@ -203,16 +203,38 @@ internal sealed class LiveStrategyRunSession
         try
         {
             var start = StrategyLifecycleInterop.EvaluateStart(_strategy.Status.ToString(), _strategy.FaultReason);
-            await _repository.RecordLifecycleEventAsync(
-                StrategyLifecycleFactMapping.Attach(
-                    _run.RequestStart(ActorId, "Run activation requested on the live trading engine."),
+            var retained = await _repository.GetRunByIdAsync(_run.RunId, ct).ConfigureAwait(false);
+            // A previous host may have stopped before activation. Resume its retained
+            // intent instead of appending the same requested transition and facts again.
+            if (retained is not
+                {
+                    LastLifecycleEvent: StrategyRunLifecycleEventType.StartRequested,
+                    EndedAt: null,
+                    TerminalStatus: null or StrategyRunStatus.Pending or StrategyRunStatus.Running or StrategyRunStatus.Paused
+                })
+            {
+                await _repository.RecordLifecycleEventAsync(
+                    StrategyLifecycleFactMapping.Attach(
+                        _run.RequestStart(ActorId, "Run activation requested on the live trading engine."),
+                        StrategyRunLifecycleEventType.StartRequested,
+                        start),
                     StrategyRunLifecycleEventType.StartRequested,
-                    start),
-                StrategyRunLifecycleEventType.StartRequested,
-                ct).ConfigureAwait(false);
+                    ct).ConfigureAwait(false);
+            }
             ct.ThrowIfCancellationRequested();
             _strategyStartAttempted = true;
-            await _strategy.StartAsync(_context, ct).ConfigureAwait(false);
+            try
+            {
+                await _strategy.StartAsync(_context, ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested && _strategy.Status == StrategyStatus.Registered)
+            {
+                // Cancellation can win before StartAsync acquires its lifecycle gate. A
+                // registered strategy has not activated, so stopping it would manufacture
+                // an invalid Registered -> Stopping cleanup failure during host shutdown.
+                _strategyStartAttempted = false;
+                throw;
+            }
             if (_strategy.Status != StrategyStatus.Running)
             {
                 throw new InvalidOperationException(
@@ -864,22 +886,33 @@ internal sealed class LiveStrategyRunSession
             }
         }
 
-        if (_strategyStartAttempted && _strategy.Status != StrategyStatus.Stopped)
+        var strategyNeedsCleanup = _strategyStartAttempted && _strategy.Status != StrategyStatus.Stopped;
+        bool retainUnstartedStopIntent;
+        lock (_stopSync)
+        {
+            retainUnstartedStopIntent = !_strategyStartAttempted && _completionRequested;
+        }
+        if (strategyNeedsCleanup || retainUnstartedStopIntent)
         {
             try
             {
-                var stop = StrategyLifecycleInterop.EvaluateStop(_strategy.Status.ToString(), _strategy.FaultReason);
+                // An operator can stop the run before strategy activation. Retain that run
+                // intent without asking the kernel to stop a still-Registered strategy.
+                var stop = strategyNeedsCleanup
+                    ? StrategyLifecycleInterop.EvaluateStop(_strategy.Status.ToString(), _strategy.FaultReason)
+                    : null;
                 try
                 {
                     var current = await _repository.GetRunByIdAsync(_run.RunId, CancellationToken.None).ConfigureAwait(false) ?? _run;
                     if ((_completeRunOnExit || faulted is not null) &&
-                        current.LastLifecycleEvent != StrategyRunLifecycleEventType.StopRequested && stop.IsValid)
+                        current.LastLifecycleEvent != StrategyRunLifecycleEventType.StopRequested &&
+                        (stop is { IsValid: true } || retainUnstartedStopIntent))
                     {
+                        var requested = current.RequestStop(ActorId, "Live session shutdown requested.");
                         await _repository.RecordLifecycleEventAsync(
-                            StrategyLifecycleFactMapping.Attach(
-                                current.RequestStop(ActorId, "Live session shutdown requested."),
-                                StrategyRunLifecycleEventType.StopRequested,
-                                stop),
+                            stop is { IsValid: true }
+                                ? StrategyLifecycleFactMapping.Attach(requested, StrategyRunLifecycleEventType.StopRequested, stop)
+                                : requested,
                             StrategyRunLifecycleEventType.StopRequested,
                             CancellationToken.None).ConfigureAwait(false);
                     }
@@ -903,17 +936,20 @@ internal sealed class LiveStrategyRunSession
                     }
                 }
 
-                await _strategy.StopAsync(CancellationToken.None).ConfigureAwait(false);
-                if (_strategy.Status != StrategyStatus.Stopped)
+                if (strategyNeedsCleanup)
                 {
-                    throw new InvalidOperationException(
-                        $"Strategy '{_run.StrategyId}' returned from StopAsync with state '{_strategy.Status}'; " +
-                        "session cleanup requires Stopped.");
-                }
+                    await _strategy.StopAsync(CancellationToken.None).ConfigureAwait(false);
+                    if (_strategy.Status != StrategyStatus.Stopped)
+                    {
+                        throw new InvalidOperationException(
+                            $"Strategy '{_run.StrategyId}' returned from StopAsync with state '{_strategy.Status}'; " +
+                            "session cleanup requires Stopped.");
+                    }
 
-                if (stop.IsValid)
-                {
-                    stopCompleted = StrategyLifecycleInterop.EvaluateStopCompleted(stop.NextState, stop.FaultReason);
+                    if (stop is { IsValid: true })
+                    {
+                        stopCompleted = StrategyLifecycleInterop.EvaluateStopCompleted(stop.NextState, stop.FaultReason);
+                    }
                 }
             }
             catch (Exception ex)

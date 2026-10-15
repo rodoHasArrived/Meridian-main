@@ -87,6 +87,9 @@ finish callbacks and cleanup, build metrics, and retain a verified completion re
 stop callers share that work; cancellation ends a caller's wait while shutdown continues. Paused
 engine sessions resume the same run. New runs launch through the engine after the prior session ends.
 Host shutdown leaves clean runs open for resume, but cannot downgrade an explicit operator stop.
+Cancellation before activation does not invoke finish or stop hooks on an unstarted strategy.
+An operator stop at that stage closes the run's retained stop intent and saves zero-fill metrics;
+it does not emit F# facts claiming that the strategy entered or completed its stopping state.
 Cleanup failures retain a failed outcome and available metrics. Terminal append failures are checked
 for an already committed event before retaining `EvidencePersistenceFailed`; failed cleanup remains
 failed even when that warning is also needed. If neither record can be retained, shutdown propagates
