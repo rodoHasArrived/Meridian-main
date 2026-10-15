@@ -21,10 +21,15 @@ resolves only retained event identifiers and alias revisions. It returns no matc
 ambiguous historical identity and never substitutes current projections. Compatibility lookups can
 use later alias corrections. Backfilled pre-038 aliases have an explicit history-availability
 boundary; omission before that boundary is missing evidence, not proof that the alias never existed.
+These timestamps supply eligibility among rows read now, not historical commit visibility or a
+transaction snapshot. A later commit can change a repeated query with the same cutoffs.
 
 `SecurityMasterCanonicalWithdrawn` records when independently retained registry evidence keeps an
 internal canonical key after Security Master withdraws its input authority. That spelling no longer
 resolves as a canonical input; independent identifiers and provider mappings remain available.
+The Security Master reconciliation writer also uses this state when no unique current primary
+exists, retaining current mappings through a hidden internal carrier. Ordinary registration ignores
+caller-supplied Security Master ownership and withdrawal flags.
 
 `SecurityMasterClosePrices` describes immutable account/book/UTC valuation-date close-price
 sets, retained selection observations and quote units, supported overrides, visible blockers,

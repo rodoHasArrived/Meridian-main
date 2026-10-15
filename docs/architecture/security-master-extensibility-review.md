@@ -5650,7 +5650,8 @@ merged #3130 evidence and the required target-environment receipts. External app
 and downstream publication still have separate transaction and reconciliation boundaries.
 
 The current #3131 refresh was `93701d7c`, rather than the earlier `41a30be8` snapshot. Main advanced
-during acceptance to `5204b8df`, adding close-price migration 037. The branch now incorporates that
+during acceptance to `5204b8df`, adding close-price migration 037, and then to `32d1dba8` with durable
+strategy lifecycle work. The branch incorporates that
 history: generation migration 036 and close-price migration 037 remain byte-for-byte unchanged,
 and alias history moves to the next available ordinal, 038. A backfilled alias revision preserves creation facts but also carries
 `history_available_from`: its current contents do not establish earlier alias history.
@@ -5682,9 +5683,15 @@ same cutoffs. Neither the identifier API nor recorded by-ID replay retains an ev
 reconstructs a historical database snapshot. Accounting certification needs separately retained
 evidence; adding a stronger durable visibility contract remains outside this acceptance scope.
 
-Seeding evaluates validity at its timestamp and records the next enabled alias or standard-identifier
+Seeding evaluates validity at its timestamp and records the next enabled alias or identifier
 boundary. The existing hosted lifecycle wakes for that boundary and reseeds without warming a lazy
 cache. A successful write seed can advance its deadline; transient failures retain retry behavior.
+Canonical selection uses exactly one primary identifier in its valid window, ignoring the
+denormalized scalar. Zero or ambiguous active primaries withdraw the Security Master canonical
+claim. A hidden stable carrier retains separately valid aliases, standard identifiers and provider
+mappings, including their SecurityId enrichment, without reserving an expired or future primary
+spelling. Independent current name authority remains usable. Every primary window is tracked before
+missing-primary handling so future-only startup and gaps still schedule the next transition.
 Rich alias candidates reach one shared registry normalization rule that prefers a supplied active
 representative for each normalized spelling/provider/source identity. Expired, disabled or future
 windows cannot mask a currently valid renewal. That live projection retains the representative's

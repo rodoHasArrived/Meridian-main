@@ -70,7 +70,8 @@ public sealed partial class SymbolRegistryService
                     continue;
                 }
 
-                entry.SecurityMasterCanonicalWithdrawn = false;
+                entry.SecurityMasterCanonicalWithdrawn = incomingBySecurityId[id].SecurityMasterCanonicalWithdrawn
+                    && entry.SecurityMasterOwnsCanonical;
             }
 
             // Finish every scoped withdrawal before evaluating destinations. Then reserve and
@@ -91,6 +92,8 @@ public sealed partial class SymbolRegistryService
                 {
                     ApplySecurityMasterIdentifiers(registered.Identifiers, entry.Identifiers);
                 }
+                registered.SecurityMasterCanonicalWithdrawn = entry.SecurityMasterCanonicalWithdrawn
+                    && registered.SecurityMasterOwnsCanonical;
             }
 
             candidate.LastUpdatedAt = DateTime.UtcNow;

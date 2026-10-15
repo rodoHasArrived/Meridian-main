@@ -21,7 +21,8 @@ public sealed class SecurityMasterCanonicalSymbolSeedFallbackTests
         var cache = new SecurityMasterProjectionCache();
         cache.Upsert(SecurityMasterProjectionChangeNotificationTests.CreateProjection(securityId, "Fallback", 1) with
         {
-            PrimaryIdentifierValue = "FALLBK"
+            PrimaryIdentifierValue = "FALLBK",
+            Identifiers = [new(SecurityIdentifierKind.Ticker, "FALLBK", true, DateTimeOffset.UtcNow.AddDays(-1))]
         });
         var registry = Substitute.For<ICanonicalSymbolRegistry>();
         registry.RegisterBatchAsync(Arg.Any<IEnumerable<CanonicalSymbolDefinition>>(), Arg.Any<CancellationToken>())
@@ -44,7 +45,10 @@ public sealed class SecurityMasterCanonicalSymbolSeedFallbackTests
         var store = Substitute.For<ISecurityMasterStore>();
         var record = SecurityMasterProjectionChangeNotificationTests.CreateProjection(securityId, "Missed creation", 1)
             with
-        { PrimaryIdentifierValue = "MISSED" };
+        {
+            PrimaryIdentifierValue = "MISSED",
+            Identifiers = [new(SecurityIdentifierKind.Ticker, "MISSED", true, DateTimeOffset.UtcNow.AddDays(-1))]
+        };
         store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { record });
         var registry = Substitute.For<ICanonicalSymbolRegistry>();
         registry.RegisterBatchAsync(Arg.Any<IEnumerable<CanonicalSymbolDefinition>>(), Arg.Any<CancellationToken>()).Returns(1);

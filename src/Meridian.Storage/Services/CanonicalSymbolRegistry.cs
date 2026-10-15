@@ -125,7 +125,14 @@ public sealed class CanonicalSymbolRegistry :
             throw new InvalidOperationException("The symbol registry store does not support Security Master reconciliation.");
 
         var count = await writer.ReconcileSecurityMasterAsync(
-            securityIds, definitions.Select(ToRegistryEntry), ct).ConfigureAwait(false);
+            securityIds, definitions.Select(definition =>
+            {
+                var entry = ToRegistryEntry(definition);
+                // Only this source-scoped writer may withdraw Security Master's canonical
+                // spelling while retaining its current alias and identifier mappings.
+                entry.SecurityMasterCanonicalWithdrawn = definition.SecurityMasterCanonicalWithdrawn;
+                return entry;
+            }), ct).ConfigureAwait(false);
         RebuildResolverCache();
         return count;
     }

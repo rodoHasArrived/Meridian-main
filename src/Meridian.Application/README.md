@@ -72,7 +72,12 @@ older candidate is never installed as a fallback. Rebuilds likewise reread after
 batch persistence instead of publishing their prepared candidates.
 The hosted lifecycle also reseeds at the next identifier validity boundary, including with lazy
 cache loading, notifications disabled and no periodic projection refresh. A successful write seed
-can move that deadline earlier. Minimal composition omits the seeder when symbol management and
+can move that deadline earlier. Canonical selection uses the sole primary identifier valid at the
+seed timestamp, rather than the denormalized primary text. Zero or multiple eligible primaries
+withdraw the Security Master canonical claim while retaining independently valid aliases, standard
+identifiers and provider mappings. A hidden internal carrier preserves their SecurityId enrichment
+without reserving an expired or future primary name. Primary boundaries remain scheduled during
+gaps, including future-only startup. Minimal composition omits the seeder when symbol management and
 an explicit canonical registry are both absent; full symbol management shares one seeder/lookup.
 Equity replay without retained flat terms refuses economic-only reconstruction: the old economic
 family cannot distinguish common, preferred and convertible preferred shares reliably.

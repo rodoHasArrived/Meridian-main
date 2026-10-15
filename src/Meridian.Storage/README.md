@@ -71,6 +71,11 @@ Independent aliases and provider overrides remain retained. When they retain an 
 Security Master-owned canonical is withdrawn, persisted `SecurityMasterCanonicalWithdrawn` keeps
 that internal storage identity from resolving as a canonical input or appearing in suggestions.
 Active reseeding restores its authority; independent exact-spelling registration owns its own name.
+The seeder selects the sole currently valid primary identifier. Missing or ambiguous primaries
+withdraw that canonical claim through the same hidden state, without dropping separately valid
+aliases, standard identifiers or provider mappings. A stable internal carrier avoids reserving
+expired or future primary names; it is not accepted as a public canonical input. Independent name
+authority remains intact.
 Canonical transfers are planned after all withdrawals and applied together, so Security Master-owned
 chains and swaps do not depend on iteration order. Independent and unscoped name authority remains
 protected; collisions refuse before persistence.

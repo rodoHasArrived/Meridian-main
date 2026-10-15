@@ -139,6 +139,10 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
 
         var definitions = new List<CanonicalSymbolDefinition>(snapshot.Count);
         var reverseMap = new Dictionary<string, Guid>(snapshot.Count, StringComparer.OrdinalIgnoreCase);
+        var retainedDefinitions = _registry.GetAll()
+            .Where(definition => definition.SecurityId.HasValue)
+            .GroupBy(definition => definition.SecurityId!.Value)
+            .ToDictionary(group => group.Key, group => group.Single());
         var now = Clock.GetUtcNow();
         DateTimeOffset? nextValidityTransition = null;
 
@@ -156,9 +160,32 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
             if (record.Status == SecurityStatusDto.Inactive)
                 continue;
 
-            var ticker = record.PrimaryIdentifierValue?.Trim();
-            if (string.IsNullOrWhiteSpace(ticker))
-                continue;
+            // The denormalized scalar is historical display data, not current identifier
+            // authority. Schedule every identifier transition even while no primary is usable.
+            foreach (var identifier in record.Identifiers)
+            {
+                TrackBoundary(identifier.ValidFrom);
+                TrackBoundary(identifier.ValidTo);
+            }
+            var currentPrimaries = record.Identifiers.Where(identifier => identifier.IsPrimary
+                && !string.IsNullOrWhiteSpace(identifier.Value)
+                && identifier.ValidFrom <= now && (identifier.ValidTo is null || identifier.ValidTo > now)).ToArray();
+            var hasCurrentPrimary = currentPrimaries.Length == 1;
+            var ticker = hasCurrentPrimary
+                ? currentPrimaries[0].Value.Trim()
+                : retainedDefinitions.TryGetValue(record.SecurityId, out var retained) && !retained.SecurityMasterOwnsCanonical
+                    ? retained.Canonical
+                    : $"SECURITY-ID:{record.SecurityId:N}";
+
+            // Missing or ambiguous primary windows withdraw the Security Master name without
+            // discarding separately current aliases/identifiers. A hidden identity anchor also
+            // releases an expired name for another instrument and supports alias enrichment.
+            if (currentPrimaries.Length > 1)
+            {
+                _logger.LogWarning(
+                    "Security {SecurityId} has {PrimaryCount} current primary identifiers; its Security Master canonical spelling is withdrawn.",
+                    record.SecurityId, currentPrimaries.Length);
+            }
 
             // The canonical registry normalizes tickers. Detect conflicts under that same key
             // before publishing anything, including in hosts implementing only the base registry.
@@ -220,9 +247,8 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
                     continue;
                 }
 
-                var isCurrent = id.ValidFrom <= now && (id.ValidTo is null || id.ValidTo > now);
-                TrackBoundary(id.ValidFrom);
-                TrackBoundary(id.ValidTo);
+                var isCurrent = id.ValidFrom <= now && (id.ValidTo is null || id.ValidTo > now)
+                    && (!id.IsPrimary || hasCurrentPrimary);
                 // Retain the window for audit/history, but only current identifiers may resolve
                 // through the live registry or populate its standard-identifier indexes.
                 aliasDefinitions.Add(new CanonicalSymbolAliasDefinition(
@@ -262,6 +288,7 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
             {
                 Canonical = ticker,
                 SecurityId = record.SecurityId,
+                SecurityMasterCanonicalWithdrawn = !hasCurrentPrimary,
                 DisplayName = record.DisplayName,
                 AssetClass = record.AssetClass,
                 Aliases = aliases,
@@ -277,12 +304,13 @@ public sealed class SecurityMasterCanonicalSymbolSeedService : ICanonicalSecurit
         }
 
         // Registries that can reconcile Security Master-owned entries drop superseded aliases; a
-        // registry implementing only the base contract keeps the merge-only seed it always had,
-        // so the reverse lookup below is still populated in that host.
+        // registry implementing only the base contract keeps merge-only compatibility. It cannot
+        // withdraw a prior name, and must not register a hidden anchor as an active ordinary name.
         var registered = _registry is ICanonicalSymbolRegistrySecurityMasterWriter writer
             ? await writer.ReconcileSecurityMasterAsync(
                 GetReconciliationScope(snapshot), definitions, ct).ConfigureAwait(false)
-            : await _registry.RegisterBatchAsync(definitions, ct).ConfigureAwait(false);
+            : await _registry.RegisterBatchAsync(
+                definitions.Where(definition => !definition.SecurityMasterCanonicalWithdrawn), ct).ConfigureAwait(false);
 
         // Atomically replace the reverse lookup so readers immediately see the new map.
         _tickerToSecurityId = reverseMap;

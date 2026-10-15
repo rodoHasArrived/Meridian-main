@@ -63,7 +63,8 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         {
             Aliases = [Alias(host.Id, "GENERIC", T0.AddSeconds(10), T0.AddSeconds(20)),
                 Alias(host.Id, "VENDOR.A", T0.AddSeconds(10), T0.AddSeconds(20), "vendor")],
-            Identifiers = [new(SecurityIdentifierKind.Isin, "US0000000001", false, T0.AddSeconds(10), T0.AddSeconds(20)),
+            Identifiers = [Primary("VALIDITY", T0.AddDays(-1)),
+                new(SecurityIdentifierKind.Isin, "US0000000001", false, T0.AddSeconds(10), T0.AddSeconds(20)),
                 new(SecurityIdentifierKind.Cusip, "123456789", false, T0.AddSeconds(10), T0.AddSeconds(20)),
                 new(SecurityIdentifierKind.Figi, "BBG000VALID", false, T0.AddSeconds(10), T0.AddSeconds(20)),
                 new(SecurityIdentifierKind.Sedol, "1234567", false, T0.AddSeconds(10), T0.AddSeconds(20))]
@@ -181,6 +182,176 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         host.Reads.Should().Be(3, "the configured refresh remains due one minute after startup, not one minute after the identifier seed");
     }
 
+    [Fact]
+    public async Task ClockOnlyPrimaryRotation_UsesCurrentHistoryDespiteFutureScalar_ThenExpiresAtExclusiveEnd()
+    {
+        await using var host = new Host();
+        host.Record = host.Record with
+        {
+            PrimaryIdentifierValue = "LATER",
+            Identifiers = [Primary("EARLY", T0.AddDays(-1), T0.AddSeconds(10)),
+                Primary("LATER", T0.AddSeconds(10), T0.AddSeconds(20))]
+        };
+        var retainedRecord = host.Record;
+        await host.StartAsync();
+        await host.WaitForTimerAsync(T0.AddSeconds(10));
+        host.Registry.ResolveToCanonical("EARLY").Should().Be("EARLY");
+        host.Registry.ResolveToCanonical("LATER").Should().BeNull("the scalar cannot activate a future primary");
+        host.Seed.TryGetSecurityId("EARLY").Should().Be(host.Id);
+        host.Seed.TryGetSecurityId("LATER").Should().BeNull();
+
+        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await UntilAsync(() => host.Registry.ResolveToCanonical("LATER") == "LATER"
+            && host.Seed.TryGetSecurityId("LATER") == host.Id);
+        host.Registry.ResolveToCanonical("EARLY").Should().BeNull();
+        host.Seed.TryGetSecurityId("EARLY").Should().BeNull();
+        await host.WaitForTimerAsync(T0.AddSeconds(20));
+
+        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await UntilAsync(() => host.Seed.TryGetSecurityId("LATER") is null
+            && host.Registry.ResolveToCanonical("LATER") is null);
+        host.Reads.Should().Be(3);
+        host.Record.Should().BeSameAs(retainedRecord, "primary transitions require no projection mutation");
+        host.Cache.Snapshot().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FutureOnlyPrimary_ArmsActivationTimerBeforeSkippingMissingCurrentCanonical()
+    {
+        await using var host = new Host();
+        host.Record = host.Record with
+        {
+            PrimaryIdentifierValue = "FUTURE",
+            Identifiers = [Primary("FUTURE", T0.AddSeconds(10), T0.AddSeconds(20))]
+        };
+        await host.StartAsync();
+        await host.WaitForTimerAsync(T0.AddSeconds(10));
+        host.Registry.ResolveToCanonical("FUTURE").Should().BeNull();
+        host.Seed.TryGetSecurityId("FUTURE").Should().BeNull();
+        host.Seed.NextValidityTransitionUtc.Should().Be(T0.AddSeconds(10));
+
+        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await UntilAsync(() => host.Registry.ResolveToCanonical("FUTURE") == "FUTURE"
+            && host.Seed.TryGetSecurityId("FUTURE") == host.Id);
+        await host.WaitForTimerAsync(T0.AddSeconds(20));
+
+        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await UntilAsync(() => host.Registry.ResolveToCanonical("FUTURE") is null
+            && host.Seed.TryGetSecurityId("FUTURE") is null);
+        host.Reads.Should().Be(3);
+        host.Cache.Snapshot().Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task PrimaryGap_PreservesActiveMappingsAndIndependentAuthority_ThenActivatesNextPrimary()
+    {
+        await using var host = new Host();
+        await host.Registry.RegisterAsync(new CanonicalSymbolDefinition
+        {
+            Canonical = "INDEPENDENT", SecurityId = host.Id,
+            AliasDefinitions = [new("MANUAL", SymbolMappingSources.Operator)]
+        });
+        host.Record = host.Record with
+        {
+            PrimaryIdentifierValue = "NEXT",
+            Identifiers = [Primary("EARLY", T0.AddDays(-1), T0.AddSeconds(10)),
+                Primary("NEXT", T0.AddSeconds(20), T0.AddSeconds(30)),
+                new(SecurityIdentifierKind.Isin, "US0000000099", false, T0.AddDays(-1), T0.AddSeconds(40))],
+            Aliases = [Alias(host.Id, "LIVE_ALIAS", T0.AddDays(-1), T0.AddSeconds(40)),
+                Alias(host.Id, "LIVE.VENDOR", T0.AddDays(-1), T0.AddSeconds(40), "vendor")]
+        };
+        var retainedRecord = host.Record;
+        await host.StartAsync();
+        await host.WaitForTimerAsync(T0.AddSeconds(10));
+        host.Registry.ResolveToCanonical("EARLY").Should().Be("EARLY");
+
+        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await UntilAsync(() => host.Seed.TryGetSecurityId("EARLY") is null
+            && host.Registry.ResolveToCanonical("EARLY") is null);
+        host.Registry.ResolveToCanonical("NEXT").Should().BeNull();
+        host.Registry.ResolveToCanonical("LIVE_ALIAS").Should().NotBeNull("the alias has an independent current validity window");
+        host.Registry.TryResolveWithProvider("LIVE.VENDOR", "vendor").Should().NotBeNull();
+        host.Registry.GetDefinition("LIVE_ALIAS")!.Isin.Should().Be("US0000000099");
+        host.Registry.ResolveToCanonical("INDEPENDENT").Should().NotBeNull();
+        host.Registry.ResolveToCanonical("MANUAL").Should().NotBeNull();
+        await host.WaitForTimerAsync(T0.AddSeconds(20));
+
+        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await UntilAsync(() => host.Registry.ResolveToCanonical("NEXT") == "NEXT"
+            && host.Seed.TryGetSecurityId("NEXT") == host.Id);
+        host.Registry.ResolveToCanonical("LIVE_ALIAS").Should().Be("NEXT");
+        host.Registry.TryResolveWithProvider("LIVE.VENDOR", "vendor").Should().Be("NEXT");
+        host.Registry.ResolveToCanonical("MANUAL").Should().Be("NEXT");
+        await host.WaitForTimerAsync(T0.AddSeconds(30));
+
+        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await UntilAsync(() => host.Registry.ResolveToCanonical("NEXT") is null
+            && host.Seed.TryGetSecurityId("NEXT") is null);
+        host.Registry.ResolveToCanonical("LIVE_ALIAS").Should().NotBeNull();
+        await host.WaitForTimerAsync(T0.AddSeconds(40));
+
+        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await UntilAsync(() => host.Registry.ResolveToCanonical("LIVE_ALIAS") is null
+            && host.Registry.TryResolveWithProvider("LIVE.VENDOR", "vendor") is null
+            && host.Registry.ResolveToCanonical("US0000000099") is null);
+        host.Registry.ResolveToCanonical("INDEPENDENT").Should().NotBeNull();
+        host.Registry.ResolveToCanonical("MANUAL").Should().NotBeNull();
+        host.Reads.Should().Be(5);
+        host.Record.Should().BeSameAs(retainedRecord);
+        host.Cache.Snapshot().Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ClockOnlyPrimaryOverlap_HidesAmbiguousCanonicalAndReverse_ThenRestoresUniquePrimary(bool typedPrimary)
+    {
+        await using var host = new Host();
+        var kind = typedPrimary ? SecurityIdentifierKind.Isin : SecurityIdentifierKind.Ticker;
+        var early = typedPrimary ? "US0000000101" : "EARLY";
+        var overlap = typedPrimary ? "US0000000102" : "OVERLAP";
+        host.Record = host.Record with
+        {
+            PrimaryIdentifierKind = kind.ToString(),
+            PrimaryIdentifierValue = overlap,
+            Identifiers = [new(kind, early, true, T0.AddDays(-1), T0.AddSeconds(30)),
+                new(kind, overlap, true, T0.AddSeconds(10), T0.AddSeconds(20))],
+            Aliases = [Alias(host.Id, "LIVE_ALIAS", T0.AddDays(-1), T0.AddSeconds(40))]
+        };
+        await host.StartAsync();
+        await host.WaitForTimerAsync(T0.AddSeconds(10));
+        host.Registry.ResolveToCanonical(early).Should().Be(early);
+        host.Seed.TryGetSecurityId(early).Should().Be(host.Id);
+        host.Registry.ResolveToCanonical(overlap).Should().BeNull();
+
+        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await UntilAsync(() => host.Registry.ResolveToCanonical(early) is null
+            && host.Seed.TryGetSecurityId(early) is null);
+        host.Registry.ResolveToCanonical(overlap).Should().BeNull();
+        host.Seed.TryGetSecurityId(overlap).Should().BeNull();
+        host.Registry.ResolveToCanonical("LIVE_ALIAS").Should().NotBeNull("a separate valid alias survives primary ambiguity");
+        if (typedPrimary)
+        {
+            var ambiguous = host.Registry.GetDefinition("LIVE_ALIAS")!;
+            ambiguous.Isin.Should().BeNull("ambiguous primary IDs cannot regain authority through the typed index");
+            ambiguous.AliasDefinitions.Should().NotContain(alias => alias.IsActive
+                && (alias.Alias == early || alias.Alias == overlap),
+                "ambiguous primary IDs cannot regain authority as Security Master aliases");
+        }
+        await host.WaitForTimerAsync(T0.AddSeconds(20));
+
+        host.Clock.Advance(TimeSpan.FromSeconds(10));
+        await UntilAsync(() => host.Registry.ResolveToCanonical(early) == early
+            && host.Seed.TryGetSecurityId(early) == host.Id);
+        host.Registry.ResolveToCanonical(overlap).Should().BeNull();
+        host.Seed.TryGetSecurityId(overlap).Should().BeNull();
+        host.Reads.Should().Be(3, "ambiguity publishes a safe state and schedules its end instead of retaining an unsafe prior lookup");
+        host.Cache.Snapshot().Should().BeEmpty();
+    }
+
+    private static SecurityIdentifierDto Primary(string value, DateTimeOffset from, DateTimeOffset? to = null)
+        => new(SecurityIdentifierKind.Ticker, value, true, from, to);
+
     private static SecurityAliasDto Alias(Guid id, string value, DateTimeOffset from, DateTimeOffset? to = null, string? provider = null)
         => new(Guid.NewGuid(), id, "Ticker", value, provider, SecurityAliasScope.Operations, null, "test", T0, from, to, true);
 
@@ -210,7 +381,10 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
         {
             Record = SecurityMasterProjectionChangeNotificationTests.CreateProjection(Id, "Validity", 1)
                 with
-            { PrimaryIdentifierValue = "VALIDITY" };
+            {
+                PrimaryIdentifierValue = "VALIDITY",
+                Identifiers = [Primary("VALIDITY", T0.AddDays(-1))]
+            };
             var store = Substitute.For<ISecurityMasterStore>();
             store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(_ =>
             {

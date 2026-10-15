@@ -180,7 +180,9 @@ public sealed class CanonicalSymbolDefinition
     public bool SecurityMasterOwnsCanonical { get; init; }
 
     /// <summary>
-    /// Read-model evidence that Security Master withdrew the canonical spelling. Independent
+    /// Read-model evidence that Security Master withdrew the canonical spelling. The Security
+    /// Master reconciliation writer also accepts this flag to retain current mappings under an
+    /// internal identity anchor when no unique primary identifier is currently effective. Independent
     /// aliases and identifiers can still address this retained definition; its internal canonical
     /// key alone no longer establishes a resolvable input. Ordinary registration cannot set this.
     /// </summary>
