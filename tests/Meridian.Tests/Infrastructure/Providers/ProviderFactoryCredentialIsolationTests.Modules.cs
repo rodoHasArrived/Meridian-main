@@ -84,10 +84,13 @@ public sealed partial class ProviderFactoryCredentialIsolationTests
             ? new StoredProviderCredentialResolver(store, new EnvironmentCredentialResolver(), Owner)
             : new EnvironmentCredentialResolver();
         using var handler = new RecordingHandler();
-        var config = Config() with { ProviderModules = new ProviderModulesConfig(new()
+        var config = Config() with
         {
-            ["alpaca"] = new(Credentials: emptyMapping ? new() : null, Settings: new() { ["feed"] = "iex" })
-        }) };
+            ProviderModules = new ProviderModulesConfig(new()
+            {
+                ["alpaca"] = new(Credentials: emptyMapping ? new() : null, Settings: new() { ["feed"] = "iex" })
+            })
+        };
         await using var services = CreateServiceCollection(handler).AddProviderServices(config, resolver).BuildServiceProvider();
         var factory = services.GetRequiredService<ProviderFactory>();
         using var historical = (IDisposable)factory.CreateAlpacaBackfillProvider(null)!;
@@ -192,11 +195,15 @@ public sealed partial class ProviderFactoryCredentialIsolationTests
             ? request.BearerToken == "owned-token" : string.IsNullOrEmpty(request.BearerToken));
     }
 
-    private static AppConfig ConfigWithModuleCredentials() => Config() with { ProviderModules = new ProviderModulesConfig(new()
+    private static AppConfig ConfigWithModuleCredentials() => Config() with
     {
-        ["alpaca"] = new(Credentials: new()
+        ProviderModules = new ProviderModulesConfig(new()
         {
-            ["keyId"] = "ALPACA_KEY_ID", ["secretKey"] = "ALPACA_SECRET_KEY"
+            ["alpaca"] = new(Credentials: new()
+            {
+                ["keyId"] = "ALPACA_KEY_ID",
+                ["secretKey"] = "ALPACA_SECRET_KEY"
+            })
         })
-    }) };
+    };
 }
