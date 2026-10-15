@@ -217,8 +217,11 @@ public sealed partial class OrderManagementSystem
                 || observedRecoveryVersion != _brokerageRecoveryVersions.GetValueOrDefault(orderId);
             _orderBrokerIds.TryGetValue(orderId, out var brokerOrderId);
             _recoveryStore?.Save(new RetainedBrokerageOrder(state, brokerOrderId, requiresRecovery)
-            { BrokerOrderAliases = GetBrokerOrderAliases(orderId), RequiresAmendmentRecovery = requiresAmendmentRecovery,
-                PendingAmendment = GetPendingAmendmentForRecovery(orderId) });
+            {
+                BrokerOrderAliases = GetBrokerOrderAliases(orderId),
+                RequiresAmendmentRecovery = requiresAmendmentRecovery,
+                PendingAmendment = GetPendingAmendmentForRecovery(orderId)
+            });
             if (requiresRecovery)
                 _recoveryOrderIds[orderId] = 0;
             else

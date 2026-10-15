@@ -26,15 +26,24 @@ public sealed partial class AlpacaBrokerageGatewayTests
             if (request.Method == HttpMethod.Patch)
             {
                 patches++;
-                return new(HttpStatusCode.OK) { Content = BuildOrderResponse("candidate", candidateStatus,
-                    clientOrderId: "candidate-client", qty: "20", replaces: "original", limitPrice: "149") };
+                return new(HttpStatusCode.OK)
+                {
+                    Content = BuildOrderResponse("candidate", candidateStatus,
+                    clientOrderId: "candidate-client", qty: "20", replaces: "original", limitPrice: "149")
+                };
             }
             if (request.RequestUri.AbsolutePath == "/v2/orders/candidate")
-                return new(HttpStatusCode.OK) { Content = BuildOrderResponse("candidate", candidateStatus,
-                    clientOrderId: "candidate-client", qty: "20", replaces: "original", limitPrice: "149") };
-            return new(HttpStatusCode.OK) { Content = BuildOrderResponse("original", originalFilled ? "filled" : "accepted",
+                return new(HttpStatusCode.OK)
+                {
+                    Content = BuildOrderResponse("candidate", candidateStatus,
+                    clientOrderId: "candidate-client", qty: "20", replaces: "original", limitPrice: "149")
+                };
+            return new(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse("original", originalFilled ? "filled" : "accepted",
                 clientOrderId: "local", qty: "10", filledQty: originalFilled ? "10" : "0",
-                filledAvgPrice: originalFilled ? "100" : null, limitPrice: "150") };
+                filledAvgPrice: originalFilled ? "100" : null, limitPrice: "150")
+            };
         });
         await using var gateway = CreateSut(handler);
         await gateway.ConnectAsync();
@@ -42,8 +51,12 @@ public sealed partial class AlpacaBrokerageGatewayTests
             portfolioState: new PaperTradingPortfolio(100_000m));
         (await oms.PlaceOrderAsync(new OrderRequest
         {
-            ClientOrderId = "local", Symbol = "AAPL", Side = OrderSide.Buy, Type = OrderType.Limit,
-            Quantity = 10m, LimitPrice = 150m
+            ClientOrderId = "local",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m
         })).Success.Should().BeTrue();
 
         var amendment = await oms.ModifyOrderAsync("local", new OrderModification { NewQuantity = 20m, NewLimitPrice = 149m });
@@ -58,23 +71,45 @@ public sealed partial class AlpacaBrokerageGatewayTests
         var channel = GetAlpacaReportChannel(gateway);
         await channel.Writer.WriteAsync(new ExecutionReport
         {
-            OrderId = "original", GatewayOrderId = "original", ClientOrderId = "local", Symbol = "AAPL", Side = OrderSide.Buy,
-            OrderStatus = OrderStatus.Filled, ReportType = ExecutionReportType.Fill, OrderQuantity = 10m,
-            FilledQuantity = 10m, FillPrice = 100m, Timestamp = DateTimeOffset.Parse("2026-10-15T12:00:00Z")
+            OrderId = "original",
+            GatewayOrderId = "original",
+            ClientOrderId = "local",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            OrderStatus = OrderStatus.Filled,
+            ReportType = ExecutionReportType.Fill,
+            OrderQuantity = 10m,
+            FilledQuantity = 10m,
+            FillPrice = 100m,
+            Timestamp = DateTimeOffset.Parse("2026-10-15T12:00:00Z")
         });
         await channel.Writer.WriteAsync(new ExecutionReport
         {
-            OrderId = "candidate", GatewayOrderId = "candidate", ClientOrderId = "candidate-client", ReplacesOrderId = "original",
-            Symbol = "AAPL", Side = OrderSide.Buy, OrderStatus = OrderStatus.Rejected, ReportType = ExecutionReportType.Rejected,
-            OrderQuantity = 20m, RejectReason = "Predecessor filled before replacement reached venue.",
+            OrderId = "candidate",
+            GatewayOrderId = "candidate",
+            ClientOrderId = "candidate-client",
+            ReplacesOrderId = "original",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            OrderStatus = OrderStatus.Rejected,
+            ReportType = ExecutionReportType.Rejected,
+            OrderQuantity = 20m,
+            RejectReason = "Predecessor filled before replacement reached venue.",
             Timestamp = DateTimeOffset.Parse("2026-10-15T12:00:01Z")
         });
         // A subsequent genuine fill proves the report pump consumed the refusal first.
         await channel.Writer.WriteAsync(new ExecutionReport
         {
-            OrderId = "sentinel", Symbol = "MSFT", Side = OrderSide.Buy, OrderStatus = OrderStatus.Filled,
-            ReportType = ExecutionReportType.Fill, OrderQuantity = 1m, FilledQuantity = 1m, LastFillQuantity = 1m,
-            FillPrice = 10m, AssetClass = "us_equity"
+            OrderId = "sentinel",
+            Symbol = "MSFT",
+            Side = OrderSide.Buy,
+            OrderStatus = OrderStatus.Filled,
+            ReportType = ExecutionReportType.Fill,
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            LastFillQuantity = 1m,
+            FillPrice = 10m,
+            AssetClass = "us_equity"
         });
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         (await oms.ExecutionReports.ReadAsync(timeout.Token)).OrderId.Should().Be("original");
@@ -96,8 +131,11 @@ public sealed partial class AlpacaBrokerageGatewayTests
             if (path == "/v2/account")
                 return new(HttpStatusCode.OK) { Content = BuildAccountResponse() };
             if (request.Method == HttpMethod.Patch)
-                return new(HttpStatusCode.OK) { Content = BuildOrderResponse("candidate", "pending_new",
-                    clientOrderId: "candidate-client", qty: "20", replaces: "original", limitPrice: "149") };
+                return new(HttpStatusCode.OK)
+                {
+                    Content = BuildOrderResponse("candidate", "pending_new",
+                    clientOrderId: "candidate-client", qty: "20", replaces: "original", limitPrice: "149")
+                };
             if (request.Method == HttpMethod.Delete)
             {
                 deletions.Add(path);
@@ -105,25 +143,43 @@ public sealed partial class AlpacaBrokerageGatewayTests
                 return new(HttpStatusCode.NoContent);
             }
             if (path == "/v2/orders/candidate")
-                return new(HttpStatusCode.OK) { Content = BuildOrderResponse("candidate", cancelled ? "canceled" : confirmed ? "accepted" : "pending_new",
-                    clientOrderId: "candidate-client", qty: "20", replaces: "original", limitPrice: "149") };
-            return new(HttpStatusCode.OK) { Content = BuildOrderResponse("original", confirmed ? "replaced" : "accepted",
-                clientOrderId: "local", qty: "10", replacedBy: confirmed ? "candidate" : null, limitPrice: "150") };
+                return new(HttpStatusCode.OK)
+                {
+                    Content = BuildOrderResponse("candidate", cancelled ? "canceled" : confirmed ? "accepted" : "pending_new",
+                    clientOrderId: "candidate-client", qty: "20", replaces: "original", limitPrice: "149")
+                };
+            return new(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse("original", confirmed ? "replaced" : "accepted",
+                clientOrderId: "local", qty: "10", replacedBy: confirmed ? "candidate" : null, limitPrice: "150")
+            };
         });
         await using var gateway = CreateSut(handler);
         await gateway.ConnectAsync();
         await using var oms = new OrderManagementSystem(new SimulatedAlpaca(gateway), NullLogger<OrderManagementSystem>.Instance);
         (await oms.PlaceOrderAsync(new OrderRequest
         {
-            ClientOrderId = "local", Symbol = "AAPL", Side = OrderSide.Buy, Type = OrderType.Limit, Quantity = 10m, LimitPrice = 150m
+            ClientOrderId = "local",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m
         })).Success.Should().BeTrue();
         (await oms.ModifyOrderAsync("local", new OrderModification { NewQuantity = 20m, NewLimitPrice = 149m })).Success.Should().BeFalse();
         confirmed = true;
         await GetAlpacaReportChannel(gateway).Writer.WriteAsync(new ExecutionReport
         {
-            OrderId = "original", GatewayOrderId = "original", ClientOrderId = "local", CandidateGatewayOrderId = "candidate",
-            Symbol = "AAPL", Side = OrderSide.Buy, OrderStatus = OrderStatus.Accepted, ReportType = ExecutionReportType.New,
-            OrderQuantity = 10m, Diagnostics = new ExecutionDiagnostics { BrokerStatus = "replaced" }
+            OrderId = "original",
+            GatewayOrderId = "original",
+            ClientOrderId = "local",
+            CandidateGatewayOrderId = "candidate",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            OrderStatus = OrderStatus.Accepted,
+            ReportType = ExecutionReportType.New,
+            OrderQuantity = 10m,
+            Diagnostics = new ExecutionDiagnostics { BrokerStatus = "replaced" }
         });
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         while (oms.GetOrder("local")!.Quantity != 20m)
@@ -157,8 +213,13 @@ public sealed partial class AlpacaBrokerageGatewayTests
         MarkConnected(gateway);
         var original = new OrderState
         {
-            OrderId = "local", Symbol = "AAPL", Side = OrderSide.Buy, Type = OrderType.Limit,
-            Quantity = 10m, LimitPrice = 150m, Status = OrderStatus.Accepted
+            OrderId = "local",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m,
+            Status = OrderStatus.Accepted
         };
         var pending = new PendingOrderAmendment(original, original with { Quantity = 20m, LimitPrice = 149m }, "original")
         { CandidateBrokerOrderId = "candidate" };
@@ -203,15 +264,28 @@ public sealed partial class AlpacaBrokerageGatewayTests
             portfolioState: portfolio, tradeEventPublisher: publisher);
         (await oms.PlaceOrderAsync(new OrderRequest
         {
-            ClientOrderId = "local", Symbol = "AAPL", Side = OrderSide.Buy, Type = OrderType.Limit,
-            Quantity = 10m, LimitPrice = 150m
+            ClientOrderId = "local",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m
         })).Success.Should().BeTrue();
         (await oms.ModifyOrderAsync("local", new OrderModification { NewQuantity = 20m, NewLimitPrice = 149m })).Success.Should().BeFalse();
         var fill = new ExecutionReport
         {
-            OrderId = "candidate", GatewayOrderId = "candidate", ClientOrderId = "candidate-client", ReplacesOrderId = "original",
-            Symbol = "AAPL", Side = OrderSide.Buy, OrderStatus = OrderStatus.PartiallyFilled, ReportType = ExecutionReportType.PartialFill,
-            OrderQuantity = 20m, FilledQuantity = 15m, LastFillQuantity = 15m, FillPrice = 100m,
+            OrderId = "candidate",
+            GatewayOrderId = "candidate",
+            ClientOrderId = "candidate-client",
+            ReplacesOrderId = "original",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            OrderStatus = OrderStatus.PartiallyFilled,
+            ReportType = ExecutionReportType.PartialFill,
+            OrderQuantity = 20m,
+            FilledQuantity = 15m,
+            LastFillQuantity = 15m,
+            FillPrice = 100m,
             Timestamp = DateTimeOffset.Parse("2026-10-15T12:00:00Z")
         };
         var channel = GetAlpacaReportChannel(gateway);
@@ -219,9 +293,16 @@ public sealed partial class AlpacaBrokerageGatewayTests
         await channel.Writer.WriteAsync(fill);
         await channel.Writer.WriteAsync(new ExecutionReport
         {
-            OrderId = "sentinel", Symbol = "MSFT", Side = OrderSide.Buy, OrderStatus = OrderStatus.Filled,
-            ReportType = ExecutionReportType.Fill, OrderQuantity = 1m, FilledQuantity = 1m, LastFillQuantity = 1m,
-            FillPrice = 10m, AssetClass = "us_equity"
+            OrderId = "sentinel",
+            Symbol = "MSFT",
+            Side = OrderSide.Buy,
+            OrderStatus = OrderStatus.Filled,
+            ReportType = ExecutionReportType.Fill,
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            LastFillQuantity = 1m,
+            FillPrice = 10m,
+            AssetClass = "us_equity"
         });
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         (await oms.ExecutionReports.ReadAsync(timeout.Token)).ClientOrderId.Should().Be("local");

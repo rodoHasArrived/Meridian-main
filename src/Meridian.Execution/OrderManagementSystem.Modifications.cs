@@ -26,8 +26,13 @@ public sealed partial class OrderManagementSystem
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
         if (_pendingModificationOrderIds.ContainsKey(orderId) || IsTerminal(state.Status))
-            return new OrderResult { Success = false, OrderId = orderId, OrderState = state,
-                ErrorMessage = "The order is terminal or an earlier amendment requires broker reconciliation." };
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                OrderState = state,
+                ErrorMessage = "The order is terminal or an earlier amendment requires broker reconciliation."
+            };
 
         // A quantity increase or any supplied limit/stop price is a new risk decision. Notional
         // increases are not the only dangerous direction: lowering a sell limit or a buy stop can
@@ -137,8 +142,13 @@ public sealed partial class OrderManagementSystem
             // The broker refused the amendment outright, so nothing routed.
             SettleRiskReservations(amendmentDecision, commit: false, orderId);
             if (report.ReportType is not ExecutionReportType.ModificationRejected)
-                report = report with { ReportType = ExecutionReportType.ModificationRejected, OrderStatus = state.Status,
-                    Symbol = state.Symbol, Side = state.Side };
+                report = report with
+                {
+                    ReportType = ExecutionReportType.ModificationRejected,
+                    OrderStatus = state.Status,
+                    Symbol = state.Symbol,
+                    Side = state.Side
+                };
             await ProcessGatewayReportAsync(report, CancellationToken.None, amendment.Original.Quantity).ConfigureAwait(false);
             var observedState = _orders.TryGetValue(orderId, out var current) ? current : state;
             // Do not apply a rejected modify to order state: ApplyReport would let the terminal

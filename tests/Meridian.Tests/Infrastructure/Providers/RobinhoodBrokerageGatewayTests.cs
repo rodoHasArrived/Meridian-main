@@ -951,8 +951,14 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
         pending.CandidateClientOrderId.Should().NotBe("order-1");
         var original = new OrderState
         {
-            OrderId = "client-1", Symbol = "AAPL", Side = OrderSide.Buy, Type = OrderType.Market,
-            Quantity = 10m, FilledQuantity = 2m, AverageFillPrice = 150m, Status = OrderStatus.Accepted
+            OrderId = "client-1",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m,
+            FilledQuantity = 2m,
+            AverageFillPrice = 150m,
+            Status = OrderStatus.Accepted
         };
         var retained = original with { Status = OrderStatus.PendingNew };
         var amendment = new PendingOrderAmendment(original, original with { Quantity = 12m }, "order-1")
@@ -997,8 +1003,14 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
         }
         var original = new OrderState
         {
-            OrderId = "client-1", Symbol = "AAPL", Side = OrderSide.Buy, Type = OrderType.Market,
-            Quantity = 10m, FilledQuantity = 2m, AverageFillPrice = 150m, Status = OrderStatus.Accepted
+            OrderId = "client-1",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m,
+            FilledQuantity = 2m,
+            AverageFillPrice = 150m,
+            Status = OrderStatus.Accepted
         };
         var amendment = new PendingOrderAmendment(original, original with { Quantity = 12m }, "order-1");
         await using var restarted = CreateSut(handler);

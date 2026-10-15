@@ -69,7 +69,7 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
             if (accepted && modification.NewLimitPrice is not null)
             {
                 var insufficient = () => restartedOms.ReconcileRecoveryOrderAsync(recoveredGateway.RecoveryReport! with
-                    { HasOrderTerms = false, OrderLimitPrice = null });
+                { HasOrderTerms = false, OrderLimitPrice = null });
                 await insufficient.Should().ThrowAsync<InvalidDataException>();
                 restartedOms.GetRecoveryOrders().Should().ContainSingle();
             }
@@ -108,7 +108,8 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
             var gateway = new RecoverableAmendmentGateway { HoldModification = true, ReturnPending = pending };
             var configuration = new BrokerageConfiguration
             {
-                Gateway = "alpaca", MaxOpenOrders = 1,
+                Gateway = "alpaca",
+                MaxOpenOrders = 1,
                 BrokerFlows = new() { ["alpaca"] = new BrokerFlowFlags { PaperOrderFlowEnabled = true } }
             };
             await using var oms = CreateRecoveryOms(gateway, Path.Combine(directory, "orders.json"), configuration);
@@ -214,7 +215,12 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
 
     private static OrderRequest RecoveryRequest() => new()
     {
-        ClientOrderId = "local", Symbol = "AAPL", Side = OrderSide.Buy, Type = OrderType.Limit, Quantity = 10m, LimitPrice = 100m
+        ClientOrderId = "local",
+        Symbol = "AAPL",
+        Side = OrderSide.Buy,
+        Type = OrderType.Limit,
+        Quantity = 10m,
+        LimitPrice = 100m
     };
 
     private sealed class RecoverableAmendmentGateway : IBrokerageGateway, IExecutionGatewayModeProvider,
@@ -251,7 +257,8 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
                 OrderStatus.Accepted, 2m, modification.NewQuantity ?? 10m, modification.NewLimitPrice ?? 100m) with
             {
                 HasOrderTerms = !ReturnPending,
-                CandidateGatewayOrderId = "candidate-broker", CandidateClientOrderId = "attempted-ref"
+                CandidateGatewayOrderId = "candidate-broker",
+                CandidateClientOrderId = "attempted-ref"
             };
         }
         public Task<ExecutionReport?> GetOrderForRecoveryAsync(string id, CancellationToken ct = default) => throw new InvalidOperationException("Use retained amendment context.");
@@ -269,10 +276,19 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
         public Task<BrokerHealthStatus> CheckHealthAsync(CancellationToken ct = default) => Task.FromResult(BrokerHealthStatus.Healthy());
         public static ExecutionReport Report(ExecutionReportType type, OrderStatus status, decimal filled, decimal quantity, decimal? limit) => new()
         {
-            OrderId = "original-broker", GatewayOrderId = "original-broker", ClientOrderId = "local",
-            Symbol = "AAPL", Side = OrderSide.Buy, ReportType = type, OrderStatus = status,
-            OrderQuantity = quantity, FilledQuantity = filled, FillPrice = filled > 0m ? 100m : null,
-            HasOrderTerms = true, OrderLimitPrice = limit, FillPriceIsCumulativeAverage = true
+            OrderId = "original-broker",
+            GatewayOrderId = "original-broker",
+            ClientOrderId = "local",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            ReportType = type,
+            OrderStatus = status,
+            OrderQuantity = quantity,
+            FilledQuantity = filled,
+            FillPrice = filled > 0m ? 100m : null,
+            HasOrderTerms = true,
+            OrderLimitPrice = limit,
+            FillPriceIsCumulativeAverage = true
         };
     }
 

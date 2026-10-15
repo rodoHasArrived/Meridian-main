@@ -135,7 +135,8 @@ public sealed partial class AlpacaBrokerageGateway
 
     private static ExecutionReport CreatePendingModification(ReplacementAttempt attempt, string reason) =>
         BuildReplacementSnapshotReport(attempt.Original, attempt.Original.ClientOrderId,
-            ExecutionReportType.ModificationPending, reason) with { CandidateGatewayOrderId = attempt.CandidateId };
+            ExecutionReportType.ModificationPending, reason) with
+        { CandidateGatewayOrderId = attempt.CandidateId };
 
     private async Task<AlpacaOrderResponse?> ReadReplacementSnapshotAsync(HttpClient client, string brokerId, CancellationToken ct)
     {
@@ -174,7 +175,8 @@ public sealed partial class AlpacaBrokerageGateway
             || candidate.Status is "pending_new" or "pending_replace" or "accepted_for_bidding")
             return null;
         return attempt.Resolution = BuildReplacementSnapshotReport(candidate, original.ClientOrderId,
-            ExecutionReportType.Modified) with { ReplacesOrderId = original.Id };
+            ExecutionReportType.Modified) with
+        { ReplacesOrderId = original.Id };
     }
 
     private static void ValidateReplacementSnapshot(AlpacaOrderResponse order)
@@ -257,7 +259,8 @@ public sealed partial class AlpacaBrokerageGateway
                 throw new InvalidDataException("Alpaca replacement refusal contradicts the confirmed predecessor state; retain the event for reconciliation.");
             return attempt.Resolution = BuildReplacementSnapshotReport(original, original.ClientOrderId,
                 ExecutionReportType.ModificationRejected, report.RejectReason ?? "Alpaca rejected the proposed replacement.")
-                with { Timestamp = report.Timestamp };
+                with
+            { Timestamp = report.Timestamp };
         }
         var observed = await ObserveReplacementAsync(client, attempt, ct).ConfigureAwait(false);
         if (report.LastFillQuantity is > 0m || report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)

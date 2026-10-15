@@ -909,7 +909,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
             AdoptReplacement(chain, attempt, found);
             var report = BuildOrderReport(chain, found, found.Status == OrderStatus.Rejected
                 ? ExecutionReportType.ModificationRejected
-                : ExecutionReportType.Modified) with { ReplacesOrderId = attempt.CancelledOrder.Id };
+                : ExecutionReportType.Modified) with
+            { ReplacesOrderId = attempt.CancelledOrder.Id };
             await PublishAsync(report, CancellationToken.None).ConfigureAwait(false);
             return true;
         }
@@ -1042,13 +1043,13 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
                 ? $"Replacement {reference} has an unconfirmed outcome; reconcile it before further operations."
                 : "Replacement outcome is unconfirmed and its provider reference is unavailable; broker reconciliation is required.")
             with
-            {
-                OrderQuantity = chain.PendingReplacement?.TotalQuantity ?? chain.TotalQuantity,
-                CandidateClientOrderId = chain.UnconfirmedReplacementRefId,
-                HasOrderTerms = false,
-                OrderLimitPrice = null,
-                OrderStopPrice = null
-            };
+        {
+            OrderQuantity = chain.PendingReplacement?.TotalQuantity ?? chain.TotalQuantity,
+            CandidateClientOrderId = chain.UnconfirmedReplacementRefId,
+            HasOrderTerms = false,
+            OrderLimitPrice = null,
+            OrderStopPrice = null
+        };
 
     private static bool IsTerminal(OrderStatus status)
         => status is OrderStatus.Cancelled or OrderStatus.Filled or OrderStatus.Rejected or OrderStatus.Expired;

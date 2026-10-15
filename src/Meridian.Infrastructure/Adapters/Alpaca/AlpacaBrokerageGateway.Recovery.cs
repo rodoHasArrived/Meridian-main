@@ -28,7 +28,8 @@ public sealed partial class AlpacaBrokerageGateway
         var observed = await ObserveReplacementAsync(client, attempt, ct).ConfigureAwait(false);
         return (observed ?? CreatePendingModification(attempt,
             "Alpaca amendment recovery has not confirmed replacement or refusal; retain both possible terms."))
-            with { ClientOrderId = clientOrderId };
+            with
+        { ClientOrderId = clientOrderId };
     }
 
     public async Task<ExecutionReport?> GetOrderForRecoveryAsync(string clientOrderId, CancellationToken ct = default)
@@ -65,17 +66,20 @@ public sealed partial class AlpacaBrokerageGateway
             {
                 if (original.Status == "replaced")
                     return CreatePendingModification(attempt,
-                        "Alpaca recovery received contradictory predecessor/replacement state.") with { ClientOrderId = clientOrderId };
+                        "Alpaca recovery received contradictory predecessor/replacement state.") with
+                    { ClientOrderId = clientOrderId };
                 return attempt.Resolution = BuildReplacementSnapshotReport(original, clientOrderId,
                     ExecutionReportType.ModificationRejected, "Alpaca rejected the proposed replacement.");
             }
             if (original.Status != "replaced" || replacement.Status is "pending_new" or "pending_replace")
                 return CreatePendingModification(attempt,
-                    "Alpaca recovery has not confirmed the proposed replacement.") with { ClientOrderId = clientOrderId };
+                    "Alpaca recovery has not confirmed the proposed replacement.") with
+                { ClientOrderId = clientOrderId };
             predecessorId = original.Id;
             order = replacement;
             attempt.Resolution = BuildReplacementSnapshotReport(order, clientOrderId,
-                ExecutionReportType.Modified) with { ReplacesOrderId = predecessorId };
+                ExecutionReportType.Modified) with
+            { ReplacesOrderId = predecessorId };
         }
         if (generation != ConnectionGeneration)
             throw new InvalidDataException("Alpaca connection changed while recovering the order.");
@@ -86,10 +90,12 @@ public sealed partial class AlpacaBrokerageGateway
             attempt.Original = order;
             var observed = await ObserveReplacementAsync(client, attempt, ct).ConfigureAwait(false);
             return (observed ?? CreatePendingModification(attempt,
-                "Alpaca recovery has not confirmed the proposed replacement.")) with { ClientOrderId = clientOrderId };
+                "Alpaca recovery has not confirmed the proposed replacement.")) with
+            { ClientOrderId = clientOrderId };
         }
         return BuildReplacementSnapshotReport(order, clientOrderId,
             predecessorId is null ? MapReconciliationReportType(MapAlpacaStatus(order.Status)) : ExecutionReportType.Modified)
-            with { OrderId = clientOrderId, ReplacesOrderId = predecessorId };
+            with
+        { OrderId = clientOrderId, ReplacesOrderId = predecessorId };
     }
 }

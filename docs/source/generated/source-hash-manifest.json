@@ -128,22 +128,22 @@
       "id": "SRC-DOMAIN",
       "path": "src/Meridian.Domain",
       "readme": "src/Meridian.Domain/README.md",
-      "readme_hash": "94bb8801a3d3ffb8b46c34e8d0b6ecb7cb309a0b10d2d61e8fb9c251465d0ad4",
-      "source_hash": "80b4999e9d45fedbe3cdbb3421e33f8f9d3c29d2ce783029a3a2d400b52a20a2"
+      "readme_hash": "07d080b9b176c7c3482fbf6663e8c1d1b42641b96a51038145f7cc5c400f860d",
+      "source_hash": "8e8509048bad005ab209c55e587773e5275df64f7a92d54e6981f5c8f1e3c161"
     },
     {
       "id": "SRC-EXECUTION",
       "path": "src/Meridian.Execution",
       "readme": "src/Meridian.Execution/README.md",
-      "readme_hash": "c611af7effdcc7f9ad5c2b1644935294098451b738a49503b86e9f36fdd766e7",
-      "source_hash": "f1d1a026f4a20150f456e8def3cfff5a474d0220fa6cfae68ee01c90980b4148"
+      "readme_hash": "cb3d719217b7c08580fe94d350c1f7cccdb5e62a6458bce19be2544ad92b02ec",
+      "source_hash": "0d0e0ab0ad0afac7bab65e07c5f2b87688e04bf2fb666f12ac0122b54f6bf154"
     },
     {
       "id": "SRC-EXECUTION-SDK",
       "path": "src/Meridian.Execution.Sdk",
       "readme": "src/Meridian.Execution.Sdk/README.md",
-      "readme_hash": "1975f92be81be0ebc70e6b6f5d95875da16275f76a5801c56741e3d67a2de303",
-      "source_hash": "6a917a02914f3737cf10e25587896686aaf709b6995a17b0001ca17aa4c28938"
+      "readme_hash": "95eff4a818ddc651765aefe5f364b38a29402f056532479cc1b6e58b9d5ab371",
+      "source_hash": "677fbe66049cba55b6423f04b324fa0505e733c7ab5b834432c6505ac6a8dd48"
     },
     {
       "id": "SRC-FSHARP",
@@ -191,8 +191,8 @@
       "id": "SRC-INFRASTRUCTURE",
       "path": "src/Meridian.Infrastructure",
       "readme": "src/Meridian.Infrastructure/README.md",
-      "readme_hash": "8f57b1791847437754cc45b424c3e3fc89a283edeafe4707d1b87cfb41331a45",
-      "source_hash": "c309308d39386f2b520af86e7afddf2ae25fa57a76e440856b03972a96d04e09"
+      "readme_hash": "924e8fb002f72f6f7bff4e796320a364a538c5d1aa4e77d3411109a02f3de0f2",
+      "source_hash": "ddb39e169214ee9e70f58ebaeb9f8a337d22e21e996dc899f63d0d22f582e4d3"
     },
     {
       "id": "SRC-LAUNCHER",

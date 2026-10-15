@@ -74,6 +74,24 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+Streaming readiness requires acknowledged authentication and successful subscription replay on both
+initial connection and recovery. Alpaca reconciles subscriptions against the current transport,
+sends explicit unsubscribe frames after the last local reference is removed, and replays only
+remaining subscriptions. WebSocket application messages, heartbeats, and close frames share a
+per-connection send gate; canceled queued writes cannot move to a replacement connection.
+
+Polygon daily/intraday history and corporate actions follow every continuation page with per-request
+pacing and overlapping-record deduplication. Repeated cursors, invalid response envelopes, and failed
+continuation requests fail the fetch rather than certifying partial coverage. The hosted corporate-action
+fetcher reports endpoint completion and acknowledged persistence counts on success, typed HTTP/authentication/
+throttling/persistence failures, and caller cancellation. An interrupted fetch retains completed writes.
+Composite history preserves unavailable-provider evidence when candidates are backed off or throttled;
+only successfully queried empty coverage can produce a no-data result, with bounded throttling retries.
+
+Polygon streaming rejects missing, malformed, nonpositive, and out-of-range source timestamps, then
+applies shared trade, quote, and aggregate quality validation. Source time remains distinct from
+receipt metadata on published events; receipt time never substitutes for missing source evidence.
+
 Canonical statement imports stream JSON to an exclusive temporary file, force its contents to
 disk, then publish with a no-overwrite rename and the host-supplied `IAtomicFileWriter`
 directory-sync policy. Caller

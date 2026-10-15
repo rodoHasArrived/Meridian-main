@@ -165,8 +165,12 @@ public sealed partial class OrderManagementSystem
         }
         catch (InvalidDataException)
         {
-            report = report with { ReportType = ExecutionReportType.ModificationPending, OrderStatus = current.Status,
-                OrderQuantity = current.Quantity };
+            report = report with
+            {
+                ReportType = ExecutionReportType.ModificationPending,
+                OrderStatus = current.Status,
+                OrderQuantity = current.Quantity
+            };
             return null;
         }
         // A late working acknowledgement cannot reopen or resize a terminal order. Its
@@ -174,8 +178,12 @@ public sealed partial class OrderManagementSystem
         if (IsTerminal(current.Status)
             && (!IsTerminal(report.OrderStatus) || terms.Quantity != current.Quantity))
         {
-            report = report with { ReportType = ExecutionReportType.ModificationPending, OrderStatus = current.Status,
-                OrderQuantity = current.Quantity };
+            report = report with
+            {
+                ReportType = ExecutionReportType.ModificationPending,
+                OrderStatus = current.Status,
+                OrderQuantity = current.Quantity
+            };
             return null;
         }
         _orders[orderId] = ApplyAmendmentTerms(current, terms);
