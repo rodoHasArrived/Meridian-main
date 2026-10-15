@@ -2856,7 +2856,8 @@ Meridian-main
 │   │   ├── w10-mark-seam-operator-acceptance.md
 │   │   ├── wave2-cockpit-reliability-evidence-runbook.md
 │   │   ├── WAVE2_ACCEPTANCE_GATE_CHECKLIST.md
-│   │   └── WAVE2_ACCEPTANCE_TESTS.md
+│   │   ├── WAVE2_ACCEPTANCE_TESTS.md
+│   │   └── workflow-correctness-regressions.md
 │   ├── DEPENDENCIES.md
 │   ├── documentation-inventory.md
 │   ├── documentation-ownership.md
