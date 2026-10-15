@@ -46,6 +46,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Historical journal legs missing their currency | [Ledger Currency Backfill](./ledger-currency-backfill.md) | why legs are currency-blind, what the repair may assert, and the survey/affirm workflow |
 | Retained data blocks tenant enforcement | [Fund Structure Tenant Backfill](fund-structure-tenant-backfill.md) | inventory, attribution, quarantine, and strict-startup checks |
 | Statement intake through reconciliation report | [Statement Reconciliation Report Operations](./statement-reconciliation-report-operations.md) | exact accounting scope, Operations Continuity and canonical-queue handoff, JSON/CSV verification, and recovery |
+| Durable account oversight | [Bounded Account Oversight](account-oversight.md) | cash-balance continuity, immutable reviewed price sets and source-backed cash forecasts |
 | Governed reporting, schedules, and delivery | [Governed Reporting Operations](./governed-reporting-operations.md) | reporting preflight, hard-close evidence, recovery, and secure relay operation |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
 | A firing alert | [Operator Runbook](./operator-runbook.md) | per-alert response, diagnostics bundle, incident procedure and ownership |

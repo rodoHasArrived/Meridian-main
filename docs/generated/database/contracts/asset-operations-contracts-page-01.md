@@ -2,11 +2,94 @@
 
 # `asset-operations-contracts` data objects - page 1 of 2
 
-Objects 1-80 of 113. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 126. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% asset-operations-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_AssetOperations_AccountCashEvidenceRole["AccountCashEvidenceRole"] {
+    }
+    class Meridian_Contracts_AssetOperations_AccountCashFlowDto["AccountCashFlowDto"] {
+        +string AccountId
+        +decimal Amount
+        +string BookId
+        +DateOnly? CashReceiptDate
+        +string Currency
+        +DateOnly? EconomicDate
+        +string FlowId
+        +string FlowType
+        +string? ProjectionEngineVersion
+        +Guid? ProjectionRunId
+        +AccountCashProvenanceDto Provenance
+        +Guid? SecurityId
+    }
+    class Meridian_Contracts_AssetOperations_AccountCashFlowStatus["AccountCashFlowStatus"] {
+    }
+    class Meridian_Contracts_AssetOperations_AccountCashForecastIssueDto["AccountCashForecastIssueDto"] {
+        +string Code
+        +string? InputId
+        +string Message
+    }
+    class Meridian_Contracts_AssetOperations_AccountCashForecastJsonContext["AccountCashForecastJsonContext"] {
+    }
+    class Meridian_Contracts_AssetOperations_AccountCashForecastRequestDto["AccountCashForecastRequestDto"] {
+        +int BucketDays
+        +AccountSettledCashObservationDto? ClosingCash
+        +string? CorrectionRationale
+        +IReadOnlyList~AccountCashFlowDto~ Flows
+        +IReadOnlyList~AccountCashFxConversionDto~ FxConversions
+        +decimal MinimumCashThreshold
+        +AccountSettledCashObservationDto? OpeningCash
+        +DateOnly PeriodEnd
+        +DateOnly PeriodStart
+        +string? PreviousSnapshotId
+        +DateTimeOffset RecordedAtUtc
+        +string RunId
+    }
+    class Meridian_Contracts_AssetOperations_AccountCashForecastScopeDto["AccountCashForecastScopeDto"] {
+        +string AccountId
+        +string BaseCurrency
+        +string BookId
+        +string CompanyId
+        +string TenantId
+    }
+    class Meridian_Contracts_AssetOperations_AccountCashForecastSnapshotDto["AccountCashForecastSnapshotDto"] {
+        +decimal? ActualNetBaseFlow
+        +IReadOnlyList~AccountCashForecastIssueDto~ Blockers
+        +decimal? ClosingVariance
+        +string EngineVersion
+        +string EvidenceHash
+        +PortfolioCashLadderDto ForecastLadder
+        +AccountCashForecastRequestDto Inputs
+        +bool IsCertified
+        +decimal? ObservedClosingBaseCash
+        +decimal? OpeningBaseCash
+        +decimal? ReconciledClosingBaseCash
+        +string SnapshotId
+    }
+    class Meridian_Contracts_AssetOperations_AccountCashFxConversionDto["AccountCashFxConversionDto"] {
+        +string BaseCurrency
+        +decimal BaseUnitsPerCurrencyUnit
+        +DateOnly ConversionDate
+        +string Currency
+        +AccountCashProvenanceDto Provenance
+    }
+    class Meridian_Contracts_AssetOperations_AccountCashProvenanceDto["AccountCashProvenanceDto"] {
+        +RetainedEvidenceIdentityDto Evidence
+        +AccountCashEvidenceRole Role
+        +string SourceContentHash
+        +string SourceDomain
+        +string SourceEntityId
+    }
+    class Meridian_Contracts_AssetOperations_AccountSettledCashObservationDto["AccountSettledCashObservationDto"] {
+        +string AccountId
+        +decimal Amount
+        +DateOnly AsOfDate
+        +string BookId
+        +string Currency
+        +bool IsSettled
+        +AccountCashProvenanceDto Provenance
+    }
     class Meridian_Contracts_AssetOperations_AppendAssetAccountingLifecycleStageRequestDto["AppendAssetAccountingLifecycleStageRequestDto"] {
         +string Actor
         +DateTimeOffset AttestedAtUtc
@@ -533,77 +616,17 @@ classDiagram
     }
     class Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceRoleDto["CorporateActionProjectionEvidenceRoleDto"] {
     }
-    class Meridian_Contracts_AssetOperations_CorporateActionProjectionStatusDto["CorporateActionProjectionStatusDto"] {
-    }
-    class Meridian_Contracts_AssetOperations_CorporateActionSpinOffTaxTreatmentDto["CorporateActionSpinOffTaxTreatmentDto"] {
-    }
-    class Meridian_Contracts_AssetOperations_CorporateActionStockDividendBasisTreatmentDto["CorporateActionStockDividendBasisTreatmentDto"] {
-    }
-    class Meridian_Contracts_AssetOperations_CorporateActionSuccessorAllocationDto["CorporateActionSuccessorAllocationDto"] {
-        +decimal? BookValueAllocationPercent
-        +decimal? FairValue
-        +decimal Quantity
-        +CorporateActionSuccessorRoleDto Role
-        +Guid SecurityId
-    }
-    class Meridian_Contracts_AssetOperations_CorporateActionSuccessorRoleDto["CorporateActionSuccessorRoleDto"] {
-    }
-    class Meridian_Contracts_AssetOperations_CorporateActionTaxClassificationDto["CorporateActionTaxClassificationDto"] {
-    }
-    class Meridian_Contracts_AssetOperations_CorporateActionTreatmentDecisionDto["CorporateActionTreatmentDecisionDto"] {
-        +AccountingBasisKindDto AccountingBasis
-        +CorporateActionAccountingTypeDto ActionType
-        +CorporateActionAutomationDispositionDto AutomationDisposition
-        +CorporateActionBookValueTreatmentDto BookValueTreatment
-        +IReadOnlyList~string~ Caveats
-        +IReadOnlyList~CorporateActionEconomicOperationKindDto~ DefaultRecipe
-        +CorporateActionHoldingPeriodTreatmentDto HoldingPeriodTreatment
-        +IReadOnlyList~CorporateActionPolicyDependencyDto~ PolicyDependencies
-        +CorporateActionTaxClassificationDto PreliminaryTaxClassification
-        +AccountingRulePackReferenceDto RuleProfile
-        +DateOnly RuleProfileEffectiveFrom
-    }
-    class Meridian_Contracts_AssetOperations_DirectLoanCovenantDto["DirectLoanCovenantDto"] {
-        +string CovenantType
-        +string? Notes
-        +int Ordinal
-        +Guid SecurityId
-        +string Threshold
-    }
-    class Meridian_Contracts_AssetOperations_DirectLoanPrincipalPaymentDto["DirectLoanPrincipalPaymentDto"] {
-        +decimal Amount
-        +int Ordinal
-        +DateOnly PaymentDate
-        +Guid SecurityId
-    }
-    class Meridian_Contracts_AssetOperations_DirectLoanReferenceDto["DirectLoanReferenceDto"] {
-        +string Borrower
-        +string Currency
-        +decimal? CurrentCouponRate
-        +string DisplayName
-        +DateOnly? Maturity
-        +string? PricingSource
-        +string PrimaryIdentifier
-        +string? ReferenceIndex
-        +string? ResetFrequency
-        +Guid SecurityId
-        +decimal? SpreadBps
-        +long Version
-    }
-    class Meridian_Contracts_AssetOperations_EconomicEventReferenceDto["EconomicEventReferenceDto"] {
-        +Guid? BookPositionId
-        +Guid? CausationId
-        +Guid? CorrelationId
-        +DateOnly EffectiveDate
-        +Guid EventId
-        +string EventType
-        +long EventVersion
-        +IReadOnlyList~string~ EvidenceLinks
-        +DateTimeOffset OccurredAtUtc
-        +IReadOnlyList~RetainedEvidenceIdentityDto~ RetainedEvidence
-        +Guid? SecurityId
-        +string? SourceContentHash
-    }
+    Meridian_Contracts_AssetOperations_AccountCashFlowDto --> Meridian_Contracts_AssetOperations_AccountCashFlowStatus
+    Meridian_Contracts_AssetOperations_AccountCashFlowDto --> Meridian_Contracts_AssetOperations_AccountCashProvenanceDto
+    Meridian_Contracts_AssetOperations_AccountCashForecastRequestDto --> Meridian_Contracts_AssetOperations_AccountCashFlowDto
+    Meridian_Contracts_AssetOperations_AccountCashForecastRequestDto --> Meridian_Contracts_AssetOperations_AccountCashForecastScopeDto
+    Meridian_Contracts_AssetOperations_AccountCashForecastRequestDto --> Meridian_Contracts_AssetOperations_AccountCashFxConversionDto
+    Meridian_Contracts_AssetOperations_AccountCashForecastRequestDto --> Meridian_Contracts_AssetOperations_AccountSettledCashObservationDto
+    Meridian_Contracts_AssetOperations_AccountCashForecastSnapshotDto --> Meridian_Contracts_AssetOperations_AccountCashForecastIssueDto
+    Meridian_Contracts_AssetOperations_AccountCashForecastSnapshotDto --> Meridian_Contracts_AssetOperations_AccountCashForecastRequestDto
+    Meridian_Contracts_AssetOperations_AccountCashFxConversionDto --> Meridian_Contracts_AssetOperations_AccountCashProvenanceDto
+    Meridian_Contracts_AssetOperations_AccountCashProvenanceDto --> Meridian_Contracts_AssetOperations_AccountCashEvidenceRole
+    Meridian_Contracts_AssetOperations_AccountSettledCashObservationDto --> Meridian_Contracts_AssetOperations_AccountCashProvenanceDto
     Meridian_Contracts_AssetOperations_AppendAssetAccountingLifecycleStageRequestDto --> Meridian_Contracts_AssetOperations_AssetAccountingLifecycleStageDto
     Meridian_Contracts_AssetOperations_AssetAccountingEventSpineAppendResultDto --> Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto
     Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto --> Meridian_Contracts_AssetOperations_AssetAccountingCorrectionReferenceDto
@@ -611,12 +634,10 @@ classDiagram
     Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto --> Meridian_Contracts_AssetOperations_AssetAccountingEventScopeDto
     Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto --> Meridian_Contracts_AssetOperations_AssetAccountingStageEvidenceDto
     Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto --> Meridian_Contracts_AssetOperations_AssetLotMutationInstructionDto
-    Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto --> Meridian_Contracts_AssetOperations_EconomicEventReferenceDto
     Meridian_Contracts_AssetOperations_AssetAccountingPostingCandidateDto --> Meridian_Contracts_AssetOperations_AssetAccountingEventSpineDto
     Meridian_Contracts_AssetOperations_AssetAccountingPostingCandidateRequestDto --> Meridian_Contracts_AssetOperations_AssetAccountingEventKindDto
     Meridian_Contracts_AssetOperations_AssetAccountingPostingCandidateRequestDto --> Meridian_Contracts_AssetOperations_AssetAccountingEventScopeDto
     Meridian_Contracts_AssetOperations_AssetAccountingPostingCandidateRequestDto --> Meridian_Contracts_AssetOperations_AssetLotMutationInstructionDto
-    Meridian_Contracts_AssetOperations_AssetAccountingPostingCandidateRequestDto --> Meridian_Contracts_AssetOperations_EconomicEventReferenceDto
     Meridian_Contracts_AssetOperations_AssetAccountingStageEvidenceDto --> Meridian_Contracts_AssetOperations_AssetAccountingLifecycleStageDto
     Meridian_Contracts_AssetOperations_AssetLotMutationInstructionDto --> Meridian_Contracts_AssetOperations_AssetAcquisitionLotDto
     Meridian_Contracts_AssetOperations_AssetLotMutationInstructionDto --> Meridian_Contracts_AssetOperations_AssetDisposalLotSelectionDto
@@ -647,23 +668,16 @@ classDiagram
     Meridian_Contracts_AssetOperations_AssetOperationsProjectionDto --> Meridian_Contracts_AssetOperations_BookPositionDto
     Meridian_Contracts_AssetOperations_AssetTermsObligationsTimelineDto --> Meridian_Contracts_AssetOperations_AssetTermsObligationTimelineEventDto
     Meridian_Contracts_AssetOperations_AssetTermsObligationsTimelineDto --> Meridian_Contracts_AssetOperations_AssetTimelineVarianceDto
-    Meridian_Contracts_AssetOperations_BookPositionDto --> Meridian_Contracts_AssetOperations_EconomicEventReferenceDto
     Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionScopeDto
     Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionEconomicOperationDto
     Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionLotMutationSetDto
     Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionPostingSetDto
     Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionProjectionBlockerDto
     Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceDependencyDto
-    Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionProjectionStatusDto
-    Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionTreatmentDecisionDto
-    Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionDto --> Meridian_Contracts_AssetOperations_EconomicEventReferenceDto
     Meridian_Contracts_AssetOperations_CorporateActionAssetAccountingEventProjectionDto --> Meridian_Contracts_AssetOperations_AssetLotMutationInstructionDto
     Meridian_Contracts_AssetOperations_CorporateActionAssetAccountingEventProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionLotMutationSetDto
     Meridian_Contracts_AssetOperations_CorporateActionAssetAccountingEventProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionPostingSetDto
-    Meridian_Contracts_AssetOperations_CorporateActionAssetAccountingEventProjectionDto --> Meridian_Contracts_AssetOperations_CorporateActionTreatmentDecisionDto
     Meridian_Contracts_AssetOperations_CorporateActionEconomicOperationDto --> Meridian_Contracts_AssetOperations_CorporateActionEconomicOperationKindDto
-    Meridian_Contracts_AssetOperations_CorporateActionEconomicOperationDto --> Meridian_Contracts_AssetOperations_CorporateActionSuccessorRoleDto
-    Meridian_Contracts_AssetOperations_CorporateActionEconomicsDto --> Meridian_Contracts_AssetOperations_CorporateActionSuccessorAllocationDto
     Meridian_Contracts_AssetOperations_CorporateActionLotMutationDto --> Meridian_Contracts_AssetOperations_CorporateActionHoldingPeriodTreatmentDto
     Meridian_Contracts_AssetOperations_CorporateActionLotMutationDto --> Meridian_Contracts_AssetOperations_CorporateActionLotMutationKindDto
     Meridian_Contracts_AssetOperations_CorporateActionLotMutationDto --> Meridian_Contracts_AssetOperations_CorporateActionLotStateSnapshotDto
@@ -674,20 +688,9 @@ classDiagram
     Meridian_Contracts_AssetOperations_CorporateActionPolicyInputsDto --> Meridian_Contracts_AssetOperations_CorporateActionCashRecognitionDto
     Meridian_Contracts_AssetOperations_CorporateActionPolicyInputsDto --> Meridian_Contracts_AssetOperations_CorporateActionExchangeOfferMethodDto
     Meridian_Contracts_AssetOperations_CorporateActionPolicyInputsDto --> Meridian_Contracts_AssetOperations_CorporateActionMergerRecognitionDto
-    Meridian_Contracts_AssetOperations_CorporateActionPolicyInputsDto --> Meridian_Contracts_AssetOperations_CorporateActionSpinOffTaxTreatmentDto
-    Meridian_Contracts_AssetOperations_CorporateActionPolicyInputsDto --> Meridian_Contracts_AssetOperations_CorporateActionStockDividendBasisTreatmentDto
-    Meridian_Contracts_AssetOperations_CorporateActionPolicyInputsDto --> Meridian_Contracts_AssetOperations_CorporateActionTaxClassificationDto
     Meridian_Contracts_AssetOperations_CorporateActionPostingComponentDto --> Meridian_Contracts_AssetOperations_CorporateActionPostingComponentKindDto
     Meridian_Contracts_AssetOperations_CorporateActionPostingComponentLineMappingDto --> Meridian_Contracts_AssetOperations_CorporateActionPostingComponentKindDto
     Meridian_Contracts_AssetOperations_CorporateActionPostingComponentLineMappingDto --> Meridian_Contracts_AssetOperations_CorporateActionPostingComponentLineAllocationDto
     Meridian_Contracts_AssetOperations_CorporateActionPostingSetDto --> Meridian_Contracts_AssetOperations_CorporateActionPostingComponentDto
     Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceDependencyDto --> Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceRoleDto
-    Meridian_Contracts_AssetOperations_CorporateActionSuccessorAllocationDto --> Meridian_Contracts_AssetOperations_CorporateActionSuccessorRoleDto
-    Meridian_Contracts_AssetOperations_CorporateActionTreatmentDecisionDto --> Meridian_Contracts_AssetOperations_CorporateActionAccountingTypeDto
-    Meridian_Contracts_AssetOperations_CorporateActionTreatmentDecisionDto --> Meridian_Contracts_AssetOperations_CorporateActionAutomationDispositionDto
-    Meridian_Contracts_AssetOperations_CorporateActionTreatmentDecisionDto --> Meridian_Contracts_AssetOperations_CorporateActionBookValueTreatmentDto
-    Meridian_Contracts_AssetOperations_CorporateActionTreatmentDecisionDto --> Meridian_Contracts_AssetOperations_CorporateActionEconomicOperationKindDto
-    Meridian_Contracts_AssetOperations_CorporateActionTreatmentDecisionDto --> Meridian_Contracts_AssetOperations_CorporateActionHoldingPeriodTreatmentDto
-    Meridian_Contracts_AssetOperations_CorporateActionTreatmentDecisionDto --> Meridian_Contracts_AssetOperations_CorporateActionPolicyDependencyDto
-    Meridian_Contracts_AssetOperations_CorporateActionTreatmentDecisionDto --> Meridian_Contracts_AssetOperations_CorporateActionTaxClassificationDto
 ```

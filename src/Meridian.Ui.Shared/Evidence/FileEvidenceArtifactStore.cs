@@ -72,6 +72,10 @@ public interface IEvidenceArtifactStore
     Task<bool> VerifyRetainedContentAsync(string vaultId, string tenantId, string scope, CancellationToken ct = default)
         => Task.FromResult(false);
 
+    /// <summary>Opens the exact scoped document bytes after manifest, document and content verification.</summary>
+    Task<EvidenceManifestFile?> TryOpenDocumentContentAsync(string vaultId, string documentId,
+        string tenantId, string scope, CancellationToken ct = default) => Task.FromResult<EvidenceManifestFile?>(null);
+
     Task<IReadOnlyList<EvidenceVaultIdentityDto>> FindByLinkageAsync(
         EvidenceVaultLookupRequestDto request,
         CancellationToken ct = default);
