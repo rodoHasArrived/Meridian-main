@@ -274,6 +274,14 @@ subsumes the other, and the service performs both.
 OMS runtime guardrails are configuration-backed under `Execution:OrderManagement`:
 `MaxRetainedOrders`, `ExecutionChannelCapacity`, and `CancelAllMaxConcurrency`. Reg T margin rates
 are configuration-bindable through `Execution:Margin:RegT` while preserving the standard defaults.
+`BrokerageConfiguration.MaxOrderNotional` and `MaxOpenOrders` are enforced by the OMS before
+broker dispatch, under the same serialized admission gate that registers working exposure.
+Open-order capacity includes pending acknowledgements, pending cancellations, ambiguous submissions,
+and broker orders outside the local book; matching broker/client identities are counted once.
+An unavailable broker snapshot blocks admission when the open-order cap is enabled. Definitive
+rejections release capacity, while ambiguous submissions retain it. The notional cap also checks
+quantity/price amendments, respects native dollar and face-value sizing and option multipliers,
+and refuses orders whose notional cannot be established (including unpriced multi-leg packages).
 Fill-report publication observes bounded-channel `WriteAsync` backpressure, and duplicate gateway
 reports resume only unfinished portfolio, durable-accounting, session, or subscriber side effects.
 Paper-session persistence resolves session identifiers through the Core rooted-path guard. It

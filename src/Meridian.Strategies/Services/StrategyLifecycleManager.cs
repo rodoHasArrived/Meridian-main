@@ -1020,7 +1020,12 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
             ExceptionStackTrace = null,
             OutputMetadata = new Dictionary<string, string>(StringComparer.Ordinal)
         };
-        return run with { InputHashSha256 = StrategyRunEntry.ComputeRealismBoundInputHash(run) };
+        return run with
+        {
+            InputHashSha256 = run.FundAccountId.HasValue
+                ? StrategyRunEntry.ComputeAccountBoundInputHash(run)
+                : StrategyRunEntry.ComputeRealismBoundInputHash(run)
+        };
     }
 
     private async Task ValidateLiveRecoveryApprovalAsync(StrategyRunEntry run, CancellationToken ct)
@@ -1059,6 +1064,7 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
 
         var approvedRun = await _repository.GetRunByIdAsync(originalRunId, ct).ConfigureAwait(false);
         if (approvedRun is null ||
+            approvedRun.FundAccountId != run.FundAccountId ||
             !string.Equals(StrategyRunEntry.ComputeRealismBoundInputHash(approvedRun),
                 StrategyRunEntry.ComputeRealismBoundInputHash(run), StringComparison.OrdinalIgnoreCase))
         {

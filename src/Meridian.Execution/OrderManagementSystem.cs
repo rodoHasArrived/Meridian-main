@@ -393,6 +393,16 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         await _preTradeReservationGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            var brokerageLimitRefusal = await EvaluateBrokerageAdmissionLimitsAsync(riskRequest, ct).ConfigureAwait(false);
+            if (brokerageLimitRefusal is not null)
+            {
+                return await RejectOrderAsync(
+                    orderId, safeRequest, actor, brokerName, runId, correlationId,
+                    brokerageLimitRefusal, sessionId, ct,
+                    rejectionSource: "brokerage admission limits",
+                    reasonCode: "BROKERAGE_LIMIT_REJECTED").ConfigureAwait(false);
+            }
+
             if (_riskValidator is not null)
             {
                 var riskResult = await _riskValidator.ValidateOrderAsync(riskRequest, ct).ConfigureAwait(false);

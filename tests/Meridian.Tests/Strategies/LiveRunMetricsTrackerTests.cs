@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
 using Meridian.Strategies.Live;
+using Meridian.Strategies.Promotions;
 using MeridianLedger = Meridian.Ledger.Ledger;
 
 namespace Meridian.Tests.Strategies;
@@ -19,6 +20,25 @@ namespace Meridian.Tests.Strategies;
 public sealed class LiveRunMetricsTrackerTests
 {
     private static readonly DateTimeOffset StartedAt = new(2024, 1, 2, 0, 0, 0, TimeSpan.Zero);
+
+    [Fact]
+    public void Build_LargerLaterCurrencyLoss_PreservesWorstPercentageAndBlocksPromotion()
+    {
+        var metrics = BuildMetricsFor([100m, 50m, 1_000m, 900m], initialEquity: 100m, finalEquity: 900m);
+
+        metrics.MaxDrawdown.Should().Be(100m);
+        metrics.MaxDrawdownPercent.Should().Be(0.5m);
+        metrics.CalmarRatio.Should().Be((double)(metrics.AnnualizedReturn / 0.5m));
+
+        var result = new LiveRunMetricsTracker(100m, StartedAt).Build(
+            "BrokerPaper", new HashSet<string>(), 900m, new MeridianLedger(), StartedAt.AddDays(4));
+        result = result with { Metrics = metrics };
+        var criteria = new PromotionCriteria(0.0, 0.25m, 0m);
+        var decision = new BacktestToLivePromoter().EvaluatePromotionThresholds(result, criteria);
+        decision.Eligible.Should().BeFalse(
+            "the 50% historical loss must reject promotion even after a later higher-dollar 10% decline");
+        decision.Reasons.Should().ContainSingle(reason => reason.Contains("Max drawdown", StringComparison.Ordinal));
+    }
 
     /// <summary>
     /// Equity 1,000 -> 1,100 (peak) -> 950 (trough) -> 1,050.

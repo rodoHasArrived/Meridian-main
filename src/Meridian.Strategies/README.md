@@ -53,6 +53,28 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 ## Important workflows
 
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
+Live and paper metrics retain the worst currency decline and worst percentage decline independently;
+Calmar and promotion gates use the percentage maximum even when a later, larger currency loss has a
+smaller percentage impact. Backtest metrics use the same convention and include initial capital as
+the first equity peak.
+Unavailable live-summary XIRR is retained as JSON null and restored to its SDK NaN marker, so terminal
+metrics survive durable replay. The exact legacy XIRR string `"NaN"` remains readable, while new writes
+use null. Other metric and input fields retain strict finite-number handling.
+`StrategyRunEntry.FundAccountId` retains the authorized execution account independently of fund
+profile and financial-account labels. Promotion copies it to the target, durable scoped runs bind it
+in the v5 input hash, and replay and lifecycle updates reject account mutation or removal. Production
+callers create scoped runs with `StrategyRunEntry.StartForFundAccount`, passing the authorized account
+explicitly; the factory computes the v5 hash together with optional evidence and execution realism.
+The established `Start` and `StartWithEvidence` overloads retain their unscoped behavior and CLR
+signatures. Advanced direct-constructor callers must supply the account-bound hash or leave the hash
+unset for the durable store to compute.
+Live launch defers when the retained account is absent or empty. Strategy orders carry the retained
+account into the production OMS and its account-scoped W7 readiness gate, including after host restart;
+run parameters cannot replace it. Legacy unscoped histories continue to replay without acquiring an
+execution account.
+Scoped recovery attempts keep the account-bound v5 hash, and live recovery compares the retained
+account with the originally approved run before external restart. Restored paused sessions retain
+that same account and input hash through explicit resume.
 Production `StrategyRunStore` composition replays a versioned, source-generated run snapshot from
 the shared Contracts-owned operational case-history port. Start, pause, and stop commands retain
 intent before invoking the external strategy, then return a validated Succeeded,
@@ -120,12 +142,17 @@ pause to `Paused`, stop-request/stopping-entry to
 cancelled event. Facts describe the policy verdict associated with that intent or verified outcome;
 consumers replay the retained lifecycle events and never execute a fact as a command. The fallback
 persistence warning preserves its original facts. Retry the unchanged snapshot so its event identity,
-fact order, and append idempotency remain stable. Legacy snapshots have an empty fact list; unknown
-or mismatched facts are rejected. Compatibility tests cover C# enum/F# state names, every bridge
+fact order, and append idempotency remain stable. Legacy snapshots have an empty fact list; replay
+recognizes unchanged typed retries without rewriting their retained bytes or rolling back the latest
+projection, and terminal retries return the original retained receipt. Retry identity includes the
+exact retained input hash, account, execution realism, and ordered facts. Unknown or mismatched
+facts are rejected. Compatibility tests cover C# enum/F# state names, every bridge
 transition, fact mapping, retained ordering, and append retries.
 
-Durable metric snapshots preserve unavailable XIRR as the SDK's `NaN` sentinel. The allowance
-is scoped to XIRR; unrelated nonfinite metrics still fail serialization.
+Durable metric snapshots write unavailable XIRR as JSON null and restore the SDK's `NaN` sentinel
+on read. The exact legacy XIRR string `"NaN"` remains readable; all other named nonfinite values
+and unrelated nonfinite metrics remain invalid. General SDK JSON serialization retains its own
+XIRR marker contract.
 
 `StrategyRunEntry` retains the W6 Backtest Studio evidence loop: operator acceptance criteria,
 retained evidence links, accounting-record references, approval references, paper-validation

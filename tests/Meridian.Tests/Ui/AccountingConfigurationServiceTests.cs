@@ -1380,6 +1380,30 @@ public sealed partial class AccountingConfigurationServiceTests
             .WithMessage("Instrument-bearing manual journal posting requires an authoritative Security Master query service.");
     }
 
+    [Fact]
+    public async Task DailyValuationIntake_RejectsEntityDifferentFromCalculationWithoutCreatingDraft()
+    {
+        var configuration = CreateService();
+        var store = new InMemoryManualJournalEntryDraftStore();
+        var workbench = new ManualJournalEntryWorkbenchService(store, configuration, new InMemoryAccountingActionAuditStore());
+        var intake = new AutomatedJournalDraftIntakeService(workbench, store, configuration);
+        var asOf = DateTimeOffset.Parse("2026-06-30T22:00:00Z");
+        var projection = DailyPortfolioPricingProjector.Project(new DailyPortfolioPricingInput(
+            new DailyPortfolioPricingPolicy("fund-alpha", "daily-close", "Daily close", "market-close", "controller", asOf.AddDays(-1)),
+            ManualJournalPeriodId.ToString("D"), asOf, "USD",
+            [new DailyPortfolioPriceMark("AAPL", 1m, 100m, 110m, "official-close", "price://aapl/close",
+                SecurityId: DailyValuationAaplSecurityId, PriceObservedOn: new DateOnly(2026, 6, 30))],
+            entityId: "entity-a"));
+
+        var action = () => intake.IntakeDraftsAsync(new AutomatedJournalPreparedDraftIntakeRequest(
+            "fund-alpha", "USD", DailyPortfolioPricingDraftBuilder.BuildDrafts(projection), "valuation-ops",
+            ManualJournalLedgerBookId, ManualJournalPeriodId.ToString("D"), EntityId: "entity-b"));
+
+        await action.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Valuation intake entity does not match*");
+        (await store.ListAsync("fund-alpha", ManualJournalLedgerBookId)).Should().BeEmpty();
+    }
+
     /// <summary>
     /// Scenario: two listed securities receive a corrected same-day close. Both the original and
     /// corrected batches traverse intake and the all-entry approval/post lifecycle, while restart
@@ -1529,6 +1553,8 @@ public sealed partial class AccountingConfigurationServiceTests
             .OrderBy(static draft => draft.JournalEntryId)
             .ToArray();
         initialDrafts.Should().HaveCount(2).And.OnlyContain(draft => draft.Status == ManualJournalEntryStatusDto.Draft);
+        initialDrafts.Should().OnlyContain(draft => draft.EntityId == "entity-master" &&
+            draft.Lines.All(line => line.Dimensions!.EntityId == "entity-master"));
         scheduledRun.JournalEntryIds.Should().BeEquivalentTo(initialDrafts.Select(static draft => draft.JournalEntryId));
         initialDrafts.Should().OnlyContain(draft =>
             draft.TreasuryContext!.IdempotencyKey!.StartsWith(
@@ -1549,6 +1575,16 @@ public sealed partial class AccountingConfigurationServiceTests
         var originalValuation = initialDrafts[0];
         originalValuation.RequiresValuationMarkEvidence.Should().BeTrue();
         originalValuation.ValuationMarkEvidenceDigest.Should().NotBeNullOrWhiteSpace();
+        originalValuation.ValuationMarkEvidenceJson.Should().Contain("entity-master");
+        var wrongEntityValidation = await workbench.ValidateDraftAsync(new ValidateManualJournalEntryDraftRequest(
+            originalValuation with
+            {
+                Lines = originalValuation.Lines.Select((line, index) => index == 0
+                    ? line with { Dimensions = line.Dimensions! with { EntityId = "entity-foreign" } }
+                    : line).ToArray()
+            }, "valuation-ops", LedgerBookId: ManualJournalLedgerBookId));
+        wrongEntityValidation.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "manual-je.valuation-mark-review-required");
         var tamperedResave = await workbench.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
             originalValuation with
             {
@@ -7915,7 +7951,8 @@ public sealed partial class AccountingConfigurationServiceTests
                 line.Account,
                 line.Debit,
                 line.Credit,
-                description)).ToArray());
+                description,
+                new LedgerLineDimensionSet(FundId: "fund-alpha", EntityId: "entity-master"))).ToArray());
     }
 
     private sealed class StaticBankTransactionSource(params BankTransactionDto[] transactions) : IBankTransactionSource
