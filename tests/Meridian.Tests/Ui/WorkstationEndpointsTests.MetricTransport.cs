@@ -19,7 +19,7 @@ namespace Meridian.Tests.Ui;
 public sealed partial class WorkstationEndpointsTests
 {
     [Fact]
-    public async Task MapWorkstationEndpoints_WinningMetrics_ShouldSurviveDurableReloadAndComparisonAndEquityResponses()
+    public async Task MapWorkstationEndpoints_MetricTransport_WinningMetricsShouldSurviveDurableReloadAndComparisonAndEquityResponses()
     {
         var dataRoot = Path.Combine(Path.GetTempPath(), $"meridian-metric-transport-{Guid.NewGuid():N}");
         try
@@ -55,7 +55,8 @@ public sealed partial class WorkstationEndpointsTests
             var compare = await client.GetAsync("/api/strategies/runs/compare?ids=transport-winning,transport-baseline");
 
             compare.StatusCode.Should().Be(HttpStatusCode.OK);
-            using var comparisonJson = await JsonDocument.ParseAsync(await compare.Content.ReadAsStreamAsync());
+            var comparisonBody = await compare.Content.ReadAsStringAsync();
+            using var comparisonJson = JsonDocument.Parse(comparisonBody);
             var row = comparisonJson.RootElement.EnumerateArray()
                 .Single(item => item.GetProperty("runId").GetString() == winning.RunId);
             row.GetProperty("profitFactor").GetString().Should().Be("Infinity");
@@ -66,7 +67,7 @@ public sealed partial class WorkstationEndpointsTests
             row.GetProperty("winningTrades").GetInt32().Should().Be(1);
             row.GetProperty("losingTrades").GetInt32().Should().Be(0);
             row.GetProperty("sharpeRatio").GetDouble().Should().Be(1.2d);
-            var typedRows = await compare.Content.ReadFromJsonAsync<List<RunComparisonDto>>(ServerJsonOptions);
+            var typedRows = JsonSerializer.Deserialize<List<RunComparisonDto>>(comparisonBody, ServerJsonOptions);
             var typedWinning = typedRows!.Single(item => item.RunId == winning.RunId);
             typedWinning.ProfitFactor.Should().Be(double.PositiveInfinity);
             typedWinning.SortinoRatio.Should().Be(double.PositiveInfinity);
