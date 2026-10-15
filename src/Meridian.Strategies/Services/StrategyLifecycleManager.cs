@@ -20,6 +20,7 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
     private readonly IStrategyRepository _repository;
     private readonly ILogger<StrategyLifecycleManager> _logger;
     private readonly Dictionary<string, (ILiveStrategy Strategy, StrategyRunEntry? CurrentRun)> _registered = new();
+    private readonly Dictionary<string, (string RunId, Func<CancellationToken, Task<VerifiedOperationOutcome>> Stop, bool Active)> _sessions = new();
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _commandGates =
         new(StringComparer.Ordinal);
     private readonly Lock _lock = new();
@@ -39,10 +40,67 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(strategy);
         lock (_lock)
         {
+            RequireReplaceableRegistration(strategy);
+            if (_registered.TryGetValue(strategy.StrategyId, out var existing) &&
+                ReferenceEquals(existing.Strategy, strategy))
+            {
+                return;
+            }
+
             _registered[strategy.StrategyId] = (strategy, null);
+            _sessions.Remove(strategy.StrategyId);
         }
 
         _logger.LogInformation("Strategy registered: {StrategyId} ({Name})", strategy.StrategyId, strategy.Name);
+    }
+
+    /// <summary>
+    /// Binds controls to the engine-owned run. Only one instance of a strategy may be active;
+    /// stop must use its session so admitted fills and metrics are retained before the receipt.
+    /// </summary>
+    internal void RegisterSession(
+        ILiveStrategy strategy,
+        StrategyRunEntry run,
+        Func<CancellationToken, Task<VerifiedOperationOutcome>> stop)
+    {
+        ArgumentNullException.ThrowIfNull(strategy);
+        ArgumentNullException.ThrowIfNull(run);
+        ArgumentNullException.ThrowIfNull(stop);
+        lock (_lock)
+        {
+            if (_sessions.TryGetValue(strategy.StrategyId, out var session) && session.Active)
+            {
+                throw new InvalidOperationException($"Strategy '{strategy.StrategyId}' already has an active session.");
+            }
+
+            RequireReplaceableRegistration(strategy);
+            _registered[strategy.StrategyId] = (strategy, run);
+            _sessions[strategy.StrategyId] = (run.RunId, stop, true);
+        }
+    }
+
+    internal void MarkSessionEnded(string strategyId, string runId)
+    {
+        lock (_lock)
+        {
+            if (_sessions.TryGetValue(strategyId, out var session) && session.RunId == runId)
+            {
+                _sessions[strategyId] = (session.RunId, session.Stop, false);
+            }
+        }
+    }
+
+    private void RequireReplaceableRegistration(ILiveStrategy strategy)
+    {
+        if (_registered.TryGetValue(strategy.StrategyId, out var existing) &&
+            !ReferenceEquals(existing.Strategy, strategy) &&
+            ((_sessions.TryGetValue(strategy.StrategyId, out var session) && session.Active) ||
+             existing.Strategy.Status is not (StrategyStatus.Registered or StrategyStatus.Stopped) ||
+             (_commandGates.TryGetValue(strategy.StrategyId, out var gate) && gate.CurrentCount == 0)))
+        {
+            throw new InvalidOperationException(
+                $"Strategy '{strategy.StrategyId}' already has an active instance. Stop its current run before registering another.");
+        }
     }
 
     /// <summary>Starts a strategy and returns its retained terminal operation receipt.</summary>
@@ -68,6 +126,17 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
     {
         var (strategy, priorRun) = await GetRegisteredEntryWithHistoryAsync(strategyId, ct)
             .ConfigureAwait(false);
+        bool hasSession;
+        lock (_lock)
+        {
+            hasSession = _sessions.ContainsKey(strategyId);
+        }
+
+        if (hasSession && strategy.Status != StrategyStatus.Paused)
+        {
+            throw new InvalidOperationException(
+                $"Strategy '{strategyId}' is engine-owned. Resume a paused session or launch a new run through the engine.");
+        }
 
         if (strategy.Status == StrategyStatus.Paused)
         {
@@ -103,6 +172,15 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
             }
 
             requested = priorRun;
+        }
+        else if (hasSession)
+        {
+            requested = StrategyLifecycleFactMapping.Attach(
+                priorRun!.RequestStart(LifecycleActorId, "Strategy session resume requested."),
+                StrategyRunLifecycleEventType.StartRequested, startTransition);
+            await _repository.RecordLifecycleEventAsync(
+                requested, StrategyRunLifecycleEventType.StartRequested, ct).ConfigureAwait(false);
+            UpdateCurrentRun(strategyId, strategy, requested);
         }
         else
         {
@@ -141,9 +219,11 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
                 AttemptNumber = recovery?.AttemptNumber ?? 1,
                 RecoveryParentRunId = recovery?.RecoveryParentRunId
             };
-            requested = run.RequestStart(
-                LifecycleActorId,
-                recoveryAttempt ? "Strategy recovery start requested." : "Strategy start requested.");
+            requested = StrategyLifecycleFactMapping.Attach(
+                run.RequestStart(
+                    LifecycleActorId,
+                    recoveryAttempt ? "Strategy recovery start requested." : "Strategy start requested."),
+                StrategyRunLifecycleEventType.StartRequested, startTransition);
             await _repository.RecordLifecycleEventAsync(
                 requested,
                 StrategyRunLifecycleEventType.StartRequested,
@@ -186,7 +266,12 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
                 exception).ConfigureAwait(false);
         }
 
-        var started = requested.Started(LifecycleActorId, "Strategy started externally.");
+        var started = StrategyLifecycleFactMapping.Attach(
+            requested.Started(LifecycleActorId, "Strategy started externally.") with { TerminalStatus = null },
+            StrategyRunLifecycleEventType.Started,
+            startTransition.NextState == nameof(StrategyStatus.WarmingUp)
+                ? [startTransition, StrategyLifecycleInterop.EvaluateWarmupCompleted(nameof(StrategyStatus.WarmingUp))]
+                : [startTransition]);
         return await PersistExternallyCompletedAsync(
             strategyId,
             strategy,
@@ -269,7 +354,9 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
                 exception).ConfigureAwait(false);
         }
 
-        var paused = requested.Paused(LifecycleActorId, "Strategy paused externally.") with
+        var paused = StrategyLifecycleFactMapping.Attach(
+            requested.Paused(LifecycleActorId, "Strategy paused externally."),
+            StrategyRunLifecycleEventType.Paused, pauseTransition) with
         {
             TerminalStatus = StrategyRunStatus.Paused
         };
@@ -300,10 +387,48 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
     {
         var (strategy, currentRun) = await GetRegisteredEntryWithHistoryAsync(strategyId, ct)
             .ConfigureAwait(false);
+        Func<CancellationToken, Task<VerifiedOperationOutcome>>? stopSession;
+        bool sessionActive;
+        lock (_lock)
+        {
+            stopSession = _sessions.TryGetValue(strategyId, out var session) ? session.Stop : null;
+            sessionActive = session.Active;
+        }
+
+        var preserveSessionFailure = stopSession is not null && currentRun?.TerminalStatus == StrategyRunStatus.Failed;
+
+        if (stopSession is not null && currentRun?.LastLifecycleEvent == StrategyRunLifecycleEventType.StartRequested)
+        {
+            // Let activation observe the session stop token before retaining its own stop
+            // intent. A manager intent here could race the session's Started append.
+            return await StopSessionAndUpdateAsync(strategyId, strategy, currentRun.RunId, stopSession, ct)
+                .ConfigureAwait(false);
+        }
+
+        if (stopSession is not null && currentRun?.EndedAt is not null)
+        {
+            if (sessionActive || strategy.Status != StrategyStatus.Faulted)
+            {
+                return RequireTerminalOutcome(currentRun, currentRun.LastLifecycleEvent);
+            }
+
+            // Retry only failed external cleanup after the session has retired. Its fills,
+            // metrics and OnFinished callback have already been finalized for this attempt.
+            stopSession = null;
+        }
+
         var stopTransition = StrategyLifecycleInterop.EvaluateStop(
             strategy.Status.ToString(), strategy.FaultReason ?? string.Empty);
         if (!stopTransition.IsValid)
         {
+            if (stopSession is not null && currentRun is not null)
+            {
+                // Startup or natural shutdown may already be in flight. The owning session
+                // serializes cleanup and supplies the outcome for this exact run.
+                return await StopSessionAndUpdateAsync(strategyId, strategy, currentRun.RunId, stopSession, ct)
+                    .ConfigureAwait(false);
+            }
+
             throw new InvalidOperationException(stopTransition.Reason);
         }
 
@@ -316,14 +441,39 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         _logger.LogInformation("Stopping strategy {StrategyId}", strategyId);
         var requested = currentRun.LastLifecycleEvent == StrategyRunLifecycleEventType.StopRequested
             ? currentRun
-            : currentRun.RequestStop(LifecycleActorId);
+            : StrategyLifecycleFactMapping.Attach(currentRun.RequestStop(LifecycleActorId),
+                StrategyRunLifecycleEventType.StopRequested, stopTransition);
         if (currentRun.LastLifecycleEvent != StrategyRunLifecycleEventType.StopRequested)
         {
-            await _repository.RecordLifecycleEventAsync(
-                requested,
-                StrategyRunLifecycleEventType.StopRequested,
-                ct).ConfigureAwait(false);
+            try
+            {
+                await _repository.RecordLifecycleEventAsync(
+                    requested,
+                    StrategyRunLifecycleEventType.StopRequested,
+                    ct).ConfigureAwait(false);
+            }
+            catch (Exception) when (stopSession is not null && !ct.IsCancellationRequested)
+            {
+                var latest = await _repository.GetRunByIdAsync(currentRun.RunId, ct).ConfigureAwait(false);
+                if (latest is null || latest.EndedAt is null &&
+                    latest.LastLifecycleEvent != StrategyRunLifecycleEventType.StopRequested)
+                {
+                    throw;
+                }
+
+                return await StopSessionAndUpdateAsync(strategyId, strategy, currentRun.RunId, stopSession, ct)
+                    .ConfigureAwait(false);
+            }
+
             UpdateCurrentRun(strategyId, strategy, requested);
+        }
+
+        if (stopSession is not null)
+        {
+            // The engine owns cleanup, delivery draining, metrics, and terminal persistence.
+            // Cancellation only stops waiting; it must not abandon admitted shutdown work.
+            return await StopSessionAndUpdateAsync(strategyId, strategy, requested.RunId, stopSession, ct)
+                .ConfigureAwait(false);
         }
 
         try
@@ -333,6 +483,17 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         }
         catch (OperationCanceledException exception)
         {
+            if (preserveSessionFailure)
+            {
+                var failed = requested.StopFailed(new AggregateException(
+                    "The session failed and its cleanup retry was cancelled.",
+                    new InvalidOperationException(requested.ExceptionMessage ?? requested.Reason), exception),
+                    LifecycleActorId);
+                return await PersistTerminalAndUpdateAsync(
+                    strategyId, strategy, failed, StrategyRunLifecycleEventType.StopFailed,
+                    exception).ConfigureAwait(false);
+            }
+
             var cancelled = requested.Cancel(exception, "Strategy stop was cancelled.") with
             {
                 ActorId = LifecycleActorId
@@ -347,7 +508,11 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         }
         catch (Exception exception)
         {
-            var failed = requested.StopFailed(exception, LifecycleActorId);
+            var failure = preserveSessionFailure
+                ? new AggregateException("The session and its cleanup retry failed.",
+                    new InvalidOperationException(requested.ExceptionMessage ?? requested.Reason), exception)
+                : exception;
+            var failed = requested.StopFailed(failure, LifecycleActorId);
             return await PersistTerminalAndUpdateAsync(
                 strategyId,
                 strategy,
@@ -356,7 +521,23 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
                 exception).ConfigureAwait(false);
         }
 
-        var completed = requested.Complete(metrics: null) with
+        if (preserveSessionFailure)
+        {
+            var retainedFailure = requested with
+            {
+                LastLifecycleEvent = StrategyRunLifecycleEventType.Failed,
+                LifecycleEventAtUtc = DateTimeOffset.UtcNow,
+                ActorId = LifecycleActorId,
+                Reason = "External cleanup succeeded on retry; the original session attempt remains failed."
+            };
+            return await PersistTerminalAndUpdateAsync(
+                strategyId, strategy, retainedFailure, StrategyRunLifecycleEventType.Failed,
+                operationException: null, CancellationToken.None).ConfigureAwait(false);
+        }
+
+        var completed = StrategyLifecycleFactMapping.Attach(
+            requested.Complete(requested.Metrics), StrategyRunLifecycleEventType.Completed,
+            StrategyLifecycleInterop.EvaluateStopCompleted(nameof(StrategyStatus.Stopping))) with
         {
             ActorId = LifecycleActorId,
             TerminalStatus = StrategyRunStatus.Stopped
@@ -369,6 +550,24 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
             StrategyRunLifecycleEventType.Completed,
             "The strategy stopped externally, but its final completion evidence could not be retained.",
             ct).ConfigureAwait(false);
+    }
+
+    private async Task<VerifiedOperationOutcome> StopSessionAndUpdateAsync(
+        string strategyId,
+        ILiveStrategy strategy,
+        string runId,
+        Func<CancellationToken, Task<VerifiedOperationOutcome>> stopSession,
+        CancellationToken ct)
+    {
+        var outcome = await stopSession(ct).ConfigureAwait(false);
+        VerifiedOperationOutcomeValidator.ValidateAndThrow(outcome);
+        var retained = await _repository.GetRunByIdAsync(runId, CancellationToken.None).ConfigureAwait(false);
+        if (retained is not null)
+        {
+            UpdateCurrentRun(strategyId, strategy, retained);
+        }
+
+        return outcome;
     }
 
     /// <summary>
@@ -396,6 +595,14 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         {
             throw new InvalidOperationException(
                 $"Strategy '{strategyId}' has no retained run to reconcile.");
+        }
+
+        if (currentRun.LastLifecycleEvent == StrategyRunLifecycleEventType.EvidencePersistenceFailed &&
+            currentRun.TerminalStatus is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled)
+        {
+            // An observed external state can confirm an action, but cannot repair failed
+            // session callbacks, lost fills, or cancellation retained in that attempt.
+            return RequireTerminalOutcome(currentRun, currentRun.LastLifecycleEvent);
         }
 
         StrategyRunEntry reconciled;
@@ -456,6 +663,17 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
                     $"retained event '{currentRun.LastLifecycleEvent}'.");
         }
 
+        reconciled = StrategyLifecycleFactMapping.Attach(reconciled, eventType, eventType switch
+        {
+            StrategyRunLifecycleEventType.Started =>
+                StrategyLifecycleInterop.EvaluateWarmupCompleted(nameof(StrategyStatus.WarmingUp)),
+            StrategyRunLifecycleEventType.Paused =>
+                StrategyLifecycleInterop.EvaluatePause(nameof(StrategyStatus.Running)),
+            StrategyRunLifecycleEventType.Completed =>
+                StrategyLifecycleInterop.EvaluateStopCompleted(nameof(StrategyStatus.Stopping)),
+            _ => throw new InvalidOperationException("Unsupported lifecycle reconciliation outcome.")
+        });
+
         return await PersistTerminalAndUpdateAsync(
             strategyId,
             strategy,
@@ -499,7 +717,15 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         GetRegisteredEntryWithHistoryAsync(string strategyId, CancellationToken ct)
     {
         var registered = GetRegisteredEntry(strategyId);
-        var retained = await _repository.GetLatestRunAsync(strategyId, ct).ConfigureAwait(false);
+        string? sessionRunId;
+        lock (_lock)
+        {
+            sessionRunId = _sessions.TryGetValue(strategyId, out var session) ? session.RunId : null;
+        }
+
+        var retained = sessionRunId is null
+            ? await _repository.GetLatestRunAsync(strategyId, ct).ConfigureAwait(false)
+            : await _repository.GetRunByIdAsync(sessionRunId, ct).ConfigureAwait(false);
         if (retained is null)
         {
             return registered;
@@ -637,6 +863,14 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         Exception? operationException,
         CancellationToken ct = default)
     {
+        if (eventType is StrategyRunLifecycleEventType.StartFailed or StrategyRunLifecycleEventType.PauseFailed or
+            StrategyRunLifecycleEventType.StopFailed or StrategyRunLifecycleEventType.Failed or StrategyRunLifecycleEventType.Cancelled)
+        {
+            terminal = StrategyLifecycleFactMapping.Attach(terminal, eventType,
+                StrategyLifecycleInterop.EvaluateFail(strategy.Status.ToString(), strategy.FaultReason ?? string.Empty,
+                    terminal.ExceptionMessage ?? terminal.Reason ?? "Strategy lifecycle action failed."));
+        }
+
         try
         {
             var outcome = await _repository

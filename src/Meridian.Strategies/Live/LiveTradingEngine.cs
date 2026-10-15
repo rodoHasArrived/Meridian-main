@@ -3,6 +3,7 @@ using System.Threading.Channels;
 using Meridian.Execution;
 using Meridian.Execution.Live;
 using Meridian.Execution.Services;
+using Meridian.Contracts.Operations;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using ExecutionSdk = Meridian.Execution.Sdk;
@@ -137,6 +138,13 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                 return RunLaunchResult.Success();
             }
 
+            if (_activeRuns.Values.Any(active => active.Session.StrategyId == run.StrategyId))
+            {
+                return await DeferAsync(run,
+                    "This strategy already has an active run. Stop it before launching another parameter set or execution mode.",
+                    ct).ConfigureAwait(false);
+            }
+
             if (!_catalog.TryCreate(run.StrategyId, run.ParameterSet, out var strategy, out var failureReason) || strategy is null)
             {
                 return await DeferAsync(run, failureReason ?? "No live strategy implementation available.", ct).ConfigureAwait(false);
@@ -167,6 +175,7 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                 fillReportQueueCapacity: fillQueueCapacity);
 
             var activeRun = new ActiveRun(session, fillQueueCapacity);
+            session.SetReportAdmissionCloser(activeRun.CompleteReportAdmission);
             lock (_disposeSync)
             {
                 // This commit check and DisposeAsync's admission close share one lock. A launch is
@@ -185,12 +194,36 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                     session.CompleteExecutionReportAdmission();
                     return RunLaunchResult.Success();
                 }
+
+                if (_activeRuns.Values.Any(active => !ReferenceEquals(active, activeRun) &&
+                                                    active.Session.StrategyId == run.StrategyId))
+                {
+                    _activeRuns.TryRemove(run.RunId, out _);
+                    activeRun.CompleteReportAdmission();
+                    session.CompleteExecutionReportAdmission();
+                    return RunLaunchResult.Deferred("This strategy already has an active run.");
+                }
             }
 
             try
             {
                 StartReportPumpIfNeeded();
-                activeRun.StartDeliveryWorker(() => DeliverReportsToRunAsync(activeRun));
+                activeRun.StartDeliveryWorker(async () =>
+                {
+                    try
+                    {
+                        await DeliverReportsToRunAsync(activeRun).ConfigureAwait(false);
+                    }
+                    catch (Exception exception)
+                    {
+                        session.RequestFailure(exception);
+                        throw;
+                    }
+                    finally
+                    {
+                        session.CompleteExecutionReportAdmission();
+                    }
+                });
 
                 if (_portfolioRegistry is not null &&
                     _portfolioState is Meridian.Execution.Models.IMultiAccountPortfolioState runPortfolio)
@@ -198,13 +231,14 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                     _portfolioRegistry.Register(run.RunId, runPortfolio);
                 }
 
-                TryRegisterWithLifecycleManager(strategy);
+                _lifecycleManager?.RegisterSession(strategy, run,
+                    token => StopActiveRunAsync(activeRun).WaitAsync(token));
                 activeRun.Execution = Task.Run(
                     async () =>
                     {
                         try
                         {
-                            await session.ExecuteAsync(_engineCts.Token).ConfigureAwait(false);
+                            return await session.ExecuteAsync(_engineCts.Token).ConfigureAwait(false);
                         }
                         finally
                         {
@@ -221,6 +255,7 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                             }
 
                             _activeRuns.TryRemove(run.RunId, out _);
+                            _lifecycleManager?.MarkSessionEnded(run.StrategyId, run.RunId);
                             _portfolioRegistry?.Deregister(run.RunId);
                         }
                     },
@@ -230,6 +265,7 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             catch (Exception ex)
             {
                 _activeRuns.TryRemove(run.RunId, out _);
+                _lifecycleManager?.MarkSessionEnded(run.StrategyId, run.RunId);
                 _portfolioRegistry?.Deregister(run.RunId);
                 activeRun.CompleteReportAdmission();
                 session.CompleteExecutionReportAdmission();
@@ -259,30 +295,50 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
     /// run was active on this engine.
     /// </summary>
     public async Task<bool> StopRunAsync(string runId, CancellationToken ct = default)
+        => await StopRunWithOutcomeAsync(runId, ct).ConfigureAwait(false) is not null;
+
+    /// <summary>
+    /// Stops a specific run through its session and returns verified retained completion evidence.
+    /// A null result means the run was not active. Cancellation stops waiting, while shutdown
+    /// continues to drain admitted reports and retain its final outcome.
+    /// </summary>
+    public async Task<VerifiedOperationOutcome?> StopRunWithOutcomeAsync(string runId, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
         if (!_activeRuns.TryGetValue(runId, out var activeRun))
         {
-            return false;
+            return null;
         }
 
-        await activeRun.Initialized.WaitAsync(ct).ConfigureAwait(false);
-        if (!_activeRuns.TryGetValue(runId, out var initializedRun)
-            || !ReferenceEquals(activeRun, initializedRun))
-        {
-            return false;
-        }
+        return await StopActiveRunAsync(activeRun).WaitAsync(ct).ConfigureAwait(false);
+    }
 
+    private Task<VerifiedOperationOutcome> StopActiveRunAsync(ActiveRun activeRun)
+    {
+        activeRun.Session.RequestCompletion();
+        return activeRun.GetOrStartStop(() => StopActiveRunCoreAsync(activeRun));
+    }
+
+    private static async Task<VerifiedOperationOutcome> StopActiveRunCoreAsync(ActiveRun activeRun)
+    {
+        await activeRun.Initialized.ConfigureAwait(false);
         activeRun.Session.CloseOutboundOrderAdmission();
         activeRun.CompleteReportAdmission();
-        await activeRun.Delivery.WaitAsync(ct).ConfigureAwait(false);
-        activeRun.Session.RequestStop(completeRun: true);
-        if (activeRun.Execution is { } execution)
+        try
         {
-            await execution.WaitAsync(ct).ConfigureAwait(false);
+            await activeRun.Delivery.ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            activeRun.Session.RequestFailure(exception);
         }
 
-        return true;
+        activeRun.Session.RequestStop(completeRun: true);
+        var outcome = await (activeRun.Execution ?? throw new InvalidOperationException(
+            "The live run did not initialize its session execution.")).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("The live run stopped without terminal completion evidence.");
+        VerifiedOperationOutcomeValidator.ValidateAndThrow(outcome);
+        return outcome;
     }
 
     /// <summary>
@@ -752,25 +808,6 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         }
     }
 
-    private void TryRegisterWithLifecycleManager(ILiveStrategy strategy)
-    {
-        if (_lifecycleManager is null)
-        {
-            return;
-        }
-
-        try
-        {
-            _lifecycleManager.Register(strategy);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex,
-                "Strategy {StrategyId} could not be registered with the lifecycle manager; cockpit pause/stop will be unavailable for it.",
-                strategy.StrategyId);
-        }
-    }
-
     private async Task<RunLaunchResult> DeferAsync(StrategyRunEntry run, string reason, CancellationToken ct)
     {
         // Normalised here rather than trusted from the caller: the catalog path passes
@@ -850,6 +887,8 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         private readonly TaskCompletionSource _initialized =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
         private int _reportAdmissionClosed;
+        private readonly object _stopSync = new();
+        private Task<VerifiedOperationOutcome>? _stop;
 
         public ActiveRun(LiveStrategyRunSession session, int reportCapacity)
         {
@@ -871,7 +910,15 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
 
         public Task Delivery { get; private set; } = Task.CompletedTask;
 
-        public Task? Execution { get; set; }
+        public Task<VerifiedOperationOutcome?>? Execution { get; set; }
+
+        public Task<VerifiedOperationOutcome> GetOrStartStop(Func<Task<VerifiedOperationOutcome>> stop)
+        {
+            lock (_stopSync)
+            {
+                return _stop ??= stop();
+            }
+        }
 
         public Task Initialized => _initialized.Task;
 

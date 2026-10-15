@@ -712,10 +712,13 @@ public sealed class LiveTradingEngineTests
     private static StrategyRunEntry CreatePaperRun(
         string strategyId,
         IReadOnlyDictionary<string, string>? parameters) =>
-        StrategyRunEntry.Start(strategyId, strategyId, RunType.Paper) with
-        {
-            ParameterSet = parameters
-        };
+        StrategyRunEntry.Start(
+            strategyId,
+            strategyId,
+            RunType.Paper,
+            Guid.NewGuid().ToString("N"),
+            engine: "BrokerPaper",
+            parameterSet: parameters);
 
     private sealed class BurstOrderLiveStrategy(string strategyId, int orderCount) : LiveStrategyBase
     {

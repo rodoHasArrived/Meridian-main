@@ -78,6 +78,37 @@ receipt instead of success. Paused resume requires retained run evidence and the
 changing between paper and live requires stopping first. Cleanup after a failed or cancelled
 attempt retains its original identity and end timestamp; restart creates a new run with recovery
 parent lineage. See `src/Meridian.FSharp.Trading/README.md` for transition semantics.
+
+The live engine and lifecycle manager enforce one active instance per strategy, including launches
+with different parameters or execution modes. Controls bind to that instance's exact run ID;
+a newer deferred run cannot replace its history. Engine-owned operator stop uses the session's
+shutdown path: close outbound order admission, drain admitted execution reports, wake an idle feed,
+finish callbacks and cleanup, build metrics, and retain a verified completion receipt. Concurrent
+stop callers share that work; cancellation ends a caller's wait while shutdown continues. Paused
+engine sessions resume the same run. New runs launch through the engine after the prior session ends.
+Host shutdown leaves clean runs open for resume, but cannot downgrade an explicit operator stop.
+Cleanup failures retain a failed outcome and available metrics. Terminal append failures are checked
+for an already committed event before retaining `EvidencePersistenceFailed`; failed cleanup remains
+failed even when that warning is also needed. If neither record can be retained, shutdown propagates
+the persistence failures rather than claiming completion.
+Metrics retained after failed cleanup remain diagnostic evidence and cannot qualify a run for
+promotion. Promotion evaluation and approval require successful retained completion; a warning
+about missing terminal evidence must be reconciled first. External stopped state alone cannot
+reconcile away a retained session failure or cancellation.
+Retrying failed external cleanup permits a new session once the strategy is stopped, while the
+original session receipt and metrics remain failed diagnostic evidence.
+
+F# `EmittedFacts` are consumed by `StrategyLifecycleFactMapping` as ordered evidence in each retained
+snapshot's `LifecycleFacts`. Start/restart/resume request and warmup-entry facts map to `StartRequested`,
+warmup-completion/running-entry to `Started`, pause to `Paused`, stop-request/stopping-entry to
+`StopRequested`, successful cleanup to `Completed`, and fault facts to the corresponding failed or
+cancelled event. Facts describe the policy verdict associated with that intent or verified outcome;
+consumers replay the retained lifecycle events and never execute a fact as a command. The fallback
+persistence warning preserves its original facts. Retry the unchanged snapshot so its event identity,
+fact order, and append idempotency remain stable. Legacy snapshots have an empty fact list; unknown
+or mismatched facts are rejected. Compatibility tests cover C# enum/F# state names, every bridge
+transition, fact mapping, retained ordering, and append retries.
+
 `StrategyRunEntry` retains the W6 Backtest Studio evidence loop: operator acceptance criteria,
 retained evidence links, accounting-record references, approval references, paper-validation
 lineage, and governed-report references are stored with the run so downstream review surfaces do

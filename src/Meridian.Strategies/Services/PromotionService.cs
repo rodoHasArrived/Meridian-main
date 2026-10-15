@@ -88,6 +88,12 @@ public sealed class PromotionService
             return PromotionEvaluationResult.NotReady(runId, "Run has not completed yet.");
         }
 
+        if (!HasSuccessfulRetainedCompletion(run))
+        {
+            return PromotionEvaluationResult.NotReady(runId,
+                "Run did not complete successfully. Resolve failed cleanup or reconcile terminal evidence before promotion.");
+        }
+
         if (run.RunType == RunType.Live)
         {
             return PromotionEvaluationResult.NotReady(runId, "Live runs cannot be promoted further.");
@@ -285,6 +291,15 @@ public sealed class PromotionService
                 PromotionId: null,
                 NewRunId: null,
                 Reason: "Run not found, incomplete, or has no metrics.");
+        }
+
+        if (!HasSuccessfulRetainedCompletion(run))
+        {
+            return new PromotionDecisionResult(
+                Success: false,
+                PromotionId: null,
+                NewRunId: null,
+                Reason: "Run did not complete successfully. Resolve failed cleanup or reconcile terminal evidence before promotion.");
         }
 
         if (run.RunType == RunType.Live)
@@ -1110,6 +1125,13 @@ public sealed class PromotionService
 
         return await RejectSingleDecisionAsync(request, scope, ct).ConfigureAwait(false);
     }
+
+    private static bool HasSuccessfulRetainedCompletion(StrategyRunEntry run) =>
+        run.EndedAt.HasValue &&
+        StrategyRunRepositoryOrdering.MapStatus(run) is (StrategyRunStatus.Completed or StrategyRunStatus.Stopped) &&
+        // Older completed snapshots used Started with an end timestamp. Keep those compatible;
+        // failed cleanup and unconfirmed final evidence are never successful promotion inputs.
+        run.LastLifecycleEvent is (StrategyRunLifecycleEventType.Started or StrategyRunLifecycleEventType.Completed);
 
     private async Task<PromotionDecisionResult> RejectSingleDecisionAsync(
         PromotionRejectionRequest request,
