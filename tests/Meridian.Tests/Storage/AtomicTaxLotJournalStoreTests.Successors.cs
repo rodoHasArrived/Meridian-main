@@ -420,10 +420,10 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var at = new DateTimeOffset(date.ToDateTime(new TimeOnly(12, 0)), TimeSpan.Zero);
         var lines = targets.Select(target => new LedgerEntry(Guid.NewGuid(), journalId, at, AmortAccount,
             target.Lot.OpenFunctionalCostBasis, 0m, "Approved cashless successor allocation",
-            new LedgerLineDimensionSet(InstrumentId: target.Lot.SecurityId) { PositionId = target.Lot.BookPositionId },
+            fixture.Dimensions(target.Lot.SecurityId, target.Lot.BookPositionId),
             new LedgerEntryCurrency("EUR", "USD", target.Lot.OpenTransactionCostBasis, 0m, 1.1m))).ToList();
         lines.Add(new(Guid.NewGuid(), journalId, at, AmortAccount, 0m, predecessor.OpenFunctionalCostBasis, "Approved cashless successor allocation",
-            new LedgerLineDimensionSet(InstrumentId: predecessor.SecurityId) { PositionId = predecessor.BookPositionId },
+            fixture.Dimensions(predecessor.SecurityId, predecessor.BookPositionId),
             new LedgerEntryCurrency("EUR", "USD", 0m, predecessor.OpenTransactionCostBasis, 1.1m)));
         var tags = new Dictionary<string, string>(SecurityMasterLineageTags(predecessor.SecurityId))
         { ["openLotSuccessorInstructionFingerprint"] = OpenLotSuccessors.Fingerprint(instruction) };
