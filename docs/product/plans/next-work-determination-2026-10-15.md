@@ -3,7 +3,10 @@
 **Status:** prioritization input; not a governance decision and not a roadmap-status document
 **Owner:** core-team
 **Reviewed:** 2026-10-15
-**Baseline:** `origin/main` at `2083befe36b39b17ba72705c24a1ab499dbb88cf` (2026-10-15 07:55 UTC)
+**Baseline:** `origin/main` at `2083befe36b39b17ba72705c24a1ab499dbb88cf` (2026-10-15 07:55 UTC) for
+the CI and source readings; the queue was re-measured against
+`5204b8dfb61fab89685e6e64f354ee262ad843a9` after #3157 merged mid-session — see
+[Queue](#queue-24-open-prs-and-one-merge-re-dirtied-most-of-it)
 **Supersedes:** [2026-10-05](next-work-determination-2026-10-05.md) (the newest determination on
 `main`) and the unmerged drafts in
 [#3112](https://github.com/rodoHasArrived/Meridian-main/pull/3112) (2026-10-07),
@@ -122,7 +125,7 @@ That is a scoped engineering lane with a named list, and it is the only code on 
 permissions during scoped startup*) sits in the same subsystem, is security-labelled, conflicts only
 in one generated file, and has been untouched for **nine days**.
 
-## New finding: #3168 and #3169 are two different fixes to the same code, both green, both clean
+## New finding: #3168 and #3169 are two different fixes to the same code, both green
 
 The two newest pull requests were opened **45 minutes apart today by the same author** with
 near-identical scope:
@@ -130,7 +133,8 @@ near-identical scope:
 | | #3168 `codex/workflow-correctness` | #3169 `codex/workflow-integrity-fixes` |
 | --- | --- | --- |
 | Files changed | **131** | **127** |
-| Merge state vs `main` | **clean** | **clean** |
+| Merge state vs `2083befe` | **clean** | **clean** |
+| Merge state vs `5204b8df` (after #3157) | 5 conflicts, **0 hand-written** | 6 conflicts, 2 hand-written |
 | Checks | **24 success, 2 by-design skips** | **24 success, 2 by-design skips** |
 
 They share **68 files**, and **47 of those 68 differ between the two branches** — these are two
@@ -143,7 +147,8 @@ dashboard screens, `validate-monitoring-deployment.py`, the monitoring alert rul
 **`docs/product/implementation-todo-list.md`** — the P0 release gate itself. On one shared file,
 `StatementRunMatcher.cs`, #3168 is +27/−10 and #3169 is +21/−14.
 
-**Both merge clean only because neither has landed.** Merging either turns the other into a 47-file
+**Each is mergeable only because the other has not landed.** Neither one's own conflicts are a
+problem — they are generated and bundle churn. But merging either turns the other into a 47-file
 hand-written conflict across reconciliation, provider routing, credential context, the ledger and the
 workstation — the most expensive conflict shape in the repository, and the one the queue has learned
 to avoid.
@@ -152,29 +157,37 @@ to avoid.
 unique to the loser against the merged result. Two green PRs are not twice the progress here; they
 are a 47-file conflict with a 50% chance of being discovered after the merge button.
 
-## Queue: 25 open PRs, 11 clean, and the bundle is still 445 conflict lines of nothing
+## Queue: 24 open PRs, and one merge re-dirtied most of it
 
-Measured today against `2083befe`, splitting content conflicts from rename/delete churn and
-classifying every path:
+Measured first against `2083befe` and then re-measured against `5204b8df` after **#3157 merged while
+this document was being written** — which turned out to be the most instructive measurement of the
+day. Content conflicts are separated from rename/delete churn, and every path is classified:
 
 | PRs | Content conflicts | Hand-written | Disposition |
 | --- | --- | --- | --- |
-| #3111, #3131, #3138, #3140, #3141, #3142, #3157, #3162, #3164, #3168, #3169 | **0** | **0** | **11 clean** |
-| #3094 (1), #3116 (2), #2928 (3), #3037 (4) | 1–4 | **0** | mechanical; resolver's job |
-| #3016, #3119, #3125, #3132 | 2–6 | **1** each | one README or index line |
-| #3112 | 5 | 2 | superseded by this document |
+| #3111, #3138, #3140, #3141, #3142 | **0** | **0** | **5 clean** |
+| #3094 (1), #3116 (2), #2928 (3), #3162 (3), #3164 (3), #3037 (4), #3168 (5) | 1–5 | **0** | mechanical; resolver's job |
+| #3016, #3119, #3125, #3132 | 4–6 | **1** each | one README or index line |
+| #3112 (5), #3169 (6) | 5–6 | 2 | #3112 is superseded by this document |
 | #2896 | 12 | 3 | two READMEs + `quant-lab-screen.tsx` |
+| #3131 | 16 | 7 | **was clean before #3157 landed** |
 | #3004 | 18 | 9 | seven READMEs, `contracts.json`, roadmap generated |
-| #3105 | 17 | 10 | **read the dependency warning below before resolving** |
+| #3105 | 19 | 10 | **read the dependency warning below before resolving** |
 | #2789 | 44 | **31** | `[DRAFT — RE-CUT REQUIRED]` in its own title since September |
 | #2587 | 535 | **456** | **was 340/269 on 10-05.** Its `modify/delete` lines are files `main` has since deleted |
 
-**The merge-driver case is now measurable, not hygienic.** Four PRs — #3119 (158), #3105 (97),
-#2896 (95) and #2789 (95) — carry **445 non-content conflict lines, and every single one of them is
-inside `src/Meridian.Ui/wwwroot/workstation/`**: rebuilt bundle hashes diverging, nothing to decide.
-`.gitattributes` still contains **no `merge=` driver** — only `text`/`eol` normalization, including
-four rules for that very bundle. The standing P3 item would delete 445 of the queue's conflict lines
-and recurs on every merge until it is implemented.
+**One merge cost the queue its clean state.** Before #3157 landed, eleven PRs merged clean, #3162 and
+#3164 among them. After it: **five**. #3162, #3164 and #3168 each picked up 3–5 conflicts with **zero
+hand-written lines** — pure generated and bundle churn — #3169 picked up 6, and **#3131 went from
+clean to 16 conflicts with 7 hand-written.** Nobody made a mistake; a single ordinary merge did this,
+and it will happen again on the next one.
+
+**So the merge-driver case is not hygiene, it is the queue's dominant cost.** Six PRs — #3119 (158),
+#3105 (98), #2896 (95), #2789 (95), #3168 (59) and #3169 (59) — now carry **564 non-content conflict
+lines, and every single one of them is inside `src/Meridian.Ui/wwwroot/workstation/`**: rebuilt
+bundle hashes diverging, nothing to decide. That is up from 445 across four PRs an hour earlier,
+because #3157 rebuilt the bundle too. `.gitattributes` still contains **no `merge=` driver** — only
+`text`/`eol` normalization, including four rules for that very bundle.
 
 **#2587 and #2789 are past repair.** #2587's 456 hand-written conflicts include files `main` deleted
 weeks ago (`archive/docs/assessments/README.md`, `docs/development/wpf-web-ui-alignment-plan.md`,
@@ -259,11 +272,15 @@ The registry parses (`yaml.safe_load` succeeds, 42 items; no fallback parser in
 in that queue only. Two `W10-LOT-002` lane PRs are mergeable today:
 
 - **[#3162](https://github.com/rodoHasArrived/Meridian-main/pull/3162)** *align successor candidate
-  and atomic posting guards* — clean against `main`; **20 checks success, 1 by-design skip**,
-  including `quality-gate`, `integration-gate`, both CodeQL analyses, `verify-desktop`,
-  `WPF W4 Acceptance` and the PostgreSQL integration job.
+  and atomic posting guards* — **20 checks success, 1 by-design skip**, including `quality-gate`,
+  `integration-gate`, both CodeQL analyses, `verify-desktop`, `WPF W4 Acceptance` and the PostgreSQL
+  integration job.
 - **[#3164](https://github.com/rodoHasArrived/Meridian-main/pull/3164)** *reject standalone tax-lot
-  writes in governed stores* — clean against `main`; **16 checks success, 1 by-design skip**.
+  writes in governed stores* — **16 checks success, 1 by-design skip**.
+
+Both were clean against `2083befe` and now carry **3 conflicts each with zero hand-written lines**
+after #3157 landed: a base merge and a regenerate, nothing to decide. They are still the two cheapest
+substantive merges in the queue.
 
 The lot contracts now carry the successor surface the 10-05 determination found missing:
 `OpenLotSuccessors.cs`, `OpenLotCapitalReturn.cs`, `OpenLotAmortizationContinuation.cs` and
@@ -300,7 +317,7 @@ today's measurements attached.
 - **Merging #3168 or #3169 before triaging them against each other.** 47 shared files differ.
 - **Taking #3105's dashboard config.** It re-adds `autoprefixer` and downgrades `vite`.
 - **Resolving #2789's or #2587's conflicts.** 31 and 456 hand-written. Re-cut or close.
-- **Hand-resolving the workstation bundle anywhere.** 445 lines across four PRs, zero decisions.
+- **Hand-resolving the workstation bundle anywhere.** 564 lines across six PRs, zero decisions.
 - **"Repairing" the vendored evidence link.** Scope the checker; do not edit retained evidence.
 - **Gating link integrity in CI before that scoping.** It would red the lane on that file.
 - **Majors before the freeze.** #3141 (`lucide-react` 0 → 1) and #2587 (`react-router`) wait.
@@ -316,7 +333,7 @@ today's measurements attached.
 | **P0** | **Decide the ~1 GB consumer download** (1,043,350,783 bytes: both architectures plus full PostgreSQL) | A product question the evidence chain explicitly refuses to settle, and it shapes what gets signed |
 | **P0** | **Freeze a full-coverage green commit and tag the RC.** `e0ecd952` has all eight workflows green with a retained receipt; the repo has one tag, `eval-v0.1.0-eval.1`, and no `v*` | The lane that blocked this for thirteen days is green. Check *which* workflows ran on the candidate, not only that they passed |
 | **P0** | **Continue `PRD-002` from #2931's merged residual list** — non-Windows key protection first | The only P0 needing code. The key still sits beside the ciphertext it opens (`FileProviderCredentialStore.cs:1233-1253`), and the file says so itself |
-| **P1** | **Triage #3168 vs #3169 before either merges** | 68 shared files, **47 differing**, both green, both clean. Whichever lands second becomes a 47-file hand-written conflict across reconciliation, providers, credentials and the ledger |
+| **P1** | **Triage #3168 vs #3169 before either merges** | 68 shared files, **47 differing**, both fully green. Whichever lands second becomes a 47-file hand-written conflict across reconciliation, providers, credentials and the ledger |
 | **P1** | **Land #3162 then #3164** | Both clean and fully green today, both in the `W10-LOT-002` lane, which is first in the recorded user-requested queue and the only `critical` row |
 | **P1** | **Take or decline `W9-CORPACT-011`** (**23 days** at `ready_for_acceptance`) | Zero engineering; precondition met on PostgreSQL. Declining is a result |
 | **P1** | **Correct the tracker's three `#2931` "draft" citations** (lines 38, 121, 241) | It merged 2026-09-30. The row's disposition is right; its evidence pointer is fifteen days stale on the file that *is* the release gate |
@@ -325,7 +342,7 @@ today's measurements attached.
 | **P2** | **Close #3112, #3125, #3132 as superseded** | Their substance is carried forward here; they conflict with each other in `plans/README.md`, which is the symptom of the process finding above |
 | **P2** | **Scope or drop `W10-LOT-002`'s "shadow-operation acceptance" criterion** | No source presence; it cannot be burned down as written. Unactioned since 10-10 |
 | **P2** | **Re-cut or close #2789 and #2587** | 31 and 456 hand-written conflicts; #2587's include files `main` has deleted |
-| **P3** | **Implement the `.gitattributes` merge driver / documented regenerate-on-merge** | **445 conflict lines across four PRs, all inside the workstation bundle, zero decisions in any of them.** Recurring by construction |
+| **P3** | **Implement the `.gitattributes` merge driver / documented regenerate-on-merge** | **564 conflict lines across six PRs, all inside the workstation bundle, zero decisions in any of them.** #3157 alone added 118 of them and cost six PRs their clean state while this document was being written. Recurring by construction, and now measured |
 | **P3** | **Exclude retained vendored evidence from `repair-links.py`, then gate link integrity in CI** | 2,530 links, 1 remaining break, inside third-party evidence. Scope first or the gate reds on an uneditable file |
 | **P3** | **Review the dashboard majors after the freeze** | #3141 and #2587 |
 
