@@ -1,6 +1,6 @@
 {
   "total_files": 736,
-  "total_lines": 161444,
+  "total_lines": 161443,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2196,7 +2196,7 @@
     },
     {
       "path": "docs/engineering/actions-workflow-followup-2026-10-15.md",
-      "line_count": 145,
+      "line_count": 144,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
