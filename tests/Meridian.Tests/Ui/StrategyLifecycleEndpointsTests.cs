@@ -128,7 +128,7 @@ public sealed class StrategyLifecycleEndpointsTests
     }
 
     [Fact]
-    public async Task Resume_MultipleOwnedPausedRuns_RequiresExplicitRunSelection()
+    public async Task Resume_DeferredPausedRun_CannotReplaceOwnerAndResumesAfterOwnerStops()
     {
         var repository = new StrategyRunStore();
         var first = new ResumeProbeStrategy("strategy-1");
@@ -140,31 +140,71 @@ public sealed class StrategyLifecycleEndpointsTests
         var catalog = new LiveStrategyCatalog().Register(first.StrategyId,
             context => context.Parameters["instance"] == "first" ? first : second);
         await using var engine = CreateEngine(repository, catalog);
+        (await engine.TryLaunchAsync(firstRun)).Launched.Should().BeTrue();
         await engine.ResumePendingRunsAsync();
+        engine.PausedRunIds.Should().Equal(firstRun.RunId);
         await using var app = await CreateAppAsync(UserPermission.ManageStrategies, services =>
         {
             services.AddSingleton<IStrategyRepository>(repository);
             services.AddSingleton(engine);
         });
 
-        var ambiguous = await app.GetTestClient().PostAsync("/api/strategies/strategy-1/resume", content: null);
+        var deferred = await app.GetTestClient().PostAsync(
+            $"/api/strategies/strategy-1/resume?runId={secondRun.RunId}", content: null);
 
-        ambiguous.StatusCode.Should().Be(HttpStatusCode.Conflict);
-        var blocked = await ambiguous.Content.ReadFromJsonAsync<VerifiedOperationOutcome>();
+        deferred.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        var blocked = await deferred.Content.ReadFromJsonAsync<VerifiedOperationOutcome>();
         blocked!.State.Should().Be(OperationTerminalState.Blocked);
-        blocked.Issues.Should().Contain(issue => issue.Message.Contains("?runId=", StringComparison.Ordinal));
+        VerifiedOperationOutcomeValidator.Validate(blocked).Should().BeEmpty();
         first.StartCalls.Should().Be(0);
         second.StartCalls.Should().Be(0);
+        engine.PausedRunIds.Should().Equal(firstRun.RunId);
 
-        var selected = await app.GetTestClient().PostAsync(
-            $"/api/strategies/strategy-1/resume?runId={firstRun.RunId}", content: null);
+        var selected = await app.GetTestClient().PostAsync("/api/strategies/strategy-1/resume", content: null);
 
         selected.StatusCode.Should().Be(HttpStatusCode.OK);
+        var firstReceipt = await selected.Content.ReadFromJsonAsync<VerifiedOperationOutcome>();
+        firstReceipt!.State.Should().Be(OperationTerminalState.Succeeded);
+        firstReceipt.CorrelationId.Should().Be(firstRun.RunId);
         first.StartCalls.Should().Be(1);
         second.StartCalls.Should().Be(0);
         (await repository.GetRunByIdAsync(firstRun.RunId))!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Resumed);
+        (await repository.GetRunByIdAsync(firstRun.RunId))!.ParameterSet.Should().BeEquivalentTo(firstRun.ParameterSet);
         (await repository.GetRunByIdAsync(secondRun.RunId))!.TerminalStatus.Should().Be(StrategyRunStatus.Paused);
+        (await repository.GetRunByIdAsync(secondRun.RunId))!.LastLifecycleEvent.Should()
+            .Be(StrategyRunLifecycleEventType.ActivationDeferred);
+        engine.PausedRunIds.Should().BeEmpty();
+
+        var stillDeferred = await app.GetTestClient().PostAsync(
+            $"/api/strategies/strategy-1/resume?runId={secondRun.RunId}", content: null);
+        stillDeferred.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        second.StartCalls.Should().Be(0);
+
+        var stop = await engine.StopRunWithOutcomeAsync(firstRun.RunId);
+        stop!.State.Should().Be(OperationTerminalState.Succeeded);
+        stop.CorrelationId.Should().Be(firstRun.RunId);
+        (await repository.GetRunByIdAsync(firstRun.RunId))!.Metrics.Should().NotBeNull();
+        (await engine.ResumePendingRunsAsync()).Should().Be(0,
+            "the deferred paused run acquires controls without executing until explicit resume");
         engine.PausedRunIds.Should().Equal(secondRun.RunId);
+        second.StartCalls.Should().Be(0);
+
+        var resumed = await app.GetTestClient().PostAsync(
+            $"/api/strategies/strategy-1/resume?runId={secondRun.RunId}", content: null);
+
+        resumed.StatusCode.Should().Be(HttpStatusCode.OK);
+        var secondReceipt = await resumed.Content.ReadFromJsonAsync<VerifiedOperationOutcome>();
+        secondReceipt!.State.Should().Be(OperationTerminalState.Succeeded);
+        secondReceipt.CorrelationId.Should().Be(secondRun.RunId);
+        VerifiedOperationOutcomeValidator.Validate(secondReceipt).Should().BeEmpty();
+        first.StartCalls.Should().Be(1);
+        second.StartCalls.Should().Be(1);
+        second.InitializeCalls.Should().Be(1);
+        var resumedSecond = (await repository.GetRunByIdAsync(secondRun.RunId))!;
+        resumedSecond.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Resumed);
+        resumedSecond.ParameterSet.Should().BeEquivalentTo(secondRun.ParameterSet);
+        (await repository.GetRunByIdAsync(firstRun.RunId))!.TerminalStatus.Should().Be(StrategyRunStatus.Stopped);
+        engine.PausedRunIds.Should().BeEmpty();
     }
 
     [Theory]
