@@ -51,24 +51,18 @@ public static class LotBasisRelief
             allocated += basis;
         }
 
-        if (pool is { } bounded && result.Length > 0)
+        if (pool is { } retained && result.Length > 0)
         {
             // Preserve the existing evaluation order for valid retained pool plans. Replacing
             // this with target-minus-prior-slices can change their exact decimal parcel values.
             result[^1] = result[^1] with { CostBasis = result[^1].CostBasis + target - allocated };
-            if (result.Any(static slice => slice.CostBasis < 0m))
+            if (retained.CostBasis > 0m && result.Any(static slice => slice.CostBasis <= 0m))
             {
-                // Such a plan cannot be posted as non-negative carrying basis. Reallocate only
-                // this invalid case, bounding rounding so the last slice cannot become negative.
-                allocated = 0m;
-                for (var index = 0; index < result.Length; index++)
-                {
-                    var remaining = target - allocated;
-                    var basis = index == result.Length - 1 ? remaining
-                        : Math.Min(remaining, bounded.CostBasis * result[index].Quantity / bounded.Quantity);
-                    result[index] = result[index] with { CostBasis = basis };
-                    allocated += basis;
-                }
+                // A positive pool and positive quantities require positive proportional slices.
+                // Bounding an exhausted target creates zero-basis parcels that durable posting
+                // refuses. Block the unsupported plan instead of certifying altered economics.
+                throw new InvalidOperationException(
+                    "Pooled basis cannot retain a positive amount for every relief slice at decimal precision.");
             }
         }
 
