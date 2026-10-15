@@ -71,6 +71,13 @@ internal sealed class UnavailableXirrJsonConverter : JsonConverter<double>
             return double.NaN;
         }
 
+        // Earlier snapshots used the SDK's named NaN sentinel. Only this exact legacy
+        // unavailable-XIRR representation is accepted; new snapshots always write null.
+        if (reader.TokenType == JsonTokenType.String && reader.ValueTextEquals("NaN"))
+        {
+            return double.NaN;
+        }
+
         if (reader.TokenType == JsonTokenType.Number && reader.TryGetDouble(out var value) && double.IsFinite(value))
         {
             return value;

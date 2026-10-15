@@ -3,7 +3,7 @@ goal_id: operational-integrity-fixes
 objective: Resolve the fourteen supplied operational integrity defects with focused regression coverage.
 status: active
 started_at: '2026-10-15T16:35:32Z'
-updated_at: '2026-10-15T18:14:49Z'
+updated_at: '2026-10-15T18:26:52Z'
 active_task_descriptor: .codex/memory/tasks/operational-integrity-fixes.yml
 progress_inventory:
 - id: offline-retention
@@ -63,12 +63,14 @@ progress_inventory:
   updated_at: '2026-10-15T18:01:22Z'
 - id: live-strategy-account
   status: completed
-  summary: Explicit account factory, immutable v5 input identity, real-gate dispatch, durable restart
-    and terminal metric retention verified.
+  summary: Immutable account scope survives launch, promotion, recovery and pause/resume; scoped recovery
+    uses v5 hashes and original account approval. Exact legacy XIRR reads preserve durable history.
   evidence_refs:
   - tests/Meridian.Tests/Strategies/LiveTradingEngineTests.cs
   - src/Meridian.Strategies/Serialization/StrategyRunPersistenceJsonContext.cs
-  updated_at: '2026-10-15T17:02:09Z'
+  - src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+  - tests/Meridian.Tests/Strategies/StrategyLifecycleManagerTests.cs
+  updated_at: '2026-10-15T18:26:52Z'
 - id: loan-wire-enums
   status: completed
   summary: Browser numeric enum normalization verified against the actual compiled host serialization
@@ -118,9 +120,8 @@ progress_inventory:
   - tests/Meridian.Setup.Tests/InstallationTransactionTests.cs
   updated_at: '2026-10-15T18:01:22Z'
 next_actions:
-- Push the final feature branch and create and attach the authorized draft PR in rodoHasArrived/Meridian-main.
-- Verify required GitHub Actions for the published head, including available Windows validation, and report
-  any blockers.
+- Run the canonical local gate on the integrated branch and verify required GitHub Actions, including
+  available Windows validation.
 open_questions: []
 promotion_candidates: []
 validation_results:
@@ -141,6 +142,13 @@ validation_results:
     passed: 13
     skipped: 0
   native_windows: Not run in this Linux environment; setup helpers and production-source WPF probes passed.
-  github_actions: Pending publication approval and pull request creation.
+  github_actions: 'Draft PR #3173 open; validation for resolved merge head pending.'
+  main_integration:
+    base_commit: 32d1dba81
+    strategy_tests_passed: 773
+    final_store_tests_passed: 74
+    summary: Preserve main lifecycle/governance behavior, bind scoped recovery hashes and approved accounts,
+      and read exact legacy XIRR NaN while keeping other metrics strict.
 publication_authorization: User explicitly approved pushing the final commits and opening a draft pull
   request in this chat.
+pull_request_url: https://github.com/rodoHasArrived/Meridian-main/pull/3173

@@ -9,6 +9,7 @@ using Meridian.Storage.Operations;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Live;
 using Meridian.Strategies.Models;
+using Meridian.Strategies.Serialization;
 using Meridian.Strategies.Storage;
 using Xunit;
 
@@ -16,6 +17,52 @@ namespace Meridian.Tests.Strategies;
 
 public sealed class StrategyRunStoreTests
 {
+    [Theory]
+    [InlineData("NaN", true)]
+    [InlineData("Infinity", false)]
+    [InlineData("-Infinity", false)]
+    [InlineData("nan", false)]
+    [InlineData("0.1", false)]
+    public async Task Replay_LegacyNamedXirr_AcceptsOnlyTheExactUnavailableSentinel(string legacyValue, bool accepted)
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var store = new StrategyRunStore(history);
+            var run = StrategyRunEntry.StartForFundAccount("summary", "Summary Strategy", RunType.Live, Guid.NewGuid());
+            await store.RecordRunAsync(run);
+            run = (await store.GetRunByIdAsync(run.RunId))!;
+            var result = new LiveRunMetricsTracker(100m, run.StartedAt).Build(
+                "BrokerLive", new HashSet<string>(), 100m, new Meridian.Ledger.Ledger(), DateTimeOffset.UtcNow);
+            var completed = run.Complete(result);
+            var snapshot = JsonSerializer.SerializeToNode(completed, StrategyRunPersistenceJson.Options)!;
+            snapshot["metrics"]!["metrics"]!["xirr"] = legacyValue;
+            await AppendRawSnapshotAsync(history, completed, run.LastLifecycleEvent,
+                snapshot.ToJsonString(), StrategyRunStore.CreateLifecycleOutcome(completed, completed.LastLifecycleEvent));
+
+            var restarted = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            if (!accepted)
+            {
+                var read = () => restarted.GetRunByIdAsync(run.RunId);
+                await read.Should().ThrowAsync<InvalidDataException>().WithMessage("*invalid snapshot*");
+                return;
+            }
+
+            var retained = (await restarted.GetRunByIdAsync(run.RunId))!;
+            retained.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            double.IsNaN(retained.Metrics!.Metrics.Xirr).Should().BeTrue();
+            retained.FundAccountId.Should().Be(run.FundAccountId);
+            retained.InputHashSha256.Should().Be(run.InputHashSha256);
+            var rewritten = JsonSerializer.SerializeToNode(retained, StrategyRunPersistenceJson.Options)!;
+            rewritten["metrics"]!["metrics"]!["xirr"].Should().BeNull();
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
     [Fact]
     public async Task DurableStore_SummaryMetricsRetainUnavailableXirrAfterRestart()
     {
@@ -1366,11 +1413,15 @@ public sealed class StrategyRunStoreTests
     private static async Task AppendRawSnapshotAsync(
         FileOperationalCaseHistoryStore history,
         StrategyRunEntry entry,
-        StrategyRunLifecycleEventType previousEvent)
+        StrategyRunLifecycleEventType previousEvent,
+        string? snapshotJsonOverride = null,
+        VerifiedOperationOutcome? terminalOutcome = null)
     {
         var eventAt = entry.LifecycleEventAtUtc!.Value;
-        var snapshotJson = JsonSerializer.Serialize(entry);
+        var snapshotJson = snapshotJsonOverride ?? JsonSerializer.Serialize(entry);
         var snapshotHash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(snapshotJson)));
+        var eventId = $"strategy-run:{entry.RunId}:{entry.LastLifecycleEvent}:{snapshotHash}";
+        terminalOutcome = terminalOutcome is null ? null : terminalOutcome with { OperationId = eventId };
         var caseId = $"strategy-run:{entry.RunId}";
         var predecessor = (await history.ReadAsync(new OperationalCaseHistoryQuery
         {
@@ -1394,13 +1445,15 @@ public sealed class StrategyRunStoreTests
         {
             CaseId = caseId,
             CaseType = StrategyRunStore.CaseType,
-            HistoryEventId = $"strategy-run:{entry.RunId}:{entry.LastLifecycleEvent}:{snapshotHash}",
+            HistoryEventId = eventId,
             EventType = entry.LastLifecycleEvent.ToString(),
             OccurredAtUtc = eventAt,
             ActorId = entry.ActorId!,
             Reason = entry.Reason!,
             CorrelationId = entry.CorrelationId!,
             InputHashSha256 = entry.InputHashSha256!,
+            Evidence = terminalOutcome?.Evidence ?? [],
+            TerminalOutcome = terminalOutcome,
             Data = data,
             Transition = new OperationalCaseStateTransition
             {
