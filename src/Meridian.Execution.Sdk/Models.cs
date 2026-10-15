@@ -192,6 +192,19 @@ public sealed record ExecutionReport
     /// <summary>Broker identity superseded by this replacement, when explicitly reported.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? ReplacesOrderId { get; init; }
+    /// <summary>Provisional successor identity; it is not yet the active broker order.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? CandidateGatewayOrderId { get; init; }
+    /// <summary>Provisional client/ref identity, distinct from the broker order namespace.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? CandidateClientOrderId { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? OrderLimitPrice { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? OrderStopPrice { get; init; }
+    /// <summary>Both order prices (including absent prices) are authoritative broker terms.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public bool HasOrderTerms { get; init; }
     /// <summary>FillPrice is a snapshot's cumulative average, rather than the latest fill price.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public bool FillPriceIsCumulativeAverage { get; init; }

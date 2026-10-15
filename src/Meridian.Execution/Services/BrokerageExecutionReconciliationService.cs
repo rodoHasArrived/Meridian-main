@@ -33,7 +33,8 @@ public sealed class BrokerageExecutionReconciliationService
         ArgumentNullException.ThrowIfNull(gateway);
         ArgumentNullException.ThrowIfNull(orderManager);
         ct.ThrowIfCancellationRequested();
-        if (gateway is not IBrokerageOrderRecoveryGateway recoveryGateway)
+        var recoveryGateway = gateway as IBrokerageOrderRecoveryGateway;
+        if (recoveryGateway is null && gateway is not IBrokerageOrderAmendmentRecoveryGateway)
             return;
         orderManager.EnsureBrokerageRecoveryScope(gateway);
         // Accepted or terminal acknowledgements can precede a late fill lost during an outage.
@@ -51,7 +52,12 @@ public sealed class BrokerageExecutionReconciliationService
         foreach (var order in recoveryOrders)
         {
             ct.ThrowIfCancellationRequested();
-            var report = await recoveryGateway.GetOrderForRecoveryAsync(order.OrderId, ct).ConfigureAwait(false);
+            var pendingAmendment = orderManager.GetPendingAmendmentForRecovery(order.OrderId);
+            if (pendingAmendment is null && recoveryGateway is null)
+                continue;
+            var report = pendingAmendment is not null && gateway is IBrokerageOrderAmendmentRecoveryGateway amendmentRecovery
+                ? await amendmentRecovery.GetAmendmentForRecoveryAsync(order.OrderId, order, pendingAmendment, ct).ConfigureAwait(false)
+                : recoveryGateway is null ? null : await recoveryGateway.GetOrderForRecoveryAsync(order.OrderId, ct).ConfigureAwait(false);
             if (report is null)
             {
                 // A terminal local order is absent from both open books, so a missing lookup
@@ -65,17 +71,26 @@ public sealed class BrokerageExecutionReconciliationService
             // The report pump may have advanced the order while the broker query was in flight.
             // Compare against the current retained state before passing evidence to the OMS.
             var current = orderManager.GetOrder(order.OrderId);
+            if (report.ReportType is ExecutionReportType.ModificationPending)
+            {
+                await orderManager.ReconcileRecoveryOrderAsync(report, ct).ConfigureAwait(false);
+                continue;
+            }
+            pendingAmendment = orderManager.GetPendingAmendmentForRecovery(order.OrderId);
+            var quantity = pendingAmendment is not null
+                && (report.OrderQuantity == pendingAmendment.Original.Quantity || report.OrderQuantity == pendingAmendment.Proposed.Quantity)
+                    ? report.OrderQuantity : current?.Quantity ?? 0m;
             if (current is null || current.FundAccountId != fundAccountId
                 || !string.Equals(report.ClientOrderId ?? report.OrderId, order.OrderId, StringComparison.Ordinal)
                 || !string.Equals(report.Symbol, current.Symbol, StringComparison.OrdinalIgnoreCase)
                 || report.Side != current.Side
-                || report.OrderQuantity != current.Quantity
+                || report.OrderQuantity != quantity
                 || report.FilledQuantity < current.FilledQuantity
                 || report.FilledQuantity < 0m
-                || report.FilledQuantity > current.Quantity
-                || (report.OrderStatus == OrderStatus.Filled && report.FilledQuantity != current.Quantity)
+                || report.FilledQuantity > quantity
+                || (report.OrderStatus == OrderStatus.Filled && report.FilledQuantity != quantity)
                 || (report.OrderStatus == OrderStatus.PartiallyFilled
-                    && (report.FilledQuantity <= 0m || report.FilledQuantity >= current.Quantity))
+                    && (report.FilledQuantity <= 0m || report.FilledQuantity >= quantity))
                 || (report.FilledQuantity > current.FilledQuantity && report.FillPrice is not > 0m))
             {
                 throw new InvalidDataException("Broker recovery evidence is incomplete or does not match the retained account order.");

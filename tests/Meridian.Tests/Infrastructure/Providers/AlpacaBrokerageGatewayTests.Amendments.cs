@@ -56,11 +56,24 @@ public sealed partial class AlpacaBrokerageGatewayTests
                 cancelled = true;
                 return new(HttpStatusCode.NoContent);
             }
+            if (path == "/v2/orders/broker-1")
+                return new(HttpStatusCode.OK)
+                {
+                    Content = BuildOrderResponse("broker-1", patches >= 1 ? "replaced" : "partially_filled", clientOrderId: localId,
+                        qty: "10", filledQty: "2", filledAvgPrice: "100", replacedBy: patches >= 1 ? "broker-2" : null, limitPrice: "150")
+                };
+            if (path == "/v2/orders/broker-2")
+                return new(HttpStatusCode.OK)
+                {
+                    Content = BuildOrderResponse("broker-2", patches >= 2 ? "replaced" : "partially_filled", clientOrderId: "replacement-client-2",
+                        qty: "12", filledQty: "5", filledAvgPrice: "106", replaces: "broker-1", replacedBy: patches >= 2 ? "broker-3" : null, limitPrice: "150")
+                };
             path.Should().Be("/v2/orders/broker-3");
             return new(HttpStatusCode.OK)
             {
                 Content = BuildOrderResponse("broker-3", cancelled ? "canceled" : "partially_filled",
-                clientOrderId: "replacement-client-3", qty: "12", filledQty: "10", filledAvgPrice: "113")
+                clientOrderId: "replacement-client-3", qty: "12", filledQty: patches >= 3 ? "10" : "8",
+                filledAvgPrice: patches >= 3 ? "113" : "111.25", replaces: "broker-2", limitPrice: "149")
             };
         });
         await using var gateway = CreateSut(handler);
@@ -171,9 +184,11 @@ public sealed partial class AlpacaBrokerageGatewayTests
             new OrderCancellationIdentifier(clientId, OrderCancellationIdentifierKind.ClientOrderId),
             new OrderModification { NewQuantity = 2m });
 
-        paths.Should().Equal($"/v2/orders:by_client_order_id?client_order_id={clientId}", "/v2/orders/actual-broker");
-        result.GatewayOrderId.Should().Be("replacement");
-        result.ReplacesOrderId.Should().Be("actual-broker");
+        paths.Should().Equal($"/v2/orders:by_client_order_id?client_order_id={clientId}", "/v2/orders/actual-broker",
+            "/v2/orders/actual-broker", "/v2/orders/replacement");
+        result.ReportType.Should().Be(ExecutionReportType.ModificationPending);
+        result.GatewayOrderId.Should().Be("actual-broker");
+        result.CandidateGatewayOrderId.Should().Be("replacement");
         result.ClientOrderId.Should().Be(clientId);
     }
 
@@ -208,6 +223,8 @@ public sealed partial class AlpacaBrokerageGatewayTests
         var requests = 0;
         using var handler = new Meridian.Tests.TestHelpers.StubHttpMessageHandler(request =>
         {
+            if (request.Method == HttpMethod.Get)
+                return new(HttpStatusCode.OK) { Content = BuildOrderResponse("original-broker") };
             requests++;
             request.Method.Should().Be(HttpMethod.Patch);
             if (failure == -1)
@@ -222,7 +239,7 @@ public sealed partial class AlpacaBrokerageGatewayTests
         var report = await gateway.ModifyOrderAsync("original-broker", new OrderModification { NewQuantity = 20m });
 
         report.ReportType.Should().Be(ExecutionReportType.ModificationPending);
-        report.OrderStatus.Should().Be(OrderStatus.PendingNew);
+        report.OrderStatus.Should().Be(OrderStatus.Accepted);
         report.GatewayOrderId.Should().Be("original-broker");
         report.RejectReason.Should().Contain("reconcile");
         requests.Should().Be(1, "an uncertain PATCH must not be retried or treated as a definite refusal");

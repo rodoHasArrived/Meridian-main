@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Execution;
 
-public sealed class OrderManagementSystemAmendmentRecoveryTests
+public sealed partial class OrderManagementSystemAmendmentRecoveryTests
 {
     [Fact]
     public async Task PendingAmendment_RetainsLargerExposureAndRecovery_UntilReplacementIsAuthoritativelyReconciled()
@@ -35,9 +35,10 @@ public sealed class OrderManagementSystemAmendmentRecoveryTests
 
             var pending = await oms.ModifyOrderAsync("local", new OrderModification { NewQuantity = 20m });
             pending.Success.Should().BeFalse();
-            pending.OrderState!.Quantity.Should().Be(20m);
+            pending.OrderState!.Quantity.Should().Be(10m);
+            oms.GetExposureReservingOrders().Single().Quantity.Should().Be(20m);
             store.Load().Single().RequiresRecovery.Should().BeTrue();
-            store.Load().Single().State.Quantity.Should().Be(20m);
+            store.Load().Single().State.Quantity.Should().Be(10m);
             store.Load().Single().State.FilledQuantity.Should().Be(2m);
 
             await gateway.Reports.Writer.WriteAsync(gateway.PendingReport);
@@ -51,7 +52,8 @@ public sealed class OrderManagementSystemAmendmentRecoveryTests
             while (store.Load().Single().State.FilledQuantity < 4m)
                 await Task.Delay(10, timeout.Token);
 
-            oms.GetOrder("local")!.Quantity.Should().Be(20m);
+            oms.GetOrder("local")!.Quantity.Should().Be(10m);
+            oms.GetExposureReservingOrders().Single().Quantity.Should().Be(20m);
             var retained = new FileBrokerageOrderRecoveryStore(path, "alpaca").Load().Single();
             retained.RequiresRecovery.Should().BeTrue();
             retained.RequiresAmendmentRecovery.Should().BeTrue();
@@ -84,7 +86,7 @@ public sealed class OrderManagementSystemAmendmentRecoveryTests
     {
         public Channel<ExecutionReport> Reports { get; } = Channel.CreateUnbounded<ExecutionReport>();
         public ExecutionReport PendingReport => Report(ExecutionReportType.ModificationPending, OrderStatus.PendingNew, 0m) with
-        { OrderQuantity = 20m, RejectReason = "Replacement acknowledgement timed out; reconcile before retrying." };
+        { OrderQuantity = 20m, CandidateGatewayOrderId = "replacement-broker", RejectReason = "Replacement acknowledgement timed out; reconcile before retrying." };
         public string GatewayId => "alpaca";
         public bool IsConnected => true;
         public ExecutionMode ExecutionMode => ExecutionMode.Paper;

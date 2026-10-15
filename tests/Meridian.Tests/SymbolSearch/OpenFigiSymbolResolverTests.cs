@@ -50,7 +50,7 @@ public sealed class OpenFigiSymbolResolverTests
             .Returns(Task.CompletedTask);
         using var resolver = new CanonicalRegistrySymbolResolver(registry.Object, new OpenFigiSymbolResolver("test-key", http));
 
-        var resolution = await resolver.ResolveAsync(" aapl ", " nasdaq ");
+        var resolution = await resolver.ResolveAsync(" aapl ", " uw ");
 
         resolution.Should().NotBeNull();
         resolution!.Figi.Should().Be("BBG000B9XRY4");
@@ -60,6 +60,76 @@ public sealed class OpenFigiSymbolResolverTests
         registry.Verify(r => r.RegisterAsync(It.Is<CanonicalSymbolDefinition>(definition =>
             definition.Canonical == "AAPL" && definition.Figi == "BBG000B9XRY4" && definition.Exchange == "UW"),
             It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("NASDAQ", "UW")]
+    [InlineData("NASDAQ", "UQ")]
+    [InlineData("NASDAQ", "UR")]
+    [InlineData("XNAS", "UW")]
+    [InlineData("XNAS", "UQ")]
+    [InlineData("XNAS", "UR")]
+    public async Task ResolveAsync_BroadNasdaqScope_ResolvesUniqueListingAcrossMarketTiers(string exchange, string venue)
+    {
+        string? requestBody = null;
+        using var handler = new StubHttpMessageHandler(request =>
+        {
+            requestBody = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return Response(Mapping("BBG000QNH748", "UN"), Mapping("BBG000B9XRY4", venue));
+        });
+        using var http = new HttpClient(handler);
+        using var resolver = new OpenFigiSymbolResolver("test-key", http);
+
+        var resolution = await resolver.ResolveAsync("AAPL", exchange);
+
+        resolution.Should().NotBeNull();
+        resolution!.Figi.Should().Be("BBG000B9XRY4");
+        resolution.ExchangeCode.Should().Be(venue);
+        using var request = JsonDocument.Parse(requestBody!);
+        request.RootElement[0].TryGetProperty("exchCode", out _).Should().BeFalse(
+            "a broad NASDAQ request must not exclude its Global or Capital Market listings");
+    }
+
+    [Theory]
+    [InlineData("NASDAQ", false)]
+    [InlineData("NASDAQ", true)]
+    [InlineData("XNAS", false)]
+    [InlineData("XNAS", true)]
+    public async Task ResolveAsync_MultipleNasdaqVenues_RemainAmbiguousAndCannotBeLearned(string exchange, bool reverse)
+    {
+        var candidates = new[]
+        {
+            Mapping("BBG000B9XRY4", "UW"),
+            Mapping("BBG000QNH748", "UQ"),
+            Mapping("BBG000B9Y5X2", "UR")
+        };
+        if (reverse)
+            Array.Reverse(candidates);
+        using var handler = new StubHttpMessageHandler(_ => Response(candidates));
+        using var http = new HttpClient(handler);
+        var registry = new Mock<ICanonicalSymbolRegistry>();
+        using var resolver = new CanonicalRegistrySymbolResolver(registry.Object, new OpenFigiSymbolResolver("test-key", http));
+
+        (await resolver.ResolveAsync("AAPL", exchange)).Should().BeNull();
+
+        registry.Verify(r => r.RegisterAsync(It.IsAny<CanonicalSymbolDefinition>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ResolveAsync_ExactVenueCache_DoesNotSatisfyBroaderNasdaqScope()
+    {
+        var responses = new Queue<HttpResponseMessage>([
+            Response(Mapping("BBG000B9XRY4", "UW")),
+            Response(Mapping("BBG000B9XRY4", "UW"), Mapping("BBG000QNH748", "UQ"))
+        ]);
+        using var handler = new StubHttpMessageHandler(_ => responses.Dequeue());
+        using var http = new HttpClient(handler);
+        using var resolver = new OpenFigiSymbolResolver("test-key", http);
+
+        (await resolver.ResolveAsync("AAPL", "UW")).Should().NotBeNull();
+        (await resolver.ResolveAsync("AAPL", "NASDAQ")).Should().BeNull();
+
+        handler.CallCount.Should().Be(2, "an exact venue and all NASDAQ tiers are different resolution scopes");
     }
 
     [Theory]
@@ -137,7 +207,7 @@ public sealed class OpenFigiSymbolResolverTests
         using var http = new HttpClient(handler);
         using var resolver = new OpenFigiSymbolResolver("test-key", http);
 
-        var first = await resolver.ResolveAsync("AAPL", "UW");
+        var first = await resolver.ResolveAsync("AAPL", "NASDAQ");
         var second = await resolver.ResolveAsync(" aapl ", "XNAS");
 
         first.Should().NotBeNull();

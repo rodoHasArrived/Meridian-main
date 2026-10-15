@@ -67,7 +67,11 @@ public sealed partial class AlpacaBrokerageGatewayTests
         string clientOrderId = "client-1",
         string qty = "1",
         string filledQty = "0",
-        string? filledAvgPrice = null) =>
+        string? filledAvgPrice = null,
+        string? replaces = null,
+        string? replacedBy = null,
+        string? limitPrice = null,
+        string? stopPrice = null) =>
         BuildJson(new
         {
             id,
@@ -78,6 +82,10 @@ public sealed partial class AlpacaBrokerageGatewayTests
             qty,
             filled_qty = filledQty,
             filled_avg_price = filledAvgPrice,
+            replaces,
+            replaced_by = replacedBy,
+            limit_price = limitPrice,
+            stop_price = stopPrice,
             status,
             created_at = "2024-01-15T10:00:00Z",
             updated_at = "2024-01-15T10:01:00Z",
@@ -329,6 +337,9 @@ public sealed partial class AlpacaBrokerageGatewayTests
         var responses = new Queue<HttpResponseMessage>(new[]
         {
             new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("ord-1") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("candidate", "pending_new", replaces: "ord-1") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("ord-1", "pending_replace") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("candidate", "pending_new", replaces: "ord-1") },
             new HttpResponseMessage(HttpStatusCode.NoContent),
             new HttpResponseMessage(HttpStatusCode.NotFound),
         });
@@ -645,7 +656,9 @@ public sealed partial class AlpacaBrokerageGatewayTests
 
         var report = await sut.ModifyOrderAsync("ord-1", new OrderModification { NewQuantity = 2m }, cts.Token);
 
-        report.ReportType.Should().Be(ExecutionReportType.Modified);
+        report.ReportType.Should().Be(ExecutionReportType.ModificationPending);
+        report.GatewayOrderId.Should().Be("ord-1");
+        report.CandidateGatewayOrderId.Should().Be("candidate");
         await sut.DisposeAsync();
     }
 

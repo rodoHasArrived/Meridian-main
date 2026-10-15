@@ -260,6 +260,10 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
             GatewayOrderId = ReadString(order, "id"),
             ClientOrderId = ReadString(order, "client_order_id"),
             ReplacesOrderId = ReadString(order, "replaces"),
+            CandidateGatewayOrderId = ReadString(order, "replaced_by"),
+            HasOrderTerms = order.TryGetProperty("limit_price", out _) && order.TryGetProperty("stop_price", out _),
+            OrderLimitPrice = ReadNullableDecimal(order, "limit_price"),
+            OrderStopPrice = ReadNullableDecimal(order, "stop_price"),
             Symbol = ReadString(order, "symbol") ?? string.Empty,
             Side = string.Equals(ReadString(order, "side"), "sell", StringComparison.OrdinalIgnoreCase)
                 ? ExecutionOrderSide.Sell
@@ -1237,12 +1241,22 @@ internal static class AlpacaTradeUpdateStateCodec
     internal static string ComputeContentHash(ExecutionReport report, DateTimeOffset timestamp)
     {
         ArgumentNullException.ThrowIfNull(report);
-        // The per-event quantity is derived from the same broker event as everything else here,
-        // so it adds nothing to identity -- and keeping it out means an envelope persisted before
-        // the field existed still matches a redelivery of the same event rather than failing
-        // closed as conflicting content.
+        // Derived execution metadata must not change identities or content checks for events
+        // persisted before those fields existed. Keep it in durable reports for execution, but
+        // omit it from the stable hash material used for broker redelivery and reconciliation.
         var content = JsonSerializer.SerializeToUtf8Bytes(
-            new AlpacaTradeUpdateHashMaterial(report with { LastFillQuantity = null, AssetClass = null }, timestamp),
+            new AlpacaTradeUpdateHashMaterial(report with
+            {
+                LastFillQuantity = null,
+                AssetClass = null,
+                FillPriceIsCumulativeAverage = false,
+                ReplacesOrderId = null,
+                OrderLimitPrice = null,
+                OrderStopPrice = null,
+                HasOrderTerms = false,
+                CandidateGatewayOrderId = null,
+                CandidateClientOrderId = null
+            }, timestamp),
             AlpacaTradeUpdateStateJsonContext.Default.AlpacaTradeUpdateHashMaterial);
         return Convert.ToHexString(SHA256.HashData(content));
     }

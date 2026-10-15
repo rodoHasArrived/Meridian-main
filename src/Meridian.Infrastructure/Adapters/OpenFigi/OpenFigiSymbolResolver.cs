@@ -73,7 +73,9 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
                 {
                     IdType = "TICKER",
                     IdValue = symbol.ToUpperInvariant(),
-                    ExchCode = exchange,
+                    // NASDAQ spans Global Select (UW), Global (UQ), and Capital (UR).
+                    // Filter those candidates locally instead of querying only one venue.
+                    ExchCode = exchange == "NASDAQ" ? null : exchange,
                     MarketSecDes = "Equity"
                 }
             };
@@ -149,7 +151,7 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
         var candidates = mappings.Where(mapping =>
             string.Equals(mapping.Ticker?.Trim(), symbol, StringComparison.OrdinalIgnoreCase)
             && (exchange is null || string.IsNullOrWhiteSpace(mapping.ExchCode)
-                || NormalizeExchangeCode(mapping.ExchCode) == exchange)
+                || MatchesExchangeScope(mapping.ExchCode, exchange))
             && (string.IsNullOrWhiteSpace(mapping.MarketSector)
                 || string.Equals(mapping.MarketSector.Trim(), "Equity", StringComparison.OrdinalIgnoreCase)))
             .ToList();
@@ -182,10 +184,15 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
     private static string? NormalizeIdentity(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim().ToUpperInvariant();
 
+    private static bool MatchesExchangeScope(string exchangeCode, string exchangeScope)
+        => exchangeScope == "NASDAQ"
+            ? NormalizeExchangeCode(exchangeCode) is "UW" or "UQ" or "UR"
+            : NormalizeExchangeCode(exchangeCode) == exchangeScope;
+
     private static string? NormalizeExchangeCode(string? exchange)
         => NormalizeIdentity(exchange) switch
         {
-            "NASDAQ" or "XNAS" => "UW",
+            "NASDAQ" or "XNAS" => "NASDAQ",
             "NYSE" or "XNYS" => "UN",
             "NYSE ARCA" or "NYSEARCA" or "ARCA" or "ARCX" => "UP",
             "NYSE AMERICAN" or "NYSEAMERICAN" or "AMEX" or "XASE" => "UA",
@@ -271,6 +278,7 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
         public string? IdValue { get; set; }
 
         [JsonPropertyName("exchCode")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? ExchCode { get; set; }
 
         [JsonPropertyName("micCode")]

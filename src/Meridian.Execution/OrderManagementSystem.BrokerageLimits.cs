@@ -17,7 +17,8 @@ public sealed partial class OrderManagementSystem
         if (_brokerageConfiguration is not { MaxOpenOrders: > 0 } configuration)
             return null;
 
-        var workingOrders = GetOpenOrders();
+        var workingOrders = GetOpenOrders().Concat(GetAmendmentExposureReservations())
+            .DistinctBy(order => order.OrderId).ToList();
         var count = workingOrders.Count;
         if (count >= configuration.MaxOpenOrders)
             return $"Open order count exceeds configured maximum of {configuration.MaxOpenOrders}.";

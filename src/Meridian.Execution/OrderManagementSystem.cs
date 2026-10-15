@@ -1231,6 +1231,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         var orderId = report.ClientOrderId ?? report.OrderId;
         if (IsCompactedBrokerageReport(report))
             return;
+        if (report.ReportType is ExecutionReportType.ModificationPending && !_pendingModificationOrderIds.ContainsKey(orderId))
+            return;
+        var resolvedAmendment = PrepareAmendmentReport(orderId, ref report, authorizedQuantity);
         var recoveryVersion = string.IsNullOrWhiteSpace(orderId) ? 0L : GetBrokerageRecoveryVersion(orderId);
         if (!string.IsNullOrWhiteSpace(orderId))
         {
@@ -1278,7 +1281,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             var previousFilledQuantity = 0m;
             while (!string.IsNullOrWhiteSpace(orderId) && _orders.TryGetValue(orderId, out var existing))
             {
-                var merged = ApplyReport(existing, report, authorizedQuantity);
+                var executionLimit = GetPendingAmendmentForRecovery(orderId) is { } pendingAmendment
+                    ? Math.Max(pendingAmendment.Original.Quantity, pendingAmendment.Proposed.Quantity) : (decimal?)null;
+                var merged = ApplyReport(existing, report, authorizedQuantity, executionLimit);
                 if (_orders.TryUpdate(orderId, merged, existing))
                 {
                     previousFilledQuantity = existing.FilledQuantity;
@@ -1360,6 +1365,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
 
             if (updatedState is not null)
             {
+                if (resolvedAmendment is not null)
+                    _pendingModificationOrderIds.TryRemove(new KeyValuePair<string, PendingOrderAmendment>(orderId!, resolvedAmendment));
                 RetainProcessedBrokerageOrder(orderId!, report, recoveryVersion);
                 await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId!), updatedState, ct).ConfigureAwait(false);
             }

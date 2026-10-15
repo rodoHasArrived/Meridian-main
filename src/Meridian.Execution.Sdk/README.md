@@ -54,7 +54,10 @@ ID, because a UUID-shaped client ID can otherwise target an unrelated broker ord
 `ExecutionReportType.CancelRejected` and `ModificationRejected` describe refused operations;
 their `OrderStatus` describes the actual order and does not imply terminal rejection. Report
 consumers retain cumulative fills and original client identity across broker replacements.
-`ModificationPending` retains an uncertain replacement attempt for reconciliation. Snapshot
+`ModificationPending` retains an uncertain replacement attempt for reconciliation. Durable pending
+amendments preserve original and proposed terms, broker identities, and provider recovery evidence
+until authoritative reconciliation selects an outcome. Reported order terms are explicitly marked
+as evidence; provisional prices and quantities cannot silently become confirmed terms. Snapshot
 averages set `FillPriceIsCumulativeAverage`; the OMS derives the executed increment's price before
 publishing accounting fills. Optional replacement and average fields preserve legacy payloads
 when absent.

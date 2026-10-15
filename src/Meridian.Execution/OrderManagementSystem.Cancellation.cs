@@ -128,6 +128,8 @@ public sealed partial class OrderManagementSystem
 
     private void RememberBrokerOrderId(string localOrderId, ExecutionReport report)
     {
+        if (report.ReportType is ExecutionReportType.ModificationPending)
+            return;
         var brokerOrderId = report.GatewayOrderId;
         if (string.IsNullOrWhiteSpace(brokerOrderId)
             && !string.IsNullOrWhiteSpace(report.ClientOrderId)
@@ -139,7 +141,7 @@ public sealed partial class OrderManagementSystem
         if (!string.IsNullOrWhiteSpace(localOrderId) && !string.IsNullOrWhiteSpace(brokerOrderId))
         {
             // A late report from an earlier chain member must keep the current routing ID.
-            var rejectedReplacement = report.ReportType is ExecutionReportType.ModificationRejected
+            var rejectedReplacement = report.ReportType is ExecutionReportType.ModificationRejected or ExecutionReportType.Rejected
                 && report.ReplacesOrderId is { Length: > 0 };
             if (!rejectedReplacement && (!_orderBrokerIds.TryGetValue(localOrderId, out var currentBrokerId)
                 || !_brokerOrderAliases.ContainsKey(brokerOrderId)

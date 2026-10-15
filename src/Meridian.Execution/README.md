@@ -15,7 +15,10 @@ OMS amendments resolve explicit broker/client identifiers, retain replacement br
 the original client identity, and process cumulative fills through the shared fill funnel.
 Refused cancellations and amendments fail the operation while preserving observed order state;
 they cannot turn a working order into a terminal rejection. These controls support `W7-LIVE-001`.
-Unconfirmed replacements retain conservative amended exposure and require recovery. Retained
+Unconfirmed replacements retain both original and proposed terms durably and reserve conservative
+exposure until authoritative recovery selects the actual outcome. Late amendment acknowledgements
+preserve terminal lifecycle state; unresolved amendment exposure and open-order capacity remain
+reserved separately. Retained
 orders and compacted tombstones keep replacement aliases so restart and late callbacks preserve
 the original order identity.
 Open-order limits recognize a working order's prior broker IDs in stale snapshots. Multiple chain

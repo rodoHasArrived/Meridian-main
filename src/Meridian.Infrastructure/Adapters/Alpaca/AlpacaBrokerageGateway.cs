@@ -40,7 +40,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IBrokerageConnectionState, IBrokerageOrderRecoveryGateway
+public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IBrokerageConnectionState, IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway
 {
     /// <inheritdoc />
     public bool UsesFaceValuePercentageOfPar(OrderRequest request)
@@ -336,12 +336,12 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         if (_tradeUpdates is not null)
         {
             await foreach (var report in _tradeUpdates.Reports.WithCancellation(ct).ConfigureAwait(false))
-                yield return report;
+                yield return await NormalizeReplacementReportAsync(report, ct).ConfigureAwait(false);
             yield break;
         }
         await foreach (var report in _reportChannel.Reader.ReadAllAsync(ct).ConfigureAwait(false))
         {
-            yield return report;
+            yield return await NormalizeReplacementReportAsync(report, ct).ConfigureAwait(false);
         }
     }
 
@@ -827,6 +827,11 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                     "Alpaca reconciliation returned an order without an id."),
                 GatewayOrderId = order.Id,
                 ClientOrderId = order.ClientOrderId,
+                ReplacesOrderId = order.Replaces,
+                CandidateGatewayOrderId = order.ReplacedBy,
+                HasOrderTerms = order.HasLimitPrice && order.HasStopPrice,
+                OrderLimitPrice = ParseNullableDecimal(order.LimitPrice),
+                OrderStopPrice = ParseNullableDecimal(order.StopPrice),
                 Symbol = order.Symbol ?? string.Empty,
                 Side = string.Equals(order.Side, "sell", StringComparison.OrdinalIgnoreCase)
                     ? OrderSide.Sell
@@ -1787,8 +1792,22 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         [JsonPropertyName("qty")] public string? Qty { get; set; }
         [JsonPropertyName("filled_qty")] public string? FilledQty { get; set; }
         [JsonPropertyName("filled_avg_price")] public string? FilledAvgPrice { get; set; }
-        [JsonPropertyName("limit_price")] public string? LimitPrice { get; set; }
-        [JsonPropertyName("stop_price")] public string? StopPrice { get; set; }
+        private string? _limitPrice;
+        private string? _stopPrice;
+        [JsonIgnore] public bool HasLimitPrice { get; private set; }
+        [JsonIgnore] public bool HasStopPrice { get; private set; }
+        [JsonPropertyName("limit_price")]
+        public string? LimitPrice
+        {
+            get => _limitPrice;
+            set { _limitPrice = value; HasLimitPrice = true; }
+        }
+        [JsonPropertyName("stop_price")]
+        public string? StopPrice
+        {
+            get => _stopPrice;
+            set { _stopPrice = value; HasStopPrice = true; }
+        }
         [JsonPropertyName("status")] public string? Status { get; set; }
         [JsonPropertyName("created_at")] public DateTimeOffset? CreatedAt { get; set; }
         [JsonPropertyName("updated_at")] public DateTimeOffset? UpdatedAt { get; set; }

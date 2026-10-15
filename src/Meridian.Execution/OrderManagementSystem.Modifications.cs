@@ -5,7 +5,7 @@ namespace Meridian.Execution;
 
 public sealed partial class OrderManagementSystem
 {
-    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> _pendingModificationOrderIds = new(StringComparer.Ordinal);
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, PendingOrderAmendment> _pendingModificationOrderIds = new(StringComparer.Ordinal);
 
     /// <inheritdoc />
     public async Task<OrderResult> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default)
@@ -25,6 +25,9 @@ public sealed partial class OrderManagementSystem
 
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
+        if (_pendingModificationOrderIds.ContainsKey(orderId) || IsTerminal(state.Status))
+            return new OrderResult { Success = false, OrderId = orderId, OrderState = state,
+                ErrorMessage = "The order is terminal or an earlier amendment requires broker reconciliation." };
 
         // A quantity increase or any supplied limit/stop price is a new risk decision. Notional
         // increases are not the only dangerous direction: lowering a sell limit or a buy stop can
@@ -66,8 +69,10 @@ public sealed partial class OrderManagementSystem
         }
 
         ExecutionReport report;
+        PendingOrderAmendment? amendment = null;
         try
         {
+            amendment = await BeginOrderAmendmentAsync(orderId, state, modification, ct).ConfigureAwait(false);
             ct.ThrowIfCancellationRequested();
             amendmentDispatchAttempted = true;
             report = _gateway is IExplicitOrderModificationGateway explicitModification
@@ -94,17 +99,25 @@ public sealed partial class OrderManagementSystem
             // does — cancel while the venue already holds the amended exposure. The only proof of
             // pre-dispatch is the check before the call, which throws before the flag is set.
             SettleRiskReservations(amendmentDecision, commit: amendmentDispatchAttempted, orderId);
-            RollBackSpeculativeReservation(orderId, speculativeReservation, state);
+            if (!amendmentDispatchAttempted)
+            {
+                if (amendment is not null)
+                    await AbandonOrderAmendmentAsync(orderId, amendment).ConfigureAwait(false);
+                RollBackSpeculativeReservation(orderId, speculativeReservation, state);
+            }
+            else
+                MarkBrokerageRecoveryRequired(orderId);
             throw;
         }
 
         if (report.ReportType is ExecutionReportType.ModificationPending)
         {
             SettleRiskReservations(amendmentDecision, commit: true, orderId);
-            _pendingModificationOrderIds[orderId] = 0;
-            await ProcessGatewayReportAsync(report, CancellationToken.None,
-                Math.Max(state.Quantity, modification.NewQuantity ?? state.Quantity)).ConfigureAwait(false);
-            MarkBrokerageRecoveryRequired(orderId);
+            if (_pendingModificationOrderIds.ContainsKey(orderId))
+            {
+                await ProcessGatewayReportAsync(report, CancellationToken.None).ConfigureAwait(false);
+                MarkBrokerageRecoveryRequired(orderId);
+            }
             var pending = _orders.TryGetValue(orderId, out var retained) ? retained : state;
             await RecordOrderLifecycleAuditAsync("OrderModifyPending", "RecoveryRequired", orderId,
                 pending, report, report.RejectReason ?? "Amendment outcome requires broker reconciliation.",
@@ -123,9 +136,10 @@ public sealed partial class OrderManagementSystem
         {
             // The broker refused the amendment outright, so nothing routed.
             SettleRiskReservations(amendmentDecision, commit: false, orderId);
-            RollBackSpeculativeReservation(orderId, speculativeReservation, state);
-            if (report.ReportType is ExecutionReportType.ModificationRejected)
-                await ProcessGatewayReportAsync(report, CancellationToken.None).ConfigureAwait(false);
+            if (report.ReportType is not ExecutionReportType.ModificationRejected)
+                report = report with { ReportType = ExecutionReportType.ModificationRejected, OrderStatus = state.Status,
+                    Symbol = state.Symbol, Side = state.Side };
+            await ProcessGatewayReportAsync(report, CancellationToken.None, amendment.Original.Quantity).ConfigureAwait(false);
             var observedState = _orders.TryGetValue(orderId, out var current) ? current : state;
             // Do not apply a rejected modify to order state: ApplyReport would let the terminal
             // Rejected overwrite a completed Filled/Cancelled order, and returning Success would
@@ -155,7 +169,7 @@ public sealed partial class OrderManagementSystem
         // The gateway report stream is not an authorization channel. Only this locally
         // initiated modification may change the quantity cap, and it may do so only to
         // the quantity the caller requested; never to a gateway-supplied quantity.
-        await ProcessGatewayReportAsync(report, CancellationToken.None, modification.NewQuantity).ConfigureAwait(false);
+        await ProcessGatewayReportAsync(report, CancellationToken.None, amendment.Proposed.Quantity).ConfigureAwait(false);
         var updated = _orders.TryGetValue(orderId, out var amendedState) ? amendedState : state;
         await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
         await RecordOrderLifecycleAuditAsync(
@@ -172,7 +186,7 @@ public sealed partial class OrderManagementSystem
         // now holds, so they travel with the accepted result — not only with a refusal.
         return new OrderResult
         {
-            Success = true,
+            Success = !_pendingModificationOrderIds.ContainsKey(orderId),
             OrderId = orderId,
             OrderState = updated,
             RiskWarnings = amendmentWarnings
@@ -192,12 +206,12 @@ public sealed partial class OrderManagementSystem
         if (localId is null)
             return report;
         var normalized = report with { ClientOrderId = localId };
-        if (report.OrderStatus is OrderStatus.Rejected
+        if (report.ReportType is ExecutionReportType.Rejected && report.OrderStatus is OrderStatus.Rejected
             && report.ReplacesOrderId is { Length: > 0 } rejectedPredecessor
             && _orderBrokerIds.TryGetValue(localId, out var workingBrokerId)
             && string.Equals(rejectedPredecessor, workingBrokerId, StringComparison.Ordinal)
             && !string.Equals(brokerId, workingBrokerId, StringComparison.Ordinal)
-            && _orders.TryGetValue(localId, out var working))
+            && _orders.TryGetValue(localId, out var working) && !IsTerminal(working.Status))
         {
             // Rejecting a proposed replacement leaves its predecessor working. Keep the
             // rejected identity as an alias so a replay cannot adopt it as another order.

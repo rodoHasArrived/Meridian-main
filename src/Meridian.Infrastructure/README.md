@@ -13,11 +13,16 @@ last_reviewed: 2026-10-15
 
 Broker amendment and cancellation failures retain the broker-observed order status and use
 operation-specific reports. Alpaca amendments resolve explicit client/broker identifier namespaces
-and retain replacement aliases; Interactive Brokers waits for operation acknowledgements and keys
+and retain replacement aliases. Successful PATCH responses remain provisional until independent
+replacement evidence confirms the successor. Durable trade-update hashes omit derived metadata
+while serialized pending reports retain it, preserving replay identities across upgrades.
+Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
+fills against pending exposure, keeps cancellation available, and keys
 positions by account plus qualified contract identity. Robinhood replacement submits only after
 confirmed cancellation with cumulative fill evidence, for the intended total less chain fills.
-Unconfirmed Robinhood replacement attempts retain their reference and block further operations
-until reconciliation establishes the outcome.
+Unconfirmed Robinhood replacement attempts retain their reference and reconcile exact broker
+history before further operations. Empty, incomplete, or ambiguous history remains unresolved;
+confirmed candidates restore replacement-chain routing and cumulative fill economics.
 
 Running Robinhood read-only account, portfolio, and activity synchronization reads the current
 host-owned OAuth token for each request, including connection, rotation, and revocation. Polling
@@ -29,6 +34,7 @@ split coefficient. Yahoo daily history includes boundary padding and uses histor
 timezone rules for session dates, falling back to the supplied offset and then UTC when absent.
 Alpaca symbol search initializes authentication after credentials are assigned. OpenFIGI resolution
 learns canonical identities only from complete, unambiguous exchange and instrument evidence;
+broad NASDAQ requests include UW, UQ, and UR while exact venue requests remain distinct;
 discovery can still return candidate lists. These corrections support `W1-DATA-001` and `W7-LIVE-001`.
 
 Local ETL post-processing requires the checksum, length and file timestamps captured while staging. Replacement deliveries at the same filename fail cleanup without being deleted or archived. Destructive cleanup atomically claims the original directory entry and verifies it again before acting; a conflicting new drop remains in place, and an interrupted claim is restored or retained for explicit recovery.
