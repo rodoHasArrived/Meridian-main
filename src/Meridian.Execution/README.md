@@ -11,6 +11,14 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.Execution
 
+OMS amendments resolve explicit broker/client identifiers, retain replacement broker aliases under
+the original client identity, and process cumulative fills through the shared fill funnel.
+Refused cancellations and amendments fail the operation while preserving observed order state;
+they cannot turn a working order into a terminal rejection. These controls support `W7-LIVE-001`.
+Unconfirmed replacements retain conservative amended exposure and require recovery. Retained
+orders and compacted tombstones keep replacement aliases so restart and late callbacks preserve
+the original order identity.
+
 Broker-dispatched client IDs, run/account ownership and processed fill watermarks are retained by
 `FileBrokerageOrderRecoveryStore` before dispatch. An ambiguous acknowledgement keeps exposure
 reserved and requires authoritative lookup; the ID cannot be reused after restart or a terminal

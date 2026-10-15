@@ -277,22 +277,10 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
             if (!IsValidOhlc(open, high, low, close))
                 continue;
 
-            // Calculate adjustment factor
-            decimal? splitFactor = null;
-            if (adjClose > 0 && close > 0)
-            {
-                var factor = adjClose / close;
-                if (Math.Abs(factor - 1m) > 0.0001m)
-                {
-                    splitFactor = factor;
-                }
-            }
-
-            // Also use split coefficient if provided
-            if (splitCoeff != 1m && splitCoeff > 0)
-            {
-                splitFactor = splitCoeff;
-            }
+            // Adjusted close includes cumulative split and dividend adjustments. The
+            // split coefficient describes only the event on this session, so it must
+            // never replace the ratio used to put all four prices on the same basis.
+            decimal? priceAdjustmentFactor = adjClose > 0 ? adjClose / close : null;
 
             bars.Add(new AdjustedHistoricalBar(
                 Symbol: symbol.ToUpperInvariant(),
@@ -304,12 +292,12 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
                 Volume: volume,
                 Source: Name,
                 SequenceNumber: sessionDate.DayNumber,
-                AdjustedOpen: splitFactor.HasValue ? open * splitFactor.Value : null,
-                AdjustedHigh: splitFactor.HasValue ? high * splitFactor.Value : null,
-                AdjustedLow: splitFactor.HasValue ? low * splitFactor.Value : null,
+                AdjustedOpen: priceAdjustmentFactor.HasValue ? open * priceAdjustmentFactor.Value : null,
+                AdjustedHigh: priceAdjustmentFactor.HasValue ? high * priceAdjustmentFactor.Value : null,
+                AdjustedLow: priceAdjustmentFactor.HasValue ? low * priceAdjustmentFactor.Value : null,
                 AdjustedClose: adjClose > 0 ? adjClose : null,
                 AdjustedVolume: null,
-                SplitFactor: splitCoeff != 1m && splitCoeff > 0 ? splitCoeff : splitFactor,
+                SplitFactor: splitCoeff != 1m && splitCoeff > 0 ? splitCoeff : null,
                 DividendAmount: dividend > 0 ? dividend : null
             ));
         }

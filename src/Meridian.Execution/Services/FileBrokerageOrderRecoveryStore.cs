@@ -111,7 +111,8 @@ public sealed class FileBrokerageOrderRecoveryStore
                 return false;
 
             var state = order.State;
-            var tombstone = new BrokerageOrderTombstone(state.OrderId, state.Status, state.Quantity, state.FilledQuantity);
+            var tombstone = new BrokerageOrderTombstone(state.OrderId, state.Status, state.Quantity, state.FilledQuantity)
+            { BrokerOrderAliases = order.BrokerOrderAliases };
             var nextOrders = new Dictionary<string, RetainedBrokerageOrder>(_orders, StringComparer.Ordinal);
             nextOrders.Remove(orderId);
             var nextTombstones = new Dictionary<string, BrokerageOrderTombstone>(_tombstones, StringComparer.Ordinal)
@@ -154,10 +155,20 @@ public sealed class FileBrokerageOrderRecoveryStore
             || (status == OrderStatus.Rejected && filledQuantity == 0m));
 }
 
-public sealed record RetainedBrokerageOrder(OrderState State, string? BrokerOrderId, bool RequiresRecovery);
+public sealed record RetainedBrokerageOrder(OrderState State, string? BrokerOrderId, bool RequiresRecovery)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public bool RequiresAmendmentRecovery { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string[]? BrokerOrderAliases { get; init; }
+}
 
 /// <summary>Minimal terminal identity that permanently reserves a dispatched client order id.</summary>
-public sealed record BrokerageOrderTombstone(string OrderId, OrderStatus Status, decimal Quantity, decimal FilledQuantity);
+public sealed record BrokerageOrderTombstone(string OrderId, OrderStatus Status, decimal Quantity, decimal FilledQuantity)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string[]? BrokerOrderAliases { get; init; }
+}
 
 internal sealed record BrokerageOrderRecoverySnapshot(
     int Version,

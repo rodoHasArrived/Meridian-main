@@ -50,6 +50,14 @@ Gateways whose providers keep client and broker order IDs in separate lookup nam
 `IExplicitOrderCancellationGateway`. Callers label the namespace with
 `OrderCancellationIdentifier`; identifier shape is never used to guess whether a value is a broker
 ID, because a UUID-shaped client ID can otherwise target an unrelated broker order.
+`IExplicitOrderModificationGateway` applies the same namespace discipline to amendments.
+`ExecutionReportType.CancelRejected` and `ModificationRejected` describe refused operations;
+their `OrderStatus` describes the actual order and does not imply terminal rejection. Report
+consumers retain cumulative fills and original client identity across broker replacements.
+`ModificationPending` retains an uncertain replacement attempt for reconciliation. Snapshot
+averages set `FillPriceIsCumulativeAverage`; the OMS derives the executed increment's price before
+publishing accounting fills. Optional replacement and average fields preserve legacy payloads
+when absent.
 `IBrokerageOrderRecoveryGateway` adds authoritative lookup by retained client ID, including terminal
 orders. A null result means unresolved state and cannot authorize resubmission.
 `IBrokerageConnectionState` exposes an opaque connection generation and verified account/environment

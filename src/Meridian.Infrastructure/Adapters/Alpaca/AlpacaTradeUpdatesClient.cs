@@ -259,6 +259,7 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
             OrderId = ReadString(order, "id") ?? throw new JsonException("Alpaca trade update lacks order.id."),
             GatewayOrderId = ReadString(order, "id"),
             ClientOrderId = ReadString(order, "client_order_id"),
+            ReplacesOrderId = ReadString(order, "replaces"),
             Symbol = ReadString(order, "symbol") ?? string.Empty,
             Side = string.Equals(ReadString(order, "side"), "sell", StringComparison.OrdinalIgnoreCase)
                 ? ExecutionOrderSide.Sell
@@ -268,6 +269,7 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
             OrderQuantity = ReadDecimal(order, "qty"),
             FilledQuantity = ReadDecimal(order, "filled_qty"),
             FillPrice = ReadNullableDecimal(data, "price") ?? ReadNullableDecimal(order, "filled_avg_price"),
+            FillPriceIsCumulativeAverage = ReadNullableDecimal(data, "price") is null,
             // The event's own executed quantity, distinct from the order's cumulative filled_qty:
             // the OMS needs it to book a fill for an order it no longer tracks after a restart.
             LastFillQuantity = mapped.type is ExecutionReportType.Fill or ExecutionReportType.PartialFill

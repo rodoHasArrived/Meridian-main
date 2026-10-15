@@ -95,6 +95,7 @@ public sealed partial class AlpacaBrokerageGateway
             OrderQuantity = ParseDecimal(authoritativeOrder.Qty),
             FilledQuantity = ParseDecimal(authoritativeOrder.FilledQty),
             FillPrice = ParseNullableDecimal(authoritativeOrder.FilledAvgPrice),
+            FillPriceIsCumulativeAverage = true,
             RejectReason = verificationFailure,
             GatewayOrderId = brokerOrderId,
             Timestamp = ResolveReconciliationTimestamp(authoritativeOrder, verifiedStatus),

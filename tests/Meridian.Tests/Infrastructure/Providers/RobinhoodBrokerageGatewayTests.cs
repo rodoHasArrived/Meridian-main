@@ -56,28 +56,36 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
             }
         });
 
-    private static StringContent BuildOrderResponse(string id = "order-1", string state = "confirmed") =>
+    private static StringContent BuildOrderResponse(
+        string id = "order-1", string state = "confirmed", string quantity = "1",
+        string? filledQuantity = "0", string? averagePrice = null, string refId = "client-1") =>
         BuildJson(new
         {
             id,
-            ref_id = "client-1",
+            ref_id = refId,
             symbol = "AAPL",
             side = "buy",
             type = "market",
             time_in_force = "gfd",
-            quantity = "1",
+            quantity,
+            cumulative_quantity = filledQuantity,
+            average_price = averagePrice,
             state,
             created_at = "2024-01-02T10:00:00Z"
         });
 
-    private static StringContent BuildOptionOrderResponse(string id = "option-order-1", string state = "confirmed") =>
+    private static StringContent BuildOptionOrderResponse(
+        string id = "option-order-1", string state = "confirmed", string quantity = "1",
+        string? filledQuantity = "0", string? averagePrice = null, bool useLegExecutionPrices = false) =>
         BuildJson(new
         {
             id,
             ref_id = "client-1",
             chain_symbol = "AAPL",
             direction = "credit",
-            quantity = "1",
+            quantity,
+            processed_quantity = filledQuantity,
+            average_price = useLegExecutionPrices ? null : averagePrice,
             type = "market",
             time_in_force = "gfd",
             price = "1.25",
@@ -88,7 +96,8 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
                     option = "https://api.robinhood.com/options/instruments/opt-close/",
                     side = "sell",
                     ratio_quantity = 1,
-                    position_effect = "close"
+                    position_effect = "close",
+                    executions = useLegExecutionPrices ? new[] { new { quantity = filledQuantity, price = averagePrice } } : null
                 }
             },
             state,
@@ -414,7 +423,8 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
             new OrderModification { NewQuantity = 2m },
             cts.Token);
 
-        report.OrderStatus.Should().Be(OrderStatus.Rejected);
+        report.OrderStatus.Should().Be(OrderStatus.Accepted);
+        report.ReportType.Should().Be(ExecutionReportType.ModificationRejected);
         report.RejectReason.Should().Contain("Cancel request failed");
         handler.Requests.Should().ContainSingle(
             r => r.Method == HttpMethod.Post && r.Url.EndsWith("/orders/order-1/cancel/", StringComparison.Ordinal));
@@ -424,6 +434,337 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
             r => r.Method == HttpMethod.Post && r.Url.EndsWith("/options/orders/", StringComparison.Ordinal));
 
         await sut.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_CancelAcceptedButStillWorking_DoesNotSubmitReplacement()
+    {
+        var handler = CreateModificationHandler((_, _) => BuildOrderResponse(quantity: "10", filledQuantity: "2", averagePrice: "150"));
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+
+        var report = await sut.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 12m });
+
+        report.ReportType.Should().Be(ExecutionReportType.ModificationRejected);
+        report.OrderStatus.Should().Be(OrderStatus.PendingCancel);
+        report.FilledQuantity.Should().Be(2m);
+        report.RejectReason.Should().Contain("not been confirmed");
+        handler.Requests.Should().NotContain(r => IsReplacementPost(r));
+    }
+
+    [Fact]
+    public async Task CancelOrderAsync_HttpAcceptance_DoesNotClaimTerminalCancellation()
+    {
+        var handler = CreateModificationHandler((_, _) => BuildOrderResponse());
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+
+        var report = await sut.CancelOrderAsync("order-1");
+
+        report.OrderStatus.Should().Be(OrderStatus.PendingCancel);
+        report.ReportType.Should().Be(ExecutionReportType.CancelRejected);
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_OrderFillsDuringCancellation_DoesNotSubmitReplacement()
+    {
+        var handler = CreateModificationHandler((_, read) => read < 3
+            ? BuildOrderResponse(quantity: "10", filledQuantity: "2", averagePrice: "150")
+            : BuildOrderResponse(state: "filled", quantity: "10", filledQuantity: "10", averagePrice: "151"));
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+
+        var report = await sut.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 12m });
+
+        report.ReportType.Should().Be(ExecutionReportType.ModificationRejected);
+        report.OrderStatus.Should().Be(OrderStatus.Filled);
+        report.FilledQuantity.Should().Be(10m);
+        report.FillPrice.Should().Be(151m);
+        handler.Requests.Should().NotContain(r => IsReplacementPost(r));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("garbled")]
+    public async Task ModifyOrderAsync_CancelledWithoutConfirmedFillQuantity_DoesNotSubmitReplacement(string? filled)
+    {
+        var handler = CreateModificationHandler((_, read) => BuildOrderResponse(
+            state: read < 3 ? "confirmed" : "cancelled", quantity: "10", filledQuantity: filled));
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+
+        var report = await sut.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 12m });
+
+        report.ReportType.Should().Be(ExecutionReportType.ModificationRejected);
+        report.OrderStatus.Should().Be(OrderStatus.Cancelled);
+        report.RejectReason.Should().Contain("confirmed cumulative fill quantity");
+        handler.Requests.Should().NotContain(r => IsReplacementPost(r));
+    }
+
+    [Theory]
+    [InlineData(4)]
+    [InlineData(5)]
+    public async Task ModifyOrderAsync_ConfirmedFillsMeetRequestedTotal_DoesNotSubmitReplacement(int filled)
+    {
+        var handler = CreateModificationHandler((_, read) => BuildOrderResponse(
+            state: read < 3 ? "confirmed" : "cancelled", quantity: "10", filledQuantity: filled.ToString()));
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+
+        var report = await sut.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 4m });
+
+        report.ReportType.Should().Be(ExecutionReportType.ModificationRejected);
+        report.FilledQuantity.Should().Be(filled);
+        handler.Requests.Should().NotContain(r => IsReplacementPost(r));
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_ConfirmedCancellation_SubmitsOnlyRemainingAndRetainsChainAcrossAmendments()
+    {
+        var handler = CreateModificationHandler((id, read) => id == "order-1"
+            ? BuildOrderResponse(state: read < 3 ? "confirmed" : "cancelled", quantity: "10",
+                filledQuantity: read < 3 ? "2" : "3", averagePrice: "150")
+            : BuildOrderResponse(id, state: read < 2 ? "confirmed" : "cancelled", quantity: "9",
+                filledQuantity: "2", averagePrice: "151", refId: "replacement-ref"));
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+
+        var first = await sut.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 12m, NewLimitPrice = 152m });
+        var second = await sut.ModifyOrderAsync("client-1", new OrderModification { NewLimitPrice = 153m });
+
+        first.ReportType.Should().Be(ExecutionReportType.Modified);
+        first.ClientOrderId.Should().Be("client-1");
+        first.GatewayOrderId.Should().Be("replacement-1");
+        first.OrderQuantity.Should().Be(12m);
+        first.FilledQuantity.Should().Be(3m);
+        second.ClientOrderId.Should().Be("client-1");
+        second.GatewayOrderId.Should().Be("replacement-2");
+        second.OrderQuantity.Should().Be(12m);
+        second.FilledQuantity.Should().Be(5m);
+        first.FillPrice.Should().Be(150m);
+        second.FillPrice.Should().Be(150.4m);
+        first.FillPriceIsCumulativeAverage.Should().BeTrue();
+        second.FillPriceIsCumulativeAverage.Should().BeTrue();
+        second.ReplacesOrderId.Should().Be("replacement-1");
+        var posts = handler.Requests.Where(IsReplacementPost).ToArray();
+        posts.Should().HaveCount(2);
+        using var firstPayload = JsonDocument.Parse(posts[0].Body!);
+        using var secondPayload = JsonDocument.Parse(posts[1].Body!);
+        firstPayload.RootElement.GetProperty("quantity").GetString().Should().Be("9");
+        secondPayload.RootElement.GetProperty("quantity").GetString().Should().Be("7");
+        firstPayload.RootElement.GetProperty("ref_id").GetString().Should().NotBe("client-1");
+        secondPayload.RootElement.GetProperty("ref_id").GetString().Should()
+            .NotBe(firstPayload.RootElement.GetProperty("ref_id").GetString());
+        handler.Requests.Should().Contain(r => r.Url.EndsWith("/orders/replacement-1/cancel/"));
+
+        await sut.DisposeAsync();
+        var reports = new List<ExecutionReport>();
+        await foreach (var report in sut.StreamExecutionReportsAsync())
+            reports.Add(report);
+        reports.Should().HaveCount(2);
+        reports.Should().OnlyContain(report => report.ReportType == ExecutionReportType.Modified);
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_ReplacementRejected_KeepsConfirmedOriginalCancellationAndFills()
+    {
+        var handler = CreateModificationHandler((_, read) => BuildOrderResponse(
+            state: read < 3 ? "confirmed" : "cancelled", quantity: "10", filledQuantity: "3", averagePrice: "150"),
+            rejectReplacement: true);
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+
+        var report = await sut.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 12m });
+
+        report.ReportType.Should().Be(ExecutionReportType.ModificationRejected);
+        report.OrderStatus.Should().Be(OrderStatus.Cancelled);
+        report.ClientOrderId.Should().Be("client-1");
+        report.GatewayOrderId.Should().Be("order-1");
+        report.FilledQuantity.Should().Be(3m);
+        report.RejectReason.Should().Contain("replacement submission failed");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ModifyOrderAsync_OptionCancellation_UsesProcessedContractsAndPreservesLeg(bool useLegExecutionPrices)
+    {
+        var reads = 0;
+        var handler = new RecordingHttpHandler((request, _) =>
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            var content = path switch
+            {
+                "/accounts/" => BuildAccountResponse(),
+                "/options/orders/option-order-1/" => BuildOptionOrderResponse(
+                    state: ++reads < 3 ? "confirmed" : "cancelled", quantity: "10", filledQuantity: "3", averagePrice: "1.25",
+                    useLegExecutionPrices: useLegExecutionPrices),
+                "/options/orders/option-order-1/cancel/" => BuildJson(new { }),
+                "/options/instruments/opt-close/" => BuildOptionInstrumentResponse(),
+                "/options/orders/" => BuildOptionOrderResponse("replacement-option"),
+                _ => null
+            };
+            return Task.FromResult(new HttpResponseMessage(content is null ? HttpStatusCode.NotFound : HttpStatusCode.OK)
+            { Content = content ?? new StringContent("missing") });
+        });
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+
+        var report = await sut.ModifyOrderAsync("option-order-1", new OrderModification { NewQuantity = 12m });
+
+        report.ReportType.Should().Be(ExecutionReportType.Modified);
+        report.ClientOrderId.Should().Be("client-1");
+        report.FilledQuantity.Should().Be(3m);
+        report.FillPrice.Should().Be(1.25m);
+        var post = handler.Requests.Should().ContainSingle(r => r.Method == HttpMethod.Post && r.Url.EndsWith("/options/orders/")).Subject;
+        using var payload = JsonDocument.Parse(post.Body!);
+        payload.RootElement.GetProperty("quantity").GetString().Should().Be("9");
+        payload.RootElement.GetProperty("legs")[0].GetProperty("position_effect").GetString().Should().Be("close");
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_ReplacementPostTimesOut_BlocksRetryUntilReconciliation()
+    {
+        var handler = CreateModificationHandler((_, read) => BuildOrderResponse(
+            state: read < 3 ? "confirmed" : "cancelled", quantity: "10", filledQuantity: "2", averagePrice: "150"),
+            timeoutReplacement: true);
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+
+        var first = await sut.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 12m });
+        var retry = await sut.ModifyOrderAsync("client-1", new OrderModification { NewQuantity = 12m });
+        var cancel = await sut.CancelOrderAsync("order-1");
+
+        first.ReportType.Should().Be(ExecutionReportType.ModificationPending);
+        first.OrderStatus.Should().Be(OrderStatus.PendingNew);
+        first.RejectReason.Should().Contain("unconfirmed outcome");
+        retry.ReportType.Should().Be(ExecutionReportType.ModificationPending);
+        retry.RejectReason.Should().Be(first.RejectReason);
+        cancel.ReportType.Should().Be(ExecutionReportType.CancelRejected);
+        cancel.OrderStatus.Should().Be(OrderStatus.PendingNew);
+        handler.Requests.Should().ContainSingle(r => IsReplacementPost(r));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task ModifyOrderAsync_ReplacementResponseLacksBrokerIdentity_RemainsPending(string? brokerId)
+    {
+        var handler = CreateModificationHandler((_, read) => BuildOrderResponse(
+            state: read < 3 ? "confirmed" : "cancelled", quantity: "10", filledQuantity: "2", averagePrice: "150"),
+            replacementResponse: () => BuildOrderResponse(brokerId!));
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+
+        var pending = await sut.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 12m });
+        var retry = await sut.ModifyOrderAsync("client-1", new OrderModification { NewQuantity = 12m });
+
+        pending.ReportType.Should().Be(ExecutionReportType.ModificationPending);
+        pending.GatewayOrderId.Should().Be("order-1");
+        retry.ReportType.Should().Be(ExecutionReportType.ModificationPending);
+        retry.RejectReason.Should().Be(pending.RejectReason);
+        handler.Requests.Should().ContainSingle(r => IsReplacementPost(r));
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_CallerCancelsReplacementPost_ReturnsPendingAndBlocksRetry()
+    {
+        using var cts = new CancellationTokenSource();
+        var handler = CreateModificationHandler((_, read) => BuildOrderResponse(
+            state: read < 3 ? "confirmed" : "cancelled", quantity: "10", filledQuantity: "2", averagePrice: "150"),
+            timeoutReplacement: true, replacementStarted: () => cts.Cancel());
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+
+        var pending = await sut.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 12m }, cts.Token);
+        var retry = await sut.ModifyOrderAsync("client-1", new OrderModification { NewQuantity = 12m });
+
+        pending.ReportType.Should().Be(ExecutionReportType.ModificationPending);
+        retry.ReportType.Should().Be(ExecutionReportType.ModificationPending);
+        retry.RejectReason.Should().Be(pending.RejectReason);
+        handler.Requests.Should().ContainSingle(r => IsReplacementPost(r));
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_StaleReadAfterPendingCancel_PreservesConfirmedFillWatermark()
+    {
+        var handler = CreateModificationHandler((_, read) => BuildOrderResponse(
+            state: read <= 7 ? "confirmed" : "cancelled", quantity: "10",
+            filledQuantity: read <= 7 ? "2" : "1", averagePrice: "150"));
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+
+        var pending = await sut.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 5m });
+        var confirmed = await sut.ModifyOrderAsync("client-1", new OrderModification { NewQuantity = 5m });
+
+        pending.OrderStatus.Should().Be(OrderStatus.PendingCancel);
+        confirmed.ReportType.Should().Be(ExecutionReportType.Modified);
+        confirmed.FilledQuantity.Should().Be(2m);
+        var post = handler.Requests.Should().ContainSingle(r => IsReplacementPost(r)).Subject;
+        using var payload = JsonDocument.Parse(post.Body!);
+        payload.RootElement.GetProperty("quantity").GetString().Should().Be("3");
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_ShutdownDuringConfirmation_DoesNotSubmitReplacement()
+    {
+        using var cts = new CancellationTokenSource();
+        var handler = CreateModificationHandler((_, read) =>
+        {
+            if (read == 3)
+                cts.Cancel();
+            return BuildOrderResponse(quantity: "10");
+        });
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+
+        var act = () => sut.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 12m }, cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+        handler.Requests.Should().NotContain(r => IsReplacementPost(r));
+    }
+
+    private static bool IsReplacementPost(RecordedRequest request)
+        => request.Method == HttpMethod.Post && request.Url.EndsWith("/orders/", StringComparison.Ordinal);
+
+    private static RecordingHttpHandler CreateModificationHandler(
+        Func<string, int, HttpContent> orderResponse, bool rejectReplacement = false,
+        bool timeoutReplacement = false, Action? replacementStarted = null,
+        Func<HttpContent>? replacementResponse = null)
+    {
+        var reads = new Dictionary<string, int>();
+        var replacements = 0;
+        return new RecordingHttpHandler((request, _) =>
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            HttpResponseMessage response;
+            if (path == "/accounts/")
+                response = new(HttpStatusCode.OK) { Content = BuildAccountResponse() };
+            else if (path == "/instruments/")
+                response = new(HttpStatusCode.OK) { Content = BuildInstrumentListResponse() };
+            else if (path.EndsWith("/cancel/", StringComparison.Ordinal))
+                response = new(HttpStatusCode.NoContent);
+            else if (path == "/orders/" && request.Method == HttpMethod.Post)
+            {
+                replacementStarted?.Invoke();
+                if (timeoutReplacement)
+                    throw new TaskCanceledException("HTTP request timed out after submission");
+                response = rejectReplacement
+                    ? new(HttpStatusCode.Conflict) { Content = new StringContent("replacement refused") }
+                    : new(HttpStatusCode.OK) { Content = replacementResponse?.Invoke() ?? BuildOrderResponse($"replacement-{++replacements}") };
+            }
+            else if (path.StartsWith("/orders/", StringComparison.Ordinal))
+            {
+                var id = path.Split('/')[2];
+                reads.TryGetValue(id, out var count);
+                reads[id] = ++count;
+                response = new(HttpStatusCode.OK) { Content = orderResponse(id, count) };
+            }
+            else
+                response = new(HttpStatusCode.NotFound) { Content = new StringContent("unexpected") };
+            return Task.FromResult(response);
+        });
     }
 
     // ── GetAccountInfoAsync ───────────────────────────────────────────────

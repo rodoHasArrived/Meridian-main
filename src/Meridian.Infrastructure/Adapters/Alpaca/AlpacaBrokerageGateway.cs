@@ -40,7 +40,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IBrokerageConnectionState, IBrokerageOrderRecoveryGateway
+public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IBrokerageConnectionState, IBrokerageOrderRecoveryGateway
 {
     /// <inheritdoc />
     public bool UsesFaceValuePercentageOfPar(OrderRequest request)
@@ -324,46 +324,6 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             ChildOrders = order?.Legs is { Length: > 0 } childLegs
                 ? childLegs.Select(MapBrokerOrder).ToList().AsReadOnly()
                 : null,
-        };
-        await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
-        return report;
-    }
-
-    /// <inheritdoc />
-    public async Task<ExecutionReport> ModifyOrderAsync(
-        string orderId, OrderModification modification, CancellationToken ct = default)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(orderId);
-        ArgumentNullException.ThrowIfNull(modification);
-        ObjectDisposedException.ThrowIf(_disposed, this);
-        EnsureConnected();
-
-        var payload = new AlpacaOrderModifyPayload
-        {
-            Qty = FormatDecimal(modification.NewQuantity),
-            LimitPrice = FormatDecimal(modification.NewLimitPrice),
-            StopPrice = FormatDecimal(modification.NewStopPrice),
-            Trail = FormatDecimal(modification.NewTrail),
-        };
-
-        using var client = CreateHttpClient();
-        var response = await client.PatchAsJsonAsync(
-            $"{BaseUrl}/v2/orders/{orderId}", payload, AlpacaBrokerageSerializerContext.Default.AlpacaOrderModifyPayload, ct)
-            .ConfigureAwait(false);
-
-        var order = response.IsSuccessStatusCode
-            ? await response.Content.ReadFromJsonAsync(
-                AlpacaBrokerageSerializerContext.Default.AlpacaOrderResponse, ct).ConfigureAwait(false)
-            : null;
-
-        var report = new ExecutionReport
-        {
-            OrderId = order?.Id ?? orderId,
-            ReportType = response.IsSuccessStatusCode ? ExecutionReportType.Modified : ExecutionReportType.Rejected,
-            Symbol = order?.Symbol ?? string.Empty,
-            Side = order?.Side == "sell" ? OrderSide.Sell : OrderSide.Buy,
-            OrderStatus = response.IsSuccessStatusCode ? MapAlpacaStatus(order?.Status) : OrderStatus.Rejected,
-            Timestamp = DateTimeOffset.UtcNow,
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
         return report;
@@ -1440,6 +1400,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         "new" => OrderStatus.Accepted,
         "accepted" => OrderStatus.Accepted,
         "pending_new" => OrderStatus.PendingNew,
+        "pending_replace" => OrderStatus.Accepted,
         "partially_filled" => OrderStatus.PartiallyFilled,
         "filled" => OrderStatus.Filled,
         "pending_cancel" => OrderStatus.PendingCancel,
@@ -1818,6 +1779,8 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
     {
         [JsonPropertyName("id")] public string? Id { get; set; }
         [JsonPropertyName("client_order_id")] public string? ClientOrderId { get; set; }
+        [JsonPropertyName("replaces")] public string? Replaces { get; set; }
+        [JsonPropertyName("replaced_by")] public string? ReplacedBy { get; set; }
         [JsonPropertyName("symbol")] public string? Symbol { get; set; }
         [JsonPropertyName("side")] public string? Side { get; set; }
         [JsonPropertyName("type")] public string? Type { get; set; }

@@ -135,15 +135,15 @@
       "id": "SRC-EXECUTION",
       "path": "src/Meridian.Execution",
       "readme": "src/Meridian.Execution/README.md",
-      "readme_hash": "b9978cc1c9a82d3c58426908532e253f49e4d58b77057e0c5b33e4fcb731eab2",
-      "source_hash": "ac74f47e1c85d6f1f28a68ef5a3684695fd462f781ad7c478276e0dc2343eed5"
+      "readme_hash": "b8130e2f0611dab4f9d97a0c658bf4cbf6a557228340514a18c7a3089476172c",
+      "source_hash": "0e724a40078ec38aae63d509c7515be6b5ed3dccd2b84493b874f667f288cf70"
     },
     {
       "id": "SRC-EXECUTION-SDK",
       "path": "src/Meridian.Execution.Sdk",
       "readme": "src/Meridian.Execution.Sdk/README.md",
-      "readme_hash": "2e2d14457b576ccc946eaa6b216602f3b947ec61317937d6f655981970bc6bb7",
-      "source_hash": "c3257cf420efe4f10fbe1044f83d87f2557a77a7825e83d7dfbccbf09b2f52c5"
+      "readme_hash": "1975f92be81be0ebc70e6b6f5d95875da16275f76a5801c56741e3d67a2de303",
+      "source_hash": "6a917a02914f3737cf10e25587896686aaf709b6995a17b0001ca17aa4c28938"
     },
     {
       "id": "SRC-FSHARP",
@@ -177,8 +177,8 @@
       "id": "SRC-HOST",
       "path": "src/Meridian",
       "readme": "src/Meridian/README.md",
-      "readme_hash": "843a21f235514aedf2f6b431dc5d4e581f4ab0bd02649c8d541a0ced57690896",
-      "source_hash": "6360bdf83da50844fda1b5330e9cfb46c0980aef0ad6ce1362e6ba64930e89eb"
+      "readme_hash": "31dab5a9c3c5aeb527b82dd489f328e210f5d989d2524faf9427ae79814c72f9",
+      "source_hash": "246479184f23847cf348a00d757fe736049b42e3bb9e8cb95e67ba5bc26678fa"
     },
     {
       "id": "SRC-IBAPI-SMOKESTUB",
@@ -191,8 +191,8 @@
       "id": "SRC-INFRASTRUCTURE",
       "path": "src/Meridian.Infrastructure",
       "readme": "src/Meridian.Infrastructure/README.md",
-      "readme_hash": "b5457cad30cbd44807dc6c6a82987e7dca196afcc915a0e4038d475d0b1bd787",
-      "source_hash": "d4b208799cfc9124c1a7c52dddf22178b7365879af6c8c35151739b867a65ce0"
+      "readme_hash": "2be4153c3c238c42d71379d684656a4bdf7bda70bbbbbc4d938bb4e61788282d",
+      "source_hash": "431f84081955a0fefa2aaf883f50d846c68c415040444e0e0ae6ab0a47b0d152"
     },
     {
       "id": "SRC-LAUNCHER",

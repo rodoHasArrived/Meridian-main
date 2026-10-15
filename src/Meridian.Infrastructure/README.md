@@ -11,6 +11,26 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Infrastructure
 
+Broker amendment and cancellation failures retain the broker-observed order status and use
+operation-specific reports. Alpaca amendments resolve explicit client/broker identifier namespaces
+and retain replacement aliases; Interactive Brokers waits for operation acknowledgements and keys
+positions by account plus qualified contract identity. Robinhood replacement submits only after
+confirmed cancellation with cumulative fill evidence, for the intended total less chain fills.
+Unconfirmed Robinhood replacement attempts retain their reference and block further operations
+until reconciliation establishes the outcome.
+
+Running Robinhood read-only account, portfolio, and activity synchronization reads the current
+host-owned OAuth token for each request, including connection, rotation, and revocation. Polling
+distinguishes lifetime cancellation from request timeouts and retains authentication, throttling,
+and outage classifications for failed batches.
+
+Alpha Vantage adjusted OHLC uses the adjusted-close/raw-close ratio independently of the session's
+split coefficient. Yahoo daily history includes boundary padding and uses historical exchange
+timezone rules for session dates, falling back to the supplied offset and then UTC when absent.
+Alpaca symbol search initializes authentication after credentials are assigned. OpenFIGI resolution
+learns canonical identities only from complete, unambiguous exchange and instrument evidence;
+discovery can still return candidate lists. These corrections support `W1-DATA-001` and `W7-LIVE-001`.
+
 Robinhood read-only synchronization logs failed HTTP status codes without endpoint URLs or response
 bodies, which can contain account identifiers or provider-returned private details.
 

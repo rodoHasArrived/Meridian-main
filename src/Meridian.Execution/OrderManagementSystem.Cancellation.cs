@@ -37,19 +37,39 @@ public sealed partial class OrderManagementSystem
             return parkedCancellation;
         }
 
+        gatewayOrderId ??= _gateway is IExplicitOrderCancellationGateway
+            && _orderBrokerIds.TryGetValue(orderId, out var knownBrokerId) ? knownBrokerId : null;
         var cancellationIdentifier = string.IsNullOrWhiteSpace(gatewayOrderId)
             ? new OrderCancellationIdentifier(orderId, OrderCancellationIdentifierKind.ClientOrderId)
             : new OrderCancellationIdentifier(gatewayOrderId, OrderCancellationIdentifierKind.BrokerOrderId);
         var report = await CancelAtGatewayAsync(cancellationIdentifier, ct).ConfigureAwait(false);
+        if (_gateway is not IExplicitOrderCancellationGateway
+            && report.ReportType is ExecutionReportType.Rejected && report.OrderStatus is OrderStatus.Rejected)
+        {
+            // Legacy gateways reuse Rejected for the command result. Only their ordinary
+            // execution stream can establish a separate terminal order rejection.
+            report = report with
+            {
+                ReportType = ExecutionReportType.CancelRejected,
+                OrderStatus = state.Status,
+                Symbol = state.Symbol,
+                Side = state.Side,
+                OrderQuantity = state.Quantity,
+                FilledQuantity = state.FilledQuantity,
+                FillPrice = state.AverageFillPrice
+            };
+        }
         RememberBrokerOrderId(orderId, report);
-        if (report.OrderStatus is not OrderStatus.Cancelled)
+        report = report with { ClientOrderId = orderId };
+        if (report.OrderStatus is not OrderStatus.Cancelled || report.ReportType is ExecutionReportType.CancelRejected)
         {
             // A cancellation can lose a race to execution. Alpaca confirms that race by re-reading
             // the broker order after its DELETE acknowledgement and returns the cumulative fill.
             // Apply it through the same idempotent funnel as the gateway report pump before
             // returning the failed cancellation, so a synchronous result cannot be lost if the
             // adapter's observer stream is absent, delayed, or racing this call.
-            if (IsTerminalStatus(report.OrderStatus)
+            if (report.ReportType is ExecutionReportType.CancelRejected
+                || IsTerminalStatus(report.OrderStatus)
                 || HasCumulativeFillEvidence(report))
             {
                 await ProcessGatewayReportAsync(report, CancellationToken.None).ConfigureAwait(false);
@@ -60,7 +80,7 @@ public sealed partial class OrderManagementSystem
                 : state;
             await RecordOrderLifecycleAuditAsync(
                 action: "OrderCancelRejected",
-                outcome: report.OrderStatus.ToString(),
+                outcome: report.ReportType is ExecutionReportType.CancelRejected ? "Rejected" : report.OrderStatus.ToString(),
                 orderId: orderId,
                 state: observedState,
                 report: report,
@@ -118,7 +138,17 @@ public sealed partial class OrderManagementSystem
 
         if (!string.IsNullOrWhiteSpace(localOrderId) && !string.IsNullOrWhiteSpace(brokerOrderId))
         {
-            _orderBrokerIds[localOrderId] = brokerOrderId;
+            // A late report from an earlier chain member must keep the current routing ID.
+            var rejectedReplacement = report.ReportType is ExecutionReportType.ModificationRejected
+                && report.ReplacesOrderId is { Length: > 0 };
+            if (!rejectedReplacement && (!_orderBrokerIds.TryGetValue(localOrderId, out var currentBrokerId)
+                || !_brokerOrderAliases.ContainsKey(brokerOrderId)
+                    && (string.IsNullOrWhiteSpace(report.ReplacesOrderId)
+                        || string.Equals(report.ReplacesOrderId, currentBrokerId, StringComparison.Ordinal))))
+                _orderBrokerIds[localOrderId] = brokerOrderId;
+            _brokerOrderAliases.TryAdd(brokerOrderId, localOrderId);
+            if (report.ReplacesOrderId is { Length: > 0 } replaced)
+                _brokerOrderAliases.TryAdd(replaced, localOrderId);
         }
     }
 
