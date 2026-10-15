@@ -413,7 +413,13 @@ public sealed class FundAccountEndpointAuthorizationTests
         bankResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         var query = app.Services.GetRequiredService<IAccountQueryService>();
         (await query.GetCustodianPositionsAsync(accountId, asOfDate)).Should().Equal(custodianRequest.Lines);
-        (await query.GetBankStatementLinesAsync(accountId)).Should().Equal(bankRequest.Lines);
+        (await query.GetBankStatementLinesAsync(accountId)).Should().Equal(
+            bankRequest.Lines.Select((line, index) => line with
+            {
+                LineSequence = line.LineSequence ?? index + 1,
+                StatementRevision = bankRequest.StatementRevision,
+                StatementAsOfDate = bankRequest.StatementDate
+            }));
     }
 
     private static IngestCustodianStatementRequest BuildCustodianStatement(Guid accountId, DateOnly asOfDate)
