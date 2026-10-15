@@ -3,7 +3,7 @@ goal_id: operational-integrity-fixes
 objective: Resolve the fourteen supplied operational integrity defects with focused regression coverage.
 status: active
 started_at: '2026-10-15T16:35:32Z'
-updated_at: '2026-10-15T18:26:52Z'
+updated_at: '2026-10-15T18:37:03Z'
 active_task_descriptor: .codex/memory/tasks/operational-integrity-fixes.yml
 progress_inventory:
 - id: offline-retention
@@ -142,13 +142,22 @@ validation_results:
     passed: 13
     skipped: 0
   native_windows: Not run in this Linux environment; setup helpers and production-source WPF probes passed.
-  github_actions: 'Draft PR #3173 open; validation for resolved merge head pending.'
+  github_actions: 'Draft PR #3173 conflict-free. PR9 phase marker added; generated schema, API coverage,
+    documentation coverage, and WPF tracker refreshed for hosted verification.'
   main_integration:
     base_commit: 32d1dba81
     strategy_tests_passed: 773
     final_store_tests_passed: 74
     summary: Preserve main lifecycle/governance behavior, bind scoped recovery hashes and approved accounts,
       and read exact legacy XIRR NaN while keeping other metrics strict.
+  generated_schema:
+    status: passed
+    postgres_version: '16.15'
+    migrations_applied: 125
+    artifact_drift: 0
+    schema_differences: 0
+    summary: Refreshed exactly eight generated contract/catalog files for the lending DTO changes; hosted
+      pinned PostgreSQL 16.14 check pending.
 publication_authorization: User explicitly approved pushing the final commits and opening a draft pull
   request in this chat.
 pull_request_url: https://github.com/rodoHasArrived/Meridian-main/pull/3173

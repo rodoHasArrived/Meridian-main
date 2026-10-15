@@ -1,6 +1,6 @@
 {
   "total_files": 733,
-  "total_lines": 160377,
+  "total_lines": 160389,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2516,7 +2516,7 @@
     },
     {
       "path": "docs/generated/database/contracts/direct-lending-contracts-page-01.md",
-      "line_count": 676,
+      "line_count": 674,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2524,7 +2524,7 @@
     },
     {
       "path": "docs/generated/database/contracts/direct-lending-contracts-page-02.md",
-      "line_count": 176,
+      "line_count": 190,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
