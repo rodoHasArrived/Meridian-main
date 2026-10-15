@@ -38,6 +38,10 @@ actual long-close and short-cover paths. Closing slices take the exact remaining
 relief assigns the division residual to the last slice. Canonical callers allocate transaction and
 functional basis independently from retained amounts. Consumer-specific ordering, currency rounding
 and historical journal reconstruction remain at their existing boundaries.
+Positive pools fail closed when decimal precision cannot retain a positive basis for every consumed
+slice; an exhausted residual is never redistributed into zero-basis parcels. This does not round
+otherwise valid exact allocations to a storage scale. Atomic disposal separately requires positive
+basis exactly representable at its durable twelve-decimal precision.
 
 `ValuationFreshnessPolicy` owns mark admission with required observation dates, complete coverage, a minimum confidence floor, and rejection of future or over-age marks. Compatibility settings can tighten this policy; Allow, Flag, or disabled settings cannot authorize stale values. `ValuationMarkEvidenceGuard` checks the retained position/date evidence at governed lifecycle boundaries. Read-only previews expose which positions would block before any valuation draft is created.
 

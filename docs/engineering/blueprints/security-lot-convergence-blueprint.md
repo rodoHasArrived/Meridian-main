@@ -649,6 +649,17 @@ journal rows, and includes `corporate-action-lot-evidence.json` under report-pac
 AverageCost reporting compares acquisition evidence and successor lineage by value against its
 retained pre-relief pool; changed provenance fails certification even when all monetary facts match.
 
+`AtomicTaxLotJournalStoreTests.AdvanceRefundingReport` connects the PostgreSQL successor receipt
+to `LedgerReportingAuthoritativeSource` and the signed report pack. Its two scenarios start with
+a partially disposed face lot, with and without subsequent amortization, using one persisted
+Statutory book and organization scope. They assert the refunded/unrefunded allocations, separate
+original and current bases in both currencies, retained acquisition FX and holding dates, and
+exclusive Schedule D treatment. They then close the period, reconstruct the stores and reporting
+service, replay the committed action, and compare the complete checkpoint and artifacts. Journals
+and lot histories come from PostgreSQL; tenancy and organization configuration are fixture inputs.
+Execution results belong to the PR's exact head. This test boundary does not supply operator or
+production shadow-operation acceptance.
+
 Amortization reversal/rebook uses the latest unchanged retained mutation and exact original journal.
 A reviewed reversal restores the complete prior basis adjustment and inverses every financial line
 atomically. A same-date rebook requires that reversal receipt and approved correction lineage.

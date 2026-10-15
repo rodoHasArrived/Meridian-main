@@ -70,6 +70,62 @@ public sealed class LotBasisReliefTests
         result.Sum(static slice => slice.CostBasis).Should().Be(10m);
     }
 
+    [Theory]
+    [InlineData(6, 0.0000000000000000000000000004)]
+    [InlineData(2, 0.0000000000000000000000000001)]
+    public void PositivePool_DecimalResidualCannotCreateZeroOrNegativeBasis(int count, decimal basis)
+    {
+        var lots = Enumerable.Repeat(new Lot(1m, 0m), count).ToArray();
+        var consumption = LotConsumption.Consume(lots, count, static lot => lot.Quantity);
+        var allocate = () => LotBasisRelief.Allocate(consumption.Slices, static lot => lot.Quantity,
+            static lot => lot.Basis, new(count, basis));
+
+        allocate.Should().Throw<InvalidOperationException>().WithMessage("*positive*decimal precision*");
+    }
+
+    [Fact]
+    public void PositivePool_PartialReliefBelowDecimalPrecisionIsRefused()
+    {
+        var lot = new Lot(10m, 0.0000000000000000000000000001m);
+        var consumption = LotConsumption.Consume([lot], 1m, static item => item.Quantity);
+        var allocate = () => LotBasisRelief.Allocate(consumption.Slices, static item => item.Quantity,
+            static item => item.Basis, new(lot.Quantity, lot.Basis));
+
+        allocate.Should().Throw<InvalidOperationException>().WithMessage("*positive*decimal precision*");
+    }
+
+    [Fact]
+    public void PositivePool_DurableScaleInputsCannotCertifyAnExhaustedFinalResidual()
+    {
+        // Retained capital-return adjustments can leave tiny current bases on large quantities.
+        // Every input fits twelve decimals, but proportional division exhausts the pool before
+        // the final positive-quantity parcel; bounding that parcel would silently give it zero.
+        var lots = new[]
+        {
+            new Lot(10_000_000_000_000_000m, 0.000000000001m),
+            new Lot(10_000_000_000_000_000m, 0.000000000001m),
+            new Lot(10_000_000_000_000_000m, 0m),
+            new Lot(0.000000000001m, 0m)
+        };
+        var quantity = lots.Sum(static lot => lot.Quantity);
+        var consumption = LotConsumption.Consume(lots, quantity, static lot => lot.Quantity);
+        var allocate = () => LotBasisRelief.Allocate(consumption.Slices, static lot => lot.Quantity,
+            static lot => lot.Basis, new(quantity, lots.Sum(static lot => lot.Basis)));
+
+        allocate.Should().Throw<InvalidOperationException>().WithMessage("*positive*decimal precision*");
+    }
+
+    [Fact]
+    public void ZeroBasisPool_PreservesExplicitZeroBasis()
+    {
+        var lots = new[] { new Lot(1m, 0m), new Lot(1m, 0m) };
+        var consumption = LotConsumption.Consume(lots, 2m, static lot => lot.Quantity);
+        var result = LotBasisRelief.Allocate(consumption.Slices, static lot => lot.Quantity,
+            static lot => lot.Basis, new(2m, 0m));
+
+        result.Select(static slice => slice.CostBasis).Should().Equal(0m, 0m);
+    }
+
     [Fact]
     public void ClosingRelief_PreservesExactBasisInsteadOfExtendingRoundedUnitQuote()
     {
