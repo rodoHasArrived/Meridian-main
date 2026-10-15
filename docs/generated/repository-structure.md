@@ -1937,6 +1937,7 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── reconciliation-operations.md
 │   │   ├── runbook-template.md
+│   │   ├── security-master-governed-edit-rollout.md
 │   │   ├── security-master-normalized-identifier-migration.md
 │   │   ├── service-level-objectives.md
 │   │   ├── statement-reconciliation-report-operations.md
@@ -4180,6 +4181,8 @@ Meridian-main
 │   │   │   ├── SecurityMasterOperationalReadinessService.cs
 │   │   │   ├── SecurityMasterPricingService.ClosePrices.cs
 │   │   │   ├── SecurityMasterPricingService.cs
+│   │   │   ├── SecurityMasterProjectionChangeHandler.cs
+│   │   │   ├── SecurityMasterProjectionChangeListener.cs
 │   │   │   ├── SecurityMasterProjectionService.cs
 │   │   │   ├── SecurityMasterProjectionWarmupService.cs
 │   │   │   ├── SecurityMasterPublishFailedException.cs
@@ -4418,6 +4421,7 @@ Meridian-main
 │   │   ├── Catalog
 │   │   │   ├── DirectoryIndex.cs
 │   │   │   ├── ICanonicalSymbolRegistry.cs
+│   │   │   ├── SecurityMasterLegacyIdentifierCleanup.cs
 │   │   │   ├── StorageCatalog.cs
 │   │   │   └── SymbolRegistry.cs
 │   │   ├── CertificatesOfDeposit
@@ -6498,7 +6502,8 @@ Meridian-main
 │   │   │   │   ├── 034_security_master_dated_price_history.sql
 │   │   │   │   ├── 035_security_master_price_selection_receipts.sql
 │   │   │   │   ├── 036_security_master_workbench_generations.sql
-│   │   │   │   └── 037_security_master_close_price_snapshots.sql
+│   │   │   │   ├── 037_security_master_close_price_snapshots.sql
+│   │   │   │   └── 038_security_master_alias_revisions.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -6556,9 +6561,11 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterStore.TermsProjection.cs
 │   │   │   ├── PostgresStructuredCreditReferenceProjectionStore.cs
 │   │   │   ├── PostgresSwapReferenceProjectionStore.cs
+│   │   │   ├── SecurityAliasSnapshot.cs
 │   │   │   ├── SecurityMasterDbMapper.cs
 │   │   │   ├── SecurityMasterMigrationRunner.cs
 │   │   │   ├── SecurityMasterProjectionCache.cs
+│   │   │   ├── SecurityProjectionChangeNotification.cs
 │   │   │   └── SecurityTermsProjectionRegistry.cs
 │   │   ├── Services
 │   │   │   ├── AdaptivePartitionPlacementPlanner.cs
@@ -6587,6 +6594,8 @@ Meridian-main
 │   │   │   ├── StorageChecksumService.cs
 │   │   │   ├── StorageSearchService.cs
 │   │   │   ├── SymbolRegistryService.cs
+│   │   │   ├── SymbolRegistryService.LegacyIdentifierCleanup.cs
+│   │   │   ├── SymbolRegistryService.SecurityMaster.cs
 │   │   │   └── TierMigrationService.cs
 │   │   ├── Sinks
 │   │   │   ├── CatalogSyncSink.cs
@@ -10915,6 +10924,7 @@ Meridian-main
 │   │   │   ├── CorporateActionTypeDescriptorCatalogTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── DayCountConventionsTests.cs
+│   │   │   ├── FaceValueLotOddPeriodTests.cs
 │   │   │   ├── FaceValueLotTests.cs
 │   │   │   ├── KeyedGatePoolTests.cs
 │   │   │   ├── NullCorporateActionOperationsServiceTests.cs
@@ -10925,6 +10935,7 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterPricingHistoryTests.cs
 │   │   │   ├── PostgresSecurityMasterRevisionStoreTests.cs
 │   │   │   ├── PostgresSecurityMasterStoreOptionalReadersTests.cs
+│   │   │   ├── RegistryMigratedProjectionGoldenTests.cs
 │   │   │   ├── SecurityAccountingInstrumentClassTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
@@ -10935,18 +10946,24 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsFieldEditValidatorTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaTests.cs
+│   │   │   ├── SecurityEconomicTermsClassAwareBridgeTests.cs
 │   │   │   ├── SecurityEconomicTermsV2BridgeCoverageTests.cs
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
+│   │   │   ├── SecurityMasterAliasMigrationTests.cs
 │   │   │   ├── SecurityMasterAliasRecordedHistoryTests.cs
+│   │   │   ├── SecurityMasterAliasSnapshotCacheTests.cs
 │   │   │   ├── SecurityMasterAmortizationLedgerBridgeTests.cs
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
+│   │   │   ├── SecurityMasterCanonicalSymbolSeedFallbackTests.cs
+│   │   │   ├── SecurityMasterCanonicalSymbolSeedReconciliationTests.cs
 │   │   │   ├── SecurityMasterClosePriceServiceTests.cs
 │   │   │   ├── SecurityMasterConflictServiceTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterCorporateActionCommandServiceTests.cs
 │   │   │   ├── SecurityMasterCostBasisAdjustmentServiceTests.cs
+│   │   │   ├── SecurityMasterCrossNodeConsistencyTests.cs
 │   │   │   ├── SecurityMasterCsvParserTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
 │   │   │   ├── SecurityMasterDatabaseFixture.cs
@@ -10956,24 +10973,34 @@ Meridian-main
 │   │   │   ├── SecurityMasterGovernedConcurrencyPostgresTests.cs
 │   │   │   ├── SecurityMasterGovernedConcurrencyPostgresTests.Recovery.cs
 │   │   │   ├── SecurityMasterHistoricalSymbolTimelineResolverTests.cs
+│   │   │   ├── SecurityMasterIdentifierLifecycleTests.cs
+│   │   │   ├── SecurityMasterIdentifierValidityLifecycleTests.cs
 │   │   │   ├── SecurityMasterImportServiceTests.cs
 │   │   │   ├── SecurityMasterLedgerBridgeAutoReverseTests.cs
 │   │   │   ├── SecurityMasterLedgerBridgeTests.cs
 │   │   │   ├── SecurityMasterMigrationRunnerTests.cs
 │   │   │   ├── SecurityMasterOperationalReadinessServiceTests.cs
+│   │   │   ├── SecurityMasterPostgresProjectionNotificationTests.cs
+│   │   │   ├── SecurityMasterPostgresProjectionNotificationTests.Monotonicity.cs
 │   │   │   ├── SecurityMasterPostgresRoundTripTests.cs
 │   │   │   ├── SecurityMasterPostingAuthorityPostgresTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterPricingServiceTests.cs
 │   │   │   ├── SecurityMasterProjectionCacheTests.cs
+│   │   │   ├── SecurityMasterProjectionChangeNotificationTests.cs
 │   │   │   ├── SecurityMasterProjectionCodecTests.cs
 │   │   │   ├── SecurityMasterProjectionServiceSnapshotTests.cs
+│   │   │   ├── SecurityMasterProjectionWarmupLifecycleTests.cs
 │   │   │   ├── SecurityMasterQueryServiceAsOfTests.cs
 │   │   │   ├── SecurityMasterQueryServiceEquityTermsTests.cs
 │   │   │   ├── SecurityMasterQueryServiceProfileSearchTests.cs
 │   │   │   ├── SecurityMasterRebuildOrchestratorTests.cs
+│   │   │   ├── SecurityMasterRecordedIdentifierPostgresTests.cs
+│   │   │   ├── SecurityMasterRecordedIdentifierQueryTests.cs
 │   │   │   ├── SecurityMasterReferenceLookupTests.cs
 │   │   │   ├── SecurityMasterSchemaVersionsTests.cs
+│   │   │   ├── SecurityMasterServiceAliasCacheRefreshTests.cs
+│   │   │   ├── SecurityMasterServiceCommittedReadbackTests.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.cs
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
@@ -11133,6 +11160,10 @@ Meridian-main
 │   │   │   ├── QuotaEnforcementServiceTests.cs
 │   │   │   ├── RecurringJournalPeriodAuthorityPostgresTests.cs
 │   │   │   ├── ReportingOperationalStoreTests.cs
+│   │   │   ├── SecurityMasterCanonicalMovePlanTests.cs
+│   │   │   ├── SecurityMasterCanonicalWithdrawalDefinitionTests.cs
+│   │   │   ├── SecurityMasterLegacyIdentifierCleanupTests.cs
+│   │   │   ├── SecurityMasterSymbolReconciliationTests.cs
 │   │   │   ├── SourceRegistryPersistenceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.cs
 │   │   │   ├── StorageChecksumServiceTests.cs
@@ -11141,6 +11172,7 @@ Meridian-main
 │   │   │   ├── StorageSearchServiceTests.cs
 │   │   │   ├── StorageSinkRegistryTests.cs
 │   │   │   ├── StrictTenantMutationPostgresTests.cs
+│   │   │   ├── SymbolAliasRepresentativeTests.cs
 │   │   │   ├── SymbolRegistryServiceTests.cs
 │   │   │   ├── TenantCutoverInspectorTests.cs
 │   │   │   ├── TenantLowerIndexMigrationTests.cs

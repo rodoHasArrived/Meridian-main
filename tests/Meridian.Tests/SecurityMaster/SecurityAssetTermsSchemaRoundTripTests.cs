@@ -30,7 +30,7 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
     /// a fixed-coupon field on a floating bond — appears with an explicit null). The coverage test
     /// below fails when a class or key is missing, so schema growth forces this table to grow with it.
     /// </summary>
-    private static readonly IReadOnlyDictionary<string, object> FullPayloads = new Dictionary<string, object>(StringComparer.Ordinal)
+    internal static readonly IReadOnlyDictionary<string, object> FullPayloads = new Dictionary<string, object>(StringComparer.Ordinal)
     {
         ["Equity"] = new
         {
@@ -726,7 +726,7 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
     /// A stored row as a node that did not write it sees it: the projection goes straight into the
     /// READ mapping, with no create command and therefore no write-mode validation in the way.
     /// </summary>
-    private static SecurityProjectionRecord LegacyProjection(string assetClass, JsonElement assetSpecificTerms)
+    internal static SecurityProjectionRecord LegacyProjection(string assetClass, JsonElement assetSpecificTerms)
     {
         var asOf = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
         return new SecurityProjectionRecord(
@@ -770,7 +770,7 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
     /// Runs a payload once through the real codec seam (C# deserializer → F# domain → F# serializer)
     /// and returns the canonical serialized asset-specific-terms document.
     /// </summary>
-    private static JsonElement SerializeThroughDomain(string assetClass, object payload)
+    internal static JsonElement SerializeThroughDomain(string assetClass, object payload)
     {
         var snapshot = CreateSnapshot(assetClass, payload);
         return JsonDocument.Parse(snapshot.AssetSpecificTermsJson).RootElement.Clone();

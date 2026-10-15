@@ -2878,6 +2878,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Catalog.ICanonicalSymbolRegistrySecurityMasterWriter"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Catalog.ISecurityMasterLegacyIdentifierCleanupWriter"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader"
     },
     {
@@ -2909,6 +2921,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Catalog.SchemaReference"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupValidation"
     },
     {
       "kind": "contract-set-member",
@@ -25953,6 +25989,30 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest",
+      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt",
+      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupValidation",
+      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Catalog.StorageCatalog",
       "target": "contract:Meridian.Contracts.Catalog.CatalogConfiguration"
     },
@@ -26009,6 +26069,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Catalog.SymbolRegistry",
       "target": "contract:Meridian.Contracts.Catalog.IdentifierIndex"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Catalog.SymbolRegistry",
+      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt"
     },
     {
       "kind": "contract-reference",
@@ -47755,6 +47821,31 @@
       "target": "schema:asset_operations"
     },
     {
+      "constraint": "security_alias_revisions_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.security_alias_revisions",
+      "target": "database:security_master.securities"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_alias_revisions_revision_check on security_master.security_alias_revisions",
+      "target": "database:security_master.security_alias_revisions.revision"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_alias_revisions_security_id_fkey on security_master.security_alias_revisions",
+      "target": "database:security_master.securities.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_alias_revisions_security_id_fkey on security_master.security_alias_revisions",
+      "target": "database:security_master.securities_pkey"
+    },
+    {
       "constraint": "security_aliases_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -49337,6 +49428,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_alias_revisions"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_aliases"
     },
     {
@@ -49545,7 +49642,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "6bc5ac0dad393d97a5a16e0de8e3d9188bce1b3108708949b8f22f1ea3dbe1aa",
+  "fingerprint": "5aa30ad4197563e650d56e59123fe17fada25f42dd089e25a245ee2f19bbfa67",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -52474,6 +52571,18 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Catalog.ICanonicalSymbolRegistrySecurityMasterWriter",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Catalog.ICanonicalSymbolRegistrySecurityMasterWriter"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Catalog.ISecurityMasterLegacyIdentifierCleanupWriter",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Catalog.ISecurityMasterLegacyIdentifierCleanupWriter"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader"
@@ -52507,6 +52616,30 @@
       "id": "contract:Meridian.Contracts.Catalog.SchemaReference",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Catalog.SchemaReference"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupValidation",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupValidation"
     },
     {
       "classification": "class",
@@ -71917,6 +72050,27 @@
       "label": "security_master.securities_pkey"
     },
     {
+      "id": "database:security_master.security_alias_revisions",
+      "kind": "database-table",
+      "label": "security_master.security_alias_revisions",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_alias_revisions.revision",
+      "kind": "database-object",
+      "label": "security_master.security_alias_revisions.revision"
+    },
+    {
+      "id": "database:security_master.security_alias_revisions_revision_check on security_master.security_alias_revisions",
+      "kind": "database-object",
+      "label": "security_master.security_alias_revisions_revision_check on security_master.security_alias_revisions"
+    },
+    {
+      "id": "database:security_master.security_alias_revisions_security_id_fkey on security_master.security_alias_revisions",
+      "kind": "database-object",
+      "label": "security_master.security_alias_revisions_security_id_fkey on security_master.security_alias_revisions"
+    },
+    {
       "id": "database:security_master.security_aliases",
       "kind": "database-table",
       "label": "security_master.security_aliases",
@@ -72425,11 +72579,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3272,
-    "contract_set_memberships": 3856,
-    "edges": 8232,
-    "foreign_keys": 136,
+    "contract_references": 3277,
+    "contract_set_memberships": 3862,
+    "edges": 8248,
+    "foreign_keys": 137,
     "logical_references": 6,
-    "nodes": 3964
+    "nodes": 3974
   }
 }

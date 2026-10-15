@@ -439,7 +439,7 @@ public static partial class SecurityMasterEndpoints
         /// </summary>
         /// <remarks>
         /// <para>A new alias is created, or an identical request for the same alias ID is replayed idempotently.</para>
-        /// <para>Material replacement or retirement of an existing alias ID returns 409 until append-only alias revisions are available. A new ID is additive; it does not retire the old alias.</para>
+        /// <para>A material change to an existing alias ID is recorded as a correction: an alias revision is appended and the current alias updated, while recorded-as-of reads before the correction keep the prior values. Re-pointing an alias ID at a different security returns 409. A new ID is additive; it does not retire the old alias.</para>
         /// <para>Supported identifier kinds: ISIN, CUSIP, Ticker, FIGI, SEDOL, LEI, RIC, Bloomberg ID, etc.</para>
         /// <para>Returns 200 OK with the upserted alias detail.</para>
         /// </remarks>
