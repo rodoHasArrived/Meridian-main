@@ -751,7 +751,8 @@ public sealed class PromotionService
             ParameterSet: sourceRun.ParameterSet,
             ParentRunId: sourceRun.RunId,
             FundProfileId: sourceRun.FundProfileId,
-            FundDisplayName: sourceRun.FundDisplayName);
+            FundDisplayName: sourceRun.FundDisplayName,
+            FundAccountId: sourceRun.FundAccountId);
 
     private static string? GetRetainedTargetValidationError(
         StrategyRunEntry sourceRun,
@@ -761,6 +762,7 @@ public sealed class PromotionService
         if (!string.Equals(retainedTarget.RunId, promotionRecord.TargetRunId, StringComparison.Ordinal) ||
             !string.Equals(retainedTarget.ParentRunId, sourceRun.RunId, StringComparison.Ordinal) ||
             !string.Equals(retainedTarget.StrategyId, sourceRun.StrategyId, StringComparison.Ordinal) ||
+            retainedTarget.FundAccountId != sourceRun.FundAccountId ||
             retainedTarget.RunType != promotionRecord.TargetRunType ||
             !string.Equals(retainedTarget.AuditReference, promotionRecord.AuditReference, StringComparison.Ordinal))
         {

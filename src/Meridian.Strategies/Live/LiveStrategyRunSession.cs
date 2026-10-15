@@ -172,10 +172,16 @@ internal sealed class LiveStrategyRunSession
         {
             await _strategy.StartAsync(_context, ct).ConfigureAwait(false);
             _strategy.Initialize(_context);
-            await _repository.RecordLifecycleEventAsync(
-                _run.Started(ActorId, "Run activated on the live trading engine."),
-                StrategyRunLifecycleEventType.Started,
-                ct).ConfigureAwait(false);
+            // Startup resumes an already-started durable run. Its retained start receipt remains
+            // authoritative; another Started event would be an illegal duplicate transition.
+            var retained = await _repository.GetRunByIdAsync(_run.RunId, ct).ConfigureAwait(false);
+            if (retained?.LastLifecycleEvent != StrategyRunLifecycleEventType.Started)
+            {
+                await _repository.RecordLifecycleEventAsync(
+                    _run.Started(ActorId, "Run activated on the live trading engine."),
+                    StrategyRunLifecycleEventType.Started,
+                    ct).ConfigureAwait(false);
+            }
 
             _logger.LogInformation(
                 "Live session started: run {RunId}, strategy {StrategyId} ({StrategyName}), mode {RunType}, universe [{Universe}]",
@@ -734,6 +740,7 @@ internal sealed class LiveStrategyRunSession
         },
         ClientOrderId = clientOrderId,
         StrategyId = _run.StrategyId,
+        FundAccountId = _run.FundAccountId,
         Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["actor"] = ActorId,

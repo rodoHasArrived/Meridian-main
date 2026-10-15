@@ -16,6 +16,75 @@ namespace Meridian.Tests.Strategies;
 public sealed class StrategyRunStoreTests
 {
     [Fact]
+    public void StartForFundAccount_RequiresAnExplicitNonEmptyAccount()
+    {
+        var create = () => StrategyRunEntry.StartForFundAccount("strategy-account", "Scoped Strategy", RunType.Live, Guid.Empty);
+
+        create.Should().Throw<ArgumentException>().WithParameterName("fundAccountId");
+    }
+
+    [Fact]
+    public async Task DurableStore_FundAccountSurvivesRestartAndCannotChangeOrLoseItsHashBinding()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var accountId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            var entry = StrategyRunEntry.StartForFundAccount("strategy-account", "Scoped Strategy", RunType.Live, accountId);
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            await store.RecordRunAsync(entry);
+
+            var restarted = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var retained = (await restarted.GetRunByIdAsync(entry.RunId))!;
+            retained.FundAccountId.Should().Be(accountId);
+            retained.InputHashSha256.Should().Be(StrategyRunEntry.ComputeAccountBoundInputHash(retained));
+
+            var changed = retained.ActivationDeferred("Retry scoped launch.") with { FundAccountId = Guid.NewGuid() };
+            var changeWithOldHash = () => restarted.RecordRunAsync(changed);
+            await changeWithOldHash.Should().ThrowAsync<ArgumentException>().WithMessage("*fund account*");
+
+            var changeWithNewHash = () => restarted.RecordRunAsync(changed with
+            {
+                InputHashSha256 = StrategyRunEntry.ComputeAccountBoundInputHash(changed)
+            });
+            await changeWithNewHash.Should().ThrowAsync<InvalidOperationException>().WithMessage("*immutable*");
+
+            var removed = retained.ActivationDeferred("Retry without scope.") with
+            {
+                FundAccountId = null,
+                InputHashSha256 = null
+            };
+            var removeScope = () => restarted.RecordRunAsync(removed);
+            await removeScope.Should().ThrowAsync<InvalidOperationException>().WithMessage("*immutable*");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task DurableStore_UnscopedHashCannotAuthorizeNewFundAccount()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var entry = StrategyRunEntry.Start("strategy-account", "Scoped Strategy", RunType.Live) with
+            {
+                FundAccountId = Guid.NewGuid()
+            };
+            var record = () => store.RecordRunAsync(entry);
+
+            await record.Should().ThrowAsync<ArgumentException>().WithMessage("*fund account*");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task GetRunByIdAsync_ReturnsRecordedRun()
     {
         var store = new StrategyRunStore();

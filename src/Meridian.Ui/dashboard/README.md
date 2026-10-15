@@ -11,6 +11,17 @@ last_reviewed: 2026-10-11
 
 # src/Meridian.Ui/dashboard
 
+Historical price charts require a complete successful historical query before showing prices
+or indicators. Failed and partial queries show an explicit incomplete state with failed source
+paths and Retry; incomplete comparison series are withheld and named in an alert. The shared
+API retains recovered bars and `fileFailures` for investigation without presenting them as a
+complete series. Focused coverage lives in `historical-chart.test.tsx`.
+
+Loan book accepts numeric and named host enums and preserves unknown values without inventing
+USD. Server `currencyTotals` retain their denomination and an explicit no-FX notice; scalar
+totals without a currency are withheld. Principal and undrawn amounts group by facility base
+currency, while collateral retains its own appraisal currency.
+
 The generated `api-routes.ts` catalog includes exact account-owned ledger-book oversight routes
 for cash continuity, reviewed close prices and cash forecasts. Regenerate it from shared
 `UiApiRoutes` and rebuild the tracked workstation bundle when those routes change; server-owned

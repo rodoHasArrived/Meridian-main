@@ -433,6 +433,12 @@ public sealed class StrategyRunStore : IStrategyRepository
         var v2InputHash = ComputeV2InputHash(entry);
         var legacyInputHash = ComputeLegacyInputHash(entry);
         var realismBoundInputHash = ComputeRealismBoundInputHash(entry);
+        if (entry.FundAccountId == Guid.Empty || (entry.FundAccountId.HasValue &&
+            !string.Equals(entry.InputHashSha256, canonicalInputHash, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidDataException(
+                $"Strategy run history sequence {record.Sequence} retained an input hash that does not bind its fund account.");
+        }
         if (!string.Equals(
                 entry.InputHashSha256,
                 canonicalInputHash,
@@ -774,6 +780,16 @@ public sealed class StrategyRunStore : IStrategyRepository
         var v2InputHash = ComputeV2InputHash(entry);
         var legacyInputHash = ComputeLegacyInputHash(entry);
         var realismBoundInputHash = ComputeRealismBoundInputHash(entry);
+        if (entry.FundAccountId == Guid.Empty)
+        {
+            throw new ArgumentException("Strategy run fund account must not be empty.", nameof(entry));
+        }
+        if (entry.FundAccountId.HasValue &&
+            !string.IsNullOrWhiteSpace(entry.InputHashSha256) &&
+            !string.Equals(entry.InputHashSha256, inputHash, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Strategy run input hash does not bind its fund account.", nameof(entry));
+        }
         var matchesRealismBound =
             string.Equals(entry.InputHashSha256, realismBoundInputHash, StringComparison.OrdinalIgnoreCase);
         if (!string.IsNullOrWhiteSpace(entry.InputHashSha256) &&
@@ -788,9 +804,8 @@ public sealed class StrategyRunStore : IStrategyRepository
                 nameof(entry));
         }
 
-        // A v4 realism-bound hash is strictly more specific than the canonical v3 digest, so it is
-        // retained verbatim. Overwriting it with the v3 recomputation would silently discard the
-        // execution-realism settings the caller asked to bind into run identity.
+        // Unscoped runs may retain their more specific v4 realism-bound digest. Scoped runs
+        // require v5, which binds both execution realism and the authorized account.
         var retainedInputHash = matchesRealismBound ? realismBoundInputHash : inputHash;
 
         return entry with
@@ -999,6 +1014,7 @@ public sealed class StrategyRunStore : IStrategyRepository
             !string.Equals(previous.LedgerReference, current.LedgerReference, StringComparison.Ordinal) ||
             !string.Equals(previous.AuditReference, current.AuditReference, StringComparison.Ordinal) ||
             !string.Equals(previous.FundProfileId, current.FundProfileId, StringComparison.Ordinal) ||
+            previous.FundAccountId != current.FundAccountId ||
             !EvidenceLoopEquals(previous, current);
         var inputHashChanged = !string.Equals(
             previous.InputHashSha256,
@@ -1132,8 +1148,14 @@ public sealed class StrategyRunStore : IStrategyRepository
         return string.Equals(previousWithoutEvidence, currentWithoutEvidence, StringComparison.Ordinal);
     }
 
-    private static string ComputeCanonicalInputHash(StrategyRunEntry entry) =>
-        StrategyRunEntry.HasNonBlankEvidenceDeclarations(
+    private static string ComputeCanonicalInputHash(StrategyRunEntry entry)
+    {
+        if (entry.FundAccountId.HasValue)
+        {
+            return StrategyRunEntry.ComputeAccountBoundInputHash(entry);
+        }
+
+        return StrategyRunEntry.HasNonBlankEvidenceDeclarations(
             entry.OperatorAcceptanceCriteria,
             entry.RetainedEvidenceReferences,
             entry.AccountingRecordReferences,
@@ -1142,6 +1164,7 @@ public sealed class StrategyRunStore : IStrategyRepository
             entry.GovernedReportReferences)
             ? ComputeEvidenceBoundInputHash(entry)
             : ComputeV2InputHash(entry);
+    }
 
     private static string ComputeEvidenceBoundInputHash(StrategyRunEntry entry) =>
         StrategyRunEntry.ComputeEvidenceBoundInputHash(

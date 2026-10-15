@@ -1,0 +1,104 @@
+version: 1
+goal_id: operational-integrity-fixes
+objective: Resolve the fourteen supplied operational integrity defects with focused
+  regression coverage.
+status: active
+started_at: '2026-10-15T16:35:32Z'
+updated_at: '2026-10-15T16:48:06Z'
+active_task_descriptor: .codex/memory/tasks/operational-integrity-fixes.yml
+progress_inventory:
+- id: offline-retention
+  status: completed
+  summary: Offline evidence survives actual cleanup alongside recognized market files;
+    33 production-source service tests passed.
+  evidence_refs:
+  - tests/Meridian.Wpf.Tests/Services/RetentionAssuranceServiceTests.cs
+  updated_at: '2026-10-15T16:48:06Z'
+- id: oms-brokerage-limits
+  status: in_progress
+  summary: oms brokerage limits
+  evidence_refs:
+  - src/Meridian.Execution/OrderManagementSystem.cs
+  updated_at: '2026-10-15T16:35:32Z'
+- id: late-adjustment-role
+  status: in_progress
+  summary: late adjustment role
+  evidence_refs:
+  - src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs
+  updated_at: '2026-10-15T16:35:32Z'
+- id: valuation-entity-scope
+  status: in_progress
+  summary: valuation entity scope
+  evidence_refs:
+  - src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs
+  updated_at: '2026-10-15T16:35:32Z'
+- id: etl-delivery-identity
+  status: completed
+  summary: etl delivery identity
+  evidence_refs:
+  - src/Meridian.Infrastructure/Etl/LocalFileSourceReader.cs
+  - tests/Meridian.Tests/Infrastructure/Etl/LocalFileSourceReaderPostProcessingTests.cs
+  updated_at: '2026-10-15T16:48:06Z'
+- id: tier-migration-codec
+  status: completed
+  summary: tier migration codec
+  evidence_refs:
+  - src/Meridian.Storage/Services/TierMigrationService.cs
+  - tests/Meridian.Tests/Storage/TierMigrationServiceTests.cs
+  updated_at: '2026-10-15T16:48:06Z'
+- id: percentage-drawdown
+  status: in_progress
+  summary: percentage drawdown
+  evidence_refs:
+  - src/Meridian.Strategies/Live/LiveRunMetricsTracker.cs
+  updated_at: '2026-10-15T16:35:32Z'
+- id: live-strategy-account
+  status: in_progress
+  summary: live strategy account
+  evidence_refs:
+  - src/Meridian.Strategies/Live/LiveStrategyRunSession.cs
+  updated_at: '2026-10-15T16:35:32Z'
+- id: loan-wire-enums
+  status: in_progress
+  summary: loan wire enums
+  evidence_refs:
+  - src/Meridian.Ui/dashboard/src/screens/loan-book-screen.view-model.ts
+  updated_at: '2026-10-15T16:35:32Z'
+- id: loan-currency-totals
+  status: completed
+  summary: loan currency totals
+  evidence_refs:
+  - src/Meridian.Application/DirectLending/PostgresDirectLendingQueryService.cs
+  - tests/Meridian.DirectLending.Tests/DirectLendingServiceTests.cs
+  updated_at: '2026-10-15T16:48:06Z'
+- id: loan-collateral-totals
+  status: completed
+  summary: loan collateral totals
+  evidence_refs:
+  - src/Meridian.Application/DirectLending/PostgresDirectLendingQueryService.cs
+  - tests/Meridian.DirectLending.Tests/DirectLendingPostgresIntegrationTests.cs
+  updated_at: '2026-10-15T16:48:06Z'
+- id: normalized-export-window
+  status: in_progress
+  summary: normalized export window
+  evidence_refs:
+  - src/Meridian.DataIntegration/Etl/EtlExportService.cs
+  updated_at: '2026-10-15T16:35:32Z'
+- id: historical-completeness
+  status: in_progress
+  summary: historical completeness
+  evidence_refs:
+  - src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs
+  updated_at: '2026-10-15T16:35:32Z'
+- id: setup-uninstall-races
+  status: completed
+  summary: setup uninstall races
+  evidence_refs:
+  - src/Meridian.Setup/Program.cs
+  - tests/Meridian.Setup.Tests/InstallationTransactionTests.cs
+  updated_at: '2026-10-15T16:48:06Z'
+next_actions:
+- Complete focused implementation lanes and regression tests.
+- Integrate all fixes and run bash scripts/ci.sh.
+open_questions: []
+promotion_candidates: []

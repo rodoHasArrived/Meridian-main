@@ -53,6 +53,22 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 ## Important workflows
 
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
+Live and paper metrics retain the worst currency decline and worst percentage decline independently;
+Calmar and promotion gates use the percentage maximum even when a later, larger currency loss has a
+smaller percentage impact. Backtest metrics use the same convention and include initial capital as
+the first equity peak.
+`StrategyRunEntry.FundAccountId` retains the authorized execution account independently of fund
+profile and financial-account labels. Promotion copies it to the target, durable scoped runs bind it
+in the v5 input hash, and replay and lifecycle updates reject account mutation or removal. Production
+callers create scoped runs with `StrategyRunEntry.StartForFundAccount`, passing the authorized account
+explicitly; the factory computes the v5 hash together with optional evidence and execution realism.
+The established `Start` and `StartWithEvidence` overloads retain their unscoped behavior and CLR
+signatures. Advanced direct-constructor callers must supply the account-bound hash or leave the hash
+unset for the durable store to compute.
+Live launch defers when the retained account is absent or empty. Strategy orders carry the retained
+account into the production OMS and its account-scoped W7 readiness gate, including after host restart;
+run parameters cannot replace it. Legacy unscoped histories continue to replay without acquiring an
+execution account.
 Production `StrategyRunStore` composition replays a versioned, source-generated run snapshot from
 the shared Contracts-owned operational case-history port. Start, pause, and stop commands retain
 intent before invoking the external strategy, then return a validated Succeeded,

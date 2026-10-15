@@ -423,7 +423,8 @@ public sealed partial class WorkstationEndpointsTests
                 RegisterOperationsContinuityServices(services);
                 RegisterScopedCloseAccessServices(services, ledgerBookId, fundAccountId, "2026-07");
             },
-            currentUserPermissions: UserPermission.AdminMaintenance);
+            currentUserPermissions: UserPermission.AdminMaintenance,
+            currentUserRole: UserRole.Controller);
         var client = app.GetTestClient();
 
         using var startResponse = await client.PostAsJsonAsync(

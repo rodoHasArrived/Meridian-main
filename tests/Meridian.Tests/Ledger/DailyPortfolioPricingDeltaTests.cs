@@ -21,6 +21,21 @@ public sealed class DailyPortfolioPricingDeltaTests
         AsOf.AddDays(-30));
 
     [Fact]
+    public void BuildDrafts_IdenticalMarksForDifferentEntities_HaveDistinctRetryIdentity()
+    {
+        var mark = Mark("AAPL", Guid.NewGuid(), 100m, 110m, 1000m, "price://aapl/shared-close");
+        AutomatedJournalDraft Draft(string entityId) => DailyPortfolioPricingDraftBuilder.BuildDrafts(
+            new DailyPortfolioPricingInput(Policy, "2026-07", AsOf, "USD", [mark], entityId)).Single();
+
+        var first = Draft("entity-a");
+        var second = Draft("entity-b");
+
+        first.Metadata.IdempotencyKey.Should().NotBe(second.Metadata.IdempotencyKey);
+        first.Lines.Should().OnlyContain(line => line.dimensions!.EntityId == "entity-a");
+        second.Lines.Should().OnlyContain(line => line.dimensions!.EntityId == "entity-b");
+    }
+
+    [Fact]
     public void Project_AbsentAndZeroCarryingValues_PreservesExplicitSemanticsAndUsesDelta()
     {
         var absentSecurityId = Guid.Parse("10000000-0000-0000-0000-000000000001");

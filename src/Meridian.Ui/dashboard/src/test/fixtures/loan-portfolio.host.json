@@ -1,0 +1,70 @@
+{
+  "totalLoans": 2,
+  "activeLoans": 1,
+  "defaultedLoans": 1,
+  "nonPerformingLoans": 0,
+  "workoutLoans": 0,
+  "totalCommitment": null,
+  "totalPrincipalOutstanding": null,
+  "totalInterestAccruedUnpaid": null,
+  "totalPenaltyAccruedUnpaid": null,
+  "totalAvailableToDraw": null,
+  "totalCollateralValue": null,
+  "loans": [
+    {
+      "loanId": "00000000-0000-0000-0000-000000000001",
+      "facilityName": "Harbour USD",
+      "borrowerId": "00000000-0000-0000-0000-000000000003",
+      "borrowerName": "Harbour Logistics",
+      "status": 2,
+      "baseCurrency": 0,
+      "commitmentAmount": 1000000,
+      "principalOutstanding": 100000,
+      "interestAccruedUnpaid": 0,
+      "penaltyAccruedUnpaid": 0,
+      "availableToDraw": 900000,
+      "originationDate": "2026-03-22",
+      "maturityDate": "2029-03-22",
+      "lastAccrualDate": null,
+      "lastPaymentDate": null
+    },
+    {
+      "loanId": "00000000-0000-0000-0000-000000000002",
+      "facilityName": "Harbour EUR",
+      "borrowerId": "00000000-0000-0000-0000-000000000003",
+      "borrowerName": "Harbour Logistics",
+      "status": 6,
+      "baseCurrency": 1,
+      "commitmentAmount": 1000000,
+      "principalOutstanding": 200000,
+      "interestAccruedUnpaid": 0,
+      "penaltyAccruedUnpaid": 0,
+      "availableToDraw": 800000,
+      "originationDate": "2026-03-22",
+      "maturityDate": "2029-03-22",
+      "lastAccrualDate": null,
+      "lastPaymentDate": null
+    }
+  ],
+  "currencyTotals": [
+    {
+      "currency": 0,
+      "totalCommitment": 1000000,
+      "totalPrincipalOutstanding": 100000,
+      "totalInterestAccruedUnpaid": 0,
+      "totalPenaltyAccruedUnpaid": 0,
+      "totalAvailableToDraw": 900000,
+      "totalCollateralValue": 400000
+    },
+    {
+      "currency": 1,
+      "totalCommitment": 1000000,
+      "totalPrincipalOutstanding": 200000,
+      "totalInterestAccruedUnpaid": 0,
+      "totalPenaltyAccruedUnpaid": 0,
+      "totalAvailableToDraw": 800000,
+      "totalCollateralValue": 500000
+    }
+  ],
+  "totalCurrency": null
+}

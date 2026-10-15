@@ -77,6 +77,63 @@ public sealed class InstallationTransactionTests : IDisposable
     }
 
     [Fact]
+    public void Uninstall_RejectsWhileAnUpgradeOwnsTheTransaction()
+    {
+        var mutexName = $"Meridian.Setup.Tests.{Guid.NewGuid():N}";
+        using var upgrade = SetupTransactionLease.Acquire(mutexName);
+        Exception? uninstallFailure = null;
+        var uninstall = new Thread(() =>
+        {
+            try
+            {
+                using var transaction = SetupTransactionLease.Acquire(mutexName);
+            }
+            catch (Exception ex)
+            {
+                uninstallFailure = ex;
+            }
+        });
+
+        uninstall.Start();
+        uninstall.Join(TimeSpan.FromSeconds(10)).Should().BeTrue();
+
+        uninstallFailure.Should().BeOfType<InvalidOperationException>()
+            .Which.Message.Should().Contain("already running");
+    }
+
+    [Fact]
+    public void Uninstall_DelayedCleanupCannotDeleteAFreshReinstallOrItsRollback()
+    {
+        var installRoot = CreateCurrentInstallation();
+        var oldRollback = InstallationTransaction.GetRollbackPath(installRoot);
+        Directory.CreateDirectory(oldRollback);
+        File.WriteAllText(Path.Combine(oldRollback, "Meridian.exe"), "old-rollback");
+        IReadOnlyList<string> captured;
+        var mutexName = $"Meridian.Setup.Tests.{Guid.NewGuid():N}";
+        using (SetupTransactionLease.Acquire(mutexName))
+        {
+            captured = InstallationTransaction.CaptureForUninstall(installRoot);
+        }
+
+        captured.Should().HaveCount(2).And.OnlyHaveUniqueItems();
+        Directory.Exists(installRoot).Should().BeFalse();
+        Directory.Exists(oldRollback).Should().BeFalse();
+        using (SetupTransactionLease.Acquire(mutexName))
+        {
+            InstallationTransaction.Promote(Stage(installRoot, ("Meridian.exe", "fresh-install")), installRoot);
+            InstallationTransaction.Promote(Stage(installRoot, ("Meridian.exe", "fresh-upgrade")), installRoot);
+        }
+
+        foreach (var directory in captured)
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+
+        File.ReadAllText(Path.Combine(installRoot, "Meridian.exe")).Should().Be("fresh-upgrade");
+        File.ReadAllText(Path.Combine(oldRollback, "Meridian.exe")).Should().Be("fresh-install");
+    }
+
+    [Fact]
     public void Stage_PathTraversalPayloadIsRejectedWithoutWritingOutsideStage()
     {
         var installRoot = Path.Combine(_root, "Meridian");

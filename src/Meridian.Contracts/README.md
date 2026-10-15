@@ -11,6 +11,13 @@ last_reviewed: 2026-10-13
 
 # src/Meridian.Contracts
 
+`LoanPortfolioSummaryDto.CurrencyTotals` carries separately denominated lending and collateral
+balances. `TotalCurrency` identifies a single-currency scalar summary; mixed-currency legacy
+scalar totals are `null`. These amounts do not imply an FX conversion. Loan currency and status
+enums follow the host JSON options; browser wire normalization accepts their numeric values.
+Amounts for `Other` or undefined currency values are unavailable, including within currency groups,
+because those values do not establish a comparable denomination.
+
 `SecurityMasterClosePrices` describes immutable account/book/UTC valuation-date close-price
 sets, retained selection observations and quote units, supported overrides, visible blockers,
 linked correction versions and independent reviewer approvals bound to a snapshot digest.

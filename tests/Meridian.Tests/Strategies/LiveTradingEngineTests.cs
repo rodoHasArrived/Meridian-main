@@ -10,6 +10,9 @@ using Meridian.Execution.Events;
 using Meridian.Execution.Live;
 using Meridian.Execution.Services;
 using Meridian.Execution;
+using Meridian.Contracts.Workstation;
+using Meridian.Storage.Operations;
+using Meridian.Ui.Shared.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Live;
 using Meridian.Strategies.Live.Strategies;
@@ -20,6 +23,9 @@ using Meridian.Strategies.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using ExecutionSdk = Meridian.Execution.Sdk;
+using BrokerageConfiguration = Meridian.Execution.Sdk.BrokerageConfiguration;
+using BrokerFlowFlags = Meridian.Execution.Sdk.BrokerFlowFlags;
+using BrokerValidationGateOptions = Meridian.Execution.Sdk.BrokerValidationGateOptions;
 
 namespace Meridian.Tests.Strategies;
 
@@ -34,6 +40,84 @@ public sealed class LiveTradingEngineTests
     private const string CanonicalPromotionVaultReference =
         "evidence://evidence-vault/ev-0123456789abcdef01234567";
     private static readonly TimeSpan WaitBudget = TimeSpan.FromSeconds(10);
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ResumePendingRunsAsync_RetainsAccountThroughRealOmsReadinessAndBrokerDispatch(bool authorized)
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var accountId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            var run = StrategyRunEntry.StartForFundAccount(
+                BuyAndHoldLiveStrategy.CatalogId,
+                "Buy and hold",
+                RunType.Live,
+                accountId,
+                parameterSet: new Dictionary<string, string>
+                {
+                    ["symbols"] = "AAPL",
+                    ["quantity"] = "1",
+                    ["fundAccountId"] = Guid.NewGuid().ToString()
+                });
+            await new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot)).RecordRunAsync(run);
+            var repository = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var hub = new LiveMarketEventHub();
+            var cache = new LiveMarketDataCache();
+            var gateway = new ControllableExecutionGateway(live: true);
+            var brokerage = CreateLiveBrokerageConfiguration();
+            var provider = new AccountReadinessProvider(run.RunId, authorized ? accountId : Guid.NewGuid());
+            var gate = new TradingOperatorLiveOrderReadinessGate(provider,
+                NullLogger<TradingOperatorLiveOrderReadinessGate>.Instance);
+            await using var auditTrail = new ExecutionAuditTrailService(
+                new ExecutionAuditTrailOptions(Path.Combine(dataRoot, "audit")),
+                NullLogger<ExecutionAuditTrailService>.Instance);
+            await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
+                brokerageConfiguration: brokerage, liveOrderReadinessGate: gate, auditTrail: auditTrail);
+            await using var engine = CreateEngine(repository, hub, cache, oms,
+                options: new LiveTradingEngineOptions { AllowLiveRuns = true }, brokerageConfiguration: brokerage);
+
+            (await engine.ResumePendingRunsAsync()).Should().Be(1);
+            await PublishTradesUntilAsync(hub, cache, "AAPL", 101m, () => provider.Called.Task.IsCompleted);
+            (await provider.Called.Task.WaitAsync(WaitBudget)).Should().Be(accountId);
+
+            if (authorized)
+            {
+                await WaitUntilAsync(() => !gateway.Requests.IsEmpty);
+                var dispatched = gateway.Requests.Should().ContainSingle().Subject;
+                dispatched.FundAccountId.Should().Be(accountId);
+                dispatched.Metadata!["runId"].Should().Be(run.RunId);
+            }
+            else
+            {
+                await WaitUntilAsync(() => oms.GetCompletedOrders().Count > 0);
+                oms.GetCompletedOrders().Should().ContainSingle()
+                    .Which.Status.Should().Be(ExecutionSdk.OrderStatus.Rejected);
+                gateway.Requests.Should().BeEmpty("a run with readiness for a different account cannot dispatch");
+            }
+
+            await engine.StopRunAsync(run.RunId);
+            if (authorized)
+            {
+                var audit = await auditTrail.GetAllAsync();
+                audit.Should().ContainSingle(entry => entry.Action == "OrderSubmitted" && entry.RunId == run.RunId)
+                    .Which.Metadata!["liveReadinessEvidenceReference"].Should()
+                    .Be("live-readiness:AUDIT-LIVE-001;snapshot:snapshot-live-001");
+            }
+            var retained = await repository.GetRunByIdAsync(run.RunId);
+            retained!.FundAccountId.Should().Be(accountId);
+            retained.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            retained.InputHashSha256.Should().Be(StrategyRunEntry.ComputeAccountBoundInputHash(retained));
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+            {
+                Directory.Delete(dataRoot, recursive: true);
+            }
+        }
+    }
 
     // ---- Full trading loop ----
 
@@ -446,6 +530,30 @@ public sealed class LiveTradingEngineTests
 
     // ---- Launch gating ----
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task TryLaunchAsync_LiveRunWithoutAccount_DefersBeforeOrderDispatch(string? accountId)
+    {
+        var repository = new InMemoryRunRepository();
+        var manager = new RecordingOrderManager(10m);
+        await using var engine = CreateEngine(repository, new LiveMarketEventHub(), new LiveMarketDataCache(), manager,
+            options: new LiveTradingEngineOptions { AllowLiveRuns = true },
+            brokerageConfiguration: CreateLiveBrokerageConfiguration());
+        var run = CreatePaperRun(BuyAndHoldLiveStrategy.CatalogId,
+            new Dictionary<string, string> { ["symbols"] = "AAPL", ["fundAccountId"] = Guid.NewGuid().ToString() }) with
+        {
+            RunType = RunType.Live,
+            FundAccountId = accountId is null ? null : Guid.Parse(accountId)
+        };
+
+        var result = await engine.TryLaunchAsync(run);
+
+        result.Launched.Should().BeFalse();
+        result.Reason.Should().Contain("retained fund account");
+        manager.Requests.Should().BeEmpty();
+    }
+
     [Fact]
     public async Task TryLaunchAsync_UnknownStrategy_DefersWithCatalogGuidance()
     {
@@ -560,39 +668,72 @@ public sealed class LiveTradingEngineTests
     [Fact]
     public async Task PromotionApproval_HandsNewRunToTheRunLauncher()
     {
-        var store = new StrategyRunStore();
-        var launcher = new RecordingRunLauncher();
-        var service = new PromotionService(
-            store,
-            new BacktestToLivePromoter(),
-            new InMemoryPromotionRecordStore(),
-            NullLogger<PromotionService>.Instance,
-            runLauncher: launcher);
-        var approvalChecklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper);
-        var run = StrategyRunEntry.StartWithEvidence(
-                "s1",
-                "Strategy One",
+        var dataRoot = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var launcher = new RecordingRunLauncher();
+            var service = new PromotionService(
+                store,
+                new BacktestToLivePromoter(),
+                new JsonlPromotionRecordStore(Path.Combine(dataRoot, "promotions"),
+                    NullLogger<JsonlPromotionRecordStore>.Instance),
+                NullLogger<PromotionService>.Instance,
+                runLauncher: launcher);
+            var approvalChecklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper);
+            var fundAccountId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            var run = StrategyRunEntry.StartForFundAccount(
+                BuyAndHoldLiveStrategy.CatalogId,
+                "Buy and hold",
                 RunType.Backtest,
+                fundAccountId,
                 runId: "promotion-launch-source",
-                engine: "MeridianNative",
-                retainedEvidenceReferences: [CanonicalPromotionVaultReference])
-            .Complete(BuildPassingResult());
-        await store.RecordRunAsync(run);
+                parameterSet: new Dictionary<string, string>
+                {
+                    ["symbols"] = "AAPL",
+                    ["quantity"] = "1"
+                },
+                retainedEvidenceReferences: [CanonicalPromotionVaultReference]);
+            run.InputHashSha256.Should().Be(StrategyRunEntry.ComputeAccountBoundInputHash(run));
+            await store.RecordRunAsync(run);
+            await store.RecordRunAsync(run.Complete(BuildPassingResult()));
 
-        var result = await service.ApproveAsync(new PromotionApprovalRequest(
-            run.RunId,
-            ApprovedBy: "ops",
-            ApprovalReason: "Metrics cleared for paper.",
-            ApprovalChecklist: approvalChecklist,
-            EvidenceReferences: approvalChecklist
-                .Select(item => $"{item}:{CanonicalPromotionVaultReference}")
-                .ToArray()));
+            var result = await service.ApproveAsync(new PromotionApprovalRequest(
+                run.RunId,
+                ApprovedBy: "ops",
+                ApprovalReason: "Metrics cleared for paper.",
+                ApprovalChecklist: approvalChecklist,
+                EvidenceReferences: approvalChecklist
+                    .Select(item => $"{item}:{CanonicalPromotionVaultReference}")
+                    .ToArray()));
 
-        result.Success.Should().BeTrue(result.Reason);
-        launcher.LaunchedRuns.Should().ContainSingle(
-            "approving a promotion must hand the new run to the execution engine");
-        launcher.LaunchedRuns[0].RunId.Should().Be(result.NewRunId);
-        launcher.LaunchedRuns[0].RunType.Should().Be(RunType.Paper);
+            result.Success.Should().BeTrue(result.Reason);
+            launcher.LaunchedRuns.Should().ContainSingle(
+                "approving a promotion must hand the new run to the execution engine");
+            launcher.LaunchedRuns[0].RunId.Should().Be(result.NewRunId);
+            launcher.LaunchedRuns[0].RunType.Should().Be(RunType.Paper);
+            launcher.LaunchedRuns[0].FundAccountId.Should().Be(fundAccountId);
+
+            var restarted = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var target = (await restarted.GetRunByIdAsync(result.NewRunId!))!;
+            target.FundAccountId.Should().Be(fundAccountId);
+            target.InputHashSha256.Should().Be(StrategyRunEntry.ComputeAccountBoundInputHash(target));
+            var hub = new LiveMarketEventHub();
+            var cache = new LiveMarketDataCache();
+            var manager = new RecordingOrderManager(101m);
+            await using var engine = CreateEngine(restarted, hub, cache, manager);
+            (await engine.ResumePendingRunsAsync()).Should().Be(1);
+            await PublishTradesUntilAsync(hub, cache, "AAPL", 101m, () => !manager.Requests.IsEmpty);
+            manager.Requests.Should().ContainSingle().Which.FundAccountId.Should().Be(fundAccountId);
+            await engine.StopRunAsync(target.RunId);
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+            {
+                Directory.Delete(dataRoot, recursive: true);
+            }
+        }
     }
 
     // ------------------------------------------------------------------ //
@@ -645,12 +786,13 @@ public sealed class LiveTradingEngineTests
     }
 
     private static LiveTradingEngine CreateEngine(
-        InMemoryRunRepository repository,
+        IStrategyRepository repository,
         ILiveMarketEventFeed feed,
         LiveMarketDataCache cache,
         ExecutionSdk.IOrderManager orderManager,
         ILiveStrategyCatalog? catalog = null,
-        LiveTradingEngineOptions? options = null)
+        LiveTradingEngineOptions? options = null,
+        BrokerageConfiguration? brokerageConfiguration = null)
     {
         // `Meridian.Execution` and `Meridian.Execution.Adapters` both declare `PaperTradingGateway`
         // and this file imports both. Only the Adapters one implements `IOrderGateway`, which is
@@ -669,7 +811,8 @@ public sealed class LiveTradingEngineTests
             new PaperTradingPortfolio(100_000m),
             repository,
             options: options ?? new LiveTradingEngineOptions(),
-            loggerFactory: NullLoggerFactory.Instance);
+            loggerFactory: NullLoggerFactory.Instance,
+            brokerageConfiguration: brokerageConfiguration);
     }
 
     private static string BuildRunOrderPrefix(string runId) => $"mlt-{runId}-";
@@ -978,7 +1121,7 @@ public sealed class LiveTradingEngineTests
         public IReadOnlyList<ExecutionSdk.OrderState> GetCompletedOrders(int take = 20) => [];
     }
 
-    private sealed class ControllableExecutionGateway :
+    private sealed class ControllableExecutionGateway(bool live = false) :
         ExecutionSdk.IExecutionGateway,
         ExecutionSdk.IExecutionGatewayModeProvider
     {
@@ -987,11 +1130,11 @@ public sealed class LiveTradingEngineTests
 
         public ConcurrentQueue<ExecutionSdk.OrderRequest> Requests { get; } = new();
 
-        public string GatewayId => "fractional-fill-test";
+        public string GatewayId => live ? "alpaca" : "fractional-fill-test";
 
         public bool IsConnected => true;
 
-        public ExecutionSdk.ExecutionMode ExecutionMode => ExecutionSdk.ExecutionMode.Paper;
+        public ExecutionSdk.ExecutionMode ExecutionMode => live ? ExecutionSdk.ExecutionMode.Live : ExecutionSdk.ExecutionMode.Paper;
 
         public Task ConnectAsync(CancellationToken ct = default) => Task.CompletedTask;
 
@@ -1034,6 +1177,61 @@ public sealed class LiveTradingEngineTests
 
         public ValueTask PublishAsync(ExecutionSdk.ExecutionReport report) =>
             _reports.Writer.WriteAsync(report);
+    }
+
+    private static BrokerageConfiguration CreateLiveBrokerageConfiguration() => new()
+    {
+        Gateway = "alpaca",
+        LiveExecutionEnabled = true,
+        ReadOnlyVerificationPassed = true,
+        PaperLifecycleTestsPassed = true,
+        ReplayEvidencePassed = true,
+        ProductionRoutingPhaseEnabled = true,
+        ValidationGates = new BrokerValidationGateOptions { RequireValidationArtifactsForOrderPlacement = false },
+        BrokerFlows = new Dictionary<string, BrokerFlowFlags>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["alpaca"] = new()
+            {
+                ReadOnlyDataEnabled = true,
+                PaperOrderFlowEnabled = true,
+                ProductionOrderRoutingEnabled = true
+            }
+        }
+    };
+
+    private sealed class AccountReadinessProvider(string runId, Guid authorizedAccountId)
+        : ITradingOperatorReadinessProvider
+    {
+        public TaskCompletionSource<Guid?> Called { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task<TradingOperatorReadinessDto> GetAsync(Guid? fundAccountId = null, CancellationToken ct = default)
+        {
+            var approved = fundAccountId == authorizedAccountId;
+            var readiness = new TradingOperatorReadinessDto(
+                AsOf: DateTimeOffset.UtcNow,
+                ActiveSession: null,
+                Sessions: [],
+                Replay: null,
+                Controls: new TradingControlReadinessDto(false, null, null, null, 0, 0, 100m),
+                Promotion: new TradingPromotionReadinessDto("Approved", "Retained approval", false,
+                    "paper-source", runId, "Live", "AUDIT-LIVE-001", "Approved", null, "governance"),
+                TrustGate: new TradingTrustGateReadinessDto("dk1", "Ready", true, false, "NotRequired",
+                    DateTimeOffset.UtcNow, "evidence/dk1.json", "Trusted data", 1, 1, 1, [], [], "Ready"),
+                BrokerageSync: null,
+                WorkItems: [],
+                Warnings: [])
+            {
+                ReadyForLiveOperation = approved,
+                LiveOperationBlockers = approved ? [] : ["fund-account-mismatch"],
+                SnapshotVersion = "snapshot-live-001",
+                LiveOperationRequirements = PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)
+                    .Select(item => new TradingLiveOperationRequirementDto(item, item,
+                        TradingAcceptanceGateStatusDto.Ready, "Retained evidence", item,
+                        $"{item}:retained-evidence", true, true, null)).ToArray()
+            };
+            Called.TrySetResult(fundAccountId);
+            return Task.FromResult(readiness);
+        }
     }
 
     private sealed class CompletedMarketEventFeed : ILiveMarketEventFeed
