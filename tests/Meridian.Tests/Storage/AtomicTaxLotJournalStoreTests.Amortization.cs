@@ -900,6 +900,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         public string SecuritySchema { get; private set; } = null!;
         public PostgresAssetOperationsProjectionStore Positions { get; }
         public PostgresLedgerJournalStore Store { get; }
+        public AccountingBasisKindDto AccountingBasis { get; }
+        public Guid? OrganizationId { get; }
         public SecurityProjectionRecord Security { get; private set; } = null!;
         public Guid BookId { get; } = Guid.NewGuid();
         public Guid PositionId { get; } = Guid.NewGuid();
@@ -908,12 +910,15 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         private AccountingBookContextDto BookContext { get; set; } = null!;
 
         private AmortFixture(PostgresTestServer server, LedgerJournalStoreOptions options,
-            PostgresSecurityMasterStore securities, PostgresAssetOperationsProjectionStore positions)
+            PostgresSecurityMasterStore securities, PostgresAssetOperationsProjectionStore positions,
+            AccountingBasisKindDto accountingBasis, Guid? organizationId)
         {
             _server = server;
             Options = options;
             Securities = securities;
             Positions = positions;
+            AccountingBasis = accountingBasis;
+            OrganizationId = organizationId;
             Store = Restart();
         }
 
@@ -930,7 +935,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 null, position.Version, new("independent-controller", "evidence://position-revision", "Review current position", DateTimeOffset.UtcNow));
         }
 
-        public static async Task<AmortFixture> CreateAsync(bool premium)
+        public static async Task<AmortFixture> CreateAsync(bool premium,
+            AccountingBasisKindDto accountingBasis = AccountingBasisKindDto.Primary, Guid? organizationId = null)
         {
             var server = await PostgresTestServer.CreateAsync("MERIDIAN_LEDGER_CONNECTION_STRING");
             var options = new LedgerJournalStoreOptions
@@ -952,7 +958,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 await new LedgerMigrationRunner(options).EnsureMigratedAsync();
                 await new SecurityMasterMigrationRunner(securityOptions).EnsureMigratedAsync();
                 await new AssetOperationsMigrationRunner(assetOptions).EnsureMigratedAsync();
-                var fixture = new AmortFixture(server, options, new(securityOptions), new(assetOptions))
+                var fixture = new AmortFixture(server, options, new(securityOptions), new(assetOptions), accountingBasis, organizationId)
                 { SecuritySchema = securityOptions.Schema };
                 await fixture.SeedAsync(premium);
                 return fixture;
@@ -965,7 +971,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var ownerId = Guid.NewGuid();
             var at = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero);
             await Store.SaveLedgerBookAsync(new(BookId, "amort-fund", ownerId, FundStructureNodeKindDto.Fund,
-                "Amortization book", "USD", at, at, AccountingPolicyId: "amort-policy", AccountingPolicyVersion: "1"));
+                "Amortization book", "USD", at, at, AccountingBasis: AccountingBasis,
+                AccountingPolicyId: "amort-policy", AccountingPolicyVersion: "1"));
             var acquisitionPeriod = await Store.SavePeriodAsync(new(Guid.NewGuid(), BookId, 2025, 1, "2025",
                 AmortAcquired, new DateOnly(2025, 12, 31), "Open", at, null, 0), 0);
             Period = await Store.SavePeriodAsync(new(Guid.NewGuid(), BookId, 2026, 1, "2026",
@@ -980,7 +987,12 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var role = new InstrumentRoleDto(roleId, Security.SecurityId, "amort-fund", "Fund", InstrumentRoleKinds.Holder,
                 InstrumentAccountingSides.Debit, InstrumentEconomicSides.Asset, AmortAcquired, OriginEvent: origin, EvidenceLinks: [evidence.EvidenceUri]);
             var book = new AccountingBookContextDto(BookId, "amort-fund", ownerId, FundStructureNodeKindDto.Fund,
-                "Amortization book", "USD", AccountingBasisKindDto.Primary, "amort-policy", "1");
+                "Amortization book", "USD", AccountingBasis, "amort-policy", "1")
+            {
+                Dimensions = OrganizationId is { } organizationId
+                    ? new LedgerDimensionSetDto(FundId: "amort-fund", OrganizationId: organizationId.ToString("D"),
+                        BookId: BookId.ToString("D")) : null
+            };
             BookContext = book with { PeriodId = Period.PeriodId };
             await Positions.UpsertAsync(role, new BookPositionDto(PositionId, Security.SecurityId, roleId, book,
                 BookPositionSides.Long, "Active", AmortAcquired, OriginEvent: origin, EvidenceLinks: [evidence.EvidenceUri])
@@ -1111,7 +1123,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var id = Guid.NewGuid();
             var sourceId = Guid.NewGuid();
             var at = new DateTimeOffset(date.ToDateTime(new TimeOnly(12, 0)), TimeSpan.Zero);
-            var dimensions = new LedgerLineDimensionSet(InstrumentId: Security.SecurityId) { PositionId = PositionId };
+            var dimensions = Dimensions(Security.SecurityId, PositionId);
             var offset = key.StartsWith("amort-period:", StringComparison.Ordinal)
                 ? new LedgerAccount("Amortization income", LedgerAccountType.Revenue)
                 : new LedgerAccount("Cash", LedgerAccountType.Asset);
@@ -1125,8 +1137,17 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 ApprovalState: AccountingPostingApprovalStateDto.Approved, ApprovalId: "independent-controller-review",
                 OperatorRationale: "Independently reviewed fixture economics and owned retained evidence.", LedgerBookId: BookId)
             { Actor = "independent-controller" };
-            return new(entry, BookId, period.PeriodId, AccountingPolicyId: "amort-policy", AccountingPolicyVersion: "1",
+            return new(entry, BookId, period.PeriodId, AccountingBasis: AccountingBasis,
+                AccountingPolicyId: "amort-policy", AccountingPolicyVersion: "1",
                 SourceEventId: sourceId, LedgerBookId: BookId, PostingCommand: posting);
+        }
+
+        public LedgerLineDimensionSet Dimensions(Guid securityId, Guid positionId)
+        {
+            var dimensions = new LedgerLineDimensionSet(InstrumentId: securityId) { PositionId = positionId };
+            return OrganizationId is { } organizationId
+                ? dimensions with { FundId = "amort-fund", OrganizationId = organizationId.ToString("D"), BookId = BookId.ToString("D") }
+                : dimensions;
         }
 
         public ValueTask DisposeAsync() => _server.DisposeAsync();
