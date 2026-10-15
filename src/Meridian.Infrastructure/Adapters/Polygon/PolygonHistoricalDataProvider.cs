@@ -1,7 +1,9 @@
 using System.Globalization;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -60,8 +62,9 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
     };
 
 
-    public PolygonHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
-        : base(httpClient, log)
+    public PolygonHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null,
+        TimeProvider? timeProvider = null)
+        : base(httpClient, log, timeProvider: timeProvider)
     {
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("POLYGON_API_KEY");
 
@@ -82,7 +85,7 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
             await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
 
             // Quick health check with ticker details endpoint
-            var url = $"{BaseUrl}/v3/reference/tickers/AAPL?apiKey={_apiKey}";
+            var url = $"{BaseUrl}/v3/reference/tickers/AAPL?apiKey={Uri.EscapeDataString(_apiKey)}";
             using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
@@ -106,8 +109,6 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         if (string.IsNullOrEmpty(_apiKey))
             throw new InvalidOperationException("Polygon API key is required. Set POLYGON_API_KEY environment variable.");
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
 
         // Build URL with date range
@@ -116,33 +117,26 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         var endDate = to?.ToString("yyyy-MM-dd") ?? DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd");
 
         // Use aggregates/range endpoint with adjusted=true for split/dividend adjusted data
-        var url = $"{BaseUrl}/v2/aggs/ticker/{normalizedSymbol}/range/1/day/{startDate}/{endDate}?adjusted=true&sort=asc&limit=50000&apiKey={_apiKey}";
+        var url = $"{BaseUrl}/v2/aggs/ticker/{normalizedSymbol}/range/1/day/{startDate}/{endDate}?adjusted=true&sort=asc&limit=50000";
 
         Log.Information("Requesting Polygon history for {Symbol} ({StartDate} to {EndDate})", symbol, startDate, endDate);
 
         try
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            var results = await GetAllPagesAsync<PolygonAggregate>(url, symbol, "bars", ct).ConfigureAwait(false);
 
-            if (!response.IsSuccessStatusCode)
+            if (results.Count == 0)
             {
-                await HandleHttpResponseOrThrowAsync(response, symbol, "bars", ct).ConfigureAwait(false);
-            }
-
-            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            var data = DeserializeResponse<PolygonAggregatesResponse>(json, symbol);
-
-            if (data?.Results is null || data.Results.Count == 0)
-            {
-                Log.Warning("No data returned from Polygon for {Symbol} (resultsCount: {Count})",
-                    symbol, data?.ResultsCount ?? 0);
+                Log.Warning("No data returned from Polygon for {Symbol}", symbol);
                 return Array.Empty<AdjustedHistoricalBar>();
             }
 
             var bars = new List<AdjustedHistoricalBar>();
+            var seenDates = new HashSet<DateOnly>();
 
-            foreach (var result in data.Results)
+            foreach (var result in results)
             {
+                ct.ThrowIfCancellationRequested();
                 // Polygon timestamp is in milliseconds
                 var date = DateTimeOffset.FromUnixTimeMilliseconds(result.Timestamp).Date;
                 var sessionDate = DateOnly.FromDateTime(date);
@@ -155,6 +149,8 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
                 // Validate OHLC using base class helper
                 if (!ValidateOhlc(result.Open, result.High, result.Low, result.Close, symbol, sessionDate))
+                    continue;
+                if (!seenDates.Add(sessionDate))
                     continue;
 
                 bars.Add(new AdjustedHistoricalBar(
@@ -204,8 +200,6 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         if (string.IsNullOrEmpty(_apiKey))
             throw new InvalidOperationException("Polygon API key is required.");
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
 
         // Parse interval (e.g., "1min", "5min", "15min", "1hour")
@@ -214,36 +208,36 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         var startDate = from?.ToString("yyyy-MM-dd") ?? DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(-1)).ToString("yyyy-MM-dd");
         var endDate = to?.ToString("yyyy-MM-dd") ?? DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd");
 
-        var url = $"{BaseUrl}/v2/aggs/ticker/{normalizedSymbol}/range/{multiplier}/{timespan}/{startDate}/{endDate}?adjusted=true&sort=asc&limit=50000&apiKey={_apiKey}";
+        var url = $"{BaseUrl}/v2/aggs/ticker/{normalizedSymbol}/range/{multiplier}/{timespan}/{startDate}/{endDate}?adjusted=true&sort=asc&limit=50000";
 
         Log.Information("Requesting Polygon {Interval} bars for {Symbol} ({StartDate} to {EndDate})",
             interval, symbol, startDate, endDate);
 
         try
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            var results = await GetAllPagesAsync<PolygonAggregate>(url, symbol, "bars", ct).ConfigureAwait(false);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                await HandleHttpResponseOrThrowAsync(response, symbol, "bars", ct).ConfigureAwait(false);
-            }
-
-            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            var data = DeserializeResponse<PolygonAggregatesResponse>(json, symbol);
-
-            if (data?.Results is null || data.Results.Count == 0)
+            if (results.Count == 0)
             {
                 return Array.Empty<AdjustedHistoricalBar>();
             }
 
             var bars = new List<AdjustedHistoricalBar>();
+            var seenTimestamps = new HashSet<long>();
 
-            foreach (var result in data.Results)
+            foreach (var result in results)
             {
+                ct.ThrowIfCancellationRequested();
                 var timestamp = DateTimeOffset.FromUnixTimeMilliseconds(result.Timestamp);
                 var sessionDate = DateOnly.FromDateTime(timestamp.Date);
 
+                if (from.HasValue && sessionDate < from.Value)
+                    continue;
+                if (to.HasValue && sessionDate > to.Value)
+                    continue;
                 if (!ValidateOhlc(result.Open, result.High, result.Low, result.Close, symbol, sessionDate))
+                    continue;
+                if (!seenTimestamps.Add(result.Timestamp))
                     continue;
 
                 bars.Add(new AdjustedHistoricalBar(
@@ -266,7 +260,7 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
             Log.Information("Fetched {Count} {Interval} bars for {Symbol} from Polygon",
                 bars.Count, interval, symbol);
-            return bars;
+            return bars.OrderBy(b => b.SequenceNumber).ToList();
         }
         catch (JsonException ex)
         {
@@ -281,42 +275,26 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
     public async Task<IReadOnlyList<SplitInfo>> GetSplitsAsync(string symbol, CancellationToken ct = default)
     {
         ThrowIfDisposed();
+        ValidateSymbol(symbol);
 
         if (string.IsNullOrEmpty(_apiKey))
             throw new InvalidOperationException("Polygon API key is required.");
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
-        var url = $"{BaseUrl}/v3/reference/splits?ticker={normalizedSymbol}&apiKey={_apiKey}";
+        var url = $"{BaseUrl}/v3/reference/splits?ticker={normalizedSymbol}";
 
-        try
+        var results = await GetAllPagesAsync<PolygonSplit>(url, symbol, "splits", ct).ConfigureAwait(false);
+        return DistinctCorporateActions(results, s => s.Id, s =>
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return Array.Empty<SplitInfo>();
-            }
-
-            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            var data = DeserializeResponse<PolygonSplitsResponse>(json, symbol);
-
-            if (data?.Results is null)
-                return Array.Empty<SplitInfo>();
-
-            return data.Results.Select(s => new SplitInfo(
+            ct.ThrowIfCancellationRequested();
+            return new SplitInfo(
                 Symbol: symbol.ToUpperInvariant(),
                 ExDate: DateOnly.ParseExact(s.ExecutionDate ?? s.ExDate ?? "", "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 SplitFrom: s.SplitFrom ?? 1,
                 SplitTo: s.SplitTo ?? 1,
                 Source: Name
-            )).ToList();
-        }
-        catch
-        {
-            return Array.Empty<SplitInfo>();
-        }
+            );
+        }).OrderBy(s => s.ExDate).ToList();
     }
 
     /// <summary>
@@ -325,31 +303,19 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
     public async Task<IReadOnlyList<DividendInfo>> GetDividendsAsync(string symbol, CancellationToken ct = default)
     {
         ThrowIfDisposed();
+        ValidateSymbol(symbol);
 
         if (string.IsNullOrEmpty(_apiKey))
             throw new InvalidOperationException("Polygon API key is required.");
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
-        var url = $"{BaseUrl}/v3/reference/dividends?ticker={normalizedSymbol}&apiKey={_apiKey}";
+        var url = $"{BaseUrl}/v3/reference/dividends?ticker={normalizedSymbol}";
 
-        try
+        var results = await GetAllPagesAsync<PolygonDividend>(url, symbol, "dividends", ct).ConfigureAwait(false);
+        return DistinctCorporateActions(results, d => d.Id, d =>
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return Array.Empty<DividendInfo>();
-            }
-
-            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            var data = DeserializeResponse<PolygonDividendsResponse>(json, symbol);
-
-            if (data?.Results is null)
-                return Array.Empty<DividendInfo>();
-
-            return data.Results.Select(d => new DividendInfo(
+            ct.ThrowIfCancellationRequested();
+            return new DividendInfo(
                 Symbol: symbol.ToUpperInvariant(),
                 ExDate: DateOnly.ParseExact(d.ExDividendDate ?? "", "yyyy-MM-dd", CultureInfo.InvariantCulture),
                 PaymentDate: !string.IsNullOrEmpty(d.PayDate) ? DateOnly.ParseExact(d.PayDate, "yyyy-MM-dd", CultureInfo.InvariantCulture) : null,
@@ -358,12 +324,81 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
                 Currency: d.Currency ?? "USD",
                 Type: ParseDividendType(d.DividendType),
                 Source: Name
-            )).ToList();
-        }
-        catch
+            );
+        }).OrderBy(d => d.ExDate).ToList();
+    }
+
+    private static IEnumerable<TAction> DistinctCorporateActions<TSource, TAction>(
+        IEnumerable<TSource> rows, Func<TSource, string?> getId, Func<TSource, TAction> map)
+        where TAction : notnull
+    {
+        var seenIds = new HashSet<string>(StringComparer.Ordinal);
+        var seenValues = new HashSet<TAction>();
+        foreach (var row in rows)
         {
-            return Array.Empty<DividendInfo>();
+            var id = getId(row);
+            if (!string.IsNullOrWhiteSpace(id) && !seenIds.Add(id))
+                continue;
+
+            var action = map(row);
+            if (!string.IsNullOrWhiteSpace(id) || seenValues.Add(action))
+                yield return action;
         }
+    }
+
+    private async Task<IReadOnlyList<T>> GetAllPagesAsync<T>(
+        string url, string symbol, string dataType, CancellationToken ct)
+    {
+        var results = new List<T>();
+        var visited = new HashSet<string>(StringComparer.Ordinal);
+        string? nextUrl = url;
+
+        while (!string.IsNullOrWhiteSpace(nextUrl))
+        {
+            ct.ThrowIfCancellationRequested();
+            var pageUri = PolygonPagination.GetAuthenticatedPageUri(nextUrl, _apiKey!);
+            if (!visited.Add(PolygonPagination.GetPageIdentity(pageUri)))
+            {
+                throw new DataProviderException(
+                    $"Polygon returned a repeated pagination cursor for {symbol}; {dataType} coverage is incomplete.",
+                    provider: Name, symbol: symbol);
+            }
+
+            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
+            using var response = await Http.GetAsync(pageUri, ct).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+            {
+                await HandleHttpResponseOrThrowAsync(response, symbol, dataType, ct).ConfigureAwait(false);
+                if (response.StatusCode == HttpStatusCode.NotFound && visited.Count == 1)
+                    return results;
+
+                // The shared handler allows 404 for an initial empty lookup. A missing
+                // continuation page cannot establish complete coverage of prior results.
+                throw new DataProviderException(
+                    $"Polygon pagination failed for {symbol}; {dataType} coverage is incomplete.",
+                    provider: Name, symbol: symbol);
+            }
+
+            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            var page = DeserializeResponse<PolygonResponse<T>>(json, symbol)
+                ?? throw new DataProviderException(
+                    $"Polygon returned an empty {dataType} response for {symbol}.", provider: Name, symbol: symbol);
+            if ((!string.IsNullOrWhiteSpace(page.Status)
+                    && !string.Equals(page.Status, "OK", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(page.Status, "DELAYED", StringComparison.OrdinalIgnoreCase))
+                || page.Results is null && page.ResultsCount != 0)
+            {
+                throw new DataProviderException(
+                    $"Polygon returned an unsuccessful or incomplete {dataType} response for {symbol}.",
+                    provider: Name, symbol: symbol);
+            }
+            if (page.Results is not null)
+                results.AddRange(page.Results);
+            nextUrl = page.NextUrl;
+        }
+
+        ct.ThrowIfCancellationRequested();
+        return results;
     }
 
 
@@ -406,31 +441,19 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
 
 
 
-    private sealed class PolygonAggregatesResponse
+    private sealed class PolygonResponse<T>
     {
-        [JsonPropertyName("ticker")]
-        public string? Ticker { get; set; }
-
-        [JsonPropertyName("queryCount")]
-        public int QueryCount { get; set; }
-
-        [JsonPropertyName("resultsCount")]
-        public int ResultsCount { get; set; }
-
-        [JsonPropertyName("adjusted")]
-        public bool Adjusted { get; set; }
-
         [JsonPropertyName("results")]
-        public List<PolygonAggregate>? Results { get; set; }
+        public List<T>? Results { get; set; }
+
+        [JsonPropertyName("next_url")]
+        public string? NextUrl { get; set; }
 
         [JsonPropertyName("status")]
         public string? Status { get; set; }
 
-        [JsonPropertyName("request_id")]
-        public string? RequestId { get; set; }
-
-        [JsonPropertyName("next_url")]
-        public string? NextUrl { get; set; }
+        [JsonPropertyName("resultsCount")]
+        public int? ResultsCount { get; set; }
     }
 
     private sealed class PolygonAggregate
@@ -460,17 +483,11 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         public int? NumberOfTrades { get; set; }
     }
 
-    private sealed class PolygonSplitsResponse
-    {
-        [JsonPropertyName("results")]
-        public List<PolygonSplit>? Results { get; set; }
-
-        [JsonPropertyName("status")]
-        public string? Status { get; set; }
-    }
-
     private sealed class PolygonSplit
     {
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
+
         [JsonPropertyName("execution_date")]
         public string? ExecutionDate { get; set; }
 
@@ -487,17 +504,11 @@ public sealed class PolygonHistoricalDataProvider : BaseHistoricalDataProvider
         public string? Ticker { get; set; }
     }
 
-    private sealed class PolygonDividendsResponse
-    {
-        [JsonPropertyName("results")]
-        public List<PolygonDividend>? Results { get; set; }
-
-        [JsonPropertyName("status")]
-        public string? Status { get; set; }
-    }
-
     private sealed class PolygonDividend
     {
+        [JsonPropertyName("id")]
+        public string? Id { get; set; }
+
         [JsonPropertyName("cash_amount")]
         public decimal? CashAmount { get; set; }
 
