@@ -1,6 +1,6 @@
 {
   "total_files": 731,
-  "total_lines": 159551,
+  "total_lines": 159563,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2260,7 +2260,7 @@
     },
     {
       "path": "docs/engineering/blueprints/security-lot-convergence-blueprint.md",
-      "line_count": 795,
+      "line_count": 806,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2812,7 +2812,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12036,
+      "line_count": 12037,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
