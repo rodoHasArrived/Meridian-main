@@ -1,8 +1,12 @@
 using System.Threading.Channels;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Operations;
+using Meridian.Contracts.Workstation;
 using Meridian.Execution;
 using Meridian.Execution.Live;
 using Meridian.Execution.Services;
+using Meridian.FSharp.Trading;
+using Meridian.Strategies.Storage;
 using ExecutionSdk = Meridian.Execution.Sdk;
 using OrderType = Meridian.Backtesting.Sdk.OrderType;
 using TimeInForce = Meridian.Backtesting.Sdk.TimeInForce;
@@ -47,8 +51,14 @@ internal sealed class LiveStrategyRunSession
 
     private DateOnly? _currentDate;
     private volatile bool _completeRunOnExit = true;
-    private bool _explicitCompletionRequested;
+    private volatile bool _completionRequested;
+    private bool _strategyStartAttempted;
+    private StrategyTransitionDto? _completedCleanupTransition;
+    private volatile bool _hostOnlyFinalization;
+    private Exception? _suspensionEvidenceFailure;
     private Exception? _requestedFailure;
+    private Action? _closeReportAdmission;
+    private SemaphoreSlim? _lifecycleControlGate;
     private int _outboundOrderAdmissionClosed;
 
     public LiveStrategyRunSession(
@@ -92,6 +102,8 @@ internal sealed class LiveStrategyRunSession
 
     public RunType RunType => _run.RunType;
 
+    internal bool RequiresOperatorCompletion => _hostOnlyFinalization;
+
     public IExecutionContext ExecutionContext => _context;
 
     internal static string BuildClientOrderIdPrefix(string runId) => $"{ClientOrderIdPrefix}-{runId}-";
@@ -131,6 +143,14 @@ internal sealed class LiveStrategyRunSession
     public void CompleteExecutionReportAdmission()
         => _fillReports.Writer.TryComplete();
 
+    /// <summary>Connects finalization to the engine-owned delivery queue before execution starts.</summary>
+    public void SetReportAdmissionCloser(Action closeReportAdmission)
+        => _closeReportAdmission = closeReportAdmission ?? throw new ArgumentNullException(nameof(closeReportAdmission));
+
+    /// <summary>Waits for admitted start/pause commands before session cleanup begins.</summary>
+    internal void SetLifecycleControlGate(SemaphoreSlim controlGate)
+        => _lifecycleControlGate = controlGate ?? throw new ArgumentNullException(nameof(controlGate));
+
     /// <summary>
     /// Stops strategy callbacks from creating new broker work while keeping the event loop alive
     /// to consume fills for operations admitted before shutdown.
@@ -149,6 +169,7 @@ internal sealed class LiveStrategyRunSession
         lock (_stopSync)
         {
             _requestedFailure ??= failure;
+            _completionRequested = true;
             _completeRunOnExit = true;
         }
 
@@ -163,35 +184,101 @@ internal sealed class LiveStrategyRunSession
     {
         lock (_stopSync)
         {
-            if (_requestedFailure is null)
+            if (completeRun)
             {
-                // An admitted operator stop survives a concurrent host shutdown. The default
-                // remains completion for a naturally exhausted feed; a host-only stop suspends.
-                _explicitCompletionRequested |= completeRun;
-                _completeRunOnExit = _explicitCompletionRequested;
+                _completionRequested = true;
+                _completeRunOnExit = true;
+            }
+            else if (!_completionRequested)
+            {
+                _completeRunOnExit = false;
             }
         }
 
         _stopRequested.Cancel();
     }
 
-    /// <summary>Runs the session to completion. Never throws for operational failures.</summary>
-    public async Task ExecuteAsync(CancellationToken engineToken)
+    /// <summary>Retains operator completion intent while the engine drains its delivery queue.</summary>
+    public void RequestCompletion()
+    {
+        lock (_stopSync)
+        {
+            _completionRequested = true;
+            _completeRunOnExit = true;
+        }
+    }
+
+    /// <summary>
+    /// Runs the session and returns its retained terminal receipt. A clean host shutdown leaves
+    /// the run open and returns null. Failure to retain either terminal evidence or its recovery
+    /// warning propagates to the caller.
+    /// </summary>
+    public async Task<VerifiedOperationOutcome?> ExecuteAsync(CancellationToken engineToken)
     {
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(engineToken, _stopRequested.Token);
         var ct = linked.Token;
+        Exception? faulted = null;
         try
         {
-            if (_run.TerminalStatus != Meridian.Contracts.Workstation.StrategyRunStatus.Paused)
+            if (_run.TerminalStatus == StrategyRunStatus.Paused)
             {
-                await _strategy.StartAsync(_context, ct).ConfigureAwait(false);
+                // The restored wrapper owns cleanup even before its first explicit resume;
+                // it suppresses callbacks until the underlying strategy actually initializes.
+                _strategyStartAttempted = true;
+            }
+            else
+            {
+                var start = StrategyLifecycleInterop.EvaluateStart(_strategy.Status.ToString(), _strategy.FaultReason);
+                var retained = await _repository.GetRunByIdAsync(_run.RunId, ct).ConfigureAwait(false);
+                // A previous host may have stopped before activation. Resume its retained
+                // intent instead of appending the same requested transition and facts again.
+                if (retained is not
+                    {
+                        LastLifecycleEvent: StrategyRunLifecycleEventType.StartRequested,
+                        EndedAt: null,
+                        TerminalStatus: null or StrategyRunStatus.Pending or StrategyRunStatus.Running or StrategyRunStatus.Paused
+                    })
+                {
+                    await _repository.RecordLifecycleEventAsync(
+                        StrategyLifecycleFactMapping.Attach(
+                            _run.RequestStart(ActorId, "Run activation requested on the live trading engine."),
+                            StrategyRunLifecycleEventType.StartRequested,
+                            start),
+                        StrategyRunLifecycleEventType.StartRequested,
+                        ct).ConfigureAwait(false);
+                }
+                ct.ThrowIfCancellationRequested();
+                _strategyStartAttempted = true;
+                try
+                {
+                    await _strategy.StartAsync(_context, ct).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested && _strategy.Status == StrategyStatus.Registered)
+                {
+                    // Cancellation can win before StartAsync acquires its lifecycle gate. A
+                    // registered strategy has not activated, so stopping it would manufacture
+                    // an invalid Registered -> Stopping cleanup failure during host shutdown.
+                    _strategyStartAttempted = false;
+                    throw;
+                }
+                if (_strategy.Status != StrategyStatus.Running)
+                {
+                    throw new InvalidOperationException(
+                        $"Strategy '{_run.StrategyId}' returned from StartAsync with state '{_strategy.Status}'; activation requires Running.");
+                }
                 _strategy.Initialize(_context);
                 var recovering = _run.LastLifecycleEvent is StrategyRunLifecycleEventType.Activated or
                     StrategyRunLifecycleEventType.Recovered or StrategyRunLifecycleEventType.Resumed or
                     StrategyRunLifecycleEventType.Suspended;
                 var activated = recovering ? _run.Recovered(ActorId) : _run.Activated(ActorId);
                 await _repository.RecordLifecycleEventAsync(
-                    activated, activated.LastLifecycleEvent, ct).ConfigureAwait(false);
+                    StrategyLifecycleFactMapping.Attach(
+                        activated,
+                        activated.LastLifecycleEvent,
+                        start.NextState == nameof(StrategyStatus.Running) ? start :
+                            StrategyLifecycleInterop.EvaluateWarmupCompleted(start.NextState, start.FaultReason)),
+                    activated.LastLifecycleEvent,
+                    ct).ConfigureAwait(false);
             }
 
             _logger.LogInformation(
@@ -199,23 +286,20 @@ internal sealed class LiveStrategyRunSession
                 _run.RunId, _run.StrategyId, _strategy.Name, _run.RunType, string.Join(", ", _context.Universe));
 
             await RunEventLoopAsync(ct).ConfigureAwait(false);
-            await FinishAsync(faulted: null).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (_stopRequested.IsCancellationRequested || engineToken.IsCancellationRequested)
         {
-            Exception? requestedFailure;
-            lock (_stopSync)
-            {
-                requestedFailure = _requestedFailure;
-            }
-
-            await FinishAsync(requestedFailure).ConfigureAwait(false);
+            // The explicit failure request is read below, including one racing loop exit.
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Live session for run {RunId} failed.", _run.RunId);
-            await FinishAsync(faulted: ex).ConfigureAwait(false);
+            faulted = ex;
         }
+
+        // Finalization sits outside the execution catch: a persistence failure must never
+        // invoke strategy cleanup a second time or turn an unretained result into success.
+        return await FinishAsync(faulted).ConfigureAwait(false);
     }
 
     private async Task RunEventLoopAsync(CancellationToken ct)
@@ -275,10 +359,12 @@ internal sealed class LiveStrategyRunSession
         }
         finally
         {
-            // A market feed may complete normally while no fills are pending. Complete the
-            // private inbox before awaiting its outstanding read so that teardown cannot
-            // wait indefinitely for a writer that no longer exists.
-            _fillReports.Writer.TryComplete();
+            // A directly hosted session owns its inbox. Engine-hosted sessions keep admission
+            // open until FinishAsync closes and drains the engine's delivery worker.
+            if (_closeReportAdmission is null)
+            {
+                _fillReports.Writer.TryComplete();
+            }
 
             // A fill callback can fail while the market-feed advance is still pending. Cancel
             // this loop's owned token before awaiting that advance so the original fill failure
@@ -333,6 +419,7 @@ internal sealed class LiveStrategyRunSession
         var eventDate = DateOnly.FromDateTime(evt.Timestamp.UtcDateTime);
         if (_currentDate is { } currentDate && eventDate > currentDate)
         {
+            _currentDate = null;
             CloseDay(currentDate);
         }
 
@@ -764,37 +851,160 @@ internal sealed class LiveStrategyRunSession
         }
     };
 
-    private async Task FinishAsync(Exception? faulted)
+    private async Task<VerifiedOperationOutcome?> FinishAsync(Exception? faulted)
     {
-        // Drain any fills that raced session shutdown so metrics stay complete.
-        while (_fillReports.Reader.TryRead(out var report))
-        {
-            HandleExecutionReport(report);
-        }
-
-        if (_currentDate is { } lastDay)
-        {
-            CloseDay(lastDay);
-        }
-
+        var canBuildMetrics = faulted is null;
+        StrategyTransitionDto? stopCompleted = null;
+        CloseOutboundOrderAdmission();
         try
         {
-            _strategy.OnFinished(_context);
+            _closeReportAdmission?.Invoke();
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Run {RunId} strategy OnFinished callback failed.", _run.RunId);
+            faulted = CombineFailures(faulted, ex);
+            CompleteExecutionReportAdmission();
         }
 
-        if (_strategy.Status != StrategyStatus.Stopped)
+        if (_closeReportAdmission is null)
+        {
+            CompleteExecutionReportAdmission();
+        }
+
+        // Drain any fills that raced session shutdown so metrics stay complete.
+        await foreach (var report in _fillReports.Reader.ReadAllAsync(CancellationToken.None).ConfigureAwait(false))
         {
             try
             {
-                await _strategy.StopAsync(CancellationToken.None).ConfigureAwait(false);
+                HandleExecutionReport(report);
+            }
+            catch (Exception ex)
+            {
+                canBuildMetrics = false;
+                faulted = CombineFailures(faulted, ex);
+            }
+        }
+
+        if (_lifecycleControlGate is { } controlGate)
+        {
+            // Closing report admission also closes lifecycle control admission in the engine.
+            // An admitted resume must finish initialization and its retained transition before
+            // OnFinished/Stop run, including when a finite feed ends during warmup.
+            await controlGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+            controlGate.Release();
+        }
+
+        Exception? deliveryFailure;
+        lock (_stopSync)
+        {
+            deliveryFailure = _requestedFailure;
+        }
+        if (deliveryFailure is not null)
+        {
+            canBuildMetrics = false;
+            faulted = CombineFailures(faulted, deliveryFailure);
+        }
+
+        // Keep one disposition through callbacks and persistence. An operator intent
+        // arriving after this host-only snapshot joins CompleteSuspendedRunAsync instead.
+        var completeRun = _completeRunOnExit;
+
+        if (_currentDate is { } lastDay)
+        {
+            _currentDate = null;
+            try
+            {
+                CloseDay(lastDay);
+            }
+            catch (Exception ex)
+            {
+                faulted = CombineFailures(faulted, ex);
+            }
+        }
+
+        if (_strategyStartAttempted)
+        {
+            try
+            {
+                _strategy.OnFinished(_context);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Run {RunId} strategy OnFinished callback failed.", _run.RunId);
+                faulted = CombineFailures(faulted, ex);
+            }
+        }
+
+        var strategyNeedsCleanup = _strategyStartAttempted && _strategy.Status != StrategyStatus.Stopped;
+        bool retainUnstartedStopIntent;
+        lock (_stopSync)
+        {
+            retainUnstartedStopIntent = !_strategyStartAttempted && _completionRequested;
+        }
+        if (strategyNeedsCleanup || retainUnstartedStopIntent)
+        {
+            try
+            {
+                // An operator can stop the run before strategy activation. Retain that run
+                // intent without asking the kernel to stop a still-Registered strategy.
+                var stop = strategyNeedsCleanup
+                    ? StrategyLifecycleInterop.EvaluateStop(_strategy.Status.ToString(), _strategy.FaultReason)
+                    : null;
+                try
+                {
+                    var current = await _repository.GetRunByIdAsync(_run.RunId, CancellationToken.None).ConfigureAwait(false) ?? _run;
+                    if ((completeRun || faulted is not null) &&
+                        current.LastLifecycleEvent != StrategyRunLifecycleEventType.StopRequested &&
+                        (stop is { IsValid: true } || retainUnstartedStopIntent))
+                    {
+                        var requested = current.RequestStop(ActorId, "Live session shutdown requested.");
+                        await _repository.RecordLifecycleEventAsync(
+                            stop is { IsValid: true }
+                                ? StrategyLifecycleFactMapping.Attach(requested, StrategyRunLifecycleEventType.StopRequested, stop)
+                                : requested,
+                            StrategyRunLifecycleEventType.StopRequested,
+                            CancellationToken.None).ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    try
+                    {
+                        // An operator can retain the same stop intent after our read. Joining
+                        // that open intent must not manufacture a session cleanup failure.
+                        var retained = await _repository.GetRunByIdAsync(_run.RunId, CancellationToken.None).ConfigureAwait(false);
+                        if (retained is not { LastLifecycleEvent: StrategyRunLifecycleEventType.StopRequested, EndedAt: null } ||
+                            retained.TerminalStatus is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled)
+                        {
+                            faulted = CombineFailures(faulted, ex);
+                        }
+                    }
+                    catch (Exception verificationException)
+                    {
+                        faulted = CombineFailures(faulted, new AggregateException(ex, verificationException));
+                    }
+                }
+
+                if (strategyNeedsCleanup)
+                {
+                    await _strategy.StopAsync(CancellationToken.None).ConfigureAwait(false);
+                    if (_strategy.Status != StrategyStatus.Stopped)
+                    {
+                        throw new InvalidOperationException(
+                            $"Strategy '{_run.StrategyId}' returned from StopAsync with state '{_strategy.Status}'; " +
+                            "session cleanup requires Stopped.");
+                    }
+
+                    if (stop is { IsValid: true })
+                    {
+                        stopCompleted = StrategyLifecycleInterop.EvaluateStopCompleted(stop.NextState, stop.FaultReason);
+                    }
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Run {RunId} strategy stop failed during session teardown.", _run.RunId);
+                faulted = CombineFailures(faulted, ex);
             }
         }
 
@@ -802,7 +1012,7 @@ internal sealed class LiveStrategyRunSession
         // completeRun: false precisely so the run can be resumed, and denying its parked
         // orders there would durably discard live approvals and trade intentions on every
         // deployment.
-        if (_completeRunOnExit)
+        if (completeRun || faulted is not null)
         {
             // An escalation that survives teardown can still route an order into a run that
             // no longer exists, whose fills reach no session. If any withdrawal fails the
@@ -810,14 +1020,112 @@ internal sealed class LiveStrategyRunSession
             var unwithdrawn = await WithdrawParkedOrdersAsync().ConfigureAwait(false);
             if (unwithdrawn > 0)
             {
-                faulted ??= new InvalidOperationException(
+                faulted = CombineFailures(faulted, new InvalidOperationException(
                     $"{unwithdrawn} governed risk escalation(s) could not be withdrawn as the run ended; "
-                    + "an approval could still route an order this run cannot receive.");
+                    + "an approval could still route an order this run cannot receive."));
             }
         }
-        await RecordTerminalRunStateAsync(faulted).ConfigureAwait(false);
-        await RecordSessionAuditAsync(faulted).ConfigureAwait(false);
+
+        lock (_stopSync)
+        {
+            if (_requestedFailure is not null && !ReferenceEquals(deliveryFailure, _requestedFailure))
+            {
+                canBuildMetrics = false;
+                faulted = CombineFailures(faulted, _requestedFailure);
+            }
+        }
+
+        BacktestResult? metrics = null;
+        if (canBuildMetrics && (completeRun || faulted is not null))
+        {
+            try
+            {
+                metrics = BuildMetrics();
+            }
+            catch (Exception ex)
+            {
+                faulted = CombineFailures(faulted, ex);
+            }
+        }
+
+        _completedCleanupTransition = stopCompleted;
+        var outcome = await RecordTerminalRunStateAsync(faulted, metrics, stopCompleted, suspendRun: !completeRun).ConfigureAwait(false);
+        var auditFailure = faulted ?? (outcome is { State: not OperationTerminalState.Succeeded }
+            ? new InvalidOperationException(string.Join(" ", outcome.Issues.Select(static issue => issue.Message)))
+            : null);
+        await RecordSessionAuditAsync(auditFailure).ConfigureAwait(false);
+        return outcome;
     }
+
+    /// <summary>
+    /// Finishes an operator stop admitted while host suspension was committing. The engine calls
+    /// this only after ExecuteAsync chose host suspension, so report draining and strategy cleanup have
+    /// finished. It closes retained run intent and saves metrics without repeating user hooks.
+    /// </summary>
+    internal async Task<VerifiedOperationOutcome> CompleteSuspendedRunAsync()
+    {
+        RequestCompletion();
+        Exception? faulted = null;
+        BacktestResult? metrics = null;
+        try
+        {
+            var current = await _repository.GetRunByIdAsync(_run.RunId, CancellationToken.None).ConfigureAwait(false) ?? _run;
+            if (current.LastLifecycleEvent != StrategyRunLifecycleEventType.StopRequested)
+            {
+                await _repository.RecordLifecycleEventAsync(
+                    current.RequestStop(ActorId, "Operator completion requested as host suspension finished."),
+                    StrategyRunLifecycleEventType.StopRequested,
+                    CancellationToken.None).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex)
+        {
+            try
+            {
+                var retained = await _repository.GetRunByIdAsync(_run.RunId, CancellationToken.None).ConfigureAwait(false);
+                if (retained is not { LastLifecycleEvent: StrategyRunLifecycleEventType.StopRequested, EndedAt: null } ||
+                    retained.TerminalStatus is StrategyRunStatus.Failed or StrategyRunStatus.Cancelled)
+                {
+                    faulted = ex;
+                }
+            }
+            catch (Exception verificationException)
+            {
+                faulted = new AggregateException(ex, verificationException);
+            }
+        }
+
+        var unwithdrawn = await WithdrawParkedOrdersAsync().ConfigureAwait(false);
+        if (unwithdrawn > 0)
+        {
+            faulted = CombineFailures(faulted, new InvalidOperationException(
+                $"{unwithdrawn} governed risk escalation(s) could not be withdrawn as the run ended; "
+                + "an approval could still route an order this run cannot receive."));
+        }
+
+        try
+        {
+            metrics = BuildMetrics();
+        }
+        catch (Exception ex)
+        {
+            faulted = CombineFailures(faulted, ex);
+        }
+
+        return await RecordTerminalRunStateAsync(faulted, metrics, _completedCleanupTransition, _suspensionEvidenceFailure).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Run '{_run.RunId}' operator completion produced no retained receipt.");
+    }
+
+    private BacktestResult BuildMetrics() => _metrics.Build(
+        _run.Engine ?? (_run.RunType == RunType.Live ? "BrokerLive" : "BrokerPaper"),
+        _context.Universe,
+        _context.PortfolioValue,
+        _context.Ledger,
+        DateTimeOffset.UtcNow);
+
+    private static Exception? CombineFailures(Exception? first, Exception? second) =>
+        first is null ? second : second is null || ReferenceEquals(first, second) ? first :
+            new AggregateException("Live session execution or cleanup failed.", first, second);
 
     /// <summary>
     /// Cancels orders still awaiting governed approval as the run ends. The run is about to
@@ -882,61 +1190,218 @@ internal sealed class LiveStrategyRunSession
         return unwithdrawn;
     }
 
-    private async Task RecordTerminalRunStateAsync(Exception? faulted)
+    private async Task<VerifiedOperationOutcome?> RecordTerminalRunStateAsync(
+        Exception? faulted,
+        BacktestResult? metrics,
+        StrategyTransitionDto? stopCompleted,
+        Exception? priorPersistenceFailure = null,
+        bool suspendRun = false)
     {
+        var suspending = suspendRun && faulted is null;
+        _hostOnlyFinalization = suspending;
+        if (!suspending && faulted is null && metrics is null)
+        {
+            // A verified successful completion always includes the drained run metrics.
+            try
+            {
+                metrics = BuildMetrics();
+            }
+            catch (Exception ex)
+            {
+                faulted = ex;
+            }
+        }
+        if (suspending && !_strategyStartAttempted)
+        {
+            // Cancellation before activation preserves the existing start intent. No
+            // strategy execution occurred, so there is no suspension boundary to retain.
+            return null;
+        }
+
+        var terminalFailure = faulted;
+        StrategyRunEntry BuildTerminal(StrategyRunEntry current)
+        {
+            terminalFailure = faulted is null ? null : CombineFailures(faulted, priorPersistenceFailure);
+            var retainedFailure = current.TerminalStatus == StrategyRunStatus.Failed;
+            if (retainedFailure && !string.Equals(current.ExceptionMessage, faulted?.Message, StringComparison.Ordinal))
+            {
+                terminalFailure = CombineFailures(faulted, new InvalidOperationException(
+                    $"Previously retained failure: {current.ExceptionType}: {current.ExceptionMessage ?? current.Reason}"));
+            }
+
+            if (terminalFailure is not null)
+            {
+                var failed = current.Fail(terminalFailure, "Live session execution or cleanup failed.");
+                if (retainedFailure && faulted is null)
+                {
+                    failed = failed with
+                    {
+                        ExceptionType = current.ExceptionType,
+                        ExceptionMessage = current.ExceptionMessage,
+                        ExceptionStackTrace = current.ExceptionStackTrace
+                    };
+                }
+
+                return StrategyLifecycleFactMapping.Attach(failed with
+                {
+                    ActorId = ActorId,
+                    EndedAt = current.EndedAt ?? failed.EndedAt,
+                    Metrics = metrics
+                },
+                    StrategyRunLifecycleEventType.Failed,
+                    StrategyLifecycleInterop.EvaluateFail(_strategy.Status.ToString(), _strategy.FaultReason, terminalFailure.Message));
+            }
+
+            var completed = current.Complete(metrics) with
+            {
+                ActorId = ActorId,
+                TerminalStatus = _completionRequested ? StrategyRunStatus.Stopped : StrategyRunStatus.Completed
+            };
+            var established = stopCompleted is null ? completed : StrategyLifecycleFactMapping.Attach(
+                completed,
+                StrategyRunLifecycleEventType.Completed,
+                stopCompleted);
+            return priorPersistenceFailure is null ? established : established.EvidencePersistenceFailed(
+                priorPersistenceFailure,
+                "Operator completion retained metrics after a failed host-suspension evidence append.",
+                ActorId);
+        }
+
+        var terminal = suspending ? _run.Suspended(ActorId) : BuildTerminal(_run);
+        var eventType = terminal.LastLifecycleEvent;
         try
         {
             var latest = await _repository.GetRunByIdAsync(_run.RunId, CancellationToken.None).ConfigureAwait(false);
-            if (latest is { EndedAt: not null })
+            if (latest is { EndedAt: not null, LastLifecycleEvent: StrategyRunLifecycleEventType.Failed } && faulted is null)
             {
-                // Another surface (e.g. the lifecycle manager stop endpoint) already
-                // finalised this run; do not overwrite its terminal evidence.
-                return;
+                return RequireTerminalOutcome(latest, StrategyRunLifecycleEventType.Failed);
             }
 
-            var current = latest ?? _run;
-            if (faulted is not null)
+            if (suspending)
             {
-                await _repository.RecordLifecycleEventAsync(
-                    current.Fail(faulted, "Live session failed.") with { ActorId = ActorId },
-                    StrategyRunLifecycleEventType.Failed,
-                    CancellationToken.None).ConfigureAwait(false);
-                return;
-            }
-
-            if (!_completeRunOnExit)
-            {
-                // Preserve paused operator intent across host shutdown. Other sessions record
-                // an explicit recovery boundary without ending or replacing the retained run.
-                if (current.TerminalStatus != Meridian.Contracts.Workstation.StrategyRunStatus.Paused)
+                // A restored paused run keeps the operator's pause across host shutdown.
+                if (latest?.TerminalStatus == StrategyRunStatus.Paused)
                 {
-                    await _repository.RecordLifecycleEventAsync(
-                        current.Suspended(ActorId), StrategyRunLifecycleEventType.Suspended,
-                        CancellationToken.None).ConfigureAwait(false);
+                    return null;
                 }
-                return;
+
+                terminal = (latest ?? _run).Suspended(ActorId);
+                eventType = StrategyRunLifecycleEventType.Suspended;
+                await _repository.RecordLifecycleEventAsync(terminal, eventType, CancellationToken.None).ConfigureAwait(false);
+                return null;
             }
 
-            var metrics = _metrics.Build(
-                _run.Engine ?? (_run.RunType == RunType.Live ? "BrokerLive" : "BrokerPaper"),
-                _context.Universe,
-                _context.PortfolioValue,
-                _context.Ledger,
-                DateTimeOffset.UtcNow);
-            await _repository.RecordLifecycleEventAsync(
-                current.Complete(metrics) with
-                {
-                    ActorId = ActorId,
-                    TerminalStatus = Meridian.Contracts.Workstation.StrategyRunStatus.Completed
-                },
-                StrategyRunLifecycleEventType.Completed,
-                CancellationToken.None).ConfigureAwait(false);
+            terminal = BuildTerminal(latest ?? _run);
+            eventType = terminal.LastLifecycleEvent;
+            return await PersistTerminalAsync(terminal, eventType).ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception persistenceException)
         {
-            _logger.LogError(ex, "Run {RunId} terminal state could not be recorded.", _run.RunId);
+            _logger.LogError(persistenceException, "Run {RunId} terminal state could not be recorded.", _run.RunId);
+            if (eventType == StrategyRunLifecycleEventType.Suspended &&
+                await VerifyRetainedSuspensionAsync(terminal).ConfigureAwait(false))
+            {
+                return null;
+            }
+
+            if (eventType == StrategyRunLifecycleEventType.Suspended)
+            {
+                _suspensionEvidenceFailure = persistenceException;
+            }
+
+            var retainedOutcome = eventType == StrategyRunLifecycleEventType.Suspended ? null :
+                await VerifyRetainedTerminalAsync(terminal, eventType).ConfigureAwait(false);
+            if (retainedOutcome is not null)
+            {
+                return retainedOutcome;
+            }
+
+            var failure = CombineFailures(terminalFailure ?? priorPersistenceFailure, persistenceException)!;
+            var warning = terminal.EvidencePersistenceFailed(
+                failure,
+                terminalFailure is null
+                    ? "Session cleanup completed, but its shutdown evidence append failed."
+                    : "Session execution or cleanup failed, and its terminal evidence append also failed.",
+                ActorId);
+            try
+            {
+                return await PersistTerminalAsync(warning, StrategyRunLifecycleEventType.EvidencePersistenceFailed)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception warningPersistenceException)
+            {
+                retainedOutcome = await VerifyRetainedTerminalAsync(
+                    warning, StrategyRunLifecycleEventType.EvidencePersistenceFailed).ConfigureAwait(false);
+                if (retainedOutcome is not null)
+                {
+                    return retainedOutcome;
+                }
+
+                throw new InvalidOperationException(
+                    $"Run '{_run.RunId}' ended, but neither its terminal transition nor recovery warning could be retained.",
+                    new AggregateException(failure, warningPersistenceException));
+            }
         }
     }
+
+    private async Task<bool> VerifyRetainedSuspensionAsync(StrategyRunEntry suspended)
+    {
+        try
+        {
+            var retained = await _repository.GetRunByIdAsync(_run.RunId, CancellationToken.None).ConfigureAwait(false);
+            return retained is not null &&
+                retained.LastLifecycleEvent == StrategyRunLifecycleEventType.Suspended &&
+                retained.LifecycleEventAtUtc == suspended.LifecycleEventAtUtc &&
+                retained.EndedAt is null && retained.TerminalStatus == suspended.TerminalStatus;
+        }
+        catch (Exception verificationException)
+        {
+            _logger.LogWarning(verificationException,
+                "Run {RunId} suspension persistence could not be verified.", _run.RunId);
+            return false;
+        }
+    }
+
+    private async Task<VerifiedOperationOutcome?> VerifyRetainedTerminalAsync(
+        StrategyRunEntry terminal,
+        StrategyRunLifecycleEventType eventType)
+    {
+        try
+        {
+            // A repository can commit and then fail while returning its receipt. Verify this
+            // exact transition before appending a warning or reporting an unretained outcome.
+            var retained = await _repository.GetRunByIdAsync(_run.RunId, CancellationToken.None).ConfigureAwait(false);
+            if (retained is not null && retained.LastLifecycleEvent == eventType &&
+                retained.LifecycleEventAtUtc == terminal.LifecycleEventAtUtc &&
+                retained.EndedAt == terminal.EndedAt &&
+                retained.ExceptionMessage == terminal.ExceptionMessage)
+            {
+                return RequireTerminalOutcome(retained, eventType);
+            }
+        }
+        catch (Exception verificationException)
+        {
+            _logger.LogWarning(verificationException,
+                "Run {RunId} terminal persistence could not be verified.", _run.RunId);
+        }
+
+        return null;
+    }
+
+    private async Task<VerifiedOperationOutcome> PersistTerminalAsync(
+        StrategyRunEntry entry,
+        StrategyRunLifecycleEventType eventType)
+    {
+        var outcome = await _repository.RecordLifecycleEventWithOutcomeAsync(entry, eventType, CancellationToken.None)
+            .ConfigureAwait(false);
+        return VerifiedOperationOutcomeValidator.ValidateAndThrow(outcome
+            ?? throw new InvalidOperationException($"Lifecycle event '{eventType}' did not produce a terminal operation receipt."));
+    }
+
+    private static VerifiedOperationOutcome RequireTerminalOutcome(
+        StrategyRunEntry entry,
+        StrategyRunLifecycleEventType eventType) => StrategyRunStore.CreateLifecycleOutcome(entry, eventType)
+        ?? throw new InvalidOperationException($"Lifecycle event '{eventType}' did not produce a terminal operation receipt.");
 
     private async Task RecordSessionAuditAsync(Exception? faulted)
     {

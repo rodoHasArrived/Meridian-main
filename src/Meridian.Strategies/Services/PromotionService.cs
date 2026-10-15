@@ -72,10 +72,6 @@ public sealed class PromotionService
         return EvaluateCoreAsync(runId, criteria, scope, ct);
     }
 
-    private static bool HasSuccessfulOutcome(StrategyRunEntry run) =>
-        run.LastLifecycleEvent == StrategyRunLifecycleEventType.Completed &&
-        run.TerminalStatus is null or StrategyRunStatus.Completed;
-
     private async Task<PromotionEvaluationResult> EvaluateCoreAsync(
         string runId,
         PromotionCriteria? criteria,
@@ -95,9 +91,10 @@ public sealed class PromotionService
             return PromotionEvaluationResult.NotReady(runId, "Run has not completed yet.");
         }
 
-        if (!HasSuccessfulOutcome(run))
+        if (!HasSuccessfulRetainedCompletion(run))
         {
-            return PromotionEvaluationResult.NotReady(runId, "Run must complete successfully before promotion.");
+            return PromotionEvaluationResult.NotReady(runId,
+                "Run did not complete successfully. Resolve failed cleanup or reconcile terminal evidence before promotion.");
         }
 
         if (run.RunType == RunType.Live)
@@ -313,13 +310,13 @@ public sealed class PromotionService
                 Reason: "Run not found, incomplete, or has no metrics.");
         }
 
-        if (!HasSuccessfulOutcome(run))
+        if (!HasSuccessfulRetainedCompletion(run))
         {
             return new PromotionDecisionResult(
                 Success: false,
                 PromotionId: null,
                 NewRunId: null,
-                Reason: "Run must complete successfully before promotion.");
+                Reason: "Run did not complete successfully. Resolve failed cleanup or reconcile terminal evidence before promotion.");
         }
 
         if (run.RunType == RunType.Live)
@@ -1171,6 +1168,11 @@ public sealed class PromotionService
 
         return await RejectSingleDecisionAsync(request, scope, ct).ConfigureAwait(false);
     }
+
+    private static bool HasSuccessfulRetainedCompletion(StrategyRunEntry run) =>
+        run.EndedAt.HasValue &&
+        run.LastLifecycleEvent == StrategyRunLifecycleEventType.Completed &&
+        run.TerminalStatus is null or StrategyRunStatus.Completed or StrategyRunStatus.Stopped;
 
     private async Task<PromotionDecisionResult> RejectSingleDecisionAsync(
         PromotionRejectionRequest request,
