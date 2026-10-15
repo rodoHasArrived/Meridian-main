@@ -241,7 +241,8 @@ public sealed class SecurityMasterLegacyIdentifierCleanupTests : IDisposable
         else if (invalidPart == "provider-only")
             await store.RegisterSymbolAsync(new SymbolRegistryEntry
             {
-                Canonical = "CLEANUP", SecurityId = id,
+                Canonical = "CLEANUP",
+                SecurityId = id,
                 Aliases = [new() { Alias = invalid.IdentifierValue, Source = "manual", Provider = "feed" }]
             });
         else if (invalidPart == "ambiguous")
@@ -289,7 +290,8 @@ public sealed class SecurityMasterLegacyIdentifierCleanupTests : IDisposable
         var id = await SeedAsync(store);
         await store.RegisterSymbolAsync(new SymbolRegistryEntry
         {
-            Canonical = "CLEANUP", SecurityId = id,
+            Canonical = "CLEANUP",
+            SecurityId = id,
             Aliases = [new() { Alias = "OLD-ISIN", Source = "isin" }]
         });
         var manifest = await ManifestAsync(store,
@@ -315,7 +317,8 @@ public sealed class SecurityMasterLegacyIdentifierCleanupTests : IDisposable
         var id = Guid.NewGuid();
         await store.RegisterSymbolAsync(new SymbolRegistryEntry
         {
-            Canonical = "CLEANUP", SecurityId = id,
+            Canonical = "CLEANUP",
+            SecurityId = id,
             Identifiers = Identifiers(kind, "OLD-ISIN"),
             Aliases = [new() { Alias = "OLD-ISIN", Source = "manual" }]
         });
@@ -347,7 +350,8 @@ public sealed class SecurityMasterLegacyIdentifierCleanupTests : IDisposable
         var id = await SeedAsync(store);
         await store.RegisterSymbolAsync(new SymbolRegistryEntry
         {
-            Canonical = "CLEANUP", SecurityId = id,
+            Canonical = "CLEANUP",
+            SecurityId = id,
             Aliases = [new() { Alias = "OLD-ISIN", Source = source, Provider = provider }]
         });
         var item = Item(id) with { TypedIdentifierEvidenceReference = "incident:typed-identifier-origin/field-1" };
@@ -392,7 +396,8 @@ public sealed class SecurityMasterLegacyIdentifierCleanupTests : IDisposable
         var id = Guid.NewGuid();
         await store.RegisterSymbolAsync(new SymbolRegistryEntry
         {
-            Canonical = "CLEANUP", SecurityId = id,
+            Canonical = "CLEANUP",
+            SecurityId = id,
             Identifiers = new() { Isin = "old-isin" },
             Aliases = [new() { Alias = "OLD-ISIN", Source = "manual" }]
         });
@@ -412,7 +417,8 @@ public sealed class SecurityMasterLegacyIdentifierCleanupTests : IDisposable
         var id = Guid.NewGuid();
         await store.RegisterSymbolAsync(new SymbolRegistryEntry
         {
-            Canonical = "CLEANUP", SecurityId = id,
+            Canonical = "CLEANUP",
+            SecurityId = id,
             Identifiers = new() { Isin = "OLD-ISIN" },
             Aliases = [new() { Alias = "OLD-ISIN", Source = "manual" }]
         });

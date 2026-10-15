@@ -46,14 +46,16 @@ public sealed class SecurityMasterCanonicalSymbolSeedReconciliationTests : IDisp
         var registry = new CanonicalSymbolRegistry(new SymbolRegistryService(_directory));
         await registry.RegisterAsync(new CanonicalSymbolDefinition
         {
-            Canonical = "MANUAL", SecurityId = id,
+            Canonical = "MANUAL",
+            SecurityId = id,
             AliasDefinitions = [new("DELETEDALIAS", SymbolMappingSources.SecurityMaster)]
         });
         await registry.SetProviderSymbolAsync("MANUAL", "polygon", "DELETEDPROVIDER", SymbolMappingSources.SecurityMaster, false);
         await registry.SetProviderSymbolAsync("MANUAL", "ib", "OPERATOR", SymbolMappingSources.Operator, true);
         await registry.RegisterAsync(new CanonicalSymbolDefinition
         {
-            Canonical = "UNKNOWN", SecurityId = unknownId,
+            Canonical = "UNKNOWN",
+            SecurityId = unknownId,
             Aliases = ["KEEPUNKNOWN"]
         });
         var seed = CreateSeed(new SecurityMasterProjectionCache(), registry, authoritative: true);
@@ -152,7 +154,9 @@ public sealed class SecurityMasterCanonicalSymbolSeedReconciliationTests : IDisp
         var registry = new CanonicalSymbolRegistry(new SymbolRegistryService(_directory));
         await registry.RegisterAsync(new CanonicalSymbolDefinition
         {
-            Canonical = "INDEPENDENT", SecurityId = id, Isin = isin
+            Canonical = "INDEPENDENT",
+            SecurityId = id,
+            Isin = isin
         });
         var cache = new SecurityMasterProjectionCache();
         cache.Upsert(Projection(id, "INDEPENDENT") with
@@ -228,7 +232,8 @@ public sealed class SecurityMasterCanonicalSymbolSeedReconciliationTests : IDisp
 
     private static SecurityProjectionRecord Projection(Guid id, string ticker, long version = 1)
         => SecurityMasterProjectionChangeNotificationTests.CreateProjection(id, ticker, version)
-            with { PrimaryIdentifierValue = ticker };
+            with
+        { PrimaryIdentifierValue = ticker };
 
     private static SecurityMasterCanonicalSymbolSeedService CreateSeed(SecurityMasterProjectionCache cache,
         ICanonicalSymbolRegistry registry, bool authoritative = false)

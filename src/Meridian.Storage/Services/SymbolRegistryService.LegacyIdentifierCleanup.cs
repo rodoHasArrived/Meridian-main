@@ -227,11 +227,20 @@ public sealed partial class SymbolRegistryService : ISecurityMasterLegacyIdentif
     {
         switch (kind)
         {
-            case SecurityIdentifierKind.Isin: identifiers.Isin = null; break;
-            case SecurityIdentifierKind.Cusip: identifiers.Cusip = null; break;
-            case SecurityIdentifierKind.Figi: identifiers.Figi = null; break;
-            case SecurityIdentifierKind.Sedol: identifiers.Sedol = null; break;
-            default: throw new ArgumentOutOfRangeException(nameof(kind));
+            case SecurityIdentifierKind.Isin:
+                identifiers.Isin = null;
+                break;
+            case SecurityIdentifierKind.Cusip:
+                identifiers.Cusip = null;
+                break;
+            case SecurityIdentifierKind.Figi:
+                identifiers.Figi = null;
+                break;
+            case SecurityIdentifierKind.Sedol:
+                identifiers.Sedol = null;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(kind));
         }
     }
 

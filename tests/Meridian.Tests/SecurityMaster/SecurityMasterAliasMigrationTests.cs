@@ -93,7 +93,8 @@ public sealed class SecurityMasterAliasMigrationTests
             catch
             {
                 await server.DisposeAsync();
-                if (Directory.Exists(scripts)) Directory.Delete(scripts, recursive: true);
+                if (Directory.Exists(scripts))
+                    Directory.Delete(scripts, recursive: true);
                 throw;
             }
         }
@@ -142,7 +143,8 @@ public sealed class SecurityMasterAliasMigrationTests
 
         public async ValueTask DisposeAsync()
         {
-            try { await server.DisposeAsync(); }
+            try
+            { await server.DisposeAsync(); }
             finally { if (Directory.Exists(scripts)) Directory.Delete(scripts, recursive: true); }
         }
     }

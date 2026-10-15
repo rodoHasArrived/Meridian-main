@@ -43,7 +43,8 @@ public sealed class SecurityMasterCanonicalSymbolSeedFallbackTests
         var cache = new SecurityMasterProjectionCache();
         var store = Substitute.For<ISecurityMasterStore>();
         var record = SecurityMasterProjectionChangeNotificationTests.CreateProjection(securityId, "Missed creation", 1)
-            with { PrimaryIdentifierValue = "MISSED" };
+            with
+        { PrimaryIdentifierValue = "MISSED" };
         store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(new[] { record });
         var registry = Substitute.For<ICanonicalSymbolRegistry>();
         registry.RegisterBatchAsync(Arg.Any<IEnumerable<CanonicalSymbolDefinition>>(), Arg.Any<CancellationToken>()).Returns(1);

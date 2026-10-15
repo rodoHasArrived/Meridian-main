@@ -176,7 +176,10 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
             SubType = "PreferredShare",
             Classification = JsonSerializer.SerializeToElement(new
             {
-                assetClass = "Equity", assetFamily = "PreferredEquity", subType = "PreferredShare", classification
+                assetClass = "Equity",
+                assetFamily = "PreferredEquity",
+                subType = "PreferredShare",
+                classification
             }),
             EconomicTerms = JsonSerializer.SerializeToElement(new
             {

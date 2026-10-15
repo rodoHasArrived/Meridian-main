@@ -21,7 +21,9 @@ public sealed class SecurityMasterRecordedIdentifierPostgresTests(SecurityMaster
         await store.UpsertAliasAsync(original);
         await store.UpsertAliasAsync(original with
         {
-            AliasValue = $"NEW-{id:N}", CreatedBy = "correcting.operator", CreatedAt = DateTimeOffset.UtcNow
+            AliasValue = $"NEW-{id:N}",
+            CreatedBy = "correcting.operator",
+            CreatedAt = DateTimeOffset.UtcNow
         });
         var cutoff = recordedAt.AddDays(1);
 

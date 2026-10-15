@@ -120,5 +120,6 @@ public sealed class SecurityMasterProjectionWarmupLifecycleTests
 
     private static SecurityProjectionRecord Projection()
         => SecurityMasterProjectionChangeNotificationTests.CreateProjection(Guid.NewGuid(), "Durable", 1)
-            with { PrimaryIdentifierValue = "DURABLE" };
+            with
+        { PrimaryIdentifierValue = "DURABLE" };
 }
