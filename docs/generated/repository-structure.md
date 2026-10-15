@@ -5568,9 +5568,11 @@ Meridian-main
 │   │   │   │   ├── ITradingParametersBackfillService.cs
 │   │   │   │   ├── PolygonConstants.cs
 │   │   │   │   ├── PolygonCorporateActionFetcher.cs
+│   │   │   │   ├── PolygonCorporateActionFetchResult.cs
 │   │   │   │   ├── PolygonHistoricalDataProvider.cs
 │   │   │   │   ├── PolygonMarketDataClient.cs
 │   │   │   │   ├── PolygonOptionsChainProvider.cs
+│   │   │   │   ├── PolygonPagination.cs
 │   │   │   │   ├── PolygonSecurityMasterIngestProvider.cs
 │   │   │   │   ├── PolygonSymbolSearchProvider.cs
 │   │   │   │   └── TradingParametersBackfillService.cs
@@ -5638,7 +5640,8 @@ Meridian-main
 │   │   │   ├── ProviderConnectionSupervisor.cs
 │   │   │   ├── WebSocketConnectionConfig.cs
 │   │   │   ├── WebSocketConnectionManager.cs
-│   │   │   └── WebSocketResiliencePolicy.cs
+│   │   │   ├── WebSocketResiliencePolicy.cs
+│   │   │   └── WebSocketSendSession.cs
 │   │   ├── Shared
 │   │   │   ├── ISymbolStateStore.cs
 │   │   │   ├── SubscriptionManager.cs
@@ -10544,6 +10547,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaAssetStreamRoutingTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PortfolioRecovery.cs
+│   │   │   │   ├── AlpacaConnectionReadinessTests.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
 │   │   │   │   ├── AlpacaHistoricalDataProviderTests.cs
@@ -10595,6 +10599,7 @@ Meridian-main
 │   │   │   │   ├── NyseTaqCollectorIntegrationTests.cs
 │   │   │   │   ├── PolygonCoherenceTests.cs
 │   │   │   │   ├── PolygonCorporateActionFetcherTests.cs
+│   │   │   │   ├── PolygonHistoricalPaginationTests.cs
 │   │   │   │   ├── PolygonMarketDataClientTests.cs
 │   │   │   │   ├── PolygonMessageParsingTests.cs
 │   │   │   │   ├── PolygonProviderContractTests.cs
@@ -10602,6 +10607,7 @@ Meridian-main
 │   │   │   │   ├── PolygonSecurityMasterIngestProviderTests.cs
 │   │   │   │   ├── PolygonSequenceIntegrityTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
+│   │   │   │   ├── PolygonTimestampIntegrityTests.cs
 │   │   │   │   ├── ProviderDataQualityValidatorTests.cs
 │   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
 │   │   │   │   ├── ProviderHealthTrackerTests.cs
@@ -10635,7 +10641,8 @@ Meridian-main
 │   │   │   │   ├── PollingProviderBaseTests.cs
 │   │   │   │   ├── ProviderConnectionSupervisorTests.cs
 │   │   │   │   ├── WebSocketConnectionManagerTests.cs
-│   │   │   │   └── WebSocketResiliencePolicyTests.cs
+│   │   │   │   ├── WebSocketResiliencePolicyTests.cs
+│   │   │   │   └── WebSocketSendSessionTests.cs
 │   │   │   └── Shared
 │   │   │       ├── SymbolNormalizationTests.cs
 │   │   │       └── TempDirectoryFixture.cs

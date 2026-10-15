@@ -640,7 +640,8 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
 
             var price = elem.TryGetProperty("p", out var priceProp) ? priceProp.GetDecimal() : 0m;
             var size = elem.TryGetProperty("s", out var sizeProp) ? sizeProp.GetInt64() : 0L;
-            var timestamp = elem.TryGetProperty("t", out var tsProp) ? tsProp.GetInt64() : 0L;
+            if (!TryReadSourceTimestamp(elem, "t", symbol, out var tradeTimestamp))
+                return;
             var tradeId = elem.TryGetProperty("i", out var idProp) ? idProp.GetString() : null;
             var exchange = elem.TryGetProperty("x", out var xProp) ? xProp.GetInt32() : 0;
 
@@ -674,9 +675,6 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
             var seq = elem.TryGetProperty("q", out var seqProp) && seqProp.TryGetInt64(out var providerSeq) && providerSeq > 0
                 ? providerSeq
                 : 0L;
-            var tradeTimestamp = timestamp > 0
-                ? DateTimeOffset.FromUnixTimeMilliseconds(timestamp)
-                : DateTimeOffset.UtcNow;
             var trade = new MarketTradeUpdate(
                 Timestamp: tradeTimestamp,
                 Symbol: symbol,
@@ -698,6 +696,13 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 // prior Eastern trading date, so the adapter — which owns provider semantics —
                 // stamps the America/New_York market date into the continuity key.
                 SequenceSessionDate: ResolveUsEquitiesSessionDate(tradeTimestamp));
+
+            var issues = ProviderDataQualityValidator.ValidateTrade(ProviderId, trade);
+            if (HasBlockingIssues(issues))
+            {
+                LogDataQualityRejection("trade", symbol, issues);
+                return;
+            }
 
             _tradeCollector.OnTrade(trade);
         }
@@ -751,7 +756,8 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
             var bidSize = elem.TryGetProperty("bs", out var bsProp) ? bsProp.GetInt64() : 0L;
             var askPrice = elem.TryGetProperty("ap", out var apProp) ? apProp.GetDecimal() : 0m;
             var askSize = elem.TryGetProperty("as", out var asProp) ? asProp.GetInt64() : 0L;
-            var timestamp = elem.TryGetProperty("t", out var tsProp) ? tsProp.GetInt64() : 0L;
+            if (!TryReadSourceTimestamp(elem, "t", symbol, out var quoteTimestamp))
+                return;
             var exchange = elem.TryGetProperty("x", out var xProp) ? xProp.GetInt32() : 0;
 
             if (bidPrice <= 0 && askPrice <= 0)
@@ -760,24 +766,13 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 return;
             }
 
-            if (bidPrice > 0 && askPrice > 0 && askPrice < bidPrice)
-            {
-                Log.Debug("Skipping Polygon quote for {Symbol} with inverted spread: bid={Bid} ask={Ask}",
-                    symbol, bidPrice, askPrice);
-                return;
-            }
-
-            var ts = timestamp > 0
-                ? DateTimeOffset.FromUnixTimeMilliseconds(timestamp)
-                : DateTimeOffset.UtcNow;
-
             // Preserve Polygon's own quote sequence ("q") when supplied; null keeps the
             // collector's local-counter fallback honest about its origin.
             long? quoteSeq = elem.TryGetProperty("q", out var quoteSeqProp) && quoteSeqProp.TryGetInt64(out var providerQuoteSeq) && providerQuoteSeq > 0
                 ? providerQuoteSeq
                 : null;
             var quote = new MarketQuoteUpdate(
-                Timestamp: ts,
+                Timestamp: quoteTimestamp,
                 Symbol: symbol,
                 BidPrice: bidPrice,
                 BidSize: bidSize,
@@ -787,6 +782,13 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 StreamId: "POLYGON",
                 Venue: MapExchangeCode(exchange),
                 Source: MarketDataSources.Polygon);
+
+            var issues = ProviderDataQualityValidator.ValidateQuote(ProviderId, quote);
+            if (HasBlockingIssues(issues))
+            {
+                LogDataQualityRejection("quote", symbol, issues);
+                return;
+            }
 
             _quoteCollector.OnQuote(quote);
         }
@@ -831,16 +833,10 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
             }
 
             var vwap = elem.TryGetProperty("vw", out var vwProp) ? vwProp.GetDecimal() : 0m;
-            var startTimestamp = elem.TryGetProperty("s", out var sProp) ? sProp.GetInt64() : 0L;
-            var endTimestamp = elem.TryGetProperty("e", out var eProp) ? eProp.GetInt64() : 0L;
+            if (!TryReadSourceTimestamp(elem, "s", symbol, out var startTime) ||
+                !TryReadSourceTimestamp(elem, "e", symbol, out var endTime))
+                return;
             var tradeCount = elem.TryGetProperty("n", out var nProp) ? nProp.GetInt32() : 0;
-
-            var startTime = startTimestamp > 0
-                ? DateTimeOffset.FromUnixTimeMilliseconds(startTimestamp)
-                : DateTimeOffset.UtcNow;
-            var endTime = endTimestamp > 0
-                ? DateTimeOffset.FromUnixTimeMilliseconds(endTimestamp)
-                : startTime.AddSeconds(timeframe == Domain.Models.AggregateTimeframe.Second ? 1 : 60);
 
             // Polygon aggregate messages carry no provider sequence; do not fabricate one.
             // The bar's identity is its (symbol, timeframe, window) — the dedup ledger keys
@@ -860,7 +856,15 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
                 Source: MarketDataSources.Polygon,
                 SequenceNumber: 0);
 
-            _publisher.TryPublish(MarketEvent.AggregateBar(endTime, symbol, aggregateBar, MarketDataSources.Polygon));
+            var issues = ProviderDataQualityValidator.ValidateAggregate(ProviderId, aggregateBar);
+            if (HasBlockingIssues(issues))
+            {
+                LogDataQualityRejection("aggregate", symbol, issues);
+                return;
+            }
+
+            _publisher.TryPublish(MarketEvent.AggregateBar(endTime, symbol, aggregateBar, MarketDataSources.Polygon)
+                .StampReceiveTime(exchangeTs: endTime));
 
             Log.Debug(
                 "Processed {Timeframe} aggregate for {Symbol}: O={Open} H={High} L={Low} C={Close} V={Volume}",
@@ -871,6 +875,38 @@ public sealed class PolygonMarketDataClient : WebSocketProviderBase
             Log.Warning(ex, "Failed to process Polygon aggregate message");
         }
     }
+
+    private bool TryReadSourceTimestamp(JsonElement elem, string fieldName, string symbol, out DateTimeOffset timestamp)
+    {
+        timestamp = default;
+        if (!elem.TryGetProperty(fieldName, out var value) ||
+            value.ValueKind != JsonValueKind.Number ||
+            !value.TryGetInt64(out var milliseconds) || milliseconds <= 0)
+        {
+            Log.Warning("Rejected Polygon event for {Symbol}: source timestamp field {Field} must be a positive Unix millisecond integer",
+                symbol, fieldName);
+            return false;
+        }
+
+        try
+        {
+            timestamp = DateTimeOffset.FromUnixTimeMilliseconds(milliseconds);
+            return true;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            Log.Warning("Rejected Polygon event for {Symbol}: source timestamp field {Field} is outside the supported range",
+                symbol, fieldName);
+            return false;
+        }
+    }
+
+    private static bool HasBlockingIssues(IReadOnlyList<ProviderDataQualityIssue> issues)
+        => issues.Any(issue => issue.Severity == ProviderDataQualitySeverity.Error);
+
+    private void LogDataQualityRejection(string messageType, string symbol, IReadOnlyList<ProviderDataQualityIssue> issues)
+        => Log.Warning("Rejected Polygon {MessageType} for {Symbol} due to provider data quality issues: {Issues}",
+            messageType, symbol, string.Join("; ", issues.Select(issue => $"{issue.FieldPath}: {issue.Message}")));
 
     private void ProcessStatus(JsonElement elem)
     {
