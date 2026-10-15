@@ -158,6 +158,7 @@ classDiagram
         +string LoadedBy
         +string? Notes
         +DateOnly StatementDate
+        +int StatementRevision
     }
     class Meridian_Contracts_FundStructure_IngestCustodianStatementRequest["IngestCustodianStatementRequest"] {
         +Guid AccountId

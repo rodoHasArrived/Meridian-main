@@ -973,6 +973,33 @@
       "sha256": "34411f0d35fdf449138b18fd32906cc0d99cce27d0a6840e2ebdca9eff49deab"
     },
     {
+      "filename": "005_reconciliation_resolution.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/005_reconciliation_resolution.sql",
+      "schema": "fund_accounts",
+      "sha256": "71f9171f25eac7417d796b47132e0a3f5ee0c430e2a2bb68e2432c10241cc605"
+    },
+    {
+      "filename": "006_sync_history_correlation.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/006_sync_history_correlation.sql",
+      "schema": "fund_accounts",
+      "sha256": "8fb4687497ef27603fec88d7a5a92032753bdec19a2add02ce5c871c6ecad7b0"
+    },
+    {
+      "filename": "007_bank_statement_authority.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/007_bank_statement_authority.sql",
+      "schema": "fund_accounts",
+      "sha256": "657b113983e3d7f0cfc9b663a493257ea706685e684fc275e5daaa369c685fe6"
+    },
+    {
       "filename": "001_banking.sql",
       "immutable": true,
       "migration_set_id": "banking",
@@ -1136,7 +1163,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "c536bb20227cf2dedfc7e4bbd9ee938e8e9fd05ad49bfb663c4bee73b208be92",
+  "fingerprint": "315732246c5493aedac2e7587b28f27777f3746d3fadecc4e46d2b98739cf8ac",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1374,7 +1401,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 126,
+    "files": 129,
     "migration_sets": 10,
     "waivers": 17,
     "warnings": 0
