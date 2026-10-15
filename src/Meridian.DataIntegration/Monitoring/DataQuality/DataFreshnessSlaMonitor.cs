@@ -143,13 +143,13 @@ public sealed class DataFreshnessSlaMonitor : IDisposable
     private readonly ILogger _log = LoggingSetup.ForContext<DataFreshnessSlaMonitor>();
     private readonly ConcurrentDictionary<string, SymbolFreshnessState> _symbolStates = new();
     private readonly SlaConfig _config;
-    private readonly Timer _checkTimer;
+    private readonly ITimer _checkTimer;
+    private readonly TimeProvider _timeProvider;
     private volatile bool _isDisposed;
 
     // Metrics (ADQ-4.5)
     private long _totalViolations;
     private long _totalRecoveries;
-    private long _currentViolations;
 
     /// <summary>
     /// Event raised when an SLA violation is detected.
@@ -161,11 +161,15 @@ public sealed class DataFreshnessSlaMonitor : IDisposable
     /// </summary>
     public event Action<SlaRecoveryEvent>? OnRecovery;
 
-    public DataFreshnessSlaMonitor(SlaConfig? config = null)
+    /// <summary>Periodic snapshots, including when no feed events arrive or markets are closed.</summary>
+    public event Action<SlaStatusSnapshot>? OnSnapshotUpdated;
+
+    public DataFreshnessSlaMonitor(SlaConfig? config = null, TimeProvider? timeProvider = null)
     {
         _config = config ?? SlaConfig.Default;
+        _timeProvider = timeProvider ?? TimeProvider.System;
 
-        _checkTimer = new Timer(
+        _checkTimer = _timeProvider.CreateTimer(
             CheckSlaCompliance,
             null,
             TimeSpan.FromSeconds(_config.CheckIntervalSeconds),
@@ -184,21 +188,28 @@ public sealed class DataFreshnessSlaMonitor : IDisposable
     public void RecordEvent(string symbol)
     {
         var state = _symbolStates.GetOrAdd(symbol, s => new SymbolFreshnessState(s, _config.GetThresholdForSymbol(s)));
-        state.RecordEvent();
-
-        // Check if this recovers from violation
-        if (state.CurrentState == SlaState.Violation)
+        SlaRecoveryEvent? recovery = null;
+        lock (state)
         {
-            var violationDuration = DateTimeOffset.UtcNow - (state.LastViolationTime ?? DateTimeOffset.UtcNow);
-            state.MarkRecovered();
-            Interlocked.Decrement(ref _currentViolations);
-            Interlocked.Increment(ref _totalRecoveries);
+            var now = _timeProvider.GetUtcNow();
+            state.RecordEvent(now);
 
-            _log.Information("SLA recovered for {Symbol} after {Duration:F1}s violation", symbol, violationDuration.TotalSeconds);
+            if (state.CurrentState == SlaState.Violation)
+            {
+                var violationDuration = now - (state.LastViolationTime ?? now);
+                state.MarkRecovered();
+                Interlocked.Increment(ref _totalRecoveries);
+                recovery = new SlaRecoveryEvent(symbol, now, violationDuration, state.ViolationCount);
+            }
+        }
 
+        // Subscribers may read every symbol's snapshot; never invoke them under a symbol lock.
+        if (recovery is { } recovered)
+        {
+            _log.Information("SLA recovered for {Symbol} after {Duration:F1}s violation", symbol, recovered.ViolationDuration.TotalSeconds);
             try
             {
-                OnRecovery?.Invoke(new SlaRecoveryEvent(symbol, DateTimeOffset.UtcNow, violationDuration, state.ViolationCount));
+                OnRecovery?.Invoke(recovered);
             }
             catch (Exception ex)
             {
@@ -251,7 +262,7 @@ public sealed class DataFreshnessSlaMonitor : IDisposable
     public SymbolSlaStatus? GetSymbolStatus(string symbol)
     {
         return _symbolStates.TryGetValue(symbol, out var state)
-            ? state.GetStatus(IsMarketOpen())
+            ? state.GetStatus(IsMarketOpen(), _timeProvider.GetUtcNow())
             : null;
     }
 
@@ -260,6 +271,7 @@ public sealed class DataFreshnessSlaMonitor : IDisposable
     /// </summary>
     public SlaStatusSnapshot GetSnapshot()
     {
+        var now = _timeProvider.GetUtcNow();
         var isMarketOpen = IsMarketOpen();
         var statuses = new List<SymbolSlaStatus>();
 
@@ -269,7 +281,7 @@ public sealed class DataFreshnessSlaMonitor : IDisposable
 
         foreach (var kvp in _symbolStates)
         {
-            var status = kvp.Value.GetStatus(isMarketOpen);
+            var status = kvp.Value.GetStatus(isMarketOpen, now);
             statuses.Add(status);
 
             switch (status.State)
@@ -305,7 +317,7 @@ public sealed class DataFreshnessSlaMonitor : IDisposable
         var overallScore = freshnessCount > 0 ? totalFreshness / freshnessCount : 100;
 
         return new SlaStatusSnapshot(
-            Timestamp: DateTimeOffset.UtcNow,
+            Timestamp: now,
             TotalSymbols: statuses.Count,
             HealthySymbols: healthy,
             WarningSymbols: warning,
@@ -326,7 +338,7 @@ public sealed class DataFreshnessSlaMonitor : IDisposable
     /// <summary>
     /// Gets current active violation count for metrics.
     /// </summary>
-    public long CurrentViolations => Interlocked.Read(ref _currentViolations);
+    public long CurrentViolations => GetSnapshot().ViolationSymbols;
 
     /// <summary>
     /// Gets total recovery count for metrics.
@@ -341,8 +353,9 @@ public sealed class DataFreshnessSlaMonitor : IDisposable
         if (!_config.SkipOutsideMarketHours)
             return true;
 
-        var now = TimeOnly.FromDateTime(DateTime.UtcNow);
-        var dayOfWeek = DateTime.UtcNow.DayOfWeek;
+        var utcNow = _timeProvider.GetUtcNow();
+        var now = TimeOnly.FromDateTime(utcNow.UtcDateTime);
+        var dayOfWeek = utcNow.DayOfWeek;
 
         // Skip weekends
         if (dayOfWeek == DayOfWeek.Saturday || dayOfWeek == DayOfWeek.Sunday)
@@ -358,67 +371,76 @@ public sealed class DataFreshnessSlaMonitor : IDisposable
 
         try
         {
-            var now = DateTimeOffset.UtcNow;
+            var now = _timeProvider.GetUtcNow();
             var isMarketOpen = IsMarketOpen();
 
             foreach (var kvp in _symbolStates)
             {
                 var symbolState = kvp.Value;
-
-                // Skip checks outside market hours if configured
-                if (!isMarketOpen && _config.SkipOutsideMarketHours)
+                SlaViolationEvent? violation = null;
+                lock (symbolState)
                 {
-                    continue;
-                }
-
-                var status = symbolState.GetStatus(isMarketOpen);
-
-                // Check for new violation (ADQ-4.4)
-                if (status.State == SlaState.Violation && symbolState.CurrentState != SlaState.Violation)
-                {
-                    // Check cooldown
-                    if (symbolState.LastAlertTime.HasValue &&
-                        (now - symbolState.LastAlertTime.Value).TotalSeconds < _config.AlertCooldownSeconds)
+                    // Skip checks outside market hours if configured
+                    if (!isMarketOpen && _config.SkipOutsideMarketHours)
                     {
                         continue;
                     }
 
-                    var previousState = symbolState.CurrentState;
-                    symbolState.MarkViolation();
-                    Interlocked.Increment(ref _totalViolations);
-                    Interlocked.Increment(ref _currentViolations);
+                    var status = symbolState.GetStatus(isMarketOpen, now);
 
-                    _log.Warning(
-                        "SLA violation for {Symbol}: {Freshness:F1}s since last event (threshold: {Threshold}s)",
-                        kvp.Key,
-                        status.TimeSinceLastEvent.TotalSeconds,
-                        status.ThresholdSeconds);
-
-                    try
+                    // Check for new violation (ADQ-4.4)
+                    if (status.State == SlaState.Violation && symbolState.CurrentState != SlaState.Violation)
                     {
-                        OnViolation?.Invoke(new SlaViolationEvent(
+                        // Check cooldown
+                        if (symbolState.LastAlertTime.HasValue &&
+                            (now - symbolState.LastAlertTime.Value).TotalSeconds < _config.AlertCooldownSeconds)
+                        {
+                            continue;
+                        }
+
+                        var previousState = symbolState.CurrentState;
+                        symbolState.MarkViolation(now);
+                        Interlocked.Increment(ref _totalViolations);
+
+                        _log.Warning(
+                            "SLA violation for {Symbol}: {Freshness:F1}s since last event (threshold: {Threshold}s)",
+                            kvp.Key,
+                            status.TimeSinceLastEvent.TotalSeconds,
+                            status.ThresholdSeconds);
+
+                        violation = new SlaViolationEvent(
                             kvp.Key,
                             now,
                             status.TimeSinceLastEvent,
                             status.ThresholdSeconds,
                             symbolState.ViolationCount,
-                            previousState));
+                            previousState);
+                    }
+                    else if (status.State == SlaState.Warning && symbolState.CurrentState == SlaState.Healthy)
+                    {
+                        symbolState.UpdateState(SlaState.Warning);
+                        _log.Debug(
+                            "SLA warning for {Symbol}: {Freshness:F1}s since last event (threshold: {Threshold}s)",
+                            kvp.Key,
+                            status.TimeSinceLastEvent.TotalSeconds,
+                            status.ThresholdSeconds);
+                    }
+                }
+
+                if (violation is { } detected)
+                {
+                    try
+                    {
+                        OnViolation?.Invoke(detected);
                     }
                     catch (Exception ex)
                     {
                         _log.Error(ex, "Error in SLA violation event handler");
                     }
                 }
-                else if (status.State == SlaState.Warning && symbolState.CurrentState == SlaState.Healthy)
-                {
-                    symbolState.UpdateState(SlaState.Warning);
-                    _log.Debug(
-                        "SLA warning for {Symbol}: {Freshness:F1}s since last event (threshold: {Threshold}s)",
-                        kvp.Key,
-                        status.TimeSinceLastEvent.TotalSeconds,
-                        status.ThresholdSeconds);
-                }
             }
+
+            OnSnapshotUpdated?.Invoke(GetSnapshot());
         }
         catch (Exception ex)
         {
@@ -460,20 +482,20 @@ public sealed class DataFreshnessSlaMonitor : IDisposable
             ThresholdSeconds = thresholdSeconds;
         }
 
-        public void RecordEvent()
+        public void RecordEvent(DateTimeOffset now)
         {
-            _lastEventTime = DateTimeOffset.UtcNow;
+            _lastEventTime = now;
             if (_currentState == SlaState.NoData || _currentState == SlaState.Warning)
             {
                 _currentState = SlaState.Healthy;
             }
         }
 
-        public void MarkViolation()
+        public void MarkViolation(DateTimeOffset now)
         {
             _currentState = SlaState.Violation;
-            _lastViolationTime = DateTimeOffset.UtcNow;
-            _lastAlertTime = DateTimeOffset.UtcNow;
+            _lastViolationTime = now;
+            _lastAlertTime = now;
             Interlocked.Increment(ref _violationCount);
         }
 
@@ -487,9 +509,16 @@ public sealed class DataFreshnessSlaMonitor : IDisposable
             _currentState = newState;
         }
 
-        public SymbolSlaStatus GetStatus(bool isMarketOpen)
+        public SymbolSlaStatus GetStatus(bool isMarketOpen, DateTimeOffset now)
         {
-            var now = DateTimeOffset.UtcNow;
+            lock (this)
+            {
+                return GetStatusCore(isMarketOpen, now);
+            }
+        }
+
+        private SymbolSlaStatus GetStatusCore(bool isMarketOpen, DateTimeOffset now)
+        {
 
             if (!_lastEventTime.HasValue)
             {

@@ -6,7 +6,7 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Ledger
@@ -72,6 +72,11 @@ income-statement and balance-sheet rows with net-income and accounting-equation 
 investing / financing, reconciled to beginning and ending cash) and a
 `LedgerPartnersCapitalStatement` roll-forward (beginning capital, contributions, distributions,
 allocated result, ending capital per equity account) from the period's journal activity. The
+cash-flow statement preserves each scoped non-cash counterpart's credit-minus-debit amount in
+journals with cash activity, including compound journals whose cash legs net to zero. Cash-only
+transfers and journals without scoped cash activity add no classified flow. Amounts are neither
+reweighted nor rounded during classification; a scope that omits balancing counterparts retains
+its reconciliation variance. The
 allocated result is additionally decomposed into `IncomeGainAllocations`, `ExpenseAllocations`, and
 `FeeAllocations` (management and performance fees, identified by
 `LedgerAccounts.IsFundFeeExpenseAccount`) so a client-grade partners' capital statement reports the

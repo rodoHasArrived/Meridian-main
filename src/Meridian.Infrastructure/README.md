@@ -251,6 +251,16 @@ and sandbox-transfer calls are mapped into contract DTOs before shared workstati
 them to fund-account, treasury, reconciliation, or evidence workflows.
 QuickBooks Online accounting-system transport moved to `src/Meridian.DataIntegration` so provider
 ingestion and source-evidence mapping live in the physical Data Integration design module.
+Provider factories treat a resolved vault or module credential record as complete. Missing, cleared,
+or deleted credential fields remain unavailable through historical, search, streaming, options,
+corporate-action, and brokerage construction; adapters must not fill them from ambient secrets.
+Factory-created corporate-action providers receive the selected credential context, and Alpaca
+brokerage/trade-update clients retain the selected credential snapshot and trading environment.
+Legacy environment aliases are resolved only by the explicit environment resolver before construction.
+An empty module environment-variable mapping is settings-only; an empty sidecar or
+`FromCredentials` record explicitly owns an empty credential set. Selected vault environment metadata
+also controls Alpaca brokerage paper/live routing, with paper retained for legacy contexts that do
+not declare a trading environment.
 Credential and connectivity checks in this layer must stay secret-safe and read-only by default:
 provider credential responses expose masked status only, file-backed vault payloads must not echo
 submitted secrets, and read-only brokerage sync adapters may fetch account, portfolio, activity,

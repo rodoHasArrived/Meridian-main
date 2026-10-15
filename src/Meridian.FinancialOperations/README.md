@@ -176,6 +176,24 @@ availability. Missing/failed internal populations and empty statements cannot ce
 a narrower source feed is a distinct comparison scope. This evidence is retained with the immutable
 match artifact so later profile updates cannot reinterpret historical breaks.
 
+Statement transactions require both security and compatible currency identity at every pair and
+split stage. Successful FX normalization establishes a common denomination; a missing rate keeps
+the source denomination and prevents matching against a different currency. Cash balances retain
+their source-currency identity even after amount conversion. The matcher evaluates complete
+cash, position and transaction rules with their existing `Allows` evaluators. Exact matches run
+first; tolerance rules use retained profile order, with the first admissible rule governing each
+pair or split. Matched evidence retains that rule ID, and cash confidence uses the effective
+absolute/basis-point allowance. Split search filters each rule's settlement window before its
+candidate cap, then checks aggregate quantity, cash and quantity-weighted retained price against
+the same rule. Statement closing cash must still belong to the requested period end.
+
+Prices are optional source evidence: supplied prices are FX-normalized and compared when both
+sides retain them; missing prices retain the existing optional-evidence behavior and net cash is
+never treated as execution price. Empty rule lists allow exact matches only. Matcher revision v2
+separates this policy from older comparison evidence. End-to-end coverage lives in
+`StatementRunWorkflowServiceTests.MatchingPolicy`.
+
+
 Generated candidate posts retain the validated posting actor in the approved command. Replays
 use the journal's versioned, command-normalized `postingActor`; unversioned legacy metadata remains unattributed rather
 than acquiring the identity of a later caller. Durable mutation/audit atomicity is owned by the

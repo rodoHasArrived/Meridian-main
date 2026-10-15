@@ -234,6 +234,10 @@ public static class PrometheusMetrics
         "mdc_sla_freshness_score",
         "Overall data freshness score (0-100)");
 
+    private static readonly Gauge SlaMonitoredSymbols = Prometheus.Metrics.CreateGauge(
+        "mdc_sla_monitored_symbols",
+        "Number of symbols registered with the live freshness monitor");
+
     private static readonly Gauge SlaHealthySymbols = Prometheus.Metrics.CreateGauge(
         "mdc_sla_healthy_symbols",
         "Number of symbols within SLA thresholds");
@@ -680,6 +684,7 @@ public static class PrometheusMetrics
         SlaCurrentViolations.Set(snapshot.ViolationSymbols);
         SlaFreshnessScore.Set(snapshot.OverallFreshnessScore);
         SlaHealthySymbols.Set(snapshot.HealthySymbols);
+        SlaMonitoredSymbols.Set(snapshot.TotalSymbols);
         SlaViolationSymbols.Set(snapshot.ViolationSymbols);
 
         // Record per-symbol freshness (with cardinality guard)

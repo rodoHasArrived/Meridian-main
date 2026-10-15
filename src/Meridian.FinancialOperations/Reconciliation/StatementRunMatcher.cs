@@ -252,7 +252,12 @@ internal static class StatementRunMatcher
             row.TradeDate,
             row.Quantity,
             marketValue,
-            evidence);
+            evidence)
+        {
+            Price = row.Price != 0m && fxRateProvider.TryConvert(row.Price, row.Currency, baseCurrency, row.TradeDate, out var price)
+                ? price
+                : null
+        };
     }
 
     private static NormalizedStatementCashBalance MapCash(
@@ -299,7 +304,10 @@ internal static class StatementRunMatcher
             row.ActivityType,
             row.Quantity,
             amount,
-            evidence);
+            evidence)
+        {
+            Price = row.Price == 0m ? null : ToBaseCurrency(row.Price, row.Currency, baseCurrency, row.TradeDate, fxRateProvider).Amount
+        };
     }
 
     private static InternalCashBalance NormalizeInternalCash(
@@ -319,7 +327,14 @@ internal static class StatementRunMatcher
         string baseCurrency)
     {
         var (currency, amount) = ToBaseCurrency(transaction.NetAmount, transaction.Currency, baseCurrency, transaction.TradeDate, fxRateProvider);
-        return transaction with { Currency = currency, NetAmount = amount };
+        return transaction with
+        {
+            Currency = currency,
+            NetAmount = amount,
+            Price = transaction.Price is { } price
+                ? ToBaseCurrency(price, transaction.Currency, baseCurrency, transaction.TradeDate, fxRateProvider).Amount
+                : null
+        };
     }
 
     /// <summary>
@@ -346,15 +361,17 @@ internal static class StatementRunMatcher
 
     private static StatementMatchingToleranceProfile ToEngineTolerance(StatementToleranceProfile profile)
     {
-        var position = profile.PositionRules.Count > 0 ? profile.PositionRules[0] : null;
-        var cash = profile.CashRules.Count > 0 ? profile.CashRules[0] : null;
-        var transaction = profile.TransactionRules.Count > 0 ? profile.TransactionRules[0] : null;
+        // Scalar bounds remain diagnostic/candidate hints only. Admission evaluates the complete
+        // retained rules, in declared order, including their price and settlement conditions.
         return new StatementMatchingToleranceProfile(
-            PositionQuantity: position?.QuantityTolerance ?? 0m,
-            PositionMarketValue: position?.MarketValueTolerance ?? 0m,
-            CashBalance: cash?.AbsoluteCashTolerance ?? 0m,
+            PositionQuantity: profile.PositionRules.Select(rule => Math.Abs(rule.QuantityTolerance)).DefaultIfEmpty().Max(),
+            PositionMarketValue: profile.PositionRules.Select(rule => Math.Abs(rule.MarketValueTolerance)).DefaultIfEmpty().Max(),
+            CashBalance: profile.CashRules.Select(rule => Math.Abs(rule.AbsoluteCashTolerance)).DefaultIfEmpty().Max(),
             TransactionQuantity: 0m,
-            TransactionNetAmount: transaction?.AbsoluteCashTolerance ?? 0m);
+            TransactionNetAmount: profile.TransactionRules.Select(rule => Math.Abs(rule.AbsoluteCashTolerance)).DefaultIfEmpty().Max())
+        {
+            Rules = profile
+        };
     }
 
     private static decimal ResolveToleranceAmount(StatementMatchTolerance tolerance) =>

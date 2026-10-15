@@ -197,9 +197,10 @@ public sealed partial class ProviderFactory
         var credentials = CreateCredentialContext<AlpacaHistoricalDataProvider>(
             ("ALPACA_KEY_ID", configuredOptions.KeyId),
             ("ALPACA_SECRET_KEY", configuredOptions.SecretKey));
-        var aliasAwareCredentials = AlpacaCredentialEnvironment.Resolve(configuredOptions);
-        var keyId = FirstNonBlank(credentials.Get("ALPACA_KEY_ID"), aliasAwareCredentials.KeyId);
-        var secretKey = FirstNonBlank(credentials.Get("ALPACA_SECRET_KEY"), aliasAwareCredentials.SecretKey);
+        // Resolution selects the complete credential record. A missing field is not
+        // permission to borrow another account's environment or configuration values.
+        var keyId = credentials.Get("ALPACA_KEY_ID");
+        var secretKey = credentials.Get("ALPACA_SECRET_KEY");
         if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
             return null;
 
@@ -501,7 +502,7 @@ public sealed class EnvironmentCredentialResolver : IProviderCredentialResolver
 {
     public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary<string, string?>? configuredValues = null)
     {
-        return AttributeCredentialResolver.ForType(providerType, credentialName =>
+        var credentials = AttributeCredentialResolver.ForType(providerType, credentialName =>
         {
             if (configuredValues is not null &&
                 configuredValues.TryGetValue(credentialName, out var configuredValue))
@@ -511,5 +512,16 @@ public sealed class EnvironmentCredentialResolver : IProviderCredentialResolver
 
             return null;
         });
+        var environment = AttributeCredentialResolver.GetAttributes(providerType).Any(attribute => attribute.Name == "ALPACA_KEY_ID")
+            ? AlpacaCredentialEnvironment.Resolve().Environment
+            : null;
+        return new EnvironmentCredentialContext(credentials, environment);
+    }
+
+    private sealed class EnvironmentCredentialContext(ICredentialContext credentials, string? environment) : ICredentialContext
+    {
+        public string? CredentialEnvironment => environment;
+        public string? Get(string name) => credentials.Get(name);
+        public bool IsConfigured(string name) => credentials.IsConfigured(name);
     }
 }

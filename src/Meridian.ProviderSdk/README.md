@@ -41,6 +41,13 @@ This layer is the plugin contract for provider adapters. It should expose stable
 ## Important workflows
 
 Use this module when a provider abstraction must be consumed by multiple adapters or higher-level services.
+`ICredentialContext.IsAuthoritative` identifies a complete selected record: missing values must not
+be filled or replaced by module, environment, or configuration credentials. The default is false
+for legacy resolver compatibility. `CredentialEnvironment` carries the selected provider environment
+so brokerage construction cannot change a paper record into a live connection through ambient or
+market-data sandbox settings. `ProviderModuleContext.HasCredentialRecord` distinguishes an
+explicit empty credential record from a settings-only context; `FromCredentials` sets it even
+for an empty dictionary. Settings-only module contexts preserve the host's credential resolution.
 `ProviderIdentity` owns canonical adapter-family IDs and an explicit immutable map of accepted
 configuration/capability aliases. Discovery metadata and module context lookup normalize through
 that map; unknown plugin names retain their identity after trimming and lower-casing. `ibkr` is the

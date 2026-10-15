@@ -72,6 +72,10 @@ legacy new-run behavior and must not be treated as safe automatic retries.
 
 ## Credential source ownership
 
+`StoredProviderCredentialResolver` marks managed results as authoritative even when the selected
+record is absent. Provider factory module configuration cannot replace a scoped vault selection or
+revive a deleted record; legacy unmanaged resolvers retain their explicit fallback behavior.
+
 `ProviderConnectionService.GetConnectionsForTenantAsync` lists connections only when retained
 tenant ownership matches the authorized tenant. Unassigned legacy connections require explicit
 ownership establishment and are not implicitly claimed by discovery.

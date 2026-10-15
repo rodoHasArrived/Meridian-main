@@ -33,6 +33,13 @@ public sealed record ProviderModuleContext
         = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
+    /// An explicit credential record was selected, including an empty record. Settings-only
+    /// contexts leave this false so they do not replace credentials resolved by the host.
+    /// Nonempty Credentials also establish selection for compatibility with existing modules.
+    /// </summary>
+    public bool HasCredentialRecord { get; init; }
+
+    /// <summary>
     /// Optional provider-specific settings (connection strings, timeouts, feature flags, etc.).
     /// Keys are lower-camel-case strings; values are JSON-compatible primitives.
     /// </summary>
@@ -69,5 +76,5 @@ public sealed record ProviderModuleContext
         IReadOnlyDictionary<string, string?> credentials,
         bool enabled = true,
         int priority = 100)
-        => new() { Enabled = enabled, Priority = priority, Credentials = credentials };
+        => new() { Enabled = enabled, Priority = priority, Credentials = credentials, HasCredentialRecord = true };
 }

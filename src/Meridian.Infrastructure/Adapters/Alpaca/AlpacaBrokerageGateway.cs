@@ -92,6 +92,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AlpacaOptions _options;
+    private readonly AlpacaCredentialSnapshot? _resolvedCredentials;
     private readonly ILogger<AlpacaBrokerageGateway> _logger;
     private readonly AlpacaTradeUpdatesClient? _tradeUpdates;
     private readonly Channel<ExecutionReport> _reportChannel;
@@ -109,10 +110,12 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
         IHttpClientFactory httpClientFactory,
         AlpacaOptions options,
         ILogger<AlpacaBrokerageGateway> logger,
-        AlpacaTradeUpdatesClient? tradeUpdates = null)
+        AlpacaTradeUpdatesClient? tradeUpdates = null,
+        AlpacaCredentialSnapshot? resolvedCredentials = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _options = options ?? throw new ArgumentNullException(nameof(options));
+        _resolvedCredentials = resolvedCredentials;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _tradeUpdates = tradeUpdates;
         _tradeUpdates?.ConfigureReconciliation(ReconcileExecutionSnapshotsAsync);
@@ -182,7 +185,7 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
 
     string IBrokerageActivitySync.ProviderId => GatewayId;
 
-    private AlpacaCredentialSnapshot CurrentCredentials => AlpacaCredentialEnvironment.Resolve(_options);
+    private AlpacaCredentialSnapshot CurrentCredentials => _resolvedCredentials ?? AlpacaCredentialEnvironment.Resolve(_options);
 
     private string BaseUrl => CurrentCredentials.UseSandbox ? PaperBaseUrl : LiveBaseUrl;
 

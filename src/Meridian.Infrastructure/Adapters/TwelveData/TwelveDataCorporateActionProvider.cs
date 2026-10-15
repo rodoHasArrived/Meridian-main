@@ -35,15 +35,18 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
+    private readonly ICredentialContext? _credentials;
     private readonly ILogger<TwelveDataCorporateActionProvider> _logger;
 
     public TwelveDataCorporateActionProvider(
         IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
-        ILogger<TwelveDataCorporateActionProvider> logger)
+        ILogger<TwelveDataCorporateActionProvider> logger,
+        ICredentialContext? credentials = null)
     {
         _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _credentials = credentials;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -251,6 +254,9 @@ public sealed partial class TwelveDataCorporateActionProvider : ICorporateAction
 
     private string? ResolveApiKey()
     {
+        if (_credentials is not null)
+            return _credentials.Get("TWELVEDATA_API_KEY");
+
         return FirstNonEmpty(
             _configuration["TWELVEDATA_API_KEY"],
             _configuration["TWELVEDATA__APIKEY"],

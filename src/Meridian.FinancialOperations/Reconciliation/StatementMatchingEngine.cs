@@ -8,7 +8,7 @@ namespace Meridian.FinancialOperations.Reconciliation;
 /// many-to-one split matching over the kernel's split search, so identical populations produce
 /// identical results regardless of input enumeration order.
 /// </summary>
-public sealed class StatementMatchingEngine
+public sealed partial class StatementMatchingEngine
 {
     private const string PositionExactRuleId = "statement-position-exact-v1";
     private const string PositionToleranceRuleId = "statement-position-tolerance-v1";
@@ -55,7 +55,8 @@ public sealed class StatementMatchingEngine
             matchedInternal,
             (statement, internalPosition) => SamePositionIdentity(statement, internalPosition)
                 && statement.Quantity == internalPosition.Quantity
-                && OptionalMarketValueEquals(statement.MarketValue, internalPosition.MarketValue),
+                && OptionalMarketValueEquals(statement.MarketValue, internalPosition.MarketValue)
+                && OptionalPriceEquals(statement.Price, internalPosition.Price),
             static (_, _) => 0m,
             (statement, internalPosition) => CreatePositionResult(
                 statement,
@@ -74,17 +75,17 @@ public sealed class StatementMatchingEngine
             matchedStatements,
             matchedInternal,
             (statement, internalPosition) => SamePositionIdentity(statement, internalPosition)
-                && Abs(statement.Quantity - internalPosition.Quantity) <= tolerance.PositionQuantity
-                && OptionalMarketValueWithinTolerance(statement.MarketValue, internalPosition.MarketValue, tolerance.PositionMarketValue),
+                && FindPositionRule(statement, internalPosition, tolerance) is not null,
             static (statement, internalPosition) => PositionVariance(statement, internalPosition).LargestAbsoluteAmount,
             (statement, internalPosition) => CreatePositionResult(
                 statement,
                 internalPosition,
                 StatementMatchTier.Tolerance,
-                ConfidenceFromVariance(PositionVariance(statement, internalPosition).LargestAbsoluteAmount, PositionToleranceAmount(statement, internalPosition, tolerance)),
-                [PositionToleranceRuleId],
+                ConfidenceFromVariance(PositionVariance(statement, internalPosition).LargestAbsoluteAmount,
+                    Math.Max(Math.Abs(FindPositionRule(statement, internalPosition, tolerance)!.QuantityTolerance), Math.Abs(FindPositionRule(statement, internalPosition, tolerance)!.MarketValueTolerance))),
+                [FindPositionRule(statement, internalPosition, tolerance)!.RuleId],
                 PositionVariance(statement, internalPosition),
-                new StatementMatchTolerance(tolerance.PositionQuantity, StatementMarketValueTolerance(statement, internalPosition, tolerance)),
+                PositionRuleTolerance(FindPositionRule(statement, internalPosition, tolerance)!),
                 "Position matched inside configured quantity and market-value tolerances."),
             results);
 
@@ -138,17 +139,17 @@ public sealed class StatementMatchingEngine
             request.InternalCashBalances,
             matchedStatements,
             matchedInternal,
-            (statement, internalCash) => SameCashIdentity(statement, internalCash)
-                && Abs(statement.EndingBalance - internalCash.Balance) <= tolerance.CashBalance,
+            (statement, internalCash) => SameCashScope(statement, internalCash)
+                && FindCashRule(statement, internalCash, tolerance) is not null,
             static (statement, internalCash) => Abs(statement.EndingBalance - internalCash.Balance),
             (statement, internalCash) => CreateCashResult(
                 statement,
                 internalCash,
                 StatementMatchTier.Tolerance,
-                ConfidenceFromVariance(Abs(statement.EndingBalance - internalCash.Balance), tolerance.CashBalance),
-                [CashToleranceRuleId],
+                ConfidenceFromVariance(Abs(statement.EndingBalance - internalCash.Balance), CashRuleTolerance(statement, internalCash, FindCashRule(statement, internalCash, tolerance)!).Amount ?? 0m),
+                [FindCashRule(statement, internalCash, tolerance)!.RuleId],
                 CashVariance(statement, internalCash),
-                new StatementMatchTolerance(Amount: tolerance.CashBalance),
+                CashRuleTolerance(statement, internalCash, FindCashRule(statement, internalCash, tolerance)!),
                 "Cash balance matched inside configured balance tolerance."),
             results);
 
@@ -187,7 +188,8 @@ public sealed class StatementMatchingEngine
             (statement, internalTransaction) => HasSameExternalTransactionId(statement, internalTransaction)
                 && SameTransactionIdentity(statement, internalTransaction)
                 && statement.Quantity == internalTransaction.Quantity
-                && statement.NetAmount == internalTransaction.NetAmount,
+                && statement.NetAmount == internalTransaction.NetAmount
+                && OptionalPriceEquals(statement.Price, internalTransaction.Price),
             static (_, _) => 0m,
             (statement, internalTransaction) => CreateTransactionResult(
                 statement,
@@ -207,7 +209,8 @@ public sealed class StatementMatchingEngine
             matchedInternal,
             (statement, internalTransaction) => SameTransactionIdentity(statement, internalTransaction)
                 && statement.Quantity == internalTransaction.Quantity
-                && statement.NetAmount == internalTransaction.NetAmount,
+                && statement.NetAmount == internalTransaction.NetAmount
+                && OptionalPriceEquals(statement.Price, internalTransaction.Price),
             static (_, _) => 0m,
             (statement, internalTransaction) => CreateTransactionResult(
                 statement,
@@ -217,7 +220,7 @@ public sealed class StatementMatchingEngine
                 [TransactionExactRuleId],
                 TransactionVariance(statement, internalTransaction),
                 TransactionTolerance(tolerance),
-                "Exact transaction match on account, instrument or currency, dates, type, quantity, and net amount."),
+                "Exact transaction match on account, security and currency, dates, type, quantity, and net amount."),
             results);
 
         MatchStage(
@@ -225,18 +228,19 @@ public sealed class StatementMatchingEngine
             request.InternalLedgerTransactions,
             matchedStatements,
             matchedInternal,
-            (statement, internalTransaction) => SameTransactionIdentity(statement, internalTransaction)
+            (statement, internalTransaction) => SameTransactionScope(statement, internalTransaction)
                 && Abs(statement.Quantity - internalTransaction.Quantity) <= tolerance.TransactionQuantity
-                && Abs(statement.NetAmount - internalTransaction.NetAmount) <= tolerance.TransactionNetAmount,
+                && FindTransactionRule(statement, internalTransaction, tolerance) is not null,
             static (statement, internalTransaction) => TransactionVariance(statement, internalTransaction).LargestAbsoluteAmount,
             (statement, internalTransaction) => CreateTransactionResult(
                 statement,
                 internalTransaction,
                 StatementMatchTier.Tolerance,
-                ConfidenceFromVariance(TransactionVariance(statement, internalTransaction).LargestAbsoluteAmount, Math.Max(tolerance.TransactionQuantity, tolerance.TransactionNetAmount)),
-                [TransactionToleranceRuleId],
+                ConfidenceFromVariance(TransactionVariance(statement, internalTransaction).LargestAbsoluteAmount,
+                    Math.Max(tolerance.TransactionQuantity, Math.Abs(FindTransactionRule(statement, internalTransaction, tolerance)!.AbsoluteCashTolerance))),
+                [FindTransactionRule(statement, internalTransaction, tolerance)!.RuleId],
                 TransactionVariance(statement, internalTransaction),
-                TransactionTolerance(tolerance),
+                new StatementMatchTolerance(tolerance.TransactionQuantity, Math.Abs(FindTransactionRule(statement, internalTransaction, tolerance)!.AbsoluteCashTolerance)),
                 "Transaction matched inside configured quantity and net-amount tolerances."),
             results);
 
@@ -261,7 +265,7 @@ public sealed class StatementMatchingEngine
                 [TransactionCandidateRuleId],
                 TransactionVariance(statement, internalTransaction),
                 TransactionTolerance(tolerance),
-                "Transaction candidate shares account, instrument or currency, type, and nearby dates but requires operator review."),
+                "Transaction candidate shares account, security and currency, type, and nearby dates but requires operator review."),
             results);
 
         AddUnmatchedTransactions(request.StatementTransactions, request.InternalLedgerTransactions, matchedStatements, matchedInternal, tolerance, results);
@@ -340,8 +344,8 @@ public sealed class StatementMatchingEngine
     /// <summary>
     /// Deterministic one-to-many / many-to-one transaction matching over the sided kernel. Anchors
     /// are visited in ordinal id order; each anchor's candidate legs are partitioned by the same
-    /// identity constraints the pair stages apply (account, instrument-or-currency, trade and
-    /// settlement dates, type) BEFORE the kernel's bounded search, so the
+    /// identity constraints the pair stages apply (account, security, currency, trade date and type),
+    /// followed by each rule's settlement window BEFORE the kernel's bounded search, so the
     /// <see cref="ReconciliationMatchKernel.MaxSplitSearchCandidates"/> cap lands on legs that could
     /// actually match instead of being exhausted by larger cross-identity amounts. The accept
     /// callback then holds the subset's aggregate quantity to the transaction-quantity tolerance —
@@ -365,7 +369,7 @@ public sealed class StatementMatchingEngine
             var legs = CollectSplitPool(
                 request.InternalLedgerTransactions,
                 matchedInternal,
-                internalTransaction => SameTransactionIdentity(statement, internalTransaction),
+                internalTransaction => SameTransactionScope(statement, internalTransaction),
                 static internalTransaction => internalTransaction.TransactionId);
             if (!TryMatchSplit(
                 statement.NetAmount,
@@ -374,10 +378,16 @@ public sealed class StatementMatchingEngine
                 static leg => leg.TransactionId,
                 static leg => leg.NetAmount,
                 static leg => leg.Quantity,
+                (leg, rule) => DateDelta(statement.SettlementDate, leg.SettlementDate).Duration() <= rule.SettlementDateTolerance.Duration(),
+                (subset, rule) => rule.Allows(subset.Sum(leg => leg.NetAmount), statement.NetAmount,
+                    subset.Max(leg => DateDelta(statement.SettlementDate, leg.SettlementDate).Duration()),
+                    WeightedPrice(subset, leg => leg.Quantity, leg => leg.Price) ?? 0m,
+                    ComparablePrice(statement.Price, WeightedPrice(subset, leg => leg.Quantity, leg => leg.Price))),
                 tolerance,
                 out var selectedLegs,
                 out var amountVariance,
-                out var quantityVariance))
+                out var quantityVariance,
+                out var appliedRule))
             {
                 continue;
             }
@@ -390,14 +400,15 @@ public sealed class StatementMatchingEngine
 
             results.Add(new StatementMatchResult(
                 StatementMatchKind.Transaction,
-                amountVariance == 0m && quantityVariance == 0m ? StatementMatchTier.Exact : StatementMatchTier.Tolerance,
-                SplitConfidence(amountVariance, quantityVariance, tolerance),
-                [TransactionSplitRuleId],
+                appliedRule is null ? StatementMatchTier.Exact : StatementMatchTier.Tolerance,
+                ConfidenceFromVariance(Math.Max(Math.Abs(amountVariance), Math.Abs(quantityVariance)),
+                    Math.Max(tolerance.TransactionQuantity, appliedRule is null ? 0m : Math.Abs(appliedRule.AbsoluteCashTolerance))),
+                appliedRule is null ? [TransactionSplitRuleId] : [appliedRule.RuleId, TransactionSplitRuleId],
                 statement.EvidenceReference,
                 null,
                 new StatementMatchVariance(Quantity: quantityVariance, Amount: amountVariance),
-                TransactionTolerance(tolerance),
-                $"Statement transaction settled as {selectedLegs.Count} internal ledger legs sharing account, instrument or currency, dates, and type within configured tolerances.")
+                new StatementMatchTolerance(tolerance.TransactionQuantity, appliedRule is null ? 0m : Math.Abs(appliedRule.AbsoluteCashTolerance)),
+                $"Statement transaction settled as {selectedLegs.Count} internal ledger legs sharing account, security and currency, dates, and type within configured tolerances.")
             {
                 InternalEvidenceReferences = selectedLegs.Select(static leg => leg.EvidenceReference).ToArray()
             });
@@ -411,7 +422,7 @@ public sealed class StatementMatchingEngine
             var legs = CollectSplitPool(
                 request.StatementTransactions,
                 matchedStatements,
-                statement => SameTransactionIdentity(statement, internalTransaction),
+                statement => SameTransactionScope(statement, internalTransaction),
                 static statement => statement.TransactionId);
             if (!TryMatchSplit(
                 internalTransaction.NetAmount,
@@ -420,10 +431,16 @@ public sealed class StatementMatchingEngine
                 static leg => leg.TransactionId,
                 static leg => leg.NetAmount,
                 static leg => leg.Quantity,
+                (leg, rule) => DateDelta(leg.SettlementDate, internalTransaction.SettlementDate).Duration() <= rule.SettlementDateTolerance.Duration(),
+                (subset, rule) => rule.Allows(internalTransaction.NetAmount, subset.Sum(leg => leg.NetAmount),
+                    subset.Max(leg => DateDelta(leg.SettlementDate, internalTransaction.SettlementDate).Duration()),
+                    internalTransaction.Price ?? 0m,
+                    ComparablePrice(WeightedPrice(subset, leg => leg.Quantity, leg => leg.Price), internalTransaction.Price)),
                 tolerance,
                 out var selectedLegs,
                 out var amountVariance,
-                out var quantityVariance))
+                out var quantityVariance,
+                out var appliedRule))
             {
                 continue;
             }
@@ -437,14 +454,15 @@ public sealed class StatementMatchingEngine
             // Variance keeps the statement-minus-internal convention of the pair stages.
             results.Add(new StatementMatchResult(
                 StatementMatchKind.Transaction,
-                amountVariance == 0m && quantityVariance == 0m ? StatementMatchTier.Exact : StatementMatchTier.Tolerance,
-                SplitConfidence(amountVariance, quantityVariance, tolerance),
-                [TransactionSplitRuleId],
+                appliedRule is null ? StatementMatchTier.Exact : StatementMatchTier.Tolerance,
+                ConfidenceFromVariance(Math.Max(Math.Abs(amountVariance), Math.Abs(quantityVariance)),
+                    Math.Max(tolerance.TransactionQuantity, appliedRule is null ? 0m : Math.Abs(appliedRule.AbsoluteCashTolerance))),
+                appliedRule is null ? [TransactionSplitRuleId] : [appliedRule.RuleId, TransactionSplitRuleId],
                 null,
                 internalTransaction.EvidenceReference,
                 new StatementMatchVariance(Quantity: -quantityVariance, Amount: -amountVariance),
-                TransactionTolerance(tolerance),
-                $"Internal ledger transaction reported by the custodian as {selectedLegs.Count} statement rows sharing account, instrument or currency, dates, and type within configured tolerances.")
+                new StatementMatchTolerance(tolerance.TransactionQuantity, appliedRule is null ? 0m : Math.Abs(appliedRule.AbsoluteCashTolerance)),
+                $"Internal ledger transaction reported by the custodian as {selectedLegs.Count} statement rows sharing account, security and currency, dates, and type within configured tolerances.")
             {
                 BrokerEvidenceReferences = selectedLegs.Select(static leg => leg.EvidenceReference).ToArray()
             });
@@ -478,57 +496,6 @@ public sealed class StatementMatchingEngine
 
         return pool;
     }
-
-    private static bool TryMatchSplit<TLeg>(
-        decimal anchorNetAmount,
-        decimal anchorQuantity,
-        IReadOnlyList<TLeg> legs,
-        Func<TLeg, string> legId,
-        Func<TLeg, decimal> legNetAmount,
-        Func<TLeg, decimal> legQuantity,
-        StatementMatchingToleranceProfile tolerance,
-        out IReadOnlyList<TLeg> selectedLegs,
-        out decimal amountVariance,
-        out decimal quantityVariance)
-        where TLeg : class
-    {
-        selectedLegs = [];
-        amountVariance = 0m;
-        quantityVariance = 0m;
-        if (legs.Count < 2)
-        {
-            return false;
-        }
-
-        var legById = legs.ToDictionary(legId, StringComparer.Ordinal);
-        if (!ReconciliationMatchKernel.TryFindSplit(
-            anchorNetAmount,
-            legs.Select(leg => new ReconciliationMatchKernel.SplitCandidate(legId(leg), legNetAmount(leg))).ToArray(),
-            tolerance.TransactionNetAmount,
-            MaxTransactionSplitLegs,
-            accept: subset => Abs(anchorQuantity - subset.Sum(leg => legQuantity(legById[leg.Id]))) <= tolerance.TransactionQuantity,
-            out var kernelLegs,
-            out var residual))
-        {
-            return false;
-        }
-
-        selectedLegs = kernelLegs
-            .Select(leg => legById[leg.Id])
-            .OrderBy(legId, StringComparer.Ordinal)
-            .ToArray();
-        amountVariance = residual;
-        quantityVariance = anchorQuantity - selectedLegs.Sum(legQuantity);
-        return true;
-    }
-
-    private static decimal SplitConfidence(
-        decimal amountVariance,
-        decimal quantityVariance,
-        StatementMatchingToleranceProfile tolerance)
-        => ConfidenceFromVariance(
-            Math.Max(Abs(amountVariance), Abs(quantityVariance)),
-            Math.Max(tolerance.TransactionNetAmount, tolerance.TransactionQuantity));
 
     /// <summary>
     /// Side-qualified, case-normalized member keys for the kernel's ordinal consumed set. The
@@ -725,24 +692,29 @@ public sealed class StatementMatchingEngine
         && statement.AsOfDate == internalPosition.AsOfDate;
 
     private static bool SameCashIdentity(NormalizedStatementCashBalance statement, InternalCashBalance internalCash) =>
+        SameCashScope(statement, internalCash) && statement.AsOfDate == internalCash.AsOfDate;
+
+    private static bool SameCashScope(NormalizedStatementCashBalance statement, InternalCashBalance internalCash) =>
         statement.IsForStatementPeriodEnd
         && SameText(statement.Account, internalCash.Account)
-        && SameText(statement.Currency, internalCash.Currency)
-        && statement.AsOfDate == internalCash.AsOfDate;
+        && SameText(statement.Currency, internalCash.Currency);
 
     private static bool SameTransactionIdentity(NormalizedStatementTransaction statement, InternalLedgerTransaction internalTransaction) =>
+        SameTransactionScope(statement, internalTransaction)
+        && statement.SettlementDate == internalTransaction.SettlementDate;
+
+    private static bool SameTransactionScope(NormalizedStatementTransaction statement, InternalLedgerTransaction internalTransaction) =>
         SameText(statement.Account, internalTransaction.Account)
         && SameTransactionInstrumentOrCurrency(statement, internalTransaction)
         && statement.TradeDate == internalTransaction.TradeDate
-        && statement.SettlementDate == internalTransaction.SettlementDate
         && SameText(statement.TransactionType, internalTransaction.TransactionType);
 
     private static bool SameTransactionInstrumentOrCurrency(NormalizedStatementTransaction statement, InternalLedgerTransaction internalTransaction)
     {
-        if (!string.IsNullOrWhiteSpace(statement.SecurityId) || !string.IsNullOrWhiteSpace(internalTransaction.SecurityId))
-            return SameNullableText(statement.SecurityId, internalTransaction.SecurityId);
-
-        return SameNullableText(statement.Currency, internalTransaction.Currency);
+        // Security identity never substitutes for denomination. FX normalization can establish a
+        // common currency upstream; absent conversion, different currencies remain unmatched.
+        return SameNullableText(statement.Currency, internalTransaction.Currency)
+            && SameNullableText(statement.SecurityId, internalTransaction.SecurityId);
     }
 
     private static bool HasSameExternalTransactionId(NormalizedStatementTransaction statement, InternalLedgerTransaction internalTransaction) =>
@@ -751,9 +723,6 @@ public sealed class StatementMatchingEngine
 
     private static bool OptionalMarketValueEquals(decimal? statementMarketValue, decimal? internalMarketValue) =>
         statementMarketValue is null || internalMarketValue is null || statementMarketValue == internalMarketValue;
-
-    private static bool OptionalMarketValueWithinTolerance(decimal? statementMarketValue, decimal? internalMarketValue, decimal tolerance) =>
-        statementMarketValue is null || internalMarketValue is null || Abs(statementMarketValue.Value - internalMarketValue.Value) <= tolerance;
 
     private static StatementMatchVariance PositionVariance(NormalizedStatementPosition statement, InternalPortfolioPosition internalPosition) =>
         new(
@@ -767,16 +736,6 @@ public sealed class StatementMatchingEngine
         new(
             Quantity: statement.Quantity - internalTransaction.Quantity,
             Amount: statement.NetAmount - internalTransaction.NetAmount);
-
-    private static decimal PositionToleranceAmount(
-        NormalizedStatementPosition statement,
-        InternalPortfolioPosition internalPosition,
-        StatementMatchingToleranceProfile tolerance)
-    {
-        var quantityTolerance = tolerance.PositionQuantity;
-        var marketValueTolerance = StatementMarketValueTolerance(statement, internalPosition, tolerance);
-        return Math.Max(quantityTolerance, marketValueTolerance);
-    }
 
     private static decimal StatementMarketValueTolerance(
         NormalizedStatementPosition statement,
@@ -827,7 +786,11 @@ public sealed record StatementMatchingToleranceProfile(
     decimal CashBalance,
     decimal TransactionQuantity,
     decimal TransactionNetAmount,
-    int CandidateDateWindowDays = 2);
+    int CandidateDateWindowDays = 2)
+{
+    /// <summary>The retained full profile. List order is precedence: the first admissible rule wins.</summary>
+    public StatementToleranceProfile? Rules { get; init; }
+}
 
 public sealed record NormalizedStatementPosition(
     string PositionId,
@@ -838,6 +801,9 @@ public sealed record NormalizedStatementPosition(
     decimal? MarketValue,
     string EvidenceReference) : IStatementMatchItem
 {
+    /// <summary>Retained unit price, when supplied by the source; never inferred from net cash.</summary>
+    public decimal? Price { get; init; }
+
     string IStatementMatchItem.MatchId => PositionId;
 }
 
@@ -866,6 +832,9 @@ public sealed record NormalizedStatementTransaction(
     decimal NetAmount,
     string EvidenceReference) : IStatementMatchItem
 {
+    /// <summary>Retained execution price, when supplied by the source; never inferred from net cash.</summary>
+    public decimal? Price { get; init; }
+
     string IStatementMatchItem.MatchId => TransactionId;
 }
 
@@ -878,6 +847,9 @@ public sealed record InternalPortfolioPosition(
     decimal? MarketValue,
     string EvidenceReference) : IStatementMatchItem
 {
+    /// <summary>Retained unit price, when supplied by the source; never inferred from net cash.</summary>
+    public decimal? Price { get; init; }
+
     string IStatementMatchItem.MatchId => PositionId;
 }
 
@@ -905,6 +877,9 @@ public sealed record InternalLedgerTransaction(
     decimal NetAmount,
     string EvidenceReference) : IStatementMatchItem
 {
+    /// <summary>Retained execution price, when supplied by the source; never inferred from net cash.</summary>
+    public decimal? Price { get; init; }
+
     string IStatementMatchItem.MatchId => TransactionId;
 }
 
