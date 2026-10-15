@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-10
-**Review history:** scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-10-10
+**Review history:** resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -288,6 +288,17 @@ This is the right governance instinct.
 > holds to shrink-only. `IntentionallyUnprojectedAssetClasses` keeps the nine classes that are
 > genuine decisions. Every passage below that reads "11 projected / 15 declared gaps" describes the
 > state before that change; the partition guard itself is unchanged in intent.
+
+> **Updated 2026-10-10 — writer split.** Six of the 13 projected classes are now written by the
+> declarative `SecurityTermsProjectionRegistry` (`src/Meridian.Storage/SecurityMaster/`):
+> `DirectLoan` and `StructuredCredit`, plus `CryptoCurrency`, `Deposit`, `MoneyMarketFund` and
+> `CertificateOfDeposit`, whose hand-written writers were migrated behaviour-preserving behind a
+> database-backed parity guard (now kept as `RegistryMigratedProjectionGoldenTests`). The other
+> seven stay hand-written in `PostgresSecurityMasterStore.cs` because their projections carry real
+> decisions: `Bond`, `Option`, `Swap`, `FxSpot`, `Future` (derived lifecycle, legs, pair codes,
+> fallbacks), `Equity` (common-terms columns), and `Commodity`, which projects `exchangeCode` and
+> `deliveryCountry` — keys `SecurityAssetTermsSchema` does not declare and the canonical serializer
+> never writes. The projection tables and read-side stores are unchanged.
 
 **Open-lot modeling for par instruments is careful.** `FaceValueLot` makes previously implicit
 conventions explicit — quote basis (`ParBasis`, so a per-unit-priced lot cannot silently
@@ -597,6 +608,18 @@ for: a per-asset workaround on a surface that is otherwise generic.
 > full catalog-class coverage are test-locked (the lock immediately caught five catalog classes no
 > pack claimed). Valid-time term history remains reachable only by event replay — still declared
 > and deferred.
+>
+> **Status (2026-10-10):** distributed projection-cache invalidation landed. Every committed
+> projection write in `PostgresSecurityMasterStore` (create/amend/deactivate upserts, rebuild
+> batches) issues `pg_notify` on a schema-scoped channel inside its own transaction, so the
+> notification is delivered only on commit. Each node's `SecurityMasterProjectionChangeListener`
+> holds a dedicated `LISTEN` connection, ignores its own node's notifications, re-reads the
+> announced security from the durable store, and applies it through the cache's version-guarded
+> `Upsert` (evicting it if the store no longer holds it). Bulk rebuilds above 256 records announce a
+> single resync instead. After a lost connection the listener reconnects with backoff and
+> re-synchronises the whole cache, since PostgreSQL does not replay missed notifications;
+> `ProjectionCacheRefreshMinutes` remains a backstop and `ProjectionCacheNotificationsEnabled`
+> (`MERIDIAN_SECURITY_MASTER_PROJECTION_NOTIFICATIONS`) can disable the listener.
 
 - **`SecurityMasterProjectionCache` is a per-process `ConcurrentDictionary`** with no eviction and a
   `Snapshot()` that materializes every record. Publishing on node A does not invalidate node B, and
@@ -633,7 +656,7 @@ for: a per-asset workaround on a surface that is otherwise generic.
 | Effective-interest amortization | Enum only | GAAP-compliant premium amortization for material portfolios |
 | Bond principal / step / inflation schedules | Absent | Sinking funds, step-rate, TIPS — already classifiable, not computable |
 | Asset-class-scoped projection replay | Argument ignored | Bounded rebuild cost as class count grows |
-| Distributed projection cache invalidation | Per-process only | Multi-node deployment coherence |
+| Distributed projection cache invalidation | Closed 2026-10-10: transactional `pg_notify` + per-node `LISTEN` refresh, resync after reconnect | — |
 | Relational projections for 15 of 26 classes | Declared gap, test-guarded | Any query path that needs typed columns for private/alternative assets |
 
 ---
@@ -695,7 +718,8 @@ document one canonical modeling route for MBS/ABS/CLO and make the validators re
 the partition is enforced rather than conventional.
 
 *Deferred but worth tracking:* generic corporate-action payload envelope (item 7);
-effective-interest amortization (item 10); distributed projection-cache invalidation (item 10).
+effective-interest amortization (item 10); distributed projection-cache invalidation (item 10; since
+closed, see the 2026-10-10 status note).
 
 ---
 
@@ -765,7 +789,8 @@ means every new type is another nullable column, and six declared types already 
 **5. Make the projection cache multi-node-safe.**
 Per-process with no invalidation, and a clear-then-fill `ReplaceAll` that exposes an empty master to
 concurrent readers. Migration 025 moved the conflict and revision stores off process-local memory
-specifically for scale-out; this cache did not follow.
+specifically for scale-out; this cache did not follow. *(Atomic swap closed 2026-08-24; cross-node
+invalidation closed 2026-10-10 — see item 10.)*
 
 *Deferred but worth tracking:* effective-interest amortization (GAAP materiality question, not an
 architecture question); relational projections for the private/alternative classes; valid-time term
@@ -788,7 +813,7 @@ An implementation pass addressed the open findings from the 2026-08-14 verificat
 | 8 | Factor schedules exist in incompatible shapes | The `Meridian.Strategies` type renamed to `SecurityFactorObservation` and documented as a per-period observation derived FROM the canonical typed schedule — one canonical dated-factor shape remains |
 | 7 | Corporate actions: wide table, per-event-type columns | Migration 029 adds the generic `payload jsonb` envelope; `CorporateActionDto.Payload` round-trips it and `CorporateActionPayloads` documents well-known keys with tolerant readers |
 | 9 | Equity has bespoke amendment endpoints | `RequireGovernedTermAmendments` gates the generic and bespoke direct amendment routes uniformly behind the workbench maker-checker path; the bespoke endpoints stay as the whole-block replacement surface |
-| 10 | Per-process projection cache | Atomic-swap `ReplaceAll` (no empty-master window), eviction, deactivate-path coherence, and a `ProjectionCacheRefreshMinutes` bounded-staleness re-warm for multi-node deployments |
+| 10 | Per-process projection cache | Atomic-swap `ReplaceAll` (no empty-master window), eviction, deactivate-path coherence, and a `ProjectionCacheRefreshMinutes` bounded-staleness re-warm for multi-node deployments (cross-node invalidation via PostgreSQL `LISTEN/NOTIFY` followed on 2026-10-10; the re-warm is now a backstop) |
 | 10 | Straight-line amortization only | `FaceValueLot.ConstantYieldAmortizedBasisAsOf` implements the effective-interest method, with routing across `BondAmortizationMethod` (NoAmortization, AuctionRate, StraightLine fallbacks) |
 | — | Asset-class-scoped projection replay | `RebuildAssetClassAsync` re-folds only the requested class; `IUflProjectionRebuilder` now delivers what its signature promises |
 | — | `SecurityAssetPackRegistry` unenforced | `ValidateAll()` plus full catalog-class coverage are test-locked; five previously unclaimed catalog classes (`Commodity`, `CryptoCurrency`, `Cfd`, `Warrant`, `InvestmentFund`) are now claimed by packs |
@@ -1787,6 +1812,17 @@ against, two paragraphs after the correction that withdrew that target.
   wrong; they differ only in which direction they lie" — and precisely the outcome it asked not to be
   mistaken for closure. The interim state is defensible if chosen deliberately; what the item asks is
   that recorded-as-of's promise for aliases then be narrowed explicitly, which has not happened.
+
+  > **Update 2026-10-10 — P3b resolved by versioned alias state.** Migration
+  > `037_security_master_alias_revisions.sql` adds the append-only `security_alias_revisions` table
+  > (backfilled with revision 1 for every existing alias at its `created_at`). `UpsertAliasAsync` keeps
+  > an identical replay a no-op, and records a material correction by appending the next revision
+  > (attributed to the correcting actor, which also answers the "P1 (alias corrections)" row) before
+  > updating the current row; re-pointing an alias ID at another security still returns 409.
+  > Projection replacement appends revisions for changed or dropped aliases. `GetRecordedByIdAsOfAsync`
+  > reads aliases through `ISecurityMasterStore.GetAliasesRecordedAsOfAsync`, so a January view keeps
+  > January's value after a June correction. Current-state reads and identifier resolution still use
+  > the current rows.
 
 **Verified still open.**
 
@@ -5318,6 +5354,27 @@ remains the authoritative full run.
 
 ---
 
+## Resolution pass — 2026-10-10
+
+An implementation pass on the five priorities of the 2026-10-09 scheduled review (no review PR was
+opened for that interval; its findings matched the standing open items above).
+
+| # | Priority | What landed | Still open |
+| --- | --- | --- | --- |
+| 1 | Lossy v2 → v1 rebuild bridge | `SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(JsonElement, string?)` inverts the per-class module assignment of `SecurityMasterLegacyUpgrade.termsFromKind`; the rebuild fallback in `SecurityEconomicDefinitionAdapter.ToProjection` passes the record's class, so call, issuer, sweep, fund, financing, auction and structured-product values land at the class's declared flat keys (previously dropped, and maturity was written as an undeclared `maturityDate`). `SecurityEconomicTermsClassAwareBridgeTests` asserts every written key is declared and that each class's fully populated v1 record survives v1 → economic → v1 at every recovered key. | What the economic document never carries (`UnrecoverableKeys`: option strike/put-call, swap legs, bond subclass and schedules) is still lost on this route, and the marker stays. Codec generation from the schema is not started. |
+| 2 | Hand-written projection writers | MoneyMarketFund, CertificateOfDeposit, Deposit and CryptoCurrency moved onto `SecurityTermsProjectionRegistry` behind a DB-backed parity guard (see the writer-split note above). | Bond, Option, Swap, FxSpot, Future, Equity and Commodity stay hand-written for the reasons in that note. |
+| 3 | Constant-yield amortization refuses odd periods | `FaceValueLot.ConstantYieldAmortizedBasisAsOf` supports an odd (short) first period for mid-period acquisitions: schedule built backward from maturity, clean-price basis with purchased accrued interest excluded, decimal-only fractional powers; regular schedules are bit-identical. A par clean price across a stub still solves its implied yield (it is not the coupon rate), so the basis moves off par and returns at maturity. | Posting under calculation model v2 still refuses odd schedules by test-locked design; enabling it needs a governed v3 calculation version and human review. Odd last periods are not modelled. |
+| 4 | Aliases immutable | Append-only alias revisions (P3b note above). Projection reads stamp their alias list with the per-security revision count (`SecurityAliasSnapshot`); a projection write (rebuild, warm, amendment) whose stamp is stale keeps the current alias rows, and the cache keeps the newer-stamped aliases, so an overlapping rebuild cannot durably undo a correction. | — |
+| 5 | Per-process projection cache | Transactional `pg_notify` + per-node `LISTEN` refresh (status note above); the listener also re-synchronises on its first subscription, closing the startup-warm window. | — |
+
+**Validation.** `tests/Meridian.Tests` built in Release; with the Security Master and ledger
+connection strings pointed at a local PostgreSQL, the filter
+`SecurityMaster|AssetOperations|Amortization|Projection|AtomicTaxLot|CostBasis` ran 2,718 tests:
+2,707 passed, 0 failed, 11 skipped (suites gated on other connection strings). Schema-control
+`verify` passed against a fresh database after `snapshot`/`promote`.
+
+---
+
 ## Method
 
 Reviewed `src/Meridian.FSharp/Domain/SecurityMaster*.fs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`,
@@ -5556,3 +5613,100 @@ with the regenerated `docs/status/` reports correctly recognized as generated-ex
 check on this document, not on the subsystem it reviews, and it is recorded here only so the
 paragraph above is not read as claiming more silence than the pass kept — the same correction the
 2026-09-08 pass had to make after the fact (`4481741f`), made here before it was needed.
+
+
+## Integration refresh — 2026-10-14 (PR #3131)
+
+Migration `036_security_master_workbench_generations.sql` from merged #3130 remains immutable.
+Alias correction history is now `037_security_master_alias_revisions.sql`, the next unreserved
+Security Master ordinal on the inspected main. The waiver follows the renamed migration and only
+covers the append-only TRUNCATE guard. It does not approve destructive migration operations.
+`SecurityMasterAliasMigrationTests` covers fresh initialization and a populated through-036
+upgrade, preservation of generation fences and alias creation facts, failed-DDL rollback, retry,
+append-only guards, unchanged historical receipts, and restart without reapplying 037.
+
+The six unresolved review topics remain visible for independent review:
+
+| Topic | Refreshed implementation / remaining decision |
+| --- | --- |
+| Valid-time versus recorded-time alias lookup | Preserve the documented distinction. Valid-time reads use corrected current knowledge; recorded-time reads use append-only history. A recorded-time identifier lookup is still a separate API decision. |
+| Preferred-equity economic replay | Refuse fallback when preferred economics are present but retained flat terms are absent. The old economic family loses the Preferred/ConvertiblePreferred distinction, senior multiple, participation and conversion terms; reconstructing a complete envelope would invent facts. Retained legacy payloads replay unchanged. Historical incomplete events require authoritative terms recovery before rebuild. |
+| Failed local registry reseed | A coalesced background worker retries with bounded backoff until successful or service cancellation. The durable alias write remains successful. |
+| Seeder dependency registration | PostgreSQL composition registers one concrete seeder singleton and aliases `ICanonicalSecurityIdLookup` to it, making local, startup and remote reseeding available to production composition. |
+| Missed creations in lazy mode | Lazy-mode registry seeding reads durable membership without warming the projection cache. Reconnect/bulk resync can therefore recover a creation whose individual notification was missed. |
+| Unattributed legacy identifiers | No automatic destructive cleanup. Old inferred-source aliases cannot reliably be distinguished from manually added aliases. An owner-reviewed inventory and cleanup decision remains required; new seed-owned identifiers retain explicit provenance. |
+
+These corrections do not resolve review threads or establish human acceptance. Independent Storage,
+Security Master and schema reviews remain required. Full preferred-term recovery and unattributed
+legacy-alias cleanup are not claimed as implemented. PostgreSQL and CI results must be tied to the
+published refreshed head, not the historical PR-body measurements.
+
+## Acceptance repair — 2026-10-15 (PR #3131)
+
+The acceptance scope is code and isolated database rehearsal. Production deployment, writer drain,
+independent human schema/Storage approval and operator acceptance remain pending. The
+[governed-edit rollout runbook](../operators/security-master-governed-edit-rollout.md) records the
+merged #3130 evidence and the required target-environment receipts. External approval persistence
+and downstream publication still have separate transaction and reconciliation boundaries.
+
+The current #3131 refresh was `93701d7c`, rather than the earlier `41a30be8` snapshot. Main advanced
+during acceptance to `5204b8df`, adding close-price migration 037, and then to `32d1dba8` with durable
+strategy lifecycle work. The branch incorporates that
+history: generation migration 036 and close-price migration 037 remain byte-for-byte unchanged,
+and alias history moves to the next available ordinal, 038. A backfilled alias revision preserves creation facts but also carries
+`history_available_from`: its current contents do not establish earlier alias history.
+Recorded reads filter that timestamp eligibility boundary before selecting the latest revision. Missing
+pre-migration alias history is unavailable evidence, not proof that no alias existed.
+
+| Review topic | Implemented contract |
+| --- | --- |
+| Historical identifier lookup | Additive `GetRecordedByIdentifierAsOfAsync` resolves retained event identifiers and alias revisions using an explicit stored-timestamp cutoff and a separate effective cutoff. It supplies timestamp eligibility, not historical commit visibility. Missing or ambiguous identity returns no match; current projections and legacy primary-identity fallbacks are excluded. Recorded by-ID reads also retain aliases when the current projection is absent. The compatibility APIs keep their existing mixed semantics: recorded terms can carry aliases corrected later. |
+| Equity replay | Economic-only Equity reconstruction refuses because the old family cannot prove common versus preferred or convertible preferred classification. Retained flat payloads replay unchanged. Reconstructing missing preferred economics still requires authoritative retained terms; no partial envelope is invented. |
+| Identifier propagation | Production composition supplies one seeder/ID-lookup singleton; Minimal composition without a canonical registry omits it. Failed local reseeds retry. Startup seeding works without preloading or notifications, and reads authoritative membership independently of cache completeness. Local create, amend and deactivate install committed cache state and request reseeding before optional post-commit work. The hosted lifecycle reseeds at identifier validity boundaries even without a periodic projection refresh. |
+| Durable rebuild concurrency | PostgreSQL rejects lower-version parent upserts before rewriting identifiers, aliases or asset-specific child tables. Rejected records send no notification; deactivation and checkpoint writes cannot regress. Rebuilds and command cache/conflict publication use effective durable state, so a skipped prepared record cannot overwrite newer state in a cold cache. Failed post-commit cache readbacks retry. |
+| Canonical ownership | Persisted Security Master canonical provenance supports ticker rename and removal of withdrawn entries whose remaining authority is exclusively Security Master. A mixed-authority entry retains its internal storage identity and independent identifiers, but `SecurityMasterCanonicalWithdrawn` prevents its former Security Master-only canonical input from resolving. Proven owned IDs absent from the authoritative snapshot are reconciled across restart. Independent aliases, provider overrides and unattributed legacy authority are preserved. Resolver snapshot rebuilds serialize publication. |
+| Legacy identifiers | Normal reconciliation never infers ownership from a matching typed value or inferred alias source. Explicit cleanup uses an exact evidence-bound manifest, registry fingerprint, dry-run counts and atomic persisted receipt; typed-field removal needs separate evidence. A changed registry requires renewed review, and exact retries replay the retained receipt. |
+
+Legacy cleanup is an optional maintenance capability on `ISecurityMasterLegacyIdentifierCleanupWriter`.
+Capture its registry fingerprint, create a manifest selecting each exact SecurityId, identifier
+kind/value, expected alias source and retained origin evidence, then call
+`ValidateLegacyIdentifierCleanupAsync`. Review its selections and counts before passing that result
+to `ApplyLegacyIdentifierCleanupAsync`. Omit typed-field evidence to preserve a matching typed
+identifier. The receipt records the requested cleanup and its evidence references; it does not
+establish independent approval. This rehearsal applies no cleanup to a production registry.
+
+The chosen historical identifier contract explicitly excludes transaction visibility at the cutoff.
+Event timestamps are application record times and alias revision timestamps can be assigned before
+lock waits or commit. `history_available_from` is likewise a migration timestamp eligibility floor,
+not commit evidence. A transaction that becomes visible later can change a repeated query with the
+same cutoffs. Neither the identifier API nor recorded by-ID replay retains an evaluation receipt or
+reconstructs a historical database snapshot. Accounting certification needs separately retained
+evidence; adding a stronger durable visibility contract remains outside this acceptance scope.
+
+Seeding evaluates validity at its timestamp and records the next enabled alias or identifier
+boundary. The existing hosted lifecycle wakes for that boundary and reseeds without warming a lazy
+cache. A successful write seed can advance its deadline; transient failures retain retry behavior.
+Canonical selection uses exactly one primary identifier in its valid window, ignoring the
+denormalized scalar. Zero or ambiguous active primaries withdraw the Security Master canonical
+claim. A hidden stable carrier retains separately valid aliases, standard identifiers and provider
+mappings, including their SecurityId enrichment, without reserving an expired or future primary
+spelling. Independent current name authority remains usable. Every primary window is tracked before
+missing-primary handling so future-only startup and gaps still schedule the next transition.
+This withdrawal behavior uses production's source-aware reconciliation writer. Base-only custom
+adapters retain their merge-only limitation and do not receive hidden carrier definitions.
+Rich alias candidates reach one shared registry normalization rule that prefers a supplied active
+representative for each normalized spelling/provider/source identity. Expired, disabled or future
+windows cannot mask a currently valid renewal. That live projection retains the representative's
+provenance and window; complete recorded history remains in the append-only alias revision store.
+Registry reconciliation applies withdrawals before planning canonical transfers, then detaches and
+assigns permitted moves as one candidate batch. Security Master-owned chains and swaps are order
+independent; independently retained and unscoped names remain protected from adoption.
+
+The public odd-first-period constant-yield path carries contractual maturity into its 30E/360 ISDA
+stub and reference-period fractions. A final February endpoint retains its actual day, while an
+intermediate February coupon keeps the ordinary month-end adjustment. Independent nonleap/leap
+price and carrying-basis fixtures cover that distinction. This corrects the newly added odd-period
+path; retained regular/v1 calculations and governed v2 posting refusal remain unchanged.
+Shared schedule validation (#3126) and
+explicit payload-family discrimination (#3127) remain separately scoped. Review threads and human
+acceptance are not inferred from these code corrections or from automated review.

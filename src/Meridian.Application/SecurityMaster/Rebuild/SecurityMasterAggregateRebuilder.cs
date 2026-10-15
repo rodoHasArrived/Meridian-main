@@ -52,11 +52,11 @@ public sealed class SecurityMasterAggregateRebuilder
     }
 
     /// <summary>
-    /// Rebuilds the security's state as it was recorded at <paramref name="asOfUtc"/>
-    /// (transaction time). Every event payload carries the full definition, so the as-of
-    /// state is the payload of the last event recorded at or before the timestamp. Returns
-    /// <c>null</c> when the stream has history but none of it existed at that time;
-    /// securities with no event history fall back to the supplied current projection.
+    /// Rebuilds from the last retained stream version whose stored event timestamp is at or before
+    /// <paramref name="asOfUtc"/>. Every payload carries the full definition. Returns <c>null</c>
+    /// when the stream has no timestamp-eligible event; projection-only securities fall back to
+    /// the supplied current projection. Event timestamps may precede lock waits and commit, so this
+    /// selects eligible rows read now and does not reconstruct historical transaction visibility.
     /// </summary>
     public async Task<SecurityProjectionRecord?> RebuildAsOfAsync(
         Guid securityId,
@@ -82,17 +82,21 @@ public sealed class SecurityMasterAggregateRebuilder
     }
 
     /// <summary>
-    /// Rebuilds only from retained event history and returns <c>null</c> when no event was
-    /// recorded at or before <paramref name="asOfUtc"/>. Accounting as-of workflows use this
-    /// strict variant so a projection-only current definition cannot masquerade as history.
-    /// Aliases are retained only when they were both recorded and effective at the cutoff;
-    /// their enabled state is preserved for downstream resolution policy.
+    /// Rebuilds only from retained events with stored timestamps at or before <paramref name="asOfUtc"/>,
+    /// returning <c>null</c> when no eligible event is read. Projection-only current definitions
+    /// are never substituted. Aliases must satisfy their stored recording and valid-time cutoffs;
+    /// their enabled state is preserved for downstream resolution policy. Callers supply the
+    /// aliases as recorded at the cutoff (<see cref="ISecurityMasterStore.GetAliasesRecordedAsOfAsync"/>)
+    /// so current alias rows cannot replace the retained revisions. These timestamps are not commit
+    /// receipts: later commits can change repeated results for the same cutoff, and the event/alias
+    /// reads do not share a single historical transaction snapshot.
     /// </summary>
     public async Task<SecurityProjectionRecord?> RebuildRecordedAsOfAsync(
         Guid securityId,
         DateTimeOffset asOfUtc,
         SecurityProjectionRecord? projectionWithAliases,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        IReadOnlyList<SecurityAliasDto>? aliasesRecordedAtCutoff = null)
     {
         var events = await _eventStore.LoadAsync(securityId, ct).ConfigureAwait(false);
         SecurityEconomicDefinitionRecord? rebuilt = null;
@@ -101,8 +105,8 @@ public sealed class SecurityMasterAggregateRebuilder
             rebuilt = SecurityMasterMapping.FromEconomicPayload(@event.Payload);
         }
 
-        var aliasesAsOf = projectionWithAliases?.Aliases
-            .Where(alias => alias.CreatedAt <= asOfUtc
+        var aliasesAsOf = (aliasesRecordedAtCutoff ?? projectionWithAliases?.Aliases)
+            ?.Where(alias => alias.CreatedAt <= asOfUtc
                             && alias.ValidFrom <= asOfUtc
                             && (!alias.ValidTo.HasValue || alias.ValidTo.Value > asOfUtc))
             .ToArray();
