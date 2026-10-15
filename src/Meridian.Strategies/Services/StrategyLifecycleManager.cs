@@ -1,8 +1,11 @@
 using System.Collections.Concurrent;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
+using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.FSharp.Trading;
 using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Storage;
 
 namespace Meridian.Strategies.Services;
@@ -19,7 +22,12 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
 
     private readonly IStrategyRepository _repository;
     private readonly ILogger<StrategyLifecycleManager> _logger;
+    private readonly IPromotionRecordStore? _promotionRecordStore;
+    private readonly ExecutionOperatorControlService? _operatorControls;
+    private readonly BrokerageConfiguration? _brokerageConfiguration;
     private readonly Dictionary<string, (ILiveStrategy Strategy, StrategyRunEntry? CurrentRun)> _registered = new();
+    // Replaced engine instances must not stay alive solely to remember their binding mode.
+    private readonly ConditionalWeakTable<ILiveStrategy, object> _runBoundStrategies = new();
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _commandGates =
         new(StringComparer.Ordinal);
     private readonly Lock _lock = new();
@@ -28,21 +36,72 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
     public StrategyLifecycleManager(
         IStrategyRepository repository,
         ILogger<StrategyLifecycleManager> logger)
+        : this(repository, logger, null)
+    {
+    }
+
+    /// <summary>Creates a manager with the authority required to revalidate live recovery.</summary>
+    public StrategyLifecycleManager(
+        IStrategyRepository repository,
+        ILogger<StrategyLifecycleManager> logger,
+        IPromotionRecordStore? promotionRecordStore,
+        ExecutionOperatorControlService? operatorControls = null,
+        BrokerageConfiguration? brokerageConfiguration = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _promotionRecordStore = promotionRecordStore;
+        _operatorControls = operatorControls;
+        _brokerageConfiguration = brokerageConfiguration;
     }
 
     /// <summary>Registers a strategy so it can be controlled by this manager.</summary>
     public void Register(ILiveStrategy strategy)
+        => Register(strategy, null);
+
+    /// <summary>Registers a restored strategy together with its retained control state.</summary>
+    public void Register(ILiveStrategy strategy, StrategyRunEntry? currentRun)
     {
         ArgumentNullException.ThrowIfNull(strategy);
+        if (currentRun is not null &&
+            !string.Equals(currentRun.StrategyId, strategy.StrategyId, StringComparison.Ordinal))
+        {
+            throw new ArgumentException("The retained run belongs to a different strategy.", nameof(currentRun));
+        }
+
         lock (_lock)
         {
-            _registered[strategy.StrategyId] = (strategy, null);
+            _registered[strategy.StrategyId] = (strategy, currentRun);
+            if (currentRun is null)
+                _runBoundStrategies.Remove(strategy);
+            else
+                _runBoundStrategies.GetValue(strategy, static _ => new object());
         }
 
         _logger.LogInformation("Strategy registered: {StrategyId} ({Name})", strategy.StrategyId, strategy.Name);
+    }
+
+    /// <summary>Releases an engine-owned instance after its execution and controls have drained.</summary>
+    internal async Task UnregisterAsync(ILiveStrategy strategy)
+    {
+        var gate = _commandGates.GetOrAdd(strategy.StrategyId, static _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            lock (_lock)
+            {
+                _runBoundStrategies.Remove(strategy);
+                if (_registered.TryGetValue(strategy.StrategyId, out var current) &&
+                    ReferenceEquals(current.Strategy, strategy))
+                {
+                    _registered.Remove(strategy.StrategyId);
+                }
+            }
+        }
+        finally
+        {
+            gate.Release();
+        }
     }
 
     /// <summary>Starts a strategy and returns its retained terminal operation receipt.</summary>
@@ -60,16 +119,58 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
             token => StartCoreAsync(strategyId, ctx, runType, token));
     }
 
+    /// <summary>Resumes the exact engine-owned instance and retained run under the strategy command gate.</summary>
+    internal Task<VerifiedOperationOutcome> ResumeRunAsync(
+        ILiveStrategy strategy,
+        string runId,
+        IExecutionContext ctx,
+        RunType runType,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(strategy);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentNullException.ThrowIfNull(ctx);
+        return ExecuteSerializedAsync(strategy.StrategyId, ct, async token =>
+        {
+            var run = await _repository.GetRunByIdAsync(runId, token).ConfigureAwait(false);
+            if (run is null ||
+                !string.Equals(run.StrategyId, strategy.StrategyId, StringComparison.Ordinal) ||
+                run.RunType != runType || run.EndedAt.HasValue ||
+                run.TerminalStatus != StrategyRunStatus.Paused)
+            {
+                throw new InvalidOperationException("The requested run no longer has resumable paused evidence.");
+            }
+
+            lock (_lock)
+            {
+                _registered[strategy.StrategyId] = (strategy, run);
+                _runBoundStrategies.GetValue(strategy, static _ => new object());
+            }
+
+            // Carry the pair directly into the command. A concurrent registration of another
+            // run of this strategy must never redirect the external action or its evidence.
+            return await StartCoreAsync(
+                strategy.StrategyId, ctx, runType, token, (strategy, run)).ConfigureAwait(false);
+        });
+    }
+
     private async Task<VerifiedOperationOutcome> StartCoreAsync(
         string strategyId,
         IExecutionContext ctx,
         RunType runType,
-        CancellationToken ct)
+        CancellationToken ct,
+        (ILiveStrategy Strategy, StrategyRunEntry? CurrentRun)? boundEntry = null)
     {
-        var (strategy, priorRun) = await GetRegisteredEntryWithHistoryAsync(strategyId, ct)
+        var (strategy, priorRun) = boundEntry ?? await GetRegisteredEntryWithHistoryAsync(strategyId, ct)
             .ConfigureAwait(false);
+        var resumesPausedRun = strategy.Status == StrategyStatus.Paused;
+        if (priorRun?.TerminalStatus == StrategyRunStatus.Paused && !resumesPausedRun)
+        {
+            throw new InvalidOperationException(
+                $"Strategy '{strategyId}' must restore its retained paused control state before an explicit resume.");
+        }
 
-        if (strategy.Status == StrategyStatus.Paused)
+        if (resumesPausedRun)
         {
             if (priorRun is null)
             {
@@ -81,7 +182,7 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
             {
                 throw new InvalidOperationException(
                     $"Strategy '{strategyId}' must resume its retained {priorRun.RunType} run. " +
-                    "Stop the strategy before changing its run type.");
+                    "Use the promotion workflow to approve a different run type.");
             }
         }
 
@@ -90,6 +191,21 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         if (!startTransition.IsValid)
         {
             throw new InvalidOperationException(startTransition.Reason);
+        }
+
+        var recoveryAttempt = !resumesPausedRun && priorRun is not null &&
+                              (strategy.Status == StrategyStatus.Stopped || priorRun.EndedAt.HasValue ||
+                               priorRun.LastLifecycleEvent == StrategyRunLifecycleEventType.RecoveryAttempted);
+        if ((resumesPausedRun || recoveryAttempt) && priorRun!.RunType != runType)
+        {
+            throw new InvalidOperationException(
+                $"Strategy '{strategyId}' must retain its approved {priorRun.RunType} execution mode during recovery. " +
+                "Use the promotion workflow to approve a different run type.");
+        }
+
+        if (resumesPausedRun || recoveryAttempt)
+        {
+            await ValidateLiveRecoveryApprovalAsync(priorRun!, ct).ConfigureAwait(false);
         }
 
         StrategyRunEntry requested;
@@ -104,10 +220,17 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
 
             requested = priorRun;
         }
+        else if (resumesPausedRun)
+        {
+            requested = priorRun!.RequestStart(LifecycleActorId, "Paused strategy resume requested.");
+            await _repository.RecordLifecycleEventAsync(
+                requested,
+                StrategyRunLifecycleEventType.StartRequested,
+                ct).ConfigureAwait(false);
+            UpdateCurrentRun(strategyId, strategy, requested);
+        }
         else
         {
-            var recoveryAttempt = priorRun is not null &&
-                                  strategy.Status is StrategyStatus.Paused or StrategyStatus.Stopped;
             StrategyRunEntry? recovery = null;
             if (recoveryAttempt)
             {
@@ -130,17 +253,7 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
 
             var run = recovery is null
                 ? StrategyRunEntry.Start(strategyId, strategy.Name, runType)
-                : StrategyRunEntry.Start(
-                    strategyId,
-                    strategy.Name,
-                    runType,
-                    recovery.AttemptId ?? throw new InvalidOperationException(
-                        $"Strategy '{strategyId}' recovery marker has no attempt identity."));
-            run = run with
-            {
-                AttemptNumber = recovery?.AttemptNumber ?? 1,
-                RecoveryParentRunId = recovery?.RecoveryParentRunId
-            };
+                : CreateRecoveryRun(recovery);
             requested = run.RequestStart(
                 LifecycleActorId,
                 recoveryAttempt ? "Strategy recovery start requested." : "Strategy start requested.");
@@ -186,12 +299,16 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
                 exception).ConfigureAwait(false);
         }
 
-        var started = requested.Started(LifecycleActorId, "Strategy started externally.");
+        var started = resumesPausedRun
+            ? requested.Resumed(LifecycleActorId, "Paused strategy resumed externally.")
+            : requested.RecoveryParentRunId is not null
+                ? requested.Recovered(LifecycleActorId, "Strategy recovery started externally.")
+                : requested.Started(LifecycleActorId, "Strategy started externally.");
         return await PersistExternallyCompletedAsync(
             strategyId,
             strategy,
             started,
-            StrategyRunLifecycleEventType.Started,
+            started.LastLifecycleEvent,
             "The strategy started externally, but its final start evidence could not be retained.",
             ct).ConfigureAwait(false);
     }
@@ -406,14 +523,17 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
                 StrategyRunLifecycleEventType.StartRequested or
                 StrategyRunLifecycleEventType.StartFailed or
                 StrategyRunLifecycleEventType.EvidencePersistenceFailed:
-                reconciled = currentRun.Started(
-                    LifecycleActorId,
-                    "Reconciled externally running strategy state.") with
+                var running = currentRun.TerminalStatus == StrategyRunStatus.Paused
+                    ? currentRun.Resumed(LifecycleActorId, "Reconciled externally resumed strategy state.")
+                    : currentRun.RecoveryParentRunId is not null
+                        ? currentRun.Recovered(LifecycleActorId, "Reconciled externally recovered strategy state.")
+                        : currentRun.Started(LifecycleActorId, "Reconciled externally running strategy state.");
+                reconciled = running with
                 {
                     EndedAt = null,
                     TerminalStatus = null
                 };
-                eventType = StrategyRunLifecycleEventType.Started;
+                eventType = reconciled.LastLifecycleEvent;
                 break;
             case StrategyStatus.Paused when currentRun.LastLifecycleEvent is
                 StrategyRunLifecycleEventType.PauseRequested or
@@ -446,7 +566,11 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
                 };
                 eventType = StrategyRunLifecycleEventType.Completed;
                 break;
-            case StrategyStatus.Running when currentRun.LastLifecycleEvent == StrategyRunLifecycleEventType.Started:
+            case StrategyStatus.Running when currentRun.LastLifecycleEvent is
+                StrategyRunLifecycleEventType.Started or
+                StrategyRunLifecycleEventType.Activated or
+                StrategyRunLifecycleEventType.Resumed or
+                StrategyRunLifecycleEventType.Recovered:
             case StrategyStatus.Paused when currentRun.LastLifecycleEvent == StrategyRunLifecycleEventType.Paused:
             case StrategyStatus.Stopped when currentRun.LastLifecycleEvent == StrategyRunLifecycleEventType.Completed:
                 return RequireTerminalOutcome(currentRun, currentRun.LastLifecycleEvent);
@@ -499,7 +623,14 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         GetRegisteredEntryWithHistoryAsync(string strategyId, CancellationToken ct)
     {
         var registered = GetRegisteredEntry(strategyId);
-        var retained = await _repository.GetLatestRunAsync(strategyId, ct).ConfigureAwait(false);
+        bool runBound;
+        lock (_lock)
+        {
+            runBound = registered.CurrentRun is not null && _runBoundStrategies.TryGetValue(registered.Strategy, out _);
+        }
+        var retained = runBound
+            ? await _repository.GetRunByIdAsync(registered.CurrentRun!.RunId, ct).ConfigureAwait(false)
+            : await _repository.GetLatestRunAsync(strategyId, ct).ConfigureAwait(false);
         if (retained is null)
         {
             return registered;
@@ -510,6 +641,13 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
             if (!_registered.TryGetValue(strategyId, out var current))
             {
                 throw new InvalidOperationException($"Strategy '{strategyId}' is not registered.");
+            }
+
+            if (runBound && (!ReferenceEquals(current.Strategy, registered.Strategy) ||
+                             current.CurrentRun?.RunId != registered.CurrentRun!.RunId))
+            {
+                throw new InvalidOperationException(
+                    $"Strategy '{strategyId}' registration changed while its retained run was being loaded.");
             }
 
             if (ShouldUseRetainedRun(current.CurrentRun, retained))
@@ -562,6 +700,100 @@ public sealed class StrategyLifecycleManager : IAsyncDisposable
         lock (_lock)
         {
             _registered[strategyId] = (strategy, run);
+        }
+    }
+
+    private static StrategyRunEntry CreateRecoveryRun(StrategyRunEntry prior)
+    {
+        var attemptId = prior.AttemptId ?? throw new InvalidOperationException(
+            $"Strategy '{prior.StrategyId}' recovery marker has no attempt identity.");
+        var now = DateTimeOffset.UtcNow;
+
+        // A restart executes the same approved inputs: keep the parameter, feed, engine,
+        // portfolio/ledger/fund scope, realism, evidence and promotion-parent declarations.
+        // Correlation identifies the original execution across attempts; recovery parent
+        // identifies the immediate predecessor. Outcomes belong only to their producing run.
+        var run = prior with
+        {
+            RunId = attemptId,
+            StartedAt = now,
+            EndedAt = null,
+            Metrics = null,
+            TerminalStatus = null,
+            LastLifecycleEvent = StrategyRunLifecycleEventType.StartRequested,
+            LifecycleEventAtUtc = now,
+            CorrelationId = prior.CorrelationId ?? prior.RunId,
+            ExceptionType = null,
+            ExceptionMessage = null,
+            ExceptionStackTrace = null,
+            OutputMetadata = new Dictionary<string, string>(StringComparer.Ordinal)
+        };
+        return run with { InputHashSha256 = StrategyRunEntry.ComputeRealismBoundInputHash(run) };
+    }
+
+    private async Task ValidateLiveRecoveryApprovalAsync(StrategyRunEntry run, CancellationToken ct)
+    {
+        if (run.RunType != RunType.Live)
+        {
+            return;
+        }
+
+        if (_promotionRecordStore is null || _operatorControls is null)
+        {
+            throw new InvalidOperationException(
+                "Live recovery requires the durable promotion authority and current execution controls.");
+        }
+
+        if (_brokerageConfiguration is not { LiveExecutionEnabled: true })
+        {
+            throw new InvalidOperationException("Live recovery requires enabled live brokerage routing.");
+        }
+
+        var originalRunId = run.CorrelationId ?? run.RunId;
+        var decisions = await _promotionRecordStore.LoadAllAsync(ct).ConfigureAwait(false);
+        var approval = decisions.FirstOrDefault(decision =>
+            string.Equals(decision.TargetRunId, originalRunId, StringComparison.Ordinal) &&
+            string.Equals(decision.SourceRunId, run.ParentRunId, StringComparison.Ordinal) &&
+            string.Equals(decision.StrategyId, run.StrategyId, StringComparison.Ordinal) &&
+            string.Equals(decision.AuditReference, run.AuditReference, StringComparison.Ordinal) &&
+            decision.SourceRunType == RunType.Paper && decision.TargetRunType == RunType.Live);
+        if (approval is null ||
+            !string.Equals(approval.Decision, PromotionDecisionKinds.Approved, StringComparison.OrdinalIgnoreCase) ||
+            string.IsNullOrWhiteSpace(approval.ApprovedBy) ||
+            PromotionApprovalChecklist.GetMissingRequiredItems(RunType.Live, approval.ApprovalChecklist).Length > 0)
+        {
+            throw new InvalidOperationException("Live recovery has no matching retained operator promotion approval.");
+        }
+
+        var approvedRun = await _repository.GetRunByIdAsync(originalRunId, ct).ConfigureAwait(false);
+        if (approvedRun is null ||
+            !string.Equals(StrategyRunEntry.ComputeRealismBoundInputHash(approvedRun),
+                StrategyRunEntry.ComputeRealismBoundInputHash(run), StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Live recovery inputs differ from the approved execution configuration.");
+        }
+
+        var controlDecision = _operatorControls.EvaluateLivePromotion(
+            approval.SourceRunId,
+            run.StrategyId,
+            approval.ManualOverrideId);
+        if (!controlDecision.IsAllowed)
+        {
+            throw new InvalidOperationException(
+                $"Live recovery approval is no longer valid: {controlDecision.RejectReason}");
+        }
+
+        var controls = _operatorControls.GetSnapshot();
+        if (controls.ManualOverrides.Any(entry =>
+                string.Equals(entry.Kind, ExecutionManualOverrideKinds.ForceBlockOrders, StringComparison.OrdinalIgnoreCase) &&
+                (string.IsNullOrWhiteSpace(entry.StrategyId) ||
+                 string.Equals(entry.StrategyId, run.StrategyId, StringComparison.OrdinalIgnoreCase)) &&
+                (string.IsNullOrWhiteSpace(entry.RunId) ||
+                 string.Equals(entry.RunId, approval.SourceRunId, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(entry.RunId, originalRunId, StringComparison.OrdinalIgnoreCase) ||
+                 string.Equals(entry.RunId, run.RunId, StringComparison.OrdinalIgnoreCase))))
+        {
+            throw new InvalidOperationException("Live recovery is blocked by an active ForceBlockOrders override.");
         }
     }
 

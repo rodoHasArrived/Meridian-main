@@ -8,169 +8,169 @@
  viewBox="0.00 0.00 1040.00 713.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(28.8 683.8)">
 <title>WpfTradingScreens</title>
-<polygon fill="#0f172a" stroke="none" points="-28.8,28.8 -28.8,-683.8 1011.6,-683.8 1011.6,28.8 -28.8,28.8"/>
-<text xml:space="preserve" text-anchor="middle" x="491.4" y="-633" font-family="Segoe UI" font-size="20.00">Meridian WPF Trading screens</text>
-<text xml:space="preserve" text-anchor="middle" x="491.4" y="-609" font-family="Segoe UI" font-size="20.00">(auto&#45;generated from live shell registry)</text>
+<polygon fill="#0f172a" stroke="none" points="-28.8,28.8 -28.8,-683.8 1011.58,-683.8 1011.58,28.8 -28.8,28.8"/>
+<text xml:space="preserve" text-anchor="middle" x="491.39" y="-633" font-family="Segoe UI" font-size="20.00">Meridian WPF Trading screens</text>
+<text xml:space="preserve" text-anchor="middle" x="491.39" y="-609" font-family="Segoe UI" font-size="20.00">(auto&#45;generated from live shell registry)</text>
 <g id="clust1" class="cluster">
 <title>cluster_section_1</title>
-<path fill="#0f172a" stroke="#334155" d="M387.31,-485C387.31,-485 962.8,-485 962.8,-485 968.8,-485 974.8,-491 974.8,-497 974.8,-497 974.8,-579 974.8,-579 974.8,-585 968.8,-591 962.8,-591 962.8,-591 387.31,-591 387.31,-591 381.31,-591 375.31,-585 375.31,-579 375.31,-579 375.31,-497 375.31,-497 375.31,-491 381.31,-485 387.31,-485"/>
-<text xml:space="preserve" text-anchor="middle" x="675.05" y="-569" font-family="Segoe UI" font-size="20.00">Desk</text>
+<path fill="#0f172a" stroke="#334155" d="M387.29,-485C387.29,-485 962.78,-485 962.78,-485 968.78,-485 974.78,-491 974.78,-497 974.78,-497 974.78,-579 974.78,-579 974.78,-585 968.78,-591 962.78,-591 962.78,-591 387.29,-591 387.29,-591 381.29,-591 375.29,-585 375.29,-579 375.29,-579 375.29,-497 375.29,-497 375.29,-491 381.29,-485 387.29,-485"/>
+<text xml:space="preserve" text-anchor="middle" x="675.03" y="-569" font-family="Segoe UI" font-size="20.00">Desk</text>
 </g>
 <g id="clust2" class="cluster">
 <title>cluster_section_2</title>
-<path fill="#0f172a" stroke="#334155" d="M552.78,-288C552.78,-288 930.9,-288 930.9,-288 936.9,-288 942.9,-294 942.9,-300 942.9,-300 942.9,-465 942.9,-465 942.9,-471 936.9,-477 930.9,-477 930.9,-477 552.78,-477 552.78,-477 546.78,-477 540.78,-471 540.78,-465 540.78,-465 540.78,-300 540.78,-300 540.78,-294 546.78,-288 552.78,-288"/>
-<text xml:space="preserve" text-anchor="middle" x="741.84" y="-455" font-family="Segoe UI" font-size="20.00">Market Feed</text>
+<path fill="#0f172a" stroke="#334155" d="M552.76,-288C552.76,-288 930.88,-288 930.88,-288 936.88,-288 942.88,-294 942.88,-300 942.88,-300 942.88,-465 942.88,-465 942.88,-471 936.88,-477 930.88,-477 930.88,-477 552.76,-477 552.76,-477 546.76,-477 540.76,-471 540.76,-465 540.76,-465 540.76,-300 540.76,-300 540.76,-294 546.76,-288 552.76,-288"/>
+<text xml:space="preserve" text-anchor="middle" x="741.82" y="-455" font-family="Segoe UI" font-size="20.00">Market Feed</text>
 </g>
 <g id="clust3" class="cluster">
 <title>cluster_section_3</title>
-<path fill="#0f172a" stroke="#334155" d="M559.97,-8C559.97,-8 943,-8 943,-8 949,-8 955,-14 955,-20 955,-20 955,-268 955,-268 955,-274 949,-280 943,-280 943,-280 559.97,-280 559.97,-280 553.97,-280 547.97,-274 547.97,-268 547.97,-268 547.97,-20 547.97,-20 547.97,-14 553.97,-8 559.97,-8"/>
-<text xml:space="preserve" text-anchor="middle" x="751.49" y="-258" font-family="Segoe UI" font-size="20.00">Execution</text>
+<path fill="#0f172a" stroke="#334155" d="M559.95,-8C559.95,-8 942.98,-8 942.98,-8 948.98,-8 954.98,-14 954.98,-20 954.98,-20 954.98,-268 954.98,-268 954.98,-274 948.98,-280 942.98,-280 942.98,-280 559.95,-280 559.95,-280 553.95,-280 547.95,-274 547.95,-268 547.95,-268 547.95,-20 547.95,-20 547.95,-14 553.95,-8 559.95,-8"/>
+<text xml:space="preserve" text-anchor="middle" x="751.47" y="-258" font-family="Segoe UI" font-size="20.00">Execution</text>
 </g>
 <!-- generated -->
 <g id="node1" class="node">
 <title>generated</title>
-<polygon fill="#1d4ed8" stroke="#60a5fa" points="195.83,-395.2 0,-395.2 0,-336.8 201.83,-336.8 201.83,-389.2 195.83,-395.2"/>
-<polyline fill="none" stroke="#60a5fa" points="195.83,-395.2 195.83,-389.2"/>
-<polyline fill="none" stroke="#60a5fa" points="201.83,-389.2 195.83,-389.2"/>
-<text xml:space="preserve" text-anchor="middle" x="100.92" y="-378.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Source fingerprint: b17fed41ff83</text>
-<text xml:space="preserve" text-anchor="middle" x="100.92" y="-361.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Trading screens: 6</text>
-<text xml:space="preserve" text-anchor="middle" x="100.92" y="-345" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Sections: 3</text>
+<polygon fill="#1d4ed8" stroke="#60a5fa" points="195.81,-395.2 0,-395.2 0,-336.8 201.81,-336.8 201.81,-389.2 195.81,-395.2"/>
+<polyline fill="none" stroke="#60a5fa" points="195.81,-395.2 195.81,-389.2"/>
+<polyline fill="none" stroke="#60a5fa" points="201.81,-389.2 195.81,-389.2"/>
+<text xml:space="preserve" text-anchor="middle" x="100.91" y="-378.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Source fingerprint: feca62e2f289</text>
+<text xml:space="preserve" text-anchor="middle" x="100.91" y="-361.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Trading screens: 6</text>
+<text xml:space="preserve" text-anchor="middle" x="100.91" y="-345" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Sections: 3</text>
 </g>
 <!-- workspace -->
 <g id="node2" class="node">
 <title>workspace</title>
-<polygon fill="#0f766e" stroke="#2dd4bf" points="487.78,-386.8 484.78,-390.8 463.78,-390.8 460.78,-386.8 262.83,-386.8 262.83,-345.2 487.78,-345.2 487.78,-386.8"/>
-<text xml:space="preserve" text-anchor="middle" x="375.31" y="-370.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Trading workspace</text>
-<text xml:space="preserve" text-anchor="middle" x="375.31" y="-353.4" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 5 | Secondary 1 | Overflow 0</text>
+<polygon fill="#0f766e" stroke="#2dd4bf" points="487.76,-386.8 484.76,-390.8 463.76,-390.8 460.76,-386.8 262.81,-386.8 262.81,-345.2 487.76,-345.2 487.76,-386.8"/>
+<text xml:space="preserve" text-anchor="middle" x="375.29" y="-370.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Trading workspace</text>
+<text xml:space="preserve" text-anchor="middle" x="375.29" y="-353.4" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary 5 | Secondary 1 | Overflow 0</text>
 </g>
 <!-- generated&#45;&gt;workspace -->
 <g id="edge1" class="edge">
 <title>generated&#45;&gt;workspace</title>
-<path fill="none" stroke="#38bdf8" stroke-width="1.2" d="M202.19,-366C218.98,-366 236.56,-366 253.79,-366"/>
-<polygon fill="#38bdf8" stroke="#38bdf8" stroke-width="1.2" points="253.46,-368.63 260.96,-366 253.46,-363.38 253.46,-368.63"/>
+<path fill="none" stroke="#38bdf8" stroke-width="1.2" d="M202.17,-366C218.96,-366 236.54,-366 253.78,-366"/>
+<polygon fill="#38bdf8" stroke="#38bdf8" stroke-width="1.2" points="253.44,-368.63 260.94,-366 253.44,-363.38 253.44,-368.63"/>
 </g>
 <!-- section_1 -->
 <g id="node3" class="node">
 <title>section_1</title>
-<polygon fill="#172554" stroke="#93c5fd" points="626.2,-538.8 623.2,-542.8 602.2,-542.8 599.2,-538.8 558.5,-538.8 558.5,-497.2 626.2,-497.2 626.2,-538.8"/>
-<text xml:space="preserve" text-anchor="middle" x="592.35" y="-522.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Desk</text>
-<text xml:space="preserve" text-anchor="middle" x="592.35" y="-505.4" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">1 screens</text>
+<polygon fill="#172554" stroke="#93c5fd" points="626.18,-538.8 623.18,-542.8 602.18,-542.8 599.18,-538.8 558.48,-538.8 558.48,-497.2 626.18,-497.2 626.18,-538.8"/>
+<text xml:space="preserve" text-anchor="middle" x="592.33" y="-522.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Desk</text>
+<text xml:space="preserve" text-anchor="middle" x="592.33" y="-505.4" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">1 screens</text>
 </g>
 <!-- workspace&#45;&gt;section_1 -->
 <g id="edge2" class="edge">
 <title>workspace&#45;&gt;section_1</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M405.94,-387.25C438.81,-410.78 493.45,-449.79 540.78,-483 544.77,-485.8 548.94,-488.71 553.11,-491.61"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="551.4,-493.62 559.06,-495.74 554.4,-489.31 551.4,-493.62"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M405.92,-387.25C438.79,-410.78 493.43,-449.79 540.76,-483 544.75,-485.8 548.92,-488.71 553.09,-491.61"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="551.38,-493.62 559.04,-495.74 554.38,-489.31 551.38,-493.62"/>
 </g>
 <!-- section_2 -->
 <g id="node5" class="node">
 <title>section_2</title>
-<polygon fill="#172554" stroke="#93c5fd" points="635.92,-386.8 632.92,-390.8 611.92,-390.8 608.92,-386.8 548.78,-386.8 548.78,-345.2 635.92,-345.2 635.92,-386.8"/>
-<text xml:space="preserve" text-anchor="middle" x="592.35" y="-370.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Market Feed</text>
-<text xml:space="preserve" text-anchor="middle" x="592.35" y="-353.4" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">2 screens</text>
+<polygon fill="#172554" stroke="#93c5fd" points="635.9,-386.8 632.9,-390.8 611.9,-390.8 608.9,-386.8 548.76,-386.8 548.76,-345.2 635.9,-345.2 635.9,-386.8"/>
+<text xml:space="preserve" text-anchor="middle" x="592.33" y="-370.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Market Feed</text>
+<text xml:space="preserve" text-anchor="middle" x="592.33" y="-353.4" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">2 screens</text>
 </g>
 <!-- workspace&#45;&gt;section_2 -->
 <g id="edge4" class="edge">
 <title>workspace&#45;&gt;section_2</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M488.24,-366C506.16,-366 523.91,-366 539.5,-366"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="539.1,-368.63 546.6,-366 539.1,-363.38 539.1,-368.63"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M488.22,-366C506.13,-366 523.89,-366 539.48,-366"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="539.08,-368.63 546.58,-366 539.08,-363.38 539.08,-368.63"/>
 </g>
 <!-- section_3 -->
 <g id="node8" class="node">
 <title>section_3</title>
-<polygon fill="#172554" stroke="#93c5fd" points="628.73,-189.8 625.73,-193.8 604.73,-193.8 601.73,-189.8 555.97,-189.8 555.97,-148.2 628.73,-148.2 628.73,-189.8"/>
-<text xml:space="preserve" text-anchor="middle" x="592.35" y="-173.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Execution</text>
-<text xml:space="preserve" text-anchor="middle" x="592.35" y="-156.4" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">3 screens</text>
+<polygon fill="#172554" stroke="#93c5fd" points="628.71,-189.8 625.71,-193.8 604.71,-193.8 601.71,-189.8 555.95,-189.8 555.95,-148.2 628.71,-148.2 628.71,-189.8"/>
+<text xml:space="preserve" text-anchor="middle" x="592.33" y="-173.2" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Execution</text>
+<text xml:space="preserve" text-anchor="middle" x="592.33" y="-156.4" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">3 screens</text>
 </g>
 <!-- workspace&#45;&gt;section_3 -->
 <g id="edge7" class="edge">
 <title>workspace&#45;&gt;section_3</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M399.32,-344.92C438.51,-309.02 518.15,-236.06 561.54,-196.31"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="563.08,-198.46 566.84,-191.46 559.54,-194.59 563.08,-198.46"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M399.3,-344.92C438.49,-309.02 518.13,-236.06 561.52,-196.31"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="563.06,-198.46 566.82,-191.46 559.52,-194.59 563.06,-198.46"/>
 </g>
 <!-- screen_TradingShell -->
 <g id="node4" class="node">
 <title>screen_TradingShell</title>
-<path fill="#1e293b" stroke="#475569" d="M954.8,-551.2C954.8,-551.2 708.92,-551.2 708.92,-551.2 702.92,-551.2 696.92,-545.2 696.92,-539.2 696.92,-539.2 696.92,-504.8 696.92,-504.8 696.92,-498.8 702.92,-492.8 708.92,-492.8 708.92,-492.8 954.8,-492.8 954.8,-492.8 960.8,-492.8 966.8,-498.8 966.8,-504.8 966.8,-504.8 966.8,-539.2 966.8,-539.2 966.8,-545.2 960.8,-551.2 954.8,-551.2"/>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-534.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Trading Workspace</text>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-517.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">TradingShell → TradingWorkspaceShellPage</text>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-501" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary | order 0</text>
+<path fill="#1e293b" stroke="#475569" d="M954.78,-551.2C954.78,-551.2 708.9,-551.2 708.9,-551.2 702.9,-551.2 696.9,-545.2 696.9,-539.2 696.9,-539.2 696.9,-504.8 696.9,-504.8 696.9,-498.8 702.9,-492.8 708.9,-492.8 708.9,-492.8 954.78,-492.8 954.78,-492.8 960.78,-492.8 966.78,-498.8 966.78,-504.8 966.78,-504.8 966.78,-539.2 966.78,-539.2 966.78,-545.2 960.78,-551.2 954.78,-551.2"/>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-534.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Trading Workspace</text>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-517.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">TradingShell → TradingWorkspaceShellPage</text>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-501" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary | order 0</text>
 </g>
 <!-- section_1&#45;&gt;screen_TradingShell -->
 <g id="edge3" class="edge">
 <title>section_1&#45;&gt;screen_TradingShell</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M626.63,-518.56C643.31,-518.84 664.77,-519.2 687.5,-519.59"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="687.25,-522.21 694.79,-519.71 687.34,-516.96 687.25,-522.21"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M626.61,-518.56C643.29,-518.84 664.75,-519.2 687.48,-519.59"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="687.23,-522.21 694.77,-519.71 687.32,-516.96 687.23,-522.21"/>
 </g>
 <!-- screen_LiveData -->
 <g id="node6" class="node">
 <title>screen_LiveData</title>
-<path fill="#1e293b" stroke="#475569" d="M922.9,-354.2C922.9,-354.2 740.82,-354.2 740.82,-354.2 734.82,-354.2 728.82,-348.2 728.82,-342.2 728.82,-342.2 728.82,-307.8 728.82,-307.8 728.82,-301.8 734.82,-295.8 740.82,-295.8 740.82,-295.8 922.9,-295.8 922.9,-295.8 928.9,-295.8 934.9,-301.8 934.9,-307.8 934.9,-307.8 934.9,-342.2 934.9,-342.2 934.9,-348.2 928.9,-354.2 922.9,-354.2"/>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-337.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Live data</text>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-320.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">LiveData → LiveDataViewerPage</text>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-304" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary | order 10</text>
+<path fill="#1e293b" stroke="#475569" d="M922.88,-354.2C922.88,-354.2 740.8,-354.2 740.8,-354.2 734.8,-354.2 728.8,-348.2 728.8,-342.2 728.8,-342.2 728.8,-307.8 728.8,-307.8 728.8,-301.8 734.8,-295.8 740.8,-295.8 740.8,-295.8 922.88,-295.8 922.88,-295.8 928.88,-295.8 934.88,-301.8 934.88,-307.8 934.88,-307.8 934.88,-342.2 934.88,-342.2 934.88,-348.2 928.88,-354.2 922.88,-354.2"/>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-337.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Live data</text>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-320.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">LiveData → LiveDataViewerPage</text>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-304" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary | order 10</text>
 </g>
 <!-- section_2&#45;&gt;screen_LiveData -->
 <g id="edge5" class="edge">
 <title>section_2&#45;&gt;screen_LiveData</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M636.36,-358.58C659.74,-354.54 689.85,-349.34 719.35,-344.25"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="719.75,-346.84 726.69,-342.98 718.86,-341.67 719.75,-346.84"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M636.34,-358.58C659.72,-354.54 689.83,-349.34 719.33,-344.25"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="719.73,-346.84 726.67,-342.98 718.84,-341.67 719.73,-346.84"/>
 </g>
 <!-- screen_OrderBook -->
 <g id="node7" class="node">
 <title>screen_OrderBook</title>
-<path fill="#1e293b" stroke="#475569" d="M913.2,-437.2C913.2,-437.2 750.52,-437.2 750.52,-437.2 744.52,-437.2 738.52,-431.2 738.52,-425.2 738.52,-425.2 738.52,-390.8 738.52,-390.8 738.52,-384.8 744.52,-378.8 750.52,-378.8 750.52,-378.8 913.2,-378.8 913.2,-378.8 919.2,-378.8 925.2,-384.8 925.2,-390.8 925.2,-390.8 925.2,-425.2 925.2,-425.2 925.2,-431.2 919.2,-437.2 913.2,-437.2"/>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-420.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Order book</text>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-403.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">OrderBook → OrderBookPage</text>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-387" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary | order 20</text>
+<path fill="#1e293b" stroke="#475569" d="M913.18,-437.2C913.18,-437.2 750.5,-437.2 750.5,-437.2 744.5,-437.2 738.5,-431.2 738.5,-425.2 738.5,-425.2 738.5,-390.8 738.5,-390.8 738.5,-384.8 744.5,-378.8 750.5,-378.8 750.5,-378.8 913.18,-378.8 913.18,-378.8 919.18,-378.8 925.18,-384.8 925.18,-390.8 925.18,-390.8 925.18,-425.2 925.18,-425.2 925.18,-431.2 919.18,-437.2 913.18,-437.2"/>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-420.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Order book</text>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-403.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">OrderBook → OrderBookPage</text>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-387" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary | order 20</text>
 </g>
 <!-- section_2&#45;&gt;screen_OrderBook -->
 <g id="edge6" class="edge">
 <title>section_2&#45;&gt;screen_OrderBook</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M636.36,-373.61C662.39,-378.21 696.75,-384.28 729.34,-390.05"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="728.84,-392.62 736.68,-391.35 729.76,-387.46 728.84,-392.62"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M636.34,-373.61C662.37,-378.21 696.73,-384.28 729.32,-390.05"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="728.82,-392.62 736.66,-391.35 729.73,-387.46 728.82,-392.62"/>
 </g>
 <!-- screen_PositionBlotter -->
 <g id="node9" class="node">
 <title>screen_PositionBlotter</title>
-<path fill="#1e293b" stroke="#475569" d="M935,-74.2C935,-74.2 728.72,-74.2 728.72,-74.2 722.72,-74.2 716.72,-68.2 716.72,-62.2 716.72,-62.2 716.72,-27.8 716.72,-27.8 716.72,-21.8 722.72,-15.8 728.72,-15.8 728.72,-15.8 935,-15.8 935,-15.8 941,-15.8 947,-21.8 947,-27.8 947,-27.8 947,-62.2 947,-62.2 947,-68.2 941,-74.2 935,-74.2"/>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-57.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Position blotter</text>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-40.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">PositionBlotter → PositionBlotterPage</text>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-24" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary | order 30</text>
+<path fill="#1e293b" stroke="#475569" d="M934.98,-74.2C934.98,-74.2 728.7,-74.2 728.7,-74.2 722.7,-74.2 716.7,-68.2 716.7,-62.2 716.7,-62.2 716.7,-27.8 716.7,-27.8 716.7,-21.8 722.7,-15.8 728.7,-15.8 728.7,-15.8 934.98,-15.8 934.98,-15.8 940.98,-15.8 946.98,-21.8 946.98,-27.8 946.98,-27.8 946.98,-62.2 946.98,-62.2 946.98,-68.2 940.98,-74.2 934.98,-74.2"/>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-57.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Position blotter</text>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-40.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">PositionBlotter → PositionBlotterPage</text>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-24" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary | order 30</text>
 </g>
 <!-- section_3&#45;&gt;screen_PositionBlotter -->
 <g id="edge8" class="edge">
 <title>section_3&#45;&gt;screen_PositionBlotter</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M614.64,-147.87C634.44,-129.25 665.55,-102.59 696.92,-86 702.2,-83.21 707.69,-80.58 713.31,-78.11"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="714.07,-80.64 719.95,-75.3 712.02,-75.8 714.07,-80.64"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M614.62,-147.87C634.42,-129.25 665.53,-102.59 696.9,-86 702.18,-83.21 707.67,-80.58 713.29,-78.11"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="714.05,-80.64 719.93,-75.3 712,-75.8 714.05,-80.64"/>
 </g>
 <!-- screen_RunRisk -->
 <g id="node10" class="node">
 <title>screen_RunRisk</title>
-<path fill="#1e293b" stroke="#475569" d="M899.23,-157.2C899.23,-157.2 764.49,-157.2 764.49,-157.2 758.49,-157.2 752.49,-151.2 752.49,-145.2 752.49,-145.2 752.49,-110.8 752.49,-110.8 752.49,-104.8 758.49,-98.8 764.49,-98.8 764.49,-98.8 899.23,-98.8 899.23,-98.8 905.23,-98.8 911.23,-104.8 911.23,-110.8 911.23,-110.8 911.23,-145.2 911.23,-145.2 911.23,-151.2 905.23,-157.2 899.23,-157.2"/>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-140.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Run risk</text>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-123.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">RunRisk → RunRiskPage</text>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-107" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary | order 40</text>
+<path fill="#1e293b" stroke="#475569" d="M899.21,-157.2C899.21,-157.2 764.47,-157.2 764.47,-157.2 758.47,-157.2 752.47,-151.2 752.47,-145.2 752.47,-145.2 752.47,-110.8 752.47,-110.8 752.47,-104.8 758.47,-98.8 764.47,-98.8 764.47,-98.8 899.21,-98.8 899.21,-98.8 905.21,-98.8 911.21,-104.8 911.21,-110.8 911.21,-110.8 911.21,-145.2 911.21,-145.2 911.21,-151.2 905.21,-157.2 899.21,-157.2"/>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-140.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Run risk</text>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-123.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">RunRisk → RunRiskPage</text>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-107" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Primary | order 40</text>
 </g>
 <!-- section_3&#45;&gt;screen_RunRisk -->
 <g id="edge9" class="edge">
 <title>section_3&#45;&gt;screen_RunRisk</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M629.17,-162.82C659.41,-157.6 703.98,-149.9 743.54,-143.07"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="743.68,-145.71 750.63,-141.85 742.79,-140.54 743.68,-145.71"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M629.15,-162.82C659.39,-157.6 703.96,-149.9 743.52,-143.07"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="743.66,-145.71 750.61,-141.85 742.77,-140.54 743.66,-145.71"/>
 </g>
 <!-- screen_TradingHours -->
 <g id="node11" class="node">
 <title>screen_TradingHours</title>
-<path fill="#312e81" stroke="#475569" d="M928.76,-240.2C928.76,-240.2 734.97,-240.2 734.97,-240.2 728.97,-240.2 722.97,-234.2 722.97,-228.2 722.97,-228.2 722.97,-193.8 722.97,-193.8 722.97,-187.8 728.97,-181.8 734.97,-181.8 734.97,-181.8 928.76,-181.8 928.76,-181.8 934.76,-181.8 940.76,-187.8 940.76,-193.8 940.76,-193.8 940.76,-228.2 940.76,-228.2 940.76,-234.2 934.76,-240.2 928.76,-240.2"/>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-223.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Trading hours</text>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-206.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">TradingHours → TradingHoursPage</text>
-<text xml:space="preserve" text-anchor="middle" x="831.86" y="-190" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Secondary | order 50</text>
+<path fill="#312e81" stroke="#475569" d="M928.73,-240.2C928.73,-240.2 734.94,-240.2 734.94,-240.2 728.94,-240.2 722.94,-234.2 722.94,-228.2 722.94,-228.2 722.94,-193.8 722.94,-193.8 722.94,-187.8 728.94,-181.8 734.94,-181.8 734.94,-181.8 928.73,-181.8 928.73,-181.8 934.73,-181.8 940.73,-187.8 940.73,-193.8 940.73,-193.8 940.73,-228.2 940.73,-228.2 940.73,-234.2 934.73,-240.2 928.73,-240.2"/>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-223.6" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Trading hours</text>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-206.8" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">TradingHours → TradingHoursPage</text>
+<text xml:space="preserve" text-anchor="middle" x="831.84" y="-190" font-family="Segoe UI" font-size="14.00" fill="#e2e8f0">Secondary | order 50</text>
 </g>
 <!-- section_3&#45;&gt;screen_TradingHours -->
 <g id="edge10" class="edge">
 <title>section_3&#45;&gt;screen_TradingHours</title>
-<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M629.17,-175.33C651.93,-179.36 682.82,-184.82 713.57,-190.26"/>
-<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="713.03,-192.83 720.88,-191.55 713.95,-187.66 713.03,-192.83"/>
+<path fill="none" stroke="#94a3b8" stroke-width="1.2" d="M629.15,-175.33C651.91,-179.36 682.8,-184.82 713.55,-190.26"/>
+<polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.2" points="713.01,-192.83 720.86,-191.55 713.93,-187.66 713.01,-192.83"/>
 </g>
 </g>
 </svg>
