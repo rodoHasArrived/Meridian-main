@@ -50,6 +50,20 @@ internal static class SecurityEconomicDefinitionAdapter
             ? economic.TypeName
             : economic.LegacyAssetClass;
 
+        if (economic.LegacyAssetSpecificTerms is null
+            && (HasPreferredClassification(economic)
+                || string.Equals(legacyAssetClass, "Equity", StringComparison.OrdinalIgnoreCase)
+                || (string.Equals(economic.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase)
+                    && !string.Equals(legacyAssetClass, "PrivateCompanyEquity", StringComparison.OrdinalIgnoreCase))))
+        {
+            // Structural Common metadata cannot establish the original equity classification, even
+            // when every preferred module is absent. Also refuse incomplete imported equity whose
+            // TypeName/LegacyAssetClass cannot select the known flat Equity family.
+            throw new InvalidOperationException(
+                "Equity economic replay requires retained legacy asset-specific terms; " +
+                "the economic payload cannot reconstruct the complete classification and preferred/convertible terms.");
+        }
+
         // The legacy slot expects the flat v1 asset-specific-terms family. The retained v1 payload is
         // the authoritative copy and is used whenever the record carries it. When only the structured
         // v2 economic-terms document exists — a stored event written without
@@ -57,14 +71,15 @@ internal static class SecurityEconomicDefinitionAdapter
         // upcaster chain so it lands as a v1 payload the guard accepts; putting the raw v2 document
         // here made every read of the row fail with "Unsupported schemaVersion '2'".
         //
-        // That fallback is LOSSY: the flat family is keyed per asset class and the bridge only
-        // carries the maturity/coupon/payment/accrual/discount modules, so call schedules, pool
-        // factors, issuer identity, sweep and fund terms are dropped (see
-        // SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster). The flattened payload is stamped
-        // with FlattenedFromMarkerProperty so a projection rebuilt through this route is
-        // distinguishable from one whose flat terms were always present.
+        // The flat family is keyed per asset class, so the fallback flattens against the record's
+        // asset class: every value the economic document carries (call dates, pool factors, issuer
+        // identity, sweep, fund and financing terms) lands at that class's declared flat key. It is
+        // still lossy for what the economic document never held — an option's strike, a swap's
+        // legs, a bond's subclass (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys)
+        // — so the payload is stamped with FlattenedFromMarkerProperty and a projection rebuilt
+        // through this route stays distinguishable from one whose flat terms were always present.
         var assetSpecificTerms = economic.LegacyAssetSpecificTerms?.Clone()
-            ?? SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms).Payload;
+            ?? SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms, legacyAssetClass).Payload;
         var primaryIdentifier = economic.Identifiers.FirstOrDefault(identifier => identifier.IsPrimary);
 
         return new SecurityProjectionRecord(
@@ -83,6 +98,24 @@ internal static class SecurityEconomicDefinitionAdapter
             economic.EffectiveTo,
             economic.Identifiers,
             aliases ?? Array.Empty<SecurityAliasDto>());
+    }
+
+    private static bool HasPreferredClassification(SecurityEconomicDefinitionRecord economic)
+    {
+        static bool IsPreferredLabel(string? value)
+            => value is not null && (value.Equals("PreferredEquity", StringComparison.OrdinalIgnoreCase)
+                                     || value.Equals("PreferredShare", StringComparison.OrdinalIgnoreCase)
+                                     || value.Equals("Preferred", StringComparison.OrdinalIgnoreCase)
+                                     || value.Equals("ConvertiblePreferred", StringComparison.OrdinalIgnoreCase));
+
+        return IsPreferredLabel(economic.AssetFamily)
+               || IsPreferredLabel(economic.SubType)
+               || IsPreferredLabel(economic.TypeName)
+               || (economic.Classification.ValueKind == JsonValueKind.Object
+                   && economic.Classification.EnumerateObject().Any(property =>
+                       property.Name is "assetFamily" or "subType" or "typeName" or "classification"
+                       && property.Value.ValueKind == JsonValueKind.String
+                       && IsPreferredLabel(property.Value.GetString())));
     }
 
     private static JsonElement BuildClassificationJson(SecurityEconomicDefinition definition)

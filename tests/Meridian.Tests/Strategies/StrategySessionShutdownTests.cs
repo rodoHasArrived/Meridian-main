@@ -26,6 +26,7 @@ public sealed class StrategySessionShutdownTests
 {
     private static readonly TimeSpan WaitBudget = TimeSpan.FromSeconds(10);
     private const string StrategyId = "coordinated-session-stop";
+    private const string SessionActorId = "live-trading-engine";
 
     [Fact]
     public async Task OperatorStop_IdleSession_WakesAndRetainsMetricsBeforeReturningReceipt()
@@ -45,6 +46,8 @@ public sealed class StrategySessionShutdownTests
         fixture.Engine.ActiveRunIds.Should().NotContain(run.RunId);
         var history = await fixture.ReadHistoryAsync(run.RunId);
         history.Select(record => record.EventType).Should().ContainInOrder("StopRequested", "Completed");
+        history.Should().ContainSingle(record => record.EventType == "StopRequested")
+            .Which.ActorId.Should().Be(SessionActorId, "the manager delegates stop intent to the owning session");
         history.Last().TerminalOutcome.Should().BeEquivalentTo(outcome);
     }
 
@@ -86,12 +89,12 @@ public sealed class StrategySessionShutdownTests
         stopped!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
         stopped.EndedAt.Should().NotBeNull();
         stopped.Metrics.Should().NotBeNull();
-        StrategyRunRepositoryOrdering.MapStatus(stopped).Should().BeOneOf(StrategyRunStatus.Stopped, StrategyRunStatus.Completed);
+        StrategyRunRepositoryOrdering.MapStatus(stopped).Should().Be(StrategyRunStatus.Stopped);
         fixture.Manager.GetStatuses()[StrategyId].Should().Be(StrategyStatus.Stopped);
         strategy.FinishedCount.Should().Be(1);
         var history = await fixture.ReadHistoryAsync(run.RunId);
         history.Select(record => record.EventType).Should().ContainInOrder(
-            "Paused", "StartRequested", "Started", "Paused", "StopRequested", "Completed");
+            "Paused", "StartRequested", "Resumed", "Paused", "StopRequested", "Completed");
         history.Should().NotContain(record => record.EventType == "RecoveryAttempted");
     }
 
@@ -127,25 +130,25 @@ public sealed class StrategySessionShutdownTests
     }
 
     [Fact]
-    public async Task OperatorStop_WhenNaturalFinishRetainsStopIntentFirst_JoinsExistingCleanup()
+    public async Task OperatorStop_WhenNaturalFinishIsRetainingStopIntent_JoinsTheSessionWriter()
     {
         var strategy = new GatedStrategy { BlockStop = true };
         await using var fixture = new SessionFixture(_ => strategy);
         var run = fixture.CreateRun();
         var subscription = await fixture.LaunchAsync(run);
-        var staleIntent = fixture.Repository.GateNextStopIntent("strategy-lifecycle-manager");
+        var intent = fixture.Repository.GateNextStopIntent(SessionActorId);
 
-        var operatorStop = fixture.Manager.StopAsync(StrategyId);
-        await staleIntent.Entered.Task.WaitAsync(WaitBudget);
         subscription.TryComplete().Should().BeTrue();
+        await intent.Entered.Task.WaitAsync(WaitBudget);
+        var operatorStop = fixture.Manager.StopAsync(StrategyId);
+        operatorStop.IsCompleted.Should().BeFalse();
+        intent.Release.TrySetResult();
         await strategy.StopEntered.Task.WaitAsync(WaitBudget);
         var stopping = await fixture.ReloadRunAsync(run.RunId);
         stopping!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.StopRequested);
-        stopping.ActorId.Should().Be("live-trading-engine");
+        stopping.ActorId.Should().Be(SessionActorId);
         stopping.EndedAt.Should().BeNull();
 
-        staleIntent.Release.TrySetResult();
-        await fixture.Repository.RejectedStopIntent.Task.WaitAsync(WaitBudget);
         operatorStop.IsCompleted.Should().BeFalse();
         strategy.ReleaseStop.TrySetResult();
         var outcome = await operatorStop.WaitAsync(WaitBudget);
@@ -155,30 +158,32 @@ public sealed class StrategySessionShutdownTests
     }
 
     [Fact]
-    public async Task NaturalFinish_WhenOperatorRetainsStopIntentFirst_JoinsItWithoutRecordingFailure()
+    public async Task NaturalFinish_WhenOperatorStopIsRetainingIntent_UsesTheSameSessionWriter()
     {
         var strategy = new GatedStrategy { BlockStop = true };
         await using var fixture = new SessionFixture(_ => strategy);
         var run = fixture.CreateRun();
         var subscription = await fixture.LaunchAsync(run);
-        var staleIntent = fixture.Repository.GateNextStopIntent("live-trading-engine");
+        var intent = fixture.Repository.GateNextStopIntent(SessionActorId);
 
-        subscription.TryComplete().Should().BeTrue();
-        await staleIntent.Entered.Task.WaitAsync(WaitBudget);
         var operatorStop = fixture.Manager.StopAsync(StrategyId);
-        await fixture.History.StopRequested.Task.WaitAsync(WaitBudget);
+        await intent.Entered.Task.WaitAsync(WaitBudget);
+        subscription.TryComplete().Should().BeTrue();
+        var runStop = fixture.Engine.StopRunWithOutcomeAsync(run.RunId);
+        operatorStop.IsCompleted.Should().BeFalse();
+        runStop.IsCompleted.Should().BeFalse();
+        intent.Release.TrySetResult();
+        await strategy.StopEntered.Task.WaitAsync(WaitBudget);
         var stopping = await fixture.ReloadRunAsync(run.RunId);
         stopping!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.StopRequested);
-        stopping.ActorId.Should().Be("strategy-lifecycle-manager");
+        stopping.ActorId.Should().Be(SessionActorId);
         stopping.EndedAt.Should().BeNull();
 
-        staleIntent.Release.TrySetResult();
-        await fixture.Repository.RejectedStopIntent.Task.WaitAsync(WaitBudget);
-        await strategy.StopEntered.Task.WaitAsync(WaitBudget);
         strategy.ReleaseStop.TrySetResult();
         var outcome = await operatorStop.WaitAsync(WaitBudget);
 
         AssertSuccess(outcome);
+        (await runStop.WaitAsync(WaitBudget)).Should().BeEquivalentTo(outcome);
         await AssertSingleSuccessfulCleanupAsync(fixture, run, strategy);
     }
 
@@ -225,13 +230,17 @@ public sealed class StrategySessionShutdownTests
         await strategy.FillEntered.Task.WaitAsync(WaitBudget);
 
         var stop = fixture.Manager.StopAsync(StrategyId);
-        await fixture.History.StopRequested.Task.WaitAsync(WaitBudget);
+        var runStop = fixture.Engine.StopRunWithOutcomeAsync(run.RunId);
         stop.IsCompleted.Should().BeFalse("the admitted fill callback must finish before final metrics are saved");
+        runStop.IsCompleted.Should().BeFalse();
+        fixture.History.StopRequested.Task.IsCompleted.Should().BeFalse(
+            "the session drains admitted fills before retaining its stop intent and invoking cleanup");
 
         strategy.ReleaseFill.Set();
         var outcome = await stop.WaitAsync(WaitBudget);
 
         AssertSuccess(outcome);
+        (await runStop.WaitAsync(WaitBudget)).Should().BeEquivalentTo(outcome);
         var retained = await fixture.ReloadRunAsync(run.RunId);
         retained!.Metrics!.Metrics.TotalTrades.Should().Be(1);
         retained.Metrics.Fills.Should().ContainSingle(fill => fill.Symbol == "AAPL" && fill.FilledQuantity == 3);
@@ -392,9 +401,12 @@ public sealed class StrategySessionShutdownTests
         strategy.StopCount.Should().Be(1);
         strategy.FinishedCount.Should().Be(1);
         var history = await fixture.ReadHistoryAsync(run.RunId);
-        history.Should().ContainSingle(record => record.EventType == "StopRequested");
+        history.Should().ContainSingle(record => record.EventType == "StopRequested")
+            .Which.ActorId.Should().Be(SessionActorId);
         history.Should().ContainSingle(record => record.EventType == "Completed");
         history.Should().NotContain(record => record.EventType == "Failed" || record.EventType == "StopFailed" || record.EventType == "EvidencePersistenceFailed");
+        fixture.Repository.RejectedStopIntent.Task.IsCompleted.Should().BeFalse(
+            "natural completion and operator stop share a single session-owned intent append");
     }
 
     private sealed class SessionFixture : IAsyncDisposable

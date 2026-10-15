@@ -64,8 +64,13 @@ public sealed class StrategyRunStore : IStrategyRepository
             lock (_lock)
             {
                 var eventType = InferEventType(entry);
+                _runsById.TryGetValue(entry.RunId, out var existing);
                 if (entry.OutputMetadata.Count > 0 &&
-                    eventType != StrategyRunLifecycleEventType.Completed)
+                    eventType != StrategyRunLifecycleEventType.Completed &&
+                    !(existing is { EndedAt: not null } && entry.EndedAt == existing.EndedAt &&
+                      CanonicalDictionaryEquals(existing.OutputMetadata, entry.OutputMetadata) &&
+                      (eventType == StrategyRunLifecycleEventType.RecoveryAttempted ||
+                       IsRetainedTerminalCleanupStep(existing, entry))))
                 {
                     throw new InvalidOperationException(
                         $"Strategy run '{entry.RunId}' lifecycle update is invalid: " +
@@ -620,6 +625,9 @@ public sealed class StrategyRunStore : IStrategyRepository
         }
 
         var succeeded = eventType is StrategyRunLifecycleEventType.Started or
+            StrategyRunLifecycleEventType.Activated or
+            StrategyRunLifecycleEventType.Recovered or
+            StrategyRunLifecycleEventType.Resumed or
             StrategyRunLifecycleEventType.Paused or
             StrategyRunLifecycleEventType.Completed;
         var persistenceFailure = eventType == StrategyRunLifecycleEventType.EvidencePersistenceFailed;
@@ -908,6 +916,9 @@ public sealed class StrategyRunStore : IStrategyRepository
 
     private static bool RequiresTerminalOutcome(StrategyRunLifecycleEventType eventType) =>
         eventType is StrategyRunLifecycleEventType.Started or
+            StrategyRunLifecycleEventType.Activated or
+            StrategyRunLifecycleEventType.Recovered or
+            StrategyRunLifecycleEventType.Resumed or
             StrategyRunLifecycleEventType.Paused or
             StrategyRunLifecycleEventType.Completed or
             StrategyRunLifecycleEventType.StartFailed or
@@ -921,6 +932,9 @@ public sealed class StrategyRunStore : IStrategyRepository
         entry.LastLifecycleEvent switch
         {
             StrategyRunLifecycleEventType.Started or
+            StrategyRunLifecycleEventType.Activated or
+            StrategyRunLifecycleEventType.Recovered or
+            StrategyRunLifecycleEventType.Resumed or
             StrategyRunLifecycleEventType.Paused or
             StrategyRunLifecycleEventType.Completed => OperationTerminalState.Succeeded,
             StrategyRunLifecycleEventType.EvidencePersistenceFailed when entry.TerminalStatus == StrategyRunStatus.Failed =>
@@ -974,6 +988,10 @@ public sealed class StrategyRunStore : IStrategyRepository
         }
 
         if (current.LastLifecycleEvent is (StrategyRunLifecycleEventType.Started or
+                StrategyRunLifecycleEventType.Activated or
+                StrategyRunLifecycleEventType.Recovered or
+                StrategyRunLifecycleEventType.Resumed or
+                StrategyRunLifecycleEventType.Suspended or
                 StrategyRunLifecycleEventType.StartRequested or
                 StrategyRunLifecycleEventType.PauseRequested or
                 StrategyRunLifecycleEventType.Paused or
@@ -987,7 +1005,12 @@ public sealed class StrategyRunStore : IStrategyRepository
         }
 
         if (current.OutputMetadata.Count > 0 &&
-            current.LastLifecycleEvent != StrategyRunLifecycleEventType.Completed)
+            current.LastLifecycleEvent != StrategyRunLifecycleEventType.Completed &&
+            !(previous is { EndedAt: not null } &&
+              current.EndedAt == previous.EndedAt &&
+              CanonicalDictionaryEquals(previous.OutputMetadata, current.OutputMetadata) &&
+              (current.LastLifecycleEvent == StrategyRunLifecycleEventType.RecoveryAttempted ||
+               IsRetainedTerminalCleanupStep(previous, current))))
         {
             return "run output metadata may only be retained with a completed lifecycle event";
         }
@@ -1088,7 +1111,8 @@ public sealed class StrategyRunStore : IStrategyRepository
 
         var reconcilesExternallyStartedRun =
             previous.LastLifecycleEvent == StrategyRunLifecycleEventType.StartFailed &&
-            current.LastLifecycleEvent == StrategyRunLifecycleEventType.Started &&
+            current.LastLifecycleEvent is (StrategyRunLifecycleEventType.Started or
+                StrategyRunLifecycleEventType.Recovered or StrategyRunLifecycleEventType.Resumed) &&
             current.EndedAt is null;
         if (previous.EndedAt is { } previousEndedAt &&
             current.EndedAt != previousEndedAt &&
@@ -1274,6 +1298,10 @@ public sealed class StrategyRunStore : IStrategyRepository
         return previous switch
         {
             StrategyRunLifecycleEventType.StartRequested => current is
+                StrategyRunLifecycleEventType.Suspended or
+                StrategyRunLifecycleEventType.Activated or
+                StrategyRunLifecycleEventType.Recovered or
+                StrategyRunLifecycleEventType.Resumed or
                 StrategyRunLifecycleEventType.Started or
                 StrategyRunLifecycleEventType.StartFailed or
                 StrategyRunLifecycleEventType.Failed or
@@ -1283,6 +1311,7 @@ public sealed class StrategyRunStore : IStrategyRepository
                 StrategyRunLifecycleEventType.ActivationDeferred,
             StrategyRunLifecycleEventType.Started => current is
                 StrategyRunLifecycleEventType.StartRequested or
+                StrategyRunLifecycleEventType.Activated or
                 StrategyRunLifecycleEventType.StartFailed or
                 StrategyRunLifecycleEventType.PauseRequested or
                 StrategyRunLifecycleEventType.Paused or
@@ -1296,6 +1325,7 @@ public sealed class StrategyRunStore : IStrategyRepository
                 StrategyRunLifecycleEventType.ActivationDeferred,
             StrategyRunLifecycleEventType.Paused => current is
                 StrategyRunLifecycleEventType.StartRequested or
+                StrategyRunLifecycleEventType.ActivationDeferred or
                 StrategyRunLifecycleEventType.PauseRequested or
                 StrategyRunLifecycleEventType.PauseFailed or
                 StrategyRunLifecycleEventType.StopRequested or
@@ -1330,6 +1360,9 @@ public sealed class StrategyRunStore : IStrategyRepository
                 StrategyRunLifecycleEventType.Cancelled or
                 StrategyRunLifecycleEventType.RecoveryAttempted,
             StrategyRunLifecycleEventType.EvidencePersistenceFailed => current is
+                StrategyRunLifecycleEventType.Activated or
+                StrategyRunLifecycleEventType.Recovered or
+                StrategyRunLifecycleEventType.Resumed or
                 StrategyRunLifecycleEventType.Started or
                 StrategyRunLifecycleEventType.Paused or
                 StrategyRunLifecycleEventType.Completed or
@@ -1337,6 +1370,8 @@ public sealed class StrategyRunStore : IStrategyRepository
                 StrategyRunLifecycleEventType.Cancelled or
                 StrategyRunLifecycleEventType.StopRequested,
             StrategyRunLifecycleEventType.StartFailed => current is
+                StrategyRunLifecycleEventType.Recovered or
+                StrategyRunLifecycleEventType.Resumed or
                 StrategyRunLifecycleEventType.Started or
                 StrategyRunLifecycleEventType.StopRequested or
                 StrategyRunLifecycleEventType.RecoveryAttempted,
@@ -1348,6 +1383,30 @@ public sealed class StrategyRunStore : IStrategyRepository
                 StrategyRunLifecycleEventType.RecoveryAttempted,
             StrategyRunLifecycleEventType.Completed =>
                 current == StrategyRunLifecycleEventType.RecoveryAttempted,
+            StrategyRunLifecycleEventType.Activated or
+            StrategyRunLifecycleEventType.Recovered or
+            StrategyRunLifecycleEventType.Resumed => current is
+                StrategyRunLifecycleEventType.StartRequested or
+                StrategyRunLifecycleEventType.Recovered or
+                StrategyRunLifecycleEventType.Suspended or
+                StrategyRunLifecycleEventType.EvidencePersistenceFailed or
+                StrategyRunLifecycleEventType.PauseRequested or
+                StrategyRunLifecycleEventType.Paused or
+                StrategyRunLifecycleEventType.PauseFailed or
+                StrategyRunLifecycleEventType.StopRequested or
+                StrategyRunLifecycleEventType.Completed or
+                StrategyRunLifecycleEventType.Failed or
+                StrategyRunLifecycleEventType.Cancelled or
+                StrategyRunLifecycleEventType.RecoveryAttempted or
+                StrategyRunLifecycleEventType.ActivationDeferred,
+            StrategyRunLifecycleEventType.Suspended => current is
+                StrategyRunLifecycleEventType.StartRequested or
+                StrategyRunLifecycleEventType.EvidencePersistenceFailed or
+                StrategyRunLifecycleEventType.Recovered or
+                StrategyRunLifecycleEventType.ActivationDeferred or
+                StrategyRunLifecycleEventType.StopRequested or
+                StrategyRunLifecycleEventType.Failed or
+                StrategyRunLifecycleEventType.Cancelled,
             StrategyRunLifecycleEventType.RecoveryAttempted => false,
 
             // A deferred run is retained intact and re-attempted -- the engine's startup resume
@@ -1357,6 +1416,8 @@ public sealed class StrategyRunStore : IStrategyRepository
             // waiting for the same missing source (#2726).
             StrategyRunLifecycleEventType.ActivationDeferred => current is
                 StrategyRunLifecycleEventType.StartRequested or
+                StrategyRunLifecycleEventType.Activated or
+                StrategyRunLifecycleEventType.Recovered or
                 StrategyRunLifecycleEventType.Started or
                 StrategyRunLifecycleEventType.ActivationDeferred or
                 StrategyRunLifecycleEventType.StartFailed or
@@ -1387,6 +1448,10 @@ public sealed class StrategyRunStore : IStrategyRepository
     {
         StrategyRunLifecycleEventType.StartRequested => "Strategy start requested.",
         StrategyRunLifecycleEventType.Started => "Strategy run started.",
+        StrategyRunLifecycleEventType.Activated => "Promoted strategy run activated.",
+        StrategyRunLifecycleEventType.Recovered => "Strategy execution recovered.",
+        StrategyRunLifecycleEventType.Resumed => "Paused strategy resumed.",
+        StrategyRunLifecycleEventType.Suspended => "Host stopped; strategy execution awaits recovery.",
         StrategyRunLifecycleEventType.StartFailed => "Strategy start failed.",
         StrategyRunLifecycleEventType.PauseRequested => "Strategy pause requested.",
         StrategyRunLifecycleEventType.Paused => "Strategy run paused.",

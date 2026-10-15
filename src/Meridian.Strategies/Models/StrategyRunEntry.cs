@@ -385,6 +385,39 @@ public sealed record StrategyRunEntry(
         };
     }
 
+    /// <summary>Marks the first execution session of a retained promoted run.</summary>
+    public StrategyRunEntry Activated(string actorId = "system", string? reason = null) =>
+        Started(actorId, reason ?? "Promoted run activated.") with
+        {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Activated,
+            TerminalStatus = null
+        };
+
+    /// <summary>Marks execution recovered after interruption without replacing the run inputs.</summary>
+    public StrategyRunEntry Recovered(string actorId = "system", string? reason = null) =>
+        Activated(actorId, reason ?? "Strategy execution recovered.") with
+        {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Recovered
+        };
+
+    /// <summary>Clears paused control state after an explicit operator resume.</summary>
+    public StrategyRunEntry Resumed(string actorId = "system", string? reason = null) =>
+        Activated(actorId, reason ?? "Paused strategy resumed.") with
+        {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Resumed
+        };
+
+    /// <summary>Retains an unfinished run across orderly engine shutdown.</summary>
+    public StrategyRunEntry Suspended(string actorId = "system", string? reason = null) =>
+        this with
+        {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Suspended,
+            LifecycleFacts = [],
+            LifecycleEventAtUtc = DateTimeOffset.UtcNow,
+            ActorId = actorId,
+            Reason = reason ?? "Host stopped; execution awaits recovery."
+        };
+
     public StrategyRunEntry PauseRequested(string actorId = "system", string? reason = null)
     {
         var now = DateTimeOffset.UtcNow;

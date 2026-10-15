@@ -25,6 +25,7 @@ public sealed class PromotionService
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly BrokerageConfiguration? _brokerageConfiguration;
     private readonly IPromotedRunLauncher? _runLauncher;
+    private readonly IPromotionTrustEvidenceProvider? _trustEvidenceProvider;
 
     public PromotionService(
         IStrategyRepository repository,
@@ -34,7 +35,8 @@ public sealed class PromotionService
         ExecutionOperatorControlService? operatorControls = null,
         ExecutionAuditTrailService? auditTrail = null,
         BrokerageConfiguration? brokerageConfiguration = null,
-        IPromotedRunLauncher? runLauncher = null)
+        IPromotedRunLauncher? runLauncher = null,
+        IPromotionTrustEvidenceProvider? trustEvidenceProvider = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _promoter = promoter ?? throw new ArgumentNullException(nameof(promoter));
@@ -44,6 +46,7 @@ public sealed class PromotionService
         _auditTrail = auditTrail;
         _brokerageConfiguration = brokerageConfiguration;
         _runLauncher = runLauncher;
+        _trustEvidenceProvider = trustEvidenceProvider;
     }
 
     /// <summary>
@@ -107,6 +110,20 @@ public sealed class PromotionService
         var effectiveCriteria = criteria ?? PromotionCriteria.Default;
         var metrics = run.Metrics.Metrics;
         var targetMode = run.RunType == RunType.Backtest ? RunType.Paper : RunType.Live;
+        var trustEvidence = targetMode == RunType.Live && _trustEvidenceProvider is not null
+            ? await _trustEvidenceProvider.GetEvidenceAsync(run, ct).ConfigureAwait(false)
+            : null;
+        var hasBoundTrustEvidence = trustEvidence is not null &&
+            string.Equals(trustEvidence.RunId, run.RunId, StringComparison.Ordinal) &&
+            !string.IsNullOrWhiteSpace(run.InputHashSha256) &&
+            string.Equals(trustEvidence.InputHashSha256, run.InputHashSha256, StringComparison.Ordinal) &&
+            !string.IsNullOrWhiteSpace(trustEvidence.SourceReference);
+        var evaluatedAt = DateTimeOffset.UtcNow;
+        var hasFreshTrustEvidence = hasBoundTrustEvidence &&
+            trustEvidence!.ObservedAt != default &&
+            trustEvidence.ObservedAt <= evaluatedAt &&
+            trustEvidence.ValidUntil > trustEvidence.ObservedAt &&
+            trustEvidence.ValidUntil > evaluatedAt;
         var controlsSnapshot = _operatorControls?.GetSnapshot();
         var brokerageValidation = targetMode == RunType.Live
             ? BrokerageValidationEvaluator.Evaluate(_brokerageConfiguration)
@@ -149,8 +166,8 @@ public sealed class PromotionService
             effectiveCriteria.MaxAllowedDrawdownPercent,
             effectiveCriteria.MinTotalReturn,
             targetMode == RunType.Live,
-            controlsSnapshot is not null || targetMode != RunType.Live,
-            controlsSnapshot is not null || targetMode != RunType.Live,
+            targetMode != RunType.Live || (hasBoundTrustEvidence && trustEvidence!.IsComplete),
+            targetMode != RunType.Live || hasFreshTrustEvidence,
             _brokerageConfiguration?.LiveExecutionEnabled ?? false,
             controlsSnapshot?.CircuitBreaker.IsOpen ?? false,
             hasConflictingOverride,
@@ -650,6 +667,31 @@ public sealed class PromotionService
                     : CreateDurableApprovalCompletionFailure(promotionRecord, retainedTargetError);
             }
 
+            if (promotionRecord.TargetRunType == RunType.Live)
+            {
+                var sourceScope = StrategyRunRepositoryVisibility.TryGetRetainedScope(sourceRun, out var retainedScope)
+                    ? new StrategyRunReadScope(retainedScope.TenantId, retainedScope.CompanyId)
+                    : null;
+                var currentEvaluation = await EvaluateCoreAsync(
+                    sourceRun.RunId, criteria: null, scope: sourceScope, ct: CancellationToken.None).ConfigureAwait(false);
+                if (!currentEvaluation.IsEligible)
+                {
+                    return CreateDurableApprovalCompletionFailure(
+                        promotionRecord,
+                        "The retained approval cannot create a live target until current policy gates pass: " +
+                        (currentEvaluation.BlockingReasons?.FirstOrDefault() ?? currentEvaluation.Reason));
+                }
+
+                var retainedApprovalControl = _operatorControls?.EvaluateLivePromotion(
+                    sourceRun.RunId, sourceRun.StrategyId, promotionRecord.ManualOverrideId);
+                if (retainedApprovalControl?.IsAllowed != true)
+                {
+                    return CreateDurableApprovalCompletionFailure(
+                        promotionRecord,
+                        retainedApprovalControl?.RejectReason ?? "Execution operator controls are unavailable for the retained approval.");
+                }
+            }
+
             // Once the decision is durable, complete its governance and target materialization
             // non-cancellably. Cancellation cannot be allowed to strand an approved decision after
             // commit while exposing an unaudited or request-owned target id.
@@ -764,6 +806,7 @@ public sealed class PromotionService
             AuditReference: promotionRecord.AuditReference,
             Engine: promotionRecord.TargetRunType == RunType.Paper ? "BrokerPaper" : "BrokerLive",
             ParameterSet: sourceRun.ParameterSet,
+            RetainedEvidenceReferences: sourceRun.RetainedEvidenceReferences,
             ParentRunId: sourceRun.RunId,
             FundProfileId: sourceRun.FundProfileId,
             FundDisplayName: sourceRun.FundDisplayName);
@@ -1128,10 +1171,8 @@ public sealed class PromotionService
 
     private static bool HasSuccessfulRetainedCompletion(StrategyRunEntry run) =>
         run.EndedAt.HasValue &&
-        StrategyRunRepositoryOrdering.MapStatus(run) is (StrategyRunStatus.Completed or StrategyRunStatus.Stopped) &&
-        // Older completed snapshots used Started with an end timestamp. Keep those compatible;
-        // failed cleanup and unconfirmed final evidence are never successful promotion inputs.
-        run.LastLifecycleEvent is (StrategyRunLifecycleEventType.Started or StrategyRunLifecycleEventType.Completed);
+        run.LastLifecycleEvent == StrategyRunLifecycleEventType.Completed &&
+        run.TerminalStatus is null or StrategyRunStatus.Completed or StrategyRunStatus.Stopped;
 
     private async Task<PromotionDecisionResult> RejectSingleDecisionAsync(
         PromotionRejectionRequest request,

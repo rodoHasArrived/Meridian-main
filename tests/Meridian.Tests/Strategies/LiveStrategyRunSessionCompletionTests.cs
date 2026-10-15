@@ -43,6 +43,16 @@ public sealed class LiveStrategyRunSessionCompletionTests
         var invalidMetrics = result.Metrics with { SharpeRatio = double.NaN };
         var serializeOtherNonfiniteMetric = () => JsonSerializer.Serialize(invalidMetrics);
         serializeOtherNonfiniteMetric.Should().Throw<ArgumentException>("named-value support is scoped to XIRR");
+
+        var retained = (await fixture.ReloadAsync())!;
+        var historyCount = history.Count;
+        var persistOtherNonfiniteMetric = () => fixture.Repository.RecordRunAsync(retained with
+        {
+            Metrics = result with { Metrics = invalidMetrics }
+        });
+        await persistOtherNonfiniteMetric.Should().ThrowAsync<ArgumentException>(
+            "the durable source-generated serializer must also reject nonfinite metrics other than XIRR");
+        (await fixture.ReadHistoryAsync()).Should().HaveCount(historyCount);
     }
 
     [Theory]
@@ -225,6 +235,156 @@ public sealed class LiveStrategyRunSessionCompletionTests
     }
 
     [Fact]
+    public async Task HostStopAfterActivation_RetainsSuspensionWithoutCompletingRun()
+    {
+        using var fixture = new SessionFixture(new CleanupStrategy());
+        fixture.Strategy.OnTradeAction = () => fixture.Session.RequestStop(completeRun: false);
+
+        var outcome = await fixture.Session.ExecuteAsync(CancellationToken.None);
+
+        outcome.Should().BeNull();
+        var retained = await fixture.ReloadAsync();
+        retained!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Suspended);
+        retained.EndedAt.Should().BeNull("host shutdown keeps the run available for recovery");
+        retained.TerminalStatus.Should().BeNull();
+        retained.Metrics.Should().BeNull();
+        retained.ExceptionMessage.Should().BeNull();
+        retained.Reason.Should().Be("Host stopped; execution awaits recovery.");
+        retained.LifecycleFacts.Should().BeEmpty("stopping the strategy instance does not complete the retained run");
+        var history = await fixture.ReadHistoryAsync();
+        history.Select(record => record.EventType).Should().Equal(
+            "StartRequested", "Activated", "Suspended");
+        history.Last().TerminalOutcome.Should().BeNull();
+        fixture.Strategy.DayEndCalls.Should().Be(1);
+        fixture.Strategy.FinishedCalls.Should().Be(1);
+        fixture.Strategy.StopCalls.Should().Be(1);
+        fixture.Strategy.Status.Should().Be(StrategyStatus.Stopped);
+    }
+
+    [Fact]
+    public async Task SuspensionPersistenceFailure_RetainsVerifiedWarningWithoutRepeatingCleanup()
+    {
+        using var fixture = new SessionFixture(new CleanupStrategy(), suspensionFailures: 1);
+        fixture.Strategy.OnTradeAction = () => fixture.Session.RequestStop(completeRun: false);
+
+        var outcome = await fixture.Session.ExecuteAsync(CancellationToken.None);
+
+        outcome!.State.Should().Be(OperationTerminalState.CompletedWithWarnings);
+        VerifiedOperationOutcomeValidator.Validate(outcome).Should().BeEmpty();
+        var retained = await fixture.ReloadAsync();
+        retained!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.EvidencePersistenceFailed);
+        retained.ExceptionMessage.Should().Contain("suspension persistence failed");
+        retained.Reason.Should().Be("Session cleanup completed, but its shutdown evidence append failed.");
+        retained.EndedAt.Should().BeNull();
+        retained.TerminalStatus.Should().BeNull();
+        var history = await fixture.ReadHistoryAsync();
+        history.Select(record => record.EventType).Should().Equal(
+            "StartRequested", "Activated", "EvidencePersistenceFailed");
+        history.Last().TerminalOutcome!.OperationId.Should().Be(outcome.OperationId);
+        history.Last().TerminalOutcome!.State.Should().Be(outcome.State);
+        fixture.Strategy.DayEndCalls.Should().Be(1);
+        fixture.Strategy.FinishedCalls.Should().Be(1);
+        fixture.Strategy.StopCalls.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task CommittedSuspensionWithLostResponse_VerifiesOpenRunWithoutWarningOrDuplicateWrite()
+    {
+        using var fixture = new SessionFixture(new CleanupStrategy(), suspensionFailures: 1,
+            commitSuspensionBeforeThrow: true);
+        fixture.Strategy.OnTradeAction = () => fixture.Session.RequestStop(completeRun: false);
+
+        var outcome = await fixture.Session.ExecuteAsync(CancellationToken.None);
+
+        outcome.Should().BeNull();
+        var retained = await fixture.ReloadAsync();
+        retained!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Suspended);
+        retained.EndedAt.Should().BeNull();
+        retained.TerminalStatus.Should().BeNull();
+        retained.ExceptionMessage.Should().BeNull();
+        var history = await fixture.ReadHistoryAsync();
+        history.Select(record => record.EventType).Should().Equal(
+            "StartRequested", "Activated", "Suspended");
+        history.Last().TerminalOutcome.Should().BeNull();
+        fixture.Strategy.DayEndCalls.Should().Be(1);
+        fixture.Strategy.FinishedCalls.Should().Be(1);
+        fixture.Strategy.StopCalls.Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData("read", false)]
+    [InlineData("suspension append", false)]
+    [InlineData("suspension append", true)]
+    public async Task OperatorStopJoiningHostFinalization_RetainsMetricsAndPriorPersistenceFailure(
+        string blockedStage, bool failSuspension)
+    {
+        var finalizationGate = new FinalizationGate(blockedStage);
+        using var fixture = new SessionFixture(new CleanupStrategy(), suspensionFailures: failSuspension ? 1 : 0,
+            finalizationGate: finalizationGate);
+        fixture.Strategy.OnTradeAction = () => fixture.Session.RequestStop(completeRun: false);
+
+        var execution = fixture.Session.ExecuteAsync(CancellationToken.None);
+        try
+        {
+            await finalizationGate.Reached.WaitAsync(TimeSpan.FromSeconds(10));
+            fixture.Strategy.StopCalls.Should().Be(1, "the operator stop arrives after instance cleanup");
+            (await fixture.ReloadAsync())!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Activated);
+            fixture.Session.RequestCompletion();
+            fixture.Session.RequestStop(completeRun: true);
+        }
+        finally
+        {
+            finalizationGate.Release();
+        }
+
+        var outcome = await execution.WaitAsync(TimeSpan.FromSeconds(10));
+        if (failSuspension)
+        {
+            outcome!.State.Should().Be(OperationTerminalState.CompletedWithWarnings);
+            fixture.Session.RequiresOperatorCompletion.Should().BeTrue(
+                "a suspension warning does not complete the admitted operator stop");
+            var warning = await fixture.ReloadAsync();
+            warning!.ExceptionMessage.Should().Contain("suspension persistence failed");
+            warning.EndedAt.Should().BeNull();
+        }
+
+        // Match the engine's coordinated stop join after report draining and user cleanup.
+        if (outcome is null || fixture.Session.RequiresOperatorCompletion)
+            outcome = await fixture.Session.CompleteSuspendedRunAsync().WaitAsync(TimeSpan.FromSeconds(10));
+
+        outcome!.State.Should().Be(failSuspension
+            ? OperationTerminalState.CompletedWithWarnings
+            : OperationTerminalState.Succeeded);
+        VerifiedOperationOutcomeValidator.Validate(outcome).Should().BeEmpty();
+        var retained = await fixture.ReloadAsync();
+        retained!.LastLifecycleEvent.Should().Be(failSuspension
+            ? StrategyRunLifecycleEventType.EvidencePersistenceFailed
+            : StrategyRunLifecycleEventType.Completed);
+        retained.TerminalStatus.Should().Be(StrategyRunStatus.Stopped);
+        retained.EndedAt.Should().NotBeNull();
+        retained.Metrics.Should().NotBeNull("operator completion must finalize metrics even after host cleanup began");
+        retained.Metrics!.TotalEventsProcessed.Should().Be(1);
+        if (failSuspension)
+        {
+            retained.ExceptionMessage.Should().Contain("suspension persistence failed");
+            retained.Reason.Should().Be("Operator completion retained metrics after a failed host-suspension evidence append.");
+        }
+        else
+        {
+            retained.ExceptionMessage.Should().BeNull();
+        }
+
+        var history = await fixture.ReadHistoryAsync();
+        history.Count(record => record.EventType == "Completed").Should().Be(failSuspension ? 0 : 1);
+        history.Count(record => record.EventType == "EvidencePersistenceFailed").Should().Be(failSuspension ? 2 : 0);
+        history.Last().TerminalOutcome!.OperationId.Should().Be(outcome.OperationId);
+        history.Last().TerminalOutcome!.State.Should().Be(outcome.State);
+        fixture.Strategy.DayEndCalls.Should().Be(1);
+        fixture.Strategy.FinishedCalls.Should().Be(1);
+        fixture.Strategy.StopCalls.Should().Be(1);
+    }
+
+    [Fact]
     public async Task HostStopBeforeStartup_LeavesRunOpenWithoutInvokingUnstartedCleanup()
     {
         using var fixture = new SessionFixture(new CleanupStrategy());
@@ -249,12 +409,14 @@ public sealed class LiveStrategyRunSessionCompletionTests
         public IStrategyRepository Repository { get; }
 
         public SessionFixture(CleanupStrategy strategy, int terminalFailures = 0, bool commitBeforeThrow = false,
-            bool commitWarningBeforeThrow = false, bool concurrentStopIntent = false)
+            bool commitWarningBeforeThrow = false, bool concurrentStopIntent = false, int suspensionFailures = 0,
+            bool commitSuspensionBeforeThrow = false, FinalizationGate? finalizationGate = null)
         {
             Strategy = strategy;
             _history = new FileOperationalCaseHistoryStore(_dataRoot);
             var repository = new FailingTerminalRepository(new StrategyRunStore(_history), terminalFailures, commitBeforeThrow,
-                commitWarningBeforeThrow, concurrentStopIntent);
+                commitWarningBeforeThrow, concurrentStopIntent, suspensionFailures, commitSuspensionBeforeThrow,
+                finalizationGate, () => strategy.Status == StrategyStatus.Stopped);
             Repository = repository;
             var gateway = new Mock<IOrderGateway>();
             gateway.SetupGet(item => item.BrokerName).Returns("Paper");
@@ -337,20 +499,55 @@ public sealed class LiveStrategyRunSessionCompletionTests
         }
     }
 
+    private sealed class FinalizationGate(string stage)
+    {
+        private readonly TaskCompletionSource _reached = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _released = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _blocked;
+
+        public Task Reached => _reached.Task;
+
+        public void Release() => _released.TrySetResult();
+
+        public async Task WaitAsync(string currentStage)
+        {
+            if (stage != currentStage || Interlocked.Exchange(ref _blocked, 1) != 0)
+                return;
+
+            _reached.TrySetResult();
+            await _released.Task;
+        }
+    }
+
     private sealed class FailingTerminalRepository(
         StrategyRunStore inner,
         int terminalFailures,
         bool commitBeforeThrow,
         bool commitWarningBeforeThrow,
-        bool concurrentStopIntent) : IStrategyRepository
+        bool concurrentStopIntent,
+        int suspensionFailures,
+        bool commitSuspensionBeforeThrow,
+        FinalizationGate? finalizationGate,
+        Func<bool> cleanupFinished) : IStrategyRepository
     {
         private int _failuresRemaining = terminalFailures;
+        private int _suspensionFailuresRemaining = suspensionFailures;
 
         public Task RecordRunAsync(StrategyRunEntry entry, CancellationToken ct = default) => inner.RecordRunAsync(entry, ct);
 
         public async Task RecordLifecycleEventAsync(StrategyRunEntry entry, StrategyRunLifecycleEventType eventType,
             CancellationToken ct = default)
         {
+            if (eventType == StrategyRunLifecycleEventType.Suspended && finalizationGate is not null)
+                await finalizationGate.WaitAsync("suspension append");
+
+            if (eventType == StrategyRunLifecycleEventType.Suspended && _suspensionFailuresRemaining-- > 0)
+            {
+                if (commitSuspensionBeforeThrow)
+                    await inner.RecordLifecycleEventAsync(entry, eventType, ct);
+                throw new IOException("suspension persistence failed");
+            }
+
             if (concurrentStopIntent && eventType == StrategyRunLifecycleEventType.StopRequested)
             {
                 // Model the operator committing intent between the session's read and append.
@@ -373,7 +570,14 @@ public sealed class LiveStrategyRunSessionCompletionTests
             return await ((IStrategyRepository)inner).RecordLifecycleEventWithOutcomeAsync(entry, eventType, ct);
         }
 
-        public Task<StrategyRunEntry?> GetRunByIdAsync(string runId, CancellationToken ct = default) => inner.GetRunByIdAsync(runId, ct);
+        public async Task<StrategyRunEntry?> GetRunByIdAsync(string runId, CancellationToken ct = default)
+        {
+            var retained = await inner.GetRunByIdAsync(runId, ct);
+            if (retained?.LastLifecycleEvent == StrategyRunLifecycleEventType.Activated && cleanupFinished() && finalizationGate is not null)
+                await finalizationGate.WaitAsync("read");
+            return retained;
+        }
+
         public Task<StrategyRunEntry?> GetLatestRunAsync(string strategyId, CancellationToken ct = default) => inner.GetLatestRunAsync(strategyId, ct);
         public IAsyncEnumerable<StrategyRunEntry> GetRunsAsync(string strategyId, CancellationToken ct = default) => inner.GetRunsAsync(strategyId, ct);
         public IAsyncEnumerable<StrategyRunEntry> GetAllRunsAsync(CancellationToken ct = default) => inner.GetAllRunsAsync(ct);

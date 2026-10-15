@@ -90,7 +90,13 @@ public static class StrategyLifecycleFactMapping
     {
         "strategy-start-requested" or "strategy-restart-requested" or "strategy-resume-requested" or
             "strategy-warmup-entered" => [StrategyRunLifecycleEventType.StartRequested],
-        "strategy-warmup-completed" or "strategy-running-entered" => [StrategyRunLifecycleEventType.Started],
+        "strategy-warmup-completed" or "strategy-running-entered" =>
+        [
+            StrategyRunLifecycleEventType.Started,
+            StrategyRunLifecycleEventType.Activated,
+            StrategyRunLifecycleEventType.Recovered,
+            StrategyRunLifecycleEventType.Resumed
+        ],
         "strategy-paused" => [StrategyRunLifecycleEventType.Paused],
         "strategy-stop-requested" or "strategy-stopping-entered" => [StrategyRunLifecycleEventType.StopRequested],
         "strategy-stopped" => [StrategyRunLifecycleEventType.Completed],

@@ -155,6 +155,7 @@ public sealed class LiveTradingEngineTests
     [Theory]
     [InlineData(false, null)]
     [InlineData(false, StrategyRunStatus.Running)]
+    [InlineData(false, StrategyRunStatus.Pending)]
     [InlineData(true, null)]
     public async Task StopBeforeActivation_CancelsStartupWithoutInvokingCleanup(bool operatorStop, StrategyRunStatus? retainedStatus)
     {
@@ -207,14 +208,7 @@ public sealed class LiveTradingEngineTests
             var resumedFeed = new LiveMarketEventHub();
             await using var resumedEngine = CreateEngine(new StrategyRunStore(history.Store), resumedFeed,
                 new LiveMarketDataCache(), new RecordingOrderManager(50m), resumedCatalog);
-            if (retainedStatus is null)
-            {
-                (await resumedEngine.ResumePendingRunsAsync()).Should().Be(1);
-            }
-            else
-            {
-                (await resumedEngine.TryLaunchAsync(recorded)).Launched.Should().BeTrue();
-            }
+            (await resumedEngine.ResumePendingRunsAsync()).Should().Be(1);
             await WaitUntilAsync(() => resumedFeed.ActiveSubscriptionCount == 1 || !resumedEngine.ActiveRunIds.Contains(run.RunId));
             var resumed = await new StrategyRunStore(history.Store).GetRunByIdAsync(run.RunId);
             resumed!.ExceptionMessage.Should().BeNull();
@@ -231,12 +225,14 @@ public sealed class LiveTradingEngineTests
         strategy.StopCalls.Should().Be(0);
     }
 
-    [Fact]
-    public async Task EngineShutdown_CancellingPartialStartup_RetainsCleanupFailure()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EngineShutdown_CancellingPartialStartup_RetainsCleanupOutcome(bool cleanupFails)
     {
         using var history = new RunHistoryFixture();
         var repository = new StrategyRunStore(history.Store);
-        var strategy = new CancellingWarmupLiveStrategy();
+        var strategy = new CancellingWarmupLiveStrategy(cleanupFails);
         var catalog = new LiveStrategyCatalog().Register(strategy.StrategyId, _ => strategy);
         await using var engine = CreateEngine(repository, new LiveMarketEventHub(),
             new LiveMarketDataCache(), new RecordingOrderManager(50m), catalog);
@@ -248,10 +244,39 @@ public sealed class LiveTradingEngineTests
         await engine.DisposeAsync().AsTask().WaitAsync(WaitBudget);
 
         var retained = await new StrategyRunStore(history.Store).GetRunByIdAsync(run.RunId);
-        retained!.TerminalStatus.Should().Be(StrategyRunStatus.Failed);
-        retained.ExceptionMessage.Should().Contain("partial startup cleanup failed");
-        strategy.Status.Should().Be(StrategyStatus.Faulted);
         strategy.StopCalls.Should().Be(1);
+        var events = await history.Store.ReadAsync(new OperationalCaseHistoryQuery
+        {
+            CaseId = $"strategy-run:{run.RunId}"
+        });
+        events.Should().NotContain(record => record.EventType == "EvidencePersistenceFailed",
+            "cancelling warmup must retain its actual cleanup outcome without a fabricated persistence failure");
+        if (cleanupFails)
+        {
+            retained!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Failed);
+            retained.TerminalStatus.Should().Be(StrategyRunStatus.Failed);
+            retained.EndedAt.Should().NotBeNull();
+            retained.ExceptionMessage.Should().Contain("partial startup cleanup failed");
+            strategy.Status.Should().Be(StrategyStatus.Faulted);
+            return;
+        }
+
+        retained!.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Suspended);
+        retained.TerminalStatus.Should().BeNull();
+        retained.EndedAt.Should().BeNull();
+        retained.ExceptionMessage.Should().BeNull();
+        strategy.Status.Should().Be(StrategyStatus.Stopped);
+        events.Select(record => record.EventType).Should().ContainInOrder("StartRequested", "Suspended");
+
+        var resumedStore = new StrategyRunStore(history.Store);
+        var resumedStrategy = new BuyAndHoldLiveStrategy(strategy.StrategyId);
+        await using var resumedEngine = CreateEngine(resumedStore, new LiveMarketEventHub(),
+            new LiveMarketDataCache(), new RecordingOrderManager(50m),
+            new LiveStrategyCatalog().Register(strategy.StrategyId, _ => resumedStrategy));
+        (await resumedEngine.ResumePendingRunsAsync()).Should().Be(1);
+        await WaitForLifecycleAsync(resumedStore, run.RunId, StrategyRunLifecycleEventType.Recovered);
+        (await resumedStore.GetRunByIdAsync(run.RunId))!.ParameterSet.Should().BeEquivalentTo(run.ParameterSet);
+        (await resumedEngine.StopRunWithOutcomeAsync(run.RunId))!.State.Should().Be(OperationTerminalState.Succeeded);
     }
 
     [Fact]
@@ -664,6 +689,373 @@ public sealed class LiveTradingEngineTests
     // ---- Promotion integration ----
 
     [Fact]
+    public async Task DurablePromotion_ActivatesShutsDownAndRecoversWithoutDuplicateStart()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-live-lifecycle", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var hub = new LiveMarketEventHub();
+            var cache = new LiveMarketDataCache();
+            var orders = new RecordingOrderManager(100m);
+            var source = StrategyRunEntry.StartWithEvidence(
+                BuyAndHoldLiveStrategy.CatalogId, "Buy and hold", RunType.Backtest, "durable-promotion-source",
+                engine: "MeridianNative",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "AAPL", ["quantity"] = "7" },
+                retainedEvidenceReferences: [CanonicalPromotionVaultReference]).Complete(BuildPassingResult());
+            await store.RecordRunAsync(source);
+            string promotedId;
+            await using (var engine = CreateEngine(store, hub, cache, orders))
+            {
+                var service = new PromotionService(store, new BacktestToLivePromoter(),
+                    new InMemoryPromotionRecordStore(), NullLogger<PromotionService>.Instance, runLauncher: engine);
+                var checklist = PromotionApprovalChecklist.CreateRequiredFor(RunType.Paper);
+                var result = await service.ApproveAsync(new PromotionApprovalRequest(source.RunId,
+                    ApprovedBy: "ops", ApprovalReason: "Ready for paper.",
+                    ApprovalChecklist: checklist,
+                    EvidenceReferences: checklist.Select(item => $"{item}:{CanonicalPromotionVaultReference}").ToArray()));
+                result.Success.Should().BeTrue(result.Reason);
+                promotedId = result.NewRunId!;
+                await WaitForLifecycleAsync(store, promotedId, StrategyRunLifecycleEventType.Activated);
+                await PublishTradesUntilAsync(hub, cache, "AAPL", 100m, () => !orders.Requests.IsEmpty);
+                orders.Requests.First().Quantity.Should().Be(7);
+            }
+
+            var restartedStore = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var suspended = (await restartedStore.GetRunByIdAsync(promotedId))!;
+            suspended.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Suspended);
+            suspended.EndedAt.Should().BeNull();
+            suspended.ParentRunId.Should().Be(source.RunId);
+            var restartedHub = new LiveMarketEventHub();
+            var restartedCache = new LiveMarketDataCache();
+            var restartedOrders = new RecordingOrderManager(101m);
+            await using (var engine = CreateEngine(restartedStore, restartedHub, restartedCache, restartedOrders))
+            {
+                (await engine.ResumePendingRunsAsync()).Should().Be(1);
+                await WaitForLifecycleAsync(restartedStore, promotedId, StrategyRunLifecycleEventType.Recovered);
+                await PublishTradesUntilAsync(restartedHub, restartedCache, "AAPL", 101m, () => !restartedOrders.Requests.IsEmpty);
+                (await engine.StopRunAsync(promotedId)).Should().BeTrue();
+            }
+
+            var completed = (await new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot))
+                .GetRunByIdAsync(promotedId))!;
+            completed.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            completed.TerminalStatus.Should().Be(StrategyRunStatus.Stopped);
+            completed.Metrics!.Metrics.Xirr.Should().Be(double.NaN);
+            completed.ParameterSet.Should().BeEquivalentTo(source.ParameterSet);
+            completed.ParentRunId.Should().Be(source.RunId);
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+                Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task DurableOperatorStop_ConcurrentHostShutdown_RetainsCompletedOutcome()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-stop-shutdown", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var strategy = new BlockingStopLiveStrategy("operator-stop-strategy");
+            var run = StrategyRunEntry.StartWithEvidence(
+                strategy.StrategyId, strategy.Name, RunType.Paper, "operator-stop-run",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "MSFT" });
+            await store.RecordRunAsync(run);
+            var engine = CreateEngine(
+                store, new LiveMarketEventHub(), new LiveMarketDataCache(), new RecordingOrderManager(100m),
+                new LiveStrategyCatalog().Register(strategy.StrategyId, _ => strategy));
+            try
+            {
+                (await engine.TryLaunchAsync(run)).Launched.Should().BeTrue();
+                await WaitForLifecycleAsync(store, run.RunId, StrategyRunLifecycleEventType.Activated);
+                var stop = engine.StopRunAsync(run.RunId);
+                await strategy.StopEntered.Task.WaitAsync(WaitBudget);
+
+                // The explicit stop already drained this engine's delivery worker. With no
+                // external report pump or pending launch, Dispose synchronously requests host
+                // suspension before awaiting this blocked strategy cleanup.
+                var shutdown = engine.DisposeAsync().AsTask();
+                shutdown.IsCompleted.Should().BeFalse();
+                strategy.ReleaseStop.TrySetResult();
+
+                await Task.WhenAll(stop, shutdown).WaitAsync(WaitBudget);
+                stop.Result.Should().BeTrue();
+                var restarted = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+                var completed = (await restarted.GetRunByIdAsync(run.RunId))!;
+                completed.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+                completed.TerminalStatus.Should().Be(StrategyRunStatus.Stopped);
+                completed.EndedAt.Should().NotBeNull("host shutdown cannot downgrade an explicit stop to a recoverable suspension");
+            }
+            finally
+            {
+                strategy.ReleaseStop.TrySetResult();
+                await engine.DisposeAsync();
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+                Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DurableHostShutdown_OperatorStopDuringSuspensionCommit_CompletesWithoutRepeatingCleanup(
+        bool blockSuspensionAppend)
+    {
+        using var history = new RunHistoryFixture();
+        var store = new StrategyRunStore(history.Store);
+        var strategy = new ShutdownCleanupProbeStrategy();
+        var repository = new ShutdownPersistenceGateRepository(store, blockSuspensionAppend,
+            () => strategy.Status == StrategyStatus.Stopped);
+        var run = CreatePaperRun(strategy.StrategyId,
+            new Dictionary<string, string> { ["symbols"] = "MSFT" });
+        await store.RecordRunAsync(run);
+        var engine = CreateEngine(repository, new LiveMarketEventHub(), new LiveMarketDataCache(),
+            new RecordingOrderManager(100m), new LiveStrategyCatalog().Register(strategy.StrategyId, _ => strategy));
+        try
+        {
+            (await engine.TryLaunchAsync(run)).Launched.Should().BeTrue();
+            await WaitForLifecycleAsync(store, run.RunId, StrategyRunLifecycleEventType.Activated);
+
+            var shutdown = engine.DisposeAsync().AsTask();
+            await repository.Entered.Task.WaitAsync(WaitBudget);
+            strategy.FinishedCalls.Should().Be(1);
+            strategy.StopCalls.Should().Be(1);
+
+            // Host cleanup already chose suspension before this operator request. Its final
+            // read or append is still pending, so the engine must finish the admitted stop
+            // after that execution returns without running strategy cleanup a second time.
+            var stop = engine.StopRunWithOutcomeAsync(run.RunId);
+            stop.IsCompleted.Should().BeFalse();
+            repository.Release.TrySetResult();
+
+            var receipt = await stop.WaitAsync(WaitBudget);
+            await shutdown.WaitAsync(WaitBudget);
+
+            receipt.Should().NotBeNull();
+            receipt!.State.Should().Be(OperationTerminalState.Succeeded);
+            receipt.CorrelationId.Should().Be(run.RunId);
+            var retained = (await new StrategyRunStore(history.Store).GetRunByIdAsync(run.RunId))!;
+            retained.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            retained.TerminalStatus.Should().Be(StrategyRunStatus.Stopped);
+            retained.EndedAt.Should().NotBeNull();
+            retained.Metrics.Should().NotBeNull();
+            retained.ExceptionMessage.Should().BeNull();
+            strategy.FinishedCalls.Should().Be(1);
+            strategy.StopCalls.Should().Be(1);
+            engine.ActiveRunIds.Should().BeEmpty();
+            var events = await history.Store.ReadAsync(new OperationalCaseHistoryQuery
+            {
+                CaseId = $"strategy-run:{run.RunId}"
+            });
+            events.Select(record => record.EventType).Should().ContainInOrder(
+                "Activated", "Suspended", "StopRequested", "Completed");
+            events.Should().ContainSingle(record => record.EventType == "Completed");
+        }
+        finally
+        {
+            repository.Release.TrySetResult();
+            await engine.DisposeAsync();
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DurablePausedRun_RestoresControlsAndRequiresExplicitResumeWithSameInputsAndLineage(bool resume)
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-paused-lifecycle", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var run = StrategyRunEntry.StartWithEvidence(
+                BuyAndHoldLiveStrategy.CatalogId, "Configured paper", RunType.Paper, "durable-paused-run",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "MSFT", ["quantity"] = "9" }) with
+            {
+                ParentRunId = "approved-backtest",
+                InputHashSha256 = null
+            };
+            await store.RecordRunAsync(run);
+            var manager = new StrategyLifecycleManager(store, NullLogger<StrategyLifecycleManager>.Instance);
+            var hub = new LiveMarketEventHub();
+            var cache = new LiveMarketDataCache();
+            await using (var engine = CreateEngine(store, hub, cache, new RecordingOrderManager(100m), lifecycleManager: manager))
+            {
+                (await engine.TryLaunchAsync(run)).Launched.Should().BeTrue();
+                await WaitForLifecycleAsync(store, run.RunId, StrategyRunLifecycleEventType.Activated);
+                (await manager.PauseAsync(run.StrategyId)).State.Should()
+                    .Be(Meridian.Contracts.Operations.OperationTerminalState.Succeeded);
+            }
+            manager.GetStatuses().Should().BeEmpty("the drained engine no longer owns a controllable session");
+            await manager.DisposeAsync();
+
+            var restarted = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var paused = (await restarted.GetRunByIdAsync(run.RunId))!;
+            paused.TerminalStatus.Should().Be(StrategyRunStatus.Paused);
+            var controls = new StrategyLifecycleManager(restarted, NullLogger<StrategyLifecycleManager>.Instance);
+            var restoredStrategy = new ResumeProbeStrategy(run.StrategyId);
+            var catalog = new LiveStrategyCatalog().Register(run.StrategyId, _ => restoredStrategy);
+            var orders = new RecordingOrderManager(100m);
+            await using (var engine = CreateEngine(restarted, new LiveMarketEventHub(), new LiveMarketDataCache(), orders,
+                catalog, lifecycleManager: controls))
+            {
+                (await engine.ResumePendingRunsAsync()).Should().Be(0, "restoration must not execute a paused run");
+                engine.PausedRunIds.Should().Contain(run.RunId);
+                controls.GetStatuses()[run.StrategyId].Should().Be(StrategyStatus.Paused);
+                restoredStrategy.StartCount.Should().Be(0);
+                restoredStrategy.InitializeCount.Should().Be(0);
+                orders.Requests.Should().BeEmpty();
+                if (!resume)
+                {
+                    (await engine.StopRunAsync(run.RunId)).Should().BeTrue();
+                    restoredStrategy.StartCount.Should().Be(0);
+                    (await restarted.GetRunByIdAsync(run.RunId))!.LastLifecycleEvent.Should()
+                        .Be(StrategyRunLifecycleEventType.Completed);
+                    return;
+                }
+                (await engine.ResumeRunAsync(run.RunId)).Should().BeTrue();
+                engine.PausedRunIds.Should().NotContain(run.RunId);
+                restoredStrategy.StartCount.Should().Be(1);
+                restoredStrategy.InitializeCount.Should().Be(1);
+                var resumed = (await restarted.GetRunByIdAsync(run.RunId))!;
+                resumed.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Resumed);
+                resumed.TerminalStatus.Should().BeNull();
+                resumed.ParameterSet.Should().BeEquivalentTo(paused.ParameterSet);
+                resumed.ParentRunId.Should().Be(paused.ParentRunId);
+                resumed.InputHashSha256.Should().Be(paused.InputHashSha256);
+                resumed.AttemptId.Should().Be(paused.AttemptId);
+                (await engine.StopRunAsync(run.RunId)).Should().BeTrue();
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+                Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DurablePausedRuns_WithSameStrategyId_DeferAnotherRunUntilOwnerStops(bool olderFirst)
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-paused-run-identity", Guid.NewGuid().ToString("N"));
+        try
+        {
+            const string strategyId = "shared-configured-strategy";
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var startedAt = DateTimeOffset.UtcNow.AddHours(-1);
+            var older = StrategyRunEntry.StartWithEvidence(
+                strategyId, "Configured strategy", RunType.Paper, "older-paused-run",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "AAPL" }) with
+            {
+                StartedAt = startedAt,
+                LifecycleEventAtUtc = startedAt
+            };
+            var newer = StrategyRunEntry.StartWithEvidence(
+                strategyId, "Configured strategy", RunType.Paper, "newer-paused-run",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "MSFT" }) with
+            {
+                StartedAt = startedAt.AddMinutes(1),
+                LifecycleEventAtUtc = startedAt.AddMinutes(1)
+            };
+            foreach (var run in new[] { older, newer })
+            {
+                await store.RecordRunAsync(run);
+                await store.RecordLifecycleEventAsync(
+                    run.Paused("operator") with { TerminalStatus = StrategyRunStatus.Paused },
+                    StrategyRunLifecycleEventType.Paused);
+            }
+
+            var restarted = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var manager = new StrategyLifecycleManager(restarted, NullLogger<StrategyLifecycleManager>.Instance);
+            var olderStrategy = new ResumeProbeStrategy(strategyId);
+            var newerStrategy = new ResumeProbeStrategy(strategyId);
+            var catalog = new LiveStrategyCatalog().Register(strategyId,
+                context => context.Parameters["symbols"] == "AAPL" ? olderStrategy : newerStrategy);
+            await using var engine = CreateEngine(
+                restarted, new LiveMarketEventHub(), new LiveMarketDataCache(), new RecordingOrderManager(100m),
+                catalog, lifecycleManager: manager);
+            var first = olderFirst ? older : newer;
+            var second = olderFirst ? newer : older;
+            var firstStrategy = olderFirst ? olderStrategy : newerStrategy;
+            var secondStrategy = olderFirst ? newerStrategy : olderStrategy;
+            var retainedFirst = (await restarted.GetRunByIdAsync(first.RunId))!;
+
+            (await engine.TryLaunchAsync(retainedFirst)).Launched.Should().BeTrue();
+            (await engine.ResumePendingRunsAsync()).Should().Be(0,
+                "restoring paused controls must not execute either strategy");
+            engine.PausedRunIds.Should().Equal(first.RunId);
+            manager.GetStatuses()[strategyId].Should().Be(StrategyStatus.Paused);
+            (await engine.ResumeRunWithOutcomeAsync(second.RunId)).Should().BeNull(
+                "the other paused run must remain deferred while this strategy has an owner");
+            firstStrategy.StartCount.Should().Be(0);
+            secondStrategy.StartCount.Should().Be(0);
+
+            var firstOutcome = await engine.ResumeRunWithOutcomeAsync(first.RunId);
+
+            firstOutcome!.State.Should().Be(Meridian.Contracts.Operations.OperationTerminalState.Succeeded);
+            firstOutcome.CorrelationId.Should().Be(first.RunId);
+            firstStrategy.StartCount.Should().Be(1);
+            secondStrategy.StartCount.Should().Be(0);
+            engine.PausedRunIds.Should().BeEmpty();
+            (await restarted.GetRunByIdAsync(first.RunId))!.LastLifecycleEvent.Should()
+                .Be(StrategyRunLifecycleEventType.Resumed);
+            (await restarted.GetRunByIdAsync(second.RunId))!.LastLifecycleEvent.Should()
+                .Be(StrategyRunLifecycleEventType.ActivationDeferred);
+            (await restarted.GetRunByIdAsync(second.RunId))!.TerminalStatus.Should()
+                .Be(StrategyRunStatus.Paused);
+
+            // Strategy-level controls must retain the instance/run pair selected by resume,
+            // even when another run of the same strategy has a later start timestamp.
+            (await manager.PauseAsync(strategyId)).State.Should()
+                .Be(Meridian.Contracts.Operations.OperationTerminalState.Succeeded);
+            (await restarted.GetRunByIdAsync(first.RunId))!.LastLifecycleEvent.Should()
+                .Be(StrategyRunLifecycleEventType.Paused);
+            (await engine.ResumeRunWithOutcomeAsync(second.RunId)).Should().BeNull(
+                "pausing the owner must not release its strategy registration");
+            secondStrategy.StartCount.Should().Be(0);
+            engine.PausedRunIds.Should().Equal(first.RunId);
+
+            var stop = await manager.StopAsync(strategyId);
+
+            stop.State.Should().Be(OperationTerminalState.Succeeded);
+            stop.CorrelationId.Should().Be(first.RunId);
+            var stopped = (await restarted.GetRunByIdAsync(first.RunId))!;
+            stopped.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            stopped.TerminalStatus.Should().Be(StrategyRunStatus.Stopped);
+            stopped.EndedAt.Should().NotBeNull();
+            stopped.Metrics.Should().NotBeNull();
+            stopped.ParameterSet.Should().BeEquivalentTo(first.ParameterSet);
+            engine.ActiveRunIds.Should().NotContain(first.RunId);
+
+            var secondOutcome = await engine.ResumeRunWithOutcomeAsync(second.RunId);
+
+            secondOutcome!.State.Should().Be(Meridian.Contracts.Operations.OperationTerminalState.Succeeded);
+            secondOutcome.CorrelationId.Should().Be(second.RunId);
+            firstStrategy.StartCount.Should().Be(1);
+            secondStrategy.StartCount.Should().Be(1);
+            engine.PausedRunIds.Should().BeEmpty();
+            (await restarted.GetRunByIdAsync(first.RunId))!.TerminalStatus.Should().Be(StrategyRunStatus.Stopped);
+            var resumedSecond = (await restarted.GetRunByIdAsync(second.RunId))!;
+            resumedSecond.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Resumed);
+            resumedSecond.ParameterSet.Should().BeEquivalentTo(second.ParameterSet);
+            manager.GetStatuses()[strategyId].Should().Be(StrategyStatus.Running);
+        }
+        finally
+        {
+            if (Directory.Exists(dataRoot))
+                Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task PromotionApproval_HandsNewRunToTheRunLauncher()
     {
         var store = new StrategyRunStore();
@@ -756,7 +1148,8 @@ public sealed class LiveTradingEngineTests
         LiveMarketDataCache cache,
         ExecutionSdk.IOrderManager orderManager,
         ILiveStrategyCatalog? catalog = null,
-        LiveTradingEngineOptions? options = null)
+        LiveTradingEngineOptions? options = null,
+        StrategyLifecycleManager? lifecycleManager = null)
     {
         // `Meridian.Execution` and `Meridian.Execution.Adapters` both declare `PaperTradingGateway`
         // and this file imports both. Only the Adapters one implements `IOrderGateway`, which is
@@ -775,7 +1168,8 @@ public sealed class LiveTradingEngineTests
             new PaperTradingPortfolio(100_000m),
             repository,
             options: options ?? new LiveTradingEngineOptions(),
-            loggerFactory: NullLoggerFactory.Instance);
+            loggerFactory: NullLoggerFactory.Instance,
+            lifecycleManager: lifecycleManager);
     }
 
     private static string BuildRunOrderPrefix(string runId) => $"mlt-{runId}-";
@@ -813,6 +1207,103 @@ public sealed class LiveTradingEngineTests
         }
 
         condition().Should().BeTrue("the completed session must be removed from the active-run registry");
+    }
+
+    private static async Task WaitForLifecycleAsync(IStrategyRepository store, string runId, StrategyRunLifecycleEventType expected)
+    {
+        using var timeout = new CancellationTokenSource(WaitBudget);
+        while ((await store.GetRunByIdAsync(runId, timeout.Token))?.LastLifecycleEvent != expected)
+        {
+            await Task.Delay(25, timeout.Token);
+        }
+    }
+
+    private sealed class BlockingStopLiveStrategy(string strategyId) : LiveStrategyBase
+    {
+        public override string StrategyId => strategyId;
+        public override string Name => "Blocking stop";
+        public TaskCompletionSource StopEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource ReleaseStop { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        protected override async Task OnStoppedAsync(CancellationToken ct)
+        {
+            StopEntered.TrySetResult();
+            await ReleaseStop.Task.WaitAsync(ct);
+        }
+    }
+
+    private sealed class ShutdownCleanupProbeStrategy : LiveStrategyBase
+    {
+        public override string StrategyId => "shutdown-cleanup-probe";
+        public override string Name => "Shutdown cleanup probe";
+        public int FinishedCalls { get; private set; }
+        public int StopCalls { get; private set; }
+
+        public override void OnFinished(IBacktestContext context) => FinishedCalls++;
+
+        protected override Task OnStoppedAsync(CancellationToken ct)
+        {
+            StopCalls++;
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class ShutdownPersistenceGateRepository(
+        IStrategyRepository inner, bool blockSuspensionAppend, Func<bool> cleanupFinished) : IStrategyRepository
+    {
+        private int _gateClaimed;
+        public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task RecordRunAsync(StrategyRunEntry entry, CancellationToken ct = default) =>
+            inner.RecordRunAsync(entry, ct);
+
+        public async Task RecordLifecycleEventAsync(StrategyRunEntry entry,
+            StrategyRunLifecycleEventType eventType, CancellationToken ct = default)
+        {
+            if (blockSuspensionAppend && eventType == StrategyRunLifecycleEventType.Suspended)
+                await WaitAtGateAsync(ct);
+            await inner.RecordLifecycleEventAsync(entry, eventType, ct);
+        }
+
+        public async Task<StrategyRunEntry?> GetRunByIdAsync(string runId, CancellationToken ct = default)
+        {
+            var retained = await inner.GetRunByIdAsync(runId, ct);
+            if (!blockSuspensionAppend && cleanupFinished())
+                await WaitAtGateAsync(ct);
+            return retained;
+        }
+
+        public IAsyncEnumerable<StrategyRunEntry> GetRunsAsync(string strategyId, CancellationToken ct = default) =>
+            inner.GetRunsAsync(strategyId, ct);
+
+        public IAsyncEnumerable<StrategyRunEntry> GetAllRunsAsync(CancellationToken ct = default) =>
+            inner.GetAllRunsAsync(ct);
+
+        public Task<StrategyRunEntry?> GetLatestRunAsync(string strategyId, CancellationToken ct = default) =>
+            inner.GetLatestRunAsync(strategyId, ct);
+
+        private async Task WaitAtGateAsync(CancellationToken ct)
+        {
+            if (Interlocked.CompareExchange(ref _gateClaimed, 1, 0) != 0)
+                return;
+            Entered.TrySetResult();
+            await Release.Task.WaitAsync(ct);
+        }
+    }
+
+    private sealed class ResumeProbeStrategy(string strategyId) : LiveStrategyBase
+    {
+        public override string StrategyId => strategyId;
+        public override string Name => "Resume probe";
+        public int StartCount { get; private set; }
+        public int InitializeCount { get; private set; }
+        protected override Task OnStartingAsync(Meridian.Execution.Interfaces.IExecutionContext ctx, CancellationToken ct)
+        {
+            StartCount++;
+            return Task.CompletedTask;
+        }
+        public override void Initialize(IBacktestContext ctx) => InitializeCount++;
     }
 
     private static StrategyRunEntry CreatePaperRun(
@@ -1006,7 +1497,7 @@ public sealed class LiveTradingEngineTests
         }
     }
 
-    private sealed class CancellingWarmupLiveStrategy : LiveStrategyBase
+    private sealed class CancellingWarmupLiveStrategy(bool cleanupFails) : LiveStrategyBase
     {
         public override string Name => "Cancelling warmup";
         public override string StrategyId => "cancelling-warmup";
@@ -1022,7 +1513,9 @@ public sealed class LiveTradingEngineTests
         protected override Task OnStoppedAsync(CancellationToken ct)
         {
             StopCalls++;
-            throw new InvalidOperationException("partial startup cleanup failed");
+            if (cleanupFails)
+                throw new InvalidOperationException("partial startup cleanup failed");
+            return Task.CompletedTask;
         }
     }
 
