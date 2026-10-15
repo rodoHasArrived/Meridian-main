@@ -25,7 +25,7 @@ public sealed class SecurityMasterRecordedIdentifierQueryTests
         old!.DisplayName.Should().Be("Original");
         old.Identifiers.Should().ContainSingle().Which.Value.Should().Be("OLD");
         (await service.GetRecordedByIdentifierAsOfAsync(SecurityIdentifierKind.Ticker, "NEW", null, T0.AddDays(1)))
-            .Should().BeNull("the later identifier correction was not recorded yet");
+            .Should().BeNull("the correction's stored event timestamp exceeds the cutoff");
         (await service.GetRecordedByIdentifierAsOfAsync(SecurityIdentifierKind.Ticker, "NEW", null, T0.AddDays(11)))!
             .DisplayName.Should().Be("Corrected");
         await _store.DidNotReceive().LoadAllAsync(Arg.Any<CancellationToken>());
@@ -73,7 +73,7 @@ public sealed class SecurityMasterRecordedIdentifierQueryTests
         (await service.GetRecordedByIdentifierAsOfAsync(SecurityIdentifierKind.Ticker, "LOCAL", "vendor",
             T0.AddDays(10), effectiveAsOfUtc: T0.AddDays(5))).Should().BeNull("valid-to is exclusive");
         (await service.GetRecordedByIdentifierAsOfAsync(SecurityIdentifierKind.Ticker, "LOCAL", "vendor",
-            T0.AddDays(-1), effectiveAsOfUtc: T0.AddDays(1))).Should().BeNull("effective identity cannot precede retained recording evidence");
+            T0.AddDays(-1), effectiveAsOfUtc: T0.AddDays(1))).Should().BeNull("the retained event's stored timestamp exceeds this cutoff");
     }
 
     [Theory]

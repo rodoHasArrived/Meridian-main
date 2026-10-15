@@ -50,6 +50,14 @@ security/account identity. Replay by receipt preserves what was actually evaluat
 transaction with an earlier recorded timestamp commits later. Timestamp cutoffs alone are
 eligibility predicates, not durable certification or a commit-consistent snapshot.
 
+`GetRecordedByIdentifierAsOfAsync` applies that same timestamp limitation to retained Security
+Master event state and alias revisions. Its recorded cutoff filters stored timestamps; the separate
+effective cutoff selects identifier validity. Event timestamps and alias transaction timestamps can
+precede lock acquisition and commit. A later commit can therefore change a repeated query with the
+same cutoffs. Imported alias baselines also have a migration availability eligibility boundary;
+earlier alias contents remain unknown. This identifier API retains no evaluation receipt and makes
+no claim about which transactions were visible at a historical cutoff.
+
 ## Governed edit concurrency
 
 PostgreSQL-backed workbench edits use a durable per-security generation, separate from the canonical

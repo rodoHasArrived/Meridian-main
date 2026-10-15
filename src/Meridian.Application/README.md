@@ -66,6 +66,10 @@ are disabled, and failed startup or periodic reseeds retry. Create, amend and de
 their committed projection and request reseeding before optional snapshot work; request cancellation
 after the projection commit cannot skip that coherence step. A later snapshot failure can still
 fail the request after commit, so callers must reread durable state before retrying.
+Post-write cache updates and identifier-conflict scans use effective durable state, because another
+instance may already have persisted a newer projection. A failed cache readback retries; the prepared
+older candidate is never installed as a fallback. Rebuilds likewise reread after version-guarded
+batch persistence instead of publishing their prepared candidates.
 The hosted lifecycle also reseeds at the next identifier validity boundary, including with lazy
 cache loading, notifications disabled and no periodic projection refresh. A successful write seed
 can move that deadline earlier. Minimal composition omits the seeder when symbol management and
@@ -85,11 +89,16 @@ reread in the background with backoff, since the node ignores its own notificati
 reseeds are serialized and reconcile Security-Master-owned aliases and non-override provider mappings
 for authoritative security IDs, including the ISIN/CUSIP/FIGI/SEDOL identifiers Security Master supplies;
 operator/provider authority outside that ownership remains intact.
-Strict historical identifier reads use `GetRecordedByIdentifierAsOfAsync`: the recorded cutoff
-selects retained event state and alias revisions, and the separate effective cutoff selects identifier
-validity. Missing or ambiguous retained identity returns no match. The compatibility identifier API
+Historical identifier reads use `GetRecordedByIdentifierAsOfAsync`: the recorded cutoff
+filters stored event and alias-revision timestamps, and the separate effective cutoff selects
+identifier validity. Those timestamps can precede lock acquisition and commit; they do not establish
+what was committed or visible at the cutoff. A transaction that becomes visible later can change
+the result for the same cutoffs. This API supplies timestamp eligibility, without a retained
+evaluation receipt or a historical transaction snapshot. Missing or ambiguous retained identity
+returns no match. The compatibility identifier API
 can use later alias corrections and stable-identity fallbacks. Alias baselines imported by migration
-038 are available only from the migration observation onward; earlier alias history is unknown.
+038 carry a migration availability timestamp; earlier alias history is unknown. That timestamp
+also supplies an eligibility boundary rather than commit-visibility evidence.
 Primary-host storage composition supplies deferred Security Master and book-position resolvers to
 the PostgreSQL journal store. Deferred resolution preserves the shared singleton authorities while
 avoiding the journal/position constructor cycle; absent durable authority fails closed at posting.

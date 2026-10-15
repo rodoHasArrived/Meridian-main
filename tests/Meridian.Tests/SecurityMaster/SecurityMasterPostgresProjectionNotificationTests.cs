@@ -15,7 +15,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// write whose transaction rolls back after queuing its notification announces nothing.
 /// </summary>
 [Trait("Category", "Integration")]
-public sealed class SecurityMasterPostgresProjectionNotificationTests : IClassFixture<SecurityMasterDatabaseFixture>
+public sealed partial class SecurityMasterPostgresProjectionNotificationTests : IClassFixture<SecurityMasterDatabaseFixture>
 {
     private static readonly TimeSpan DeliveryTimeout = TimeSpan.FromSeconds(30);
 

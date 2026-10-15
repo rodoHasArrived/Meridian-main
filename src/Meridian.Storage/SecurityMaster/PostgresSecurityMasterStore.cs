@@ -86,12 +86,14 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
-        await UpsertProjectionCoreAsync(connection, transaction, record, ct).ConfigureAwait(false);
-        await NotifyProjectionChangedAsync(
-            connection,
-            transaction,
-            SecurityProjectionChangeNotification.ForSecurity(_nodeIdentity.NodeId, record.SecurityId, record.Version),
-            ct).ConfigureAwait(false);
+        if (await UpsertProjectionCoreAsync(connection, transaction, record, ct).ConfigureAwait(false))
+        {
+            await NotifyProjectionChangedAsync(
+                connection,
+                transaction,
+                SecurityProjectionChangeNotification.ForSecurity(_nodeIdentity.NodeId, record.SecurityId, record.Version),
+                ct).ConfigureAwait(false);
+        }
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
@@ -104,12 +106,15 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
 
-        foreach (var record in records)
+        var acceptedRecords = new List<SecurityProjectionRecord>(records.Count);
+        // Consistent row-lock ordering also keeps overlapping rebuild batches from deadlocking.
+        foreach (var record in records.OrderBy(record => record.SecurityId).ThenBy(record => record.Version))
         {
-            await UpsertProjectionCoreAsync(connection, transaction, record, ct).ConfigureAwait(false);
+            if (await UpsertProjectionCoreAsync(connection, transaction, record, ct).ConfigureAwait(false))
+                acceptedRecords.Add(record);
         }
 
-        if (records.Count > SecurityProjectionChangeNotification.MaxPerSecurityNotificationsPerBatch)
+        if (acceptedRecords.Count > SecurityProjectionChangeNotification.MaxPerSecurityNotificationsPerBatch)
         {
             await NotifyProjectionChangedAsync(
                 connection,
@@ -119,7 +124,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         }
         else
         {
-            foreach (var record in records)
+            foreach (var record in acceptedRecords)
             {
                 await NotifyProjectionChangedAsync(
                     connection,
@@ -147,7 +152,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                 set status = 'Inactive',
                     effective_to = @effective_to,
                     version = @version
-                where security_id = @security_id;
+                where security_id = @security_id and version <= @version;
                 """;
             command.Parameters.AddWithValue("security_id", securityId);
             command.Parameters.AddWithValue("effective_to", effectiveTo.UtcDateTime);
@@ -332,7 +337,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         await SaveCheckpointCoreAsync(connection, transaction: null, projectionName, lastGlobalSequence, ct).ConfigureAwait(false);
     }
 
-    private async Task UpsertProjectionCoreAsync(
+    private async Task<bool> UpsertProjectionCoreAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         SecurityProjectionRecord record,
@@ -343,7 +348,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             command.Transaction = transaction;
             command.CommandText =
                 $"""
-                insert into {Qualified("securities")} (
+                insert into {Qualified("securities")} as retained (
                     security_id, asset_class, status, display_name, currency, country_of_risk, issuer_name,
                     exchange_code, lot_size, tick_size, primary_identifier_kind, primary_identifier_value,
                     normalized_primary_identifier_value,
@@ -373,7 +378,8 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                     version = excluded.version,
                     schema_version = excluded.schema_version,
                     effective_from = excluded.effective_from,
-                    effective_to = excluded.effective_to;
+                    effective_to = excluded.effective_to
+                where retained.version <= excluded.version;
                 """;
 
             // Promote the asset-specific-terms schema version into the queryable schema_version column.
@@ -407,7 +413,11 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             command.Parameters.AddWithValue("schema_version", schemaVersion);
             command.Parameters.AddWithValue("effective_from", record.EffectiveFrom.UtcDateTime);
             command.Parameters.AddWithValue("effective_to", (object?)record.EffectiveTo?.UtcDateTime ?? DBNull.Value);
-            await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            // ON CONFLICT locks and rechecks the retained row after a competing writer commits.
+            // A skipped parent must skip every child replacement/deletion and its notification;
+            // checking the version in application code before this statement would still race.
+            if (await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 0)
+                return false;
         }
 
         await ReplaceIdentifiersAsync(connection, transaction, record.SecurityId, record.Identifiers, ct).ConfigureAwait(false);
@@ -436,6 +446,8 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         {
             await writer.WriteAsync(this, connection, transaction, record, ct).ConfigureAwait(false);
         }
+
+        return true;
     }
 
     private async Task UpsertBondProjectionTablesAsync(
@@ -533,12 +545,12 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            insert into {Qualified("projection_checkpoint")} (
+            insert into {Qualified("projection_checkpoint")} as retained (
                 projection_name, last_global_sequence, updated_at)
             values (
                 @projection_name, @last_global_sequence, @updated_at)
             on conflict (projection_name) do update set
-                last_global_sequence = excluded.last_global_sequence,
+                last_global_sequence = greatest(retained.last_global_sequence, excluded.last_global_sequence),
                 updated_at = excluded.updated_at;
             """;
         command.Parameters.AddWithValue("projection_name", projectionName);

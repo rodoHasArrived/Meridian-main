@@ -36,7 +36,7 @@ public sealed class SecurityMasterRebuildOrchestratorTests
 
         await orchestrator.RebuildAsync();
 
-        await store.Received(1).LoadAllAsync(Arg.Any<CancellationToken>());
+        await store.Received(2).LoadAllAsync(Arg.Any<CancellationToken>());
         await store.Received(1).PersistProjectionBatchAsync(
             "security_master_cache",
             42L,
@@ -76,7 +76,7 @@ public sealed class SecurityMasterRebuildOrchestratorTests
 
         await orchestrator.RebuildAsync();
 
-        await store.Received(1).LoadAllAsync(Arg.Any<CancellationToken>());
+        await store.Received(2).LoadAllAsync(Arg.Any<CancellationToken>());
         await eventStore.DidNotReceive().LoadSinceSequenceAsync(Arg.Any<long>(), Arg.Any<int>(), Arg.Any<CancellationToken>());
         await eventStore.Received(1).LoadAsync(securityId, Arg.Any<CancellationToken>());
         cache.Count.Should().Be(1);
@@ -151,6 +151,7 @@ public sealed class SecurityMasterRebuildOrchestratorTests
                 6L,
                 Arg.Is<IReadOnlyList<SecurityProjectionRecord>>(records => records.Count == 1 && records[0].SecurityId == securityId),
                 Arg.Any<CancellationToken>());
+            store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>());
         });
 
         cache.Get(securityId).Should().NotBeNull();
@@ -342,11 +343,13 @@ public sealed class SecurityMasterRebuildOrchestratorTests
                 Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(),
                 Arg.Any<CancellationToken>())
             .Returns(_ => Task.FromException(new InvalidOperationException("conflict store unavailable")));
-        // First read seeds the replay fold; the second is the deferred retry's reload, where a
+        // The first read seeds replay and the second reads committed state; the third is the
+        // deferred retry's reload, where a
         // transient store failure must degrade to a logged error, not fail the committed rebuild.
         var projection = (await store.GetProjectionAsync(securityId, CancellationToken.None))!;
         store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
             .Returns(
+                _ => Task.FromResult<SecurityProjectionRecord?>(projection),
                 _ => Task.FromResult<SecurityProjectionRecord?>(projection),
                 _ => Task.FromException<SecurityProjectionRecord?>(new IOException("projection store unavailable")));
 
@@ -412,10 +415,12 @@ public sealed class SecurityMasterRebuildOrchestratorTests
             });
         eventStore.LoadSinceSequenceAsync(7L, 10, Arg.Any<CancellationToken>())
             .Returns(Array.Empty<SecurityMasterEventEnvelope>());
-        // First read seeds the replay fold; the second is the deferred retry's reload, which
+        // The first read seeds replay and the second reads committed state; the third is the
+        // deferred retry's reload, which
         // fails for this security only — the other deferred security must still be scanned.
         store.GetProjectionAsync(firstId, Arg.Any<CancellationToken>())
             .Returns(
+                _ => Task.FromResult<SecurityProjectionRecord?>(firstProjection),
                 _ => Task.FromResult<SecurityProjectionRecord?>(firstProjection),
                 _ => Task.FromException<SecurityProjectionRecord?>(new IOException("projection store unavailable")));
         store.GetProjectionAsync(secondId, Arg.Any<CancellationToken>())
@@ -446,6 +451,86 @@ public sealed class SecurityMasterRebuildOrchestratorTests
             Arg.Is<IReadOnlyList<SecurityProjectionRecord>>(records =>
                 records.Count == 1 && records[0].SecurityId == secondId),
             Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task FullRebuild_PublishesEffectiveDurableReadbackAndScansThatState()
+    {
+        var id = Guid.NewGuid();
+        var prepared = CreateProjection(id, "Prepared older terms", 1);
+        var current = CreateProjection(id, "Concurrent committed terms", 3);
+        var events = Substitute.For<ISecurityMasterEventStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var snapshots = Substitute.For<ISecurityMasterSnapshotStore>();
+        var cache = new SecurityMasterProjectionCache();
+        var orphanId = Guid.NewGuid();
+        cache.Upsert(CreateProjection(orphanId, "Removed durable member", 7));
+        var conflicts = Substitute.For<ISecurityMasterConflictService>();
+        store.GetCheckpointAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns((long?)null);
+        var durable = prepared;
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(_ => new[] { durable });
+        store.PersistProjectionBatchAsync(Arg.Any<string>(), Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(), Arg.Any<CancellationToken>()).Returns(_ =>
+            {
+                // Another instance wins after preparation, so the store's monotonic guard keeps
+                // v3 instead of applying our stale v1 batch. The target is absent from this cache.
+                durable = current;
+                return Task.CompletedTask;
+            });
+        var rebuilder = new SecurityMasterAggregateRebuilder(events, snapshots);
+        var projectionService = new SecurityMasterProjectionService(store, cache, rebuilder,
+            NullLogger<SecurityMasterProjectionService>.Instance);
+        var orchestrator = new SecurityMasterRebuildOrchestrator(events, store, cache, rebuilder,
+            projectionService, new SecurityMasterOptions(), NullLogger<SecurityMasterRebuildOrchestrator>.Instance, conflicts);
+
+        await orchestrator.RebuildAsync();
+
+        await store.Received().PersistProjectionBatchAsync(Arg.Any<string>(), Arg.Any<long>(),
+            Arg.Is<IReadOnlyList<SecurityProjectionRecord>>(records => records.Single().Version == 1), Arg.Any<CancellationToken>());
+        cache.Get(id)!.Version.Should().Be(3);
+        cache.Get(orphanId).Should().BeNull("full replacement preserves authoritative deletion semantics");
+        await conflicts.Received().RecordConflictsForProjectionsAsync(
+            Arg.Is<IReadOnlyList<SecurityProjectionRecord>>(records => records.Single().Version == 3), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CommittedBatchReadbackFailure_NextRebuildReconcilesDespiteCurrentCheckpointAndNonemptyCache()
+    {
+        var id = Guid.NewGuid();
+        var prepared = CreateProjection(id, "Prepared older terms", 1);
+        var current = CreateProjection(id, "Concurrent committed terms", 3);
+        var events = Substitute.For<ISecurityMasterEventStore>();
+        events.GetLatestSequenceAsync(Arg.Any<CancellationToken>()).Returns(42L);
+        var store = Substitute.For<ISecurityMasterStore>();
+        long? checkpoint = null;
+        store.GetCheckpointAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(_ => checkpoint);
+        store.PersistProjectionBatchAsync(Arg.Any<string>(), Arg.Any<long>(),
+            Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(), Arg.Any<CancellationToken>()).Returns(call =>
+            {
+                checkpoint = call.Arg<long>();
+                return Task.CompletedTask;
+            });
+        store.LoadAllAsync(Arg.Any<CancellationToken>()).Returns(
+            _ => Task.FromResult<IReadOnlyList<SecurityProjectionRecord>>([prepared]),
+            _ => Task.FromException<IReadOnlyList<SecurityProjectionRecord>>(new IOException("committed readback unavailable")),
+            _ => Task.FromResult<IReadOnlyList<SecurityProjectionRecord>>([current]));
+        var snapshots = Substitute.For<ISecurityMasterSnapshotStore>();
+        var cache = new SecurityMasterProjectionCache();
+        cache.Upsert(prepared);
+        var rebuilder = new SecurityMasterAggregateRebuilder(events, snapshots);
+        var projectionService = new SecurityMasterProjectionService(store, cache, rebuilder,
+            NullLogger<SecurityMasterProjectionService>.Instance);
+        var orchestrator = new SecurityMasterRebuildOrchestrator(events, store, cache, rebuilder,
+            projectionService, new SecurityMasterOptions(), NullLogger<SecurityMasterRebuildOrchestrator>.Instance);
+
+        await orchestrator.Invoking(service => service.RebuildAsync()).Should().ThrowAsync<IOException>();
+        checkpoint.Should().Be(42);
+        cache.Get(id)!.Version.Should().Be(1);
+        await orchestrator.RebuildAsync();
+
+        cache.Get(id)!.Version.Should().Be(3);
+        await store.Received(2).PersistProjectionBatchAsync(Arg.Any<string>(), 42,
+            Arg.Any<IReadOnlyList<SecurityProjectionRecord>>(), Arg.Any<CancellationToken>());
     }
 
     /// <summary>One replayable event past the checkpoint, mirroring the recorded-conflicts scenario.</summary>

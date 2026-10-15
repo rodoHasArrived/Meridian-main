@@ -58,8 +58,10 @@ as described in [the rollout contract](../../docs/domain/security.md#governed-ed
 
 Migration 038 adds append-only alias revisions after immutable generation migration 036 and
 close-price migration 037.
-Its imported alias baseline retains creation facts and records when historical values first became
-available; strict recorded-time reads do not present that baseline before the migration observation.
+Its imported alias baseline retains creation facts and a migration availability timestamp;
+recorded-time reads exclude that baseline before this eligibility boundary. Event, revision and
+availability timestamps can precede commit. They do not certify historical transaction visibility,
+and the same timestamp-cutoff query can change after a pending transaction commits.
 Fresh-install and populated through-036 and through-037 upgrade tests cover rollback, retry and
 restart receipts, retaining the previously applied migration checksums and close-price evidence.
 
@@ -672,12 +674,18 @@ Security Master cache refreshes build a complete candidate map without blocking 
 every accepted upsert during that build, reconcile those writes by record version, and publish the
 result with one reference swap. Readers therefore see a complete old or new master, while a write
 accepted during `ReplaceAll` materialization is not discarded by the swap.
+PostgreSQL also rejects lower-version projection upserts atomically at the parent row. A rejected
+record cannot rewrite identifiers, aliases or asset-specific child tables and sends no change
+notification. Deactivation and checkpoint writes cannot regress their versions. Rebuilds reload
+effective durable records before publishing cache state or evaluating identifier conflicts, so an
+older prepared batch cannot poison a cold cache after its write is skipped.
 
 Every projection-writing transaction also issues `pg_notify` on a per-schema channel, so other nodes'
 `SecurityMasterProjectionChangeListener` refresh the changed security (version-guarded) once the write
 commits; rolled-back writes announce nothing. Aliases keep an append-only revision history
 (`038_security_master_alias_revisions.sql`, following immutable migrations 036 and 037): corrections append a revision and recorded-as-of reads
-resolve each alias from the revision current at the cutoff. An alias ID stays bound to its first security even after it is
+resolve each alias from the latest eligible revision at the stored-timestamp cutoff. This is not a
+commit-consistent historical snapshot or a retained evaluation receipt. An alias ID stays bound to its first security even after it is
 retired, so neither alias upserts nor projection replacement can continue its history elsewhere.
 Projection reads stamp their alias list with the security's revision count (`SecurityAliasSnapshot`);
 a projection write carrying aliases read before a later alias write keeps the current alias rows

@@ -37,8 +37,8 @@ public sealed class SecurityMasterQueryService :
         DateTimeOffset asOfUtc,
         CancellationToken ct = default)
     {
-        // Retained events and alias revisions remain authoritative even if today's projection is
-        // absent. A later correction or projection rebuild cannot change this recorded view.
+        // Use retained timestamp-eligible rows even if today's projection is absent. These reads
+        // do not reconstruct commit visibility: an in-flight write may become eligible after commit.
         var recordedAliases = await _store
             .GetAliasesRecordedAsOfAsync(securityId, asOfUtc, ct)
             .ConfigureAwait(false);
@@ -70,7 +70,7 @@ public sealed class SecurityMasterQueryService :
             return SecurityMasterMapping.ToDetail(projection);
         }
 
-        // An explicit historical lookup must return the terms as recorded at that time —
+        // An explicit cutoff selects terms by the retained event timestamp —
         // resolving the identifier as-of and then returning the current projection would
         // silently hand back today's terms under yesterday's identity.
         var asOfProjection = await _rebuilder.RebuildAsOfAsync(projection.SecurityId, asOf, projection, ct)
@@ -98,9 +98,9 @@ public sealed class SecurityMasterQueryService :
         var effectiveAsOf = effectiveAsOfUtc ?? recordedAsOfUtc;
 
         // Enumerate retained streams rather than today's projection membership or identifier rows.
-        // Historical identity must remain resolvable after a correction or a projection rebuild.
-        // This strict evidence query deliberately pays the replay cost; the compatibility lookup
-        // above remains the indexed current-knowledge path.
+        // Stored event/revision timestamps determine eligibility, not commit time. Pages and alias
+        // reads observe rows when read and do not share a historical visibility snapshot. This
+        // retained-event query pays the replay cost; the compatibility lookup remains indexed.
         const int pageSize = 1000;
         var latestEvents = new Dictionary<Guid, SecurityMasterEventEnvelope>();
         long sequence = 0;

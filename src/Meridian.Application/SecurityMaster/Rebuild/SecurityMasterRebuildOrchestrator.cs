@@ -16,6 +16,10 @@ public sealed class SecurityMasterRebuildOrchestrator
     private readonly SecurityMasterOptions _options;
     private readonly ILogger<SecurityMasterRebuildOrchestrator> _logger;
     private readonly ISecurityMasterConflictService? _conflictService;
+    // A committed batch can be followed by a failed/cancelled readback. Its checkpoint must not
+    // make a later invocation skip reconciliation of a nonempty cache left on the previous set.
+    private int _cacheReadbackPending;
+    private readonly SemaphoreSlim _rebuildGate = new(1, 1);
 
     public SecurityMasterRebuildOrchestrator(
         ISecurityMasterEventStore eventStore,
@@ -39,6 +43,19 @@ public sealed class SecurityMasterRebuildOrchestrator
 
     public async Task RebuildAsync(CancellationToken ct = default)
     {
+        await _rebuildGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await RebuildCoreAsync(ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _rebuildGate.Release();
+        }
+    }
+
+    private async Task RebuildCoreAsync(CancellationToken ct)
+    {
         var checkpoint = await _store.GetCheckpointAsync(ProjectionName, ct).ConfigureAwait(false);
         var latestSequence = await _eventStore.GetLatestSequenceAsync(ct).ConfigureAwait(false);
 
@@ -48,7 +65,7 @@ public sealed class SecurityMasterRebuildOrchestrator
             return;
         }
 
-        if (checkpoint is null || _cache.Count == 0)
+        if (checkpoint is null || _cache.Count == 0 || Volatile.Read(ref _cacheReadbackPending) != 0)
         {
             // The cache must catch up with the committed batch before the cancellable conflict
             // scan: the checkpoint has already advanced, so a cancellation escaping the scan
@@ -60,10 +77,15 @@ public sealed class SecurityMasterRebuildOrchestrator
                 async token =>
                 {
                     var records = await _projectionService.BuildWarmSetAsync(token).ConfigureAwait(false);
+                    Interlocked.Exchange(ref _cacheReadbackPending, 1);
                     await _store.PersistProjectionBatchAsync(ProjectionName, latestSequence, records, token).ConfigureAwait(false);
-                    return records;
+                    // A newer writer may have committed after BuildWarmSet read. The durable
+                    // version guard skips our stale rows; publish the effective committed set,
+                    // including its membership, rather than reinstalling the prepared snapshot.
+                    return await _store.LoadAllAsync(token).ConfigureAwait(false);
                 },
                 ct).ConfigureAwait(false);
+            Interlocked.Exchange(ref _cacheReadbackPending, 0);
             var deferredWarmSecurityIds = await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false);
             await RetryDeferredConflictDetectionAsync(deferredWarmSecurityIds, ct).ConfigureAwait(false);
             _logger.LogInformation(
@@ -103,17 +125,20 @@ public sealed class SecurityMasterRebuildOrchestrator
                 cursor = Math.Max(cursor, @event.GlobalSequence ?? cursor);
             }
 
+            Interlocked.Exchange(ref _cacheReadbackPending, 1);
             await _store.PersistProjectionBatchAsync(ProjectionName, cursor, rebuiltRecords, ct).ConfigureAwait(false);
+            var persistedRecords = await ReadBackProjectionsAsync(rebuiltRecords, ct).ConfigureAwait(false);
             // The cache must catch up with the committed batch before the cancellable conflict
             // scan: the checkpoint has already advanced, so a cancellation escaping the scan
             // would otherwise leave these records permanently stale in a nonempty cache — the
             // next rebuild takes the checkpoint-current path and never revisits them.
-            foreach (var rebuilt in rebuiltRecords)
+            foreach (var persisted in persistedRecords)
             {
-                _cache.Upsert(rebuilt);
+                _cache.Upsert(persisted);
             }
+            Interlocked.Exchange(ref _cacheReadbackPending, 0);
 
-            deferredConflictSecurityIds.UnionWith(await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false));
+            deferredConflictSecurityIds.UnionWith(await TryRecordConflictsAsync(persistedRecords, ct).ConfigureAwait(false));
         }
 
         await RetryDeferredConflictDetectionAsync(deferredConflictSecurityIds, ct).ConfigureAwait(false);
@@ -135,7 +160,19 @@ public sealed class SecurityMasterRebuildOrchestrator
     public async Task<int> RebuildAssetClassAsync(string assetClass, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(assetClass);
+        await _rebuildGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await RebuildAssetClassCoreAsync(assetClass, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _rebuildGate.Release();
+        }
+    }
 
+    private async Task<int> RebuildAssetClassCoreAsync(string assetClass, CancellationToken ct)
+    {
         var seeds = await _store.LoadAllAsync(ct).ConfigureAwait(false);
         var rebuiltRecords = new List<SecurityProjectionRecord>();
         foreach (var seed in seeds)
@@ -152,13 +189,20 @@ public sealed class SecurityMasterRebuildOrchestrator
             }
         }
 
+        var readbackWasPending = Interlocked.Exchange(ref _cacheReadbackPending, 1);
         foreach (var rebuilt in rebuiltRecords)
         {
             await _store.UpsertProjectionAsync(rebuilt, ct).ConfigureAwait(false);
-            _cache.Upsert(rebuilt);
         }
+        var persistedRecords = await ReadBackProjectionsAsync(rebuiltRecords, ct).ConfigureAwait(false);
+        foreach (var persisted in persistedRecords)
+        {
+            _cache.Upsert(persisted);
+        }
+        if (readbackWasPending == 0)
+            Interlocked.Exchange(ref _cacheReadbackPending, 0);
 
-        var deferredSecurityIds = await TryRecordConflictsAsync(rebuiltRecords, ct).ConfigureAwait(false);
+        var deferredSecurityIds = await TryRecordConflictsAsync(persistedRecords, ct).ConfigureAwait(false);
         await RetryDeferredConflictDetectionAsync(deferredSecurityIds, ct).ConfigureAwait(false);
 
         _logger.LogInformation(
@@ -166,6 +210,21 @@ public sealed class SecurityMasterRebuildOrchestrator
             rebuiltRecords.Count,
             assetClass);
         return rebuiltRecords.Count;
+    }
+
+    private async Task<IReadOnlyList<SecurityProjectionRecord>> ReadBackProjectionsAsync(
+        IReadOnlyList<SecurityProjectionRecord> preparedRecords, CancellationToken ct)
+    {
+        var persistedRecords = new List<SecurityProjectionRecord>(preparedRecords.Count);
+        foreach (var securityId in preparedRecords.Select(record => record.SecurityId).Distinct())
+        {
+            var persisted = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+            if (persisted is null)
+                _cache.Remove(securityId);
+            else
+                persistedRecords.Add(persisted);
+        }
+        return persistedRecords;
     }
 
     /// <summary>

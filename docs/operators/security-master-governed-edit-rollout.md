@@ -194,8 +194,10 @@ credentials, session cookies and production secrets out of the packet.
 Each receipt needs its environment, exact artifact/revision, timestamp, responsible person and
 durable link. Mark unperformed checks and missing decisions pending. The evidence table above is
 the retrieved source baseline, not a completed production packet. Shared typed-schedule validation
-(#3126), explicit payload-family discrimination (#3127), alias-history semantics and shared economics
-remain separately scoped work; this rollout does not certify them.
+(#3126), explicit payload-family discrimination (#3127), durable historical visibility evidence and
+shared economics remain separately scoped work; this rollout does not certify them. The identifier
+lookup contract in #3131 uses stored timestamps for eligibility and explicitly excludes historical
+commit visibility; repeated queries can change when an earlier-timestamped transaction commits later.
 
 ## Related References
 

@@ -9,16 +9,15 @@ using Xunit;
 namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
-/// Verifies point-in-time (transaction-time) reads over the security-master event stream:
-/// as-of queries replay the stream up to the requested timestamp instead of returning the
-/// current projection.
+/// Verifies stored event/revision timestamp eligibility. These queries read retained rows now;
+/// their timestamp cutoff does not assert historical transaction visibility or commit ordering.
 /// </summary>
 public sealed class SecurityMasterQueryServiceAsOfTests
 {
     private static readonly DateTimeOffset T0 = new(2025, 1, 15, 0, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public async Task GetByIdAsOfAsync_ReturnsTermsAsRecordedAtThatTime()
+    public async Task GetByIdAsOfAsync_ReturnsTermsFromTimestampEligibleEvents()
     {
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
@@ -100,7 +99,7 @@ public sealed class SecurityMasterQueryServiceAsOfTests
 
         var detail = await service.GetRecordedByIdAsOfAsync(securityId, T0);
 
-        detail.Should().BeNull("strict accounting as-of reads require retained historical events");
+        detail.Should().BeNull("this retained-event query requires an eligible retained event");
     }
 
     [Fact]

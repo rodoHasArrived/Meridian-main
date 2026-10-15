@@ -131,6 +131,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // amendment's value in a durably recorded conflict.
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var amendmentGate = await AmendmentGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
+        SecurityProjectionRecord? persistedProjection = null;
         try
         {
             await RecordFieldConflictsBeforePersistAsync(currentProjection, projection, ct).ConfigureAwait(false);
@@ -145,7 +146,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
             await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
             await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-            OnProjectionCommitted(projection);
+            persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
             // A governed field that just changed invalidates any prior conflict-resolution attribution
             // for that path: the recorded winner no longer supplied the current value. Changed paths
             // are computed independently of cross-source conflict creation — the previous winner
@@ -168,13 +169,15 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // refreshing them before AppendAsync's ExpectedVersion check could mutate the governed
         // conflict queue for an amendment the event store then rejects. Best-effort — a failed
         // sweep leaves conflicts Open, where the resolve-time guard reconciles them lazily.
-        await TryReconcileOpenFieldConflictsAsync(projection, _serviceCts.Token).ConfigureAwait(false);
+        if (persistedProjection is not null)
+            await TryReconcileOpenFieldConflictsAsync(persistedProjection, _serviceCts.Token).ConfigureAwait(false);
         // The snapshot and identifier-conflict steps are post-commit too: the event append and
         // projection upsert are durable, so a canceled request token must not surface a canceled
         // amendment (the retry would fail concurrency on the advanced version). Local cache and
         // registry coherence has already been scheduled at the projection commit boundary.
         await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
-        await TryRecordConflictsAsync(projection, request.SecurityId, _serviceCts.Token).ConfigureAwait(false);
+        if (persistedProjection is not null)
+            await TryRecordConflictsAsync(persistedProjection, request.SecurityId, _serviceCts.Token).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action re-fetch so that updated identifiers
         // (e.g. ticker changes after a merger rename) are reflected in the backfill history.
@@ -271,7 +274,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-        OnProjectionCommitted(projection);
+        await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
     }
 
@@ -316,7 +319,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [envelope], ct).ConfigureAwait(false);
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-        OnProjectionCommitted(projection);
+        var persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
         // Creation is the first canonical write of every governed field the record supplies, so it
         // seeds the per-field attribution the same way an amend does — diffed against an empty
         // baseline instead of a previous revision, and immediately after the projection write to
@@ -326,7 +329,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         await TryRecordCanonicalFieldAttributionAsync(seededGovernedFields, projection, _serviceCts.Token).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
 
-        await TryRecordConflictsAsync(projection, request.SecurityId, _serviceCts.Token).ConfigureAwait(false);
+        if (persistedProjection is not null)
+            await TryRecordConflictsAsync(persistedProjection, request.SecurityId, _serviceCts.Token).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action backfill for the newly-created security so
         // that historical corp action data is available immediately for backtesting.
@@ -356,62 +360,57 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     }
 
     /// <summary>
-    /// Install local coherence as soon as the projection is durable. Later snapshot or lineage
-    /// failures cannot skip this node's update, and request cancellation cannot cancel its reseed.
-    /// This node ignores its own projection notification, so it cannot rely on the listener to heal.
+    /// A projection write may be superseded before it reaches the store. Publish only durable
+    /// readback state, never the prepared command candidate. Later failures cannot skip recovery;
+    /// the request token cannot cancel the cache refresh or authoritative registry reseed.
     /// </summary>
-    private void OnProjectionCommitted(SecurityProjectionRecord projection)
+    private async Task<SecurityProjectionRecord?> OnProjectionCommittedAsync(Guid securityId)
     {
-        _projectionCache?.Upsert(projection);
         TryReseedRegistryInBackground();
+        if (_projectionCache is null && _conflictService is null)
+            return null;
+
+        var refreshed = await TryRefreshProjectionCacheAsync(securityId).ConfigureAwait(false);
+        if (!refreshed.Succeeded)
+            RetryProjectionCacheRefreshInBackground(securityId, recordConflicts: true);
+        return refreshed.Projection;
     }
 
-    /// <summary>First delay before retrying a failed post-commit alias cache refresh; doubles up to a minute.</summary>
+    /// <summary>First delay before retrying a failed post-commit projection refresh; doubles up to a minute.</summary>
     internal TimeSpan AliasCacheRefreshRetryDelay { get; init; } = TimeSpan.FromSeconds(5);
 
     /// <summary>
-    /// Rereads the security after a committed alias write and installs it in the cache, then reseeds
-    /// the registry. The alias is durable once the store returns, so this never turns a committed
-    /// write into a reported failure: it ignores the request token and returns <see langword="false"/>
-    /// on a failed reread instead of throwing. Inside the cache's refresh gate the reread starts after
-    /// every earlier refresh (local or from a remote notification) finished, so the last update
-    /// reflects the latest committed alias state.
+    /// Rereads committed state and installs it under the same gate as remote refreshes, then
+    /// reseeds. A failed read is retriable and cannot turn the accepted event/alias into a rollback.
     /// </summary>
-    private async Task<bool> TryRefreshAliasCacheAsync(Guid securityId, Guid aliasId)
+    private async Task<(bool Succeeded, SecurityProjectionRecord? Projection)> TryRefreshProjectionCacheAsync(Guid securityId)
     {
-        await _projectionCache!.RefreshGate.WaitAsync(_serviceCts.Token).ConfigureAwait(false);
+        if (_projectionCache is not null)
+            await _projectionCache.RefreshGate.WaitAsync(_serviceCts.Token).ConfigureAwait(false);
         try
         {
-            if (await _store.GetProjectionAsync(securityId, _serviceCts.Token).ConfigureAwait(false) is { } projection)
-            {
-                _projectionCache.Upsert(projection);
-                TryReseedRegistryInBackground();
-            }
-
-            return true;
+            var projection = await _store.GetProjectionAsync(securityId, _serviceCts.Token).ConfigureAwait(false);
+            if (projection is null)
+                _projectionCache?.Remove(securityId);
+            else
+                _projectionCache?.Upsert(projection);
+            TryReseedRegistryInBackground();
+            return (true, projection);
         }
         catch (Exception ex) when (ex is not OperationCanceledException || !_serviceCts.IsCancellationRequested)
         {
-            _logger.LogWarning(
-                ex,
-                "Security Master alias {AliasId} committed but the local projection cache refresh for {SecurityId} failed; it will be retried",
-                aliasId,
+            _logger.LogWarning(ex,
+                "Security Master write committed but local projection refresh for {SecurityId} failed; it will be retried",
                 securityId);
-            return false;
+            return (false, null);
         }
         finally
         {
-            _projectionCache.RefreshGate.Release();
+            _projectionCache?.RefreshGate.Release();
         }
     }
 
-    /// <summary>
-    /// Retries a failed post-commit alias cache refresh until it succeeds or the service stops. This
-    /// node ignores its own projection-change notification and periodic re-warm is off by default, so
-    /// without a retry nothing would revisit the security and the cache and registry would keep
-    /// serving the superseded alias.
-    /// </summary>
-    private void RetryAliasCacheRefreshInBackground(Guid securityId, Guid aliasId)
+    private void RetryProjectionCacheRefreshInBackground(Guid securityId, bool recordConflicts = false)
     {
         var ct = _serviceCts.Token;
         _ = Task.Run(async () =>
@@ -419,12 +418,21 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             var delay = AliasCacheRefreshRetryDelay;
             try
             {
-                do
+                while (true)
                 {
                     await Task.Delay(delay, ct).ConfigureAwait(false);
+                    var refreshed = await TryRefreshProjectionCacheAsync(securityId).ConfigureAwait(false);
+                    if (refreshed.Succeeded)
+                    {
+                        if (recordConflicts && refreshed.Projection is { } projection)
+                        {
+                            await TryReconcileOpenFieldConflictsAsync(projection, ct).ConfigureAwait(false);
+                            await TryRecordConflictsAsync(projection, securityId, ct).ConfigureAwait(false);
+                        }
+                        return;
+                    }
                     delay = TimeSpan.FromTicks(Math.Min(delay.Ticks * 2, TimeSpan.FromMinutes(1).Ticks));
                 }
-                while (!await TryRefreshAliasCacheAsync(securityId, aliasId).ConfigureAwait(false));
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -1805,10 +1813,11 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
         // Aliases are part of the cached projection and seed the canonical registry, so a new or
         // corrected alias refreshes both here; other nodes refresh from the store's notification.
+        TryReseedRegistryInBackground();
         if (_projectionCache is not null
-            && !await TryRefreshAliasCacheAsync(alias.SecurityId, alias.AliasId).ConfigureAwait(false))
+            && !(await TryRefreshProjectionCacheAsync(alias.SecurityId).ConfigureAwait(false)).Succeeded)
         {
-            RetryAliasCacheRefreshInBackground(alias.SecurityId, alias.AliasId);
+            RetryProjectionCacheRefreshInBackground(alias.SecurityId);
         }
 
         return persisted;

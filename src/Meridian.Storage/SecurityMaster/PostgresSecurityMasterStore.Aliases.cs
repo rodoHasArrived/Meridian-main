@@ -7,8 +7,8 @@ namespace Meridian.Storage.SecurityMaster;
 /// <summary>
 /// Alias write and recorded-history paths. <c>security_aliases</c> holds the current alias row used by
 /// identifier resolution and posting authority. Every recorded change to an alias first appends a row
-/// to the append-only <c>security_alias_revisions</c> table, so a correction updates the current row
-/// without rewriting what an older recorded-as-of view reports.
+/// to the append-only <c>security_alias_revisions</c> table without overwriting earlier revisions.
+/// Recorded-as-of reads filter stored timestamp eligibility; these are not historical commit-visibility snapshots.
 /// </summary>
 public sealed partial class PostgresSecurityMasterStore
 {
@@ -71,8 +71,8 @@ public sealed partial class PostgresSecurityMasterStore
             if (!existing.Unchanged)
             {
                 // A material correction appends the next revision (recorded by the correcting actor)
-                // before replacing the current row, so older recorded-as-of views keep the prior values.
-                // An identical replay appends nothing.
+                // before replacing the current row. Earlier revision rows remain retained; a write
+                // committed later may still satisfy an earlier timestamp cutoff. Identical replay appends nothing.
                 await AppendAliasRevisionAsync(connection, transaction, alias, alias.CreatedBy, ct).ConfigureAwait(false);
                 await UpdateCurrentAliasAsync(connection, transaction, alias, ct).ConfigureAwait(false);
             }
@@ -261,11 +261,12 @@ public sealed partial class PostgresSecurityMasterStore
     }
 
     /// <summary>
-    /// Appends the next revision for <paramref name="alias"/>. The first revision is recorded at the
-    /// alias creation time; migration 038 also marks pre-existing aliases with a separate history
+    /// Appends the next revision for <paramref name="alias"/>. The first timestamp preserves the
+    /// caller's alias creation stamp; migration 038 also marks pre-existing aliases with a separate history
     /// availability boundary, since their pre-migration corrections are unknown. Later revisions are recorded at the
-    /// database transaction time, kept strictly after the previous revision so revision order and
-    /// recorded order cannot disagree.
+    /// database transaction-start time, kept strictly after the previous revision so revision order and
+    /// timestamp order cannot disagree. These timestamps may precede parent-lock waits and commit;
+    /// they determine eligibility, not historical transaction visibility.
     /// </summary>
     private async Task AppendAliasRevisionAsync(
         NpgsqlConnection connection,

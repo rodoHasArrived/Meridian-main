@@ -17,20 +17,25 @@ public interface ISecurityMasterStore
     /// the returned value rather than the one they passed — as-of rebuilds filter on <c>CreatedAt</c>,
     /// so a caller that echoes a freshly stamped creation time would report an identifier as newer than
     /// it is. An identical replay records nothing; a material change appends an alias revision recorded
-    /// by <see cref="SecurityAliasDto.CreatedBy"/> and then updates the current row, leaving earlier
-    /// recorded-as-of views (<see cref="GetAliasesRecordedAsOfAsync"/>) unchanged. Re-pointing an alias
+    /// by <see cref="SecurityAliasDto.CreatedBy"/> and then updates the current row without replacing
+    /// earlier revisions. Timestamp-eligible views can change when an in-flight write commits.
+    /// Re-pointing an alias
     /// ID at a different security throws <see cref="SecurityAliasHistoryConflictException"/>.
     /// Returns <c>null</c> only when the store cannot read the row back.
     /// </summary>
     Task<SecurityAliasDto?> UpsertAliasAsync(SecurityAliasDto alias, CancellationToken ct = default);
 
     /// <summary>
-    /// Returns the security's aliases as they were recorded at <paramref name="recordedAsOfUtc"/>
-    /// (transaction time): for each alias, the latest revision recorded at or before the cutoff,
-    /// omitting aliases not yet recorded or already retired by then. <c>CreatedBy</c>/<c>CreatedAt</c>
+    /// Returns each alias's latest retained revision whose stored recording timestamp is at or
+    /// before <paramref name="recordedAsOfUtc"/>, omitting eligible retirement revisions.
+    /// <c>CreatedBy</c>/<c>CreatedAt</c>
     /// carry the alias's original creation facts. Valid-time filtering is left to the caller.
     /// Pre-existing aliases whose revision history began at migration 038 are omitted for earlier
     /// cutoffs: their prior values are unavailable, and an empty result cannot certify no aliases existed.
+    /// Initial recording timestamps preserve caller creation stamps; subsequent timestamps use
+    /// transaction-start time with monotonic revision ordering. Neither these timestamps nor the
+    /// migration availability marker prove commit visibility. A later commit can change the result
+    /// for the same cutoff; this query observes rows when it executes.
     /// </summary>
     Task<IReadOnlyList<SecurityAliasDto>> GetAliasesRecordedAsOfAsync(
         Guid securityId,
