@@ -25,7 +25,8 @@ public sealed class DailyPortfolioPricingDeltaTests
     {
         var mark = Mark("AAPL", Guid.NewGuid(), 100m, 110m, 1000m, "price://aapl/shared-close");
         AutomatedJournalDraft Draft(string entityId) => DailyPortfolioPricingDraftBuilder.BuildDrafts(
-            new DailyPortfolioPricingInput(Policy, "2026-07", AsOf, "USD", [mark], entityId)).Single();
+            DailyPortfolioPricingProjector.Project(
+                new DailyPortfolioPricingInput(Policy, "2026-07", AsOf, "USD", [mark], entityId))).Single();
 
         var first = Draft("entity-a");
         var second = Draft("entity-b");

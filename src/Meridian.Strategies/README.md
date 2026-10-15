@@ -57,6 +57,8 @@ Live and paper metrics retain the worst currency decline and worst percentage de
 Calmar and promotion gates use the percentage maximum even when a later, larger currency loss has a
 smaller percentage impact. Backtest metrics use the same convention and include initial capital as
 the first equity peak.
+Unavailable live-summary XIRR is retained as JSON null and restored to its SDK NaN marker, so terminal
+metrics survive durable replay. Other metric and input fields retain strict finite-number handling.
 `StrategyRunEntry.FundAccountId` retains the authorized execution account independently of fund
 profile and financial-account labels. Promotion copies it to the target, durable scoped runs bind it
 in the v5 input hash, and replay and lifecycle updates reject account mutation or removal. Production

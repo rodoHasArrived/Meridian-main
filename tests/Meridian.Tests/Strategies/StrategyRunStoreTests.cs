@@ -7,6 +7,7 @@ using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Operations;
 using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Live;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Storage;
 using Xunit;
@@ -15,6 +16,35 @@ namespace Meridian.Tests.Strategies;
 
 public sealed class StrategyRunStoreTests
 {
+    [Fact]
+    public async Task DurableStore_SummaryMetricsRetainUnavailableXirrAfterRestart()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var run = StrategyRunEntry.StartForFundAccount("summary", "Summary Strategy", RunType.Live, Guid.NewGuid());
+            var result = new LiveRunMetricsTracker(100m, run.StartedAt).Build(
+                "BrokerLive", new HashSet<string>(), 100m, new Meridian.Ledger.Ledger(), DateTimeOffset.UtcNow);
+            await store.RecordRunAsync(run);
+            var invalid = result with { Metrics = result.Metrics with { SharpeRatio = double.NaN } };
+            var rejectInvalidMetric = () => store.RecordRunAsync(run.Complete(invalid));
+            await rejectInvalidMetric.Should().ThrowAsync<ArgumentException>();
+            await store.RecordRunAsync(run.Complete(result));
+
+            var replayed = (await new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot))
+                .GetRunByIdAsync(run.RunId))!;
+            replayed.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            replayed.Metrics!.EngineMetadata!.ResultKind.Should().Be(BacktestResultKinds.SummaryOnly);
+            double.IsNaN(replayed.Metrics.Metrics.Xirr).Should().BeTrue();
+            replayed.FundAccountId.Should().Be(run.FundAccountId);
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
     [Fact]
     public void StartForFundAccount_RequiresAnExplicitNonEmptyAccount()
     {

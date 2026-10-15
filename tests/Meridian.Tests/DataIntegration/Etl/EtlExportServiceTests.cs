@@ -60,6 +60,7 @@ public sealed class EtlExportServiceTests : IDisposable
         var export = () => service.ExportAsync(new IngestionJob { JobId = "retry" }, new EtlJobDefinition
         {
             JobId = "retry",
+            FlowDirection = EtlFlowDirection.Export,
             PartnerSchemaId = "partner.trades.csv.v1",
             LogicalSourceName = "test",
             Source = new EtlSourceDefinition { Kind = EtlSourceKind.Local, Location = sourceDirectory },
@@ -109,6 +110,7 @@ public sealed class EtlExportServiceTests : IDisposable
         var result = await service.ExportAsync(new IngestionJob { JobId = "date-range" }, new EtlJobDefinition
         {
             JobId = "date-range",
+            FlowDirection = EtlFlowDirection.Export,
             PartnerSchemaId = "partner.trades.csv.v1",
             LogicalSourceName = "test",
             Source = new EtlSourceDefinition { Kind = EtlSourceKind.Local, Location = directory },

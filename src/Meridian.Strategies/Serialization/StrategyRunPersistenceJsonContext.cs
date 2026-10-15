@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Meridian.Backtesting.Sdk;
 using Meridian.Ledger;
 using Meridian.Strategies.Models;
@@ -33,10 +34,65 @@ internal static class StrategyRunPersistenceJson
     private static JsonSerializerOptions CreateOptions()
     {
         var options = new JsonSerializerOptions(StrategyRunPersistenceJsonContext.Default.Options);
+        options.TypeInfoResolver = StrategyRunPersistenceJsonContext.Default.WithAddedModifier(static typeInfo =>
+        {
+            if (typeInfo.Type != typeof(BacktestMetrics))
+            {
+                return;
+            }
+
+            foreach (var property in typeInfo.Properties)
+            {
+                if (string.Equals(property.Name, nameof(BacktestMetrics.Xirr), StringComparison.OrdinalIgnoreCase))
+                {
+                    property.CustomConverter = new UnavailableXirrJsonConverter();
+                }
+            }
+        });
         options.Converters.Add(new CashFlowEntryJsonConverter());
         options.Converters.Add(new ReadOnlyLedgerJsonConverter());
         options.Converters.Add(new ReadOnlyStringSetJsonConverter());
         return options;
+    }
+}
+
+/// <summary>
+/// The live summary contract marks unavailable XIRR with NaN. Retain that absence as JSON null
+/// without allowing named floating-point values in other metric or strategy-input fields.
+/// </summary>
+internal sealed class UnavailableXirrJsonConverter : JsonConverter<double>
+{
+    public override bool HandleNull => true;
+
+    public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.Null)
+        {
+            return double.NaN;
+        }
+
+        if (reader.TokenType == JsonTokenType.Number && reader.TryGetDouble(out var value) && double.IsFinite(value))
+        {
+            return value;
+        }
+
+        throw new JsonException("Retained XIRR must be a finite number or null when unavailable.");
+    }
+
+    public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
+    {
+        if (double.IsNaN(value))
+        {
+            writer.WriteNullValue();
+        }
+        else if (double.IsFinite(value))
+        {
+            writer.WriteNumberValue(value);
+        }
+        else
+        {
+            throw new JsonException("Retained XIRR must be finite or explicitly unavailable.");
+        }
     }
 }
 
