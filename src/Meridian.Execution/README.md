@@ -18,6 +18,8 @@ they cannot turn a working order into a terminal rejection. These controls suppo
 Unconfirmed replacements retain conservative amended exposure and require recovery. Retained
 orders and compacted tombstones keep replacement aliases so restart and late callbacks preserve
 the original order identity.
+Open-order limits recognize a working order's prior broker IDs in stale snapshots. Multiple chain
+members reported as open still consume separate slots.
 
 Broker-dispatched client IDs, run/account ownership and processed fill watermarks are retained by
 `FileBrokerageOrderRecoveryStore` before dispatch. An ambiguous acknowledgement keeps exposure
