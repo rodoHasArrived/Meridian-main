@@ -10,6 +10,7 @@ namespace Meridian.Tests.Execution;
 
 public sealed partial class OrderManagementSystemAmendmentRecoveryTests
 {
+    private static readonly Guid RecoveryAccountId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     [Theory]
     [InlineData(8, true)]
     [InlineData(8, false)]
@@ -74,7 +75,7 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
                 restartedOms.GetRecoveryOrders().Should().ContainSingle();
             }
 
-            await recovery.RecoverOrdersAsync(recoveredGateway, restartedOms, fundAccountId: null);
+            await recovery.RecoverOrdersAsync(recoveredGateway, restartedOms, fundAccountId: RecoveryAccountId);
 
             recoveredGateway.RecoveredContext!.CandidateClientOrderId.Should().Be("attempted-ref");
             recoveredGateway.RecoveredState!.FilledQuantity.Should().Be(2m);
@@ -186,7 +187,7 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
                 (await oms.PlaceOrderAsync(RecoveryRequest())).Success.Should().BeTrue();
                 (await oms.ModifyOrderAsync("local", new OrderModification { NewQuantity = 20m })).Success.Should().BeFalse();
 
-                await recovery.RecoverOrdersAsync(gateway, oms, fundAccountId: null);
+                await recovery.RecoverOrdersAsync(gateway, oms, fundAccountId: RecoveryAccountId);
 
                 inner.RecoveredContext.Should().NotBeNull();
                 oms.GetOrder("local")!.Quantity.Should().Be(20m);
@@ -197,7 +198,7 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
             await using var restarted = CreateRecoveryOms(freshGateway, path);
             restarted.GetRecoveryOrders().Should().ContainSingle();
 
-            await recovery.RecoverOrdersAsync(freshGateway, restarted, fundAccountId: null);
+            await recovery.RecoverOrdersAsync(freshGateway, restarted, fundAccountId: RecoveryAccountId);
 
             restarted.GetRecoveryOrders().Should().ContainSingle("ordinary recovery is unsupported and must remain unresolved");
             freshInner.RecoveredContext.Should().BeNull();
@@ -219,6 +220,7 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
         Symbol = "AAPL",
         Side = OrderSide.Buy,
         Type = OrderType.Limit,
+        FundAccountId = RecoveryAccountId,
         Quantity = 10m,
         LimitPrice = 100m
     };

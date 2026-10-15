@@ -99,7 +99,8 @@ public sealed class OpenFigiSymbolResolver : ISymbolResolver, IDisposable
 
             if (mapping is null)
             {
-                _log.Debug("No unambiguous FIGI mapping found for {Symbol} on {Exchange}", symbol, exchange);
+                _log.Debug("No unambiguous FIGI mapping found for {Symbol} on {Exchange}",
+                    symbol.Replace('\r', '_').Replace('\n', '_'), exchange?.Replace('\r', '_').Replace('\n', '_'));
                 return null;
             }
 

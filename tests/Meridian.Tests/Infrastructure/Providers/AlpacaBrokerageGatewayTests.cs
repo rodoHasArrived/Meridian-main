@@ -337,9 +337,6 @@ public sealed partial class AlpacaBrokerageGatewayTests
         var responses = new Queue<HttpResponseMessage>(new[]
         {
             new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("ord-1") },
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("candidate", "pending_new", replaces: "ord-1") },
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("ord-1", "pending_replace") },
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("candidate", "pending_new", replaces: "ord-1") },
             new HttpResponseMessage(HttpStatusCode.NoContent),
             new HttpResponseMessage(HttpStatusCode.NotFound),
         });
@@ -649,6 +646,9 @@ public sealed partial class AlpacaBrokerageGatewayTests
         var responses = new Queue<HttpResponseMessage>(new[]
         {
             new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("ord-1") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("candidate", "pending_new", replaces: "ord-1") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("ord-1", "pending_replace") },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse("candidate", "pending_new", replaces: "ord-1") },
         });
         var sut = CreateSut(new SequentialStubHandler(responses), tradeUpdates: stream);
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));

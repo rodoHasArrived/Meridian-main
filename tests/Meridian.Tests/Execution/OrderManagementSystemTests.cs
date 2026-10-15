@@ -442,7 +442,8 @@ public sealed class OrderManagementSystemTests : IDisposable
     [Fact]
     public async Task ModifyOrderAsync_WhenAuditTrailConfigured_RecordsModificationOutcome()
     {
-        var gateway = Substitute.For<IExecutionGateway>();
+        var gateway = Substitute.For<IExecutionGateway, IExecutionGatewayModeProvider>();
+        ((IExecutionGatewayModeProvider)gateway).ExecutionMode.Returns(ExecutionMode.Paper);
         gateway.GatewayId.Returns("ibkr");
         gateway.SubmitOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
@@ -495,6 +496,8 @@ public sealed class OrderManagementSystemTests : IDisposable
             LimitPrice = 100m
         });
 
+        placed.Success.Should().BeTrue();
+        placed.OrderState!.Status.Should().Be(OrderStatus.Accepted);
         var result = await oms.ModifyOrderAsync(placed.OrderId, new OrderModification
         {
             NewQuantity = 12m,
@@ -1022,6 +1025,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             }
         });
         placed.Success.Should().BeTrue();
+        placed.OrderState!.Status.Should().Be(OrderStatus.Accepted);
 
         var probes = new List<OrderRequest>();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
@@ -1086,6 +1090,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             }
         });
         placed.Success.Should().BeTrue();
+        placed.OrderState!.Status.Should().Be(OrderStatus.Accepted);
 
         var probes = new List<OrderRequest>();
         riskValidator.ValidateOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
@@ -1112,6 +1117,20 @@ public sealed class OrderManagementSystemTests : IDisposable
         : TypedPaperExecutionGatewayBase(gatewayId), INotionalOrderSizingGateway
     {
         public bool RoutesNotionalMetadata(OrderRequest request) => true;
+
+        public override async Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default)
+        {
+            var report = await base.SubmitOrderAsync(request, ct);
+            return request.Type is OrderType.Limit
+                ? report with
+                {
+                    ReportType = ExecutionReportType.New,
+                    OrderStatus = OrderStatus.Accepted,
+                    FilledQuantity = 0m,
+                    FillPrice = null
+                }
+                : report;
+        }
     }
 
     private sealed class TypedPaperExecutionGateway(string gatewayId)
@@ -1129,7 +1148,7 @@ public sealed class OrderManagementSystemTests : IDisposable
 
         public Task DisconnectAsync(CancellationToken ct = default) => Task.CompletedTask;
 
-        public Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default) =>
+        public virtual Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default) =>
             Task.FromResult(new ExecutionReport
             {
                 OrderId = request.ClientOrderId ?? "paper-1",
