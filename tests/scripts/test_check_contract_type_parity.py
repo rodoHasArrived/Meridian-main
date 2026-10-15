@@ -112,6 +112,21 @@ class ContractTypeParityTests(unittest.TestCase):
         )
         self.assertEqual(1, self.run_gate(self.write_registry()))
 
+    def test_attributed_nullable_array_is_compared_as_a_collection(self) -> None:
+        self.csharp_path.write_text(
+            'public record SampleDto([property: JsonPropertyName("rows")] '
+            'string[]? Rows = null);', encoding="utf-8"
+        )
+        self.typescript_path.write_text(
+            "export interface SampleDto { rows: string[] | null; }", encoding="utf-8"
+        )
+        self.assertEqual(0, self.run_gate(self.write_registry()))
+
+        self.typescript_path.write_text(
+            "export interface SampleDto { rows: string | null; }", encoding="utf-8"
+        )
+        self.assertEqual(1, self.run_gate(self.write_registry()))
+
     def test_missing_record_fails_rather_than_skipping(self) -> None:
         registry = self.write_registry(
             pairs=[
@@ -137,6 +152,22 @@ class ContractTypeParityTests(unittest.TestCase):
             known_divergences=[self.pair("SampleDto")],
         )
         self.assertEqual(0, self.run_gate(registry))
+
+    def test_json_report_retains_diagnostics_for_exemption_review(self) -> None:
+        self.typescript_path.write_text(TYPESCRIPT.replace("title:", "heading:"), encoding="utf-8")
+        registry = self.write_registry(
+            pairs=[self.pair("OtherDto")], known_divergences=[self.pair("SampleDto")],
+        )
+        output = self.root / "parity.json"
+
+        self.assertEqual(0, MODULE.main([
+            "--registry", str(registry), "--repo-root", str(self.root), "--json-output", str(output),
+        ]))
+
+        report = json.loads(output.read_text(encoding="utf-8"))
+        self.assertEqual(["SampleDto"], report["still_diverging"])
+        self.assertEqual(2, len(report["divergence_details"]["SampleDto"]))
+        self.assertIn("'title'", report["divergence_details"]["SampleDto"][0])
 
     def test_new_drift_still_fails_alongside_a_known_divergence(self) -> None:
         # Both drift: the recorded one is tolerated, the enforced one is not.
@@ -184,6 +215,52 @@ class ContractTypeParityTests(unittest.TestCase):
             enforced & exempt,
             "a pair cannot be both enforced and exempt",
         )
+
+
+class CSharpArrayParsingTests(unittest.TestCase):
+    def test_comments_do_not_hide_or_change_collection_parameters(self) -> None:
+        members = MODULE.parse_csharp_record('''
+            public record Sample(
+                // A nullable collection, with documentation punctuation: [] ()
+                IReadOnlyList<string>? Values = null,
+                /* Another collection, with a default. */
+                [property: Example("https://example.test/*value*/")]
+                string[]? Tags = null);
+        ''', "Sample")
+
+        self.assertEqual({
+            "Values": {"type": "IReadOnlyList<string>?", "nullable": True, "collection": True},
+            "Tags": {"type": "string[]?", "nullable": True, "collection": True},
+        }, members)
+
+    def test_array_suffixes_and_nullability_survive_attribute_removal(self) -> None:
+        for attribute in (
+            "",
+            '[property: JsonPropertyName("values")] ',
+            '[property: Example(typeof(string[]))] [Optional] ',
+            '[Description("]")] ',
+            "[Example(']')] ",
+            '[Example(new[] { "]", "(", "," })] ',
+            r'[Description("escaped \"quote ],")] ',
+            '[Description(@"verbatim ""quote ],")] ',
+        ):
+            for type_text, nullable in (
+                ("string[]", False),
+                ("string[]?", True),
+                ("string?[]", False),
+                ("string?[]?", True),
+                ("string[][]", False),
+                ("string[]?[]?", True),
+            ):
+                with self.subTest(attribute=attribute, type_text=type_text):
+                    members = MODULE.parse_csharp_record(
+                        f"public record Sample({attribute}{type_text}\n Values = null);",
+                        "Sample",
+                    )
+                    self.assertEqual(
+                        {"Values": {"type": type_text, "nullable": nullable, "collection": True}},
+                        members,
+                    )
 
 
 class DocumentedMemberParsingTests(unittest.TestCase):

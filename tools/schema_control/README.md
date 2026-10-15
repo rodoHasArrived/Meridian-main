@@ -97,6 +97,8 @@ is generated from that register and the SQL files on disk.
 highest file ordinal, skips reservations, writes a SQL scaffold, and refreshes the documentation
 table. Add `--ordinal N` to request a particular free number. Occupied numbers and reserved numbers
 are always refused, including the historical duplicate Ledger ordinal `008`.
+Generated migration paths use forward slashes on Windows and Unix. External register and
+blueprint paths must still be repository-relative, use forward slashes, and stay within the checkout.
 
 Reservations are pending plans. To implement a reserved migration, remove its pending claim from
 the register before scaffolding that number. Move remaining reservations when delivery sequencing
