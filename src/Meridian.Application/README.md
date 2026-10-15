@@ -11,6 +11,10 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.Application
 
+`StoredProviderCredentialResolver` marks retained records as authoritative and carries their
+credential environment into provider construction. Missing scoped records retain the authorized
+scope's environment and cannot select global, module, configuration or environment credentials.
+
 `ILivePositionCorporateActionAdjuster` exposes an additive overload for retained total carrying
 basis. Native paper-execution adjustments use it to avoid rebuilding basis from rounded unit
 quotes. Legacy implementers retain their original overload; a null `AdjustedTotalCostBasis`
@@ -722,7 +726,14 @@ Core workstation host. Do not introduce a second listener or independent monitor
   Reconciliation governance exception classification now lives in
   `Meridian.Strategies.Services.GovernanceExceptionService`. Report-pack generation and NAV
   attribution live in `Meridian.Reporting` rather than Application-local services.
-- `Monitoring/` - application monitoring adapters and status server support. The default
+- `Monitoring/` - application monitoring adapters and status server support. Shared pipeline
+  composition records live price/order-book ingress in `DataFreshnessSlaMonitor`, independent of
+  storage acceptance and the bounded quality-sample queue. Configured enabled symbols start with
+  one freshness threshold of grace; missing first events then violate the SLA. Subscription
+  hot reload synchronizes the monitored scope, so removed symbols and late callbacks cannot
+  recreate alerts. Its periodic snapshots update the Prometheus SLA instruments even when feeds
+  stall; market closure suppresses active violations.
+  The default
   static-backed implementation of the contracts-owned event metrics interface lives in
   `Meridian.Platform.Tracing`. Stored
   market-event schema compatibility checks, clock-skew estimation, spread monitoring, data-loss

@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 import copy
+import io
 import json
 import subprocess
 import sys
 import tempfile
 import unittest
-from pathlib import Path
+from contextlib import redirect_stderr, redirect_stdout
+from pathlib import Path, PureWindowsPath
 from unittest.mock import patch
 
+from tools.schema_control.cli import main
 from tools.schema_control.migrations import build_migration_inventory
 from tools.schema_control.reservations import (
     generate_migration_docs,
@@ -116,6 +119,44 @@ class SchemaControlReservationTests(unittest.TestCase):
         self.assertEqual(applied_bytes, existing.read_bytes())
         self.assertEqual(register_bytes, self.register_path.read_bytes())
         self.assertTrue(generate_migration_docs(self.root, self.config, check=True))
+
+    def test_new_migration_cli_normalizes_internally_generated_windows_paths(self) -> None:
+        self._migration(41, "current")
+        self._write("database/schema-control.json", json.dumps(self.config))
+        directory = self.config["migration_sets"][0]["directory"]
+        stdout, stderr = io.StringIO(), io.StringIO()
+
+        # Use Windows joining semantics for the generated relative path even on
+        # Linux CI; keep real filesystem operations and path validation intact.
+        def native_path(value):
+            return PureWindowsPath(value) if value == directory else Path(value)
+
+        with patch("tools.schema_control.reservations.Path", side_effect=native_path):
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                result = main([
+                    "--root", str(self.root), "new-migration",
+                    "--migration-set", "ledger", "--name", "windows_cli",
+                ])
+
+        self.assertEqual(0, result, stderr.getvalue())
+        relative = "src/Ledger/Migrations/V_ledger_043__windows_cli.sql"
+        self.assertEqual(f"Created migration: {relative}\n", stdout.getvalue())
+        self.assertTrue((self.root / relative).is_file())
+        self.assertIn(Path(relative).name, self.docs_path.read_text(encoding="utf-8"))
+        self.assertTrue(generate_migration_docs(self.root, self.config, check=True))
+
+    def test_external_backslash_and_parent_paths_are_still_rejected(self) -> None:
+        for value in (
+            r"database\migration-reservations.json",
+            "../migration-reservations.json",
+            r"C:\outside\migration-reservations.json",
+        ):
+            with self.subTest(value=value):
+                config = {**self.config, "migration_reservations": value}
+                before = self._snapshot()
+                with self.assertRaisesRegex(ValueError, "within the repository"):
+                    scaffold_migration(self.root, config, "ledger", "external_path")
+                self.assertEqual(before, self._snapshot())
 
     def test_concurrent_scaffolds_allocate_distinct_numbers_and_keep_docs_current(self) -> None:
         self._migration(41, "current")

@@ -171,6 +171,15 @@ uses its selected profile at every boundary. Ambiguous many-to-one mappings and
 collisions are rejected. Meridian period-close journals and their reversals are
 excluded from provider-basis balances and gross export activity.
 
+Statement matching requires compatible transaction currencies even when a security or external ID
+is present, including every split leg. Explicit FX conversion normalizes amount and observed price
+before matching; missing rates retain source currencies. Configured rules use their complete existing
+quantity, amount, basis-point, settlement-window and price evaluators. Exact pairs precede exact splits;
+then declared rule order controls matching, with pairs before splits within each transaction rule.
+Matched groups retain the actual configured rule ID. Prices constrain matching when observed on
+both sides; quantity-only positions stay quantity-only, and net cash including fees is never
+invented as an execution price. Position prices may derive from observed market value and quantity.
+
 Statement matching retains exact tolerance rules/version and matcher revision with population
 availability. Missing/failed internal populations and empty statements cannot certify source clearing;
 a narrower source feed is a distinct comparison scope. This evidence is retained with the immutable

@@ -4,6 +4,7 @@ using Meridian.Contracts.Coordination;
 using Meridian.Application.Subscriptions;
 using Meridian.Contracts.Configuration;
 using Meridian.Domain.Collectors;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
@@ -114,6 +115,56 @@ public sealed class SubscriptionOrchestratorCoordinationTests
         {
             DeleteTempDir(config.DataRoot);
         }
+    }
+
+    [Fact]
+    public async Task ApplyAsync_UpdatesFreshnessScopeAndIgnoresLateUnsubscribedEvents()
+    {
+        var clock = new SubscriptionClock(new DateTimeOffset(2026, 10, 12, 14, 0, 0, TimeSpan.Zero));
+        using var monitor = new DataFreshnessSlaMonitor(new SlaConfig
+        {
+            DefaultFreshnessThresholdSeconds = 10,
+            CheckIntervalSeconds = 3600,
+            SkipOutsideMarketHours = false
+        }, clock);
+        var publisher = new TestMarketEventPublisher();
+        var client = new TrackingMarketDataClient();
+        var orchestrator = new SubscriptionOrchestrator(new MarketDepthCollector(publisher),
+            new TradeDataCollector(publisher), client, "tracking", freshness: monitor);
+        var config = new AppConfig(Symbols:
+        [
+            new SymbolConfig("SPY", SubscribeDepth: false),
+            new SymbolConfig("QQQ", SubscribeTrades: false)
+        ]);
+        await orchestrator.ApplyAsync(config);
+        monitor.RecordEvent("SPY");
+        clock.Advance(TimeSpan.FromSeconds(21));
+        monitor.CurrentViolations.Should().Be(2);
+
+        await orchestrator.ApplyAsync(config with
+        {
+            Symbols = [new SymbolConfig("SPY", SubscribeTrades: false, SubscribeDepth: false), new SymbolConfig("MSFT")]
+        });
+        monitor.RecordEvent("SPY");
+        monitor.RecordEvent("QQQ");
+        monitor.GetSnapshot().SymbolStatuses.Should().ContainSingle(s => s.Symbol == "MSFT" && s.State == SlaState.NoData);
+        monitor.CurrentViolations.Should().Be(0);
+        clock.Advance(TimeSpan.FromSeconds(21));
+        monitor.CurrentViolations.Should().Be(1);
+
+        await orchestrator.ApplyAsync(config with { Symbols = [] });
+        monitor.RecordEvent("MSFT");
+        monitor.GetSnapshot().TotalSymbols.Should().Be(0);
+        monitor.CurrentViolations.Should().Be(0);
+
+        await orchestrator.ApplyAsync(config);
+        monitor.GetSnapshot().NoDataSymbols.Should().Be(2, "re-enabled subscriptions receive a fresh startup grace");
+    }
+
+    private sealed class SubscriptionClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+        public void Advance(TimeSpan elapsed) => now += elapsed;
     }
 
     private static CoordinationConfig CreateConfig(string dataRoot)

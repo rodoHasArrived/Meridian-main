@@ -5,6 +5,7 @@ using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Collectors;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Infrastructure;
 using Serilog;
 
@@ -30,6 +31,7 @@ public sealed class SubscriptionOrchestrator
     private readonly ISubscriptionOwnershipService? _ownershipService;
     private readonly ISecurityMasterQueryService? _securityMasterQuery;
     private readonly ILogger _log;
+    private readonly DataFreshnessSlaMonitor? _freshness;
     private readonly SemaphoreSlim _applyGate = new(1, 1);
 
     // symbol -> subscription id
@@ -46,7 +48,8 @@ public sealed class SubscriptionOrchestrator
         ISubscriptionOwnershipService? ownershipService = null,
         ILogger? log = null,
         OptionDataCollector? optionCollector = null,
-        ISecurityMasterQueryService? securityMasterQuery = null)
+        ISecurityMasterQueryService? securityMasterQuery = null,
+        DataFreshnessSlaMonitor? freshness = null)
     {
         _depthCollector = depthCollector ?? throw new ArgumentNullException(nameof(depthCollector));
         _tradeCollector = tradeCollector ?? throw new ArgumentNullException(nameof(tradeCollector));
@@ -56,6 +59,7 @@ public sealed class SubscriptionOrchestrator
         _log = log ?? LoggingSetup.ForContext<SubscriptionOrchestrator>();
         _optionCollector = optionCollector;
         _securityMasterQuery = securityMasterQuery;
+        _freshness = freshness;
 
         if (_optionCollector is not null)
             _log.Information("OptionDataCollector available; option data will be collected by the option collector, while subscriptions remain managed by SubscriptionOrchestrator");
@@ -276,6 +280,14 @@ public sealed class SubscriptionOrchestrator
                     await ReleaseOwnershipAsync("trades", symbol, ct).ConfigureAwait(false);
                 }
             }
+
+            // Scope freshness to subscriptions owned by this process. Failed local attempts
+            // retain their sentinel IDs and must still age into violations; another owner's
+            // subscriptions and deliberately disabled symbols must not page this instance.
+            _freshness?.SynchronizeSymbols(desired.Values
+                .Where(s => (s.SubscribeTrades || s.SubscribeDepth) &&
+                    (_tradeSubs.ContainsKey(s.Symbol.Trim()) || _depthSubs.ContainsKey(s.Symbol.Trim()) || _optionSubs.ContainsKey(s.Symbol.Trim())))
+                .Select(s => s.Symbol.Trim()));
 
             _lastConfig.Clear();
             foreach (var kvp in desired)

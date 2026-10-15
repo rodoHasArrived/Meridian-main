@@ -1,7 +1,7 @@
 {
   "schema": "meridian.contract-type-parity",
   "version": "1.0.0",
-  "policy": "Every entry in 'pairs' must agree exactly; check-contract-type-parity.py fails on any member, nullability, or collection-shape difference. 'known_divergences' enumerates pairs that already differ at the commit this registry was introduced. They do not fail the gate, but a divergence that has since been repaired does: move it into 'pairs' so the parity is enforced from then on. The list is a ratchet and may shrink to empty.",
+  "policy": "Every entry in 'pairs' must agree exactly; check-contract-type-parity.py fails on any member, nullability, or collection-shape difference. 'known_divergences' records structural-parser findings awaiting review, not confirmed serialization defects. They do not fail the gate, but an entry whose findings have cleared does: move it into 'pairs' so parity is enforced from then on. The list is a ratchet and may shrink to empty. See docs/engineering/contract-type-parity.md for the parser limits and exemption reassessment.",
   "pairs": [
     {
       "csharp_file": "src/Meridian.Contracts/Api/UiDashboardModels.cs",
@@ -614,6 +614,12 @@
       "csharp_record": "LedgerDisposalTaxParcelDto",
       "typescript_file": "src/Meridian.Ui/dashboard/src/types/ledger-tax-results.ts",
       "typescript_interface": "LedgerDisposalTaxParcel"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Api/ProviderSetupApiModels.cs",
+      "csharp_record": "ProviderSetupResult",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "typescript_interface": "ProviderSetupResult"
     }
   ],
   "known_divergences": [
@@ -713,14 +719,7 @@
       "csharp_record": "ProviderSetupRequest",
       "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
       "typescript_interface": "ProviderSetupRequest",
-      "problem_count": 4
-    },
-    {
-      "csharp_file": "src/Meridian.Contracts/Api/ProviderSetupApiModels.cs",
-      "csharp_record": "ProviderSetupResult",
-      "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
-      "typescript_interface": "ProviderSetupResult",
-      "problem_count": 2
+      "problem_count": 3
     },
     {
       "csharp_file": "src/Meridian.Contracts/Api/Quality/QualityApiModels.cs",
@@ -734,7 +733,7 @@
       "csharp_record": "ReconciliationBreakQueueItem",
       "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
       "typescript_interface": "ReconciliationBreakQueueItem",
-      "problem_count": 27
+      "problem_count": 28
     },
     {
       "csharp_file": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
@@ -776,14 +775,14 @@
       "csharp_record": "ResolveReconciliationBreakRequest",
       "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
       "typescript_interface": "ResolveReconciliationBreakRequest",
-      "problem_count": 1
+      "problem_count": 2
     },
     {
       "csharp_file": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
       "csharp_record": "ReviewReconciliationBreakRequest",
       "typescript_file": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
       "typescript_interface": "ReviewReconciliationBreakRequest",
-      "problem_count": 1
+      "problem_count": 3
     },
     {
       "csharp_file": "src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs",

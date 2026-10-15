@@ -72,7 +72,11 @@ income-statement and balance-sheet rows with net-income and accounting-equation 
 investing / financing, reconciled to beginning and ending cash) and a
 `LedgerPartnersCapitalStatement` roll-forward (beginning capital, contributions, distributions,
 allocated result, ending capital per equity account) from the period's journal activity. The
-allocated result is additionally decomposed into `IncomeGainAllocations`, `ExpenseAllocations`, and
+cash-flow classification retains each scoped counterpart's credit-minus-debit amount, so compound
+journals preserve gross inflows and outflows by activity (including offsetting cash movements),
+rather than distributing net cash with unsigned weights. Journals without scoped cash activity
+remain excluded; any incomplete scoped journal remains visible in the cash reconciliation variance.
+The allocated result is additionally decomposed into `IncomeGainAllocations`, `ExpenseAllocations`, and
 `FeeAllocations` (management and performance fees, identified by
 `LedgerAccounts.IsFundFeeExpenseAccount`) so a client-grade partners' capital statement reports the
 income/expense/fee drivers a fund accountant delivers rather than one lumped figure; the split holds

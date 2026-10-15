@@ -112,6 +112,27 @@ class ContractTypeParityTests(unittest.TestCase):
         )
         self.assertEqual(1, self.run_gate(self.write_registry()))
 
+    def test_csharp_arrays_match_typescript_arrays_through_gate(self) -> None:
+        self.csharp_path.write_text(
+            CSHARP.replace("IReadOnlyList<SampleRowDto> Rows", "SampleRowDto[] Rows"),
+            encoding="utf-8",
+        )
+        self.assertEqual(0, self.run_gate(self.write_registry()))
+
+    def test_attributed_nullable_array_scalar_drift_fails_through_gate(self) -> None:
+        self.csharp_path.write_text(
+            CSHARP.replace(
+                "IReadOnlyList<SampleRowDto> Rows",
+                '[property: JsonPropertyName("rows")] SampleRowDto[]? Rows',
+            ),
+            encoding="utf-8",
+        )
+        self.typescript_path.write_text(
+            TYPESCRIPT.replace("rows: SampleRowDto[];", "rows: SampleRowDto | null;"),
+            encoding="utf-8",
+        )
+        self.assertEqual(1, self.run_gate(self.write_registry()))
+
     def test_missing_record_fails_rather_than_skipping(self) -> None:
         registry = self.write_registry(
             pairs=[
@@ -158,6 +179,25 @@ class ContractTypeParityTests(unittest.TestCase):
             known_divergences=[self.pair("SampleDto")],
         )
         self.assertEqual(1, self.run_gate(registry))
+
+    def test_report_retains_the_actual_findings_for_exemption_review(self) -> None:
+        self.typescript_path.write_text(TYPESCRIPT.replace("title:", "heading:"), encoding="utf-8")
+        registry = self.write_registry(
+            pairs=[self.pair("OtherDto")],
+            known_divergences=[self.pair("SampleDto")],
+        )
+        report = self.root / "report.json"
+        self.assertEqual(
+            0,
+            MODULE.main([
+                "--registry", str(registry), "--repo-root", str(self.root),
+                "--json-output", str(report),
+            ]),
+        )
+        findings = json.loads(report.read_text(encoding="utf-8"))["divergence_details"]["SampleDto"]
+        self.assertEqual(2, len(findings))
+        self.assertTrue(any("'title'" in finding for finding in findings))
+        self.assertTrue(any("'heading'" in finding for finding in findings))
 
     def test_camel_case_matches_serializer_policy(self) -> None:
         self.assertEqual("explorerId", MODULE.camel_case("ExplorerId"))
@@ -249,6 +289,46 @@ class DocumentedMemberParsingTests(unittest.TestCase):
 
         self.assertIsNotNone(members)
         self.assertIn("documented", members)
+
+
+class CsharpArrayParsingTests(unittest.TestCase):
+    def test_array_brackets_and_outer_nullability_are_preserved(self) -> None:
+        for type_text, nullable in (
+            ("string[]", False),
+            ("string[]?", True),
+            ("string?[]", False),
+            ("string?[]?", True),
+            ("string[][]", False),
+            ("string[]?[]?", True),
+        ):
+            for attributes in (
+                "",
+                '[property: JsonPropertyName("values")] ',
+                '[property: JsonPropertyName("values")] [Required] ',
+                '[Example(typeof(string[]), "brackets [] and )")] ',
+            ):
+                with self.subTest(type_text=type_text, attributes=attributes):
+                    members = MODULE.parse_csharp_record(
+                        f"public record Sample({attributes}{type_text} Values);", "Sample"
+                    )
+                    self.assertEqual(
+                        {"Values": {"type": type_text, "nullable": nullable, "collection": True}},
+                        members,
+                    )
+
+    def test_attributes_and_defaults_do_not_hide_neighboring_members(self) -> None:
+        members = MODULE.parse_csharp_record(
+            '''public record Sample(
+                [property: Example(new[] { "a", "b" })] string[] Names,
+                [property: Example("[]")] string?[]? Aliases = null,
+                string Title = "default");''',
+            "Sample",
+        )
+        self.assertEqual({"Names", "Aliases", "Title"}, set(members))
+        self.assertTrue(members["Names"]["collection"])
+        self.assertTrue(members["Aliases"]["nullable"])
+        self.assertFalse(members["Title"]["collection"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -8,6 +8,7 @@ using Meridian.Application.Services;
 using Meridian.Application.Subscriptions;
 using Meridian.Application.UI;
 using Meridian.Domain.Collectors;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;
@@ -339,7 +340,8 @@ public sealed class HostStartup : IAsyncDisposable
             providerId,
             ownershipService,
             log,
-            optionCollector);
+            optionCollector,
+            freshness: GetRequiredService<DataFreshnessSlaMonitor>());
     }
 
     /// <summary>

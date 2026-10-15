@@ -85,8 +85,21 @@ def split_top_level(text: str, separator: str = ",") -> list[str]:
 
 def _balanced_slice(text: str, start: int, opener: str, closer: str) -> str | None:
     depth = 0
+    in_string = False
+    escaped = False
     for index in range(start, len(text)):
         char = text[index]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            continue
+        if char == '"':
+            in_string = True
+            continue
         if char == opener:
             depth += 1
         elif char == closer:
@@ -94,6 +107,17 @@ def _balanced_slice(text: str, start: int, opener: str, closer: str) -> str | No
             if depth == 0:
                 return text[start + 1 : index]
     return None
+
+
+def _strip_parameter_attributes(parameter: str) -> str:
+    """Remove only leading attribute sections, preserving brackets in array types."""
+    cleaned = parameter.lstrip()
+    while cleaned.startswith("["):
+        attribute = _balanced_slice(cleaned, 0, "[", "]")
+        if attribute is None:
+            break
+        cleaned = cleaned[len(attribute) + 2 :].lstrip()
+    return cleaned
 
 
 def parse_csharp_record(source: str, record_name: str) -> dict[str, dict] | None:
@@ -107,7 +131,7 @@ def parse_csharp_record(source: str, record_name: str) -> dict[str, dict] | None
 
     members: dict[str, dict] = {}
     for parameter in split_top_level(body):
-        cleaned = re.sub(r"\[[^\]]*\]", "", parameter).strip()
+        cleaned = _strip_parameter_attributes(parameter).strip()
         # Drop a default value; the name is the last identifier before it.
         cleaned = split_top_level(cleaned, "=")[0].strip() if "=" in cleaned else cleaned
         tokens = cleaned.rsplit(" ", 1)
@@ -214,6 +238,7 @@ def main(argv: list[str] | None = None) -> int:
     problems: list[str] = []
     resolved_exemptions: list[str] = []
     exempted: list[str] = []
+    divergence_details: dict[str, list[str]] = {}
     checked = 0
     for entry in list(entries) + list(exemptions.values()):
         csharp_path = args.repo_root / entry["csharp_file"]
@@ -243,6 +268,7 @@ def main(argv: list[str] | None = None) -> int:
         found = compare(entry, csharp, typescript)
         exemption = exemptions.get(entry["typescript_interface"])
         if exemption is not None and exemption is entry:
+            divergence_details[entry["typescript_interface"]] = found
             # A recorded divergence that has since been repaired must be promoted, or the list
             # rots into a permanent allowance. It is allowed to shrink to empty.
             if found:
@@ -263,6 +289,7 @@ def main(argv: list[str] | None = None) -> int:
                     "known_divergences": len(exemptions),
                     "still_diverging": exempted,
                     "resolved_divergences": resolved_exemptions,
+                    "divergence_details": divergence_details,
                     "problems": problems,
                 },
                 indent=2,
