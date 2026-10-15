@@ -38,6 +38,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     private readonly CancellationTokenSource _serviceCts = new();
 
 
+    private readonly ISecurityMasterCanonicalWriteScope _canonicalWriteScope;
+
     public SecurityMasterService(
         ISecurityMasterEventStore eventStore,
         ISecurityMasterSnapshotStore snapshotStore,
@@ -50,8 +52,10 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         SecurityMasterProjectionCache? projectionCache = null,
         SecurityMasterCanonicalSymbolSeedService? seedService = null,
         Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
-        ISecurityFieldProvenanceStore? fieldProvenance = null)
+        ISecurityFieldProvenanceStore? fieldProvenance = null,
+        ISecurityMasterCanonicalWriteScope? canonicalWriteScope = null)
     {
+        _canonicalWriteScope = canonicalWriteScope ?? PassthroughSecurityMasterCanonicalWriteScope.Instance;
         _eventStore = eventStore;
         _snapshotStore = snapshotStore;
         _store = store;
@@ -146,22 +150,39 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 request.Reason,
                 projection.Version);
 
-            await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
-            await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-            persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
             // A governed field that just changed invalidates any prior conflict-resolution attribution
             // for that path: the recorded winner no longer supplied the current value. Changed paths
             // are computed independently of cross-source conflict creation — the previous winner
             // amending its OWN value opens no conflict, yet still makes the old attribution stale.
-            // Attribution runs IMMEDIATELY after the projection write (before snapshots and identifier
-            // conflict detection) to minimize the window in which a concurrent reader sees the new
-            // value with the old field attribution; true atomicity needs the shared-transaction seam
-            // tracked as follow-up work.
             var changedGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(
                 currentProjection, projection, _assetProfileCatalog);
-            await TryRetireStaleFieldResolutionProvenanceAsync(
-                changedGovernedFields, request.SecurityId, projection.Version, _serviceCts.Token).ConfigureAwait(false);
-            await TryRecordCanonicalFieldAttributionAsync(changedGovernedFields, projection, _serviceCts.Token).ConfigureAwait(false);
+            if (_canonicalWriteScope.IsAtomic)
+            {
+                // The event, the projection and the field attribution commit in one transaction:
+                // attribution can no longer be lost after the canonical write committed, and a
+                // failed attribution rolls the amendment back instead of leaving a stale incumbent.
+                await _canonicalWriteScope.ExecuteAsync(request.SecurityId, async () =>
+                {
+                    await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
+                    await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
+                    await RecordFieldLineageInScopeAsync(
+                        changedGovernedFields, changedGovernedFields, projection, ct).ConfigureAwait(false);
+                    return true;
+                }, ct).ConfigureAwait(false);
+                persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
+            }
+            else
+            {
+                await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
+                await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
+                persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
+                // Without a shared transaction, attribution runs IMMEDIATELY after the projection
+                // write (before snapshots and identifier conflict detection) to minimize the window
+                // in which a concurrent reader sees the new value with the old field attribution.
+                await TryRetireStaleFieldResolutionProvenanceAsync(
+                    changedGovernedFields, request.SecurityId, projection.Version, _serviceCts.Token).ConfigureAwait(false);
+                await TryRecordCanonicalFieldAttributionAsync(changedGovernedFields, projection, _serviceCts.Token).ConfigureAwait(false);
+            }
         }
         finally
         {
@@ -276,8 +297,12 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             request.Reason,
             projection.Version);
 
-        await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
-        await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
+        await _canonicalWriteScope.ExecuteAsync(request.SecurityId, async () =>
+        {
+            await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
+            await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
+            return true;
+        }, ct).ConfigureAwait(false);
         await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
     }
@@ -321,16 +346,30 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             request.Reason,
             projection.Version);
 
-        await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [envelope], ct).ConfigureAwait(false);
-        await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-        var persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
         // Creation is the first canonical write of every governed field the record supplies, so it
         // seeds the per-field attribution the same way an amend does — diffed against an empty
-        // baseline instead of a previous revision, and immediately after the projection write to
-        // minimize the unattributed window.
+        // baseline instead of a previous revision.
         var seededGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(
             CreateEmptyGovernedBaseline(projection), projection, _assetProfileCatalog);
-        await TryRecordCanonicalFieldAttributionAsync(seededGovernedFields, projection, _serviceCts.Token).ConfigureAwait(false);
+        SecurityProjectionRecord? persistedProjection;
+        if (_canonicalWriteScope.IsAtomic)
+        {
+            await _canonicalWriteScope.ExecuteAsync(request.SecurityId, async () =>
+            {
+                await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [envelope], ct).ConfigureAwait(false);
+                await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
+                await RecordFieldLineageInScopeAsync([], seededGovernedFields, projection, ct).ConfigureAwait(false);
+                return true;
+            }, ct).ConfigureAwait(false);
+            persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
+        }
+        else
+        {
+            await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [envelope], ct).ConfigureAwait(false);
+            await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
+            persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
+            await TryRecordCanonicalFieldAttributionAsync(seededGovernedFields, projection, _serviceCts.Token).ConfigureAwait(false);
+        }
         await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
 
         if (persistedProjection is not null)
@@ -765,6 +804,53 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                     "Invalidating stale field attribution for {SecurityId} field {FieldPath} also failed; a stale incumbent may misattribute this field until the next successful write or resolution.",
                     projection.SecurityId, fieldPath);
             }
+        }
+    }
+
+    /// <summary>
+    /// Writes the field lineage of a canonical write inside its atomic scope: retires stale
+    /// conflict-resolution attribution for <paramref name="retiredResolutionPaths"/> and records
+    /// CanonicalWrite attribution for <paramref name="attributedPaths"/>. Any failure propagates and
+    /// rolls back the event append and projection upsert with it, so attribution can never lag the
+    /// canonical record it describes.
+    /// </summary>
+    private async Task RecordFieldLineageInScopeAsync(
+        IReadOnlyList<string> retiredResolutionPaths,
+        IReadOnlyList<string> attributedPaths,
+        SecurityProjectionRecord projection,
+        CancellationToken ct)
+    {
+        if (_fieldProvenance is null)
+            return;
+
+        var now = DateTimeOffset.UtcNow;
+        foreach (var fieldPath in retiredResolutionPaths)
+        {
+            await _fieldProvenance.RemoveAsync(
+                projection.SecurityId,
+                fieldPath,
+                SecurityFieldProvenanceOrigins.ConflictResolution,
+                clearedAt: now,
+                maxSourceVersion: projection.Version,
+                ct: ct).ConfigureAwait(false);
+        }
+
+        var provenance = SecurityMasterProvenanceReader.Read(projection.Provenance);
+        foreach (var fieldPath in attributedPaths)
+        {
+            await _fieldProvenance.UpsertAsync(
+                new SecurityFieldProvenanceRecord(
+                    projection.SecurityId,
+                    fieldPath,
+                    provenance.SourceSystem,
+                    provenance.AsOf,
+                    provenance.UpdatedBy,
+                    Confidence: null,
+                    SecurityFieldProvenanceOrigins.CanonicalWrite,
+                    OriginReference: $"version:{projection.Version}",
+                    now,
+                    SourceVersion: projection.Version),
+                ct).ConfigureAwait(false);
         }
     }
 

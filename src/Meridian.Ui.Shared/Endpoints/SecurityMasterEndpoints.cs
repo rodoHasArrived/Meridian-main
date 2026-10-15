@@ -1044,6 +1044,13 @@ public static partial class SecurityMasterEndpoints
             var decision = new OperatorOverrideDecision(request.Decision, ResolveActor(context), request.Comment);
             try
             {
+                // Independent review on every route, whatever store or workbench seam the host
+                // composes: the actor who staged the pending values cannot approve them.
+                if (await store.GetAsync(securityId, ct).ConfigureAwait(false) is { } overlay)
+                {
+                    OperatorOverrideReviewRules.EnsureIndependentReview(securityId, overlay, decision);
+                }
+
                 // A direct decision bypasses the revision lifecycle's controls (bound workflow,
                 // independent reviewer, staged-value deferral). When the host wires the workbench
                 // service, the decision goes through its governed seam, which refuses while staged
@@ -1057,6 +1064,10 @@ public static partial class SecurityMasterEndpoints
             catch (ArgumentException exception)
             {
                 return Results.BadRequest(new { error = exception.Message });
+            }
+            catch (OperatorOverrideSelfApprovalException exception)
+            {
+                return Results.Json(new { error = exception.Message }, statusCode: StatusCodes.Status403Forbidden);
             }
             catch (SecurityMasterMutationConflictException exception)
             {

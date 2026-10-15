@@ -89,6 +89,7 @@ public sealed partial class PostgresAssetOperationsProjectionStore :
             .ConfigureAwait(false);
 
         await DeleteExistingAsync(connection, transaction, projection.Subject.SecurityId, ct).ConfigureAwait(false);
+        await AppendWriteEventAsync(connection, transaction, projection, approval, ct).ConfigureAwait(false);
         await InsertAsync(connection, transaction, "asset_operation_subjects", projection.Subject.SecurityId, "SecurityMaster", projection.Subject.SecurityId.ToString("D"), projection.Subject, ct).ConfigureAwait(false);
         await InsertManyAsync(connection, transaction, "asset_terms_versions", projection.Subject.SecurityId, projection.TermsHistory, approval, ct).ConfigureAwait(false);
         await InsertManyAsync(connection, transaction, "asset_lifecycle_events", projection.Subject.SecurityId, projection.LifecycleEvents, approval, ct).ConfigureAwait(false);
@@ -240,6 +241,49 @@ public sealed partial class PostgresAssetOperationsProjectionStore :
         var connection = new NpgsqlConnection(_options.ConnectionString);
         await connection.OpenAsync(ct).ConfigureAwait(false);
         return connection;
+    }
+
+    /// <summary>
+    /// Records the wholesale replacement in the append-only <c>asset_operations_write_events</c>
+    /// log, inside the replacing transaction, so every publish (Direct Lending included) leaves a
+    /// durable record of who replaced the projection, under which approval, and with what shape.
+    /// </summary>
+    private async Task AppendWriteEventAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        AssetOperationsProjectionDto projection,
+        AssetOperationsWriteApprovalDto approval,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText =
+            $"""
+            insert into {Qualified("asset_operations_write_events")}
+                (security_id, approval_actor, approval_reference, approval_rationale, approved_at, source_domain, summary)
+            values
+                (@security_id, @approval_actor, @approval_reference, @approval_rationale, @approved_at, @source_domain, @summary::jsonb);
+            """;
+        command.Parameters.AddWithValue("security_id", projection.Subject.SecurityId);
+        command.Parameters.AddWithValue("approval_actor", approval.Actor);
+        command.Parameters.AddWithValue("approval_reference", approval.ApprovalReference);
+        command.Parameters.AddWithValue("approval_rationale", approval.Rationale);
+        command.Parameters.AddWithValue("approved_at", approval.ApprovedAt.UtcDateTime);
+        command.Parameters.AddWithValue("source_domain", projection.Readiness.SourceDomain ?? "Unknown");
+        command.Parameters.AddWithValue("summary", JsonSerializer.Serialize(new
+        {
+            assetClass = projection.Subject.AssetClass,
+            termsVersions = projection.TermsHistory.Count,
+            lifecycleEvents = projection.LifecycleEvents.Count,
+            cashFlowProjectionRuns = projection.CashFlowProjectionRuns.Count,
+            projectedCashFlows = projection.ProjectedCashFlows.Count,
+            actualActivity = projection.ActualActivity.Count,
+            reconciliationRuns = projection.ReconciliationRuns.Count,
+            reconciliationResults = projection.ReconciliationResults.Count,
+            ledgerProjections = projection.LedgerProjections.Count,
+            workflowAudit = projection.WorkflowAudit.Count
+        }));
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
     private async Task DeleteExistingAsync(

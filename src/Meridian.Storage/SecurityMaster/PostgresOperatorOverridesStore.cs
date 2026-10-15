@@ -160,6 +160,29 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore, IS
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
 
+        // The row is current state; the governance log is the append-only record of the change,
+        // written in the same transaction so the two can never disagree.
+        await PostgresSecurityGovernanceEventLog.AppendAsync(
+            connection,
+            transaction,
+            _options.Schema,
+            securityId,
+            SecurityGovernanceStreams.OperatorOverrides,
+            "Patched",
+            updatedBy,
+            updatedAt,
+            new
+            {
+                setKeys = request.SetValues?.Keys.Where(static key => !string.IsNullOrWhiteSpace(key)).ToArray() ?? [],
+                removedKeys = request.RemoveKeys?.Where(static key => !string.IsNullOrWhiteSpace(key)).ToArray() ?? [],
+                previousValues = current,
+                values = next,
+                reasonCode,
+                approvalStatus = SecurityOverrideApprovalStatusDto.Pending.ToString(),
+                expectedCanonicalVersion
+            },
+            ct).ConfigureAwait(false);
+
         return new OperatorOverridesDto(securityId, next, updatedBy, updatedAt)
         {
             ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending,
@@ -215,6 +238,12 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore, IS
                 "re-patch the overlay before recording another decision.");
         }
 
+        // Independent review: the actor who staged the pending values cannot approve them. Every
+        // other approval path in the Security Master blocks self-approval; this legacy overlay
+        // decision used to be the exception. Withdrawing one's own staged values (Rejected) stays
+        // allowed.
+        OperatorOverrideReviewRules.EnsureIndependentReview(securityId, existing, decision with { Reviewer = reviewer });
+
         var reviewedAt = DateTimeOffset.UtcNow;
         var reasonCode = existing.ReasonCode;
         var comment = string.IsNullOrWhiteSpace(decision.Comment) ? null : decision.Comment.Trim();
@@ -251,6 +280,27 @@ public sealed class PostgresOperatorOverridesStore : IOperatorOverridesStore, IS
             command.Parameters.AddWithValue("audit_trail", SerializeAuditTrail(auditTrail));
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
+
+        await PostgresSecurityGovernanceEventLog.AppendAsync(
+            connection,
+            transaction,
+            _options.Schema,
+            securityId,
+            SecurityGovernanceStreams.OperatorOverrides,
+            decision.Decision == SecurityOverrideApprovalStatusDto.Approved ? "Approved" : "Rejected",
+            reviewer,
+            reviewedAt,
+            new
+            {
+                decision = decision.Decision.ToString(),
+                reviewer,
+                stagedBy = existing.UpdatedBy,
+                comment,
+                reasonCode,
+                restoresPriorDecision = decision.RestoresPriorDecision,
+                values = existing.Values
+            },
+            ct).ConfigureAwait(false);
 
         return existing with
         {

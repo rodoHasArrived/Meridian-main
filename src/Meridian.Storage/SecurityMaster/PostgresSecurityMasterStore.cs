@@ -91,6 +91,23 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
 
     public async Task UpsertProjectionAsync(SecurityProjectionRecord record, CancellationToken ct = default)
     {
+        // Inside a canonical write scope the projection joins the shared transaction with the event
+        // append and field attribution; its change notification is delivered when that commits.
+        if (PostgresSecurityMasterMutation.IsActiveFor(_options, record.SecurityId))
+        {
+            await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+            if (await UpsertProjectionCoreAsync(lease.Connection, lease.Transaction!, record, ct).ConfigureAwait(false))
+            {
+                await NotifyProjectionChangedAsync(
+                    lease.Connection,
+                    lease.Transaction!,
+                    SecurityProjectionChangeNotification.ForSecurity(_nodeIdentity.NodeId, record.SecurityId, record.Version),
+                    ct).ConfigureAwait(false);
+            }
+
+            return;
+        }
+
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
         if (await UpsertProjectionCoreAsync(connection, transaction, record, ct).ConfigureAwait(false))
@@ -139,6 +156,28 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                     SecurityProjectionChangeNotification.ForSecurity(_nodeIdentity.NodeId, record.SecurityId, record.Version),
                     ct).ConfigureAwait(false);
             }
+        }
+
+        if (acceptedRecords.Count > 0)
+        {
+            // A rebuild rewrites governed projections from the event log; record that it happened,
+            // and which records it wrote, in the append-only governance log in the same transaction.
+            await PostgresSecurityGovernanceEventLog.AppendAsync(
+                connection,
+                transaction,
+                _options.Schema,
+                securityId: null,
+                SecurityGovernanceStreams.ProjectionRebuild,
+                "ProjectionBatchRebuilt",
+                "security-master.rebuild",
+                DateTimeOffset.UtcNow,
+                new
+                {
+                    projectionName,
+                    lastGlobalSequence,
+                    records = acceptedRecords.Select(static record => new { record.SecurityId, record.Version }).ToArray()
+                },
+                ct).ConfigureAwait(false);
         }
 
         await SaveCheckpointCoreAsync(connection, transaction, projectionName, lastGlobalSequence, ct).ConfigureAwait(false);

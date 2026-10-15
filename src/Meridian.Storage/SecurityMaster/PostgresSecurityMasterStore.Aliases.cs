@@ -296,6 +296,31 @@ public sealed partial class PostgresSecurityMasterStore
         AddCreationParameters(command, alias);
         command.Parameters.Add(new NpgsqlParameter("recorded_by", NpgsqlDbType.Text) { Value = recordedBy });
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+
+        // Every explicit alias revision is also recorded in the governance event log, in the same
+        // transaction, so alias changes sit beside override and rebuild activity in one audit stream.
+        await PostgresSecurityGovernanceEventLog.AppendAsync(
+            connection,
+            transaction,
+            _options.Schema,
+            alias.SecurityId,
+            SecurityGovernanceStreams.Aliases,
+            "AliasRevisionRecorded",
+            recordedBy,
+            DateTimeOffset.UtcNow,
+            new
+            {
+                aliasId = alias.AliasId,
+                aliasKind = alias.AliasKind,
+                aliasValue = alias.AliasValue,
+                provider = alias.Provider,
+                scope = alias.Scope.ToString(),
+                reason = alias.Reason,
+                validFrom = alias.ValidFrom,
+                validTo = alias.ValidTo,
+                isEnabled = alias.IsEnabled
+            },
+            ct).ConfigureAwait(false);
     }
 
     private static void AddAliasParameters(NpgsqlCommand command, SecurityAliasDto alias)
@@ -474,6 +499,20 @@ public sealed partial class PostgresSecurityMasterStore
             """;
         command.Parameters.AddWithValue("security_id", securityId);
         command.Parameters.Add(new NpgsqlParameter("actor", NpgsqlDbType.Text) { Value = ProjectionReplacementAliasActor });
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        var appended = await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        if (appended > 0)
+        {
+            await PostgresSecurityGovernanceEventLog.AppendAsync(
+                connection,
+                transaction,
+                _options.Schema,
+                securityId,
+                SecurityGovernanceStreams.Aliases,
+                "AliasRevisionsSynchronized",
+                ProjectionReplacementAliasActor,
+                DateTimeOffset.UtcNow,
+                new { appendedRevisions = appended },
+                ct).ConfigureAwait(false);
+        }
     }
 }
