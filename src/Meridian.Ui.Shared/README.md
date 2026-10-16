@@ -2705,6 +2705,11 @@ cross-run positions the Portfolio workspace reports, valuing them at live marks 
 marks are fresh, reserving accepted-but-unfilled orders, and reporting option reference prices per
 contract while keeping the contract multiplier in exposure totals.
 
+`/api/security-master/asset-classes` and `/api/security-master/asset-classes/{assetClass}`
+return the Security Master asset-class registry (fields, validation, projection, lot and
+cash-flow behaviour, editor hints) for schema-driven forms. Override decisions return 403 when the
+reviewer staged the values being approved.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.

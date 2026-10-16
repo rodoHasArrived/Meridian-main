@@ -46,6 +46,16 @@ carrying account. Backfill review/application require a Long or Asset book posit
 disposal and tax-history projection also refuse short direction, preventing asset-credit or
 opening-age tax rules from silently certifying a short cover.
 
+Security Master migration `040_security_master_governance_events.sql` adds the append-only
+`security_governance_events` log (streams `OperatorOverrides`, `Aliases`, `ProjectionRebuild`);
+triggers refuse update, delete and truncate. Override patches and decisions, alias revisions and
+projection batch rebuilds append in the same transaction as the change, and an override reviewer
+cannot approve values they staged. The event store and projection store join
+`PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap and
+Commodity projections are now declarative registry plans rather than hand-written writers.
+Asset-operations migration `005_asset_operations_write_events.sql` adds an append-only write-event
+log for direct projection writes.
+
 Security Master migration `039_security_master_event_payload_version.sql` adds non-null
 `payload_type`/`payload_version` columns to `security_events`, backfilled from the stored payload
 shape, so replay can refuse events written by a newer build.

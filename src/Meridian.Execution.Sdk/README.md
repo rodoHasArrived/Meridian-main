@@ -82,6 +82,9 @@ override routed face value.
 fund-ownership attribution is decimal, so deriving an unattributed remainder from the rounded value
 invents a contribution the book never held.
 
+`TaxLot` quantity is `decimal` and carries `UnitKind` (default `Shares`) and `Multiplier`
+(default 1) through `IUnitizedLot`, matching backtesting and ledger lots.
+
 ## Diagrams
 
 See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.

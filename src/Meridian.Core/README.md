@@ -106,6 +106,9 @@ source-generated metadata for market-data events, Security Master validation, re
 custom asset profile, custom profile governance, and Passport Workbench governed-write DTOs so
 shared services can serialize those payloads without reflection-based fallback.
 
+`SecurityMasterJsonContext` registers the asset-class registry DTOs that the Security Master
+asset-class endpoints serialize.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

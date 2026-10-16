@@ -986,6 +986,14 @@ ingests (`--provider polygon`, `--provider edgar`, `--provider corporate-actions
 this guard and keep their existing provider attribution. Verify this lane with
 `SecurityMasterCommandsEdgarTests`.
 
+Security Master canonical writes run under `ISecurityMasterCanonicalWriteScope`. With the
+PostgreSQL scope registered, create, amend and deactivate append the event, upsert the projection
+and record canonical field attribution in one transaction; a failed attribution rolls back the
+event and projection. Workbench restorations mark `RestoresPriorDecision`, the only override
+decision exempt from independent review. `FaceValueLotExtensions.ToLedgerTaxLot` emits `FaceValue`
+lots with multiplier 100. Writes reject non-canonical values for typed term conventions
+(day count, settlement method, option right).
+
 ## API contract notes
 
 - Instruments-owned options-chain provider IDs are normalized with trim plus invariant lowercase

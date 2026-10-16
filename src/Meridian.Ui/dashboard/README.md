@@ -1505,6 +1505,9 @@ for older JSON. The browser submits posting intent and assertions only; server s
 authority, and the same shared contracts remain available to WPF without browser-owned accounting
 logic or a new route.
 
+`ui-api-routes.generated.ts` includes `SecurityMasterAssetClasses` and
+`SecurityMasterAssetClassDefinition`. `SecurityIdentifierKind` includes `LoanX` and `Clip`.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
