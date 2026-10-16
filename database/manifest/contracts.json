@@ -4032,7 +4032,7 @@
       ]
     }
   ],
-  "fingerprint": "7d71c508f7cdf1d9cf8cd82c8f64f1f61ce20b9967cd582a8fae64feb94d17fe",
+  "fingerprint": "2f7f42496d278367226e247c7b22ca08f58cf8b72ab157bfaea06e50cb1fffc5",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6026,7 +6026,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "b3133182d9e82b3d546106899732162b5c58925276a64a06590ba81f3c8b00f1",
+      "fingerprint": "9f9ae9ba1c9ca0f7ca49c81107c7b300370ac7f9c2dc97653df351898e0f7cca",
       "mapped_schemas": [
         "security_master"
       ],
@@ -227103,7 +227103,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "1bbd06d59a8da1c2047b4f7819982910ad32970013d94fdd0cf732668246c0e5",
+      "fingerprint": "6e67196cdcee2c65325ece0ceb1220e3dee56b7a1766f89caec61392ac9d8d0c",
       "full_name": "Meridian.Contracts.SecurityMaster.EconomicTermsSchema",
       "id": "Meridian.Contracts.SecurityMaster.EconomicTermsSchema",
       "kind": "class",
@@ -227117,12 +227117,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.EconomicTermsSchema",
       "references": [],
       "source": {
-        "line": 69,
+        "line": 74,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs"
       },
       "sources": [
         {
-          "line": 69,
+          "line": 74,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs"
         }
       ],
@@ -241365,7 +241365,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "83fd2e834afaf52e9820708e7102f328f213f85be7dfe6c2b75265e26c9d6003",
+      "fingerprint": "c21073204397a5a5b7a6a6aa631abb43392d312d28455ee06808a8bcb86cf3b9",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityMasterSchemaVersions",
       "id": "Meridian.Contracts.SecurityMaster.SecurityMasterSchemaVersions",
       "kind": "class",
@@ -241379,12 +241379,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityMasterSchemaVersions",
       "references": [],
       "source": {
-        "line": 82,
+        "line": 87,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs"
       },
       "sources": [
         {
-          "line": 82,
+          "line": 87,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs"
         }
       ],
