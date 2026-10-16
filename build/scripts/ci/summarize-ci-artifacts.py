@@ -40,10 +40,46 @@ STEP_GATED_FINDINGS: dict[str, tuple[str, ...]] = {
     ),
     "Generated documentation drift was detected.": ("Render roadmap/source docs and check drift",),
     "Workflow hygiene or lane manifest validation failed.": (
+        "Validate Actions syntax with actionlint",
         "Validate lane manifest",
         "Validate workflow hygiene",
     ),
 }
+
+# Keep commands literal and limited to maintained checks. Log contents and step names
+# are evidence, never shell fragments. Unknown steps retain the full-lane reproduction.
+STEP_REPRODUCTION_COMMANDS: dict[str, tuple[str, ...]] = {
+    "Validate browser evidence reader": (
+        "node --test src/Meridian.Ui/dashboard/scripts/vitest-evidence.test.mjs",
+    ),
+    "Install dashboard dependencies from lockfile": (
+        "npm --prefix src/Meridian.Ui/dashboard ci --include=optional",
+    ),
+    "Generated UI contract drift gate": (
+        "python build/scripts/generate-ui-api-routes-ts.py --check",
+        "python build/scripts/generate-workspace-catalog-ts.py --check",
+    ),
+    "Lint dashboard source": ("npm --prefix src/Meridian.Ui/dashboard run lint",),
+    "Enforce strictNullChecks on dashboard source": (
+        "npm --prefix src/Meridian.Ui/dashboard run typecheck:strict",
+    ),
+    "Run dashboard tests": ("npm --prefix src/Meridian.Ui/dashboard run test",),
+    "Build dashboard bundle": ("npm --prefix src/Meridian.Ui/dashboard run build",),
+    "Workstation bundle freshness gate": ("bash scripts/ci.sh --lane verify-browser",),
+    "Validate Actions syntax with actionlint": ("actionlint -shellcheck= -pyflakes=",),
+    "Validate lane manifest": ("python build/scripts/ci/check-lane-manifest.py --summary",),
+    "Validate lane vocabulary": ("python build/scripts/docs/check-known-lanes.py",),
+    "Validate workflow hygiene": ("python build/scripts/ci/check-workflow-hygiene.py",),
+    "Validate test skip register": ("python build/scripts/ci/check-test-skip-register.py --summary",),
+    "Run repo script test suite (quarantine-aware)": ("python build/scripts/ci/run-script-tests.py",),
+    "Validate roadmap registry": ("python build/scripts/docs/validate-roadmap-registry.py --summary",),
+    "Validate source READMEs": ("python build/scripts/docs/validate-source-readmes.py --summary",),
+    "Render roadmap/source docs and check drift": ("bash scripts/ci.sh --lane verify-docs",),
+}
+
+CI_LANES = frozenset({
+    "quality-gate", "verify-fast", "verify-dotnet", "verify-browser", "verify-docs", "verify-workflows",
+})
 
 INTERESTING_LINE_RE = re.compile(
     r"(error\s+[A-Z]+[0-9]+|error:|failed|exception|Traceback|Unsupported|too broad|does not exist|drift|npm ERR!)",
@@ -173,6 +209,7 @@ def build_summary(
     interesting_lines: list[str],
 ) -> str:
     result = "passed" if exit_code == 0 else "failed"
+    reproduce = f"bash scripts/ci.sh --lane {lane}" if lane in CI_LANES else "bash scripts/ci.sh"
     lines = [
         f"### Meridian CI lane: `{lane}`",
         "",
@@ -180,7 +217,7 @@ def build_summary(
         f"- Exit code: `{exit_code}`",
         f"- Run attempt: `{os.environ.get('GITHUB_RUN_ATTEMPT', 'local')}`; commit: `{os.environ.get('GITHUB_SHA', 'local')}`",
         f"- Dependency cache hit: `{os.environ.get('MERIDIAN_DEPENDENCY_CACHE_HIT', 'not reported')}`",
-        f"- Reproduce: `bash scripts/ci.sh --lane {lane}`",
+        f"- Reproduce from the repository root: `{reproduce}`",
         "- Queue time: available after completion through `ci-metrics.py`; excluded from step durations.",
     ]
 
@@ -188,6 +225,27 @@ def build_summary(
         lines.extend(["", "| Step | Status | Exit code | Duration (s) |", "| --- | --- | ---: | ---: |"])
         for step in steps:
             lines.append(f"| {step.name} | {step.status} | {step.exit_code} | {step.duration_seconds} |")
+
+    if exit_code != 0:
+        commands = list(dict.fromkeys(
+            command
+            for step in steps if step.exit_code != 0
+            for command in STEP_REPRODUCTION_COMMANDS.get(step.name, ())
+        ))
+        if commands:
+            lines.extend([
+                "", "#### Reproduce the failed checks", "",
+                "Run from the repository root after installing the lane prerequisites in "
+                "`docs/engineering/README.md` (Contributor validation path). "
+                "These focused checks do not replace the full gate.",
+                "", "```bash", *commands, "```",
+            ])
+        lines.extend([
+            "", "For prerequisite or build contention diagnostics: "
+            "`python build/python/cli/buildctl.py doctor --quick` and "
+            "`python build/python/cli/buildctl.py validation-status --summary`.",
+            "After correcting the failure, rerun the lane above, then `bash scripts/ci.sh` before handoff.",
+        ])
 
     if dotnet_totals:
         lines.extend(["", "#### .NET test summary", ""])

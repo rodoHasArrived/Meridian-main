@@ -71,11 +71,45 @@ without supported source files. CI continues to check whitespace across `Meridia
 For hosted CI cache behavior, artifact locations, and timing comparisons, see
 [dependency caches and artifacts](../../.github/workflows/README.md#dependency-caches-and-artifacts).
 
-For completed PR-ready work, use the canonical repository gate:
+### Contributor validation path
+
+Run commands from the repository root. Start with the [checkout prerequisites](../start/README.md#prerequisites),
+then inspect the environment and any active local .NET validation before choosing a check:
+
+```powershell
+python build/python/cli/buildctl.py doctor --quick
+python build/python/cli/buildctl.py validation-status --summary
+```
+
+`doctor --quick` skips restore and reports missing tooling, services, configuration, and provider
+credentials. Warnings also produce a nonzero exit; read which capability is missing before
+attempting that lane. Live-provider credentials and PostgreSQL are not prerequisites for a focused
+browser or Python check. Doctor is a diagnostic, not proof that the selected lane passes.
+
+Choose the lane that covers the change while iterating. A lane runs its maintained prerequisites
+and checks in order; focused test commands below are useful for a shorter edit/test loop.
+
+| Change or failure | Maintained lane | Additional prerequisites |
+| --- | --- | --- |
+| .NET source or tests | `bash scripts/ci.sh --lane verify-dotnet` | SDK from `global.json`; the lane restores and builds before testing. |
+| Browser dashboard or generated UI contracts | `bash scripts/ci.sh --lane verify-browser` | Node.js 24 and npm; the lane installs dashboard dependencies from the lockfile. |
+| Documentation, source registry, roadmap, or AI guidance | `bash scripts/ci.sh --lane verify-docs` | `python -m pip install --requirement build/scripts/docs/requirements.txt`; generation can update tracked files, so review the resulting diff. |
+| Actions, CI tooling, or repository script tests | `bash scripts/ci.sh --lane verify-workflows` | `python -m pip install --requirement build/scripts/ci/requirements.txt`, actionlint 1.7.12, and PowerShell 7 for the recovery suites. |
+
+All lanes require Bash, Git, and Python 3.11 or newer. See the [workflow prerequisites](ci-cd-optimization.md)
+for the hosted tool installation. Before retrying a failure, open
+`artifacts/ci-summary/<lane>/summary.md`: it lists the failed step, the lane reproduction command,
+and focused commands for recognized failures. Retained build logs and .NET shard reports are
+under `artifacts/build-logs/` and `artifacts/test-results/dotnet/`. Diagnose resource or lock
+contention with `validation-status` and the recovery guidance below before starting another build.
+
+For completed PR-ready work, run the full canonical repository gate after the focused checks:
 
 ```powershell
 bash scripts/ci.sh
 ```
+
+Focused checks and environment diagnostics do not replace this gate or the required hosted checks.
 
 GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. Local work may
 happen on `main` when the user explicitly requests it or the checkout is intentionally operating

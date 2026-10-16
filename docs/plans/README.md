@@ -23,7 +23,7 @@ record reads the path:
 | File | Kept because |
 |---|---|
 | [report-writer-auto-preview-blueprint.md](report-writer-auto-preview-blueprint.md) | The append-only brainstorm ledger (`.claude/skills/meridian-brainstorm/brainstorm-history.jsonl`) records this path; the blueprint itself moved to `docs/engineering/blueprints/` |
-| [desktop-workstation-screen-blueprint.md](desktop-workstation-screen-blueprint.md) and [desktop-workstation-screen-blueprint.checklist.json](desktop-workstation-screen-blueprint.checklist.json) | Read by `scripts/dev/desktop_screen_blueprint_checklist.py` and its tests |
+| [desktop-workstation-screen-blueprint.md](desktop-workstation-screen-blueprint.md) and [desktop-workstation-screen-blueprint.checklist.json](desktop-workstation-screen-blueprint.checklist.json) | Historical redirect plus active checklist data; the validator reads headings from the [canonical checklist reference](../engineering/plans/desktop-workstation-screen-blueprint.md) |
 | [paper-trading-cockpit-reliability-sprint.md](paper-trading-cockpit-reliability-sprint.md) | Evidence input for the pilot-readiness and paper-replay dashboard generators |
 | [codebase-audit-cleanup-roadmap.md](codebase-audit-cleanup-roadmap.md) | Referenced by the meridian-archive-organizer skill evaluation fixtures (`must_exist`) |
 | [research-backtest-trust-and-velocity-blueprint.md](research-backtest-trust-and-velocity-blueprint.md) | Redirect for inbound links to the archived plan |

@@ -198,6 +198,11 @@ refunding. The mapped projection retains the exact reviewed lot instruction thro
 spine. Independent approval is required. The PostgreSQL posting boundary locks current source and
 target scope and commits predecessor closure, successor openings, journal and immutable receipts
 in one transaction. Same-security splits explicitly opt into a basis-transfer journal.
+Preparation and posting require source and target securities to cover the economic action date
+and bind their complete reviewed projection hashes. Backdated successor actions use that date
+even when the source's effective interval ended before preparation. Open and closed lots reserve
+their labels within the complete carrying-account and ledger-book identity. Candidate validation
+checks those reservations before drafting; atomic posting rechecks them under transaction locks.
 Atomic successor commands require the canonical `AssetAccounting.CorporateAction` source type,
 approved state, retained approval identity, named actor and complete typed accounting context.
 Corrected-batch/source-journal metadata, reversal/rebook intents and closing-entry posting kinds
