@@ -1,5 +1,103 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_RecordCorporateActionConflictRequestDto["RecordCorporateActionConflictRequestDto"] {
+        +string Actor
+        +IReadOnlyList~CorporateActionConflictCandidateDto~ Candidates
+        +Guid CaseId
+        +string CompanyId
+        +Guid? ConflictId
+        +string? CorrelationId
+        +string Description
+        +long ExpectedVersion
+        +string Field
+        +string IdempotencyKey
+        +CorporateActionCaseScopeDto? ScopeAssertion
+        +string TenantId
+    }
+    class Meridian_Contracts_SecurityMaster_RecordCorporateActionSourceProposalRequestDto["RecordCorporateActionSourceProposalRequestDto"] {
+        +string Actor
+        +string? ClaimedEconomicFingerprint
+        +string? CorrelationId
+        +CorporateActionSourceDisplayMetadataDto? DisplayMetadata
+        +Guid? ProposalId
+        +CorporateActionDto ProposedAction
+        +CorporateActionProviderEventIdentityDto ProviderIdentity
+        +string? Reason
+        +Guid? SupersedesProposalId
+    }
+    class Meridian_Contracts_SecurityMaster_RecordRawPriceRequest["RecordRawPriceRequest"] {
+        +decimal Price
+        +DateTimeOffset PriceAsOf
+        +string RecordedBy
+        +Guid SecurityId
+        +string SourceId
+        +SecurityPriceUnit Unit
+    }
+    class Meridian_Contracts_SecurityMaster_RedemptionCorporateActionTerms["RedemptionCorporateActionTerms"] {
+        +decimal? CashPerUnit
+        +string EventType
+        +bool? IsMakeWhole
+        +bool? IsPartial
+        +decimal? PricePercentOfPar
+    }
+    class Meridian_Contracts_SecurityMaster_ReferenceChangeCorporateActionTerms["ReferenceChangeCorporateActionTerms"] {
+        +string EventType
+        +DateOnly? FinalTradingDate
+        +string? Reason
+        +Guid? SuccessorSecurityId
+    }
+    class Meridian_Contracts_SecurityMaster_RejectCorporateActionSourceProposalRequestDto["RejectCorporateActionSourceProposalRequestDto"] {
+        +string Actor
+        +string? CorrelationId
+        +long ExpectedVersion
+        +string IdempotencyKey
+        +Guid ProposalId
+        +string Reason
+    }
+    class Meridian_Contracts_SecurityMaster_ResolveConflictRequest["ResolveConflictRequest"] {
+        +string? ChosenWinnerSource
+        +Guid ConflictId
+        +string? Reason
+        +string Resolution
+        +string ResolvedBy
+    }
+    class Meridian_Contracts_SecurityMaster_ResolveCorporateActionConflictRequestDto["ResolveCorporateActionConflictRequestDto"] {
+        +string Actor
+        +Guid CaseId
+        +string CompanyId
+        +Guid ConflictId
+        +string? CorrelationId
+        +string Disposition
+        +string EvidenceHash
+        +string EvidenceReference
+        +long ExpectedVersion
+        +string IdempotencyKey
+        +string Resolution
+        +CorporateActionCaseScopeDto? ScopeAssertion
+    }
+    class Meridian_Contracts_SecurityMaster_ResolveSecurityRequest["ResolveSecurityRequest"] {
+        +bool ActiveOnly
+        +DateTimeOffset? AsOfUtc
+        +SecurityIdentifierKind IdentifierKind
+        +string IdentifierValue
+        +string? Provider
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAccountingInstrumentClasses["SecurityAccountingInstrumentClasses"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAliasDto["SecurityAliasDto"] {
+        +Guid AliasId
+        +string AliasKind
+        +string AliasValue
+        +DateTimeOffset CreatedAt
+        +string CreatedBy
+        +bool IsEnabled
+        +string? Provider
+        +string? Reason
+        +SecurityAliasScope Scope
+        +Guid SecurityId
+        +DateTimeOffset ValidFrom
+        +DateTimeOffset? ValidTo
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAliasHistoryConflictException["SecurityAliasHistoryConflictException"] {
         +Guid AliasId
     }
@@ -219,6 +317,7 @@ classDiagram
         +SecurityAssetTermVocabularyEscape? Escape
         +string Key
         +bool Required
+        +SecurityAssetTermRole Role
         +SecurityAssetTermFieldType Type
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto["SecurityAssetTermFieldDefinitionDto"] {
@@ -231,10 +330,15 @@ classDiagram
         +string Label
         +int Order
         +bool Required
+        +SecurityAssetTermRole Role
         +bool ScalarEditable
         +string Type
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldType["SecurityAssetTermFieldType"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetTermFormModel["SecurityAssetTermFormModel"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetTermRole["SecurityAssetTermRole"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint["SecurityAssetTermUiHint"] {
         +IReadOnlyList~string~ Choices
@@ -340,6 +444,11 @@ classDiagram
         +SecurityStatusDto Status
         +long Version
     }
+    class Meridian_Contracts_SecurityMaster_SecurityDistributionCorporateActionTerms["SecurityDistributionCorporateActionTerms"] {
+        +Guid? DistributedSecurityId
+        +string EventType
+        +decimal? UnitsPerHeldUnit
+    }
     class Meridian_Contracts_SecurityMaster_SecurityEconomicDefinitionRecord["SecurityEconomicDefinitionRecord"] {
         +string AssetClass
         +string? AssetFamily
@@ -366,6 +475,25 @@ classDiagram
         +string? Route
         +string? Summary
     }
+    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict["SecurityFactorHistoryConflict"] {
+        +DateOnly AsOfDate
+        +IReadOnlyList~SecurityFactorHistoryPoint~ Points
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto["SecurityFactorHistoryDto"] {
+        +IReadOnlyList~SecurityFactorHistoryConflict~ Conflicts
+        +IReadOnlyList~SecurityFactorHistoryPoint~ Points
+        +Guid SecurityId
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint["SecurityFactorHistoryPoint"] {
+        +DateOnly AsOfDate
+        +Guid? CorpActId
+        +decimal Factor
+        +SecurityFactorSource Source
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryProjector["SecurityFactorHistoryProjector"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityFactorSource["SecurityFactorSource"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityFieldProvenance["SecurityFieldProvenance"] {
         +DateTimeOffset? AsOf
         +decimal? Confidence
@@ -387,139 +515,23 @@ classDiagram
         +long? SourceVersion
         +string? UpdatedBy
     }
-    class Meridian_Contracts_SecurityMaster_SecurityHistoryRequest["SecurityHistoryRequest"] {
-        +Guid SecurityId
-        +int Take
+    class Meridian_Contracts_SecurityMaster_SecurityForwardCurve["SecurityForwardCurve"] {
+        +DateOnly AsOfDate
+        +string IndexName
+        +IReadOnlyList~SecurityForwardCurvePoint~ Points
+        +string? Source
     }
-    class Meridian_Contracts_SecurityMaster_SecurityIdentifierDto["SecurityIdentifierDto"] {
-        +bool IsPrimary
-        +SecurityIdentifierKind Kind
-        +string? NormalizedProvider
-        +string? NormalizedValue
-        +string? Provider
-        +DateTimeOffset ValidFrom
-        +DateTimeOffset? ValidTo
-        +string Value
+    class Meridian_Contracts_SecurityMaster_SecurityForwardCurvePoint["SecurityForwardCurvePoint"] {
+        +DateOnly Date
+        +decimal Rate
     }
-    class Meridian_Contracts_SecurityMaster_SecurityIdentifierKind["SecurityIdentifierKind"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityIdentifierNormalizer["SecurityIdentifierNormalizer"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityLotUnitKind["SecurityLotUnitKind"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterClosePricesJsonContext["SecurityMasterClosePricesJsonContext"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterConflict["SecurityMasterConflict"] {
-        +Guid ConflictId
-        +string ConflictKind
-        +DateTimeOffset DetectedAt
-        +string FieldPath
-        +string ProviderA
-        +string ProviderB
-        +DateTimeOffset? ResolvedAt
-        +string? ResolvedBy
-        +string? ResolvedReason
-        +string? ResolvedWinnerSource
-        +Guid SecurityId
-        +string Status
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterConflictKinds["SecurityMasterConflictKinds"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendRequestDto["SecurityMasterCorporateActionAppendRequestDto"] {
-        +string Actor
-        +CorporateActionDto CorporateAction
-        +string? CorrelationId
-        +string? FundProfileId
-        +string? Reason
-        +Guid SecurityId
-        +string? SourceRecordId
-        +string SourceSystem
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto["SecurityMasterCorporateActionAppendResultDto"] {
-        +SecurityMasterCorporateActionAuditDto Audit
-        +CorporateActionDto CorporateAction
-        +SecurityMasterCorporateActionRestatementDto? Restatement
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto["SecurityMasterCorporateActionAuditDto"] {
-        +string Actor
-        +string AuditId
-        +Guid CorporateActionId
-        +string? CorrelationId
-        +string EventType
-        +string? Reason
-        +DateTimeOffset RecordedAtUtc
-        +Guid SecurityId
-        +string? SourceRecordId
-        +string SourceSystem
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto["SecurityMasterCorporateActionRestatementDto"] {
-        +IReadOnlyList~RestatementCandidateDto~ Candidates
-        +string EvaluationStatus
-        +bool RestatementRequired
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterEnumReads["SecurityMasterEnumReads"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterEventEnvelope["SecurityMasterEventEnvelope"] {
-        +string Actor
-        +Guid? CausationId
-        +Guid? CorrelationId
-        +DateTimeOffset EventTimestamp
-        +string EventType
-        +long? GlobalSequence
-        +JsonElement Metadata
-        +JsonElement Payload
-        +string? PayloadType
-        +int? PayloadVersion
-        +Guid SecurityId
-        +long StreamVersion
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterEventPayloadDescriptor["SecurityMasterEventPayloadDescriptor"] {
-        +string PayloadType
-        +int PayloadVersion
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterEventPayloads["SecurityMasterEventPayloads"] {
-        +IReadOnlyDictionary~string__int~ SupportedVersions
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterImportRequest["SecurityMasterImportRequest"] {
-        +string FileContent
-        +string FileExtension
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterOptions["SecurityMasterOptions"] {
-        +string ConnectionString
-        +bool PreloadProjectionCache
-        +bool ProjectionCacheNotificationsEnabled
-        +int ProjectionCacheRefreshMinutes
-        +int ProjectionReplayBatchSize
-        +bool ResolveInactiveByDefault
-        +string Schema
-        +int SnapshotIntervalVersions
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterProvenanceReader["SecurityMasterProvenanceReader"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterQualityReportDto["SecurityMasterQualityReportDto"] {
-        +DateTimeOffset RunAt
-        +int SecuritiesScanned
-        +int ViolationCount
-        +IReadOnlyList~DataQualityRuleViolationDto~ Violations
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference["SecurityMasterReportingReference"] {
-        +DateTimeOffset AsOfUtc
-        +SecurityDetailDto Detail
-        +SecurityEconomicDefinitionRecord? EconomicDefinition
-        +long? EventGlobalSequence
-        +long? EventStreamVersion
-        +DateTimeOffset? EventTimestamp
-        +SecurityMasterReportingResolutionMode ResolutionMode
-    }
+    Meridian_Contracts_SecurityMaster_SecurityAliasDto --> Meridian_Contracts_SecurityMaster_SecurityAliasScope
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermField
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityCashFlowBehavior
-    Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityLotUnitKind
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor --> Meridian_Contracts_SecurityMaster_SecurityCashFlowBehavior
-    Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
-    Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor --> Meridian_Contracts_SecurityMaster_SecurityLotUnitKind
     Meridian_Contracts_SecurityMaster_SecurityAssetClassRegistry --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDateOrderRuleDto
@@ -535,7 +547,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceResultDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceResultDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceAuditEventDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceResultDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto
-    Meridian_Contracts_SecurityMaster_SecurityAssetProfileIdentifierPreferenceDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceAuditEventDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionCandidateDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionReadinessDto
@@ -546,8 +557,10 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsV0ToCurrentUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetTermField --> Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldType
+    Meridian_Contracts_SecurityMaster_SecurityAssetTermField --> Meridian_Contracts_SecurityMaster_SecurityAssetTermRole
     Meridian_Contracts_SecurityMaster_SecurityAssetTermField --> Meridian_Contracts_SecurityMaster_SecurityAssetTermVocabularyEscape
     Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
+    Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermRole
     Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
     Meridian_Contracts_SecurityMaster_SecurityClosePriceInputDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
@@ -555,11 +568,10 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceBlockerDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto
-    Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
-    Meridian_Contracts_SecurityMaster_SecurityEconomicDefinitionRecord --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
+    Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityAliasDto
     Meridian_Contracts_SecurityMaster_SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
-    Meridian_Contracts_SecurityMaster_SecurityIdentifierDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
-    Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto
-    Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto
-    Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityDetailDto
-    Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityEconomicDefinitionRecord
+    Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
+    Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict
+    Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
+    Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint --> Meridian_Contracts_SecurityMaster_SecurityFactorSource
+    Meridian_Contracts_SecurityMaster_SecurityForwardCurve --> Meridian_Contracts_SecurityMaster_SecurityForwardCurvePoint
