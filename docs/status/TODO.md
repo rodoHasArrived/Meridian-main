@@ -20,7 +20,7 @@ Total items: **238**
 | `docs/architecture/deterministic-canonicalization.md` | 371 | `NOTE` | ❌ | Note: Polygon does not define buyer-initiated codes. Only ~5% of trades carry definitive aggressor inference. The canonicalization layer preserves `Unknown` as a valid canonical value rather than attempting inference. |
 | `docs/architecture/domains.md` | 120 | `NOTE` | ❌ | > Note: not every enum member is currently emitted by the three core collectors (`TradeDataCollector`, `MarketDepthCollector`, `QuoteCollector`); several are used by adapters, backfill paths, or the `L3OrderBookCollector`. |
 | `src/Meridian.Application/Commands/SecurityMasterCommands.cs` | 35 | `NOTE` | ❌ | // NOTE: _importService is null when the Security Master database is not configured at CLI |
-| `src/Meridian.Backtesting/Metrics/BacktestMetricsEngine.cs` | 314 | `NOTE` | ❌ | /// NOTE: This is an independent computation over fill events for metric attribution purposes. |
+| `src/Meridian.Backtesting/Metrics/BacktestMetricsEngine.cs` | 315 | `NOTE` | ❌ | /// NOTE: This is an independent computation over fill events for metric attribution purposes. |
 | `src/Meridian.Backtesting/Portfolio/SimulatedPortfolio.cs` | 1460 | `NOTE` | ❌ | /// NOTE: This must stay consistent with <c>BacktestMetricsEngine.ComputeRealisedPnl</c>, |
 | `src/Meridian.Core/Monitoring/MigrationDiagnostics.cs` | 17 | `NOTE` | ❌ | /// NOTE: This class lives in the Core project (not Application) so that |
 | `src/Meridian.Core/Serialization/MarketDataJsonContext.cs` | 177 | `NOTE` | ❌ | /// NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
@@ -207,7 +207,7 @@ Total items: **238**
 | `src/Meridian.Ui/dashboard/src/types/workstation-4.ts` | 1269 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Ui/dashboard/src/types/workstation-4.ts` | 1610 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Wpf/GlobalUsings.cs` | 7 | `NOTE` | ❌ | // NOTE: Type aliases and Contracts namespaces are NOT re-defined here because |
-| `src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs` | 262 | `NOTE` | ❌ | Note: null, |
+| `src/Meridian.Wpf/ViewModels/SecurityPassportEditorViewModel.cs` | 356 | `NOTE` | ❌ | Note: null, |
 | `tests/Meridian.QuantScript.Tests/workers/quant-script/Meridian.Core.xml` | 3203 | `NOTE` | ❌ | NOTE: This class lives in the Core project (not Application) so that |
 | `tests/Meridian.QuantScript.Tests/workers/quant-script/Meridian.Core.xml` | 4997 | `NOTE` | ❌ | NOTE: Alpaca payloads use both "T" and "t" keys in the same object. |
 | `tests/Meridian.Tests/Application/Backfill/BackfillWorkerServiceTests.cs` | 28 | `NOTE` | ❌ | // NOTE: Using null! because validation throws before dependencies are accessed |

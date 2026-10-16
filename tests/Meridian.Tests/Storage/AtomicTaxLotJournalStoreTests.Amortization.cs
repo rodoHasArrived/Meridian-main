@@ -309,14 +309,21 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         await fixture.Securities.UpsertProjectionAsync(fixture.Security with { Version = 2 });
         var stale = () => fixture.Store.AppendAssetPostingAsync(command);
         await stale.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Security Master*stale*");
-        await fixture.Securities.UpsertProjectionAsync(fixture.Security);
-        await fixture.LockPeriodAsync();
-        var lockedCommand = fixture.Command();
-        var locked = () => fixture.Store.AppendAssetPostingAsync(lockedCommand);
-        await locked.Should().ThrowAsync<LedgerValidationException>().WithMessage("*closed*");
         (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Should().BeEmpty();
         (await fixture.Store.GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
         (await fixture.Store.ListOpenTaxLotsAsync(fixture.BookId, AmortAccount)).Single().ToOpenLot().Should().BeEquivalentTo(command.Amortization!.ExpectedLot);
+
+        // Keep the closed-period refusal independent of the stale-reference scenario: projection
+        // versions are monotonic, so writing the original v1 definition cannot reset v2 evidence.
+        await using var lockedFixture = await AmortFixture.CreateAsync(premium: true);
+        await lockedFixture.LockPeriodAsync();
+        var lockedCommand = lockedFixture.Command();
+        var locked = () => lockedFixture.Store.AppendAssetPostingAsync(lockedCommand);
+        await locked.Should().ThrowAsync<LedgerValidationException>().WithMessage("*closed*");
+        (await lockedFixture.Store.GetByPeriodAsync(lockedFixture.Period.PeriodId)).Should().BeEmpty();
+        (await lockedFixture.Store.GetAtomicTaxLotPostingAsync(lockedCommand.MutationBatchId)).Should().BeNull();
+        (await lockedFixture.Store.ListOpenTaxLotsAsync(lockedFixture.BookId, AmortAccount)).Single().ToOpenLot()
+            .Should().BeEquivalentTo(lockedCommand.Amortization!.ExpectedLot);
     }
 
     [LedgerDatabaseFact]

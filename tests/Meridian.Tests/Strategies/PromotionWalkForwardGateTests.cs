@@ -24,6 +24,7 @@ public sealed class PromotionWalkForwardGateTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s-wf", "Strategy WF", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult()
         };
@@ -45,6 +46,7 @@ public sealed class PromotionWalkForwardGateTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s-wf", "Strategy WF", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = new StrategyRunWalkForwardEvidence(
@@ -70,6 +72,7 @@ public sealed class PromotionWalkForwardGateTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s-wf", "Strategy WF", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = new StrategyRunWalkForwardEvidence(
@@ -95,6 +98,7 @@ public sealed class PromotionWalkForwardGateTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s-wf", "Strategy WF", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = new StrategyRunWalkForwardEvidence(
@@ -122,6 +126,7 @@ public sealed class PromotionWalkForwardGateTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s-wf", "Strategy WF", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult()
         };
@@ -141,6 +146,7 @@ public sealed class PromotionWalkForwardGateTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s-wf", "Strategy WF", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = new StrategyRunWalkForwardEvidence(
@@ -163,6 +169,7 @@ public sealed class PromotionWalkForwardGateTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s-wf", "Strategy WF", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult()
         };
@@ -235,6 +242,7 @@ public sealed class PromotionWalkForwardGateTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s-wf", "Strategy WF", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult()
         };
@@ -261,6 +269,7 @@ public sealed class PromotionWalkForwardGateTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s-wf", "Strategy WF", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult()
         };
@@ -308,7 +317,8 @@ public sealed class PromotionWalkForwardGateTests
             store,
             new BacktestToLivePromoter(),
             promotionStore,
-            NullLogger<PromotionService>.Instance);
+            NullLogger<PromotionService>.Instance,
+            trustEvidenceProvider: new PromotionTrustEvidenceStub());
     }
 
     private static BacktestResult BuildPassingResult()

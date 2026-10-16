@@ -1,16 +1,18 @@
 name: AI Navigation Refresh
 
-# The verify-docs lane fails once docs/ai/generated/repo-navigation.json ages past
-# check-ai-navigation-freshness.py's 14-day maximum. That gate is time-based rather than
-# change-based, so without a scheduled refresh it eventually red-lights main and every open
-# pull request regardless of what they touch — the failure lands on whoever pushes next.
-# This job regenerates the artifact weekly, which keeps a comfortable margin: one skipped or
-# failed run still leaves the artifact inside the window.
-
+# Refresh the navigation's 14-day age gate and its compatible generated reports
+# together. Generation never has a write token; the trusted writer only applies
+# the reviewed output policy and advances the dedicated branch without force.
 on:
   schedule:
     - cron: "0 6 * * 1"
   workflow_dispatch:
+    inputs:
+      retry_count:
+        description: Internal bounded stale-revision retry counter
+        type: choice
+        options: ["0", "1"]
+        default: "0"
 
 permissions:
   contents: read
@@ -22,17 +24,15 @@ concurrency:
 jobs:
   refresh:
     name: Refresh AI navigation artifact
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    permissions:
-      contents: write
-      pull-requests: write
-
     steps:
-      - name: Check out repository
+      - name: Check out pinned default branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Set up Python
@@ -43,34 +43,77 @@ jobs:
       - name: Install docs script dependencies
         run: python -m pip install --requirement build/scripts/docs/requirements.txt
 
-      - name: Regenerate AI navigation artifact
-        run: |
-          python3 build/scripts/docs/generate-ai-navigation.py \
-            --json-output docs/ai/generated/repo-navigation.json \
-            --markdown-output docs/ai/generated/repo-navigation.md \
-            --summary
+      - name: Regenerate compatible maintenance outputs and check 14-day freshness
+        run: python3 build/scripts/ci/maintenance_refresh.py generate --output "$RUNNER_TEMP/maintenance-refresh"
 
-      - name: Verify freshness gate now passes
-        # Guards against a regenerated-but-still-stale artifact: if the generator ever stops
-        # stamping generatedAt, the refresh must fail loudly here rather than open a pull
-        # request that leaves verify-docs red.
-        run: python3 build/scripts/docs/check-ai-navigation-freshness.py
-
-      - name: Open navigation refresh pull request
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+      - name: Retain reviewable maintenance patch
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          branch: automation/ai-navigation-refresh
-          base: ${{ github.event.repository.default_branch }}
-          title: "chore: refresh AI navigation artifact"
-          commit-message: "chore: refresh AI navigation artifact"
-          body: |
-            Scheduled regeneration of `docs/ai/generated/repo-navigation.{json,md}` by the
-            AI Navigation Refresh workflow.
+          name: generated-maintenance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/maintenance-refresh/
+          if-no-files-found: error
+          retention-days: 14
 
-            The artifact carries a 14-day freshness gate enforced by `verify-docs`
-            (`build/scripts/docs/check-ai-navigation-freshness.py`). This refresh keeps the
-            gate green so the staleness failure never lands on an unrelated pull request.
-          add-paths: |
-            docs/ai/generated/repo-navigation.json
-            docs/ai/generated/repo-navigation.md
-          delete-branch: true
+  publish:
+    name: Open generated maintenance pull request
+    environment: generated-repair
+    needs: refresh
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out trusted publisher at pinned default revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install publisher dependencies before creating credentials
+        run: python -m pip install --requirement build/scripts/docs/requirements.txt
+
+      - name: Download patch from this exact run and attempt
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: generated-maintenance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/maintenance-refresh
+
+      - name: Require App configuration so repair commits trigger fresh CI
+        env:
+          APP_ID: ${{ vars.GENERATED_REPAIR_APP_ID }}
+          APP_PRIVATE_KEY: ${{ secrets.GENERATED_REPAIR_APP_PRIVATE_KEY }}
+        run: |
+          if [ -z "$APP_ID" ] || [ -z "$APP_PRIVATE_KEY" ]; then
+            echo "::error::Configure GENERATED_REPAIR_APP_ID and environment secret GENERATED_REPAIR_APP_PRIVATE_KEY in the default-branch-restricted generated-repair environment. The App requires Contents, Pull requests and Actions write access. The generated-maintenance artifact contains the patch for manual use."
+            exit 1
+          fi
+
+      - name: Create narrowly scoped publication token
+        id: app-token
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          app-id: ${{ vars.GENERATED_REPAIR_APP_ID }}
+          private-key: ${{ secrets.GENERATED_REPAIR_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-actions: write
+
+      - name: Publish validated patch without force pushes
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          BASE_SHA: ${{ github.sha }}
+          BASE_BRANCH: ${{ github.event.repository.default_branch }}
+          REPOSITORY: ${{ github.repository }}
+          RETRY_COUNT: ${{ inputs.retry_count || '0' }}
+        run: |
+          python3 build/scripts/ci/maintenance_refresh.py publish \
+            --artifact "$RUNNER_TEMP/maintenance-refresh" \
+            --base-sha "$BASE_SHA" --base-branch "$BASE_BRANCH" --repository "$REPOSITORY" \
+            --retry-count "$RETRY_COUNT"

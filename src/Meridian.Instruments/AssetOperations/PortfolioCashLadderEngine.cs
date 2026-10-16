@@ -298,6 +298,42 @@ public static class PortfolioCashLadderEngine
             BlockingReasons: []);
     }
 
+    /// <summary>
+    /// Buckets already validated, account-scoped cash contributions through the shared ladder.
+    /// Amounts must already be in the declared base currency; original observations remain in
+    /// the owning account forecast snapshot. The end date is inclusive.
+    /// </summary>
+    public static PortfolioCashLadderDto BuildFromRetainedContributions(
+        DateOnly startDate,
+        DateOnly endDate,
+        string baseCurrency,
+        decimal openingCash,
+        IReadOnlyList<PortfolioCashLadderContributionDto> contributions,
+        decimal minimumCashThreshold,
+        int bucketDays,
+        DateTimeOffset generatedAt,
+        IReadOnlyList<string> blockingReasons)
+    {
+        ArgumentNullException.ThrowIfNull(contributions);
+        ArgumentNullException.ThrowIfNull(blockingReasons);
+        var horizonDays = Math.Max(1, endDate.DayNumber - startDate.DayNumber + 1);
+        var valid = blockingReasons.Count == 0;
+        var rows = contributions.OrderBy(static row => row.DueDate)
+            .ThenBy(static row => row.SourceEntityId, StringComparer.Ordinal).ToArray();
+        return new PortfolioCashLadderDto(
+            EngineVersion, startDate, horizonDays, baseCurrency, BaseScenarioId, openingCash,
+            minimumCashThreshold,
+            valid ? BuildBuckets(rows, startDate, startDate.AddDays(horizonDays), Math.Max(1, bucketDays),
+                openingCash, minimumCashThreshold) : [],
+            rows, [ScenarioCatalog[0] with { Assumptions = [] }],
+            ["Cash is recognized on the explicitly retained receipt date; expected rows are replaced by linked observed cash movements.",
+             "Dated FX is declared in the retained account forecast inputs. This projection does not execute payments."],
+            blockingReasons, generatedAt,
+            rows.Select(static row => row.SecurityId).Where(static id => id != Guid.Empty).Distinct().Count(),
+            rows.Select(static row => row.SecurityId).Where(static id => id != Guid.Empty).Distinct().Count(),
+            valid, blockingReasons);
+    }
+
     private static PortfolioCashScenarioDto ResolveScenario(string? scenarioId, List<string> warnings)
     {
         if (string.IsNullOrWhiteSpace(scenarioId))
@@ -339,8 +375,7 @@ public static class PortfolioCashLadderEngine
         foreach (var flow in flows)
         {
             var lane = ResolveInstrumentLane(flow.FlowType);
-            var direction = ResolveInstrumentDirection(flow.FlowType);
-            var amount = RoundCash(flow.Amount * quantity * direction);
+            var amount = GetSignedInstrumentAmount(flow, quantity);
             rows.Add(new PortfolioCashLadderContributionDto(
                 operations.Subject.SecurityId,
                 operations.Subject.DisplayName,
@@ -361,6 +396,13 @@ public static class PortfolioCashLadderEngine
         }
 
         return rows;
+    }
+
+    /// <summary>Uses the same held-quantity and cash-direction semantics for account forecasts.</summary>
+    public static decimal GetSignedInstrumentAmount(AssetProjectedCashFlowDto flow, decimal heldQuantity)
+    {
+        ArgumentNullException.ThrowIfNull(flow);
+        return RoundCash(checked(flow.Amount * heldQuantity * ResolveInstrumentDirection(flow.FlowType)));
     }
 
     private static IEnumerable<PortfolioCashLadderContributionDto> BuildCapitalContributions(

@@ -278,7 +278,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                                 new OperatorOverrideDecision(
                                     priorApprovalStatus,
                                     priorReviewer!,
-                                    "Prior decision restored after a failed field-edit draft creation reverted the overlay."),
+                                    "Prior decision restored after a failed field-edit draft creation reverted the overlay.")
+                                { RestoresPriorDecision = true },
                                 CancellationToken.None).ConfigureAwait(false);
                         }
                     }

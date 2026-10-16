@@ -45,8 +45,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: maintenance-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: maintenance-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'latest' }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
 
 jobs:
   workflow-hygiene:
@@ -66,7 +66,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      # PR/main coverage is owned by the always-on canonical Meridian CI lanes.
       - name: Run Meridian workflow hygiene checks
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: python3 build/scripts/ci/check-workflow-hygiene.py
 
       - name: Verify tooling metadata integrity
@@ -75,10 +77,14 @@ jobs:
       - name: Validate workflow syntax with actionlint
         uses: rhysd/actionlint@914e7df21a07ef503a81201c76d2b11c789d3fca # v1.7.12
 
+      # PR/main coverage is owned by the always-on canonical Meridian CI lanes.
       - name: Validate AI contract drift
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: |
           python3 build/scripts/docs/check-ai-contract-drift.py --canonical docs/ai/contract-policy.json --mirror docs/ai/copilot/contract-policy.mirror.json --mirror docs/ai/claude/contract-policy.mirror.json --routing-rules docs/ai/codex/prompt-route-rules.json --routing-host-doc docs/ai/codex/README.md --routing-host-doc docs/ai/assistant-workflow-contract.md
 
+      # PR/main coverage is owned by the always-on canonical Meridian CI lanes.
       - name: Validate AI navigation freshness
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
         run: |
           python3 build/scripts/docs/check-ai-navigation-freshness.py --navigation-json docs/ai/generated/repo-navigation.json --max-age-days 14

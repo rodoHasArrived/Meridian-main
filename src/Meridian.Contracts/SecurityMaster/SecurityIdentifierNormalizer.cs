@@ -72,6 +72,8 @@ public static class SecurityIdentifierNormalizer
             or SecurityIdentifierKind.Lei
             or SecurityIdentifierKind.Wkn
             or SecurityIdentifierKind.Cik
+            or SecurityIdentifierKind.LoanX
+            or SecurityIdentifierKind.Clip
                 => StripNonAlphanumeric(trimmed),
             SecurityIdentifierKind.Valoren => StripNonDigit(trimmed),
             _ => trimmed
@@ -123,6 +125,8 @@ public static class SecurityIdentifierNormalizer
             SecurityIdentifierKind.Wkn => normalized.Length == 6 && IsAlphaNumeric(normalized),
             SecurityIdentifierKind.Valoren => normalized.Length is >= 6 and <= 9 && IsDigitsOnly(normalized),
             SecurityIdentifierKind.Cik => normalized.Length is >= 1 and <= 10 && IsDigitsOnly(normalized),
+            SecurityIdentifierKind.LoanX => normalized.Length == 8 && normalized.StartsWith("LX", StringComparison.Ordinal) && IsDigitsOnly(normalized[2..]),
+            SecurityIdentifierKind.Clip => normalized.Length == 9 && IsAlphaNumeric(normalized),
             _ => true
         };
 
@@ -138,6 +142,8 @@ public static class SecurityIdentifierNormalizer
             SecurityIdentifierKind.Wkn => "WKN must be a 6-character alphanumeric code.",
             SecurityIdentifierKind.Valoren => "Valoren must be a 6- to 9-digit Swiss security number.",
             SecurityIdentifierKind.Cik => "CIK must be a 1- to 10-digit SEC issuer code.",
+            SecurityIdentifierKind.LoanX => "LoanX ID must be 'LX' followed by six digits.",
+            SecurityIdentifierKind.Clip => "CLIP must be a 9-character alphanumeric loan identifier.",
             _ => "Identifier format is invalid."
         };
 

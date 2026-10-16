@@ -11,6 +11,24 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.FinancialOperations
 
+`AccountCashReconciliationService` adds a bounded two-source cash-balance continuity aggregate.
+Exact tenant/company/account/book, source identities and currency determine a stable case;
+amounts, row IDs and tolerance versions remain observation evidence. Corrected sources change
+or clear the same case after restart, retaining ownership, UTC calendar-day aging and prior
+resolutions. Each run freezes original source rows, normalized balances, complete executed
+tolerances and canonical matching evidence for deterministic replay. Missing/partial populations,
+duplicate balances, unrelated accounts and changed source identities fail closed. Distinct evidence
+references and original row payloads are required for independence. Each scoped source/version
+binds its complete normalized source content across all retained runs; rebinding is rejected under
+the store lease before any case changes. Unchanged revisions can be reused; corrections require
+new versions. Null cash-tolerance entries are rejected before rule evaluation. Explicitly
+provision `FileAccountCashReconciliationStore.InitializeAsync` before use; loss of retained state
+cannot silently restart history. Source clearing confers no governed close approval.
+See [account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
+`AccountCashReconciliationContinuityTests` for the first `W10-RECON-001` acceptance slice.
+Tolerance profile IDs and versions also bind immutable complete rules across the scoped history.
+Owner assignment timestamps cannot precede the latest case observation or assignment.
+
 `AccountingPostingCandidatePostService` passes the retained approved Security Master and position
 versions into new atomic acquisitions/disposals. Storage revalidates and holds that authority in
 the posting transaction. A replay may omit the new reference-version field only when the complete

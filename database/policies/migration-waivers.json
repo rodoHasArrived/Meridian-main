@@ -55,6 +55,18 @@
       "review_after": "2027-03-22"
     },
     {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/037_security_master_close_price_snapshots.sql",
+      "rule_id": "migration-truncate",
+      "reason": "Requires independent human schema/storage review. The lexical TRUNCATE matches declare BEFORE TRUNCATE rejection triggers that preserve immutable close-price snapshots and approval receipts. No truncation or data removal is executed by this migration. Preserve both guards; PostgreSQL regression coverage attempts update, delete, and truncate and verifies that the retained approved snapshot remains replayable.",
+      "review_after": "2027-04-13"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/038_security_master_alias_revisions.sql",
+      "rule_id": "migration-truncate",
+      "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects deletion of the append-only alias revision history; no data is truncated. PostgreSQL regression coverage attempts update, delete, and truncate and verifies that the revision is retained.",
+      "review_after": "2027-04-10"
+    },
+    {
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_037__open_lot_basis_adjustment.sql",
       "rule_id": "migration-drop-table-member",
       "reason": "Constraint widening, not data loss: ck_tax_lot_mutations_kind, ck_tax_lot_mutations_quantities, and ck_tax_lot_mutations_cost are dropped and immediately re-created in the same transaction as strict supersets that admit the governed AverageCost BasisRedistribution mutation kind and pooled relief basis. Every existing row still satisfies the re-created checks, and no column or data is removed.",

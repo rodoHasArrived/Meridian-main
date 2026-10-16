@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import subprocess
+import json
 import sys
 import tempfile
 import unittest
@@ -175,6 +176,41 @@ class GeneratedMergeRecoveryTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2, result.stderr)
         self.assertIn("No merge is in progress", result.stderr)
         self.assertEqual(before, self.snapshot())
+
+    def test_reviewed_hash_conflict_uses_only_parent_entries_matching_final_source(self) -> None:
+        manifest_path = "docs/source/generated/source-hash-manifest.json"
+        registry = {"modules": [{"id": "Example", "path": "src/Example", "readme": README}]}
+        self.write("docs/source/data/source-modules.yml", json.dumps(registry))
+        self.write(SOURCE, "// base\n")
+        self.write(README, "# Reviewed documentation\n")
+        validator = SCRIPT.parent / "docs/validate-doc-hashes.py"
+        def refresh():
+            subprocess.run([sys.executable, str(validator), "--root", str(self.repo), "--write"], check=True, capture_output=True)
+        refresh()
+        self.commit("reviewed base")
+        self.git("switch", "-c", "feature")
+        self.write(SOURCE, "// reviewed feature\n")
+        refresh()
+        self.commit("feature review")
+        self.git("switch", "main")
+        self.write("src/Example/Second.cs", "// reviewed incoming\n")
+        refresh()
+        self.commit("main review")
+        self.merge()
+        before = (self.repo / manifest_path).read_bytes()
+        result = self.run_recovery("--apply")
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertIn("neither reviewed parent", result.stdout)
+        self.assertEqual(before, (self.repo / manifest_path).read_bytes())
+        # A user resolves source to one reviewed parent; its existing review may
+        # now be reused without ever calculating a new reviewed baseline.
+        self.write(SOURCE, "// base\n")
+        self.git("add", SOURCE)
+        result = self.run_recovery("--apply")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(json.loads((self.repo / manifest_path).read_bytes()),
+                         json.loads(self.git("show", f"main:{manifest_path}").stdout))
+        self.assertFalse(self.git("ls-files", "--unmerged").stdout)
 
     def test_repeated_apply_does_not_overwrite_regenerated_output(self) -> None:
         self.start_conflict((ASSET,))

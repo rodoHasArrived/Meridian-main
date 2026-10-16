@@ -88,12 +88,18 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         await fixture.Securities.UpsertProjectionAsync(security with { Version = security.Version + 1 });
         var staleSecurity = () => fixture.Restart().AppendAssetPostingAsync(command);
         await staleSecurity.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Security Master*");
-        await fixture.Securities.UpsertProjectionAsync(security);
-        await fixture.AdvancePositionAsync();
-        var stalePosition = () => fixture.Restart().AppendAssetPostingAsync(command);
-        await stalePosition.Should().ThrowAsync<LedgerValidationException>().WithMessage("*book-position*");
         (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Should().BeEmpty();
         (await fixture.Store.GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
+
+        // Security Master versions cannot be rewound to reset this fixture. Isolate the position
+        // change so its valid security evidence reaches the book-position guard independently.
+        await using var positionFixture = await AmortFixture.CreateAsync(premium: true);
+        var positionCommand = await CapitalReturnCommandAsync(positionFixture);
+        await positionFixture.AdvancePositionAsync();
+        var stalePosition = () => positionFixture.Restart().AppendAssetPostingAsync(positionCommand);
+        await stalePosition.Should().ThrowAsync<LedgerValidationException>().WithMessage("*book-position*");
+        (await positionFixture.Store.GetByPeriodAsync(positionFixture.Period.PeriodId)).Should().BeEmpty();
+        (await positionFixture.Store.GetAtomicTaxLotPostingAsync(positionCommand.MutationBatchId)).Should().BeNull();
     }
 
     [LedgerDatabaseFact]

@@ -42,6 +42,14 @@ names return an invalid verdict with unchanged state and no emitted facts. Failu
 be nonblank. Overloads accept the current fault reason, and verdicts retain previous and next
 fault diagnostics separately from a command rejection reason.
 
+`EmittedFacts` are deterministic policy evidence. Production C# orchestration maps them through
+`StrategyLifecycleFactMapping` into the ordered `LifecycleFacts` of retained run events: request
+facts accompany intent, while running/paused/stopped facts accompany verified external outcomes.
+Fault facts accompany failed or cancelled events. They are not commands or a separate replay stream.
+Persistence retries reuse the unchanged snapshot and fact order; legacy snapshots may omit facts.
+The C# contract suite enumerates F# states and commands and compares every interop verdict with
+the kernel, including the intentional `EvaluateStart("Paused")` to `Resume` translation.
+
 ## Diagrams
 
 See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.

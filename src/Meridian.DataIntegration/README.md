@@ -11,6 +11,14 @@ last_reviewed: 2026-09-28
 
 # src/Meridian.DataIntegration
 
+Normalized ETL extracts apply `FromDateUtc` and `ToDateUtc` as inclusive UTC calendar
+dates to each stored event, including mixed-date and undated-file layouts. Gzip inputs
+remain gzip outputs. A bounded extract rejects records without a valid timestamp rather
+than copying evidence outside the requested range; unbounded extracts preserve the source bytes.
+Extracts and local directory deliveries are staged before guarded replacement, so narrower retries
+remove stale files and failed copies retain the previous output. Source/destination overlap is rejected;
+replacing an existing local extract requires `OverwriteIfExists`.
+
 ## External GL providers
 
 `AccountingSystem/XeroAccountingProvider.cs` and `NetSuiteAccountingProvider.cs`
@@ -156,6 +164,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   OHLCV bar aggregation service used by CLI, diagnostics, simulation, and shared-data access
   adapters. File-date filtering and date-range discovery inspect paths relative to the configured
   data root, so dated workspace or backup directories cannot replace the data's own session date.
+  File read failures return `Success=false` with relative source paths in `FileFailures`;
+  `IsPartial` identifies recovered records/bars that are incomplete. Caller cancellation propagates
+  during the only or final source file as well as between files.
 - `Monitoring/BadTickFilter.cs`, `Monitoring/TickSizeValidator.cs`,
   `Monitoring/TimestampMonotonicityChecker.cs`, `Monitoring/ValidationMetrics.cs`,
   `Monitoring/ClockSkewEstimator.cs`, `Monitoring/SpreadMonitor.cs`,

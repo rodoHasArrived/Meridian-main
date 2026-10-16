@@ -362,6 +362,10 @@ function securityMasterWorkbenchPath(route: string, securityId: string): string 
   return route.replace("{securityId:guid}", encodeURIComponent(securityId));
 }
 
+export function securityMasterAssetClassDefinitionEndpoint(assetClass: string): string {
+  return UI_API_ROUTES.SecurityMasterAssetClassDefinition.replace("{assetClass}", encodeURIComponent(assetClass));
+}
+
 export function securityMasterWorkbenchFieldEndpoint(securityId: string): string {
   return securityMasterWorkbenchPath(UI_API_ROUTES.SecurityMasterWorkbenchField, securityId);
 }

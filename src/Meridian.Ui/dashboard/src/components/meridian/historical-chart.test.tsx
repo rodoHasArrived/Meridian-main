@@ -223,6 +223,49 @@ describe("HistoricalChartCard", () => {
     expect(screen.getByTestId("historical-chart-sma-20")).toBeInTheDocument();
   });
 
+  it("discloses failed sources and withholds partial prices until a complete retry", async () => {
+    const bars = [bar("2024-06-03T14:30:00Z", 100, 101, 99, 100, 1000)];
+    getBarsSpy.mockResolvedValueOnce({
+      ...response(bars), success: false, isPartial: true,
+      message: "Historical query incomplete: 1 of 2 file(s) failed.",
+      fileFailures: [{ sourceFile: "AAPL/2024-06-03.jsonl.gz", error: "Invalid gzip" }]
+    }).mockResolvedValueOnce(response(bars));
+    const user = userEvent.setup();
+    render(<HistoricalChartCard symbol="AAPL" />);
+
+    expect(await screen.findByText("Historical query incomplete")).toBeVisible();
+    expect(screen.getByRole("alert")).toHaveTextContent("AAPL/2024-06-03.jsonl.gz");
+    expect(screen.queryByLabelText(/AAPL 1D candlestick chart/i)).not.toBeInTheDocument();
+    expect(screen.queryByText("Open")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Retry loading/ }));
+    expect(await screen.findByText("Open")).toBeVisible();
+    expect(screen.queryByText("Historical query incomplete")).not.toBeInTheDocument();
+  });
+
+  it("keeps a failed all-file query distinct from an empty successful query", async () => {
+    getBarsSpy.mockResolvedValueOnce({ ...response([]), success: false, message: "All source files failed." });
+    render(<HistoricalChartCard symbol="AAPL" />);
+    expect(await screen.findByText("Historical query incomplete")).toBeVisible();
+    expect(screen.getByRole("alert")).toHaveTextContent("All source files failed.");
+    expect(screen.queryByText("No stored bars")).not.toBeInTheDocument();
+  });
+
+  it("discloses an incomplete comparison without drawing its recovered series", async () => {
+    const bars = [bar("2024-06-03T14:30:00Z", 100, 101, 99, 100, 1000)];
+    getBarsSpy.mockImplementation(async (symbol) => symbol === "MSFT" ? {
+      ...response(bars), success: false, isPartial: true,
+      fileFailures: [{ sourceFile: "MSFT/trades.jsonl.gz", error: "Invalid gzip" }]
+    } : response(bars));
+    const user = userEvent.setup();
+    render(<HistoricalChartCard symbol="AAPL" />);
+    await screen.findByText("Open");
+    await user.type(screen.getByPlaceholderText(/Compare with/i), "MSFT{Enter}");
+    expect(await screen.findByText("Historical comparison incomplete")).toBeVisible();
+    expect(screen.getByRole("alert")).toHaveTextContent("MSFT/trades.jsonl.gz");
+    expect(screen.queryByLabelText(/MSFT.*comparison series/i)).not.toBeInTheDocument();
+  });
+
   it("compares multiple symbols, fetches each, and renders normalized series with a legend", async () => {
     const aaplBars = [
       bar("2024-06-03T14:30:00Z", 100, 101, 99.5, 100, 1000),

@@ -22,5 +22,17 @@ public enum StrategyRunLifecycleEventType : byte
     /// often because no live strategy source could resolve it. Not a failure: the run is intact
     /// and activates on a later attempt if the blocking condition changes.
     /// </summary>
-    ActivationDeferred = 13
+    ActivationDeferred = 13,
+
+    /// <summary>A retained promoted run began execution on its first engine session.</summary>
+    Activated = 14,
+
+    /// <summary>An open run or a new recovery attempt began execution after interruption.</summary>
+    Recovered = 15,
+
+    /// <summary>An operator explicitly resumed the same paused run.</summary>
+    Resumed = 16,
+
+    /// <summary>The host released execution while retaining an open run for recovery.</summary>
+    Suspended = 17
 }

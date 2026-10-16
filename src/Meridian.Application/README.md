@@ -6,10 +6,28 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-14
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Application
+
+`SecurityMasterPricingService.ClosePrices` builds independently reviewed immutable close-price
+sets through the existing hierarchy and retained selection receipts. Exact account/book/UTC
+valuation date, quote units, source observations, override support and blocker assessments are
+frozen before review. Approval binds an independent reviewer and rationale to that snapshot;
+later quotes cannot change it. Corrections append linked versions with unchanged security coverage.
+Missing Security Master composition fails closed. Proof is in `SecurityMasterClosePriceServiceTests`
+and `PostgresSecurityMasterClosePriceTests`; this extends `W10-MARK-001` without claiming its
+live operator acceptance or adding dealer RFQ.
+Unrepresentable comparison percentages preserve exact raw prices; close-price snapshots retain
+an explicit dispersion blocker rather than losing the exception evidence.
+Exact account/book/date history returns retained price versions and approvals after restart.
+Concurrent identical approval retries return the canonical retained decision; conflicting reviews
+remain immutable-write conflicts.
+An explicit creation `RequestId` becomes the immutable snapshot identity. Retrying that same
+normalized command after a lost response or restart returns its retained observations and review
+before reading live prices. Changed commands conflict; concurrent identical captures converge on
+the committed snapshot. Callers without an identity retain the existing new-command behavior.
 
 `ILivePositionCorporateActionAdjuster` exposes an additive overload for retained total carrying
 basis. Native paper-execution adjustments use it to avoid rebuilding basis from rounded unit
@@ -38,6 +56,61 @@ Ledger composition registers the read-only `CanonicalLotAmortizationService` alo
 `CanonicalLotCorporateActionService` uses the same deferred authoritative stores to prepare the
 single retained successor instruction and draft it through the event spine. Preview preserves
 the chart path separately from the durable ledger account; posting requires independent approval.
+
+PostgreSQL composition registers the canonical-symbol seeder and its security-ID lookup as one
+singleton. Failed post-write reseeds retry with bounded backoff and coalesced requests until success
+or service cancellation. Production reseeding reads durable membership without populating a lazy cache,
+so reconnects can discover missed creations and incomplete cache warmup cannot withdraw valid names.
+Startup seeds even when cache preloading and notifications
+are disabled, and failed startup or periodic reseeds retry. Create, amend and deactivation install
+their committed projection and request reseeding before optional snapshot work; request cancellation
+after the projection commit cannot skip that coherence step. A later snapshot failure can still
+fail the request after commit, so callers must reread durable state before retrying.
+Post-write cache updates and identifier-conflict scans use effective durable state, because another
+instance may already have persisted a newer projection. A failed cache readback retries; the prepared
+older candidate is never installed as a fallback. Rebuilds likewise reread after version-guarded
+batch persistence instead of publishing their prepared candidates.
+The hosted lifecycle also reseeds at the next identifier validity boundary, including with lazy
+cache loading, notifications disabled and no periodic projection refresh. A successful write seed
+can move that deadline earlier. Canonical selection uses the sole primary identifier valid at the
+seed timestamp, rather than the denormalized primary text. Zero or multiple eligible primaries
+withdraw the Security Master canonical claim while retaining independently valid aliases, standard
+identifiers and provider mappings. A hidden internal carrier preserves their SecurityId enrichment
+without reserving an expired or future primary name. Primary boundaries remain scheduled during
+gaps, including future-only startup. Minimal composition omits the seeder when symbol management and
+an explicit canonical registry are both absent; full symbol management shares one seeder/lookup.
+Hosts implementing only the base registry retain merge-only behavior and do not receive hidden
+carrier definitions; withdrawal requires the source-aware reconciliation writer used in production.
+Equity replay without retained flat terms refuses economic-only reconstruction: the old economic
+family cannot distinguish common, preferred and convertible preferred shares reliably.
+
+Security Master replay reads each stored event through `SecurityMasterMapping.FromEventEnvelope`,
+which refuses payload types or versions newer than this build understands. Amend and deactivate
+carry the stored economic terms that a flat rebuild cannot express (`retainedEconomicTerms`), so a
+newer-to-older terms conversion keeps the data rather than silently dropping it.
+
+Security Master event replay that lacks retained flat terms flattens the economic-terms document onto
+the record's asset class, so carried values land at that class's declared keys. The Postgres
+composition registers `SecurityMasterProjectionChangeListener` (disable with
+`MERIDIAN_SECURITY_MASTER_PROJECTION_NOTIFICATIONS=false`) to keep the projection cache coherent
+across nodes; it re-synchronises on first subscription and after every reconnect. Failed durable
+refreshes schedule a monotonic 30-second retry that incoming notifications cannot postpone; with
+pre-warm disabled the retry rereads the failed securities directly, so a remote creation the lazy
+cache never held is not lost. A local alias write whose post-commit cache reread fails retries that
+reread in the background with backoff, since the node ignores its own notification. Canonical
+reseeds are serialized and reconcile Security-Master-owned aliases and non-override provider mappings
+for authoritative security IDs, including the ISIN/CUSIP/FIGI/SEDOL identifiers Security Master supplies;
+operator/provider authority outside that ownership remains intact.
+Historical identifier reads use `GetRecordedByIdentifierAsOfAsync`: the recorded cutoff
+filters stored event and alias-revision timestamps, and the separate effective cutoff selects
+identifier validity. Those timestamps can precede lock acquisition and commit; they do not establish
+what was committed or visible at the cutoff. A transaction that becomes visible later can change
+the result for the same cutoffs. This API supplies timestamp eligibility, without a retained
+evaluation receipt or a historical transaction snapshot. Missing or ambiguous retained identity
+returns no match. The compatibility identifier API
+can use later alias corrections and stable-identity fallbacks. Alias baselines imported by migration
+038 carry a migration availability timestamp; earlier alias history is unknown. That timestamp
+also supplies an eligibility boundary rather than commit-visibility evidence.
 Primary-host storage composition supplies deferred Security Master and book-position resolvers to
 the PostgreSQL journal store. Deferred resolution preserves the shared singleton authorities while
 avoiding the journal/position constructor cycle; absent durable authority fails closed at posting.
@@ -62,6 +135,12 @@ the publisher. The outbox worker publishes retained state and retries failures; 
 configuration for a Security Master-backed loan remains a failed delivery. Identified replays
 retain one message per run. Integration tests cover concurrent retries and enqueue-failure rollback.
 
+Loan portfolio summaries group principal, commitments, accruals, available capacity, and retained
+collateral appraisals by their recorded currency in both in-memory and PostgreSQL readers.
+Mixed-currency scalar totals are unavailable; no FX conversion is implied. PostgreSQL collateral
+totals are rebuilt from servicing state, including revaluations and removals after reload.
+Unspecified (`Other`) and undefined currency values leave monetary totals unavailable.
+
 
 Direct-lending outbox deliveries with unsupported topics or missing journal source evidence
 remain failed and retryable; they are never silently acknowledged as processed.
@@ -76,6 +155,8 @@ legacy new-run behavior and must not be treated as safe automatic retries.
 
 
 `DailyMarkToMarketService` uses the shared `ValuationFreshnessPolicy` for both impact previews and draft generation. Missing, future-dated, low-confidence, or over-age marks produce position-specific review reasons and prevent partial valuation batches from becoming approved support. Previewing returns affected position and valuation counts without retaining a draft.
+The valuation request carries the posting entity into the carrying-value read and projection.
+Retained mark evidence and draft identity preserve that entity through governed intake and posting.
 
 ## Credential source ownership
 
@@ -915,6 +996,22 @@ bulk imports go through the authenticated workstation/API import instead. Provid
 ingests (`--provider polygon`, `--provider edgar`, `--provider corporate-actions`) dispatch before
 this guard and keep their existing provider attribution. Verify this lane with
 `SecurityMasterCommandsEdgarTests`.
+
+Security Master canonical writes run under `ISecurityMasterCanonicalWriteScope`. With the
+PostgreSQL scope registered, create, amend and deactivate append the event, upsert the projection
+and record canonical field attribution in one transaction; a failed attribution rolls back the
+event and projection. Workbench restorations mark `RestoresPriorDecision`, the only override
+decision exempt from independent review. `FaceValueLotExtensions.ToLedgerTaxLot` emits `FaceValue`
+lots with multiplier 100. Writes reject non-canonical values for typed term conventions
+(day count, settlement method, option right).
+
+`SecurityMasterCashFlowService` projects floating legs from an `ISecurityForwardCurveProvider` when
+one is registered (the default is the in-process `InMemorySecurityForwardCurveProvider`): each
+future reset reads the index curve at its accrual start, the period already reset keeps the
+retained fixing, and each leg schedule records its `RateSource`. Without a curve, legs stay flat
+forward. `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
+block (preferred terms, call schedules, swap legs) through the normal amend path and records
+`TermBlockAmended`.
 
 ## API contract notes
 

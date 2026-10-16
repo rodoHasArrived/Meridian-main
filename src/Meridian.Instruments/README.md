@@ -11,6 +11,20 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Instruments
 
+`AccountCashForecastEngine` and `AccountCashForecastService` retain bounded account/book cash
+forecasts over the shared `PortfolioCashLadderEngine`. Opening settled cash, expected and observed
+flows, economic/settlement/receipt dates, terms/projection provenance and exact dated FX remain
+inspectable. Observed flows replace corresponding predictions in the ladder; only validated
+observed cash reconciles to closing cash. Missing scope, source evidence, FX or unexplained closing
+variance blocks certification. Corrections retain linked earlier snapshots and factor predictions.
+Opening and closing cash require independently identifiable retained observations, including
+single-day periods with equal balances. Linked expected and actual flows must agree on security
+identity, including whether an identity is absent. Existing receipts remain immutable; formerly
+certified inputs violating these guards fail replay closed and require source review.
+Certification describes cash evidence reconciliation and grants no payment authority. See
+[account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
+`AccountCashForecastTests` for the bounded contract.
+
 Direct-lending Asset Operations publication derives terms, status, and ledger row identities
 from retained loan/security facts so retries preserve those visible IDs. Ledger projection dates
 come from the retained projection as-of date, or the contract effective date when no run exists.
@@ -155,6 +169,9 @@ Option-chain discovery and quote/snapshot caching also live here because option 
 expirations, strikes, and chain snapshots are instrument-market data rather than host
 orchestration. Application composition still wires provider implementations and collectors, while
 UI Shared and strategy adapters consume `Meridian.Instruments.Options.OptionsChainService`.
+
+The bond reference read model no longer emits `cashFlowSource` from bond accounting elections;
+those elections were never populated and are retired from the Security Master terms.
 
 ## Diagrams
 

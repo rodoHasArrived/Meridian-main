@@ -29,6 +29,15 @@ import {
   type PassportSeverityTone,
   type PassportStateTone
 } from "./security-passport-editor.view-model";
+import {
+  getSecurityAssetClassDefinition as defaultGetAssetClassDefinition,
+  type SecurityAssetClassDefinition
+} from "@/lib/api/security-master-schema.api";
+import {
+  buildSchemaFieldGroups,
+  buildSchemaValueEditor,
+  validateSchemaFieldValue
+} from "./security-passport-schema-fields.view-model";
 
 /** Injectable workbench client so the editor can be unit-tested without the network. */
 export interface SecurityPassportWorkbenchService {
@@ -37,6 +46,8 @@ export interface SecurityPassportWorkbenchService {
   submit: typeof defaultSubmit;
   approve: typeof defaultApprove;
   publish: typeof defaultPublish;
+  /** Loads the asset-class schema the term picker is built from. */
+  getAssetClassDefinition: typeof defaultGetAssetClassDefinition;
 }
 
 export interface PassportApprovalContext {
@@ -113,9 +124,17 @@ export function SecurityPassportEditor({
       resolveConflict: service?.resolveConflict ?? defaultResolveConflict,
       submit: service?.submit ?? defaultSubmit,
       approve: service?.approve ?? defaultApprove,
-      publish: service?.publish ?? defaultPublish
+      publish: service?.publish ?? defaultPublish,
+      getAssetClassDefinition: service?.getAssetClassDefinition ?? defaultGetAssetClassDefinition
     }),
-    [service?.updateField, service?.resolveConflict, service?.submit, service?.approve, service?.publish]
+    [
+      service?.updateField,
+      service?.resolveConflict,
+      service?.submit,
+      service?.approve,
+      service?.publish,
+      service?.getAssetClassDefinition
+    ]
   );
 
   const [revision, setRevision] = useState<WorkingRevision | null>(null);
@@ -134,6 +153,35 @@ export function SecurityPassportEditor({
   const [newValue, setNewValue] = useState("");
   const [effectiveFrom, setEffectiveFrom] = useState("");
   const [justification, setJustification] = useState("");
+  const [schema, setSchema] = useState<SecurityAssetClassDefinition | null>(null);
+
+  // The term picker is built from the asset-class registry. Without a class, or if the schema
+  // cannot be loaded, the free-text field path remains available.
+  useEffect(() => {
+    if (!assetClass) {
+      setSchema(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    Promise.resolve()
+      .then(() => client.getAssetClassDefinition(assetClass, controller.signal))
+      .then((definition) => {
+        if (!controller.signal.aborted) setSchema(definition);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setSchema(null);
+      });
+    return () => controller.abort();
+  }, [assetClass, client]);
+
+  const schemaGroups = useMemo(() => buildSchemaFieldGroups(schema), [schema]);
+  const selectedSchemaField = useMemo(
+    () => schemaGroups.flatMap((group) => group.fields).find((field) => field.fieldPath === fieldPath.trim()) ?? null,
+    [schemaGroups, fieldPath]
+  );
+  const valueEditor = buildSchemaValueEditor(selectedSchemaField);
+  const valueError = validateSchemaFieldValue(selectedSchemaField, newValue);
 
   const [approval, setApproval] = useState<PassportApprovalContext>({
     workflowId: "",
@@ -157,7 +205,7 @@ export function SecurityPassportEditor({
     setApproval({ workflowId: "", expectedWorkflowVersion: 0, reviewer: "", reportPackId: "" });
   }, [securityId, version]);
 
-  const hasPendingEdit = fieldPath.trim().length > 0 && justification.trim().length > 0;
+  const hasPendingEdit = fieldPath.trim().length > 0 && justification.trim().length > 0 && valueError === null;
   const stateBadge = buildPassportStateBadge(revision?.state ?? null);
   const trust = buildTrustPosture(trustPosture);
   const expectedVersion = revision?.version ?? liveVersion;
@@ -327,13 +375,63 @@ export function SecurityPassportEditor({
         ) : null}
 
         <fieldset className="grid gap-3 sm:grid-cols-2" disabled={isBusy}>
+          {schemaGroups.length > 0 ? (
+            <label className="space-y-1 text-sm sm:col-span-2">
+              <span className="text-muted-foreground">{schema?.assetClass} term</span>
+              <select
+                className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                aria-label="Asset-class term"
+                value={selectedSchemaField?.fieldPath ?? ""}
+                onChange={(e) => {
+                  setFieldPath(e.target.value);
+                  setNewValue("");
+                }}
+              >
+                <option value="">Choose a term…</option>
+                {schemaGroups.map((group) => (
+                  <optgroup key={group.group} label={group.group}>
+                    {group.fields.map((field) => (
+                      <option key={field.fieldPath} value={field.fieldPath}>
+                        {field.label}
+                        {field.required ? " *" : ""}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </label>
+          ) : null}
           <label className="space-y-1 text-sm">
             <span className="text-muted-foreground">Field path</span>
             <Input value={fieldPath} onChange={(e) => setFieldPath(e.target.value)} placeholder="EconomicDefinition.Coupon" />
           </label>
           <label className="space-y-1 text-sm">
             <span className="text-muted-foreground">New value</span>
-            <Input value={newValue} onChange={(e) => setNewValue(e.target.value)} placeholder="5.125" />
+            {valueEditor.input === "select" ? (
+              <select
+                className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+                aria-label="New value"
+                value={newValue}
+                onChange={(e) => setNewValue(e.target.value)}
+              >
+                <option value="">—</option>
+                {valueEditor.choices.map((choice) => (
+                  <option key={choice} value={choice}>
+                    {choice}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <Input
+                type={valueEditor.input}
+                step={valueEditor.step}
+                value={newValue}
+                onChange={(e) => setNewValue(e.target.value)}
+                placeholder={valueEditor.input === "date" ? undefined : "5.125"}
+                aria-invalid={valueError ? true : undefined}
+              />
+            )}
+            {valueError ? <span className="text-xs text-[var(--danger)]">{valueError}</span> : null}
           </label>
           <label className="space-y-1 text-sm">
             <span className="text-muted-foreground">Effective from</span>
