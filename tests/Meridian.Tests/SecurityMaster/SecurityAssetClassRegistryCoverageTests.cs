@@ -113,6 +113,8 @@ public sealed class SecurityAssetClassRegistryCoverageTests
                 hint.FieldPath.Should().Be($"assetSpecificTerms.{field.Key}");
                 hint.Required.Should().Be(field.Required);
                 (hint.Editor == SecurityAssetTermEditorKind.Choice).Should().Be(field.AllowedValues.Count > 0);
+                (hint.Editor == SecurityAssetTermEditorKind.Convention)
+                    .Should().Be(field.AllowedValues.Count == 0 && field.Convention != SecurityTermConventionKind.None);
                 hint.ScalarEditable.Should().Be(field.Type is not (SecurityAssetTermFieldType.Array or SecurityAssetTermFieldType.Object));
             }
         }

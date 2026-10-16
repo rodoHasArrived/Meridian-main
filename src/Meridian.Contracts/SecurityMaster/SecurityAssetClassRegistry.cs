@@ -95,6 +95,12 @@ public enum SecurityAssetTermEditorKind
     Date,
     Identifier,
     Choice,
+
+    /// <summary>
+    /// A typed convention (day count, settlement method): free text the convention's parser must
+    /// recognize, with <see cref="SecurityAssetTermUiHint.Choices"/> offering the canonical spellings.
+    /// </summary>
+    Convention,
     Json
 }
 
@@ -292,6 +298,8 @@ public static class SecurityAssetClassRegistry
     {
         var editor = field.AllowedValues.Count > 0
             ? SecurityAssetTermEditorKind.Choice
+            : field.Convention != SecurityTermConventionKind.None
+                ? SecurityAssetTermEditorKind.Convention
             : field.Type switch
             {
                 SecurityAssetTermFieldType.String => SecurityAssetTermEditorKind.Text,
@@ -312,7 +320,7 @@ public static class SecurityAssetClassRegistry
             GroupFor(field),
             order,
             field.Required,
-            field.AllowedValues,
+            field.AllowedValues.Count > 0 ? field.AllowedValues : SecurityTermConventions.CanonicalValues(field.Convention),
             scalar);
     }
 
