@@ -31,6 +31,14 @@ boundary; omission before that boundary is missing evidence, not proof that the 
 These timestamps supply eligibility among rows read now, not historical commit visibility or a
 transaction snapshot. A later commit can change a repeated query with the same cutoffs.
 
+`SecurityTermsEnvelope` stamps asset-specific terms with `termsFormat` (flat, economic or custom
+profile) and a per-asset-class `assetClassTermsVersion` taken from `SecurityAssetClassCatalog`.
+Terms newer than the declared class version fail loudly; economic modules a flat conversion cannot
+express travel under the reserved `retainedEconomicTerms` key and fold back on the next economic
+rebuild. Reserved envelope keys are rejected as user-editable term fields.
+`SecurityMasterEventEnvelope` carries `PayloadType`/`PayloadVersion`;
+`SecurityMasterEventPayloads.EnsureReplayable` refuses unknown or newer payloads.
+
 `SecurityMasterCanonicalWithdrawn` records when independently retained registry evidence keeps an
 internal canonical key after Security Master withdraws its input authority. That spelling no longer
 resolves as a canonical input; independent identifiers and provider mappings remain available.
@@ -1744,6 +1752,33 @@ operating fund account before the execution layer routes a broker order.
 `TradingLiveOperationRequirementDto` extend the trading operator readiness contract with broker
 open-order reconciliation posture and explicit live-operation checklist evidence for the bounded
 W7 live-readiness gate.
+
+### Security Master asset-class registry
+
+`SecurityAssetClassRegistry` composes, per asset class, the catalog entry (lot unit, cash-flow
+behaviour, projection kind, preferred identifiers, terms version, multiplier key), the term
+schema, validators and editor hints. `SecurityAssetClassRegistryCoverageTests` fails when an F#
+`SecurityKind` case has no definition. The registry backs `/api/security-master/asset-classes`.
+`SecurityTermConventions` types day count, settlement method and option right as canonical
+vocabularies. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
+one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `SecurityIdentifierKind` adds
+`LoanX` (`LX` plus six digits) and `Clip` (nine alphanumerics).
+
+### Security Master income, curves, factors and corporate-action terms
+
+`SecurityIncomeCashFlowProjector` builds the declared income schedule (dividends, special
+dividends, fund distributions with a typed `distributionComponent`, returns of capital) from
+effective corporate actions and lists unschedulable distributions as gaps.
+`SecurityForwardCurve` and `ISecurityForwardCurveProvider` supply per-index forward fixings for
+floating legs. `SecurityFactorHistoryProjector` merges the declared factor schedule, paydown
+factors and the dated scalar factor into one dated history with same-day conflicts.
+`CorporateActionTerms.From` reads a `CorporateActionDto` into its event family's typed terms
+(cash distribution, split, exchange, redemption, principal paydown and others); a coverage test
+holds every catalog event type to a family. `SecurityTermBlocks` lists each class's nested blocks
+from the registry. `SecurityAssetTermRole` marks operational fields (pricing sources) apart from
+economics. `SecurityAssetTermFormModel` holds the schema-driven editor rules. The unused
+`BondAccountingElectionsDto` and `BondYieldAdjustmentMethod` are retired; accounting elections live
+on the lot.
 
 ## Validation
 

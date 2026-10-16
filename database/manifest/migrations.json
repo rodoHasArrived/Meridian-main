@@ -343,6 +343,33 @@
       "sha256": "63e3cfa29070bcd9de6471cc57d558eb2b092df7bde00092bfbf65ec3a0541cf"
     },
     {
+      "filename": "039_security_master_event_payload_version.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 39,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/039_security_master_event_payload_version.sql",
+      "schema": "security_master",
+      "sha256": "30857c526b708a0fdff74b3ee8f82c27c91945f3eecc224caf8351d924495602"
+    },
+    {
+      "filename": "040_security_master_governance_events.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 40,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/040_security_master_governance_events.sql",
+      "schema": "security_master",
+      "sha256": "f6c8be6775d87290020b63ddeb83252a16ce19074cf48375f9d11f708072faad"
+    },
+    {
+      "filename": "041_security_master_governance_events_truncate_guard.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 41,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/041_security_master_governance_events_truncate_guard.sql",
+      "schema": "security_master",
+      "sha256": "7a485ad3fd8a2b67805e7db47cd32e1604c5142a031ae40a16eb87fe29ed080c"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -485,6 +512,24 @@
       "path": "src/Meridian.Storage/AssetOperations/Migrations/004_asset_accounting_event_spine.sql",
       "schema": "asset_operations",
       "sha256": "05f7cded5340a0ab36a092260853e2d457ee743833a15e103ab8304a62c1c52b"
+    },
+    {
+      "filename": "005_asset_operations_write_events.sql",
+      "immutable": true,
+      "migration_set_id": "asset-operations",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/AssetOperations/Migrations/005_asset_operations_write_events.sql",
+      "schema": "asset_operations",
+      "sha256": "09760a5ee98d9104d2ef1d13efb2bf68e3e3fc61630a7f70a956818c8fc29548"
+    },
+    {
+      "filename": "006_asset_operations_write_events_truncate_guard.sql",
+      "immutable": true,
+      "migration_set_id": "asset-operations",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/AssetOperations/Migrations/006_asset_operations_write_events_truncate_guard.sql",
+      "schema": "asset_operations",
+      "sha256": "c060fdf1addb5beff7233fab983af254a3f08bc7f36bc34823a3497a0e5a9080"
     },
     {
       "filename": "V_ledger_001__journal_entries.sql",
@@ -1163,7 +1208,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "315732246c5493aedac2e7587b28f27777f3746d3fadecc4e46d2b98739cf8ac",
+  "fingerprint": "bf50bab63d45c90bd6f559943ef963bdef0c8b6d0080b47b17f168d2a9dcc573",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1401,12 +1446,19 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 129,
+    "files": 134,
     "migration_sets": 10,
-    "waivers": 17,
+    "waivers": 19,
     "warnings": 0
   },
   "waivers": [
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/AssetOperations/Migrations/006_asset_operations_write_events_truncate_guard.sql",
+      "reason": "Requires human schema/storage review. Authorized by the repository owner on 2026-10-16. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only Asset Operations write-event log; no data is truncated. PostgreSQL regression coverage attempts delete and truncate and verifies refusal.",
+      "review_after": "2027-04-16",
+      "rule_id": "migration-truncate"
+    },
     {
       "category": "destructive_changes",
       "path": "src/Meridian.Storage/FundStructure/Migrations/005_tenant_backfill_receipts.sql",
@@ -1517,6 +1569,13 @@
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/038_security_master_alias_revisions.sql",
       "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects deletion of the append-only alias revision history; no data is truncated. PostgreSQL regression coverage attempts update, delete, and truncate and verifies that the revision is retained.",
       "review_after": "2027-04-10",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/041_security_master_governance_events_truncate_guard.sql",
+      "reason": "Requires human schema/storage review. Authorized by the repository owner on 2026-10-16. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only Security Master governance event log; no data is truncated. PostgreSQL regression coverage attempts update, delete and truncate and verifies the events are retained.",
+      "review_after": "2027-04-16",
       "rule_id": "migration-truncate"
     },
     {

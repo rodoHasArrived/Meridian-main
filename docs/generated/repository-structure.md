@@ -897,6 +897,8 @@ Meridian-main
 │   │   ├── desktop-user-manual.yml
 │   │   ├── desktop-workflow-runner.yml
 │   │   ├── documentation.yml
+│   │   ├── generated-repair-publish.yml
+│   │   ├── generated-repair.yml
 │   │   ├── golden-path-validation.yml
 │   │   ├── ibapi-runtime.yml
 │   │   ├── ibapi-smoke.yml
@@ -907,6 +909,7 @@ Meridian-main
 │   │   ├── provider-validation.yml
 │   │   ├── publish-smoke.yml
 │   │   ├── README.md
+│   │   ├── release-readiness.yml
 │   │   ├── roadmap-source-docs.yml
 │   │   ├── roadmap-tools-manual.yml
 │   │   ├── robinhood-options-smoke.yml
@@ -1120,11 +1123,13 @@ Meridian-main
 │       │   ├── check-duplicate-helpers.py
 │       │   ├── check-endpoint-cancellation.py
 │       │   ├── check-file-size.py
+│       │   ├── check-generated-output.py
 │       │   ├── check-inline-sha256.py
 │       │   ├── check-lane-manifest.py
 │       │   ├── check-ledger-book-scope.py
 │       │   ├── check-ledger-dimension-coverage.py
 │       │   ├── check-posture-env-serialization.py
+│       │   ├── check-release-signing.ps1
 │       │   ├── check-sample-config-datasources.py
 │       │   ├── check-store-concurrency-posture.py
 │       │   ├── check-test-skip-register.py
@@ -1135,8 +1140,13 @@ Meridian-main
 │       │   ├── dispatch-targeted-test.py
 │       │   ├── duplicate-helper-baseline.json
 │       │   ├── generate-release-evidence-manifest.py
+│       │   ├── generated-repair.Dockerfile
+│       │   ├── generated_repair.py
+│       │   ├── generated_repair_sandbox.py
 │       │   ├── inline-sha256-baseline.json
+│       │   ├── maintenance_refresh.py
 │       │   ├── release-preflight.py
+│       │   ├── release-readiness.py
 │       │   ├── requirements.txt
 │       │   ├── resolve-consumer-predecessor.py
 │       │   ├── run-dotnet-ci-tests.py
@@ -1279,6 +1289,8 @@ Meridian-main
 │       ├── generate-ui-api-routes-ts.py
 │       ├── generate-workspace-catalog-ts.py
 │       ├── maintained-generation-outputs.json
+│       ├── merge-reviewed-doc-hashes.py
+│       ├── repair-generated.py
 │       ├── resolve-generated-merge-conflicts.py
 │       ├── run-maintained-generation.py
 │       ├── schema-control.py
@@ -1841,6 +1853,7 @@ Meridian-main
 │   │   │   │   ├── security-master-contracts-page-02.md
 │   │   │   │   ├── security-master-contracts-page-03.md
 │   │   │   │   ├── security-master-contracts-page-04.md
+│   │   │   │   ├── security-master-contracts-page-05.md
 │   │   │   │   └── security-master-contracts.md
 │   │   │   ├── diagrams
 │   │   │   │   ├── asset_operations.mmd
@@ -1864,6 +1877,7 @@ Meridian-main
 │   │   │   │   ├── contracts-security-master-contracts-page-02.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-03.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-04.mmd
+│   │   │   │   ├── contracts-security-master-contracts-page-05.mmd
 │   │   │   │   ├── fund_accounts.mmd
 │   │   │   │   ├── fund_structure.mmd
 │   │   │   │   ├── identity_access.mmd
@@ -4625,6 +4639,7 @@ Meridian-main
 │   │   │   ├── CorporateActionPayloads.cs
 │   │   │   ├── CorporateActionPayloadSchemaCatalog.cs
 │   │   │   ├── CorporateActionSourceProposalReplayComparer.cs
+│   │   │   ├── CorporateActionTerms.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalog.cs
 │   │   │   ├── DataVendorEntitlement.cs
 │   │   │   ├── DayCountConventions.cs
@@ -4643,19 +4658,25 @@ Meridian-main
 │   │   │   ├── ISecurityMasterRuntimeStatus.cs
 │   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── IStructuredCashFlowProvider.cs
+│   │   │   ├── LotQuantity.cs
 │   │   │   ├── OperatorOverrides.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
+│   │   │   ├── SecurityAssetClassRegistry.cs
 │   │   │   ├── SecurityAssetPackRegistry.cs
 │   │   │   ├── SecurityAssetProfiles.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcaster.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChain.cs
+│   │   │   ├── SecurityAssetTermFormModel.cs
 │   │   │   ├── SecurityAssetTermsFieldEditValidator.cs
 │   │   │   ├── SecurityAssetTermsSchema.cs
 │   │   │   ├── SecurityCommands.cs
 │   │   │   ├── SecurityDtos.cs
 │   │   │   ├── SecurityEvents.cs
+│   │   │   ├── SecurityFactorHistory.cs
+│   │   │   ├── SecurityForwardCurve.cs
 │   │   │   ├── SecurityIdentifierNormalizer.cs
 │   │   │   ├── SecurityIdentifiers.cs
+│   │   │   ├── SecurityIncomeCashFlows.cs
 │   │   │   ├── SecurityMasterCashFlow.cs
 │   │   │   ├── SecurityMasterClosePrices.cs
 │   │   │   ├── SecurityMasterClosePricesJsonContext.cs
@@ -4667,7 +4688,10 @@ Meridian-main
 │   │   │   ├── SecurityMasterProvenance.cs
 │   │   │   ├── SecurityMasterSchemaVersions.cs
 │   │   │   ├── SecurityQueries.cs
+│   │   │   ├── SecurityTermBlocks.cs
+│   │   │   ├── SecurityTermConventions.cs
 │   │   │   ├── SecurityTermReader.cs
+│   │   │   ├── SecurityTermsEnvelope.cs
 │   │   │   ├── SecurityValidationDtos.cs
 │   │   │   ├── StructuredCashFlowTerms.cs
 │   │   │   └── StructuredCashFlowTermsResolver.cs
@@ -6181,7 +6205,9 @@ Meridian-main
 │   │   │   │   ├── 001_asset_operations.sql
 │   │   │   │   ├── 002_instrument_position_projections.sql
 │   │   │   │   ├── 003_instrument_position_projection_guards.sql
-│   │   │   │   └── 004_asset_accounting_event_spine.sql
+│   │   │   │   ├── 004_asset_accounting_event_spine.sql
+│   │   │   │   ├── 005_asset_operations_write_events.sql
+│   │   │   │   └── 006_asset_operations_write_events_truncate_guard.sql
 │   │   │   ├── AssetOperationsMigrationRunner.cs
 │   │   │   ├── FileAccountCashForecastStore.cs
 │   │   │   ├── IAssetAccountingEventProjectionStore.cs
@@ -6513,7 +6539,10 @@ Meridian-main
 │   │   │   │   ├── 035_security_master_price_selection_receipts.sql
 │   │   │   │   ├── 036_security_master_workbench_generations.sql
 │   │   │   │   ├── 037_security_master_close_price_snapshots.sql
-│   │   │   │   └── 038_security_master_alias_revisions.sql
+│   │   │   │   ├── 038_security_master_alias_revisions.sql
+│   │   │   │   ├── 039_security_master_event_payload_version.sql
+│   │   │   │   ├── 040_security_master_governance_events.sql
+│   │   │   │   └── 041_security_master_governance_events_truncate_guard.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -6572,6 +6601,8 @@ Meridian-main
 │   │   │   ├── PostgresStructuredCreditReferenceProjectionStore.cs
 │   │   │   ├── PostgresSwapReferenceProjectionStore.cs
 │   │   │   ├── SecurityAliasSnapshot.cs
+│   │   │   ├── SecurityGovernanceEventLog.cs
+│   │   │   ├── SecurityMasterCanonicalWriteScope.cs
 │   │   │   ├── SecurityMasterDbMapper.cs
 │   │   │   ├── SecurityMasterMigrationRunner.cs
 │   │   │   ├── SecurityMasterProjectionCache.cs
@@ -6951,6 +6982,8 @@ Meridian-main
 │   │   │   │   │   │   ├── security-passport-editor.tsx
 │   │   │   │   │   │   ├── security-passport-editor.view-model.test.ts
 │   │   │   │   │   │   ├── security-passport-editor.view-model.ts
+│   │   │   │   │   │   ├── security-passport-schema-fields.view-model.test.ts
+│   │   │   │   │   │   ├── security-passport-schema-fields.view-model.ts
 │   │   │   │   │   │   ├── stat-strip.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.test.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.tsx
@@ -7154,6 +7187,7 @@ Meridian-main
 │   │   │   │   │   │   ├── recurring-journals.api.ts
 │   │   │   │   │   │   ├── reporting-runs.api.test.ts
 │   │   │   │   │   │   ├── reporting-runs.api.ts
+│   │   │   │   │   │   ├── security-master-schema.api.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.test.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.ts
 │   │   │   │   │   │   └── statement-run-detail.api.ts
@@ -10942,14 +10976,18 @@ Meridian-main
 │   │   │   ├── CorporateActionPayloadsTests.cs
 │   │   │   ├── CorporateActionSourceRevisionPolicyTests.cs
 │   │   │   ├── CorporateActionTaxonomyPropertyTests.cs
+│   │   │   ├── CorporateActionTermsTests.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalogTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── DayCountConventionsTests.cs
 │   │   │   ├── FaceValueLotOddPeriodTests.cs
 │   │   │   ├── FaceValueLotTests.cs
+│   │   │   ├── ForwardCurveCashFlowTests.cs
 │   │   │   ├── KeyedGatePoolTests.cs
+│   │   │   ├── LoanIdentifierKindTests.cs
 │   │   │   ├── NullCorporateActionOperationsServiceTests.cs
 │   │   │   ├── NullOperatorOverridesStoreTests.cs
+│   │   │   ├── OperatorOverrideReviewRulesTests.cs
 │   │   │   ├── PostgresOperatorOverridesStoreTests.cs
 │   │   │   ├── PostgresSecurityMasterClosePriceTests.cs
 │   │   │   ├── PostgresSecurityMasterConflictServiceTests.cs
@@ -10960,10 +10998,12 @@ Meridian-main
 │   │   │   ├── SecurityAccountingInstrumentClassTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
+│   │   │   ├── SecurityAssetClassRegistryCoverageTests.cs
 │   │   │   ├── SecurityAssetProfileGovernanceServiceTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChainTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterPipelineTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterTests.cs
+│   │   │   ├── SecurityAssetTermFormModelTests.cs
 │   │   │   ├── SecurityAssetTermsFieldEditValidatorTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaTests.cs
@@ -10971,6 +11011,7 @@ Meridian-main
 │   │   │   ├── SecurityEconomicTermsV2BridgeCoverageTests.cs
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
+│   │   │   ├── SecurityIncomeCashFlowProjectorTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
 │   │   │   ├── SecurityMasterAliasMigrationTests.cs
 │   │   │   ├── SecurityMasterAliasRecordedHistoryTests.cs
@@ -10991,6 +11032,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterDataQualityServiceCoverageTests.cs
 │   │   │   ├── SecurityMasterDataQualityServiceTests.cs
 │   │   │   ├── SecurityMasterDraftProposalServiceTests.cs
+│   │   │   ├── SecurityMasterGovernanceEventsPostgresTests.cs
 │   │   │   ├── SecurityMasterGovernedConcurrencyPostgresTests.cs
 │   │   │   ├── SecurityMasterGovernedConcurrencyPostgresTests.Recovery.cs
 │   │   │   ├── SecurityMasterHistoricalSymbolTimelineResolverTests.cs
@@ -11026,9 +11068,14 @@ Meridian-main
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
 │   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
+│   │   │   ├── SecurityTermBlockAmendmentTests.cs
+│   │   │   ├── SecurityTermConventionTests.cs
 │   │   │   ├── SecurityTermsProjectionRegistryTests.cs
+│   │   │   ├── SecurityTermsVersioningTests.cs
 │   │   │   ├── SecurityValidationServiceTests.cs
-│   │   │   └── SwapLegRoundTripTests.cs
+│   │   │   ├── SpecializedProjectionGoldenTests.cs
+│   │   │   ├── SwapLegRoundTripTests.cs
+│   │   │   └── UnitizedLotTests.cs
 │   │   ├── Serialization
 │   │   │   └── HighPerformanceJsonTests.cs
 │   │   ├── Services
@@ -11939,6 +11986,7 @@ Meridian-main
 │   │   ├── test_check_duplicate_helpers.py
 │   │   ├── test_check_endpoint_cancellation.py
 │   │   ├── test_check_file_size_ratchet.py
+│   │   ├── test_check_generated_output.py
 │   │   ├── test_check_inline_sha256.py
 │   │   ├── test_check_ledger_book_scope.py
 │   │   ├── test_check_ledger_dimension_coverage.py
@@ -11974,12 +12022,16 @@ Meridian-main
 │   │   ├── test_generate_ui_api_routes_ts.py
 │   │   ├── test_generate_ui_route_wiring_report.py
 │   │   ├── test_generate_workspace_catalog_ts.py
+│   │   ├── test_generated_repair.py
+│   │   ├── test_generated_repair_sandbox.py
 │   │   ├── test_git_hooks.py
 │   │   ├── test_golden_path_validation_workflow.py
 │   │   ├── test_ibapi_smoke_workflow.py
 │   │   ├── test_lane_manifest.py
 │   │   ├── test_live_execution_controls_route_consistency.py
 │   │   ├── test_maintenance_full_workflow.py
+│   │   ├── test_maintenance_refresh.py
+│   │   ├── test_merge_reviewed_doc_hashes.py
 │   │   ├── test_meridian_ci_cache_contract.py
 │   │   ├── test_meridian_ci_workflow.py
 │   │   ├── test_meridian_code_review_run_eval.py
@@ -11995,8 +12047,10 @@ Meridian-main
 │   │   ├── test_release_evidence_manifest.py
 │   │   ├── test_release_evidence_workflows.py
 │   │   ├── test_release_promotion.py
+│   │   ├── test_release_readiness.py
 │   │   ├── test_render_adapter_readiness.py
 │   │   ├── test_render_roadmap_diagrams.py
+│   │   ├── test_repair_generated.py
 │   │   ├── test_repair_links_anchors.py
 │   │   ├── test_resolve_generated_merge_conflicts.py
 │   │   ├── test_roadmap_source_docs.py

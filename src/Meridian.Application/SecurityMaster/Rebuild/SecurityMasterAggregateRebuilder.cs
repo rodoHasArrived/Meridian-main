@@ -38,7 +38,7 @@ public sealed class SecurityMasterAggregateRebuilder
         var events = await _eventStore.LoadAsync(securityId, ct).ConfigureAwait(false);
         foreach (var @event in events.Where(e => snapshot is null || e.StreamVersion > snapshot.Version))
         {
-            rebuilt = SecurityMasterMapping.FromEconomicPayload(@event.Payload);
+            rebuilt = SecurityMasterMapping.FromEventEnvelope(@event);
         }
 
         if (rebuilt is null)
@@ -73,7 +73,7 @@ public sealed class SecurityMasterAggregateRebuilder
         SecurityEconomicDefinitionRecord? rebuilt = null;
         foreach (var @event in events.Where(e => e.EventTimestamp <= asOfUtc))
         {
-            rebuilt = SecurityMasterMapping.FromEconomicPayload(@event.Payload);
+            rebuilt = SecurityMasterMapping.FromEventEnvelope(@event);
         }
 
         return rebuilt is null
@@ -102,7 +102,7 @@ public sealed class SecurityMasterAggregateRebuilder
         SecurityEconomicDefinitionRecord? rebuilt = null;
         foreach (var @event in events.Where(e => e.EventTimestamp <= asOfUtc))
         {
-            rebuilt = SecurityMasterMapping.FromEconomicPayload(@event.Payload);
+            rebuilt = SecurityMasterMapping.FromEventEnvelope(@event);
         }
 
         var aliasesAsOf = (aliasesRecordedAtCutoff ?? projectionWithAliases?.Aliases)

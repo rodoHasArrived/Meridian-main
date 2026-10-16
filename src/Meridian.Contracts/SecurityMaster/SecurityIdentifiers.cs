@@ -31,6 +31,16 @@ public enum SecurityIdentifierKind
     /// <summary>SEC Central Index Key — identifies an EDGAR filer or issuer, not a standalone tradable security.</summary>
     Cik,
     /// <summary>
+    /// IHS Markit LoanX ID — the market-standard identifier for syndicated loans ("LX" followed by
+    /// six digits).
+    /// </summary>
+    LoanX,
+    /// <summary>
+    /// CUSIP-format loan identifier (CLIP) assigned to syndicated loan facilities and tranches —
+    /// nine alphanumeric characters.
+    /// </summary>
+    Clip,
+    /// <summary>
     /// Read-tolerance member: a kind written by a newer node that this node does not recognize.
     /// Rows carrying it stay readable (mixed-version rollout) but cannot be written back as-is —
     /// the command mapping rejects <see cref="Unknown"/> so unrecognized kinds are never silently

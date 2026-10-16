@@ -1469,7 +1469,7 @@ internal sealed class SimulatedPortfolio
 
     private static decimal WeightedAverageEntryPrice(LinkedList<OpenLot> lots)
     {
-        var totalQty = 0L;
+        var totalQty = 0m;
         var totalCost = 0m;
         foreach (var lot in lots)
         {
@@ -1618,14 +1618,14 @@ internal sealed class SimulatedPortfolio
         return allocated;
     }
 
-    private static OpenLot ReduceOpenLot(OpenLot lot, long remainingQuantity, decimal remainingBasis,
+    private static OpenLot ReduceOpenLot(OpenLot lot, decimal remainingQuantity, decimal remainingBasis,
         decimal remainingCommission)
     {
         OpenLotBasisComponent[] basisComponents = [];
         if (lot.BasisComponents is { Count: > 0 })
         {
             var lotBasis = lot.CostBasis();
-            var quantityRatio = (decimal)remainingQuantity / lot.Quantity;
+            var quantityRatio = remainingQuantity / lot.Quantity;
             var basisRatio = lotBasis == 0m ? quantityRatio : remainingBasis / lotBasis;
             basisComponents = lot.BasisComponents
                 .Select(component => component with

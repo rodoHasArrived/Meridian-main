@@ -113,6 +113,13 @@ public static class CorporateActionPayloads
     /// <summary>Exchange events: source assertion describing whether the offer is voluntary.</summary>
     public const string IsVoluntary = "isVoluntary";
 
+    /// <summary>
+    /// Dividend on a fund class: which tax component of the distribution this event pays
+    /// (<see cref="SecurityIncomeComponent"/> names, e.g. <c>"Income"</c>, <c>"LongTermCapitalGain"</c>).
+    /// A distribution with several components is recorded as one event per component.
+    /// </summary>
+    public const string DistributionComponent = "distributionComponent";
+
     /// <summary>Reads a decimal payload value; null when the payload or key is absent or mistyped.</summary>
     public static decimal? ReadDecimal(JsonElement? payload, string key)
     {

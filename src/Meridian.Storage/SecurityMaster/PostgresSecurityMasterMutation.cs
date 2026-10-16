@@ -70,6 +70,52 @@ public static class PostgresSecurityMasterMutation
         }
     }
 
+    /// <summary>
+    /// Runs a canonical write — event append, projection upsert, field attribution — in one
+    /// transaction. Unlike <see cref="ExecuteAsync{T}"/> it does not advance the workbench
+    /// generation fence: a canonical write is ordered by the event stream's expected-version check,
+    /// not by the overlay fence. Participants that support it (<see cref="PostgresSecurityMasterEventStore"/>,
+    /// <see cref="PostgresSecurityMasterStore"/>, <see cref="PostgresSecurityFieldProvenanceStore"/>)
+    /// join the session instead of committing on their own, so either everything commits or nothing does.
+    /// </summary>
+    public static async Task<T> ExecuteCanonicalAsync<T>(
+        SecurityMasterOptions options, Guid securityId, Func<Task<T>> operation, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        if (Current.Value is { } nested)
+        {
+            EnsureScope(nested, options, securityId);
+            return await operation().ConfigureAwait(false);
+        }
+
+        await using var connection = new NpgsqlConnection(options.ConnectionString);
+        await connection.OpenAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct).ConfigureAwait(false);
+        var session = new Session(options, securityId, connection, transaction);
+        Current.Value = session;
+        try
+        {
+            var result = await operation().ConfigureAwait(false);
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
+            return result;
+        }
+        finally
+        {
+            session.Active = false;
+            Current.Value = null;
+            session.ConnectionGate.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Whether a mutation or canonical-write session is active for <paramref name="securityId"/> in
+    /// the database and schema <paramref name="options"/> name, so a store should join it.
+    /// </summary>
+    public static bool IsActiveFor(SecurityMasterOptions options, Guid securityId)
+        => Current.Value is { Active: true } session
+           && session.SecurityId == securityId
+           && SameDatabase(session.Options, options);
+
     /// <summary>Recover an optional step without aborting its enclosing governed mutation.</summary>
     public static async Task ExecuteBestEffortAsync(SecurityMasterOptions options, Guid securityId,
         Func<Task> operation, Action<Exception> reportFailure, CancellationToken ct = default)

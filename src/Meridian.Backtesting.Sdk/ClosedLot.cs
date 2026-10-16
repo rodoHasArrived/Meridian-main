@@ -1,3 +1,5 @@
+using Meridian.Contracts.SecurityMaster;
+
 namespace Meridian.Backtesting.Sdk;
 
 /// <summary>
@@ -7,7 +9,7 @@ namespace Meridian.Backtesting.Sdk;
 public sealed record ClosedLot(
     Guid LotId,
     string Symbol,
-    long Quantity,
+    decimal Quantity,
     decimal EntryPrice,
     DateTimeOffset OpenedAt,
     Guid OpenFillId,
@@ -15,7 +17,7 @@ public sealed record ClosedLot(
     DateTimeOffset ClosedAt,
     Guid CloseFillId,
     string? AccountId = null,
-    bool IsShort = false)
+    bool IsShort = false) : IUnitizedLot
 {
     /// <summary>Exact booked basis; absent on legacy records that only retain an entry quote.</summary>
     public decimal? CostBasis { get; init; }
@@ -25,6 +27,12 @@ public sealed record ClosedLot(
 
     /// <summary>Closing commission allocated to this disposal.</summary>
     public decimal ExitCommission { get; init; }
+
+    /// <summary>What one unit of <see cref="Quantity"/> measures; shares unless stated.</summary>
+    public SecurityLotUnitKind UnitKind { get; init; } = SecurityLotUnitKind.Shares;
+
+    /// <summary>Contract multiplier scaling one unit to economic exposure; 1 unless stated.</summary>
+    public decimal Multiplier { get; init; } = 1m;
 
     /// <summary>Total realised profit or loss for this lot.</summary>
     public decimal RealizedPnl => IsShort

@@ -303,6 +303,10 @@ Capital-account impact rows preserve each journal entry's
 capital-account and investor metadata before falling back to the event-level identity, so blocked
 conflicts remain auditable without making them report-ready.
 
+`LedgerTaxLot` implements `IUnitizedLot`; `LedgerTaxLotBasisAdjuster` carries the unit kind and
+multiplier onto adjusted lots, so a face-value lot keeps its per-100 multiplier through basis
+adjustments.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

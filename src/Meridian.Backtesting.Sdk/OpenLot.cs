@@ -1,3 +1,5 @@
+using Meridian.Contracts.SecurityMaster;
+
 namespace Meridian.Backtesting.Sdk;
 
 /// <summary>
@@ -17,20 +19,27 @@ public sealed record OpenLotBasisComponent(
 }
 
 /// <summary>
-/// Represents an open (unrealised) tax lot — a block of shares acquired in a single fill.
+/// Represents an open (unrealised) tax lot — a block of units (shares by default; see
+/// <see cref="UnitKind"/>) acquired in a single fill.
 /// Lots are always positive-quantity records. <see cref="IsShort"/> carries direction explicitly
 /// when a short lot leaves the portfolio's internal short-lot collection in a snapshot.
 /// </summary>
 public sealed record OpenLot(
     Guid LotId,
     string Symbol,
-    long Quantity,           // always positive; lots are never negative
+    decimal Quantity,        // always positive; lots are never negative
     decimal EntryPrice,
     DateTimeOffset OpenedAt,
     Guid OpenFillId,
     string? AccountId = null,
-    string? Notes = null)
+    string? Notes = null) : IUnitizedLot
 {
+    /// <summary>What one unit of <see cref="Quantity"/> measures; shares unless stated.</summary>
+    public SecurityLotUnitKind UnitKind { get; init; } = SecurityLotUnitKind.Shares;
+
+    /// <summary>Contract multiplier scaling one unit to economic exposure; 1 unless stated.</summary>
+    public decimal Multiplier { get; init; } = 1m;
+
     private BasisComponentCollection _basisComponents = BasisComponentCollection.Empty;
 
     /// <summary>

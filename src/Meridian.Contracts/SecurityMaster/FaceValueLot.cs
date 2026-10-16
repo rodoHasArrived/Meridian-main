@@ -11,7 +11,7 @@ namespace Meridian.Contracts.SecurityMaster;
 /// factor-restated face, day-count amortized basis) are owned here so every consumer computes them
 /// identically.
 /// </summary>
-public sealed record FaceValueLot
+public sealed record FaceValueLot : IUnitizedLot
 {
     public FaceValueLot(
         string lotId,
@@ -45,6 +45,13 @@ public sealed record FaceValueLot
     }
 
     public string LotId { get; }
+
+    /// <summary>A face-value lot is the face-denominated case of the shared lot shape.</summary>
+    decimal IUnitizedLot.Quantity => OriginalFace;
+
+    SecurityLotUnitKind IUnitizedLot.UnitKind => SecurityLotUnitKind.FaceValue;
+
+    decimal IUnitizedLot.Multiplier => 1m;
 
     /// <summary>Security Master identity the lot's reference data (day count, factor, maturity) resolves from.</summary>
     public Guid SecurityId { get; }

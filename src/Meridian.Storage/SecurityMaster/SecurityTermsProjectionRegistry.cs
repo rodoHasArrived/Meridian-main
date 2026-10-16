@@ -92,6 +92,29 @@ internal sealed record SecurityTermsProjectionColumn(
     /// </summary>
     internal static SecurityTermsProjectionColumn Flag(string columnName, string termKey, bool defaultWhenAbsent)
         => new(columnName, termKey, SecurityAssetTermFieldType.Boolean, DefaultWhenAbsent: defaultWhenAbsent);
+
+    /// <summary>
+    /// A column whose value is computed from the whole record rather than read from one declared
+    /// term: a value derived from several terms (a lifecycle state, a pair code, a swap type
+    /// scanned out of legs), a common-terms column, or a fallback chain. The compute function returns
+    /// the bound value, or null for SQL NULL. A gating derived column suppresses the projection when
+    /// it returns null or blank text, exactly like a gating term column.
+    /// </summary>
+    internal static SecurityTermsProjectionColumn Derived(
+        string columnName,
+        Func<SecurityProjectionRecord, object?> compute,
+        bool gates = false)
+        => new(columnName, TermKey: string.Empty, SecurityAssetTermFieldType.String, Gates: gates) { Compute = compute };
+
+    /// <summary>
+    /// The value function of a <see cref="Derived"/> column, or <see langword="null"/> for a column
+    /// that reads <see cref="TermKey"/>. A derived column is exempt from the term-schema checks: it
+    /// may read common terms or legacy keys, and its declared type is not a decode instruction.
+    /// </summary>
+    internal Func<SecurityProjectionRecord, object?>? Compute { get; init; }
+
+    /// <summary>Whether the column is computed rather than read from one declared term.</summary>
+    internal bool IsDerived => Compute is not null;
 }
 
 /// <summary>
@@ -195,22 +218,16 @@ internal sealed record SecurityTermsProjectionDescriptor(
 /// boilerplate, and folding them in would trade the duplication for a configuration language.
 /// </para>
 /// <para>
-/// Of the eleven writers that predate this registry, the four whose columns are pure term reads —
-/// MoneyMarketFund, CertificateOfDeposit, Deposit and CryptoCurrency — now live here. They moved
-/// behind a database-backed parity guard that ran each hand-written writer and its descriptor into
-/// the same table across a record matrix (gate hits and misses, whitespace gates, class changes,
-/// padded and mixed-case values, explicit nulls, wrong JSON kinds) and required identical rows;
-/// <c>RegistryMigratedProjectionGoldenTests</c> keeps those expectations as golden rows. Matching
-/// them byte for byte is what the per-column <see cref="SecurityTermsProjectionTextNormalization"/>,
-/// the boolean <see cref="SecurityTermsProjectionColumn.DefaultWhenAbsent"/> and the descriptor's
-/// <see cref="SecurityTermsProjectionDescriptor.ProjectsCurrency"/> flag express. The rest stay
-/// hand-written: Bond (derived lifecycle state, legacy nested-coupon fallback, common-terms
-/// columns), Option (series and alias tables), Swap (type scanned out of legs), FxSpot
-/// (concatenated pair code), Equity (common-terms columns), Future (derived lifecycle state and
-/// fallback-derived root symbol, multiplier and last trading date), and Commodity, which
-/// projects <c>exchangeCode</c> and <c>deliveryCountry</c> — keys the terms schema does not declare
-/// and the canonical serializer never writes, so a descriptor for it would fail validation, and
-/// declaring them would break the serializer's key-set round-trip guard.
+/// Of the eleven writers that predate this registry, nine now live here. MoneyMarketFund,
+/// CertificateOfDeposit, Deposit and CryptoCurrency moved behind a database-backed parity guard
+/// (<c>RegistryMigratedProjectionGoldenTests</c>). Equity, FxSpot, Future, Swap and Commodity moved
+/// once <see cref="SecurityTermsProjectionColumn.Derived"/> columns could express what made them
+/// special — common-terms columns, the futures root-symbol fallback and lifecycle state, the FX pair
+/// code, the swap type scanned out of legs, and Commodity's undeclared legacy keys — by calling the
+/// same readers the writers used; <c>SpecializedProjectionGoldenTests</c> captured the writers' rows
+/// across a gate/kind/class-change matrix before the move and holds the descriptors to them. Bond
+/// and Option remain specialized: each fans out to several projection tables (lifecycle, accrual,
+/// issuer; series, lifecycle, aliases) with a legacy nested-shape fallback.
 /// </para>
 /// </summary>
 internal static partial class SecurityTermsProjectionRegistry
@@ -388,8 +405,116 @@ internal static partial class SecurityTermsProjectionRegistry
                 Optional("callable_date", "callableDate", SecurityAssetTermFieldType.Date),
                 Optional("day_count", "dayCount", SecurityAssetTermFieldType.String, Verbatim)
             ],
+            ChildTables: []),
+        // The five classes below were specialized writers. Their identity spine, gates, delete
+        // branch and upsert are now the registry's; what is genuinely class-specific — common-terms
+        // columns, fallback chains and derived values — is a Derived column that calls the same
+        // readers the writers used, so every persisted value is unchanged
+        // (SpecializedProjectionGoldenTests captured the writers' rows before the move).
+        new(
+            AssetClass: "Equity",
+            TableName: "equity_projection",
+            Columns:
+            [
+                Optional("share_class", "shareClass", SecurityAssetTermFieldType.String, Verbatim),
+                Optional("voting_rights_cat", "votingRightsCat", SecurityAssetTermFieldType.String, Verbatim),
+                SecurityTermsProjectionColumn.Derived("classification",
+                    static record => SecurityTermReader.ReadEquityClassification(record.AssetSpecificTerms)),
+                CommonTerm("exchange_code", "exchange"),
+                CommonTerm("country_of_risk", "countryOfRisk"),
+                CommonTerm("issuer_name", "issuerName")
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "FxSpot",
+            TableName: "fxspot_projection",
+            Columns:
+            [
+                Gate("base_currency", "baseCurrency", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.TrimUpperInvariant),
+                Gate("quote_currency", "quoteCurrency", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.TrimUpperInvariant),
+                SecurityTermsProjectionColumn.Derived("pair_code", static record =>
+                    $"{PostgresSecurityMasterStore.GetOptionalString(record.AssetSpecificTerms, "baseCurrency")?.Trim().ToUpperInvariant()}" +
+                    $"{PostgresSecurityMasterStore.GetOptionalString(record.AssetSpecificTerms, "quoteCurrency")?.Trim().ToUpperInvariant()}")
+            ],
+            ChildTables: [],
+            ProjectsCurrency: false),
+        new(
+            AssetClass: "Future",
+            TableName: "future_projection",
+            Columns:
+            [
+                SecurityTermsProjectionColumn.Derived("root_symbol", static record =>
+                    (PostgresSecurityMasterStore.GetOptionalString(record.AssetSpecificTerms, "rootSymbol")
+                     ?? record.PrimaryIdentifierValue.Trim().ToUpperInvariant()).Trim().ToUpperInvariant()),
+                SecurityTermsProjectionColumn.Derived("contract_month", static record =>
+                    PostgresSecurityMasterStore.GetOptionalString(record.AssetSpecificTerms, "contractMonth") ?? string.Empty),
+                SecurityTermsProjectionColumn.Derived("expiry_date", static record =>
+                    FutureExpiry(record)?.ToDateTime(TimeOnly.MinValue), gates: true),
+                SecurityTermsProjectionColumn.Derived("multiplier", static record =>
+                    PostgresSecurityMasterStore.GetOptionalDecimal(record.AssetSpecificTerms, "multiplier") ?? 1m),
+                Optional("settlement_type", "settlementType", SecurityAssetTermFieldType.String, Verbatim),
+                Flag("is_roll_target", "isRollTarget", defaultWhenAbsent: false),
+                Optional("roll_window_days", "rollWindowDays", SecurityAssetTermFieldType.Integer),
+                SecurityTermsProjectionColumn.Derived("last_trading_dt", static record =>
+                    (PostgresSecurityMasterStore.GetOptionalDateOnly(record.AssetSpecificTerms, "lastTradingDt") ?? FutureExpiry(record))
+                        ?.ToDateTime(TimeOnly.MinValue)),
+                Optional("first_notice_dt", "firstNoticeDt", SecurityAssetTermFieldType.Date),
+                Optional("delivery_month_dt", "deliveryMonthDt", SecurityAssetTermFieldType.Date),
+                Optional("delivery_location_code", "deliveryLocationCode", SecurityAssetTermFieldType.String, Verbatim),
+                SecurityTermsProjectionColumn.Derived("lifecycle_stat", static record => FutureLifecycleState(record))
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "Swap",
+            TableName: "swap_projection",
+            Columns:
+            [
+                SecurityTermsProjectionColumn.Derived("swap_type", static record =>
+                    PostgresSecurityMasterStore.DeriveSwapType(record.AssetSpecificTerms)),
+                Gate("effective_date", "effectiveDate", SecurityAssetTermFieldType.Date),
+                Gate("maturity_date", "maturityDate", SecurityAssetTermFieldType.Date),
+                SecurityTermsProjectionColumn.Derived("lifecycle_stat", static _ => "Active")
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "Commodity",
+            TableName: "commodity_projection",
+            Columns:
+            [
+                Gate("commodity_type", "commodityType", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.Trim),
+                Optional("denomination", "denomination", SecurityAssetTermFieldType.String, Verbatim),
+                Optional("contract_size", "contractSize", SecurityAssetTermFieldType.Decimal),
+                // exchangeCode and deliveryCountry are not declared terms — the canonical serializer
+                // never writes them — so they are read verbatim for rows written by older importers.
+                SecurityTermsProjectionColumn.Derived("exchange_code", static record =>
+                    PostgresSecurityMasterStore.GetOptionalString(record.AssetSpecificTerms, "exchangeCode")),
+                SecurityTermsProjectionColumn.Derived("delivery_country", static record =>
+                    PostgresSecurityMasterStore.GetOptionalString(record.AssetSpecificTerms, "deliveryCountry"))
+            ],
             ChildTables: [])
     ];
+
+    /// <summary>A verbatim common-terms string column (exchange, country of risk, issuer).</summary>
+    private static SecurityTermsProjectionColumn CommonTerm(string columnName, string commonTermKey)
+        => SecurityTermsProjectionColumn.Derived(columnName, record =>
+            PostgresSecurityMasterStore.GetOptionalString(record.CommonTerms, commonTermKey));
+
+    private static DateOnly? FutureExpiry(SecurityProjectionRecord record)
+        => PostgresSecurityMasterStore.GetOptionalDateOnly(record.AssetSpecificTerms, "expiry");
+
+    /// <summary>Retired once the record has an effective-to date; otherwise expiry, then roll target.</summary>
+    private static string? FutureLifecycleState(SecurityProjectionRecord record)
+    {
+        if (FutureExpiry(record) is not { } expiry)
+        {
+            return null;
+        }
+
+        return record.EffectiveTo.HasValue ? "Retired"
+            : expiry < DateOnly.FromDateTime(DateTime.UtcNow) ? "Expired"
+            : PostgresSecurityMasterStore.GetOptionalBool(record.AssetSpecificTerms, "isRollTarget") == true ? "RollTarget"
+            : "Active";
+    }
 
     /// <summary>The asset classes covered by a schema-driven projection.</summary>
     internal static IReadOnlyList<string> AssetClasses { get; } =
@@ -462,6 +587,13 @@ internal static partial class SecurityTermsProjectionRegistry
             if (!seenColumns.Add(column.ColumnName))
             {
                 issues.Add($"{target} duplicates another column or an identity-spine column.");
+            }
+
+            if (column.IsDerived)
+            {
+                // A derived column carries its own value function; there is no term to check
+                // against the schema, and no decode type or normalization to validate.
+                continue;
             }
 
             if (!IsProjectableScalar(column.Type))

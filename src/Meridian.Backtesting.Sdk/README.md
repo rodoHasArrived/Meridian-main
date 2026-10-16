@@ -81,6 +81,12 @@ Use this module when a backtesting contract must be shared across runtime and st
   `AssetEventCashFlow.EntryCommissionDisposed` retains fees relieved by fractional disposals.
   These init-only additions preserve constructor and deconstruction compatibility.
 
+## Unitized lots
+
+`OpenLot` and `ClosedLot` hold `decimal` quantities and implement `IUnitizedLot`: `UnitKind`
+defaults to `Shares` and `Multiplier` to 1, so existing share lots are unchanged.
+`LotQuantity.EconomicUnits` gives quantity × multiplier.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
