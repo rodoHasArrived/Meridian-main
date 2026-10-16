@@ -251,8 +251,8 @@ public sealed partial class SecurityMasterGovernedConcurrencyPostgresTests(Secur
             values (@id, 'CustomAsset', 'Active', 'Concurrency fixture', 'USD', 'InternalCode', @identifier,
                     @normalized_identifier, '{}', '{}', '{}', 1, now());
             insert into {{fixture.Options.Schema}}.security_events
-                (security_id, stream_version, event_type, event_timestamp, actor, payload)
-            values (@id, 1, 'created', now(), 'test', '{}');
+                (security_id, stream_version, event_type, event_timestamp, actor, payload, payload_type, payload_version)
+            values (@id, 1, 'created', now(), 'test', '{}', 'SecurityProjection', 1);
             """;
         command.Parameters.AddWithValue("id", id);
         command.Parameters.AddWithValue("identifier", id.ToString("N"));

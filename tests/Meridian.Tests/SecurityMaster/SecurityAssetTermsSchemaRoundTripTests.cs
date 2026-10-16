@@ -370,11 +370,30 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
 
     [Theory]
     [MemberData(nameof(DeclaredAssetClasses))]
+    public void FullPayload_DeclaresItsFormatAndAssetClassTermsVersion(string assetClass)
+    {
+        var serialized = SerializeThroughDomain(assetClass, FullPayloads[assetClass]);
+
+        if (string.Equals(assetClass, "CustomAsset", StringComparison.Ordinal))
+        {
+            // The profile document is emitted verbatim and resolves to the custom-profile family by shape.
+            SecurityTermsEnvelope.ResolveFormat(serialized).Should().Be(SecurityTermsFormats.CustomProfile);
+            return;
+        }
+
+        serialized.GetProperty(SecurityTermsEnvelope.FormatKey).GetString().Should().Be(SecurityTermsFormats.Flat);
+        serialized.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32()
+            .Should().Be(SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion);
+        SecurityTermsEnvelope.ResolveFormat(serialized).Should().Be(SecurityTermsFormats.Flat);
+    }
+
+    [Theory]
+    [MemberData(nameof(DeclaredAssetClasses))]
     public void FullPayload_SerializesToExactlyTheDeclaredFieldSet(string assetClass)
     {
         var serialized = SerializeThroughDomain(assetClass, FullPayloads[assetClass]);
         var serializedKeys = ElementKeys(serialized);
-        serializedKeys.Remove("schemaVersion");
+        serializedKeys.RemoveWhere(SecurityTermsEnvelope.IsReservedKey);
 
         var declaredKeys = SecurityAssetTermsSchema.Fields(assetClass)
             .Select(static field => field.Key)

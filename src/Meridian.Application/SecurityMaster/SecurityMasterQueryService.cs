@@ -140,7 +140,7 @@ public sealed class SecurityMasterQueryService :
         foreach (var @event in latestEvents.Values)
         {
             ct.ThrowIfCancellationRequested();
-            var economic = SecurityMasterMapping.FromEconomicPayload(@event.Payload);
+            var economic = SecurityMasterMapping.FromEventEnvelope(@event);
             var recordedAliases = await _store.GetAliasesRecordedAsOfAsync(
                     @event.SecurityId, recordedAsOfUtc, ct)
                 .ConfigureAwait(false);

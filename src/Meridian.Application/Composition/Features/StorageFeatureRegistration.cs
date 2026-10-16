@@ -314,6 +314,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IStructuredCreditReferenceProjectionStore, PostgresStructuredCreditReferenceProjectionStore>();
             services.AddSingleton<IOperatorOverridesStore, PostgresOperatorOverridesStore>();
             services.AddSingleton<ISecurityFieldProvenanceStore, PostgresSecurityFieldProvenanceStore>();
+            services.AddSingleton<ISecurityMasterCanonicalWriteScope, PostgresSecurityMasterCanonicalWriteScope>();
+            services.AddSingleton<ISecurityGovernanceEventReader, PostgresSecurityGovernanceEventLog>();
             services.AddSingleton<SecurityMasterMigrationRunner>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
             // One node identity per service graph (not per process): the store stamps it on the
@@ -410,6 +412,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterPricingService, SecurityMasterPricingService>();
             services.AddSingleton<IStructuredCashFlowLedgerBridge, StructuredCashFlowLedgerBridge>();
             services.AddSingleton<ISecurityMasterAmortizationLedgerBridge, SecurityMasterAmortizationLedgerBridge>();
+            services.TryAddSingleton<InMemorySecurityForwardCurveProvider>();
+            services.TryAddSingleton<ISecurityForwardCurveProvider>(static sp => sp.GetRequiredService<InMemorySecurityForwardCurveProvider>());
             services.AddSingleton<ISecurityMasterCashFlowService, SecurityMasterCashFlowService>();
             services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
             services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();

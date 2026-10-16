@@ -12,23 +12,21 @@ namespace Meridian.Contracts.SecurityMaster;
 /// an economic-terms document landing in the asset-specific-terms slot failed every read with
 /// "Unsupported schemaVersion '2'".
 /// <para>
-/// <b>The bridge is lossy, and callers must treat it as such.</b> The flat v1 family is keyed per
-/// asset class (a callable bond's <c>callDate</c>, an MBS's <c>currentFactor</c>, a sweep vehicle's
-/// <c>programName</c>). When the caller knows the class it should use
-/// <see cref="Convert(JsonElement, string?)"/>, which writes every value the economic document
-/// carries at the class's declared flat key and loses only what that document never held
-/// (<see cref="UnrecoverableKeys"/>). The class-independent <see cref="Convert(JsonElement)"/>
-/// described next is the fallback for an unknown class: it can only carry the
-/// modules whose fields have one class-independent flat spelling. It reads the
-/// <see cref="BridgedModules"/> — <c>maturity</c>, <c>coupon</c>, <c>payment</c>, <c>accrual</c>,
-/// <c>discount</c> — and drops every other module the economic serializer emits
-/// (<see cref="DroppedModules"/>: redemption, call, auction, sweep, financing, issuer, equity
-/// behaviour, fund, structured product), plus the accrual and payment fields that have no flat
-/// counterpart. A callable bond comes out as a bullet bond with the same coupon; an MBS loses its
-/// pool factor; every class loses its issuer identity. The authoritative economic record remains
-/// stored separately — this conversion only feeds read compatibility — and the output is stamped
-/// with <see cref="FlattenedFromMarkerProperty"/> so a projection rebuilt through this route is
-/// distinguishable from one that always carried the flat terms.
+/// <b>The flat keys are lossy; the payload is not.</b> The flat v1 family is keyed per asset class
+/// (a callable bond's <c>callDate</c>, an MBS's <c>currentFactor</c>, a sweep vehicle's
+/// <c>programName</c>) and cannot express every economic module. When the caller knows the class it
+/// should use <see cref="Convert(JsonElement, string?)"/>, which writes every value the economic
+/// document carries at the class's declared flat key. The class-independent
+/// <see cref="Convert(JsonElement)"/> is the fallback for an unknown class and can only place the
+/// <see cref="BridgedModules"/>; it places nothing from the <see cref="DroppedModules"/>
+/// (redemption, call, auction, sweep, financing, issuer, equity behaviour, fund, structured product).
+/// Both conversions therefore also carry the complete source document verbatim under
+/// <see cref="SecurityTermsEnvelope.RetainedEconomicTermsKey"/>, stamp the result with the explicit
+/// flat <see cref="SecurityTermsEnvelope.FormatKey"/>, and mark it with
+/// <see cref="FlattenedFromMarkerProperty"/>, so a projection rebuilt through this route keeps every
+/// economic value and stays distinguishable from one that always carried the flat terms. The
+/// economic definition adapter folds the retained document back into the economic record on the
+/// next write, so data the flat keys cannot hold survives a replay-then-amend cycle.
 /// </para>
 /// </summary>
 public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchemaUpcaster<SecurityAssetSpecificTerms>
@@ -87,14 +85,26 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     }
 
     /// <summary>
-    /// Whether the payload has the economic-terms family's shape: an object stamped
+    /// Whether the payload is an economic-terms document. A payload that declares
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/> is classified by that declaration alone, so a
+    /// tagged document never depends on its <c>schemaVersion</c> integer; an untagged payload falls
+    /// back to <see cref="IsEconomicTermsShape"/>.
+    /// </summary>
+    public static bool IsEconomicTermsDocument(JsonElement payload)
+        => SecurityTermsEnvelope.GetDeclaredFormat(payload) is { } declared
+            ? string.Equals(declared, SecurityTermsFormats.Economic, StringComparison.Ordinal)
+            : IsEconomicTermsShape(payload);
+
+    /// <summary>
+    /// The historical shape rule for untagged payloads: an object stamped
     /// <see cref="EconomicTermsSchema.Current"/> that carries at least one of the
     /// <see cref="EconomicTermsModules"/> keys. The two payload families share one
     /// <c>schemaVersion</c> key, so the integer alone cannot tell a v2 economic-terms document from
     /// a (reserved, never declared) flat v2; the module keys can, because the economic serializer
-    /// always writes them and a flat document never does.
+    /// always writes them and a flat document never does. Payloads written after
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/> existed declare their family instead.
     /// </summary>
-    public static bool IsEconomicTermsDocument(JsonElement payload)
+    public static bool IsEconomicTermsShape(JsonElement payload)
     {
         if (payload.ValueKind != JsonValueKind.Object
             || SecurityAssetSpecificTermsV0ToCurrentUpcaster.ResolveSchemaVersion(payload) != EconomicTermsSchema.Current)
@@ -136,9 +146,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
-            writer.WriteStartObject();
-            writer.WriteNumber("schemaVersion", AssetSpecificTermsSchema.Legacy);
-            writer.WriteNumber(FlattenedFromMarkerProperty, EconomicTermsSchema.Current);
+            WriteFlatEnvelope(writer, SecurityTermsEnvelope.DefaultAssetClassTermsVersion);
 
             var maturity = GetObject(economicTerms, "maturity");
             WriteIfPresent(writer, "maturityDate", maturity, "maturityDate");
@@ -167,6 +175,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             WriteIfPresent(writer, "discountRate", discount, "discountRate");
             WriteIfPresent(writer, "yieldRate", discount, "yieldRate");
 
+            WriteRetainedEconomicTerms(writer, economicTerms);
             writer.WriteEndObject();
         }
 
@@ -212,9 +221,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
-            writer.WriteStartObject();
-            writer.WriteNumber("schemaVersion", AssetSpecificTermsSchema.Legacy);
-            writer.WriteNumber(FlattenedFromMarkerProperty, EconomicTermsSchema.Current);
+            WriteFlatEnvelope(writer, SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion);
 
             foreach (var mapping in mappings)
             {
@@ -253,6 +260,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                 }
             }
 
+            WriteRetainedEconomicTerms(writer, economicTerms);
             writer.WriteEndObject();
         }
 
@@ -432,6 +440,38 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         ("Warrant", [Map("expiry", MaturityDate)]),
         ("InvestmentFund", [Map("fundFamily", ("fund", "fundFamily"))])
     ];
+
+    /// <summary>
+    /// Opens a flattened payload with its envelope: the flat codec version, the explicit flat format
+    /// and asset-class terms version, and the marker naming the economic version it came from.
+    /// </summary>
+    private static void WriteFlatEnvelope(Utf8JsonWriter writer, int assetClassTermsVersion)
+    {
+        writer.WriteStartObject();
+        writer.WriteNumber(SecurityTermsEnvelope.SchemaVersionKey, AssetSpecificTermsSchema.Legacy);
+        writer.WriteString(SecurityTermsEnvelope.FormatKey, SecurityTermsFormats.Flat);
+        writer.WriteNumber(SecurityTermsEnvelope.AssetClassTermsVersionKey, assetClassTermsVersion);
+        writer.WriteNumber(FlattenedFromMarkerProperty, EconomicTermsSchema.Current);
+    }
+
+    /// <summary>
+    /// Carries the source economic document verbatim under
+    /// <see cref="SecurityTermsEnvelope.RetainedEconomicTermsKey"/>. The flat family cannot express
+    /// every module (redemption, call and put schedules, issuer identity, fund and structured-product
+    /// detail), so instead of dropping what it cannot place, the bridge keeps the whole document
+    /// beside the flat keys; <c>SecurityEconomicDefinitionAdapter</c> folds it back into the economic
+    /// record on the next write, so a replay-then-amend cycle never erases it.
+    /// </summary>
+    private static void WriteRetainedEconomicTerms(Utf8JsonWriter writer, JsonElement economicTerms)
+    {
+        if (economicTerms.ValueKind != JsonValueKind.Object)
+        {
+            return;
+        }
+
+        writer.WritePropertyName(SecurityTermsEnvelope.RetainedEconomicTermsKey);
+        economicTerms.WriteTo(writer);
+    }
 
     private static JsonElement? GetObject(JsonElement source, string propertyName)
         => source.ValueKind == JsonValueKind.Object
