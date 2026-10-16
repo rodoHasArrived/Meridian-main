@@ -87,6 +87,9 @@ overview events arrive with retained source names.
 The generated dashboard route table includes the Security Master asset-class registry
 endpoints, and the workstation identifier-kind union includes `LoanX` and `Clip`.
 
+The generated route table includes the income cash-flow, factor-history and term-block
+Security Master routes.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
