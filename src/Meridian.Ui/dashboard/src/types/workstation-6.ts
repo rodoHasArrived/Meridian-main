@@ -1589,7 +1589,9 @@ export type SecurityIdentifierKind =
   | "Valoren"
   | "PermTicker"
   | "Ric"
-  | "Cik";
+  | "Cik"
+  | "LoanX"
+  | "Clip";
 
 export type SecurityAssetProfileStatus = "Draft" | "Approved" | "Superseded" | "Retired";
 

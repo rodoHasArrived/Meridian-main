@@ -267,7 +267,7 @@ type BondTerms = {
     Seniority: string option
     /// Economic subclass of this bond instrument.
     Subclass: BondSubclass
-    // --- Clearwater Security Master required properties ---
+    // --- Valuation and redemption terms ---
     /// Face/par value of the bond (e.g. 1000 for a $1,000 par bond).
     /// Used in market value calculation: Par × Factor × Price / 100.
     Par: decimal option
@@ -446,7 +446,7 @@ type DirectLoanTerms = {
     Borrower: string
     Maturity: DateOnly option
     Covenants: Covenant list
-    // --- Clearwater bank loan / direct lending properties ---
+    // --- Floating-rate loan economics ---
     /// Floating rate reference index (e.g. "SOFR", "LIBOR", "EURIBOR").
     ReferenceIndex: string option
     /// Spread over the reference index in basis points (e.g. 350 = SOFR + 3.50%).
@@ -457,7 +457,8 @@ type DirectLoanTerms = {
     ResetFrequency: string option
     /// Contractual or expected principal instalment schedule.
     PrincipalSchedule: PrincipalPaymentEntry list
-    /// Pricing source for market value (e.g. "IHSMarkit", "Refinitiv", "Client").
+    /// Operational reference, not loan economics: the pricing source for market value
+    /// (e.g. "IHSMarkit", "Refinitiv", "Client"). Declared Operational in the term schema.
     PricingSource: string option
 }
 
@@ -543,7 +544,8 @@ type InvestmentFundTerms = {
     DistributionPolicy: DistributionPolicy option
     /// True for stable-NAV money market and government liquidity funds.
     IsStableNav: bool option
-    /// Price/NAV data source (e.g. "iMoneyNet", "Bloomberg", "Client").
+    /// Operational reference, not fund economics: the price/NAV data source
+    /// (e.g. "iMoneyNet", "Bloomberg", "Client"). Declared Operational in the term schema.
     PricingSource: string option
 }
 

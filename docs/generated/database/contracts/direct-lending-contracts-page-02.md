@@ -2,11 +2,25 @@
 
 # `direct-lending-contracts` data objects - page 2 of 2
 
-Objects 81-98 of 98. References crossing pages remain available in the dependency manifest.
+Objects 81-99 of 99. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% direct-lending-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_DirectLending_ServicerPositionReportLineDto["ServicerPositionReportLineDto"] {
+        +decimal? CommitmentAvailable
+        +string? DelinquencyStatus
+        +decimal? FeesAccruedUnpaid
+        +decimal? InterestAccruedUnpaid
+        +Guid LoanId
+        +decimal? NextDueAmount
+        +DateOnly? NextDueDate
+        +decimal? PenaltyAccruedUnpaid
+        +decimal? PrincipalOutstanding
+        +string RawPayloadJson
+        +DateOnly ReportAsOfDate
+        +Guid ServicerReportBatchId
+    }
     class Meridian_Contracts_DirectLending_ServicerPositionReportLineImportDto["ServicerPositionReportLineImportDto"] {
         +decimal? CommitmentAvailable
         +string? DelinquencyStatus

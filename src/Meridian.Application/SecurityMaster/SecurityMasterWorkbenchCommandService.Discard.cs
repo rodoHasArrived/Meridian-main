@@ -410,7 +410,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                                     new OperatorOverrideDecision(
                                         priorApprovalStatus,
                                         priorReviewer!,
-                                        "Prior decision restored after a discard withdrew a stale override key."),
+                                        "Prior decision restored after a discard withdrew a stale override key.")
+                                    { RestoresPriorDecision = true },
                                     CancellationToken.None).ConfigureAwait(false);
                             }, ex => _logger.LogWarning(
                                     ex,
@@ -555,7 +556,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                 new OperatorOverrideDecision(
                     SecurityOverrideApprovalStatusDto.Approved,
                     reviewer,
-                    "Published revisions' decision re-converged after discards removed the deferring staged revisions."),
+                    "Published revisions' decision re-converged after discards removed the deferring staged revisions.")
+                { RestoresPriorDecision = true },
                 CancellationToken.None).ConfigureAwait(false);
 
             _logger.LogInformation(

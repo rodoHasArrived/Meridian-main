@@ -1,44 +1,20 @@
 {
   "description": "Repo-script test modules excluded from the tests/scripts CI lane. Every entry is a tracked defect or environment gap discovered when the lane was first wired (audit finding P9); fix the underlying drift and remove the entry. run-script-tests.py prints each exclusion on every run so this list cannot rot silently.",
   "quarantined_modules": {
-    "test_validate_source_readmes": {
-      "reason": "3 failures: validator output no longer matches fixture expectations (absolute/symlink path rejection and valid-fixture contract).",
-      "owner": "@rodoHasArrived",
-      "reviewBy": "2026-10-28",
-      "tracking": "docs/engineering/ci-cd-optimization.md#script-test-quarantine"
-    },
     "test_desktop_screen_blueprint_checklist": {
-      "reason": "2 failures: checklist no longer tracks all blueprint screens; summary command exits non-zero.",
+      "reason": "2 failures: the active checklist still references docs/plans/desktop-workstation-screen-blueprint.md, now an archive stub without its 20 screen headings. Migrate the maintained blueprint/checklist reference together; do not bypass heading validation.",
       "owner": "@rodoHasArrived",
       "reviewBy": "2026-10-28",
       "tracking": "docs/engineering/ci-cd-optimization.md#script-test-quarantine"
     },
     "test_live_execution_controls_route_consistency": {
-      "reason": "1 failure: manual-override doc routes have drifted from contracts.",
-      "owner": "@rodoHasArrived",
-      "reviewBy": "2026-10-28",
-      "tracking": "docs/engineering/ci-cd-optimization.md#script-test-quarantine"
-    },
-    "test_archive_code_tombstones": {
-      "reason": "1 failure: archive/code contains files that are no longer comment-only tombstones.",
-      "owner": "@rodoHasArrived",
-      "reviewBy": "2026-10-28",
-      "tracking": "docs/engineering/ci-cd-optimization.md#script-test-quarantine"
-    },
-    "test_python_package_conda_dependencies": {
-      "reason": "1 error: python-package workflow no longer installs the expected conda environment file.",
-      "owner": "@rodoHasArrived",
-      "reviewBy": "2026-10-28",
-      "tracking": "docs/engineering/ci-cd-optimization.md#script-test-quarantine"
-    },
-    "test_check_contract_compatibility_gate": {
-      "reason": "2 errors: security-master instrument-reference checks fail against current contract shapes.",
+      "reason": "1 failure: the route-consistency test reads docs/operations/live-execution-controls.md, now an archive stub. Establish the current operator guidance for manual override create/clear routes and migrate the test to that maintained owner.",
       "owner": "@rodoHasArrived",
       "reviewBy": "2026-10-28",
       "tracking": "docs/engineering/ci-cd-optimization.md#script-test-quarantine"
     },
     "test_export_project_artifact_workflow": {
-      "reason": "setUpClass error: expected export workflow file is absent from .github/workflows.",
+      "reason": "setUpClass error: export-project-artifact.yml was retired and no maintained source-archive exporter replaces its git-object/archive-upload contract. Resolve the feature ownership before migrating this test; do not recreate a retired workflow solely to satisfy it.",
       "owner": "@rodoHasArrived",
       "reviewBy": "2026-10-28",
       "tracking": "docs/engineering/ci-cd-optimization.md#script-test-quarantine"

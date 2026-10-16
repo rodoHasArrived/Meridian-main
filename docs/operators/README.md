@@ -49,6 +49,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Durable account oversight | [Bounded Account Oversight](account-oversight.md) | cash-balance continuity, immutable reviewed price sets and source-backed cash forecasts |
 | Governed reporting, schedules, and delivery | [Governed Reporting Operations](./governed-reporting-operations.md) | reporting preflight, hard-close evidence, recovery, and secure relay operation |
 | Deployment and packaging | [Deployment and Packaging](./deployment-packaging.md) | canonical packaging/checksum/sign-off posture |
+| Security Master cross-instance edit rollout | [Governed Edit Rollout](security-master-governed-edit-rollout.md) | independent schema/Storage review, old-writer drain, migration and operator-acceptance receipts |
 | A firing alert | [Operator Runbook](./operator-runbook.md) | per-alert response, diagnostics bundle, incident procedure and ownership |
 | Inspect a connected pipeline or backfill trace | [Distributed Tracing](./distributed-tracing.md) | opt-in exporters, collector configuration, sampling, and shutdown delivery |
 | Objectives, thresholds, RTO/RPO | [Service Level Objectives](./service-level-objectives.md) | SLIs, targets, error budgets, and recovery objectives |
@@ -62,7 +63,7 @@ Lookup tables and contract shape belong in [Reference](../reference/README.md). 
 | Configure providers | [Credentials](provider-credentials.md), [Alpaca](provider-onboarding-alpaca.md), [Interactive Brokers](provider-onboarding-interactive-brokers.md), [Plaid](plaid-provider-operations.md), [Xero/NetSuite GL](external-gl-providers.md) |
 | Reconcile and report | [Reconciliation triage](reconciliation-operations.md), [statement-to-report](statement-reconciliation-report-operations.md), [governed reporting](governed-reporting-operations.md) |
 | Diagnose, repair, and recover | [Alert runbook](operator-runbook.md), [verified outcomes](verified-outcome-recovery.md), [backfill](provider-backfill-operations.md), [backup/recovery](failover-and-recovery.md), [distributed tracing](distributed-tracing.md), [SLO reference](service-level-objectives.md) |
-| Controlled data maintenance | [Persistence cutover](fund-ops-persistence-cutover.md), [tenant attribution](fund-structure-tenant-backfill.md), [ledger currency backfill](ledger-currency-backfill.md), [Security Master identifier migration](security-master-normalized-identifier-migration.md) |
+| Controlled data maintenance | [Persistence cutover](fund-ops-persistence-cutover.md), [tenant attribution](fund-structure-tenant-backfill.md), [ledger currency backfill](ledger-currency-backfill.md), [Security Master identifier migration](security-master-normalized-identifier-migration.md), [Security Master governed edit rollout](security-master-governed-edit-rollout.md) |
 
 An active procedure is maintained guidance, not evidence that its workflow or release is certified.
 Use the document's stated prerequisites and retained acceptance artifacts; an index/navigation

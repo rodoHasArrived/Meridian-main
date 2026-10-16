@@ -2,6 +2,15 @@ using Meridian.Contracts.Catalog;
 
 namespace Meridian.Storage.Interfaces;
 
+/// <summary>Atomic, source-scoped reconciliation supported by the durable registry store.</summary>
+public interface ISymbolRegistrySecurityMasterWriter
+{
+    Task<int> ReconcileSecurityMasterAsync(
+        IReadOnlyCollection<Guid> securityIds,
+        IEnumerable<SymbolRegistryEntry> symbols,
+        CancellationToken ct = default);
+}
+
 /// <summary>
 /// Service for managing the symbol registry.
 /// </summary>

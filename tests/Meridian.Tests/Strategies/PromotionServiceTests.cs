@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
@@ -49,6 +50,7 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Live) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult()
         };
@@ -66,6 +68,7 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = null
         };
@@ -82,6 +85,7 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult()
         };
@@ -97,12 +101,107 @@ public sealed class PromotionServiceTests
 
     // ---- ApproveAsync ----
 
+    [Theory]
+    [InlineData(RunType.Backtest, StrategyRunLifecycleEventType.Failed, StrategyRunStatus.Failed)]
+    [InlineData(RunType.Paper, StrategyRunLifecycleEventType.Failed, StrategyRunStatus.Failed)]
+    [InlineData(RunType.Paper, StrategyRunLifecycleEventType.Cancelled, StrategyRunStatus.Cancelled)]
+    [InlineData(RunType.Paper, StrategyRunLifecycleEventType.StopFailed, StrategyRunStatus.Stopped)]
+    [InlineData(RunType.Paper, StrategyRunLifecycleEventType.EvidencePersistenceFailed, StrategyRunStatus.Failed)]
+    [InlineData(RunType.Paper, StrategyRunLifecycleEventType.EvidencePersistenceFailed, StrategyRunStatus.Stopped)]
+    public async Task FailedCleanupOrUnconfirmedEvidence_WithRetainedMetrics_CannotBeEvaluatedOrApprovedForPromotion(
+        RunType runType,
+        StrategyRunLifecycleEventType eventType,
+        StrategyRunStatus status)
+    {
+        var service = BuildService(out var store);
+        var run = StrategyRunEntry.Start("cleanup-failure", "Cleanup Failure", runType)
+            .Complete(BuildPassingResult()) with
+        {
+            LastLifecycleEvent = eventType,
+            TerminalStatus = status,
+            ExceptionMessage = "Strategy cleanup or final evidence retention failed."
+        };
+        await store.RecordRunAsync(run);
+        var targetMode = runType == RunType.Backtest ? RunType.Paper : RunType.Live;
+
+        var evaluation = await service.EvaluateAsync(run.RunId);
+        var decision = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Review retained run metrics.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(targetMode),
+            EvidenceReferences: CreateEvidenceReferences(targetMode)));
+
+        evaluation.Ready.Should().BeFalse();
+        evaluation.IsEligible.Should().BeFalse();
+        evaluation.Reason.Should().Contain("did not complete successfully");
+        decision.Success.Should().BeFalse();
+        decision.NewRunId.Should().BeNull();
+        decision.Reason.Should().Contain("did not complete successfully");
+        (await service.GetPromotionHistoryAsync()).Should().BeEmpty();
+        (await LoadRunsAsync(store)).Should().ContainSingle().Which.Metrics.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task EvaluateAsync_WhenOnlyEndTimestampImpliesCompletion_RequiresSuccessfulLifecycleOutcome()
+    {
+        var service = BuildService(out var store);
+        var run = StrategyRunEntry.Start("ambiguous-source", "Ambiguous Strategy", RunType.Backtest) with
+        {
+            EndedAt = DateTimeOffset.UtcNow,
+            Metrics = BuildPassingResult()
+        };
+        await store.RecordRunAsync(run);
+
+        var result = await service.EvaluateAsync(run.RunId);
+
+        result.Ready.Should().BeFalse();
+        result.IsEligible.Should().BeFalse();
+        result.Reason.Should().Contain("complete successfully");
+    }
+
+    [Theory]
+    [InlineData(StrategyRunStatus.Failed, RunType.Backtest)]
+    [InlineData(StrategyRunStatus.Cancelled, RunType.Backtest)]
+    [InlineData(StrategyRunStatus.Failed, RunType.Paper)]
+    [InlineData(StrategyRunStatus.Cancelled, RunType.Paper)]
+    public async Task Promotion_WhenUnsuccessfulRunRetainsQualifyingMetrics_DoesNotCreateTargetOrDecision(
+        StrategyRunStatus terminalStatus,
+        RunType runType)
+    {
+        var service = BuildService(out var store);
+        var run = StrategyRunEntry.Start("failed-source", "Configured Strategy", runType)
+            .Complete(BuildPassingResult());
+        run = terminalStatus == StrategyRunStatus.Failed ? run.Fail() : run.Cancel();
+        await store.RecordRunAsync(run);
+
+        var evaluation = await service.EvaluateAsync(run.RunId);
+        var approval = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Metrics qualify despite unsuccessful outcome.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(
+                runType == RunType.Backtest ? RunType.Paper : RunType.Live),
+            EvidenceReferences: CreateEvidenceReferences(
+                runType == RunType.Backtest ? RunType.Paper : RunType.Live)));
+
+        evaluation.Ready.Should().BeFalse();
+        evaluation.IsEligible.Should().BeFalse();
+        evaluation.Reason.Should().Contain("complete successfully");
+        approval.Success.Should().BeFalse();
+        approval.NewRunId.Should().BeNull();
+        approval.Reason.Should().Contain("complete successfully");
+        (await service.GetPromotionHistoryAsync()).Should().BeEmpty();
+        (await LoadRunsAsync(store)).Should().ContainSingle().Which.RunId.Should().Be(run.RunId);
+    }
+
     [Fact]
     public async Task ApproveAsync_WhenRunExists_CreatesNewRunAndRecordsHistory()
     {
         var service = BuildService(out var store, CreateTempRoot());
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
@@ -120,6 +219,9 @@ public sealed class PromotionServiceTests
         result.Success.Should().BeTrue();
         result.NewRunId.Should().NotBeNullOrWhiteSpace();
         result.PromotionId.Should().NotBeNullOrWhiteSpace();
+        var promotedRun = await store.GetRunByIdAsync(result.NewRunId!);
+        promotedRun.Should().NotBeNull();
+        promotedRun!.RetainedEvidenceReferences.Should().BeEquivalentTo(run.RetainedEvidenceReferences);
         var history = await service.GetPromotionHistoryAsync();
         history.Should().HaveCount(1);
         history[0].SourceRunId.Should().Be(run.RunId);
@@ -138,6 +240,7 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store, CreateTempRoot());
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper),
@@ -177,6 +280,7 @@ public sealed class PromotionServiceTests
             runLauncher: firstLauncher);
         var run = StrategyRunEntry.Start("retry-strategy", "Retry Strategy", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
@@ -246,6 +350,7 @@ public sealed class PromotionServiceTests
             runLauncher: launcher);
         var run = StrategyRunEntry.Start("concurrent-strategy", "Concurrent Strategy", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
@@ -302,6 +407,7 @@ public sealed class PromotionServiceTests
         var run = WithCanonicalInputHash(
             StrategyRunEntry.Start("reservation-failure", "Reservation Failure", RunType.Backtest) with
             {
+                LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
                 EndedAt = DateTimeOffset.UtcNow,
                 Metrics = BuildPassingResult(),
                 RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
@@ -337,6 +443,7 @@ public sealed class PromotionServiceTests
         var run = WithCanonicalInputHash(
             StrategyRunEntry.Start("repair-strategy", "Repair Strategy", RunType.Backtest) with
             {
+                LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
                 EndedAt = DateTimeOffset.UtcNow,
                 Metrics = BuildPassingResult(),
                 RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
@@ -408,6 +515,7 @@ public sealed class PromotionServiceTests
             runLauncher: launcher);
         var run = StrategyRunEntry.Start("rejected-strategy", "Rejected Strategy", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
@@ -460,6 +568,7 @@ public sealed class PromotionServiceTests
             runLauncher: launcher);
         var run = StrategyRunEntry.Start("approved-strategy", "Approved Strategy", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
@@ -511,6 +620,7 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult()
         };
@@ -530,6 +640,7 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult()
         };
@@ -552,6 +663,7 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult()
         };
@@ -581,6 +693,7 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Live) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult()
         };
@@ -606,6 +719,7 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult()
         };
@@ -639,6 +753,7 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult()
         };
@@ -660,6 +775,7 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store, CreateTempRoot());
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
@@ -696,6 +812,7 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store, durableStore);
         var run = StrategyRunEntry.Start("s1", "Strategy One", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
@@ -768,6 +885,7 @@ public sealed class PromotionServiceTests
         var run = WithScope(
             StrategyRunEntry.Start("covered-call-overwrite:tenant-a", "Covered Call", RunType.Backtest) with
             {
+                LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
                 EndedAt = DateTimeOffset.UtcNow,
                 Metrics = BuildPassingResult(),
                 RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
@@ -810,6 +928,7 @@ public sealed class PromotionServiceTests
         var run = WithScope(
             StrategyRunEntry.Start("covered-call-overwrite:tenant-a", "Covered Call", RunType.Backtest) with
             {
+                LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
                 EndedAt = DateTimeOffset.UtcNow,
                 Metrics = BuildPassingResult()
             },
@@ -852,12 +971,14 @@ public sealed class PromotionServiceTests
         {
             StrategyRunEntry.Start("partial-tenant", "Partial Tenant", RunType.Backtest) with
             {
+                LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
                 EndedAt = DateTimeOffset.UtcNow,
                 Metrics = BuildPassingResult(),
                 ParameterSet = new Dictionary<string, string> { ["workstationTenantId"] = "tenant-a" }
             },
             StrategyRunEntry.Start("partial-company", "Partial Company", RunType.Backtest) with
             {
+                LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
                 EndedAt = DateTimeOffset.UtcNow,
                 Metrics = BuildPassingResult(),
                 ParameterSet = new Dictionary<string, string> { ["workstationCompanyId"] = "company-a" }
@@ -865,6 +986,7 @@ public sealed class PromotionServiceTests
             WithScope(
                 StrategyRunEntry.Start("blank-scope", "Blank Scope", RunType.Backtest) with
                 {
+                    LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
                     EndedAt = DateTimeOffset.UtcNow,
                     Metrics = BuildPassingResult()
                 },
@@ -890,12 +1012,14 @@ public sealed class PromotionServiceTests
         var scope = new StrategyRunReadScope("tenant-a", "company-a");
         var legacyRun = StrategyRunEntry.Start("legacy-strategy", "Legacy Strategy", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult()
         };
         var scopedCoveredCall = WithScope(
             StrategyRunEntry.Start("covered-call-overwrite:tenant-a", "Covered Call", RunType.Backtest) with
             {
+                LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
                 EndedAt = DateTimeOffset.UtcNow,
                 Metrics = BuildPassingResult()
             },
@@ -916,6 +1040,7 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store);
         var run = StrategyRunEntry.Start("paper-evidence", "Paper Evidence", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
@@ -958,6 +1083,7 @@ public sealed class PromotionServiceTests
         var run = WithScope(
             StrategyRunEntry.Start("covered-call-overwrite:tenant-a", "Covered Call", RunType.Backtest) with
             {
+                LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
                 EndedAt = DateTimeOffset.UtcNow,
                 Metrics = BuildPassingResult(),
                 RetainedEvidenceReferences = categorizedEvidence
@@ -1003,6 +1129,7 @@ public sealed class PromotionServiceTests
         var run = WithScope(
             StrategyRunEntry.Start("covered-call-overwrite:tenant-a", "Covered Call", RunType.Backtest) with
             {
+                LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
                 EndedAt = DateTimeOffset.UtcNow,
                 Metrics = BuildPassingResult(),
                 RetainedEvidenceReferences = [malformedReference]
@@ -1037,6 +1164,7 @@ public sealed class PromotionServiceTests
             .ToArray();
         var run = StrategyRunEntry.Start("legacy-paper", "Legacy Paper", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             RetainedEvidenceReferences = categorizedEvidence
@@ -1069,6 +1197,7 @@ public sealed class PromotionServiceTests
         var runA = WithScope(
             StrategyRunEntry.Start("strategy-a", "Strategy A", RunType.Backtest) with
             {
+                LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
                 EndedAt = DateTimeOffset.UtcNow,
                 Metrics = BuildPassingResult()
             },
@@ -1077,6 +1206,7 @@ public sealed class PromotionServiceTests
         var runB = WithScope(
             StrategyRunEntry.Start("strategy-b", "Strategy B", RunType.Backtest) with
             {
+                LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
                 EndedAt = DateTimeOffset.UtcNow,
                 Metrics = BuildPassingResult()
             },
@@ -1344,6 +1474,7 @@ public sealed class PromotionServiceTests
         var service = BuildService(out var store, CreateTempRoot());
         var run = StrategyRunEntry.Start("strat-test", "Session Test Strategy", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             RetainedEvidenceReferences = CreateRetainedEvidenceReferences(RunType.Paper)
@@ -1403,6 +1534,7 @@ public sealed class PromotionServiceTests
 
         var run = StrategyRunEntry.Start("strat-high-risk", "High Risk Strategy", RunType.Backtest) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = highRiskMetrics
         };

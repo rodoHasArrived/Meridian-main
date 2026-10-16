@@ -6,10 +6,12 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-14
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Storage
+
+Tier migration decodes compressed input with the production JSONL replay decoder before applying an explicitly requested output codec. An unspecified codec preserves source bytes; `None` emits uncompressed bytes with the compression suffix removed. Gzip rollover therefore produces one gzip layer. Deleting a source always requires equal logical-payload checksums through that decoder, including when optional copy verification is disabled; regression coverage also replays migrated events through `JsonlReplayer`.
 
 `PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
 account/book/date price snapshots and separate independent-review records (Security Master
@@ -44,6 +46,21 @@ carrying account. Backfill review/application require a Long or Asset book posit
 disposal and tax-history projection also refuse short direction, preventing asset-credit or
 opening-age tax rules from silently certifying a short cover.
 
+Security Master migration `040_security_master_governance_events.sql` adds the append-only
+`security_governance_events` log (streams `OperatorOverrides`, `Aliases`, `ProjectionRebuild`);
+triggers refuse update and delete, and migration `041_security_master_governance_events_truncate_guard.sql` adds a statement-level BEFORE TRUNCATE rejection. Override patches and decisions, alias revisions and
+projection batch rebuilds append in the same transaction as the change, and an override reviewer
+cannot approve values they staged. The event store and projection store join
+`PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap and
+Commodity projections are now declarative registry plans rather than hand-written writers.
+Asset-operations migration `005_asset_operations_write_events.sql` adds an append-only write-event
+log for direct projection writes; migration `006_asset_operations_write_events_truncate_guard.sql`
+rejects TRUNCATE on it as well.
+
+Security Master migration `039_security_master_event_payload_version.sql` adds non-null
+`payload_type`/`payload_version` columns to `security_events`, backfilled from the stored payload
+shape, so replay can refuse events written by a newer build.
+
 Security Master migration `036_security_master_workbench_generations.sql` adds the durable
 compare-and-set generation used by `PostgresSecurityMasterMutation`. Overlay values, their audit
 trail, governed drafts and lifecycle transitions share one connection and transaction. Discard-time
@@ -55,6 +72,38 @@ folding as the migration runner. Parallel passport reads
 serialize their commands on that connection. Independent stores and application instances use the
 database fence; in-memory compositions retain their local gate. Deploy with all old writers drained,
 as described in [the rollout contract](../../docs/domain/security.md#governed-edit-concurrency).
+
+Migration 038 adds append-only alias revisions after immutable generation migration 036 and
+close-price migration 037.
+Its imported alias baseline retains creation facts and a migration availability timestamp;
+recorded-time reads exclude that baseline before this eligibility boundary. Event, revision and
+availability timestamps can precede commit. They do not certify historical transaction visibility,
+and the same timestamp-cutoff query can change after a pending transaction commits.
+Fresh-install and populated through-036 and through-037 upgrade tests cover rollback, retry and
+restart receipts, retaining the previously applied migration checksums and close-price evidence.
+
+Symbol registry reconciliation persists canonical ownership for new Security Master entries, follows
+primary ticker changes, and withdraws names whose remaining authority is exclusively Security Master.
+Independent aliases and provider overrides remain retained. When they retain an entry after its
+Security Master-owned canonical is withdrawn, persisted `SecurityMasterCanonicalWithdrawn` keeps
+that internal storage identity from resolving as a canonical input or appearing in suggestions.
+Active reseeding restores its authority; independent exact-spelling registration owns its own name.
+The seeder selects the sole currently valid primary identifier. Missing or ambiguous primaries
+withdraw that canonical claim through the same hidden state, without dropping separately valid
+aliases, standard identifiers or provider mappings. A stable internal carrier avoids reserving
+expired or future primary names; it is not accepted as a public canonical input. Independent name
+authority remains intact.
+Canonical transfers are planned after all withdrawals and applied together, so Security Master-owned
+chains and swaps do not depend on iteration order. Independent and unscoped name authority remains
+protected; collisions refuse before persistence.
+The live registry selects one deterministic representative for each normalized alias/provider/source
+identity, preferring the supplied active state so expired or disabled windows cannot hide a renewed
+alias. Complete temporal history remains in Security Master's append-only alias revisions.
+Unknown legacy identifier ownership is never inferred from matching text:
+`ISecurityMasterLegacyIdentifierCleanupWriter` validates an
+explicit evidence-bound manifest against a registry fingerprint before atomically applying it and
+retaining an idempotent receipt. Resolver rebuilds serialize their read/build/publication step so an
+older rebuild cannot restore a superseded alias after a newer reconciliation.
 
 New WAL segments use `MDCWAL02|2` with BLAKE3-256 over length-framed, canonically
 PackBits-encoded fields. Existing `MDCWAL01|1` segments retain SHA-256 validation.
@@ -614,7 +663,17 @@ and profile presets.
 Canonical symbol resolution is Storage-owned because it wraps the durable symbol registry and its
 identifier indexes. Application composition registers the Storage implementation behind
 `Meridian.Contracts.Catalog.ICanonicalSymbolRegistry` for canonicalization and Security Master seed
-workflows.
+workflows. `ICanonicalSymbolRegistrySecurityMasterWriter` provides bounded, atomic source
+reconciliation: obsolete Security Master aliases and provider mappings are removed for supplied
+security IDs, independent alias provenance and operator overrides survive, and the resolver cache
+is replaced after durable success. Rich aliases retain their explicit source and disabled state
+even when the same spelling also appears in the plain alias list. Historical aliases without
+Security Master provenance are not deleted by guessing ownership from their spelling.
+Security Master-governed identifiers (ISIN, CUSIP, FIGI, SEDOL) are seeded as Security Master-owned
+aliases; reconciliation replaces those identifiers with the supplied values and clears ones Security
+Master no longer supplies, while identifiers another source populated are kept. Identifier aliases written by the earlier seed
+(source inferred from spelling, value equal to the typed identifier) are claimed as Security
+Master-owned on the next reconciliation, but only for identifier kinds Security Master supplies.
 Security Master identifier lookup preserves provider authority: a provider-bound canonical
 identifier resolves only for the exact normalized provider. The legacy primary-identifier fallback
 is available only for providerless records that have no authoritative identifier row, so an omitted
@@ -641,6 +700,29 @@ Security Master cache refreshes build a complete candidate map without blocking 
 every accepted upsert during that build, reconcile those writes by record version, and publish the
 result with one reference swap. Readers therefore see a complete old or new master, while a write
 accepted during `ReplaceAll` materialization is not discarded by the swap.
+PostgreSQL also rejects lower-version projection upserts atomically at the parent row. A rejected
+record cannot rewrite identifiers, aliases or asset-specific child tables and sends no change
+notification. Deactivation and checkpoint writes cannot regress their versions. Rebuilds reload
+effective durable records before publishing cache state or evaluating identifier conflicts, so an
+older prepared batch cannot poison a cold cache after its write is skipped.
+
+Every projection-writing transaction also issues `pg_notify` on a per-schema channel, so other nodes'
+`SecurityMasterProjectionChangeListener` refresh the changed security (version-guarded) once the write
+commits; rolled-back writes announce nothing. Aliases keep an append-only revision history
+(`038_security_master_alias_revisions.sql`, following immutable migrations 036 and 037): corrections append a revision and recorded-as-of reads
+resolve each alias from the latest eligible revision at the stored-timestamp cutoff. This is not a
+commit-consistent historical snapshot or a retained evaluation receipt. An alias ID stays bound to its first security even after it is
+retired, so neither alias upserts nor projection replacement can continue its history elsewhere.
+Projection reads stamp their alias list with the security's revision count (`SecurityAliasSnapshot`);
+a projection write carrying aliases read before a later alias write keeps the current alias rows
+instead of writing the superseded snapshot back, and the projection cache keeps the newer-stamped
+alias list, so an overlapping rebuild or amendment cannot undo an alias correction. Warms and full
+rebuilds install through `SecurityMasterProjectionCache.ReplaceAllAsync`, which opens the upsert
+capture before the durable read, so a local create or amend landing mid-warm survives the swap.
+Every remote notification rereads, even one older than the cached version, because aliases move
+independently of the projection version. MoneyMarketFund, CertificateOfDeposit,
+Deposit and CryptoCurrency projections are written by `SecurityTermsProjectionRegistry` descriptors
+rather than hand-written writers.
 
 Ledger journal writes fail closed for instrument-bearing postings. In practice, this means Meridian
 will not save a securities, dividend, accrued-interest, corporate-action, option, futures, short, or

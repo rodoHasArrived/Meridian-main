@@ -92,6 +92,70 @@ public sealed class HistoricalDataQueryServiceTests : IDisposable
         gz.Write(bytes, 0, bytes.Length);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Queries_ReportCorruptGzipAndRetainedPartialData(bool includeValidFile)
+    {
+        var directory = Path.Combine(_root, "AAPL");
+        Directory.CreateDirectory(directory);
+        await File.WriteAllTextAsync(Path.Combine(directory, "2026-01-01.jsonl.gz"), "not a gzip stream");
+        if (includeValidFile)
+            await File.WriteAllTextAsync(Path.Combine(directory, "2026-01-02.jsonl"),
+                "{\"timestamp\":\"2026-01-02T00:00:00Z\",\"symbol\":\"AAPL\",\"type\":\"Trade\",\"payload\":{\"price\":100,\"size\":2}}");
+
+        var records = await _service.QueryAsync(new HistoricalDataQuery("AAPL"));
+        var bars = await _service.GetBarsAsync(new HistoricalBarsQuery("AAPL", 5));
+
+        records.Success.Should().BeFalse();
+        bars.Success.Should().BeFalse();
+        records.IsPartial.Should().Be(includeValidFile);
+        bars.IsPartial.Should().Be(includeValidFile);
+        records.FileFailures.Should().ContainSingle().Which.SourceFile.Should().Be(Path.Combine("AAPL", "2026-01-01.jsonl.gz"));
+        bars.FileFailures.Should().ContainSingle().Which.Error.Should().NotBeNullOrWhiteSpace();
+        records.FilesProcessed.Should().Be(includeValidFile ? 1 : 0);
+        bars.FilesProcessed.Should().Be(includeValidFile ? 1 : 0);
+        records.TotalRecords.Should().Be(includeValidFile ? 1 : 0);
+        bars.TotalBars.Should().Be(includeValidFile ? 1 : 0);
+        records.Message.Should().Contain("incomplete");
+        bars.Message.Should().Contain("incomplete");
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task Queries_PropagateCancellationDuringOnlyOrFinalFile(bool aggregateBars, bool includeEarlierFile)
+    {
+        var directory = Path.Combine(_root, "AAPL");
+        Directory.CreateDirectory(directory);
+        if (includeEarlierFile)
+            await File.WriteAllTextAsync(Path.Combine(directory, "2026-01-01.jsonl"), "");
+        var finalPath = Path.Combine(directory, "2026-01-02.jsonl");
+        await File.WriteAllTextAsync(finalPath, "");
+        using var cts = new CancellationTokenSource();
+        var service = new HistoricalDataQueryService(_root, null, path => path == finalPath
+            ? new CancelOnReadStream(cts)
+            : File.OpenRead(path));
+
+        Func<Task> query = aggregateBars
+            ? async () => { await service.GetBarsAsync(new HistoricalBarsQuery("AAPL", 5), cts.Token); }
+        : async () => { await service.QueryAsync(new HistoricalDataQuery("AAPL"), cts.Token); };
+
+        await query.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    private sealed class CancelOnReadStream(CancellationTokenSource cts) : MemoryStream
+    {
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            cts.Cancel();
+            cancellationToken.ThrowIfCancellationRequested();
+            return ValueTask.FromResult(0);
+        }
+    }
+
     private static string BuildHistoricalBarJson(string symbol, string sessionDate)
     {
         return $$"""

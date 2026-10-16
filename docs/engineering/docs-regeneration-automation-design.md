@@ -1,328 +1,216 @@
 # Docs Regeneration Automation — Design Constraints
 
-Design constraints for automating the regeneration of generated documentation artifacts. This note
-is the detail behind working-plan item `AR8-57` in
-[the 2026-08 adversarial review remediation plan](../product/plans/adversarial-review-2026-08-remediation-plan.md);
-that item states the problem and points here for the constraints an implementation must satisfy.
-`AR8-57` is a plan-local identifier, not a roadmap registry row — there is no entry for it under
-`docs/roadmap/data/`, so do not cite it as roadmap truth.
-
-## Why this needs a design step
-
-Six review rounds each proposed a concrete repair, and each was refuted by a different interaction.
-The constraints below are what survived.
-
-**They are not jointly satisfiable, and that is the note's main conclusion.** Direct pushes to
-`main` are prohibited, a `merge_group` tree is synthetic and cannot be written to, and the
-artifacts must stay tracked — so no design achieves "no manual toll, ever". The work is to pick
-which outcome to relax, deliberately, and record the residual manual gate. Constraint 8 sets out
-the two implementable shapes. Anyone who arrives here planning a quick fix should read that
-constraint first.
-
-The scope was also mis-stated repeatedly — first by enumerating affected artifacts, then by taking
-the `core` profile as the boundary, and each version was still incomplete. Constraint 4 records the
-general form instead: derive the scope from the `regenerate-docs` job's full generation sequence,
-never from a hand-written list.
-
-## The problem
-
-`docs/status/doc-health-dashboard.{json,md}` reports totals derived from markdown line counts, over
-a corpus that `build/scripts/docs/generate-health-dashboard.py:52-57` narrows by excluding
-`.github`, `.claude`, `.codex`, `archive`, `artifacts`, vendor trees, and `docs/status/` itself.
-Any merge combining two branches' edits to markdown inside that corpus leaves the dashboard stale,
-because neither parent's copy describes the merged tree.
-
-`regenerate-docs` in `.github/workflows/documentation.yml` re-runs the core docs-automation profile
-and fails on the diff. **For a pull request whose changed paths match the workflow's filter this
-detection is pre-merge, not post-merge:** the job checks out with no explicit `ref`, so on a
-`pull_request` event it evaluates `refs/pull/<n>/merge` — the simulated merge of head into base
-(`:100-152`). Aggregate drift for the merge tree is therefore normally caught while the pull request
-is still open.
-
-That makes the toll a **manual pre-merge repair**, not a post-merge surprise, and it is the case
-the automation should target. Fifteen commits since June exist for no purpose other than re-running
-the profile and committing the result — `2368b43b2`, `f4d900d67`, `0535db058`, `d8554cefe`,
-`603d98cfe`, `fc8344145`, and `fb94b95cd` among them, across several unrelated branches, one of
-which paid it three times. This is not a correctness bug; it is a standing toll on everyone whose
-pull request touches documentation, and it trains contributors to read a red `regenerate-docs` as
-routine noise rather than signal.
-
-Two narrower classes *do* escape pre-merge detection entirely, and they are worse because nothing
-reports them:
-
-- **path-filter misses** — a pull request touching `README.md`, `.agents/**`, or a non-markdown
-  tracked file that moves `repository-structure.md` never starts this workflow at all
-  (constraint 3), and `verify-docs` does not run these generators, so stale output lands silently;
-- **merge-queue combinations** — two individually-clean pull requests whose combined tree is stale,
-  with no `merge_group` trigger to notice (constraint 8). Detection is not absent here, only late:
-  `documentation.yml` also triggers on pushes to `main` for the same paths (`:27-41`), so
-  `regenerate-docs` evaluates the merged tree once it has landed. That push failure is the natural
-  trigger and evidence for the follow-up repair pull request constraint 7 requires — model the
-  implementation and its verification on that event flow rather than inventing a new detector.
-
-An implementation that only automates the first case leaves these two; one that assumes the toll is
-post-merge will optimise for the wrong detection point.
-
-## Constraints
-
-Any implementation must satisfy all of these.
-
-### 1. No write token in a job that runs pull-request code
-
-`regenerate-docs` checks out the PR revision and executes its requirements file, Python generators,
-and npm scripts (`.github/workflows/documentation.yml:104-152`). A write-capable token in that job
-is capturable by any same-repository pull request that modifies those programs. A fork restriction
-does not address this, because the exposure is same-repo.
-
-The privileged repair must run **trusted base-revision tooling** in a job that does not execute the
-pull request's code.
-
-**The writer also needs its own path allowlist, and this is a different concern from constraint 4.**
-Those two are easy to conflate and must not be:
-
-- *discovery* scope — which artifacts need regenerating — must be derived from the job's generation
-  sequence rather than hand-enumerated (constraint 4);
-- *write* authorization — which paths a privileged writer may commit — must be a **fixed,
-  base-owned manifest**. It cannot simply be "the generated directories": some enforced output
-  lives in hand-authored files as generated *blocks*. `generate-workflow-manifest.py:358-370`
-  rewrites regions inside `docs/HELP.md` and `docs/development/documentation-automation.md`, and
-  the final drift check enforces both, so a manifest rooted only at generated roots would reject
-  required writes and leave `regenerate-docs` red. Enumerate these hybrid paths from the generators
-  that write them, or document a manual fallback for that subset.
-
-Without the second, constraint 6's "commit allowlisted output produced by an unprivileged PR-code
-job" option is a hole: a same-repository pull request can modify a generator to emit a change to an
-arbitrary tracked file — source, or a governance file such as a workflow — and have the App- or
-PAT-backed writer push it. The job's final diff is repository-wide and does not distinguish
-generated paths from source ones, so nothing downstream catches it.
-
-The manifest must come from the base revision, never from the pull request. Any path the repair
-wants to write that is not in it goes to manual review rather than being committed.
-
-**For hybrid paths, authorizing the filename is not enough.** `docs/HELP.md` is mostly
-hand-authored; only the marker-bounded block is generated. A writer that accepts the whole file
-because its path is listed lets a modified generator rewrite prose outside the markers — the same
-escalation as writing an unlisted path, one level finer. The writer must apply only
-marker-bounded replacements and verify the regions outside the markers are unchanged, rejecting the
-write otherwise.
-
-The comparison target is the **CAS-bound pull-request head from constraint 7, not the base
-revision.** A contributor may legitimately edit hand-authored prose in `docs/HELP.md` in the same
-pull request that needs its generated block refreshed; that prose is already on the reviewed head,
-so comparing against base would reject an ordinary supported case and hand the toll back to the
-author. Preserve the head's non-generated regions, replace only between the markers, and let
-constraint 7's compare-and-swap establish which head is authoritative.
-
-### 2. The repair must retrigger checks on its own result
-
-A push made with the default `GITHUB_TOKEN` starts no workflow run, so the repaired head would
-carry the verdict of the SHA it replaced. Use a GitHub App token or PAT for the push itself.
-
-### 3. Trigger on the union of the generators' input corpora
-
-The workflow's `pull_request` paths (`.github/workflows/documentation.yml:15-26`) are a curated list
-covering `docs/**` and some script paths. That is narrower than the generators' real inputs:
-
-- the health generator counts markdown outside its exclusion set, including `README.md`,
-  `AGENTS.md`, `CLAUDE.md`, `.agents/**`, and `Meridian Design System/**`;
-- the structure generator's corpus is **every tracked file**, so a change to a C# or configuration
-  file also moves a generated artifact.
-
-Nothing else catches the gap: `scripts/ci.sh`'s `verify-docs` lane runs `run-docs-automation.py`
-with an explicit `--scripts` list that omits both generators, so stale output lands silently.
-
-**This applies to the `push` event as well, not only `pull_request`.** The same curated filter sits
-on the push-to-`main` trigger (`:27-41`), and constraint 8 leans on that push run as the detector
-of last resort for merge-queue staleness. If two queued pull requests modify non-filtered tracked
-files, their combined tree is stale *and* the resulting push to `main` also misses the filter — so
-the failure that was supposed to raise the follow-up repair never fires, and the fallback silently
-does not exist. Generator-derived coverage has to be applied to both events or constraint 8's
-fallback is illusory.
-
-Compute the trigger set from the generators rather than maintaining a parallel path list — but note
-that this cannot be done *inside* the workflow. GitHub evaluates `pull_request.paths` before it
-creates a run, so no generator in that workflow can decide whether the workflow starts. Closing the
-missed-trigger cases therefore requires either removing the restrictive `paths` filter outright, or
-adding an always-triggered discovery job that decides what to run. Runtime filtering alone leaves
-additions and renames outside the current paths landing stale artifacts exactly as they do today.
-
-### 4. Derive the repair scope from the job's whole generation sequence; do not enumerate it
-
-The repair must cover *every* artifact `regenerate-docs` regenerates for the change at hand,
-computed from the job's full sequence rather than from a fixed allowlist — **and the `core` profile
-is not that boundary either.** After the profile, the same job renders roadmap and source Mermaid
-diagrams, WPF UI diagrams via `npm run generate-diagrams`, UML output, the workflow overview
-(`generate-structure-docs.py --workflows-only`), and the workflow manifest, all before its final
-repository-wide diff (`.github/workflows/documentation.yml:126-152`). A WPF navigation or
-source-registry change can therefore move a diagram artifact while every core-profile artifact is
-already current, leaving the check red for an implementation that scoped itself to
-`PROFILE_CONFIG["core"]`.
-
-Three illustrations of why any list keeps failing:
-
-- `generate-structure-docs` (`run-docs-automation.py:293-299`) rewrites
-  `docs/generated/repository-structure.md` from `git ls-files --cached`
-  (`generate-structure-docs.py:_git_visible_files`), so any tracked file added, removed, or renamed
-  moves it — not merely markdown;
-- `scan-todos` reads `.md` among its `TEXT_EXTENSIONS` and rewrites tracked `docs/status/TODO.md`,
-  so a documentation pull request adding a legitimate `TODO:` or `FIXME:` annotation dirties a
-  second artifact;
-- the post-profile diagram and workflow-overview steps above sit outside the profile entirely.
-
-None of these is the last such case. The job's generation sequence is the source of truth, and it
-must be read from the workflow rather than restated here — this note has already been wrong about
-the boundary twice.
-
-This constraint governs *discovery* only. It does not license a privileged writer to commit
-whatever a generator emits: that trust boundary is a fixed base-owned manifest, per constraint 1.
-
-### 5. Generation must reach a fixed point, not run once
-
-One pass through the sequence does not produce a self-consistent tree, because later generators
-change earlier generators' inputs. Within the `core` profile `generate-health-dashboard` runs at
-position 4 and `generate-workflow-manifest` at position 20, and the manifest step rewrites
-`docs/HELP.md` and `docs/generated/workflow-command-reference.md` — markdown the health dashboard
-counts. So any change touching workflow-manifest inputs leaves the dashboard stale after a single
-pass: the repair commits, the check re-runs, and the head is still red.
-
-Either run the sequence to a fixed point — repeat until the tree stops changing, with a bounded
-iteration cap and an explicit failure if it does not converge — or reorder the generators so every
-producer precedes its consumers. A repair that cannot make the *first* repaired head green is not
-a repair; it is a loop.
-
-### 6. Generator-changing pull requests need their own path
-
-If constraint 1 is met by running trusted base-revision tooling, a pull request that legitimately
-changes `generate-health-dashboard.py` gets regenerated by the *old* generator while
-`regenerate-docs` validates with the *new* one. The bot commits stale output and the check stays
-red, or loops.
-
-Either commit allowlisted output produced by an unprivileged PR-code job, or exclude this subset
-and require manual regeneration for it.
-
-### 7. Bind generated output to the exact tree it was computed from
-
-If the privileged writer consumes an artifact produced by an unprivileged job, that artifact must
-record the pull request head and base (or merge) SHA, and the writer must compare-and-swap against
-both before committing.
-
-The workflow's `concurrency` block (`:46-48`) groups by pull-request number with
-`cancel-in-progress`. That is a cancellation policy, not a ref guard: the pull request can
-synchronize, or `main` can advance, between generation and the privileged write, so output computed
-from an obsolete tree would be committed onto a newer head — overwriting newer generated changes
-and re-triggering the same red check.
-
-### 8. Neither pre- nor post-merge repair is free
-
-Per-branch repair does not fix the merge-queue tree. Two queued pull requests can each be
-individually correct while their combined tree is stale, and `documentation.yml` has no
-`merge_group` trigger (`:3-41`) while `meridian-ci.yml` has one (`:3-11`) but never runs the health
-generator.
-
-The obvious escape — a bot commit to `main` after the merge — is **not** available. `main` is
-protected and `AGENTS.md:12-15` forbids bypassing branch protections, so a privileged direct push is
-prohibited rather than merely awkward. Routing the repair through a follow-up pull request is
-policy-compliant but reintroduces a human merge, which does not meet the no-manual-toll outcome.
-
-Nor is a merge-group-safe pre-merge repair actually available. A `merge_group` SHA names a
-synthetic, non-writable tree: there is nothing to push to. Committing the repair to either
-constituent pull request head invalidates that group and causes it to be rebuilt, which discards
-the output computed from the combined tree rather than preserving it.
-
-**Taken together these constraints have no fully-satisfying solution, and the design must therefore
-relax one of its own outcomes.** Direct post-merge pushes are prohibited, in-place merge-group
-repair does not exist, and the artifacts must stay tracked — so "no manual toll, ever" is not
-achievable. The implementable shapes are:
-
-- **repair the pull-request head** and accept that a merge-queue combination can still land stale
-  artifacts, fixed by a follow-up repair pull request; or
-- **route every repair through a follow-up pull request**, which is policy-compliant and complete
-  but reintroduces a human merge for the affected cases.
-
-Pick one deliberately and record the residual manual gate in the item as an accepted limitation.
-What is *not* acceptable is presenting pre-merge repair as though it closes the merge-queue case.
-
-### 9. Fork pull requests cannot be repaired automatically — say so
-
-When the head belongs to a fork, neither a GitHub App installed on the base repository nor a
-maintainer PAT normally has permission to push into the contributor-owned fork branch, and the
-fork's workflow run cannot be handed the write credential instead (which is the same property that
-makes constraint 1 necessary). No automated repair is possible for that case.
-
-Scope the automation explicitly to writable same-repository heads, and document the fallback for
-forks — manual regeneration by the contributor, or a maintainer-owned branch that carries the
-repair. State this as a known limitation of the outcome rather than leaving it implied; the
-"no manual toll" goal holds for same-repository pull requests only.
-
-### 10. Keep the artifacts tracked
-
-`docs/documentation-ownership.md:23` designates `docs/status/` automation-owned output that must
-stay "at the paths consumed by tooling", so untracking these files in favour of CI-only artifacts is
-out of policy.
-
-## Rejected alternatives
-
-**A `.gitattributes` merge driver.** A custom driver runs only where `merge.<driver>.driver` is
-configured locally, and GitHub's server-side merge inherits no contributor configuration, so it
-would never run for the normal pull-request merge this work exists to fix.
-
-## Governance
-
-The implementation necessarily edits `.github/workflows/documentation.yml`, including its
-`permissions` block, and introduces a privileged token. That is a protected governance file under
-`.github/pull_request_template.md`, so the implementing pull request must declare the governance
-change and carry explicit human approval. Constraint 1 is a security requirement and should be
-reviewed as one.
-
-## Verification
-
-Assert the outcome — every artifact **the job's final drift check enforces** matching the merged
-tree — rather than the mechanism. That check is
-`git diff --exit-code -- . ':(exclude)docs/diagrams/uml/*.png' ':(exclude)docs/diagrams/uml/*.svg'`
-(`:220-224`), so the boundary is the full generation sequence *minus* the UML binaries, which are
-rendered `continue-on-error` and deliberately excluded. Requiring those to match would make
-verification impossible whenever Docker is unavailable, and would have the bot commit best-effort
-binaries the authoritative check ignores. Cover:
-
-1. a merge of a branch editing in-corpus markdown into a branch editing different in-corpus
-   markdown, confirming `regenerate-docs` ends green **on the final head** with no human running
-   the profile;
-2. two pull requests entering the merge queue together — asserting that the window **closes**, not
-   merely that it was documented: since the combined tree cannot be repaired in place, the chosen
-   shape must raise the follow-up repair pull request, and the test asserts that pull request's
-   head passes the authoritative regeneration check. An implementation that leaves the artifacts
-   stale indefinitely satisfies no acceptable reading of constraint 7;
-3. a pull request that adds or renames a **non-markdown** tracked file, exercising
-   `repository-structure.md` through a path the current triggers miss;
-4. a documentation pull request that adds a `TODO:` annotation, exercising `docs/status/TODO.md`;
-5. a pull request that changes a generator itself;
-6. a concurrent-update case where the **head** advances between generation and the privileged
-   write, asserting the writer refuses the stale artifact rather than committing it;
-7. a second concurrent-update case where the **head is unchanged and `main` advances**, which a
-   writer checking only the head would wrongly accept — this is the case that actually exercises
-   the base half of constraint 7's compare-and-swap. Refusal is not the end state: assert that
-   generation is automatically re-enqueued against the new base and that the replacement run
-   leaves the final head green, since a refusal that stops there leaves the contributor to restart
-   the repair by hand, which is the toll this item exists to remove;
-8. a fork pull request, asserting the documented fallback path is what runs rather than a silent
-   failure or a red check with no route forward;
-9. **an adversarial case for constraint 1's write boundary.** Have the unprivileged job supply a
-   valid generated artifact *together with* an extra tracked path outside the base manifest — a
-   source file, or a governance file such as `.github/workflows/documentation.yml` — and assert the
-   privileged writer **rejects the whole write and pushes nothing**. Without this case an
-   implementation passes every scenario above while accepting whatever the unprivileged job hands
-   it, which is precisely the escalation constraint 1 exists to prevent: a same-repository pull
-   request modifies a generator to emit that extra path and the token-backed writer commits it. A
-   suite that never attempts the attack does not verify the defence. Extend the same case to an
-   *authorized hybrid* path: have the artifact modify `docs/HELP.md` outside its generated markers
-   and assert the writer rejects that too, since authorizing a filename is not authorizing its
-   hand-authored prose;
-10. **a fixed-point case.** Change a workflow-manifest input, so `generate-workflow-manifest`
-   rewrites markdown the health dashboard counts, and assert the **first** repaired head is green —
-   not merely that a repair was attempted. A single pass leaves the dashboard stale here, so this
-   case is what distinguishes a repair from a loop.
-
-## Also document
-
-Whichever design is chosen, document the single regeneration command next to the check, so a
-contributor who hits a red `regenerate-docs` need not reconstruct it from the workflow.
+**Status:** active; hosted write activation requires human governance review
+**Owner:** core-team
+**Reviewed:** 2026-10-15
+
+This note defines the boundaries of generated-output repair. Use the
+[recovery guide](generated-merge-recovery.md) for commands and the
+[CI/CD rollout guide](ci-cd-optimization.md) for workflow activation. It also retains the
+design rationale behind `AR8-57` in the
+[2026-08 adversarial review remediation plan](../product/plans/adversarial-review-2026-08-remediation-plan.md).
+That identifier belongs to the historical plan, not the roadmap registry.
+
+## Current detection and repair boundary
+
+Combining two individually current branches can make tracked output stale. Documentation health
+counts depend on Markdown across the repository; the structure report depends on every tracked
+path. A browser source merge can require new hashed assets and deletion of old ones. Taking either
+parent's output is only a seed for regeneration, not proof that the merged tree is current.
+
+The canonical `Meridian CI / verify-docs` lane already runs the maintained generation sequence
+and checks its outputs. `meridian-ci.yml` runs without path filters on pull requests, main pushes,
+and `merge_group` events. Earlier versions of this note incorrectly described missing whole-tree
+and merge-group detection. Those gaps are closed by the canonical lane. Documentation Automation
+also has unrestricted PR/main triggers and a merge-group trigger, covering its generators' full
+input corpus. The stable `quality-gate` still requires all four canonical lanes.
+
+Repair prepares a candidate from pinned revisions in an isolated checkout, resolves only supported
+generated conflicts, regenerates to a fixed point, and produces reviewable evidence. Ordinary
+source conflicts, handwritten documentation conflicts, uncertain reviewed hashes, and changes to
+the automation's own trust boundary retain a contributor path. Automation does not change required
+checks, approve or merge a PR, or write directly to protected `main`.
+
+## Discovery and permission are separate
+
+The generation sequence is discovered from the maintained `regenerate-docs` job in
+[`documentation.yml`](../../.github/workflows/documentation.yml), plus the runner's browser
+contract/build and roadmap/source prerequisites. It includes steps outside the core docs profile:
+Mermaid, WPF diagrams, workflow overview and manifest generation. Adding a generator must not
+require maintaining a second list of commands in a repair workflow. The workflow's final
+`--docs-only` convergence call is orchestration, so discovery excludes that call to avoid recursion.
+
+The output policy in
+[`maintained-generation-outputs.json`](../../build/scripts/maintained-generation-outputs.json)
+answers a different question: which writes are allowed. A new discovered output does not
+automatically gain write permission. Review its owner and add an exact path, appropriate generated
+tree, or named generated block to the policy. Unknown writes fail rather than expanding the policy.
+
+Registered source READMEs, `docs/HELP.md`, and documentation automation guidance contain generated
+blocks alongside handwritten prose. Permission to update a block is not permission to replace the
+whole file. Marker multiplicity, ordering, and boundaries must be valid; the content outside every
+authorized block must remain unchanged against the candidate's pre-generation contents.
+
+The writer independently applies trusted base-owned policy. A policy supplied by the producer
+or changed in a pull request cannot authorize its own writes. For a merge repair, legitimate
+source and prose changes from the pinned base are accounted for by reproducing the merge; the
+remaining generated delta is checked against that merged candidate. A generator cannot disguise
+an unrelated source edit as part of the merge.
+
+## Reviewed hashes are not disposable output
+
+[`source-hash-manifest.json`](../source/generated/source-hash-manifest.json) records a reviewed
+source/documentation baseline. Recomputing every hash would assert review that never happened.
+Use a three-way merge keyed by module ID:
+
+- Combine entries updated independently for different modules.
+- Accept identical parent updates.
+- Carry a reviewed entry forward only when its source and README fingerprints match the final
+  merged module under the manifest's existing hashing rules.
+- Require module-specific review when final contents match neither reviewed parent, or metadata
+  cannot be reconciled without making a new review assertion.
+
+Generated README blocks do not turn handwritten documentation review into a mechanical task.
+Unresolved hash decisions remain explicit in the repair evidence. Follow the
+[source documentation workflow](../source/README.md) to review a module and refresh its baseline.
+Ordinary generated manifests can be rebuilt from final inputs under their output policy.
+Package lockfiles must be regenerated by their owning package manager after dependency changes;
+they are not covered by generic conflict acceptance.
+
+## Generation must converge
+
+A later generator can change an earlier report's inputs. For example, workflow-manifest generation
+rewrites Markdown counted by the health dashboard. The runner repeats the full required sequence
+until authorized file contents stop changing, with a bounded pass count and failure on
+non-convergence. Added and deleted files count, including removed browser asset hashes.
+
+A second invocation on unchanged inputs should converge immediately without a new delta. A failed
+required command, unauthorized write, malformed generated markers, or non-convergence does not
+produce a successful repair. Optional UML rendering retains its advisory status; failure there is
+reported separately and does not become evidence of fresh required output.
+
+Reports and per-step logs go under ignored `artifacts/`. Tracked output remains at the paths used
+by the application and documentation tooling. Run the local generator with exclusive access to its
+checkout: its byte comparison protects against accidental generator writes but is not a sandbox
+for untrusted code or a way to distinguish concurrent user edits.
+
+## Separate generation from the privileged writer
+
+`generated-repair.yml` prepares evidence without a write credential or persisted checkout
+credentials. Its `pull_request_target` event can run despite merge conflicts, but candidate
+dependencies and generators execute only inside the container launched by
+[`generated_repair_sandbox.py`](../../build/scripts/ci/generated_repair_sandbox.py). The trusted
+Dockerfile uses a pinned Node image with Git and Python. The container runs as an unprivileged user
+with a read-only root filesystem, dropped capabilities, resource limits and no privilege escalation.
+Only a disposable clone without shared Git objects and a raw output directory are mounted; host
+Actions runtime/cache credentials, actions directories and the Docker socket are not exposed.
+Network access remains available for dependency installation.
+
+After the container exits, trusted host tooling exports only allowlisted regular files within a
+size bound, rejecting symbolic links, hard links and special files. Container logs are retained as
+data rather than interpreted as Actions workflow commands. The local worktree-only repair command
+does not provide these hosted isolation guarantees.
+
+`generated-repair-publish.yml` runs on workflow completion, checks out trusted base tooling,
+validates the artifact without executing PR code, and uses a narrowly scoped GitHub App credential
+only for the authorized branch write and bounded retry dispatch.
+Same-repository ownership alone is not a trust boundary: a same-repository PR can change a
+generator too.
+
+The App private key lives only in the `generated-repair` environment, restricted to deployment
+from the default branch. A repository-wide secret would also be accessible to unreviewed branch
+workflows and would defeat that boundary. Per-run environment approval may be configured by an
+administrator but is not required by this mechanism.
+
+The writer verifies workflow/run/attempt and artifact ownership, pinned base and head, output
+policy, permitted file modes and paths, and all handwritten boundaries. Unexpected extra files or
+prose changes reject the whole write. Payload contents, filenames and Git patches remain untrusted
+data; they must not become shell commands or executable hooks. Changes to generators,
+dependencies, workflows or policy use the manual fallback when they alter this trust boundary.
+
+The App push triggers fresh checks on the repaired revision. A default `GITHUB_TOKEN` push does
+not provide that behavior and must not be substituted. The repair workflow is supporting
+automation; only the authoritative checks on the resulting revision establish freshness. With no
+App configured, the workflow retains artifact-only behavior.
+
+## Bind output to current revisions and bound retries
+
+The evidence records both the exact PR head and base commit used for generation. Before writing,
+the writer rereads the PR and base and rejects any mismatch. A normal, non-force push protects
+against a concurrent branch update. Changes to the head or base invalidate the prepared output;
+regenerate from the new revisions instead of applying it to a moving branch.
+
+Concurrency cancellation cannot replace these checks. Stale-ref retries are bounded to two
+requeues, with the original root revision retained for the chain. A repair-commit marker prevents
+self-triggered synchronize loops only when the repaired head already contains the current base;
+it must not prevent a later base advance from triggering repair. Source conflicts, policy refusal,
+generation failure or exhaustion
+retain an actionable report or contributor fallback. The writer rereads the base after its push
+and requeues a detected advance within the same bound. The next authoritative merge-tree check
+still controls acceptance; GitHub cannot atomically compare and update both refs.
+
+Base-only changes need their own trigger. The publisher also scans open same-repository PRs on
+main pushes, daily at 05:23 UTC and on manual dispatch. It requests at most ten newly stale
+head/base pairs per scan, deduplicates previously requested pairs and reports remaining backlog.
+Daily/manual scans continue that work. API listing is paginated with a 1,000-item bound; reaching
+the bound fails explicitly instead of silently claiming complete coverage. Forks retain their
+contributor path.
+
+Writer concurrency is scoped to each source workflow run. A single global group would allow
+GitHub's one-pending-run policy to discard another PR's pending repair; ref checks remain necessary
+when independent writers overlap.
+
+## Merge queue behavior
+
+A `merge_group` commit is synthetic. There is no writable branch on which to install its repair.
+Updating a constituent PR invalidates that group, and the replacement group must run fresh checks.
+Two individually repaired branches can still combine into stale output.
+
+The chosen behavior is to keep the canonical freshness check failing on such a group. Refresh
+the affected PR branches against the current base and rebuild the group. If combined groups
+repeatedly require mutually incompatible generated output, an administrator can evaluate
+one-PR merge groups under the existing governance process. No workflow changes queue settings or
+accepts a stale synthetic tree automatically.
+
+Do not describe per-PR repair as solving combined merge-group generation. Do not bypass the gate
+to land stale output and rely on a later push to repair it. A repair PR can recover pre-existing
+main drift through the ordinary protected flow, but it is not an alternative to a required
+merge-group freshness check.
+
+## Forks and contributor fallback
+
+A base-repository App cannot normally push to a contributor's fork. Fork runs retain read-only
+generation and downloadable evidence; the contributor applies or regenerates the repair on their
+own branch. A maintainer-owned branch is another ordinary PR path. Never give fork or PR-code jobs
+the writer credential.
+
+For handwritten/source conflicts, merge those files with their owners first, then regenerate.
+For changed generator/tooling policy, use the local command and review the resulting output in
+the same PR. The [recovery guide](generated-merge-recovery.md) distinguishes a repair patch from
+the Git merge parents required to update a branch.
+
+## Verification and operational acceptance
+
+Tests must verify outcomes at the boundary, including:
+
+1. Independent source/Markdown changes, non-Markdown tracked additions and renames, and generated
+   TODO inventory changes produce current output on the first repaired revision.
+2. Old browser hashes are removed, all required outputs converge, and a second run is unchanged.
+3. Independent module baseline updates merge; a same-module combined change requires review.
+4. Source conflicts, generator changes, malformed blocks, unexpected writes and unauthorized
+   handwritten edits refuse the write without losing the contributor's changes.
+5. Head advancement and base-only advancement discard stale evidence and follow bounded retry
+   behavior; changed artifact provenance or unexpected file modes also reject publication.
+6. Fork fallback leaves usable evidence without a write attempt.
+7. A synthetic merge-group combination that is stale still fails the authoritative check; PR repair
+   is never used to mark that existing group successful.
+
+Local tests establish deterministic behavior, not GitHub App configuration or hosted activation.
+After human governance review, exercise same-repository and fork PRs, a concurrent base update,
+and a merge group in Actions. Measure the proportion of first repaired revisions that pass the
+authoritative checks without manual regeneration, plus refusals, retries, non-convergence and
+runner minutes. Preserve existing test coverage and required gate identities.
+
+A local `.gitattributes` merge driver cannot provide this hosted behavior: it depends on each
+clone's Git configuration, does not configure GitHub's merge service, and cannot establish that
+either parent's generated files match the merged inputs.

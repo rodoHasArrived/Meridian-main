@@ -99,11 +99,11 @@ internal sealed class LiveRunMetricsTracker
         }
 
         var drawdown = _peakEquity - equity;
-        if (drawdown > _maxDrawdown)
-        {
-            _maxDrawdown = drawdown;
-            _maxDrawdownFraction = _peakEquity > 0m ? drawdown / _peakEquity : 0m;
-        }
+        // Currency and percentage losses can reach their maxima in different episodes.
+        // A later $100 decline from $1,000 must not replace an earlier 50% decline from $100.
+        _maxDrawdown = Math.Max(_maxDrawdown, drawdown);
+        var drawdownFraction = _peakEquity > 0m ? drawdown / _peakEquity : 0m;
+        _maxDrawdownFraction = Math.Max(_maxDrawdownFraction, drawdownFraction);
 
         _snapshots.Add(new PortfolioSnapshot(
             Timestamp: new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero),

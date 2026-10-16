@@ -1,0 +1,104 @@
+name: Release Readiness
+
+on:
+  schedule:
+    - cron: "23 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-readiness-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  runners:
+    name: observe-release-runner-capabilities
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Observe recent assigned native lifecycle and packaging jobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python build/scripts/ci/release-readiness.py collect-runners --output artifacts/release-readiness/runners.json
+      - name: Retain actual runner observations
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-runner-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/release-readiness/runners.json
+          if-no-files-found: error
+          retention-days: 90
+
+  signing:
+    name: check-protected-signing-readiness
+    runs-on: windows-latest
+    timeout-minutes: 10
+    environment: desktop-release-signing
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Inspect certificate without persisting its private key
+        shell: pwsh
+        env:
+          SIGNING_PFX: ${{ secrets.MDC_SIGNING_CERT_PFX_BASE64 }}
+          SIGNING_PASSWORD: ${{ secrets.MDC_SIGNING_CERT_PASSWORD }}
+        run: ./build/scripts/ci/check-release-signing.ps1
+      - name: Retain non-secret certificate validity evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-signing-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/release-readiness/signing.json
+          if-no-files-found: warn
+          retention-days: 90
+
+  summary:
+    name: report-release-prerequisites
+    if: always()
+    needs: [runners, signing]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Collect available prerequisite evidence
+        continue-on-error: true
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: release-*-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/readiness-input
+      - name: Publish prerequisite status and next actions
+        if: always()
+        env:
+          CERT_WARNING_DAYS: ${{ vars.MDC_SIGNING_CERT_WARNING_DAYS || '30' }}
+        run: python build/scripts/ci/release-readiness.py summary --warning-days "$CERT_WARNING_DAYS" --output artifacts/release-readiness/report.json
+      - name: Retain prerequisite report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/release-readiness/report.*
+          if-no-files-found: error
+          retention-days: 90

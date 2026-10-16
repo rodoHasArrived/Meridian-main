@@ -9,6 +9,11 @@ installation is retained as one-generation rollback state. An installed bootstra
 from a temporary detached location before promotion so its live directory is never overwritten.
 Production artifacts must be Authenticode-signed.
 
+Install, repair, upgrade, and uninstall share one setup transaction mutex, including detached
+uninstall execution. Uninstall moves the installed and rollback trees to unique sibling names
+while holding that mutex. Delayed cleanup deletes only those captured directories, so a later
+install can safely reuse the normal installation path before cleanup finishes.
+
 ## Payload delivery
 
 The payload is a ZIP archive appended to the published executable, followed by a fixed 138-byte

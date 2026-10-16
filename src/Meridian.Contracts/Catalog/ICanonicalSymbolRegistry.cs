@@ -136,6 +136,22 @@ public interface ICanonicalSymbolRegistryMigrationWriter
         CancellationToken ct = default);
 }
 
+/// <summary>Optional atomic reconciliation of Security-Master-owned symbol authority.</summary>
+public interface ICanonicalSymbolRegistrySecurityMasterWriter
+{
+    /// <summary>
+    /// Replaces Security Master identifiers, aliases, canonical tickers and non-override provider
+    /// mappings for the supplied security IDs only. Definitions describe active securities; an ID
+    /// without a definition withdraws its Security Master mappings and removes its canonical entry
+    /// only when no independent authority remains. Retained independent mappings do not authorize
+    /// the withdrawn Security Master canonical spelling. Unknown legacy provenance is preserved.
+    /// </summary>
+    Task<int> ReconcileSecurityMasterAsync(
+        IReadOnlyCollection<Guid> securityIds,
+        IEnumerable<CanonicalSymbolDefinition> definitions,
+        CancellationToken ct = default);
+}
+
 /// <summary>
 /// Defines a canonical symbol with all known identifiers, aliases, and metadata.
 /// This is the standardized representation used for symbol naming consistency.
@@ -154,6 +170,25 @@ public sealed class CanonicalSymbolDefinition
     /// </summary>
     [JsonPropertyName("securityId")]
     public Guid? SecurityId { get; init; }
+
+    /// <summary>
+    /// Read-model provenance: true when only Security Master retains the canonical ticker.
+    /// Ordinary registration cannot assert ownership; reconciliation establishes this value.
+    /// </summary>
+    [JsonPropertyName("securityMasterOwnsCanonical")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool SecurityMasterOwnsCanonical { get; init; }
+
+    /// <summary>
+    /// Read-model evidence that Security Master withdrew the canonical spelling. The Security
+    /// Master reconciliation writer also accepts this flag to retain current mappings under an
+    /// internal identity anchor when no unique primary identifier is currently effective. Independent
+    /// aliases and identifiers can still address this retained definition; its internal canonical
+    /// key alone no longer establishes a resolvable input. Ordinary registration cannot set this.
+    /// </summary>
+    [JsonPropertyName("securityMasterCanonicalWithdrawn")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool SecurityMasterCanonicalWithdrawn { get; init; }
 
     /// <summary>
     /// Human-readable display name (e.g., "Apple Inc.").
@@ -263,6 +298,11 @@ public static class SymbolMappingSources
 {
     public const string Operator = "operator";
     public const string SecurityMaster = "security-master";
+    /// <summary>
+    /// A Security Master-owned alias emitted from the security's ISIN, CUSIP, FIGI or SEDOL field,
+    /// as distinct from an ordinary Security Master alias that happens to share the value.
+    /// </summary>
+    public const string SecurityMasterIdentifier = "security-master-identifier";
     public const string LegacyConfig = "legacy-config";
     public const string OpenFigi = "openfigi";
     public const string Registry = "registry";

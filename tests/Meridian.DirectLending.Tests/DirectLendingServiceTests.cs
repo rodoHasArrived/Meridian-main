@@ -6,6 +6,97 @@ namespace Meridian.DirectLending.Tests;
 
 public sealed class DirectLendingServiceTests
 {
+    [Theory]
+    [InlineData(CurrencyCode.Other)]
+    [InlineData((CurrencyCode)99)]
+    public async Task PortfolioSummary_ShouldWithholdTotalsWithoutKnownDenomination(CurrencyCode currency)
+    {
+        var service = new InMemoryDirectLendingService();
+        foreach (var commitment in new[] { 1_000_000m, 2_000_000m })
+        {
+            var request = BuildCreateRequest();
+            var loan = await service.CreateLoanAsync(request with
+            {
+                Terms = request.Terms with { BaseCurrency = currency, CommitmentAmount = commitment }
+            });
+            await service.AddCollateralAsync(loan.LoanId,
+                new AddCollateralRequest(CollateralType.Equipment, "Unspecified appraisal", commitment,
+                    currency, new DateOnly(2026, 3, 22)));
+        }
+        var summary = await service.GetPortfolioSummaryAsync();
+        summary.TotalCurrency.Should().BeNull();
+        summary.TotalCommitment.Should().BeNull();
+        summary.TotalCollateralValue.Should().BeNull();
+        summary.CurrencyTotals.Should().ContainSingle().Which.Should().Be(
+            new LoanPortfolioCurrencyTotalsDto(currency, null, null, null, null, null, null));
+    }
+
+    [Fact]
+    public async Task PortfolioSummary_ShouldKeepLoanAndAppraisalCurrenciesSeparateAcrossCollateralChanges()
+    {
+        var service = new InMemoryDirectLendingService();
+        var usd = await service.CreateLoanAsync(BuildCreateRequest());
+        var eurRequest = BuildCreateRequest();
+        var eur = await service.CreateLoanAsync(eurRequest with
+        {
+            Terms = eurRequest.Terms with { BaseCurrency = CurrencyCode.EUR, CommitmentAmount = 2_000_000m }
+        });
+        var drawDate = new DateOnly(2026, 3, 23);
+        await service.ActivateLoanAsync(usd.LoanId, new ActivateLoanRequest(drawDate));
+        await service.ActivateLoanAsync(eur.LoanId, new ActivateLoanRequest(drawDate));
+        await service.BookDrawdownAsync(usd.LoanId, new BookDrawdownRequest(100_000m, drawDate, drawDate, "USD wire"));
+        await service.BookDrawdownAsync(eur.LoanId, new BookDrawdownRequest(200_000m, drawDate, drawDate, "EUR wire"));
+        var state = await service.AddCollateralAsync(usd.LoanId,
+            new AddCollateralRequest(CollateralType.Equipment, "EUR appraisal", 300_000m,
+                CurrencyCode.EUR, new DateOnly(2026, 3, 22)));
+        var collateralId = state!.Collateral!.Single().CollateralId;
+
+        var summary = await service.GetPortfolioSummaryAsync();
+        summary.TotalCurrency.Should().BeNull();
+        summary.TotalCommitment.Should().BeNull();
+        summary.TotalPrincipalOutstanding.Should().BeNull();
+        summary.TotalInterestAccruedUnpaid.Should().BeNull();
+        summary.TotalPenaltyAccruedUnpaid.Should().BeNull();
+        summary.TotalAvailableToDraw.Should().BeNull();
+        summary.TotalCollateralValue.Should().BeNull();
+        var usdTotals = summary.CurrencyTotals!.Single(item => item.Currency == CurrencyCode.USD);
+        var eurTotals = summary.CurrencyTotals!.Single(item => item.Currency == CurrencyCode.EUR);
+        usdTotals.TotalCommitment.Should().Be(1_000_000m);
+        usdTotals.TotalPrincipalOutstanding.Should().Be(100_000m);
+        usdTotals.TotalAvailableToDraw.Should().Be(900_000m);
+        usdTotals.TotalCollateralValue.Should().Be(0m);
+        eurTotals.TotalCommitment.Should().Be(2_000_000m);
+        eurTotals.TotalPrincipalOutstanding.Should().Be(200_000m);
+        eurTotals.TotalAvailableToDraw.Should().Be(1_800_000m);
+        eurTotals.TotalCollateralValue.Should().Be(300_000m);
+
+        await service.UpdateCollateralValueAsync(usd.LoanId,
+            new UpdateCollateralValueRequest(collateralId, 350_000m, new DateOnly(2026, 3, 23)));
+        (await service.GetPortfolioSummaryAsync()).CurrencyTotals!
+            .Single(item => item.Currency == CurrencyCode.EUR).TotalCollateralValue.Should().Be(350_000m);
+
+        await service.RemoveCollateralAsync(usd.LoanId, new RemoveCollateralRequest(collateralId, "Released"));
+        (await service.GetPortfolioSummaryAsync()).CurrencyTotals!
+            .Single(item => item.Currency == CurrencyCode.EUR).TotalCollateralValue.Should().Be(0m);
+    }
+
+    [Fact]
+    public async Task PortfolioSummary_ShouldRetainScalarCurrencyOnlyForSingleDenomination()
+    {
+        var service = new InMemoryDirectLendingService();
+        var empty = await service.GetPortfolioSummaryAsync();
+        empty.TotalCommitment.Should().Be(0m);
+        empty.TotalCurrency.Should().BeNull();
+        empty.CurrencyTotals.Should().BeEmpty();
+        var request = BuildCreateRequest();
+        await service.CreateLoanAsync(request with { Terms = request.Terms with { BaseCurrency = CurrencyCode.EUR } });
+
+        var summary = await service.GetPortfolioSummaryAsync();
+        summary.TotalCurrency.Should().Be(CurrencyCode.EUR);
+        summary.TotalCommitment.Should().Be(1_000_000m);
+        summary.TotalCollateralValue.Should().Be(0m);
+    }
+
     [Fact]
     public async Task CreateLoanAsync_ShouldCreateLoanWithInitialTermsVersionAndSchemaVersionedHistory()
     {

@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 93
-- Functions/procedures: 5
-- Triggers: 11
+- Relations: 96
+- Functions/procedures: 7
+- Triggers: 15
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -831,6 +831,25 @@ erDiagram
         text normalized_primary_identifier_value
         integer schema_version
     }
+    security_master_security_alias_revisions {
+        uuid alias_id PK
+        integer revision PK
+        uuid security_id FK
+        text alias_kind
+        text alias_value
+        text normalized_alias_value
+        text provider
+        text normalized_provider
+        text scope
+        text reason
+        timestamp_with_time_zone valid_from
+        timestamp_with_time_zone valid_to
+        boolean is_enabled
+        boolean is_retired
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+        timestamp_with_time_zone history_available_from
+    }
     security_master_security_aliases {
         uuid alias_id PK
         uuid security_id FK
@@ -883,6 +902,8 @@ erDiagram
         uuid causation_id
         jsonb payload
         jsonb metadata
+        text payload_type
+        integer payload_version
     }
     security_master_security_events_global_sequence_seq {
         text catalogued_object
@@ -898,6 +919,19 @@ erDiagram
         text origin_reference
         timestamp_with_time_zone recorded_at
         bigint source_version
+    }
+    security_master_security_governance_events {
+        bigint global_sequence PK
+        uuid security_id
+        text stream
+        text event_type
+        text actor
+        timestamp_with_time_zone occurred_at
+        jsonb payload
+        integer payload_version
+    }
+    security_master_security_governance_events_global_sequence_seq {
+        text catalogued_object
     }
     security_master_security_identifiers {
         uuid security_id PK,FK
@@ -1257,6 +1291,7 @@ erDiagram
     security_master_securities ||--o{ security_master_fxspot_projection : "fxspot_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_underlying_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_alias_revisions : "security_alias_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_aliases : "security_aliases_security_id_fkey"
     security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
     security_master_securities ||--o{ security_master_security_identifiers : "security_identifiers_security_id_fkey"
@@ -1340,13 +1375,16 @@ erDiagram
 | `reconciliation_run` | table | 6 | `reconciliation_run_id` | 2 | 1 | - |
 | `schema_migrations` | table | 4 | `filename` | 0 | 1 | - |
 | `securities` | table | 21 | `security_id` | 0 | 4 | - |
+| `security_alias_revisions` | table | 17 | `alias_id`, `revision` | 1 | 2 | Append-only Security Master alias revisions. Recorded-as-of reads select the latest available revision at or before the cutoff. Pre-migration current-row baselines retain their creation metadata but are available only from history_available_from; earlier alias history is unknown. |
 | `security_aliases` | table | 14 | `alias_id` | 1 | 3 | - |
 | `security_cashflow_source_assignments` | table | 6 | `security_id` | 1 | 2 | - |
 | `security_close_price_approvals` | table | 4 | `snapshot_id` | 1 | 1 | Immutable independent review receipt bound to the exact close price snapshot SHA-256. |
 | `security_close_price_snapshots` | table | 9 | `snapshot_id` | 1 | 4 | Immutable exact account/book/date price-set versions retaining selected receipts, quote units, overrides, source rows and blockers. |
-| `security_events` | table | 10 | `global_sequence` | 0 | 3 | - |
+| `security_events` | table | 12 | `global_sequence` | 0 | 4 | - |
 | `security_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_field_provenance` | table | 10 | `security_id`, `field_path`, `origin` | 0 | 2 | - |
+| `security_governance_events` | table | 8 | `global_sequence` | 0 | 3 | Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds), written in the same transaction as the state change. |
+| `security_governance_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_identifiers` | table | 12 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from` | 1 | 3 | - |
 | `security_master_conflicts` | table | 14 | `conflict_id` | 0 | 2 | - |
 | `security_master_quality_reports` | table | 3 | `id` | 0 | 2 | - |

@@ -12,33 +12,10 @@ on:
       - opened
       - synchronize
       - reopened
-    paths:
-      - "docs/**"
-      - ".codex/memory/**"
-      - ".claude/agents/**"
-      - "build/scripts/docs/**"
-      - "scripts/generate-diagrams.mjs"
-      - "scripts/lib/ui-diagram-generator.mjs"
-      - "src/Meridian.Wpf/**"
-      - "tests/Meridian.Wpf.Tests/**"
-      - "package.json"
-      - "package-lock.json"
-      - ".github/workflows/documentation.yml"
   push:
     branches:
       - main
-    paths:
-      - "docs/**"
-      - ".codex/memory/**"
-      - ".claude/agents/**"
-      - "build/scripts/docs/**"
-      - "scripts/generate-diagrams.mjs"
-      - "scripts/lib/ui-diagram-generator.mjs"
-      - "src/Meridian.Wpf/**"
-      - "tests/Meridian.Wpf.Tests/**"
-      - "package.json"
-      - "package-lock.json"
-      - ".github/workflows/documentation.yml"
+  merge_group:
 
 permissions:
   contents: read
@@ -53,6 +30,7 @@ env:
 jobs:
   validate-docs:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -63,6 +41,8 @@ jobs:
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: build/scripts/docs/requirements.txt
 
       # validate-agent-definitions.py parses agent frontmatter with PyYAML rather than a
       # hand-rolled subset parser, so this lane needs the dependency installed.
@@ -100,6 +80,7 @@ jobs:
 
   regenerate-docs:
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -110,6 +91,8 @@ jobs:
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: build/scripts/docs/requirements.txt
 
       # validate-agent-definitions.py parses agent frontmatter with PyYAML rather than a
       # hand-rolled subset parser, so this lane needs the dependency installed.
@@ -120,6 +103,8 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
+          cache: npm
+          cache-dependency-path: "package-lock.json"
 
       - name: Install diagram dependencies
         run: npm ci --no-fund --no-audit
@@ -150,6 +135,11 @@ jobs:
 
       - name: Refresh workflow manifest outputs
         run: python3 build/scripts/docs/generate-workflow-manifest.py
+
+      # Later generators update markdown consumed by earlier health/structure reports.
+      # The runner discovers the steps above and excludes this orchestration step.
+      - name: Converge maintained documentation
+        run: python3 build/scripts/run-maintained-generation.py --docs-only --report artifacts/docs/generation.json
 
       - name: Compare dashboard readiness deltas vs previous commit
         shell: python
@@ -218,10 +208,18 @@ jobs:
           print(json.dumps(payload, indent=2))
 
       - name: Check generated docs are current
-        run: |
-          git diff --exit-code -- . \
-            ':(exclude)docs/diagrams/uml/*.png' \
-            ':(exclude)docs/diagrams/uml/*.svg'
+        run: python3 build/scripts/ci/check-generated-output.py
 
       - name: Check whitespace
         run: git diff --check
+
+      - name: Upload documentation repair evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: documentation-repair-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            artifacts/docs/
+            artifacts/maintained-generation/
+          if-no-files-found: ignore
+          retention-days: 7
