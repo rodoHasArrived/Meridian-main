@@ -1,6 +1,10 @@
 name: Desktop Installer Release
 
 on:
+  # Opt-in after governance review and signing-environment configuration. A schedule
+  # uses GitHub's immutable event SHA on the default branch; it never creates a tag.
+  schedule:
+    - cron: "17 4 * * 0"
   push:
     tags:
       - "v*"
@@ -22,7 +26,10 @@ permissions:
 concurrency:
   # Serialize eligibility through publication so concurrent RC/stable tags cannot both
   # validate the same increasing MSIX version before either release is published.
-  group: desktop-installer-release
+  # A schedule enters workflow concurrency before the opt-in job condition is evaluated.
+  # Keep it separate even when disabled so it cannot evict a pending production release.
+  # Scheduled rehearsals never publish and do not need the publication version lock.
+  group: ${{ github.event_name == 'schedule' && 'desktop-installer-rehearsal' || 'desktop-installer-release' }}
   cancel-in-progress: false
 
 env:
@@ -35,6 +42,7 @@ env:
 jobs:
   eligibility:
     name: validate-release-eligibility
+    if: github.event_name != 'schedule' || (github.ref == 'refs/heads/main' && vars.MDC_ENABLE_RELEASE_REHEARSALS == 'true')
     runs-on: windows-latest
     timeout-minutes: 30
     environment: desktop-release-signing
@@ -56,25 +64,20 @@ jobs:
         env:
           SIGNING_PFX: ${{ secrets.MDC_SIGNING_CERT_PFX_BASE64 }}
           SIGNING_PASSWORD: ${{ secrets.MDC_SIGNING_CERT_PASSWORD }}
-        run: |
-          if ([string]::IsNullOrWhiteSpace($env:SIGNING_PFX) -or [string]::IsNullOrWhiteSpace($env:SIGNING_PASSWORD)) {
-            throw 'Signed releases and rehearsals require both signing secrets in desktop-release-signing.'
-          }
-          $certificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new(
-            [Convert]::FromBase64String($env:SIGNING_PFX), $env:SIGNING_PASSWORD,
-            [Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet)
-          try {
-            [xml]$manifest = Get-Content src/Meridian.Wpf/Package.appxmanifest
-            if (-not $certificate.HasPrivateKey -or $certificate.NotAfter -le [DateTime]::Now -or $certificate.NotBefore -gt [DateTime]::Now) {
-              throw 'Signing certificate has no private key or is outside its validity window.'
-            }
-            if ($certificate.Subject -ne $manifest.Package.Identity.Publisher) { throw 'Signing publisher does not match the MSIX identity.' }
-          } finally { $certificate.Dispose() }
+        run: ./build/scripts/ci/check-release-signing.ps1
+      - name: Retain non-secret signing readiness evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-signing-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/release-readiness/signing.json
+          if-no-files-found: warn
+          retention-days: 90
       - name: Validate exact commit and increasing package identity
         id: identity
         env:
           GH_TOKEN: ${{ github.token }}
-          REHEARSAL_VERSION: ${{ inputs.rehearsal_version || '1.0.0-rehearsal' }}
+          REHEARSAL_VERSION: ${{ inputs.rehearsal_version || vars.MDC_RELEASE_REHEARSAL_VERSION || '1.0.0-rehearsal' }}
         run: python build/scripts/ci/release-preflight.py --rehearsal-version "$env:REHEARSAL_VERSION"
 
   ci:
@@ -461,8 +464,8 @@ jobs:
           - runtime: win-x64
             architecture: x64
             runner: windows-latest
-          # GitHub-hosted Windows 11 ARM64. This repository is public, so the label is available
-          # at no cost and needs no self-hosted machine.
+          # Native ARM64 is required. The readiness workflow reports observed allocation
+          # and successful lifecycle evidence; a declared hosted label does not prove capacity.
           - runtime: win-arm64
             architecture: ARM64
             runner: windows-11-arm
@@ -687,6 +690,13 @@ jobs:
           path: artifacts/publish-release/
           if-no-files-found: error
           retention-days: 90
+      - name: Retain compact promotion receipt for readiness reporting
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-promotion-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/publish-release/release-gate-evidence.json
+          if-no-files-found: error
+          retention-days: 90
       - name: Publish exact certified GitHub release assets
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
@@ -695,3 +705,42 @@ jobs:
           fail_on_unmatched_files: true
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}
+
+  readiness-summary:
+    name: release-readiness-summary
+    if: always() && (github.event_name != 'schedule' || (github.ref == 'refs/heads/main' && vars.MDC_ENABLE_RELEASE_REHEARSALS == 'true'))
+    needs: [eligibility, ci, secrets, codeql, production, smoke, release-preflight, build-msix, build-consumer-setup, certify-installed-desktop, certify-installed-consumer, release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Collect available readiness receipts
+        # Missing artifacts are reported explicitly below, including failed/skipped builds.
+        continue-on-error: true
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: release-*-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/readiness-input
+      - name: Summarize every gate and required evidence
+        if: always()
+        env:
+          RELEASE_NEEDS: ${{ toJSON(needs) }}
+          CERT_WARNING_DAYS: ${{ vars.MDC_SIGNING_CERT_WARNING_DAYS || '30' }}
+        run: python build/scripts/ci/release-readiness.py summary --mode coordinator --warning-days "$CERT_WARNING_DAYS" --output artifacts/release-readiness/report.json
+      - name: Retain readiness report even when a gate fails
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/release-readiness/report.*
+          if-no-files-found: error
+          retention-days: 90
