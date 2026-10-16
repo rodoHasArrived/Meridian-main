@@ -1853,6 +1853,7 @@ Meridian-main
 │   │   │   │   ├── security-master-contracts-page-02.md
 │   │   │   │   ├── security-master-contracts-page-03.md
 │   │   │   │   ├── security-master-contracts-page-04.md
+│   │   │   │   ├── security-master-contracts-page-05.md
 │   │   │   │   └── security-master-contracts.md
 │   │   │   ├── diagrams
 │   │   │   │   ├── asset_operations.mmd
@@ -1876,6 +1877,7 @@ Meridian-main
 │   │   │   │   ├── contracts-security-master-contracts-page-02.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-03.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-04.mmd
+│   │   │   │   ├── contracts-security-master-contracts-page-05.mmd
 │   │   │   │   ├── fund_accounts.mmd
 │   │   │   │   ├── fund_structure.mmd
 │   │   │   │   ├── identity_access.mmd
