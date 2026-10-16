@@ -618,7 +618,7 @@ public class AlpacaMarketDataClient : WebSocketProviderBase, IAlpacaAssetStream
             404 => new TimeoutException(message),
             406 => new HttpRequestException(message, null, HttpStatusCode.TooManyRequests),
             >= 500 => new HttpRequestException(message, null, HttpStatusCode.InternalServerError),
-            400 or 403 or 405 or 410 => new ConfigurationException(message),
+            400 or 403 or 405 or 410 or 412 or 413 => new ConfigurationException(message),
             _ => new WebSocketException(message)
         };
     }

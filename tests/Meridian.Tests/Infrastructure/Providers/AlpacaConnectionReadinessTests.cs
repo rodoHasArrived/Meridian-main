@@ -75,6 +75,8 @@ public sealed class AlpacaConnectionReadinessTests
     [InlineData(403, ProviderFailureKind.LocalConfigurationError)]
     [InlineData(405, ProviderFailureKind.LocalConfigurationError)]
     [InlineData(410, ProviderFailureKind.LocalConfigurationError)]
+    [InlineData(412, ProviderFailureKind.LocalConfigurationError)]
+    [InlineData(413, ProviderFailureKind.LocalConfigurationError)]
     [InlineData(401, ProviderFailureKind.AuthenticationOrAuthorizationFailure)]
     [InlineData(402, ProviderFailureKind.AuthenticationOrAuthorizationFailure)]
     [InlineData(409, ProviderFailureKind.AuthenticationOrAuthorizationFailure)]
@@ -121,6 +123,8 @@ public sealed class AlpacaConnectionReadinessTests
     [InlineData(405)]
     [InlineData(409)]
     [InlineData(410)]
+    [InlineData(412)]
+    [InlineData(413)]
     public async Task Connect_RejectedSubscriptionAcknowledgmentFailsWithoutReadiness(int code)
     {
         await using var server = await LoopbackServer.StartAsync();
@@ -455,6 +459,8 @@ public sealed class AlpacaConnectionReadinessTests
     [InlineData(403)]
     [InlineData(405)]
     [InlineData(410)]
+    [InlineData(412)]
+    [InlineData(413)]
     public async Task Reconnect_PermanentReplayRejectionStopsWithoutSpendingRemainingAttempts(int code)
     {
         await using var server = await LoopbackServer.StartAsync();
