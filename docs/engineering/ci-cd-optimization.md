@@ -2,7 +2,7 @@
 
 **Status:** staged implementation; human governance review required  
 **Owner:** core-team  
-**Reviewed:** 2026-10-05
+**Reviewed:** 2026-10-15
 
 ## Coverage ownership
 
@@ -21,6 +21,24 @@ authority. Consolidation removes duplicate execution, never a validation purpose
 | Lifecycle supervisor and installer setup tests | Automatic Windows validation; release preflight remains |
 | Golden Path, schema control, providers and deterministic integrations/recovery | Existing specialist owners; production certification also callable by releases |
 | Workflow syntax, hygiene, manifest, skips and script tests | Meridian CI `verify-workflows` |
+
+The October 15 follow-up keeps the four lanes and both gate identities. Documentation Automation
+now covers PRs, main pushes and merge groups without path filters: any tracked file can affect
+repository-structure output. Its existing rules/example/AI checks and diagram generation remain;
+a docs-only maintained-generation pass converges the full documentation sequence before freshness
+validation. New generated files and deletions are included in the drift check, with
+`artifacts/docs/generated-repair.patch` and `drift.json` retained alongside generation evidence.
+
+Maintenance PR/push runs delegate workflow hygiene, AI contract drift and navigation validation to
+the canonical lanes. Scheduled/manual Maintenance still repeats those checks; tooling metadata
+and its distinct actionlint configuration remain on every Maintenance run. Roadmap Source Docs
+retains phase scope, schema and diagram evidence. Similar names alone do not establish duplicate
+coverage.
+
+CI and Maintenance concurrency separates event types. Scheduled/manual runs are not cancelled by
+ordinary pushes; manual runs have distinct run IDs. This avoids losing scheduled coverage while
+preserving cancellation of superseded PR/push validation. It does not establish additional runner
+capacity or alter release serialization.
 
 Meridian CI retains exactly its four canonical `scripts/ci.sh` lanes and the existing
 `quality-gate` aggregation. Its additional `service-backed-integrations` job calls the same
@@ -240,8 +258,9 @@ Configured scheduling explains demand, without establishing available capacity:
   are additional dependent jobs.
 - PR/ref concurrency groups with `cancel-in-progress: true` cancel superseded work within each
   group. They neither add runners nor cap repository/owner-wide demand. Legacy CI's main push,
-  scheduled and manual invocations share a group: a main push can cancel nightly/manual coverage.
-  This is a configuration risk, not an established cause for the sampled cancellations.
+  scheduled and manual invocations shared a group at the October 5 snapshot: a main push could
+  cancel nightly/manual coverage. The October 15 event-specific groups address that configuration
+  risk; the historical sample does not establish it as the cause of any recorded cancellation.
 - IB runtime is the sole self-hosted Windows requirement and retains its protected paper
   environment. Production release serialization across tags and certification's non-interruption
   policy must be preserved. Cancellation disabled does not imply durable FIFO queuing of every
@@ -295,13 +314,15 @@ information is explicitly unavailable, never reported as a hit or zero.
 module names `@rodoHasArrived` as owner and a review deadline of 2026-10-28. Expired, missing,
 or untracked entries fail the lane; each run publishes the register in its summary.
 
-- `test_validate_source_readmes`: path and valid-fixture expectations differ from the validator.
 - `test_desktop_screen_blueprint_checklist`: screen coverage and summary expectations drifted.
 - `test_live_execution_controls_route_consistency`: manual-override routes differ from contracts.
-- `test_archive_code_tombstones`: the archive tree and tombstone expectations differ.
-- `test_python_package_conda_dependencies`: the workflow no longer uses the expected conda file.
-- `test_check_contract_compatibility_gate`: security-master reference contract fixtures differ.
 - `test_export_project_artifact_workflow`: the expected workflow is absent.
+
+The October 15 follow-up restored source-README validation, archive tombstone, Python dependency
+workflow and contract-compatibility suites to the ordinary lane after correcting their current
+fixtures/expectations. The two screen/route suites still refer to intentional archive stubs; the
+export workflow is retired without an equivalent owner. These three remain explicit tracked
+defects with the existing review deadline; they are not silently treated as passing coverage.
 
 Pillow is now explicit. Screenshot diff and screenshot capture validation suites run in the
 ordinary script lane. New exclusions require an owner, reason, deadline, tracked defect and
@@ -318,9 +339,11 @@ visible and cannot enter successful performance cohorts.
 
 ## Review sequence and rollback
 
-Five staged PRs target main: baseline/ownership, duplicate-work removal, scheduling/Windows
-reuse, quality controls, and release orchestration. Later PRs include unmerged earlier stages.
-Review the stage commit; merge in order and refresh later branches after each human merge.
+The initial consolidation was organized into baseline/ownership, duplicate-work removal,
+scheduling/Windows reuse, quality controls, and release orchestration stages. The generated-repair
+follow-up adds isolated repair, reviewed-hash reconciliation, split hosted generation/publication,
+coordinated maintenance and release readiness. Review the final implementation and validation
+evidence together; workflow changes remain designated for human governance review.
 Never bypass a failed check. Revert the responsible optimization if selected test identities,
 reliability or released package hashes regress; keep the previous evidence until equivalence
 has been demonstrated.
@@ -337,7 +360,88 @@ then verify PR and merge-group events report all four contexts. Inspect classic 
 as an administrator as well as rulesets; the planning account received HTTP 403 for classic
 protection, so readable rulesets are not a complete inventory of existing requirements.
 
+### Generated repair and maintenance activation
+
+The local [repair command](generated-merge-recovery.md) works without a GitHub App and never writes
+to a remote. Hosted automatic writes require the reviewed workflows to be on the default branch
+and the following configuration:
+
+| Setting | Purpose |
+| --- | --- |
+| Variable `GENERATED_REPAIR_APP_ID` | ID of the GitHub App installed only on the intended repository. |
+| Environment `generated-repair` | Restrict allowed deployment branches to the default branch (`main`); both trusted publishers use this environment. |
+| Environment secret `GENERATED_REPAIR_APP_PRIVATE_KEY` | App private key stored only in `generated-repair`, so unreviewed branch workflows cannot access it. |
+| App repository permissions | Contents: write and Pull requests: write for repair/maintenance commits and maintenance PRs; Actions: write for bounded repair re-dispatch. |
+
+PR repair itself needs only Pull requests: read; the coordinated maintenance publisher additionally
+creates or updates its maintenance PR. Restrict installation and minted tokens to this repository.
+Do not store the private key as a repository-wide secret. Per-run environment approval is optional
+administrator policy; the default-branch deployment restriction is required.
+Do not use a default `GITHUB_TOKEN` push as a fallback: its commits do not trigger the fresh checks
+required on repaired revisions. No App permission allows a workflow to bypass branch protections.
+
+`generated-repair.yml` produces evidence without write credentials on PR open, synchronize and
+reopen. Candidate dependencies and generators run in a restricted container with only a disposable
+clone and raw output mounts, excluding host Actions/cache credentials and the Docker socket. The
+trusted host exports only bounded regular files without links after the container exits.
+`generated-repair-publish.yml` validates the completed run and artifact using trusted base tooling,
+recreates the pinned merge, independently derives the generated delta and rereads head/base before a
+normal branch push. The App is used only after these checks. A post-push base reread catches a base
+advance in the final write window and requeues within the retry bound; GitHub offers no atomic
+comparison-and-update transaction across both refs. Stale revisions allow at most two automatic
+requeues. Repair commit markers suppress self-triggered loops only for an already-current base;
+later base advances can repair the branch again. Publisher concurrency is scoped to each source
+run so an unrelated PR cannot evict pending repair work from a global group.
+
+On main pushes, daily at 05:23 UTC and on manual dispatch, the publisher also scans open
+same-repository PRs for a stale base. It dispatches at most ten new head/base pairs per run,
+deduplicates already requested pairs and reports the remaining backlog. Daily/manual scans continue
+remaining work. API pagination is bounded to 1,000 items and fails explicitly if that limit is
+reached. This is separate from each repair's two stale-ref retries.
+
+Without App configuration, PR repair provides artifacts only. Forks, source/handwritten conflicts,
+uncertain reviewed module hashes, and changes to generators/dependencies/automation policy retain
+the local contributor path. A valid candidate includes `repair.patch`; a refusal includes its
+reason in `report.json`. Changes to the reviewed source-hash baseline are not blindly recomputed.
+
+The weekly/manual AI Navigation Refresh coordinates navigation, recent changes, repository
+structure, workflow overview and documentation health output. Its trusted publisher maintains
+`automation/ai-navigation-refresh` through ordinary non-force updates and an App-created PR.
+Generation and publishing remain separate. The 14-day navigation freshness requirement still
+applies; missing App configuration leaves downloadable evidence and an explicit publication
+failure rather than a maintenance PR whose required checks never run. Handwritten edits or stale
+branch/base evidence refuse publication. A branch/base race allows one automatic fresh-base
+maintenance re-dispatch (`retry_count` 0 then 1); further races require inspection instead of a loop.
+
+Before enabling writes, exercise an eligible same-repository PR, a fork fallback, changes to the
+head and base during generation, and unauthorized file/prose changes. Check that the first repaired
+revision receives fresh required checks. Keep freshness failing for stale synthetic merge groups;
+refresh constituent branches and rebuild the group. Administrators may evaluate one-PR groups if
+combined output repeatedly conflicts, but no workflow changes queue policy or bypasses its checks.
+
+Report automatic success, manual-review reasons, stale retries and non-convergence separately from
+queue delay and execution cost. The main repair measure is the fraction of first repaired
+revisions passing authoritative CI without manual regeneration, with unchanged validation coverage.
+
 ## Release evidence
+
+`release-readiness.yml` runs Monday at 08:23 UTC and on manual dispatch. It checks signing
+certificate metadata through the existing protected `desktop-release-signing` environment and
+observes the last 14 days of successful, assigned native x64/ARM64 lifecycle and consumer
+packaging jobs through the read-only Actions API. Historical runner assignment is evidence of a
+recent capability, not a reservation or proof of current spare capacity. Missing, stale or
+inaccessible evidence is `unknown`, not a success.
+
+Set `MDC_SIGNING_CERT_WARNING_DAYS` to a value from 1 to 365 to change the default 30-day renewal
+warning. Invalid, expired or missing signing evidence blocks readiness; an approaching-expiry
+warning remains visible without failing otherwise valid prerequisites. No private key or password
+is retained in the report. Existing signing environment restrictions and approvals still apply.
+
+The release coordinator also runs `release-readiness-summary` after its dependencies finish,
+including failures and skips. It identifies each missing gate or receipt and the next action,
+binding the summary to the exact commit, workflow run and attempt. Both workflows retain
+`release-readiness-<run>-<attempt>` JSON/Markdown and an Actions summary for 90 days. A summary is
+diagnostic evidence, not a replacement for the existing promotion and package-digest checks.
 
 The release coordinator must bind CI, security, deterministic production certification and
 web-workstation/win-x64 installed-startup proof to the tag's exact commit. Publication depends
@@ -365,6 +469,18 @@ For a rehearsal, manually dispatch the coordinator on the reviewed branch with a
 and retains `validated-release-<run>-<attempt>` without publishing. The old unsigned manual
 lifecycle shortcut is replaced by this full signed rehearsal; the standalone evaluation channel
 still provides self-signed evaluation packages.
+
+Weekly signed rehearsals run Sunday at 04:17 UTC only when repository variable
+`MDC_ENABLE_RELEASE_REHEARSALS` is exactly `true`. Set `MDC_RELEASE_REHEARSAL_VERSION` to an
+eligible SemVer whose MSIX identity is greater than every published production package. The
+scheduled event pins the default branch's event SHA and executes the same signing, install,
+upgrade, repair, rollback and digest-bound validation graph. Scheduling never publishes a release;
+publication remains restricted to eligible `v*` tag pushes. Scheduled runs use the separate
+`desktop-installer-rehearsal` concurrency group, including when opt-in is disabled, so they cannot
+evict a pending production release. Production tags and manual rehearsals retain
+`desktop-installer-release`; production publication remains serialized. Enable the schedule after
+human governance review and a successful manual rehearsal, with the existing signing environment
+available.
 
 Publication verifies every gate, both native MSIX architecture receipts, the consumer EXE receipt, installed-startup evidence,
 source commits, run IDs, run attempts and SHA-256 digests, then copies the certified MSIX files
