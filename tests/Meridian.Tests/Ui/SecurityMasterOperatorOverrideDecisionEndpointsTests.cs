@@ -63,6 +63,22 @@ public sealed class SecurityMasterOperatorOverrideDecisionEndpointsTests
     }
 
     [Fact]
+    public async Task DecisionRoute_ReturnsForbidden_WhenTheReviewerStagedTheValues()
+    {
+        var securityId = Guid.NewGuid();
+        var store = new InMemoryOperatorOverridesStore();
+        store.Seed(securityId, stagedBy: "security-admin");
+
+        await using var app = await CreateAppAsync(store);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(DecisionRoute(securityId), new { decision = "Approved" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await store.GetAsync(securityId))!.ApprovalStatus.Should().Be(SecurityOverrideApprovalStatusDto.Pending);
+    }
+
+    [Fact]
     public async Task DecisionRoute_ReturnsNotFound_WhenNoOverridesExist()
     {
         var store = new InMemoryOperatorOverridesStore();
@@ -133,12 +149,12 @@ public sealed class SecurityMasterOperatorOverrideDecisionEndpointsTests
     {
         private readonly Dictionary<Guid, OperatorOverridesDto> _overrides = [];
 
-        public void Seed(Guid securityId)
+        public void Seed(Guid securityId, string stagedBy = "security-steward")
         {
             _overrides[securityId] = new OperatorOverridesDto(
                 securityId,
                 new Dictionary<string, string> { ["sector"] = "Technology" },
-                "security-steward",
+                stagedBy,
                 DateTimeOffset.UtcNow)
             {
                 ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending,

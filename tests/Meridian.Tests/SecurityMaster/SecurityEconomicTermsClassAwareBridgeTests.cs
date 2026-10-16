@@ -58,7 +58,7 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         var declared = SecurityAssetTermsSchema.Fields(assetClass).Select(static field => field.Key).ToHashSet(StringComparer.Ordinal);
         foreach (var property in rebuilt.EnumerateObject())
         {
-            if (property.Name is "schemaVersion" or SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlattenedFromMarkerProperty)
+            if (SecurityTermsEnvelope.IsReservedKey(property.Name))
             {
                 continue;
             }

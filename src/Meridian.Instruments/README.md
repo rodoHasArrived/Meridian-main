@@ -170,6 +170,9 @@ expirations, strikes, and chain snapshots are instrument-market data rather than
 orchestration. Application composition still wires provider implementations and collectors, while
 UI Shared and strategy adapters consume `Meridian.Instruments.Options.OptionsChainService`.
 
+The bond reference read model no longer emits `cashFlowSource` from bond accounting elections;
+those elections were never populated and are retired from the Security Master terms.
+
 ## Diagrams
 
 `DIA-ASSURANCE-LOOP`

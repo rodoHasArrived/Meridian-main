@@ -1,9 +1,11 @@
+using Meridian.Contracts.SecurityMaster;
+
 namespace Meridian.Ledger;
 
 /// <summary>
 /// Open ledger tax lot available for realized-gain relief.
 /// </summary>
-public sealed record LedgerTaxLot
+public sealed record LedgerTaxLot : IUnitizedLot
 {
     public LedgerTaxLot(
         string lotId,
@@ -46,6 +48,16 @@ public sealed record LedgerTaxLot
     public decimal Quantity { get; }
 
     public decimal UnitCost { get; }
+
+    /// <summary>
+    /// What one unit of <see cref="Quantity"/> measures. Defaults to shares; face-denominated debt
+    /// lots (bonds, CDs, bills, loans, structured credit) carry <see cref="SecurityLotUnitKind.FaceValue"/>,
+    /// whose <see cref="UnitCost"/> is a price per 100 of par.
+    /// </summary>
+    public SecurityLotUnitKind UnitKind { get; init; } = SecurityLotUnitKind.Shares;
+
+    /// <summary>Contract multiplier scaling one unit to economic exposure; 1 unless stated.</summary>
+    public decimal Multiplier { get; init; } = 1m;
 
     /// <summary>
     /// Exact current basis of the whole lot, when it is known rather than implied by

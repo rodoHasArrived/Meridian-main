@@ -72,6 +72,12 @@ Use this module when a backtesting contract must be shared across runtime and st
 - `AssetEventCashFlow.FractionalUnits`, `BasisDisposed`, and `RealizedPnl` retain cash-in-lieu
   disposal evidence even when an all-fraction transformation leaves no successor position.
 
+## Unitized lots
+
+`OpenLot` and `ClosedLot` hold `decimal` quantities and implement `IUnitizedLot`: `UnitKind`
+defaults to `Shares` and `Multiplier` to 1, so existing share lots are unchanged.
+`LotQuantity.EconomicUnits` gives quantity × multiplier.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

@@ -99,7 +99,8 @@ public sealed class AssetOperationsMigrationRunnerTests : IAsyncLifetime
             "001_asset_operations.sql",
             "002_instrument_position_projections.sql",
             "003_instrument_position_projection_guards.sql",
-            "004_asset_accounting_event_spine.sql");
+            "004_asset_accounting_event_spine.sql",
+            "005_asset_operations_write_events.sql");
 
         await using var guardColumnCommand = connection.CreateCommand();
         guardColumnCommand.CommandText =

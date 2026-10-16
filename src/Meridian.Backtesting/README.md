@@ -150,6 +150,12 @@ Studio UX remains deferred.
   `Meridian.Contracts.Services`, keeping Security Master trust-gate validation optional for hosts
   while preserving fail-closed preflight behavior when the gate reports blocking issues.
 
+## Unitized lots
+
+`SimulatedPortfolio` keeps open and closed lot quantities as `decimal` and carries each lot's unit
+kind and multiplier, so fractional crypto units, contracts and face value share one lot shape with
+execution and the ledger (`IUnitizedLot`).
+
 ## Benchmarks and performance
 
 - `MultiSymbolMergeEnumerator` uses a heap for multi-symbol replay and a single-stream fast path
