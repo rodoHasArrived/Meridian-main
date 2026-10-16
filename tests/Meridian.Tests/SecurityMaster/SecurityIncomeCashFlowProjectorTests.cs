@@ -63,9 +63,11 @@ public sealed class SecurityIncomeCashFlowProjectorTests
     {
         var announced = Action(CorporateActionEventTypes.Dividend, new DateOnly(2026, 3, 10), new DateOnly(2026, 3, 31), 0.20m);
         var amended = Action(CorporateActionEventTypes.Dividend, new DateOnly(2026, 3, 10), new DateOnly(2026, 4, 2), 0.25m)
-            with { SupersedesCorpActId = announced.CorpActId };
+            with
+        { SupersedesCorpActId = announced.CorpActId };
         var cancelled = Action(CorporateActionEventTypes.Dividend, new DateOnly(2026, 9, 10), new DateOnly(2026, 9, 30), 0.25m)
-            with { LifecycleState = CorporateActionLifecycleStates.Cancelled };
+            with
+        { LifecycleState = CorporateActionLifecycleStates.Cancelled };
 
         var flow = SecurityIncomeCashFlowProjector.Build(SecurityId, "Equity", [announced, amended, cancelled], AsOf)
             .Flows.Should().ContainSingle().Subject;

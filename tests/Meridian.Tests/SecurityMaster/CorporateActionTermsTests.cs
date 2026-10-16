@@ -40,7 +40,8 @@ public sealed class CorporateActionTermsTests
 
         var acquirer = Guid.NewGuid();
         CorporateActionTerms.From(Action(CorporateActionEventTypes.MergerAbsorption, new { cashConsiderationPerUnit = 12.5m })
-                with { AcquirerSecurityId = acquirer, ExchangeRatio = 0.75m })
+                with
+        { AcquirerSecurityId = acquirer, ExchangeRatio = 0.75m })
             .Should().Be(new ExchangeCorporateActionTerms(CorporateActionEventTypes.MergerAbsorption, acquirer, 0.75m, 12.5m, false));
 
         CorporateActionTerms.From(Action(CorporateActionEventTypes.BondCall, new { isMakeWhole = true }) with { RedemptionPricePercentOfPar = 101.5m })
@@ -64,15 +65,18 @@ public sealed class CorporateActionTermsTests
         };
         var agreeing = Action(CorporateActionEventTypes.PrincipalPaydown, new { postPaydownFactor = 0.95m }) with
         {
-            ExDate = new DateOnly(2026, 1, 20), PayDate = new DateOnly(2026, 1, 25)
+            ExDate = new DateOnly(2026, 1, 20),
+            PayDate = new DateOnly(2026, 1, 25)
         };
         var disagreeing = Action(CorporateActionEventTypes.PrincipalPaydown, new { postPaydownFactor = 0.89m }) with
         {
-            ExDate = new DateOnly(2026, 2, 20), PayDate = new DateOnly(2026, 2, 25)
+            ExDate = new DateOnly(2026, 2, 20),
+            PayDate = new DateOnly(2026, 2, 25)
         };
         var later = Action(CorporateActionEventTypes.PrincipalPaydown, new { postPaydownFactor = 0.84m }) with
         {
-            ExDate = new DateOnly(2026, 3, 20), PayDate = new DateOnly(2026, 3, 25)
+            ExDate = new DateOnly(2026, 3, 20),
+            PayDate = new DateOnly(2026, 3, 25)
         };
 
         var history = SecurityFactorHistoryProjector.Build(
