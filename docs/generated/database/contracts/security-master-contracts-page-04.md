@@ -2,11 +2,81 @@
 
 # `security-master-contracts` data objects - page 4 of 4
 
-Objects 241-275 of 275. References crossing pages remain available in the dependency manifest.
+Objects 241-291 of 291. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityMasterReportingResolutionMode["SecurityMasterReportingResolutionMode"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterSchemaVersions["SecurityMasterSchemaVersions"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityOptionRight["SecurityOptionRight"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityOverrideApprovalStatusDto["SecurityOverrideApprovalStatusDto"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityOverrideAuditEntryDto["SecurityOverrideAuditEntryDto"] {
+        +string Actor
+        +SecurityOverrideApprovalStatusDto ApprovalStatus
+        +string? Comment
+        +string EventType
+        +DateTimeOffset OccurredAt
+        +string? ReasonCode
+        +DateTimeOffset? ReviewedAt
+        +string? Reviewer
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto["SecurityPriceGoldenCopyDto"] {
+        +IReadOnlyList~SecurityComparisonPriceDto~ ComparisonPrices
+        +int? DaysStale
+        +DateTimeOffset? EvaluatedAsOf
+        +decimal GoldenCopyPrice
+        +DateTimeOffset? HierarchyAsOf
+        +SecurityPricingHierarchyDto? HierarchySnapshot
+        +bool IsStaleFallback
+        +DateTimeOffset? KnowledgeAsOf
+        +DateTimeOffset PriceAsOf
+        +SecurityPriceKind PriceKind
+        +Guid SecurityId
+        +string SelectedSource
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityPriceKind["SecurityPriceKind"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityPriceUnit["SecurityPriceUnit"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto["SecurityPricingHierarchyDto"] {
+        +string? AccountId
+        +DateTimeOffset AsOf
+        +IReadOnlyList~PricingHierarchyEntryDto~ Entries
+        +Guid SecurityId
+        +string UpdatedBy
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityProjectionRecord["SecurityProjectionRecord"] {
+        +IReadOnlyList~SecurityAliasDto~ Aliases
+        +string AssetClass
+        +JsonElement AssetSpecificTerms
+        +JsonElement CommonTerms
+        +string Currency
+        +string DisplayName
+        +DateTimeOffset EffectiveFrom
+        +DateTimeOffset? EffectiveTo
+        +IReadOnlyList~SecurityIdentifierDto~ Identifiers
+        +string PrimaryIdentifierKind
+        +string PrimaryIdentifierValue
+        +JsonElement Provenance
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityRawPriceDto["SecurityRawPriceDto"] {
+        +decimal Price
+        +DateTimeOffset PriceAsOf
+        +string SourceId
+        +SecurityPriceUnit Unit
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityRecordProvenance["SecurityRecordProvenance"] {
+        +DateTimeOffset? AsOf
+        +string? Reason
+        +string? SourceRecordId
+        +string SourceSystem
+        +string? UpdatedBy
+    }
     class Meridian_Contracts_SecurityMaster_SecuritySearchRequest["SecuritySearchRequest"] {
         +bool ActiveOnly
         +string? CustomProfileId
@@ -16,6 +86,8 @@ classDiagram
         +string Query
         +int Skip
         +int Take
+    }
+    class Meridian_Contracts_SecurityMaster_SecuritySettlementMethod["SecuritySettlementMethod"] {
     }
     class Meridian_Contracts_SecurityMaster_SecuritySnapshotRecord["SecuritySnapshotRecord"] {
         +JsonElement Payload
@@ -34,6 +106,10 @@ classDiagram
         +SecurityStatusDto Status
         +long Version
     }
+    class Meridian_Contracts_SecurityMaster_SecurityTermConventionKind["SecurityTermConventionKind"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityTermConventions["SecurityTermConventions"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityTermReader["SecurityTermReader"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityTermsEnvelope["SecurityTermsEnvelope"] {
@@ -41,6 +117,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityTermsFormats["SecurityTermsFormats"] {
         +IReadOnlyList~string~ All
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityTermsProjectionKind["SecurityTermsProjectionKind"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto["SecurityValidationGateResultDto"] {
         +bool IsBlocked
@@ -264,6 +342,12 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_SecurityOverrideAuditEntryDto --> Meridian_Contracts_SecurityMaster_SecurityOverrideApprovalStatusDto
+    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceKind
+    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
+    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto
+    Meridian_Contracts_SecurityMaster_SecurityProjectionRecord --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
+    Meridian_Contracts_SecurityMaster_SecurityRawPriceDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
     Meridian_Contracts_SecurityMaster_SecuritySummaryDto --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
     Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationReportDto
     Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto

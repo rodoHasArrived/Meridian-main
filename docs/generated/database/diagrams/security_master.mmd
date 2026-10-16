@@ -908,6 +908,19 @@ erDiagram
         timestamp_with_time_zone recorded_at
         bigint source_version
     }
+    security_master_security_governance_events {
+        bigint global_sequence PK
+        uuid security_id
+        text stream
+        text event_type
+        text actor
+        timestamp_with_time_zone occurred_at
+        jsonb payload
+        integer payload_version
+    }
+    security_master_security_governance_events_global_sequence_seq {
+        text catalogued_object
+    }
     security_master_security_identifiers {
         uuid security_id PK,FK
         text identifier_kind PK

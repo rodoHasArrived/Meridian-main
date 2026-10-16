@@ -33,14 +33,10 @@ begin
 end;
 $$;
 
-drop trigger if exists trg_asset_operations_write_event_no_update
-    on __SCHEMA__.asset_operations_write_events;
 create trigger trg_asset_operations_write_event_no_update
 before update on __SCHEMA__.asset_operations_write_events
 for each row execute function __SCHEMA__.reject_asset_operations_write_event_mutation();
 
-drop trigger if exists trg_asset_operations_write_event_no_delete
-    on __SCHEMA__.asset_operations_write_events;
 create trigger trg_asset_operations_write_event_no_delete
 before delete on __SCHEMA__.asset_operations_write_events
 for each row execute function __SCHEMA__.reject_asset_operations_write_event_mutation();

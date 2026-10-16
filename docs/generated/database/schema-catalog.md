@@ -6,7 +6,7 @@ This catalog is extracted from a disposable PostgreSQL database after every regi
 
 | Physical schema | Logical migration modules | Relations | Functions | Triggers | Policies | Fingerprint |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
-| [`asset_operations`](modules/asset_operations.md) | `asset-operations` | 16 | 1 | 2 | 0 | `78161959c33a` |
+| [`asset_operations`](modules/asset_operations.md) | `asset-operations` | 18 | 2 | 4 | 0 | `02ad84afde7b` |
 | [`banking`](modules/banking.md) | `banking` | 3 | 0 | 0 | 0 | `13eb85175584` |
 | [`fund_accounts`](modules/fund_accounts.md) | `fund-accounts` | 12 | 0 | 0 | 0 | `c11c69e353f5` |
 | [`fund_structure`](modules/fund_structure.md) | `fund-structure` | 15 | 1 | 2 | 0 | `c33e160866af` |
@@ -15,7 +15,7 @@ This catalog is extracted from a disposable PostgreSQL database after every regi
 | [`money_market`](modules/money_market.md) | `money-market` | 4 | 0 | 0 | 0 | `4c336b5362a4` |
 | [`public`](modules/public.md) | - | 0 | 0 | 0 | 0 | `d50d95b1e1f1` |
 | [`reporting`](modules/reporting.md) | `reporting` | 20 | 18 | 21 | 0 | `33a0abf15576` |
-| [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 94 | 6 | 13 | 0 | `ff79b16c518a` |
+| [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 96 | 7 | 15 | 0 | `89fb58487819` |
 
 ## Default topology
 

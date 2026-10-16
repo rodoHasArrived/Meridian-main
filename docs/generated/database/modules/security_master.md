@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 94
-- Functions/procedures: 6
-- Triggers: 13
+- Relations: 96
+- Functions/procedures: 7
+- Triggers: 15
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -920,6 +920,19 @@ erDiagram
         timestamp_with_time_zone recorded_at
         bigint source_version
     }
+    security_master_security_governance_events {
+        bigint global_sequence PK
+        uuid security_id
+        text stream
+        text event_type
+        text actor
+        timestamp_with_time_zone occurred_at
+        jsonb payload
+        integer payload_version
+    }
+    security_master_security_governance_events_global_sequence_seq {
+        text catalogued_object
+    }
     security_master_security_identifiers {
         uuid security_id PK,FK
         text identifier_kind PK
@@ -1370,6 +1383,8 @@ erDiagram
 | `security_events` | table | 12 | `global_sequence` | 0 | 4 | - |
 | `security_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_field_provenance` | table | 10 | `security_id`, `field_path`, `origin` | 0 | 2 | - |
+| `security_governance_events` | table | 8 | `global_sequence` | 0 | 3 | Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds), written in the same transaction as the state change. |
+| `security_governance_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_identifiers` | table | 12 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from` | 1 | 3 | - |
 | `security_master_conflicts` | table | 14 | `conflict_id` | 0 | 2 | - |
 | `security_master_quality_reports` | table | 3 | `id` | 0 | 2 | - |

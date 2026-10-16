@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 4
 
-Objects 81-160 of 275. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 291. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -341,6 +341,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_IStructuredCashFlowProvider["IStructuredCashFlowProvider"] {
     }
+    class Meridian_Contracts_SecurityMaster_IUnitizedLot["IUnitizedLot"] {
+    }
     class Meridian_Contracts_SecurityMaster_InstrumentTypeDescriptor["InstrumentTypeDescriptor"] {
         +IReadOnlyList~string~ CompatibleSecurityMasterAssetClasses
         +string DefaultProviderSecurityType
@@ -370,6 +372,11 @@ classDiagram
         +EdgarXbrlFact? PublicFloat
         +EdgarXbrlFact? Revenue
         +EdgarXbrlFact? Security12bTitle
+    }
+    class Meridian_Contracts_SecurityMaster_LotQuantity["LotQuantity"] {
+        +decimal Amount
+        +decimal Multiplier
+        +SecurityLotUnitKind UnitKind
     }
     class Meridian_Contracts_SecurityMaster_OperatorOverrideDecisionRequest["OperatorOverrideDecisionRequest"] {
         +string? Comment
@@ -510,11 +517,6 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
-    class Meridian_Contracts_SecurityMaster_SecurityAliasHistoryConflictException["SecurityAliasHistoryConflictException"] {
-        +Guid AliasId
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityAliasScope["SecurityAliasScope"] {
-    }
     Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto --> Meridian_Contracts_SecurityMaster_CorporateActionProviderReleaseStatusDto
     Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalAcceptanceResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDto
     Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDecisionResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDto
@@ -532,8 +534,8 @@ classDiagram
     Meridian_Contracts_SecurityMaster_EdgarFilerRecord --> Meridian_Contracts_SecurityMaster_EdgarFormerName
     Meridian_Contracts_SecurityMaster_EdgarSecurityDataRecord --> Meridian_Contracts_SecurityMaster_EdgarDebtOfferingTerms
     Meridian_Contracts_SecurityMaster_EdgarSecurityDataRecord --> Meridian_Contracts_SecurityMaster_EdgarFundHolding
+    Meridian_Contracts_SecurityMaster_FaceValueLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
     Meridian_Contracts_SecurityMaster_IssuerFactSnapshot --> Meridian_Contracts_SecurityMaster_EdgarXbrlFact
     Meridian_Contracts_SecurityMaster_RecordCorporateActionSourceProposalRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto
     Meridian_Contracts_SecurityMaster_RecordCorporateActionSourceProposalRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionSourceDisplayMetadataDto
-    Meridian_Contracts_SecurityMaster_SecurityAliasDto --> Meridian_Contracts_SecurityMaster_SecurityAliasScope
 ```

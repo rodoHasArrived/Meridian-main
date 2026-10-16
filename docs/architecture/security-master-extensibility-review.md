@@ -5777,3 +5777,10 @@ reads it per security.
 | The lot model does not record units | `IUnitizedLot` (decimal `Quantity`, `UnitKind`, `Multiplier`) is the shared lot shape, and `LotQuantity` is its value form (`EconomicUnits = Quantity × Multiplier`). `LotQuantity.UnitFor`/`For` read the unit and the multiplier term (an option's or future's `multiplier`, a commodity's `contractSize`) from the asset-class registry. |
 | The face-value lot is bond-only and separate | `FaceValueLot` implements `IUnitizedLot` as the `FaceValue` case. `ToLedgerTaxLot` states the ledger's hundred-of-face unit (`UnitKind = FaceValue`, `Multiplier = 100`), so ledger quantity × multiplier is the face amount. The basis adjuster carries unit and multiplier through adjustments. |
 | Execution and backtesting lots use whole-number quantities | `Execution.Sdk.TaxLot`, `Backtesting.Sdk.OpenLot` and `ClosedLot` now carry decimal quantities and implement `IUnitizedLot` (shares and multiplier 1 by default). `LedgerTaxLot` implements it too. Cost-basis and P&L formulas are unchanged; the backtest fill engine still trades whole units, and its lots can now represent fractional and contract-scaled holdings without a type change. |
+
+### Follow-ons — conventions and loan identifiers
+
+| Finding | What landed |
+| --- | --- |
+| Put/call, settlement type and day count are free text | `SecurityTermConventions` types `SecurityOptionRight`, `SecuritySettlementMethod` and the day-count vocabulary. Term fields declare their convention (`SecurityAssetTermField.Convention`); the five `dayCount` fields and the Option and Future `settlementType` fields are marked. Writes reject non-canonical values (`SecurityMasterMapping` write mode and the field-edit validator), and the registry exposes them as a `Convention` editor with canonical choices. |
+| No LoanX or CLIP identifiers | `SecurityIdentifierKind.LoanX` (`LX` plus six digits) and `Clip` (nine alphanumerics) exist in C#, the F# identifier union, interop, normalization and validation, the WPF labels and the workstation type union. Direct loans prefer LoanX after the internal code; structured credit lists CLIP. |
