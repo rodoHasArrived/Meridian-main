@@ -348,7 +348,16 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         AmortFixture fixture, Guid bookId, LedgerAccount account, string label, decimal openQuantity)
     {
         var at = DateTimeOffset.UtcNow;
-        return fixture.Store.SaveTaxLotAsync(new(Guid.NewGuid(), bookId, account, label, AmortAcquired,
+        // Governed stores reject standalone lot saves; seed retained rows through a compatibility store
+        // over the same schema.
+        var compatibility = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions
+        {
+            ConnectionString = fixture.Options.ConnectionString,
+            SchemaName = fixture.Options.SchemaName,
+            EnablePeriodLocking = fixture.Options.EnablePeriodLocking,
+            RequireExpectedVersion = fixture.Options.RequireExpectedVersion
+        });
+        return compatibility.SaveTaxLotAsync(new(Guid.NewGuid(), bookId, account, label, AmortAcquired,
             10m, openQuantity, 1m, "USD", at, at));
     }
 
