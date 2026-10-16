@@ -295,7 +295,11 @@ public sealed class AccountingPostingCandidateService :
             var amount = Math.Abs(line.Amount);
             var account = new LedgerAccount(chartNode.AccountName, accountType);
             if (predecessorLot is not null && IsCanonicalSuccessorLine(request, line))
-                account = account with { FinancialAccountId = predecessorLot.Account.FinancialAccountId };
+            {
+                if (account.Name != predecessorLot.Account.Name || account.AccountType != predecessorLot.Account.AccountType)
+                    throw new InvalidOperationException("The mapped successor account must match the durable predecessor lot carrying account.");
+                account = predecessorLot.Account;
+            }
             if (predecessorLot is not null && line.Side == AccountingTemplateLineSideDto.Credit
                 && line.Dimensions?.InstrumentId == predecessorLot.SecurityId
                 && line.Dimensions?.PositionId == predecessorLot.BookPositionId)

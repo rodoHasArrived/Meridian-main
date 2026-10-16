@@ -291,7 +291,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<IAccountingPolicyService>(),
                 sp.GetService<IAccountingConfigurationService>(),
                 sp.GetService<IAccountingPostingCandidateAuthorityBuilder>(),
-                sp.GetService<ILedgerJournalStore>())!);
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<Meridian.Storage.SecurityMaster.ISecurityMasterStore>())!);
         services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
             new AccountingPostingCandidatePostService(
                 sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),

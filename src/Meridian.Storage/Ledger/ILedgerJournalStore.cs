@@ -89,6 +89,15 @@ public interface ILedgerJournalStore
         => Task.FromException<IReadOnlyList<LedgerTaxLotRecord>>(
             new NotSupportedException("This ledger journal store does not support authoritative tax-lot identity reads."));
 
+    /// <summary>Finds retained labels across open and closed lots in the exact ledger book and account key.</summary>
+    Task<IReadOnlyList<LedgerTaxLotRecord>> GetTaxLotsByLotIdsAsync(
+        Guid ledgerBookId,
+        LedgerAccount account,
+        IReadOnlyList<string> lotIds,
+        CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<LedgerTaxLotRecord>>(
+            new NotSupportedException("This ledger journal store does not support authoritative retained lot-label reads."));
+
     /// <summary>
     /// Lists the lots of record open under one (security, book position) scope and acquired on or
     /// before <paramref name="effectiveDate"/>. Face-denominated economics -- principal paydown

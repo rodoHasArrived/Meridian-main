@@ -203,6 +203,10 @@ book-position authority, checks the predecessor snapshot/version and empty targe
 locks any retained target labels under the full book/account-name/type/symbol/financial-account key.
 Closed lots still reserve their labels, and the check uses the same trimmed labels as acquisition
 persistence. A collision fails through governed validation before any journal write. The transaction
+is preceded by an all-status candidate lookup through `GetTaxLotsByLotIdsAsync`, matching the
+complete account/book key including null/empty symbol and financial-account equivalence.
+Unsupported journal stores reject that lookup rather than certifying labels as available. The
+preview does not reserve labels or replace the locked atomic check. The transaction
 commits the reclassification journal, predecessor CAS, every successor and immutable mutation
 snapshot together. Both currency bases reconcile to the retained allocation while acquisition FX,
 holding dates and original acquisition evidence remain intact. Exact retries return the retained
