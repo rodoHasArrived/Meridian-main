@@ -1196,8 +1196,7 @@ public static class AssetOperationsProjectionBuilder
             factorSchedule = bond.SinkingFund is null ? null : "sinking-fund",
             inflationIndex = bond.InflationLinked?.InflationIndex,
             currentFactor = bond.InflationLinked?.CurrentFactor,
-            factorDate = bond.InflationLinked?.FactorDate,
-            cashFlowSource = bond.AccountingElections?.CashFlowSource
+            factorDate = bond.InflationLinked?.FactorDate
         });
 
     internal static IReadOnlyList<string> ReadyCapabilities(

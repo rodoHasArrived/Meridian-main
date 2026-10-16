@@ -139,3 +139,33 @@ public sealed class SecurityIncomeCashFlowProjectorTests
             null,
             Payload: payload is null ? null : JsonSerializer.SerializeToElement(payload));
 }
+
+/// <summary>
+/// Vendor and operational references stay separate from instrument economics: pricing sources are
+/// declared Operational and never offered as economic terms.
+/// </summary>
+public sealed class SecurityAssetTermRoleTests
+{
+    [Theory]
+    [InlineData("DirectLoan")]
+    [InlineData("InvestmentFund")]
+    public void PricingSource_IsAnOperationalTerm_InTheOperationsGroup(string assetClass)
+    {
+        var dto = SecurityAssetClassRegistry.ToDto(SecurityAssetClassRegistry.Get(assetClass));
+
+        var pricing = dto.Fields.Should().ContainSingle(static field => field.Key == "pricingSource").Subject;
+        pricing.Role.Should().Be(SecurityAssetTermRole.Operational);
+        pricing.Group.Should().Be("Operations");
+        dto.Fields.Where(static field => field.Key != "pricingSource")
+            .Should().OnlyContain(static field => field.Role == SecurityAssetTermRole.Economic);
+    }
+
+    [Fact]
+    public void DirectLoanEconomics_KeepRateTermsAsEconomic()
+    {
+        var fields = SecurityAssetClassRegistry.Get("DirectLoan").Fields;
+
+        fields.Where(static field => field.Key is "referenceIndex" or "spreadBps" or "currentCouponRate" or "resetFrequency")
+            .Should().HaveCount(4).And.OnlyContain(static field => field.Role == SecurityAssetTermRole.Economic);
+    }
+}
