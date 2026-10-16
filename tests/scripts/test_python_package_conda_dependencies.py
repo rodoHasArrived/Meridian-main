@@ -36,23 +36,34 @@ class PythonPackageCondaDependencyTests(unittest.TestCase):
 
         self.assertIn("pillow", dependencies)
 
-    def test_canonical_script_lane_installs_screenshot_dependencies(self) -> None:
-        # The retired conda workflow was replaced by Meridian CI's script lane.
-        # Exercise its actual dependency-install/run chain so screenshot suites
-        # cannot silently lose Pillow when the hosted environment changes.
-        workflow = yaml.safe_load(
-            (ROOT / ".github/workflows/meridian-ci.yml").read_text(encoding="utf-8")
+    def test_workflow_lane_installs_screenshot_dependencies_before_validation(self) -> None:
+        # The standalone Conda workflow was retired in the May 2026 consolidation.
+        # Screenshot fixtures now run in the canonical workflow lane.
+        workflow = yaml.load(
+            (ROOT / ".github/workflows/meridian-ci.yml").read_text(encoding="utf-8"),
+            Loader=yaml.BaseLoader,
         )
         steps = workflow["jobs"]["verify-workflows"]["steps"]
-        commands = [step.get("run", "").strip() for step in steps]
-        install_command = "python -m pip install --requirement build/scripts/ci/requirements.txt"
-        lane_command = "bash scripts/ci.sh --lane verify-workflows"
-        self.assertIn(install_command, commands)
-        self.assertIn(lane_command, commands)
-        self.assertLess(commands.index(install_command), commands.index(lane_command))
+        dependency_command = "python -m pip install --requirement build/scripts/ci/requirements.txt"
+        validation_command = "bash scripts/ci.sh --lane verify-workflows"
+        dependency_steps = [step for step in steps if step.get("run", "").strip() == dependency_command]
+        validation_steps = [step for step in steps if step.get("run", "").strip() == validation_command]
+
+        self.assertEqual(len(dependency_steps), 1)
+        self.assertEqual(len(validation_steps), 1)
+        self.assertLess(steps.index(dependency_steps[0]), steps.index(validation_steps[0]))
+        for step in (*dependency_steps, *validation_steps):
+            self.assertNotIn("if", step)
+            self.assertNotIn("continue-on-error", step)
 
         requirements = (ROOT / "build/scripts/ci/requirements.txt").read_text(encoding="utf-8")
-        self.assertRegex(requirements, r"(?mi)^pillow==\d+(?:\.\d+)+\s*$")
+        self.assertRegex(requirements, r"(?mi)^Pillow==\d+\.\d+\.\d+\s*$")
+
+    def test_workflow_lane_executes_script_tests(self) -> None:
+        ci_script = (ROOT / "scripts/ci.sh").read_text(encoding="utf-8")
+        workflow_lane = ci_script.split("verify_workflows()", 1)[1].split("\n}", 1)[0]
+
+        self.assertIn("build/scripts/ci/run-script-tests.py", workflow_lane)
 
 
 if __name__ == "__main__":
