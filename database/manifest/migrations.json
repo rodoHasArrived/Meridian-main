@@ -343,6 +343,24 @@
       "sha256": "63e3cfa29070bcd9de6471cc57d558eb2b092df7bde00092bfbf65ec3a0541cf"
     },
     {
+      "filename": "039_security_master_event_payload_version.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 39,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/039_security_master_event_payload_version.sql",
+      "schema": "security_master",
+      "sha256": "30857c526b708a0fdff74b3ee8f82c27c91945f3eecc224caf8351d924495602"
+    },
+    {
+      "filename": "040_security_master_governance_events.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 40,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/040_security_master_governance_events.sql",
+      "schema": "security_master",
+      "sha256": "f6c8be6775d87290020b63ddeb83252a16ce19074cf48375f9d11f708072faad"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -485,6 +503,15 @@
       "path": "src/Meridian.Storage/AssetOperations/Migrations/004_asset_accounting_event_spine.sql",
       "schema": "asset_operations",
       "sha256": "05f7cded5340a0ab36a092260853e2d457ee743833a15e103ab8304a62c1c52b"
+    },
+    {
+      "filename": "005_asset_operations_write_events.sql",
+      "immutable": true,
+      "migration_set_id": "asset-operations",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/AssetOperations/Migrations/005_asset_operations_write_events.sql",
+      "schema": "asset_operations",
+      "sha256": "09760a5ee98d9104d2ef1d13efb2bf68e3e3fc61630a7f70a956818c8fc29548"
     },
     {
       "filename": "V_ledger_001__journal_entries.sql",
@@ -1136,7 +1163,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "c536bb20227cf2dedfc7e4bbd9ee938e8e9fd05ad49bfb663c4bee73b208be92",
+  "fingerprint": "5983c2e8601ee6ea23e11e5afa099b4a9c47b28f22f27087e77ccec0f470fc49",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1374,7 +1401,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 126,
+    "files": 129,
     "migration_sets": 10,
     "waivers": 17,
     "warnings": 0

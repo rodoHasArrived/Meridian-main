@@ -84,6 +84,11 @@ carrier definitions; withdrawal requires the source-aware reconciliation writer 
 Equity replay without retained flat terms refuses economic-only reconstruction: the old economic
 family cannot distinguish common, preferred and convertible preferred shares reliably.
 
+Security Master replay reads each stored event through `SecurityMasterMapping.FromEventEnvelope`,
+which refuses payload types or versions newer than this build understands. Amend and deactivate
+carry the stored economic terms that a flat rebuild cannot express (`retainedEconomicTerms`), so a
+newer-to-older terms conversion keeps the data rather than silently dropping it.
+
 Security Master event replay that lacks retained flat terms flattens the economic-terms document onto
 the record's asset class, so carried values land at that class's declared keys. The Postgres
 composition registers `SecurityMasterProjectionChangeListener` (disable with
@@ -980,6 +985,22 @@ bulk imports go through the authenticated workstation/API import instead. Provid
 ingests (`--provider polygon`, `--provider edgar`, `--provider corporate-actions`) dispatch before
 this guard and keep their existing provider attribution. Verify this lane with
 `SecurityMasterCommandsEdgarTests`.
+
+Security Master canonical writes run under `ISecurityMasterCanonicalWriteScope`. With the
+PostgreSQL scope registered, create, amend and deactivate append the event, upsert the projection
+and record canonical field attribution in one transaction; a failed attribution rolls back the
+event and projection. Workbench restorations mark `RestoresPriorDecision`, the only override
+decision exempt from independent review. `FaceValueLotExtensions.ToLedgerTaxLot` emits `FaceValue`
+lots with multiplier 100. Writes reject non-canonical values for typed term conventions
+(day count, settlement method, option right).
+
+`SecurityMasterCashFlowService` projects floating legs from an `ISecurityForwardCurveProvider` when
+one is registered (the default is the in-process `InMemorySecurityForwardCurveProvider`): each
+future reset reads the index curve at its accrual start, the period already reset keeps the
+retained fixing, and each leg schedule records its `RateSource`. Without a curve, legs stay flat
+forward. `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
+block (preferred terms, call schedules, swap legs) through the normal amend path and records
+`TermBlockAmended`.
 
 ## API contract notes
 

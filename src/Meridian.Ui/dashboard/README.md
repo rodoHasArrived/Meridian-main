@@ -1505,6 +1505,14 @@ for older JSON. The browser submits posting intent and assertions only; server s
 authority, and the same shared contracts remain available to WPF without browser-owned accounting
 logic or a new route.
 
+`ui-api-routes.generated.ts` includes `SecurityMasterAssetClasses` and
+`SecurityMasterAssetClassDefinition`. `SecurityIdentifierKind` includes `LoanX` and `Clip`.
+
+The passport editor builds its term picker from `GET /api/security-master/asset-classes/{assetClass}`
+(`security-master-schema.api.ts`): scalar-editable terms grouped as the registry declares them,
+a value control per editor kind, and a client pre-check
+(`security-passport-schema-fields.view-model.ts`). The free-text field path stays as a fallback.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in

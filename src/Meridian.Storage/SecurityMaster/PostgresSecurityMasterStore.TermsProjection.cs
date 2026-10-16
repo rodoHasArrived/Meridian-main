@@ -109,7 +109,9 @@ public sealed partial class PostgresSecurityMasterStore
 
         foreach (var column in descriptor.Columns)
         {
-            var value = ReadTermValue(terms, profileFields, column.TermKey, column.Type, column.Normalization);
+            var value = column.Compute is { } compute
+                ? compute(record)
+                : ReadTermValue(terms, profileFields, column.TermKey, column.Type, column.Normalization);
 
             // A gate is satisfied only by a present, non-blank value. Under the default
             // normalization a blank string already decodes as absent; under Verbatim or Trim it
