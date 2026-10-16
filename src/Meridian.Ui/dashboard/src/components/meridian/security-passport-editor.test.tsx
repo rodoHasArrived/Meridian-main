@@ -39,6 +39,62 @@ function renderEditor(service: Partial<SecurityPassportWorkbenchService>) {
 }
 
 describe("SecurityPassportEditor", () => {
+  it("builds the term picker from the asset-class schema with a typed value control", async () => {
+    const user = userEvent.setup();
+    const updateField = vi.fn().mockResolvedValue(editResult());
+    const getAssetClassDefinition = vi.fn().mockResolvedValue({
+      assetClass: "Equity",
+      termsVersion: 1,
+      lotUnit: "Shares",
+      cashFlowBehavior: "Dividends",
+      fields: [
+        {
+          key: "classification",
+          fieldPath: "assetSpecificTerms.classification",
+          label: "Classification",
+          type: "String",
+          editor: "Choice",
+          group: "Terms",
+          order: 0,
+          required: false,
+          scalarEditable: true,
+          choices: ["Common", "Preferred"],
+          aliases: []
+        },
+        {
+          key: "preferredTerms",
+          fieldPath: "assetSpecificTerms.preferredTerms",
+          label: "Preferred terms",
+          type: "Object",
+          editor: "Json",
+          group: "Schedules and structure",
+          order: 1,
+          required: false,
+          scalarEditable: false,
+          choices: [],
+          aliases: []
+        }
+      ]
+    });
+    renderEditor({ updateField, getAssetClassDefinition });
+
+    const termPicker = await screen.findByRole("combobox", { name: "Asset-class term" });
+    expect(getAssetClassDefinition).toHaveBeenCalledWith("Equity", expect.anything());
+    expect(screen.queryByRole("option", { name: "Preferred terms" })).toBeNull();
+
+    await user.selectOptions(termPicker, "assetSpecificTerms.classification");
+    expect(screen.getByPlaceholderText("EconomicDefinition.Coupon")).toHaveValue("assetSpecificTerms.classification");
+    await user.selectOptions(screen.getByRole("combobox", { name: "New value" }), "Preferred");
+    await user.type(screen.getByPlaceholderText("Vendor confirmation #…"), "Prospectus supplement");
+    await user.click(screen.getByRole("button", { name: /save draft/i }));
+
+    await waitFor(() => expect(updateField).toHaveBeenCalledTimes(1));
+    expect(updateField.mock.calls[0][1]).toMatchObject({
+      fieldPath: "assetSpecificTerms.classification",
+      newValue: "Preferred"
+    });
+  });
+
   it("saves a draft through the workbench client with the loaded version and advances lifecycle state", async () => {
     const user = userEvent.setup();
     const updateField = vi.fn().mockResolvedValue(editResult());
