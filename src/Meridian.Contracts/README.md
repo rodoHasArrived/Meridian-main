@@ -1752,6 +1752,22 @@ vocabularies. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger a
 one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `SecurityIdentifierKind` adds
 `LoanX` (`LX` plus six digits) and `Clip` (nine alphanumerics).
 
+### Security Master income, curves, factors and corporate-action terms
+
+`SecurityIncomeCashFlowProjector` builds the declared income schedule (dividends, special
+dividends, fund distributions with a typed `distributionComponent`, returns of capital) from
+effective corporate actions and lists unschedulable distributions as gaps.
+`SecurityForwardCurve` and `ISecurityForwardCurveProvider` supply per-index forward fixings for
+floating legs. `SecurityFactorHistoryProjector` merges the declared factor schedule, paydown
+factors and the dated scalar factor into one dated history with same-day conflicts.
+`CorporateActionTerms.From` reads a `CorporateActionDto` into its event family's typed terms
+(cash distribution, split, exchange, redemption, principal paydown and others); a coverage test
+holds every catalog event type to a family. `SecurityTermBlocks` lists each class's nested blocks
+from the registry. `SecurityAssetTermRole` marks operational fields (pricing sources) apart from
+economics. `SecurityAssetTermFormModel` holds the schema-driven editor rules. The unused
+`BondAccountingElectionsDto` and `BondYieldAdjustmentMethod` are retired; accounting elections live
+on the lot.
+
 ## Validation
 
 ```bash

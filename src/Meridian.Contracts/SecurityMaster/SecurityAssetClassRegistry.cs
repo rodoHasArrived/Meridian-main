@@ -167,7 +167,8 @@ public sealed record SecurityAssetTermFieldDefinitionDto(
     bool Required,
     bool ScalarEditable,
     IReadOnlyList<string> Choices,
-    IReadOnlyList<string> Aliases);
+    IReadOnlyList<string> Aliases,
+    SecurityAssetTermRole Role = SecurityAssetTermRole.Economic);
 
 /// <summary>Wire form of <see cref="SecurityAssetClassDefinition"/>.</summary>
 public sealed record SecurityAssetClassDefinitionDto(
@@ -285,7 +286,8 @@ public static class SecurityAssetClassRegistry
                         field.Required,
                         hint.ScalarEditable,
                         hint.Choices,
-                        field.Aliases);
+                        field.Aliases,
+                        field.Role);
                 })
                 .ToArray());
     }
@@ -326,6 +328,11 @@ public static class SecurityAssetClassRegistry
 
     private static string GroupFor(SecurityAssetTermField field)
     {
+        if (field.Role == SecurityAssetTermRole.Operational)
+        {
+            return "Operations";
+        }
+
         if (field.Type is SecurityAssetTermFieldType.Array or SecurityAssetTermFieldType.Object)
         {
             return "Schedules and structure";

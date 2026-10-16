@@ -69,6 +69,17 @@ public sealed record SecurityAssetTermVocabularyEscape(
 /// Re-serializing is always destructive.</item>
 /// </list>
 /// </remarks>
+/// <summary>What a term field describes.</summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<SecurityAssetTermRole>))]
+public enum SecurityAssetTermRole
+{
+    /// <summary>The instrument's contractual economics.</summary>
+    Economic,
+
+    /// <summary>An operational or vendor reference (pricing source, data feed) carried with the terms.</summary>
+    Operational
+}
+
 public sealed record SecurityAssetTermField(
     string Key,
     SecurityAssetTermFieldType Type,
@@ -155,6 +166,17 @@ public sealed record SecurityAssetTermField(
     /// <summary>Declares the typed convention this string field carries.</summary>
     public SecurityAssetTermField WithConvention(SecurityTermConventionKind convention)
         => this with { Convention = convention };
+
+    /// <summary>
+    /// Whether the field is part of the instrument's economics or an operational reference (a pricing
+    /// source, a vendor feed). Operational fields are kept beside the economics for compatibility but
+    /// never feed cash-flow, accounting or economic-definition math.
+    /// </summary>
+    public SecurityAssetTermRole Role { get; init; } = SecurityAssetTermRole.Economic;
+
+    /// <summary>Declares the field an operational reference rather than an economic term.</summary>
+    public SecurityAssetTermField AsOperational()
+        => this with { Role = SecurityAssetTermRole.Operational };
 
     /// <summary>
     /// True when <paramref name="value"/> satisfies this field's convention (or it declares none).
@@ -389,7 +411,7 @@ public static class SecurityAssetTermsSchema
                 Opt("spreadBps", SecurityAssetTermFieldType.Decimal),
                 Opt("currentCouponRate", SecurityAssetTermFieldType.Decimal),
                 Opt("resetFrequency", SecurityAssetTermFieldType.String),
-                Opt("pricingSource", SecurityAssetTermFieldType.String),
+                Opt("pricingSource", SecurityAssetTermFieldType.String).AsOperational(),
                 Req("covenants", SecurityAssetTermFieldType.Array),
                 Req("principalSchedule", SecurityAssetTermFieldType.Array)
             ],
@@ -486,7 +508,7 @@ public static class SecurityAssetTermsSchema
                 Opt("navCurrency", SecurityAssetTermFieldType.String),
                 Opt("distributionPolicy", SecurityAssetTermFieldType.String),
                 Opt("isStableNav", SecurityAssetTermFieldType.Boolean),
-                Opt("pricingSource", SecurityAssetTermFieldType.String)
+                Opt("pricingSource", SecurityAssetTermFieldType.String).AsOperational()
             ]
         };
 

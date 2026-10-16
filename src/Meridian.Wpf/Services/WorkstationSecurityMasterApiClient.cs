@@ -46,6 +46,14 @@ public interface IWorkstationSecurityMasterApiClient
 
     Task<ApiResponse<SecurityMasterPublishResultDto>> PublishRevisionAsync(
         Guid securityId, PublishSecurityMasterRevisionRequest request, CancellationToken ct = default);
+
+    // ── Asset-class registry (schema-driven term editors) ─────────────────────
+    /// <summary>
+    /// The asset-class registry definition the passport editor builds its term picker from. Null
+    /// when unavailable; the editor then keeps the free-text field path.
+    /// </summary>
+    Task<SecurityAssetClassDefinitionDto?> GetAssetClassDefinitionAsync(string assetClass, CancellationToken ct = default)
+        => Task.FromResult<SecurityAssetClassDefinitionDto?>(null);
 }
 
 public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMasterApiClient
@@ -127,6 +135,19 @@ public sealed class WorkstationSecurityMasterApiClient : IWorkstationSecurityMas
         Guid securityId, PublishSecurityMasterRevisionRequest request, CancellationToken ct = default)
         => _apiClient.PostWithResponseAsync<SecurityMasterPublishResultDto>(
             SecurityIdRoute(UiApiRoutes.SecurityMasterWorkbenchPublish, securityId), request, ct);
+
+    public async Task<SecurityAssetClassDefinitionDto?> GetAssetClassDefinitionAsync(string assetClass, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(assetClass))
+        {
+            return null;
+        }
+
+        var endpoint = UiApiRoutes.SecurityMasterAssetClassDefinition.Replace(
+            "{assetClass}", Uri.EscapeDataString(assetClass.Trim()), StringComparison.Ordinal);
+        return (await _apiClient.GetWithResponseAsync<SecurityAssetClassDefinitionDto>(endpoint, ct).ConfigureAwait(false))
+            .DataOrLoggedNull("Get asset-class definition");
+    }
 
     private static string SecurityIdRoute(string routeTemplate, Guid securityId)
         => routeTemplate.Replace("{securityId:guid}", securityId.ToString("D"), StringComparison.Ordinal);

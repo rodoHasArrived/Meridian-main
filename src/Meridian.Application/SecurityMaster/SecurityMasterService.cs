@@ -271,6 +271,29 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         return await AmendTermsInternalAsync(amendRequest, eventType: "ConvertibleTermsAmended", ct).ConfigureAwait(false);
     }
 
+    public async Task<SecurityDetailDto> AmendTermBlockAsync(Guid securityId, string blockKey, AmendSecurityTermBlockRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
+
+        var amendRequest = new AmendSecurityTermsRequest(
+            SecurityId: securityId,
+            ExpectedVersion: request.ExpectedVersion,
+            CommonTerms: null,
+            AssetSpecificTermsPatch: SecurityTermBlocks.BuildPatch(
+                currentProjection.AssetClass, currentProjection.AssetSpecificTerms, blockKey, request.Block),
+            IdentifiersToAdd: Array.Empty<SecurityIdentifierDto>(),
+            IdentifiersToExpire: Array.Empty<SecurityIdentifierDto>(),
+            EffectiveFrom: request.EffectiveFrom,
+            SourceSystem: request.SourceSystem,
+            UpdatedBy: request.UpdatedBy,
+            SourceRecordId: request.SourceRecordId,
+            Reason: request.Reason);
+
+        return await AmendTermsInternalAsync(amendRequest, eventType: SecurityTermBlocks.AmendedEventType, ct).ConfigureAwait(false);
+    }
+
     public async Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
     {
         var aliasProjection = await _store.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);

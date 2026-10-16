@@ -109,6 +109,9 @@ shared services can serialize those payloads without reflection-based fallback.
 `SecurityMasterJsonContext` registers the asset-class registry DTOs that the Security Master
 asset-class endpoints serialize.
 
+`SecurityMasterJsonContext` also registers the income schedule, factor history and term-block
+request contracts.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

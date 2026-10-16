@@ -427,6 +427,67 @@ public static partial class SecurityMasterEndpoints
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         /// <summary>
+        /// Replaces one nested term block (an object or array term the asset class declares, such as
+        /// preferred terms, a call schedule or swap legs) and carries every other term unchanged.
+        /// </summary>
+        /// <remarks>
+        /// <para>The declared blocks are the Object and Array fields of the asset-class registry
+        /// (<c>/api/security-master/asset-classes/{assetClass}</c>). Returns 400 for an undeclared block
+        /// or a JSON kind that does not match, and 404 for an unknown security.</para>
+        /// </remarks>
+        group.MapPut(UiApiRoutes.SecurityMasterTermBlock, async (
+            Guid securityId,
+            string blockKey,
+            AmendSecurityTermBlockRequest request,
+            HttpContext context,
+            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterService service,
+            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
+            CancellationToken ct) =>
+        {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+
+            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+                return governedRefusal;
+
+            var current = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (current is null)
+            {
+                return Results.NotFound();
+            }
+
+            if (!SecurityTermBlocks.For(current.AssetClass).Any(field => string.Equals(field.Key, blockKey, StringComparison.Ordinal)))
+            {
+                return Results.Problem(
+                    $"Asset class '{current.AssetClass}' declares no term block '{blockKey}'.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var detail = await service
+                    .AmendTermBlockAsync(securityId, blockKey, request with { UpdatedBy = ResolveActor(context) }, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(detail, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("AmendSecurityMasterTermBlock").RequirePermission(UserPermission.ModifySecurityMaster)
+        .Accepts<AmendSecurityTermBlockRequest>("application/json")
+        .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>
         /// Marks a security as inactive (soft delete). The security record remains in the database for audit purposes.
         /// </summary>
         /// <remarks>
@@ -661,6 +722,70 @@ public static partial class SecurityMasterEndpoints
         })
         .WithName("GetSecurityMasterCorporateActions").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<CorporateActionDto>>(StatusCodes.Status200OK);
+
+        /// <summary>
+        /// Returns the declared income schedule (dividends, special dividends, fund distributions,
+        /// returns of capital) built from the security's effective corporate actions.
+        /// </summary>
+        /// <remarks>
+        /// <para>Amounts are per unit held. Distributions without a pay date, amount, currency or a
+        /// recognised <c>distributionComponent</c> are reported under <c>gaps</c>.</para>
+        /// <para><c>from</c>/<c>to</c> bound the payment date inclusively. Returns 404 for an unknown security.</para>
+        /// </remarks>
+        group.MapGet(UiApiRoutes.SecurityMasterIncomeCashFlows, async (
+            Guid securityId,
+            [FromQuery] DateOnly? from,
+            [FromQuery] DateOnly? to,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
+        {
+            var security = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (security is null)
+            {
+                return Results.NotFound();
+            }
+
+            var actions = await queryService.GetCorporateActionsAsync(securityId, ct).ConfigureAwait(false);
+            var schedule = SecurityIncomeCashFlowProjector.Build(
+                securityId, security.AssetClass, actions, DateTimeOffset.UtcNow, from, to);
+            return Results.Json(schedule, jsonOptions);
+        })
+        .WithName("GetSecurityMasterIncomeCashFlows").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<SecurityIncomeCashFlowScheduleDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
+        /// Returns the dated factor history: the declared factor schedule, factors observed on
+        /// effective principal paydowns, and the dated scalar factor, with same-day disagreements.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterFactorHistory, async (
+            Guid securityId,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
+        {
+            var security = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (security is null)
+            {
+                return Results.NotFound();
+            }
+
+            var actions = await queryService.GetCorporateActionsAsync(securityId, ct).ConfigureAwait(false);
+            var termSources = security.AssetSpecificTerms.ValueKind == System.Text.Json.JsonValueKind.Object
+                && SecurityTermReader.TryGetProperty(security.AssetSpecificTerms, "profileFields", out var profileFields)
+                && profileFields.ValueKind == System.Text.Json.JsonValueKind.Object
+                    ? new[] { profileFields, security.AssetSpecificTerms }
+                    : new[] { security.AssetSpecificTerms };
+            var history = SecurityFactorHistoryProjector.Build(
+                securityId,
+                StructuredCashFlowTermsResolver.Resolve(security),
+                SecurityTermReader.ReadDate(termSources, "factorDate", "currentFactorDate"),
+                actions,
+                DateTimeOffset.UtcNow);
+            return Results.Json(history, jsonOptions);
+        })
+        .WithName("GetSecurityMasterFactorHistory").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<SecurityFactorHistoryDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
 
         /// <summary>
         /// Records a new corporate action event for a security (dividend, split, merger, etc.).

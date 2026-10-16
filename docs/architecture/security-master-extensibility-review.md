@@ -5784,3 +5784,17 @@ reads it per security.
 | --- | --- |
 | Put/call, settlement type and day count are free text | `SecurityTermConventions` types `SecurityOptionRight`, `SecuritySettlementMethod` and the day-count vocabulary. Term fields declare their convention (`SecurityAssetTermField.Convention`); the five `dayCount` fields and the Option and Future `settlementType` fields are marked. Writes reject non-canonical values (`SecurityMasterMapping` write mode and the field-edit validator), and the registry exposes them as a `Convention` editor with canonical choices. |
 | No LoanX or CLIP identifiers | `SecurityIdentifierKind.LoanX` (`LX` plus six digits) and `Clip` (nine alphanumerics) exist in C#, the F# identifier union, interop, normalization and validation, the WPF labels and the workstation type union. Direct loans prefer LoanX after the internal code; structured credit lists CLIP. |
+
+### Follow-ons — cash flows, curves, factors, corporate actions, legacy fields and forms
+
+| Finding | What landed |
+| --- | --- |
+| Dividends and fund distributions produce no cash flows | `SecurityIncomeCashFlowProjector` schedules declared income per unit from effective (amendment-folded, non-cancelled) corporate actions: dividends, special dividends, returns of capital, and fund distributions (fund classes accept `Dividend` events with a typed `distributionComponent`). Distributions without a pay date, amount, currency or a known component are reported as gaps. `GET /api/security-master/{id}/income-cash-flows`. |
+| Floating legs have no forward curve | `ISecurityForwardCurveProvider` supplies a per-index `SecurityForwardCurve`; each future reset reads the curve at its accrual start, the period already reset keeps the retained fixing, and a curve lets a leg without a fixing project instead of blocking. Leg schedules record their `RateSource`; hosts without a curve keep flat forward. |
+| No dated factor history | `SecurityFactorHistoryProjector` merges the declared schedule, post-paydown factors from principal paydowns and the dated scalar factor, preferring observed paydowns and listing same-day conflicts. `GET /api/security-master/{id}/factor-history`. |
+| Corporate actions carry ~13 nullable per-event fields | `CorporateActionTerms.From` reads each action into its family's typed terms; consumers switch on the case instead of probing other events' columns. A coverage test holds every catalog event type to a typed family or the declared payload-only list. |
+| Preferred equity has a one-off amendment record | `PUT /api/security-master/{id}/terms/{blockKey}` (`AmendTermBlockAsync`) replaces any nested block the registry declares for any class; preferred and convertible routes remain as typed conveniences over the same path. |
+| Vendor (Clearwater) fields sit inside loan terms; legacy accounting fields | `pricingSource` on DirectLoan and InvestmentFund is declared an Operational term (`SecurityAssetTermRole`), grouped under Operations; vendor naming leaves the economics. The never-populated `AccountingElections` and `Pci` term modules, `BondAccountingElectionsDto` and `BondYieldAdjustmentMethod` are retired; those elections live on the lot. |
+| UI edit forms are not built from the schema | The browser and WPF passport editors build their term picker and value controls from `/api/security-master/asset-classes/{assetClass}`. |
+
+**Not done here.** A TRUNCATE guard on `security_governance_events` needs a `migration-truncate` waiver and human schema review.

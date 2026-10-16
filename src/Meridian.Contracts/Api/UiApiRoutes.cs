@@ -374,7 +374,10 @@ public static class UiApiRoutes
     public const string SecurityMasterTradingParameters = "/api/security-master/{securityId:guid}/trading-parameters";
     public const string SecurityMasterPreferredEquityTerms = "/api/security-master/{securityId:guid}/preferred-equity-terms";
     public const string SecurityMasterConvertibleEquityTerms = "/api/security-master/{securityId:guid}/convertible-equity-terms";
+    public const string SecurityMasterTermBlock = "/api/security-master/{securityId:guid}/terms/{blockKey}";
     public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
+    public const string SecurityMasterIncomeCashFlows = "/api/security-master/{securityId:guid}/income-cash-flows";
+    public const string SecurityMasterFactorHistory = "/api/security-master/{securityId:guid}/factor-history";
     public const string SecurityMasterCorporateActionsIngest = "/api/security-master/corporate-actions/ingest";
     public const string SecurityMasterCorporateActionsInbox = "/api/security-master/corporate-actions/inbox";
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";

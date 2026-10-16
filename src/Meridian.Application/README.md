@@ -994,6 +994,14 @@ decision exempt from independent review. `FaceValueLotExtensions.ToLedgerTaxLot`
 lots with multiplier 100. Writes reject non-canonical values for typed term conventions
 (day count, settlement method, option right).
 
+`SecurityMasterCashFlowService` projects floating legs from an `ISecurityForwardCurveProvider` when
+one is registered (the default is the in-process `InMemorySecurityForwardCurveProvider`): each
+future reset reads the index curve at its accrual start, the period already reset keeps the
+retained fixing, and each leg schedule records its `RateSource`. Without a curve, legs stay flat
+forward. `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
+block (preferred terms, call schedules, swap legs) through the normal amend path and records
+`TermBlockAmended`.
+
 ## API contract notes
 
 - Instruments-owned options-chain provider IDs are normalized with trim plus invariant lowercase

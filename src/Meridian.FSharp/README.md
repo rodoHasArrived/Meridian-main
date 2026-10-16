@@ -45,6 +45,9 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   except `CustomAsset`, whose profile owns its own document shape.
 - `IdentifierKind` includes `LoanX` and `Clip` for syndicated-loan identifiers; interop maps
   them to the matching C# `SecurityIdentifierKind` values.
+- `SecurityTermModules` no longer carries `AccountingElections` or `Pci`. Amortization method,
+  yield updates, cash-flow source and PCI designation are lot- and account-level accounting
+  choices and live on the lot, not in security economics.
 - C# callers should enter through C#-friendly interop wrappers and should not depend on internal F# domain types.
 - Security Master identifier interop retains optional provider/source metadata for standard
   identifiers. For `ProviderSymbol`, the provider namespace carried by the identifier kind remains

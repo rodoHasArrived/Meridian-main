@@ -412,6 +412,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterPricingService, SecurityMasterPricingService>();
             services.AddSingleton<IStructuredCashFlowLedgerBridge, StructuredCashFlowLedgerBridge>();
             services.AddSingleton<ISecurityMasterAmortizationLedgerBridge, SecurityMasterAmortizationLedgerBridge>();
+            services.TryAddSingleton<InMemorySecurityForwardCurveProvider>();
+            services.TryAddSingleton<ISecurityForwardCurveProvider>(static sp => sp.GetRequiredService<InMemorySecurityForwardCurveProvider>());
             services.AddSingleton<ISecurityMasterCashFlowService, SecurityMasterCashFlowService>();
             services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
             services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();
