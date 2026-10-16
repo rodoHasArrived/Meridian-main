@@ -34,9 +34,22 @@ event = {'kind': 'docker', 'args': args, 'time': time.monotonic()}
 with (backend / 'events.jsonl').open('a', encoding='utf-8') as stream:
     stream.write(json.dumps(event) + '\n')
 
+def write_resource(path, item):
+    temporary = path.with_name(path.name + '.' + uuid.uuid4().hex + '.tmp')
+    try:
+        temporary.write_text(json.dumps(item))
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
 def find_resource(identity):
     for path in backend.glob('resource-*.json'):
-        item = json.loads(path.read_text())
+        try:
+            content = path.read_text()
+        except FileNotFoundError:
+            # Another run can remove its own container after this directory listing.
+            continue
+        item = json.loads(content)
         if identity in (item['Id'], item['Name']):
             return path, item
     print('No such container', file=sys.stderr)
@@ -81,12 +94,12 @@ elif command in ('create', 'run'):
         }]}},
         'State': {'Running': command == 'run'},
     }
-    (backend / ('resource-' + identifier + '.json')).write_text(json.dumps(item))
+    write_resource(backend / ('resource-' + identifier + '.json'), item)
     print(identifier)
 elif command == 'start':
     path, item = find_resource(args[-1])
     item['State']['Running'] = True
-    path.write_text(json.dumps(item))
+    write_resource(path, item)
     print(item['Id'])
 elif command == 'inspect':
     path, item = find_resource(args[-1])
@@ -108,7 +121,7 @@ elif command == 'rm':
 elif command == 'stop':
     path, item = find_resource(args[-1])
     item['State']['Running'] = False
-    path.write_text(json.dumps(item))
+    write_resource(path, item)
 else:
     raise SystemExit('Unhandled fake Docker command: ' + command)
 """
