@@ -40,21 +40,56 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
+                <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,0,8"
+                            Visibility="{Binding HasSchemaFields, Converter={StaticResource BooleanToVisibility}}">
+                    <TextBlock Text="Asset-class term" Opacity="0.8" />
+                    <ComboBox ItemsSource="{Binding SchemaFields}"
+                              SelectedItem="{Binding SelectedSchemaField}"
+                              AutomationProperties.Name="Asset-class term">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <Run Text="{Binding Group, Mode=OneWay}" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <Run Text=" · " Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <Run Text="{Binding Label, Mode=OneWay}" />
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,8">
                     <TextBlock Text="Field path" Opacity="0.8" />
                     <TextBox Text="{Binding FieldPath, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
-                <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,0,8">
+                <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,0,0,8">
                     <TextBlock Text="New value" Opacity="0.8" />
-                    <TextBox Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged}" />
+                    <ComboBox IsEditable="True"
+                              ItemsSource="{Binding SchemaValueChoices}"
+                              Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged}"
+                              AutomationProperties.Name="New value choices"
+                              Visibility="{Binding HasSchemaValueChoices, Converter={StaticResource BooleanToVisibility}}" />
+                    <TextBox Text="{Binding NewValue, UpdateSourceTrigger=PropertyChanged}"
+                             AutomationProperties.Name="New value">
+                        <TextBox.Style>
+                            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasSchemaValueChoices}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBox.Style>
+                    </TextBox>
+                    <TextBlock Text="{Binding SchemaValueError}" Foreground="{StaticResource ErrorColorBrush}" TextWrapping="Wrap" />
                 </StackPanel>
-                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,0">
+                <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,8,0">
                     <TextBlock Text="Effective from" Opacity="0.8" />
                     <DatePicker SelectedDate="{Binding EffectiveFrom}" />
                 </StackPanel>
-                <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,0,0,0">
+                <StackPanel Grid.Row="2" Grid.Column="1" Margin="8,0,0,0">
                     <TextBlock Text="Justification (required)" Opacity="0.8" />
                     <TextBox Text="{Binding Justification, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>

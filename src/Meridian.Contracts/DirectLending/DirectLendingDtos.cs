@@ -292,13 +292,31 @@ public sealed record LoanPortfolioSummaryDto(
     int DefaultedLoans,
     int NonPerformingLoans,
     int WorkoutLoans,
-    decimal TotalCommitment,
-    decimal TotalPrincipalOutstanding,
-    decimal TotalInterestAccruedUnpaid,
-    decimal TotalPenaltyAccruedUnpaid,
-    decimal TotalAvailableToDraw,
-    decimal TotalCollateralValue,
-    IReadOnlyList<LoanSummaryDto> Loans);
+    decimal? TotalCommitment,
+    decimal? TotalPrincipalOutstanding,
+    decimal? TotalInterestAccruedUnpaid,
+    decimal? TotalPenaltyAccruedUnpaid,
+    decimal? TotalAvailableToDraw,
+    decimal? TotalCollateralValue,
+    IReadOnlyList<LoanSummaryDto> Loans,
+    IReadOnlyList<LoanPortfolioCurrencyTotalsDto>? CurrencyTotals = null,
+    CurrencyCode? TotalCurrency = null);
+
+/// <summary>
+/// Unconverted totals in the retained loan or collateral currency. Portfolio scalar totals
+/// are null when more than one currency occurs; no reporting currency or FX rate is implied.
+/// Collateral is grouped by its own appraisal currency, independently of facility currency.
+/// Other or unsupported currencies retain an unavailable bucket with null amounts, since
+/// their common denomination cannot be proved.
+/// </summary>
+public sealed record LoanPortfolioCurrencyTotalsDto(
+    CurrencyCode Currency,
+    decimal? TotalCommitment,
+    decimal? TotalPrincipalOutstanding,
+    decimal? TotalInterestAccruedUnpaid,
+    decimal? TotalPenaltyAccruedUnpaid,
+    decimal? TotalAvailableToDraw,
+    decimal? TotalCollateralValue);
 
 public sealed record DirectLendingOperationsReadModelDto(
     DateTimeOffset AsOf,

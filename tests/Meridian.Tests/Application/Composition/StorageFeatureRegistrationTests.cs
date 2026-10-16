@@ -25,7 +25,9 @@ using Meridian.Storage.Interfaces;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Storage.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
@@ -115,6 +117,84 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
             sd.ImplementationType == typeof(TenantPostureHostedService<DirectLendingOutboxDispatcher>));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(TenantPostureHostedService<DailyAccrualWorker>));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Register_ResolvesCanonicalSeederAndLookupAsTheSameSingleton(bool enableSymbolManagement)
+    {
+        ConfigureInMemoryGovernanceFixture();
+        ClearPostgresBackedStorageEnvironment();
+        Environment.SetEnvironmentVariable(SecurityMasterStartup.ConnectionStringVariable,
+            "Host=unused;Database=unused;Username=test;Password=test");
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(NSubstitute.Substitute.For<Meridian.Contracts.Catalog.ICanonicalSymbolRegistry>());
+        new StorageFeatureRegistration().Register(services,
+            enableSymbolManagement ? CompositionOptions.WebDashboard : CompositionOptions.Minimal);
+        using var provider = services.BuildServiceProvider();
+
+        var seed = provider.GetRequiredService<SecurityMasterCanonicalSymbolSeedService>();
+        provider.GetRequiredService<Meridian.DataIntegration.Canonicalization.ICanonicalSecurityIdLookup>()
+            .Should().BeSameAs(seed);
+        provider.GetRequiredService<SecurityMasterProjectionChangeHandler>().Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task MinimalComposition_ResolvesAndStartsProjectionHostedServiceWithoutCanonicalRegistry()
+    {
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["DOTNET_ENVIRONMENT"] = "Test",
+            ["MERIDIAN_USE_INMEMORY_GOVERNANCE"] = "true",
+            [SecurityMasterStartup.ConnectionStringVariable] = "Host=unused;Database=unused;Username=test;Password=test",
+            ["MERIDIAN_SECURITY_MASTER_PRELOAD_CACHE"] = "false",
+            ["MERIDIAN_SECURITY_MASTER_PROJECTION_NOTIFICATIONS"] = "false"
+        }).Build();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddMarketDataServices(CompositionOptions.Minimal with { Configuration = configuration });
+        services.Should().NotContain(descriptor => descriptor.ServiceType == typeof(Meridian.Contracts.Catalog.ICanonicalSymbolRegistry));
+        services.Should().NotContain(descriptor => descriptor.ServiceType == typeof(SecurityMasterCanonicalSymbolSeedService));
+        services.Should().NotContain(descriptor => descriptor.ServiceType == typeof(Meridian.DataIntegration.Canonicalization.ICanonicalSecurityIdLookup));
+
+        // Exercise the exact hosted registration without starting unrelated storage workers.
+        var warmupRegistration = services.Single(descriptor => descriptor.ServiceType == typeof(IHostedService)
+            && descriptor.ImplementationType == typeof(SecurityMasterProjectionWarmupService));
+        services.RemoveAll<IHostedService>();
+        services.Add(warmupRegistration);
+        await using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<ISecurityMasterService>().Should().BeOfType<SecurityMasterService>();
+        provider.GetRequiredService<SecurityMasterProjectionChangeHandler>().Should().NotBeNull();
+        var warmup = provider.GetServices<IHostedService>().Should().ContainSingle().Which;
+
+        await warmup.StartAsync(CancellationToken.None);
+        await warmup.StopAsync(CancellationToken.None);
+    }
+
+    [Fact]
+    public void SymbolManagementComposition_ResolvesSeederRegisteredBeforeCanonicalRegistry()
+    {
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["DOTNET_ENVIRONMENT"] = "Test",
+            ["MERIDIAN_USE_INMEMORY_GOVERNANCE"] = "true",
+            [SecurityMasterStartup.ConnectionStringVariable] = "Host=unused;Database=unused;Username=test;Password=test"
+        }).Build();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddMarketDataServices(CompositionOptions.Minimal with
+        {
+            Configuration = configuration,
+            EnableSymbolManagement = true
+        });
+        using var provider = services.BuildServiceProvider();
+
+        provider.GetRequiredService<Meridian.Contracts.Catalog.ICanonicalSymbolRegistry>().Should().BeOfType<CanonicalSymbolRegistry>();
+        var seed = provider.GetRequiredService<SecurityMasterCanonicalSymbolSeedService>();
+        provider.GetRequiredService<Meridian.DataIntegration.Canonicalization.ICanonicalSecurityIdLookup>()
+            .Should().BeSameAs(seed);
     }
 
     [Fact]

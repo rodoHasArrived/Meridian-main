@@ -10,7 +10,8 @@ public sealed record DailyPortfolioPricingInput
         string periodId,
         DateTimeOffset asOf,
         string baseCurrency,
-        IReadOnlyList<DailyPortfolioPriceMark> marks)
+        IReadOnlyList<DailyPortfolioPriceMark> marks,
+        string? entityId = null)
     {
         ArgumentNullException.ThrowIfNull(policy);
         ArgumentNullException.ThrowIfNull(marks);
@@ -26,6 +27,7 @@ public sealed record DailyPortfolioPricingInput
         AsOf = asOf;
         BaseCurrency = baseCurrency.Trim().ToUpperInvariant();
         Marks = marks;
+        EntityId = string.IsNullOrWhiteSpace(entityId) ? null : entityId.Trim();
     }
 
     public DailyPortfolioPricingPolicy Policy { get; }
@@ -37,4 +39,6 @@ public sealed record DailyPortfolioPricingInput
     public string BaseCurrency { get; }
 
     public IReadOnlyList<DailyPortfolioPriceMark> Marks { get; }
+
+    public string? EntityId { get; }
 }

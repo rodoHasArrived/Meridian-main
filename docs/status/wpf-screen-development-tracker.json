@@ -7,7 +7,7 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "9aa1197db8c6",
+  "sourceFingerprint": "f116fa60aa53",
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 98,
@@ -3269,6 +3269,7 @@
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterDeactivateViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterEditViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/ViewModels/SecurityPassportEditorViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SettingsViewModelAssetProfileTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyRunLedgerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/StrategyRunPortfolioViewModelTests.cs",
@@ -3290,7 +3291,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, +23 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, +24 more."
         }
       ],
       "openTaskCount": 0

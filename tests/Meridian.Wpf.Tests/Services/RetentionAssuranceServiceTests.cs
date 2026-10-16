@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Http;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Services;
 
@@ -9,6 +11,95 @@ namespace Meridian.Wpf.Tests.Services;
 /// </summary>
 public sealed class RetentionAssuranceServiceTests
 {
+    [Fact]
+    public async Task OfflineCleanup_SharedRootRetainsAgedEvidenceAndOnlyDeletesRecognizedMarketData()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-offline-retention-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var evidenceRoot = Path.Combine(root, "workstation", "evidence", "tenant-a");
+            Directory.CreateDirectory(evidenceRoot);
+            var retained = new[]
+            {
+                Path.Combine(evidenceRoot, "trade-approval.pdf"),
+                Path.Combine(evidenceRoot, "manifest.json"),
+                Path.Combine(evidenceRoot, "SPY_Trade_2020-01-01.jsonl"),
+                Path.Combine(root, "unknown.jsonl"),
+                Path.Combine(root, "SPY_trade-review.json"),
+                Path.Combine(root, "quarterly-bar-review.jsonl")
+            };
+            var market = Path.Combine(root, "SPY_Trade_2020-01-01.jsonl.gz");
+            foreach (var path in retained.Append(market))
+            {
+                await File.WriteAllTextAsync(path, "retained financial evidence");
+                File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddYears(-2));
+            }
+            using var api = new ApiClientService(new OfflineClientFactory());
+            var service = new RetentionAssuranceService(api);
+
+            var dryRun = await service.PerformDryRunAsync(new RetentionPolicy(), root);
+
+            dryRun.Errors.Should().BeEmpty();
+            dryRun.FilesToDelete.Should().ContainSingle().Which.Path.Should().Be(market);
+            dryRun.SkippedFiles.Select(file => file.Path).Should().BeEquivalentTo(retained);
+            var report = await service.ExecuteRetentionCleanupAsync(dryRun, verifyChecksums: true);
+            report.Status.Should().Be(CleanupStatus.Success);
+            File.Exists(market).Should().BeFalse();
+            foreach (var path in retained)
+                (await File.ReadAllTextAsync(path)).Should().Be("retained financial evidence");
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("SPY_Trade_2020-01-01.jsonl.gz", "SPY", "Tick")]
+    [InlineData("alpaca/AAPL/HistoricalBar/2020-01-01.jsonl", "AAPL", "Bar")]
+    [InlineData("BboQuote/QQQ/2020-01-01.jsonl", "QQQ", "Quote")]
+    [InlineData("2020/01/01/alpaca/MSFT/Trade.jsonl", "MSFT", "Tick")]
+    [InlineData("AAPL/L2Snapshot/2020-01-01.jsonl", "AAPL", "Depth")]
+    public async Task OfflineDryRun_RecognizedStorageLayoutsRetainSymbolAndDataType(string relativePath, string symbol, string type)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-market-retention-" + Guid.NewGuid().ToString("N"));
+        var file = Path.Combine(root, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+        try
+        {
+            await File.WriteAllTextAsync(file, "market payload");
+            File.SetLastWriteTimeUtc(file, DateTime.UtcNow.AddYears(-2));
+            using var api = new ApiClientService(new OfflineClientFactory());
+            var service = new RetentionAssuranceService(api);
+
+            var result = await service.PerformDryRunAsync(new RetentionPolicy(), root);
+
+            result.Errors.Should().BeEmpty();
+            result.FilesToDelete.Should().ContainSingle().Which.Should().BeEquivalentTo(new
+            {
+                Path = file,
+                Symbol = symbol,
+                DataType = type
+            });
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    private sealed class OfflineClientFactory : IHttpClientFactory
+    {
+        public HttpClient CreateClient(string name) => new(new OfflineHandler());
+    }
+
+    private sealed class OfflineHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
+    }
+
     [Fact]
     public void Instance_ShouldReturnSingleton()
     {

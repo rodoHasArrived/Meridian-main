@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import os
 import subprocess
 import sys
 import tempfile
@@ -196,6 +197,18 @@ class MaintainedGenerationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unsupported generation command"):
             generation.discover_steps(self.repo)
 
+    def test_docs_only_keeps_documentation_producers_without_recursive_or_browser_execution(self) -> None:
+        actual_root = SCRIPT.parents[2]
+        commands = [step.command for step in generation.discover_steps(actual_root, docs_only=True)]
+        flattened = "\n".join(" ".join(command) for command in commands)
+        self.assertNotIn("run-maintained-generation.py", flattened)
+        self.assertNotIn("generate-ui-api-routes-ts.py", flattened)
+        self.assertNotIn("generate-workspace-catalog-ts.py", flattened)
+        self.assertNotIn("dashboard run build", flattened)
+        for producer in ("render-source-docs.py", "render-roadmap-docs.py", "render-adapter-readiness.py",
+                         "run-docs-automation.py", "generate-workflow-manifest.py", "generate-diagrams"):
+            self.assertIn(producer, flattened)
+
     def test_late_producer_reaches_fixed_point_and_second_invocation_is_empty(self) -> None:
         self.write(STRUCTURE, "old registry\n")
         self.write(OVERVIEW, "old overview\n")
@@ -242,6 +255,23 @@ class MaintainedGenerationTests(unittest.TestCase):
         self.assertFalse(report["successful"], report)
         self.assertFalse(report["converged"], report)
         self.assertEqual(2, len(report["passes"]))
+
+    @unittest.skipIf(os.name == "nt", "Windows does not implement POSIX executable file modes")
+    def test_executable_mode_changes_fail_and_restore_original_mode(self) -> None:
+        self.write("source.py", "reviewed source\n")
+        self.git("add", "source.py")
+        source = self.repo / "source.py"
+        source.chmod(0o644)
+
+        def runner(root: Path, step) -> int:
+            (root / "source.py").chmod(0o755)
+            return 0
+
+        report = generation.run_generation(self.repo, [self.step("mode-change")], self.policy, runner=runner)
+        self.assertFalse(report["successful"])
+        self.assertEqual(["source.py"], report["protection_violations"])
+        self.assertEqual(0o644, source.stat().st_mode & 0o777)
+        self.assertEqual("reviewed source\n", source.read_text())
 
     def test_advisory_failure_does_not_mask_nonconvergence_at_the_iteration_cap(self) -> None:
         self.write(STRUCTURE, "a\n")

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
@@ -16,6 +17,20 @@ public sealed class SecurityMasterImportServiceTests
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
         var store = Substitute.For<ISecurityMasterStore>();
+        // Post-commit conflict recording reads the effective durable row, so model the
+        // store's write/read lifecycle instead of returning an unpersisted prepared candidate.
+        var persisted = new ConcurrentDictionary<Guid, SecurityProjectionRecord>();
+        store.UpsertProjectionAsync(Arg.Any<SecurityProjectionRecord>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var projection = call.Arg<SecurityProjectionRecord>();
+                persisted[projection.SecurityId] = projection;
+                return Task.CompletedTask;
+            });
+        store.GetProjectionAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(call => Task.FromResult<SecurityProjectionRecord?>(persisted.TryGetValue(call.Arg<Guid>(), out var projection)
+                ? projection
+                : null));
         var conflictService = Substitute.For<ISecurityMasterConflictService>();
         conflictService.GetOpenConflictsAsync(Arg.Any<CancellationToken>())
             .Returns(

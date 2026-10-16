@@ -418,8 +418,7 @@ public static class WorkstationServiceCollectionExtensions
 
         services.TryAddSingleton<ICashSyncOrchestrationService, CashSyncOrchestrationService>();
 
-        services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
-        services.TryAddSingleton<Dk1TrustGateReadinessService>();
+        services.AddPromotionTrustEvidenceServices();
         services.TryAddSingleton<TradingOperatorReadinessService>();
         services.TryAddSingleton<ITradingOperatorReadinessProvider>(sp =>
             sp.GetRequiredService<TradingOperatorReadinessService>());

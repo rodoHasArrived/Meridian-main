@@ -8,6 +8,7 @@ validation, and review of the complete merged tree are still required.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import subprocess
 import sys
 from pathlib import Path
@@ -38,6 +39,24 @@ GENERATED_FILES = frozenset({
     "docs/source/generated/source-todo-checklist.md",
 })
 WORKSTATION_ROOT = "src/Meridian.Ui/wwwroot/workstation/"
+REVIEWED_MANIFEST = "docs/source/generated/source-hash-manifest.json"
+
+
+def load_hash_merger():
+    spec = importlib.util.spec_from_file_location(
+        "reviewed_hash_merger", Path(__file__).with_name("merge-reviewed-doc-hashes.py")
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def merge_reviewed_hashes(root: Path, head_sha: str, main_sha: str, apply: bool) -> dict:
+    ancestors = git(root, "merge-base", "--all", head_sha, main_sha).decode().splitlines()
+    if len(ancestors) != 1:
+        raise ValueError("Reviewed hash merge requires exactly one merge base")
+    return load_hash_merger().merge_checkout(root, ancestors[0], head_sha, main_sha, apply=apply)
+
 
 
 def git(root: Path, *args: str, data: bytes | None = None) -> bytes:
@@ -74,6 +93,18 @@ def recover(root: Path, main_ref: str, apply: bool) -> int:
     conflicts = unmerged_paths(root)
     candidates = [path for path in conflicts if generated(path)]
     manual = [path for path in conflicts if not generated(path)]
+    if manual == [REVIEWED_MANIFEST]:
+        try:
+            head_sha = git(root, "rev-parse", "HEAD").decode().strip()
+            reviewed = merge_reviewed_hashes(root, head_sha, main_sha, apply)
+            if reviewed["successful"]:
+                manual = []
+                print("REVIEWED   Reused parent module baselines matching the merged source/README")
+            else:
+                for identity, reason in reviewed["review_required"].items():
+                    print(f"REVIEW     {identity}: {reason}")
+        except (ValueError, OSError, subprocess.CalledProcessError) as exc:
+            print(f"REVIEW     Reviewed baseline could not be verified: {exc}")
     print(f"Incoming main: {main_sha}")
     for path in candidates:
         print(f"GENERATED  {path}")

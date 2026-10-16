@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import * as directLendingApi from "@/lib/api/direct-lending.api";
 import { LoanBookScreen } from "@/screens/loan-book-screen";
 import type { LoanPortfolioSummary } from "@/types/direct-lending.types";
+import hostPortfolio from "@/test/fixtures/loan-portfolio.host.json";
 
 vi.mock("@/lib/api/direct-lending.api", () => ({
   getLoanPortfolioSummary: vi.fn()
@@ -29,6 +30,7 @@ function summary(overrides: Partial<LoanPortfolioSummary> = {}): LoanPortfolioSu
     totalPenaltyAccruedUnpaid: 0,
     totalAvailableToDraw: 2_600_000,
     totalCollateralValue: 11_000_000,
+    totalCurrency: "USD",
     loans: [
       {
         loanId: "11111111-1111-1111-1111-111111111111",
@@ -53,6 +55,22 @@ function summary(overrides: Partial<LoanPortfolioSummary> = {}): LoanPortfolioSu
 }
 
 describe("LoanBookScreen", () => {
+  it("renders and refreshes the host-serialized numeric enums and currency buckets", async () => {
+    api.getLoanPortfolioSummary.mockResolvedValue(hostPortfolio);
+    render(<LoanBookScreen />);
+    expect(await screen.findByText("Harbour USD")).toBeInTheDocument();
+    expect(screen.getByText("Harbour EUR")).toBeInTheDocument();
+    expect(screen.getByText("Defaulted", { selector: "span.mds-badge" })).toHaveClass("mds-badge--danger");
+    expect(screen.getByRole("group", { name: "Principal outstanding (USD): $100,000.00" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Principal outstanding (EUR): €200,000.00" })).toBeInTheDocument();
+    expect(screen.getByText(/No FX conversion/)).toBeInTheDocument();
+    const refreshed = structuredClone(hostPortfolio);
+    refreshed.currencyTotals[1].totalCollateralValue = 600_000;
+    api.getLoanPortfolioSummary.mockResolvedValue(refreshed);
+    await userEvent.click(screen.getByRole("button", { name: "Refresh the loan book" }));
+    expect(await screen.findByRole("group", { name: "Collateral value (EUR): €600,000.00" })).toBeInTheDocument();
+  });
+
   it("renders the loan book from the portfolio read", async () => {
     api.getLoanPortfolioSummary.mockResolvedValue(summary());
 
@@ -60,7 +78,7 @@ describe("LoanBookScreen", () => {
 
     expect(await screen.findByText("Senior Term Facility A")).toBeInTheDocument();
     expect(screen.getByText("Harbour Logistics")).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "Principal outstanding: $6,400,000.00" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Principal outstanding (USD): $6,400,000.00" })).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "Direct lending facilities" })).toBeInTheDocument();
   });
 

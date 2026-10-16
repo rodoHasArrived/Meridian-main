@@ -56,7 +56,8 @@ public sealed class QuoteCollector : IQuoteStateStore
         }
 
         var payload = Upsert(update);
-        _publisher.TryPublish(MarketEvent.BboQuote(payload.Timestamp, payload.Symbol, payload, update.Source!));
+        _publisher.TryPublish(MarketEvent.BboQuote(payload.Timestamp, payload.Symbol, payload, update.Source!)
+            .StampReceiveTime(exchangeTs: update.Timestamp));
     }
 
     public bool TryGet(string symbol, out BboQuotePayload? quote)

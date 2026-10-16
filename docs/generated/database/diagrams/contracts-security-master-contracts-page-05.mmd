@@ -1,0 +1,14 @@
+classDiagram
+    %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_UpsertSecurityAliasRequest["UpsertSecurityAliasRequest"] {
+        +Guid AliasId
+        +string AliasKind
+        +string AliasValue
+        +string CreatedBy
+        +string? Provider
+        +string? Reason
+        +SecurityAliasScope Scope
+        +Guid SecurityId
+        +DateTimeOffset ValidFrom
+        +DateTimeOffset? ValidTo
+    }

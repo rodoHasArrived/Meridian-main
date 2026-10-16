@@ -30,7 +30,7 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
     /// a fixed-coupon field on a floating bond — appears with an explicit null). The coverage test
     /// below fails when a class or key is missing, so schema growth forces this table to grow with it.
     /// </summary>
-    private static readonly IReadOnlyDictionary<string, object> FullPayloads = new Dictionary<string, object>(StringComparer.Ordinal)
+    internal static readonly IReadOnlyDictionary<string, object> FullPayloads = new Dictionary<string, object>(StringComparer.Ordinal)
     {
         ["Equity"] = new
         {
@@ -370,11 +370,30 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
 
     [Theory]
     [MemberData(nameof(DeclaredAssetClasses))]
+    public void FullPayload_DeclaresItsFormatAndAssetClassTermsVersion(string assetClass)
+    {
+        var serialized = SerializeThroughDomain(assetClass, FullPayloads[assetClass]);
+
+        if (string.Equals(assetClass, "CustomAsset", StringComparison.Ordinal))
+        {
+            // The profile document is emitted verbatim and resolves to the custom-profile family by shape.
+            SecurityTermsEnvelope.ResolveFormat(serialized).Should().Be(SecurityTermsFormats.CustomProfile);
+            return;
+        }
+
+        serialized.GetProperty(SecurityTermsEnvelope.FormatKey).GetString().Should().Be(SecurityTermsFormats.Flat);
+        serialized.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32()
+            .Should().Be(SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion);
+        SecurityTermsEnvelope.ResolveFormat(serialized).Should().Be(SecurityTermsFormats.Flat);
+    }
+
+    [Theory]
+    [MemberData(nameof(DeclaredAssetClasses))]
     public void FullPayload_SerializesToExactlyTheDeclaredFieldSet(string assetClass)
     {
         var serialized = SerializeThroughDomain(assetClass, FullPayloads[assetClass]);
         var serializedKeys = ElementKeys(serialized);
-        serializedKeys.Remove("schemaVersion");
+        serializedKeys.RemoveWhere(SecurityTermsEnvelope.IsReservedKey);
 
         var declaredKeys = SecurityAssetTermsSchema.Fields(assetClass)
             .Select(static field => field.Key)
@@ -726,7 +745,7 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
     /// A stored row as a node that did not write it sees it: the projection goes straight into the
     /// READ mapping, with no create command and therefore no write-mode validation in the way.
     /// </summary>
-    private static SecurityProjectionRecord LegacyProjection(string assetClass, JsonElement assetSpecificTerms)
+    internal static SecurityProjectionRecord LegacyProjection(string assetClass, JsonElement assetSpecificTerms)
     {
         var asOf = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
         return new SecurityProjectionRecord(
@@ -770,7 +789,7 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
     /// Runs a payload once through the real codec seam (C# deserializer → F# domain → F# serializer)
     /// and returns the canonical serialized asset-specific-terms document.
     /// </summary>
-    private static JsonElement SerializeThroughDomain(string assetClass, object payload)
+    internal static JsonElement SerializeThroughDomain(string assetClass, object payload)
     {
         var snapshot = CreateSnapshot(assetClass, payload);
         return JsonDocument.Parse(snapshot.AssetSpecificTermsJson).RootElement.Clone();
