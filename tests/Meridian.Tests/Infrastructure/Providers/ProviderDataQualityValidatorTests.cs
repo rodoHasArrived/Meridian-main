@@ -135,6 +135,31 @@ public sealed class ProviderDataQualityValidatorTests
     }
 
     [Fact]
+    public void ValidateAggregate_FutureWindow_IdentifiesBothSourceBoundaries()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var aggregate = new AggregateBar("SPY", now.AddMinutes(10), now.AddMinutes(11), 450m, 451m, 449m, 450m, 100);
+
+        var issues = ProviderDataQualityValidator.ValidateAggregate("polygon", aggregate, now);
+
+        issues.Should().HaveCount(2);
+        issues.Should().Contain(issue => issue.FieldPath == "startTime");
+        issues.Should().Contain(issue => issue.FieldPath == "endTime");
+        issues.Should().OnlyContain(issue => issue.Severity == ProviderDataQualitySeverity.Error && issue.ProviderName == "polygon");
+    }
+
+    [Fact]
+    public void ValidateAggregate_MissingWindow_IdentifiesBothRequiredSourceBoundaries()
+    {
+        var aggregate = new AggregateBar("SPY", default, default, 450m, 451m, 449m, 450m, 100);
+
+        var issues = ProviderDataQualityValidator.ValidateAggregate("polygon", aggregate);
+
+        issues.Should().ContainSingle(issue => issue.FieldPath == "startTime" && issue.Message.Contains("required", StringComparison.Ordinal));
+        issues.Should().ContainSingle(issue => issue.FieldPath == "endTime" && issue.Message.Contains("required", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task WebSocketConnectionManager_DisconnectWithoutConnect_ReportsSafeDiagnostics()
     {
         await using var manager = new WebSocketConnectionManager("stub");

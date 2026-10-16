@@ -897,6 +897,8 @@ Meridian-main
 │   │   ├── desktop-user-manual.yml
 │   │   ├── desktop-workflow-runner.yml
 │   │   ├── documentation.yml
+│   │   ├── generated-repair-publish.yml
+│   │   ├── generated-repair.yml
 │   │   ├── golden-path-validation.yml
 │   │   ├── ibapi-runtime.yml
 │   │   ├── ibapi-smoke.yml
@@ -907,6 +909,7 @@ Meridian-main
 │   │   ├── provider-validation.yml
 │   │   ├── publish-smoke.yml
 │   │   ├── README.md
+│   │   ├── release-readiness.yml
 │   │   ├── roadmap-source-docs.yml
 │   │   ├── roadmap-tools-manual.yml
 │   │   ├── robinhood-options-smoke.yml
@@ -1120,11 +1123,13 @@ Meridian-main
 │       │   ├── check-duplicate-helpers.py
 │       │   ├── check-endpoint-cancellation.py
 │       │   ├── check-file-size.py
+│       │   ├── check-generated-output.py
 │       │   ├── check-inline-sha256.py
 │       │   ├── check-lane-manifest.py
 │       │   ├── check-ledger-book-scope.py
 │       │   ├── check-ledger-dimension-coverage.py
 │       │   ├── check-posture-env-serialization.py
+│       │   ├── check-release-signing.ps1
 │       │   ├── check-sample-config-datasources.py
 │       │   ├── check-store-concurrency-posture.py
 │       │   ├── check-test-skip-register.py
@@ -1135,8 +1140,13 @@ Meridian-main
 │       │   ├── dispatch-targeted-test.py
 │       │   ├── duplicate-helper-baseline.json
 │       │   ├── generate-release-evidence-manifest.py
+│       │   ├── generated-repair.Dockerfile
+│       │   ├── generated_repair.py
+│       │   ├── generated_repair_sandbox.py
 │       │   ├── inline-sha256-baseline.json
+│       │   ├── maintenance_refresh.py
 │       │   ├── release-preflight.py
+│       │   ├── release-readiness.py
 │       │   ├── requirements.txt
 │       │   ├── resolve-consumer-predecessor.py
 │       │   ├── run-dotnet-ci-tests.py
@@ -1279,6 +1289,8 @@ Meridian-main
 │       ├── generate-ui-api-routes-ts.py
 │       ├── generate-workspace-catalog-ts.py
 │       ├── maintained-generation-outputs.json
+│       ├── merge-reviewed-doc-hashes.py
+│       ├── repair-generated.py
 │       ├── resolve-generated-merge-conflicts.py
 │       ├── run-maintained-generation.py
 │       ├── schema-control.py
@@ -5569,9 +5581,11 @@ Meridian-main
 │   │   │   │   ├── ITradingParametersBackfillService.cs
 │   │   │   │   ├── PolygonConstants.cs
 │   │   │   │   ├── PolygonCorporateActionFetcher.cs
+│   │   │   │   ├── PolygonCorporateActionFetchResult.cs
 │   │   │   │   ├── PolygonHistoricalDataProvider.cs
 │   │   │   │   ├── PolygonMarketDataClient.cs
 │   │   │   │   ├── PolygonOptionsChainProvider.cs
+│   │   │   │   ├── PolygonPagination.cs
 │   │   │   │   ├── PolygonSecurityMasterIngestProvider.cs
 │   │   │   │   ├── PolygonSymbolSearchProvider.cs
 │   │   │   │   └── TradingParametersBackfillService.cs
@@ -5639,7 +5653,8 @@ Meridian-main
 │   │   │   ├── ProviderConnectionSupervisor.cs
 │   │   │   ├── WebSocketConnectionConfig.cs
 │   │   │   ├── WebSocketConnectionManager.cs
-│   │   │   └── WebSocketResiliencePolicy.cs
+│   │   │   ├── WebSocketResiliencePolicy.cs
+│   │   │   └── WebSocketSendSession.cs
 │   │   ├── Shared
 │   │   │   ├── ISymbolStateStore.cs
 │   │   │   ├── SubscriptionManager.cs
@@ -10546,6 +10561,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaAssetStreamRoutingTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PortfolioRecovery.cs
+│   │   │   │   ├── AlpacaConnectionReadinessTests.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
 │   │   │   │   ├── AlpacaHistoricalDataProviderTests.cs
@@ -10597,6 +10613,7 @@ Meridian-main
 │   │   │   │   ├── NyseTaqCollectorIntegrationTests.cs
 │   │   │   │   ├── PolygonCoherenceTests.cs
 │   │   │   │   ├── PolygonCorporateActionFetcherTests.cs
+│   │   │   │   ├── PolygonHistoricalPaginationTests.cs
 │   │   │   │   ├── PolygonMarketDataClientTests.cs
 │   │   │   │   ├── PolygonMessageParsingTests.cs
 │   │   │   │   ├── PolygonProviderContractTests.cs
@@ -10604,6 +10621,7 @@ Meridian-main
 │   │   │   │   ├── PolygonSecurityMasterIngestProviderTests.cs
 │   │   │   │   ├── PolygonSequenceIntegrityTests.cs
 │   │   │   │   ├── PolygonSubscriptionTests.cs
+│   │   │   │   ├── PolygonTimestampIntegrityTests.cs
 │   │   │   │   ├── ProviderDataQualityValidatorTests.cs
 │   │   │   │   ├── ProviderFactoryCredentialContextTests.cs
 │   │   │   │   ├── ProviderHealthTrackerTests.cs
@@ -10637,7 +10655,8 @@ Meridian-main
 │   │   │   │   ├── PollingProviderBaseTests.cs
 │   │   │   │   ├── ProviderConnectionSupervisorTests.cs
 │   │   │   │   ├── WebSocketConnectionManagerTests.cs
-│   │   │   │   └── WebSocketResiliencePolicyTests.cs
+│   │   │   │   ├── WebSocketResiliencePolicyTests.cs
+│   │   │   │   └── WebSocketSendSessionTests.cs
 │   │   │   └── Shared
 │   │   │       ├── SymbolNormalizationTests.cs
 │   │   │       └── TempDirectoryFixture.cs
@@ -11918,6 +11937,7 @@ Meridian-main
 │   │   ├── test_check_duplicate_helpers.py
 │   │   ├── test_check_endpoint_cancellation.py
 │   │   ├── test_check_file_size_ratchet.py
+│   │   ├── test_check_generated_output.py
 │   │   ├── test_check_inline_sha256.py
 │   │   ├── test_check_ledger_book_scope.py
 │   │   ├── test_check_ledger_dimension_coverage.py
@@ -11953,12 +11973,16 @@ Meridian-main
 │   │   ├── test_generate_ui_api_routes_ts.py
 │   │   ├── test_generate_ui_route_wiring_report.py
 │   │   ├── test_generate_workspace_catalog_ts.py
+│   │   ├── test_generated_repair.py
+│   │   ├── test_generated_repair_sandbox.py
 │   │   ├── test_git_hooks.py
 │   │   ├── test_golden_path_validation_workflow.py
 │   │   ├── test_ibapi_smoke_workflow.py
 │   │   ├── test_lane_manifest.py
 │   │   ├── test_live_execution_controls_route_consistency.py
 │   │   ├── test_maintenance_full_workflow.py
+│   │   ├── test_maintenance_refresh.py
+│   │   ├── test_merge_reviewed_doc_hashes.py
 │   │   ├── test_meridian_ci_cache_contract.py
 │   │   ├── test_meridian_ci_workflow.py
 │   │   ├── test_meridian_code_review_run_eval.py
@@ -11974,8 +11998,10 @@ Meridian-main
 │   │   ├── test_release_evidence_manifest.py
 │   │   ├── test_release_evidence_workflows.py
 │   │   ├── test_release_promotion.py
+│   │   ├── test_release_readiness.py
 │   │   ├── test_render_adapter_readiness.py
 │   │   ├── test_render_roadmap_diagrams.py
+│   │   ├── test_repair_generated.py
 │   │   ├── test_repair_links_anchors.py
 │   │   ├── test_resolve_generated_merge_conflicts.py
 │   │   ├── test_roadmap_source_docs.py
