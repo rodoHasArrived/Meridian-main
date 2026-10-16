@@ -99,3 +99,33 @@ let ``Live promotion policy approves when override is active`` () =
     decision.Eligible |> should equal true
     decision.Outcome |> should equal "approved"
     decision.Reasons.Length |> should equal 0
+
+[<Fact>]
+let ``Live promotion policy blocks stale trust evidence independently`` () =
+    let input = { livePolicyInput true with HasFreshTrustEvidence = false }
+    let decision = PromotionInterop.EvaluatePromotionPolicy(input)
+
+    decision.Eligible |> should equal false
+    decision.Outcome |> should equal "blocked"
+    decision.Reasons |> should equal [| "Provider trust evidence is stale." |]
+
+[<Fact>]
+let ``Live promotion policy blocks incomplete trust evidence independently`` () =
+    let input = { livePolicyInput true with HasCompleteTrustEvidence = false }
+    let decision = PromotionInterop.EvaluatePromotionPolicy(input)
+
+    decision.Eligible |> should equal false
+    decision.Outcome |> should equal "blocked"
+    decision.Reasons |> should equal [| "Provider trust evidence is incomplete." |]
+
+[<Fact>]
+let ``Paper promotion does not require live provider trust evidence`` () =
+    let input =
+        { livePolicyInput true with
+            IsLiveTarget = false
+            HasFreshTrustEvidence = false
+            HasCompleteTrustEvidence = false }
+    let decision = PromotionInterop.EvaluatePromotionPolicy(input)
+
+    decision.Eligible |> should equal true
+    decision.Reasons.Length |> should equal 0

@@ -18,11 +18,12 @@ internal static class StartupOutcomeReceiptMonitor
     private const string SearchPattern = "startup-terminal-*.verified-outcome.json";
 
     public static IReadOnlyDictionary<string, StartupOutcomeReceiptFingerprint> Capture(
-        string receiptRoot)
+        string receiptRoot,
+        string? expectedRequestId = null)
     {
         var snapshot = new Dictionary<string, StartupOutcomeReceiptFingerprint>(
             StringComparer.OrdinalIgnoreCase);
-        foreach (var path in EnumerateReceiptPaths(receiptRoot))
+        foreach (var path in EnumerateReceiptPaths(receiptRoot, expectedRequestId))
         {
             if (TryFingerprint(path, out var fingerprint))
                 snapshot[path] = fingerprint!;
@@ -42,20 +43,18 @@ internal static class StartupOutcomeReceiptMonitor
         ArgumentException.ThrowIfNullOrWhiteSpace(expectedOperationKind);
         outcome = null;
         receiptPath = null;
-        foreach (var file in EnumerateReceiptPaths(receiptRoot)
-                     .Select(path => new FileInfo(path))
-                     .OrderByDescending(file => file.LastWriteTimeUtc))
+        foreach (var path in EnumerateReceiptPaths(receiptRoot, expectedRequestId))
         {
-            if (!TryRead(file.FullName, out var current, out var candidate) ||
+            if (!TryRead(path, out var current, out var candidate) ||
                 candidate is null)
                 continue;
-            var existed = baseline.TryGetValue(file.FullName, out var prior);
+            var existed = baseline.TryGetValue(path, out var prior);
             var changed = existed && prior != current;
             var newlyCreated = !existed && candidate.StartedAtUtc >= launchedAtUtc;
             if (!changed && !newlyCreated)
                 continue;
             if (!MatchesExpectedStartupReceipt(
-                    file.FullName,
+                    path,
                     candidate,
                     expectedOperationKind,
                     expectedRequestId,
@@ -63,11 +62,13 @@ internal static class StartupOutcomeReceiptMonitor
                     existed ? prior : null))
                 continue;
 
-            outcome = candidate;
-            receiptPath = file.FullName;
-            return true;
+            if (outcome is null || candidate.AttemptNumber > outcome.AttemptNumber)
+            {
+                outcome = candidate;
+                receiptPath = path;
+            }
         }
-        return false;
+        return outcome is not null;
     }
 
     private static bool MatchesExpectedStartupReceipt(
@@ -84,11 +85,9 @@ internal static class StartupOutcomeReceiptMonitor
                 candidate.OperationId,
                 $"startup:{expectedRequestId}",
                 StringComparison.Ordinal) ||
-            !Path.GetFileName(path).StartsWith(
-                $"startup-terminal-{expectedRequestId}-attempt-",
-                StringComparison.OrdinalIgnoreCase) ||
-            !Path.GetFileName(path).EndsWith(
-                ".verified-outcome.json",
+            !string.Equals(
+                Path.GetFileName(path),
+                $"startup-terminal-{expectedRequestId}-attempt-{candidate.AttemptNumber:D4}.verified-outcome.json",
                 StringComparison.OrdinalIgnoreCase) ||
             candidate.CompletedAtUtc < launchedAtUtc)
         {
@@ -115,6 +114,7 @@ internal static class StartupOutcomeReceiptMonitor
         bool processStarted,
         string? exceptionType = null)
     {
+        ValidateRequestId(requestId);
         if (state is not (OperationTerminalState.Failed or OperationTerminalState.Blocked))
             throw new ArgumentOutOfRangeException(nameof(state), state, null);
         var completedAtUtc = DateTimeOffset.UtcNow;
@@ -210,12 +210,19 @@ internal static class StartupOutcomeReceiptMonitor
         return path;
     }
 
-    private static IEnumerable<string> EnumerateReceiptPaths(string receiptRoot)
+    private static IEnumerable<string> EnumerateReceiptPaths(
+        string receiptRoot,
+        string? expectedRequestId = null)
     {
+        if (expectedRequestId is not null)
+            ValidateRequestId(expectedRequestId);
+        var searchPattern = expectedRequestId is null
+            ? SearchPattern
+            : $"startup-terminal-{expectedRequestId}-attempt-*.verified-outcome.json";
         try
         {
             return Directory.Exists(receiptRoot)
-                ? Directory.EnumerateFiles(receiptRoot, SearchPattern).ToArray()
+                ? Directory.EnumerateFiles(receiptRoot, searchPattern).ToArray()
                 : [];
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -284,7 +291,7 @@ internal static class StartupOutcomeReceiptMonitor
                 stream.Write(bytes);
                 stream.Flush(flushToDisk: true);
             }
-            File.Move(temporary, path, overwrite: true);
+            File.Move(temporary, path, overwrite: false);
         }
         finally
         {
@@ -302,21 +309,24 @@ internal static class StartupOutcomeReceiptMonitor
                      receiptRoot,
                      $"launcher-terminal-{requestId}-attempt-*.verified-outcome.json"))
         {
-            try
+            var fileName = Path.GetFileName(path);
+            var attemptText = fileName[
+                $"launcher-terminal-{requestId}-attempt-".Length..^".verified-outcome.json".Length];
+            if (int.TryParse(
+                    attemptText,
+                    System.Globalization.NumberStyles.None,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out var attemptNumber))
             {
-                var outcome = JsonSerializer.Deserialize(
-                    File.ReadAllBytes(path),
-                    OperationsContractsJsonContext.Default.VerifiedOperationOutcome);
-                if (outcome is not null &&
-                    string.Equals(outcome.OperationId, $"launcher-startup:{requestId}", StringComparison.Ordinal))
-                {
-                    maxAttempt = Math.Max(maxAttempt, outcome.AttemptNumber);
-                }
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
-            {
+                maxAttempt = Math.Max(maxAttempt, attemptNumber);
             }
         }
         return checked(maxAttempt + 1);
+    }
+
+    private static void ValidateRequestId(string requestId)
+    {
+        if (!Guid.TryParseExact(requestId, "N", out _))
+            throw new ArgumentException("A normalized launch request ID is required.", nameof(requestId));
     }
 }

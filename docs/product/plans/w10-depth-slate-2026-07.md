@@ -545,6 +545,11 @@ motivated the implementation above; they are not current readiness behavior.
 
 ### `W10-CONSOL-001` — intercompany elimination
 
+The [first same-currency two-entity slice](../../domain/intercompany-consolidation.md) adds the typed
+receivable/payable rule, effective-dated perimeter enforcement, reviewed drafts, freshness guards,
+linked adjustments and a shared browser projection. Full roadmap status remains planned until the
+remaining translation and workstation scope is evidenced.
+
 - Intercompany and consolidation-elimination are **accounting treatment kinds**, selected through the
   accounting policy rule — not journal sources. That rule already carries journal template, evidence,
   approval, and auto-posting settings, which is the seam for producing elimination drafts.

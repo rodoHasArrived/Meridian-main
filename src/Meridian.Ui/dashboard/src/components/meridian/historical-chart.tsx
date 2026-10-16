@@ -114,6 +114,12 @@ export function HistoricalChartCard({ symbol, className }: HistoricalChartCardPr
         />
       </CardHeader>
       <CardContent>
+        {vm.compareFailureMessages.length > 0 ? (
+          <div role="alert" className="mb-3 rounded border border-danger/40 bg-danger/10 p-3 text-sm text-danger">
+            <p className="font-medium">Historical comparison incomplete</p>
+            {vm.compareFailureMessages.map((message) => <p key={message}>{message}</p>)}
+          </div>
+        ) : null}
         {vm.statePanel ? (
           <HistoricalChartStatePanelView panel={vm.statePanel} onRetry={vm.retry} />
         ) : vm.compareActive && vm.compareChart ? (
@@ -281,7 +287,7 @@ function CompareChip({ chip }: { chip: CompareChipViewModel }) {
         type="button"
         onClick={chip.remove}
         aria-label={chip.removeAriaLabel}
-        className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-secondary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-secondary/60 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
         data-testid={`historical-chart-compare-chip-${chip.symbol}-remove`}
       >
         <X className="h-3 w-3" aria-hidden="true" />
@@ -650,7 +656,7 @@ function CandlestickChartView({ viewModel: vm }: { viewModel: CandlestickChartVi
         ref={svgRef}
         viewBox={vm.viewBox}
         preserveAspectRatio="none"
-        className={cn("block w-full overflow-visible focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40", heightClass)}
+        className={cn("block w-full overflow-visible focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40", heightClass)}
         role="img"
         aria-label={vm.ariaLabel}
         tabIndex={0}

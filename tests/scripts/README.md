@@ -5,6 +5,10 @@ the scripts under `build/` and `tools/`, the GitHub Actions workflows under `.gi
 and the generated-artifact shapes those produce (e.g. screenshot diff reports, DK1 pilot/parity
 packets, roadmap source-doc rendering, contract-review packets).
 
+`test_git_hooks.py` exercises tracked hook installation in ordinary checkouts and linked
+worktrees, plus staged-only formatting with partial staging. It uses temporary Git repositories
+and a formatter stub, so it runs without the .NET SDK.
+
 These are intentionally **separate from the .NET xUnit projects** (`tests/Meridian.Tests`,
 `tests/Meridian.FSharp.Tests`, etc.): they exercise Python tooling and YAML workflows, not compiled
 Meridian assemblies, so they run without the .NET toolchain.

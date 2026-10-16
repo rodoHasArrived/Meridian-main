@@ -5,9 +5,12 @@ using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
+using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Storage.Operations;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
+using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -213,6 +216,79 @@ public sealed class StrategyLifecycleManagerTests
         statuses.Should().HaveCount(1);
     }
 
+    [Theory]
+    [InlineData(StrategyStatus.Running, RunType.Paper)]
+    [InlineData(StrategyStatus.Paused, RunType.Paper)]
+    [InlineData(StrategyStatus.Running, RunType.Live)]
+    [InlineData(StrategyStatus.Paused, RunType.Live)]
+    public async Task Register_SameActiveInstanceWithAnotherRun_RejectsRebindingAndStopsOriginalRun(
+        StrategyStatus activeStatus, RunType secondMode)
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-registration-run-binding", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var repository = new StrategyRunStore(history);
+            var first = StrategyRunEntry.StartWithEvidence(
+                "configured-strategy", "Configured strategy", RunType.Paper, "bound-paper-run",
+                engine: "BrokerPaper",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "AAPL", ["quantity"] = "1" });
+            await repository.RecordRunAsync(first);
+            if (activeStatus == StrategyStatus.Paused)
+            {
+                await repository.RecordLifecycleEventAsync(
+                    first.Paused("operator") with { TerminalStatus = StrategyRunStatus.Paused },
+                    StrategyRunLifecycleEventType.Paused);
+            }
+
+            var retainedFirst = (await repository.GetRunByIdAsync(first.RunId))!;
+            var second = StrategyRunEntry.StartWithEvidence(
+                first.StrategyId, first.StrategyName, secondMode, "newer-configured-run",
+                engine: secondMode == RunType.Live ? "BrokerLive" : "BrokerPaper",
+                parameterSet: new Dictionary<string, string> { ["symbols"] = "MSFT", ["quantity"] = "7" });
+            await repository.RecordRunAsync(second);
+            var retainedSecond = (await repository.GetRunByIdAsync(second.RunId))!;
+            (await repository.GetLatestRunAsync(first.StrategyId))!.RunId.Should().Be(second.RunId);
+            var strategy = new StubLiveStrategy(first.StrategyId, activeStatus);
+            await using var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+            manager.Register(strategy, retainedFirst);
+            manager.Register(strategy);
+            manager.Register(strategy, retainedFirst with { Reason = "Refreshed the same run's control state." });
+
+            var rebind = () => manager.Register(strategy, retainedSecond);
+
+            rebind.Should().Throw<InvalidOperationException>().WithMessage("*rebound*another run*");
+            manager.GetStatuses()[first.StrategyId].Should().Be(activeStatus);
+            var outcome = await manager.StopAsync(first.StrategyId);
+
+            outcome.State.Should().Be(OperationTerminalState.Succeeded);
+            outcome.CorrelationId.Should().Be(first.RunId);
+            VerifiedOperationOutcomeValidator.Validate(outcome).Should().BeEmpty();
+            var replayed = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var stopped = (await replayed.GetRunByIdAsync(first.RunId))!;
+            stopped.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            stopped.TerminalStatus.Should().Be(StrategyRunStatus.Stopped);
+            stopped.EndedAt.Should().NotBeNull();
+            stopped.ParameterSet.Should().BeEquivalentTo(first.ParameterSet);
+            (await replayed.GetRunByIdAsync(second.RunId)).Should().BeEquivalentTo(retainedSecond);
+            var secondHistory = await history.ReadAsync(new OperationalCaseHistoryQuery
+            {
+                CaseId = $"strategy-run:{second.RunId}"
+            });
+            secondHistory.Should().ContainSingle();
+            strategy.StopCallCount.Should().Be(1);
+            strategy.StartCallCount.Should().Be(0);
+
+            var rebindAfterStop = () => manager.Register(strategy, retainedSecond);
+            rebindAfterStop.Should().NotThrow("a stopped instance can acquire a different run binding");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
     // ------------------------------------------------------------------ //
     // DisposeAsync                                                          //
     // ------------------------------------------------------------------ //
@@ -390,7 +466,7 @@ public sealed class StrategyLifecycleManagerTests
     }
 
     [Fact]
-    public async Task StartAsync_AfterPause_RetainsRecoveryParentAndAttempt()
+    public async Task StartAsync_AfterPause_ResumesTheRetainedRunAndAttempt()
     {
         var repository = new InMemoryStrategyRepository();
         var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
@@ -401,11 +477,343 @@ public sealed class StrategyLifecycleManagerTests
 
         await manager.StartAsync("strategy-1", new StubExecutionContext(), RunType.Paper);
 
-        repository.RecordedRuns[^3].LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.RecoveryAttempted);
         repository.RecordedRuns[^2].LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.StartRequested);
-        repository.RecordedRuns[^1].LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Started);
-        repository.RecordedRuns[^1].RecoveryParentRunId.Should().Be(originalRunId);
-        repository.RecordedRuns[^1].AttemptNumber.Should().Be(2);
+        repository.RecordedRuns[^1].LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Resumed);
+        repository.RecordedRuns[^1].RunId.Should().Be(originalRunId);
+        repository.RecordedRuns[^1].RecoveryParentRunId.Should().BeNull();
+        repository.RecordedRuns[^1].AttemptNumber.Should().Be(1);
+        repository.RecordedRuns[^1].TerminalStatus.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(StrategyStatus.Stopped, false)]
+    [InlineData(StrategyStatus.Registered, false)]
+    [InlineData(StrategyStatus.Stopped, true)]
+    [InlineData(StrategyStatus.Registered, true)]
+    public async Task StartAsync_AfterRestart_RecoveryRetainsConfiguredInputsAndEvidence(
+        StrategyStatus restoredStatus, bool scoped)
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-configured-recovery", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        try
+        {
+            var repository = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var original = ConfiguredRun(RunType.Paper);
+            if (scoped)
+            {
+                original = original with { FundAccountId = Guid.NewGuid() };
+                original = original with { InputHashSha256 = StrategyRunEntry.ComputeAccountBoundInputHash(original) };
+            }
+            await repository.RecordRunAsync(original);
+            var completed = original.Complete(null) with
+            {
+                TerminalStatus = StrategyRunStatus.Stopped,
+                OutputMetadata = new Dictionary<string, string> { ["fillCount"] = "12" }
+            };
+            await repository.RecordRunAsync(completed);
+
+            var restartedStore = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var manager = new StrategyLifecycleManager(restartedStore, NullLogger<StrategyLifecycleManager>.Instance);
+            var strategy = new StubLiveStrategy(original.StrategyId, restoredStatus);
+            manager.Register(strategy);
+
+            var outcome = await manager.StartAsync(original.StrategyId, new StubExecutionContext(), RunType.Paper);
+
+            outcome.State.Should().Be(OperationTerminalState.Succeeded);
+            strategy.StartCallCount.Should().Be(1);
+            var reloaded = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var recovered = (await reloaded.GetLatestRunAsync(original.StrategyId))!;
+            recovered.RunId.Should().NotBe(original.RunId);
+            recovered.RecoveryParentRunId.Should().Be(original.RunId);
+            recovered.AttemptId.Should().Be(recovered.RunId);
+            recovered.AttemptNumber.Should().Be(2);
+            recovered.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Recovered);
+            recovered.CorrelationId.Should().Be(original.CorrelationId);
+            recovered.ParameterSet.Should().BeEquivalentTo(original.ParameterSet);
+            recovered.ParentRunId.Should().Be(original.ParentRunId);
+            recovered.PortfolioId.Should().Be(original.PortfolioId);
+            recovered.LedgerReference.Should().Be(original.LedgerReference);
+            recovered.AuditReference.Should().Be(original.AuditReference);
+            recovered.FundProfileId.Should().Be(original.FundProfileId);
+            recovered.FundAccountId.Should().Be(original.FundAccountId);
+            recovered.FundDisplayName.Should().Be(original.FundDisplayName);
+            recovered.DatasetReference.Should().Be(original.DatasetReference);
+            recovered.FeedReference.Should().Be(original.FeedReference);
+            recovered.Engine.Should().Be(original.Engine);
+            recovered.ExecutionRealism.Should().BeEquivalentTo(original.ExecutionRealism);
+            recovered.DataProvenanceToken.Should().Be(original.DataProvenanceToken);
+            recovered.OperatorAcceptanceCriteria.Should().Equal(original.OperatorAcceptanceCriteria);
+            recovered.RetainedEvidenceReferences.Should().Equal(original.RetainedEvidenceReferences);
+            recovered.AccountingRecordReferences.Should().Equal(original.AccountingRecordReferences);
+            recovered.ApprovalReferences.Should().Equal(original.ApprovalReferences);
+            recovered.PaperValidationReferences.Should().Equal(original.PaperValidationReferences);
+            recovered.GovernedReportReferences.Should().Equal(original.GovernedReportReferences);
+            recovered.ArtifactReferences.Should().Equal(original.ArtifactReferences);
+            recovered.InputHashSha256.Should().Be(scoped
+                ? StrategyRunEntry.ComputeAccountBoundInputHash(recovered)
+                : StrategyRunEntry.ComputeRealismBoundInputHash(recovered));
+            recovered.InputHashSha256.Should().Be(original.InputHashSha256);
+            recovered.EndedAt.Should().BeNull();
+            recovered.TerminalStatus.Should().BeNull();
+            recovered.Metrics.Should().BeNull();
+            recovered.OutputMetadata.Should().BeEmpty();
+            (await reloaded.GetRunByIdAsync(original.RunId))!.OutputMetadata.Should().Contain("fillCount", "12");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task StartAsync_AfterPauseAndStoreRestart_ResumesSameConfiguredRun()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-configured-resume", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        try
+        {
+            var repository = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var original = ConfiguredRun(RunType.Paper);
+            await repository.RecordRunAsync(original);
+            await repository.RecordRunAsync(original.PauseRequested());
+            var paused = original.Paused() with { TerminalStatus = StrategyRunStatus.Paused };
+            await repository.RecordRunAsync(paused);
+            var restartedStore = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var manager = new StrategyLifecycleManager(restartedStore, NullLogger<StrategyLifecycleManager>.Instance);
+            manager.Register(new StubLiveStrategy(original.StrategyId, StrategyStatus.Paused), paused);
+
+            var outcome = await manager.StartAsync(original.StrategyId, new StubExecutionContext(), RunType.Paper);
+
+            outcome.State.Should().Be(OperationTerminalState.Succeeded);
+            var reloaded = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var resumed = (await reloaded.GetLatestRunAsync(original.StrategyId))!;
+            resumed.RunId.Should().Be(original.RunId);
+            resumed.AttemptNumber.Should().Be(original.AttemptNumber);
+            resumed.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Resumed);
+            resumed.TerminalStatus.Should().BeNull();
+            resumed.ParameterSet.Should().BeEquivalentTo(original.ParameterSet);
+            resumed.ParentRunId.Should().Be(original.ParentRunId);
+            resumed.InputHashSha256.Should().Be(original.InputHashSha256);
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task StartAsync_RecoveryCannotChangeTheRetainedExecutionMode()
+    {
+        var repository = new InMemoryStrategyRepository();
+        var original = ConfiguredRun(RunType.Paper).Complete(null) with { TerminalStatus = StrategyRunStatus.Stopped };
+        await repository.RecordRunAsync(original);
+        var strategy = new StubLiveStrategy(original.StrategyId, StrategyStatus.Stopped);
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+        manager.Register(strategy);
+
+        var start = () => manager.StartAsync(original.StrategyId, new StubExecutionContext(), RunType.Live);
+
+        await start.Should().ThrowAsync<InvalidOperationException>().WithMessage("*promotion workflow*");
+        strategy.StartCallCount.Should().Be(0);
+        repository.RecordedRuns.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task StartAsync_RetainedPausedRunRequiresRestoredPausedControlState()
+    {
+        var repository = new InMemoryStrategyRepository();
+        var paused = ConfiguredRun(RunType.Paper).Paused() with { TerminalStatus = StrategyRunStatus.Paused };
+        await repository.RecordRunAsync(paused);
+        var strategy = new StubLiveStrategy(paused.StrategyId, StrategyStatus.Registered);
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+        manager.Register(strategy);
+
+        var start = () => manager.StartAsync(paused.StrategyId, new StubExecutionContext(), RunType.Paper);
+
+        await start.Should().ThrowAsync<InvalidOperationException>().WithMessage("*restore*paused control state*");
+        strategy.StartCallCount.Should().Be(0);
+        repository.RecordedRuns.Should().ContainSingle();
+    }
+
+    [Theory]
+    [InlineData("approved")]
+    [InlineData("approved-account")]
+    [InlineData("override-revoked")]
+    [InlineData("breaker-open")]
+    [InlineData("routing-disabled")]
+    [InlineData("approval-missing")]
+    [InlineData("inputs-changed")]
+    [InlineData("account-changed")]
+    public async Task StartAsync_LiveRecovery_RevalidatesApprovalAndCurrentControls(string scenario)
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-live-recovery", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dataRoot);
+        try
+        {
+            var repository = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var original = ConfiguredRun(RunType.Live);
+            if (scenario is "approved-account" or "account-changed")
+            {
+                original = original with { FundAccountId = Guid.NewGuid() };
+                original = original with { InputHashSha256 = StrategyRunEntry.ComputeAccountBoundInputHash(original) };
+            }
+            await repository.RecordRunAsync(original);
+            var completed = original.Complete(null) with { TerminalStatus = StrategyRunStatus.Stopped };
+            await repository.RecordRunAsync(completed);
+            var controls = new ExecutionOperatorControlService(
+                new ExecutionOperatorControlOptions(Path.Combine(dataRoot, "controls")),
+                NullLogger<ExecutionOperatorControlService>.Instance);
+            var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+                ExecutionManualOverrideKinds.AllowLivePromotion,
+                "Live recovery approved.",
+                "operator-1",
+                StrategyId: original.StrategyId,
+                RunId: original.ParentRunId));
+            var approvals = new JsonlPromotionRecordStore(
+                Path.Combine(dataRoot, "promotions"), NullLogger<JsonlPromotionRecordStore>.Instance);
+            if (scenario != "approval-missing")
+            {
+                await approvals.AppendAsync(new StrategyPromotionRecord(
+                    PromotionId: "live-approval",
+                    StrategyId: original.StrategyId,
+                    StrategyName: original.StrategyName,
+                    SourceRunType: RunType.Paper,
+                    TargetRunType: RunType.Live,
+                    SourceRunId: original.ParentRunId!,
+                    TargetRunId: original.RunId,
+                    QualifyingSharpe: 1.5,
+                    QualifyingMaxDrawdownPercent: 0.05m,
+                    QualifyingTotalReturn: 0.12m,
+                    Decision: PromotionDecisionKinds.Approved,
+                    PromotedAt: DateTimeOffset.UtcNow,
+                    ApprovalReason: "Approved execution configuration and live recovery controls reviewed.",
+                    ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+                    EvidenceReferences: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live)
+                        .Select(item => item switch
+                        {
+                            PromotionApprovalChecklist.LiveOverrideReviewed => $"{item}:manual-override/{manualOverride.OverrideId}",
+                            PromotionApprovalChecklist.PaperExecutionModelReviewed => $"{item}:paper-match/1+paper-cost/1",
+                            _ => $"{item}:evidence/retained-{item.ToLowerInvariant()}"
+                        }).ToArray(),
+                    AuditReference: original.AuditReference,
+                    ApprovedBy: "operator-1",
+                    ManualOverrideId: manualOverride.OverrideId));
+            }
+
+            if (scenario == "override-revoked")
+            {
+                await controls.ClearManualOverrideAsync(manualOverride.OverrideId, "operator-1", "Recovery no longer approved.");
+            }
+            else if (scenario == "breaker-open")
+            {
+                await controls.SetCircuitBreakerAsync(true, "Live execution halted.", "operator-1");
+            }
+            else if (scenario is "inputs-changed" or "account-changed")
+            {
+                var childStartedAt = DateTimeOffset.UtcNow;
+                var changed = original with
+                {
+                    RunId = "changed-input-attempt",
+                    StartedAt = childStartedAt,
+                    LifecycleEventAtUtc = childStartedAt,
+                    CorrelationId = original.RunId,
+                    DatasetReference = scenario == "inputs-changed" ? "dataset://different-inputs" : original.DatasetReference,
+                    FundAccountId = scenario == "account-changed" ? Guid.NewGuid() : original.FundAccountId,
+                    RecoveryParentRunId = original.RunId,
+                    AttemptId = "changed-input-attempt",
+                    AttemptNumber = 2
+                };
+                changed = changed with
+                {
+                    InputHashSha256 = changed.FundAccountId.HasValue
+                        ? StrategyRunEntry.ComputeAccountBoundInputHash(changed)
+                        : StrategyRunEntry.ComputeRealismBoundInputHash(changed)
+                };
+                await repository.RecordRunAsync(changed);
+                completed = changed.Complete(null) with { TerminalStatus = StrategyRunStatus.Stopped };
+                await repository.RecordRunAsync(completed);
+            }
+
+            var restartedStore = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var manager = new StrategyLifecycleManager(
+                restartedStore,
+                NullLogger<StrategyLifecycleManager>.Instance,
+                approvals,
+                controls,
+                new BrokerageConfiguration { Gateway = "alpaca", LiveExecutionEnabled = scenario != "routing-disabled" });
+            var strategy = new StubLiveStrategy(original.StrategyId, StrategyStatus.Stopped);
+            manager.Register(strategy);
+            (await restartedStore.GetLatestRunAsync(original.StrategyId))!.RunId.Should().Be(completed.RunId);
+
+            if (scenario is "approved" or "approved-account")
+            {
+                var outcome = await manager.StartAsync(original.StrategyId, new StubExecutionContext(), RunType.Live);
+                outcome.State.Should().Be(OperationTerminalState.Succeeded);
+                (await restartedStore.GetLatestRunAsync(original.StrategyId))!.CorrelationId.Should().Be(original.RunId);
+                (await restartedStore.GetLatestRunAsync(original.StrategyId))!.FundAccountId.Should().Be(original.FundAccountId);
+                await manager.StopAsync(original.StrategyId);
+                var second = await manager.StartAsync(original.StrategyId, new StubExecutionContext(), RunType.Live);
+                second.State.Should().Be(OperationTerminalState.Succeeded);
+                (await restartedStore.GetLatestRunAsync(original.StrategyId))!.AttemptNumber.Should().Be(3);
+            }
+            else
+            {
+                var start = () => manager.StartAsync(original.StrategyId, new StubExecutionContext(), RunType.Live);
+                var failure = await start.Should().ThrowAsync<InvalidOperationException>();
+                if (scenario is "inputs-changed" or "account-changed")
+                {
+                    failure.WithMessage("*inputs differ from the approved execution configuration*");
+                }
+                strategy.StartCallCount.Should().Be(0);
+                var retained = (await restartedStore.GetLatestRunAsync(original.StrategyId))!;
+                retained.RunId.Should().Be(completed.RunId);
+                retained.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+                retained.EndedAt.Should().Be(completed.EndedAt);
+            }
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task StartAsync_LiveRecoveryWithoutApprovalAuthority_DoesNotStartExternally()
+    {
+        var repository = new InMemoryStrategyRepository();
+        var original = ConfiguredRun(RunType.Live).Complete(null) with { TerminalStatus = StrategyRunStatus.Stopped };
+        await repository.RecordRunAsync(original);
+        var strategy = new StubLiveStrategy(original.StrategyId, StrategyStatus.Stopped);
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+        manager.Register(strategy);
+
+        var start = () => manager.StartAsync(original.StrategyId, new StubExecutionContext(), RunType.Live);
+
+        await start.Should().ThrowAsync<InvalidOperationException>().WithMessage("*promotion authority*");
+        strategy.StartCallCount.Should().Be(0);
+        repository.RecordedRuns.Should().ContainSingle();
+    }
+
+    [Theory]
+    [InlineData(StrategyRunLifecycleEventType.Activated)]
+    [InlineData(StrategyRunLifecycleEventType.Recovered)]
+    [InlineData(StrategyRunLifecycleEventType.Resumed)]
+    public async Task ReconcileExternalStateAsync_AlreadyRetainedRunningTransition_ReturnsOriginalReceipt(
+        StrategyRunLifecycleEventType eventType)
+    {
+        var repository = new InMemoryStrategyRepository();
+        var run = ConfiguredRun(RunType.Paper) with { LastLifecycleEvent = eventType };
+        await repository.RecordRunAsync(run);
+        var manager = new StrategyLifecycleManager(repository, NullLogger<StrategyLifecycleManager>.Instance);
+        var strategy = new StubLiveStrategy(run.StrategyId, StrategyStatus.Running);
+        manager.Register(strategy, run);
+
+        var outcome = await manager.ReconcileExternalStateAsync(run.StrategyId);
+
+        outcome.State.Should().Be(OperationTerminalState.Succeeded);
+        outcome.OperationKind.Should().Be($"strategy-run.{eventType}");
+        repository.RecordedRuns.Should().ContainSingle();
+        strategy.StartCallCount.Should().Be(0);
     }
 
     [Fact]
@@ -622,6 +1030,47 @@ public sealed class StrategyLifecycleManagerTests
     // ------------------------------------------------------------------ //
     // Helpers                                                               //
     // ------------------------------------------------------------------ //
+
+    private static StrategyRunEntry ConfiguredRun(RunType runType)
+    {
+        var run = StrategyRunEntry.Start(
+            "configured-strategy",
+            "Configured Strategy",
+            runType,
+            "configured-run",
+            datasetReference: "dataset://retained-v1",
+            feedReference: "feed://primary",
+            engine: "ConfiguredExecutionEngine",
+            parameterSet: new Dictionary<string, string>
+            {
+                ["symbols"] = "SPY,QQQ",
+                ["maxPosition"] = "150",
+                ["workstationTenantId"] = "tenant-1",
+                ["workstationCompanyId"] = "company-1"
+            }) with
+        {
+            ParentRunId = "paper-source-run",
+            PortfolioId = "portfolio-configured",
+            LedgerReference = "ledger-configured",
+            AuditReference = "audit-approved-execution",
+            FundProfileId = "fund-profile-1",
+            FundDisplayName = "Configured Fund",
+            DataProvenanceToken = "real",
+            OperatorAcceptanceCriteria = ["Retain approved risk limits."],
+            RetainedEvidenceReferences = ["evidence://trust-packet-1"],
+            AccountingRecordReferences = ["accounting://record-1"],
+            ApprovalReferences = ["approval://operator-1"],
+            PaperValidationReferences = ["paper://validation-1"],
+            GovernedReportReferences = ["report://approved-1"],
+            ArtifactReferences = ["artifact://execution-config-1"],
+            ExecutionRealism = new ExecutionRealismDescriptor(
+                ExecutionModel.Auto, FillTiming.NextBar, FillConservatism.Conservative,
+                DelistingPolicy.LiquidateAtLastPrice, 0m, 5, BacktestCommissionKind.PerShare,
+                0.005m, 1m, 20m, 3m, 0.1m, 0.1m, 0m, true, 0.04,
+                DefaultBrokerageAccountId: "brokerage-account-1")
+        };
+        return run with { InputHashSha256 = StrategyRunEntry.ComputeRealismBoundInputHash(run) };
+    }
 
     private sealed class InMemoryStrategyRepository : IStrategyRepository
     {

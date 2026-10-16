@@ -1,0 +1,41 @@
+{
+  "start_utc": "2026-10-07T17:12:36Z",
+  "cpu_before": "usage_usec 1354349811\nuser_usec 1269000562\nsystem_usec 85349248\nnice_usec 0\nnr_periods 6033\nnr_throttled 815\nthrottled_usec 33048172\nnr_bursts 0\nburst_usec 0\n",
+  "tiered_compilation": "0",
+  "runs": [
+    {
+      "label": "native",
+      "command": [
+        "/workspace/dotnet-10.0.100/dotnet",
+        "/workspace/wal-hash-candidates/native/bin/Release/net10.0/Profile.dll",
+        "50000",
+        "3"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 16.832
+    },
+    {
+      "label": "managed",
+      "command": [
+        "/workspace/dotnet-10.0.100/dotnet",
+        "/workspace/wal-hash-candidates/managed/bin/Release/net10.0/Profile.dll",
+        "50000",
+        "3"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 22.451
+    },
+    {
+      "label": "native-sha256",
+      "command": [
+        "/workspace/Meridian-main/artifacts/wal-checksum-profile/native/native_sha256",
+        "100000",
+        "3"
+      ],
+      "exit_code": 0,
+      "duration_seconds": 10.695
+    }
+  ],
+  "end_utc": "2026-10-07T17:13:26Z",
+  "cpu_after": "usage_usec 1404535549\nuser_usec 1318599463\nsystem_usec 85936086\nnice_usec 0\nnr_periods 6533\nnr_throttled 815\nthrottled_usec 33048172\nnr_bursts 0\nburst_usec 0\n"
+}

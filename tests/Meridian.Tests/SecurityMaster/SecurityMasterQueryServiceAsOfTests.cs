@@ -9,16 +9,15 @@ using Xunit;
 namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
-/// Verifies point-in-time (transaction-time) reads over the security-master event stream:
-/// as-of queries replay the stream up to the requested timestamp instead of returning the
-/// current projection.
+/// Verifies stored event/revision timestamp eligibility. These queries read retained rows now;
+/// their timestamp cutoff does not assert historical transaction visibility or commit ordering.
 /// </summary>
 public sealed class SecurityMasterQueryServiceAsOfTests
 {
     private static readonly DateTimeOffset T0 = new(2025, 1, 15, 0, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public async Task GetByIdAsOfAsync_ReturnsTermsAsRecordedAtThatTime()
+    public async Task GetByIdAsOfAsync_ReturnsTermsFromTimestampEligibleEvents()
     {
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
@@ -71,6 +70,25 @@ public sealed class SecurityMasterQueryServiceAsOfTests
     }
 
     [Fact]
+    public async Task GetByIdAsOfAsync_CompatibilityReadAttachesCurrentAliasesToRecordedTerms()
+    {
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        eventStore.LoadAsync(securityId, Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            MakeEnvelope(securityId, version: 1, timestamp: T0, displayName: "Recorded Name")
+        });
+        var currentAlias = MakeAlias(securityId, "RECORDED-LATER", T0.AddDays(10), T0.AddDays(10), null, true);
+        var service = CreateService(eventStore, MakeProjection(securityId, "Current Name") with { Aliases = [currentAlias] });
+
+        var detail = await service.GetByIdAsOfAsync(securityId, T0.AddDays(1));
+
+        detail!.DisplayName.Should().Be("Recorded Name");
+        detail.Aliases.Should().ContainSingle().Which.AliasValue.Should().Be("RECORDED-LATER",
+            "this compatibility method retains current alias knowledge while rebuilding recorded terms");
+    }
+
+    [Fact]
     public async Task GetRecordedByIdAsOfAsync_DoesNotFallBackToProjectionOnlyCurrentState()
     {
         var securityId = Guid.NewGuid();
@@ -81,7 +99,7 @@ public sealed class SecurityMasterQueryServiceAsOfTests
 
         var detail = await service.GetRecordedByIdAsOfAsync(securityId, T0);
 
-        detail.Should().BeNull("strict accounting as-of reads require retained historical events");
+        detail.Should().BeNull("this retained-event query requires an eligible retained event");
     }
 
     [Fact]
@@ -114,6 +132,59 @@ public sealed class SecurityMasterQueryServiceAsOfTests
             .Should().Equal("ACTIVE", "DISABLED");
         detail.Aliases.Single(static alias => alias.AliasValue == "DISABLED")
             .IsEnabled.Should().BeFalse("historical filtering must preserve alias enabled semantics");
+    }
+
+    [Fact]
+    public async Task GetRecordedByIdAsOfAsync_ReportsAliasRevisionRecordedAtCutoff_NotCurrentCorrection()
+    {
+        var securityId = Guid.NewGuid();
+        var cutoff = T0.AddDays(2);
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        eventStore.LoadAsync(securityId, Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            MakeEnvelope(securityId, version: 1, timestamp: T0, displayName: "Acme Corp")
+        });
+        var recorded = MakeAlias(securityId, "ACME.O", T0, T0, null, isEnabled: true);
+        var corrected = recorded with { AliasValue = "ACME.OQ", Reason = "corrected after cutoff" };
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(MakeProjection(securityId, "Acme Corporation") with { Aliases = [corrected] });
+        store.GetAliasesRecordedAsOfAsync(securityId, cutoff, Arg.Any<CancellationToken>())
+            .Returns(new[] { recorded });
+        var service = new SecurityMasterQueryService(
+            eventStore,
+            store,
+            new SecurityMasterAggregateRebuilder(eventStore, Substitute.For<ISecurityMasterSnapshotStore>()));
+
+        var detail = await service.GetRecordedByIdAsOfAsync(securityId, cutoff);
+
+        detail.Should().NotBeNull();
+        detail!.Aliases.Should().ContainSingle()
+            .Which.AliasValue.Should().Be("ACME.O", "a correction recorded after the cutoff must not leak into the view");
+    }
+
+    [Fact]
+    public async Task GetRecordedByIdAsOfAsync_PreservesRecordedAliases_WhenCurrentProjectionIsAbsent()
+    {
+        var securityId = Guid.NewGuid();
+        var cutoff = T0.AddDays(2);
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        eventStore.LoadAsync(securityId, Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            MakeEnvelope(securityId, version: 1, timestamp: T0, displayName: "Retained Security")
+        });
+        var alias = MakeAlias(securityId, "RETAINED.A", T0, T0, null, true);
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetAliasesRecordedAsOfAsync(securityId, cutoff, Arg.Any<CancellationToken>())
+            .Returns((IReadOnlyList<SecurityAliasDto>)[alias]);
+        var service = new SecurityMasterQueryService(eventStore, store,
+            new SecurityMasterAggregateRebuilder(eventStore, Substitute.For<ISecurityMasterSnapshotStore>()));
+
+        var detail = await service.GetRecordedByIdAsOfAsync(securityId, cutoff);
+
+        detail.Should().NotBeNull();
+        detail!.Aliases.Should().ContainSingle().Which.AliasValue.Should().Be("RETAINED.A");
+        await store.DidNotReceive().GetProjectionAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -286,6 +357,11 @@ public sealed class SecurityMasterQueryServiceAsOfTests
         var store = Substitute.For<ISecurityMasterStore>();
         store.GetProjectionAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(currentProjection);
+        // Each alias here has a single revision recorded at its creation time.
+        store.GetAliasesRecordedAsOfAsync(Arg.Any<Guid>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo => (IReadOnlyList<SecurityAliasDto>)(currentProjection?.Aliases ?? [])
+                .Where(alias => alias.CreatedAt <= callInfo.ArgAt<DateTimeOffset>(1))
+                .ToArray());
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
         return new SecurityMasterQueryService(
             eventStore, store, new SecurityMasterAggregateRebuilder(eventStore, snapshotStore));

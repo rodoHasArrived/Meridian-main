@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-173621</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Linux Debian GNU/Linux 13 (trixie)
+AMD EPYC 9V74 2.60GHz, 1 CPU, 5 logical and 5 physical cores
+.NET SDK 10.0.100
+  [Host]     : .NET 10.0.0 (10.0.0, 10.0.25.52411), X64 RyuJIT x86-64-v4
+  Job-HDUCDG : .NET 10.0.0 (10.0.0, 10.0.25.52411), X64 RyuJIT x86-64-v4
+</code></pre>
+<pre><code>IterationCount=8  IterationTime=250ms  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                     </th><th>Mean</th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>DedupKey_CacheHit</td><td>63.616 ns</td><td>7.2679 ns</td><td>3.2270 ns</td><td>-</td><td>-</td>
+</tr><tr><td>DedupKey_CacheMiss</td><td>935.735 ns</td><td>253.0905 ns</td><td>112.3738 ns</td><td>0.0042</td><td>128 B</td>
+</tr><tr><td>WalChecksum_Small</td><td>223.096 ns</td><td>31.5334 ns</td><td>16.4926 ns</td><td>-</td><td>-</td>
+</tr><tr><td>WalChecksum_Medium_1KB</td><td>269.983 ns</td><td>33.1524 ns</td><td>14.7199 ns</td><td>-</td><td>-</td>
+</tr><tr><td>WalChecksum_Large_4KB</td><td>570.700 ns</td><td>66.2036 ns</td><td>29.3948 ns</td><td>-</td><td>-</td>
+</tr><tr><td>NewlineScan_Portable</td><td>1.977 ns</td><td>0.2701 ns</td><td>0.1199 ns</td><td>-</td><td>-</td>
+</tr><tr><td>AlpacaParse_Trade_SourceGenerated</td><td>702.937 ns</td><td>138.3685 ns</td><td>61.4365 ns</td><td>0.0224</td><td>384 B</td>
+</tr><tr><td>AlpacaParse_Quote_SourceGenerated</td><td>835.951 ns</td><td>89.9392 ns</td><td>39.9336 ns</td><td>0.0256</td><td>472 B</td>
+</tr></tbody></table>
+</body>
+</html>

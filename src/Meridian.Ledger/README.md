@@ -11,6 +11,11 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ledger
 
+`OpenLotReliefService` treats explicit long/short direction as part of the pool scope. It never
+nets the two directions, and it allocates positive quantity and both retained currency bases for
+a homogeneous pool. This calculation does not authorize short journals or infer short-sale tax
+character; those posting and reporting paths remain gated separately.
+
 `RecurringJournalSchedule` remains a pure calendar and template projection. Durable claims live in
 Financial Operations, while `RecurringJournalEvidence` retains the exact schedule/template
 versions, full definitions, accounting scope, period version and source references on each generated
@@ -19,9 +24,24 @@ source evidence at workbench validation and lifecycle boundaries. `RecurringTemp
 the generated event without granting submission, approval or posting authority. See
 [Recurring Journal](../../docs/domain/recurring-journal.md) for the retention and recovery contract.
 
+`CanonicalCorporateActionLotReport` packages the immutable predecessor closeout and successor
+acquisition snapshots. `LedgerReportPackBuilder` includes `corporate-action-lot-evidence.json` in
+the artifact manifest and signature when governed reporting supplies verified successor receipts.
+This proof preserves original/current currency bases, acquisition dates/FX and immutable origins.
+
 ## Shared close and lot convergence
 
 `OpenLotReliefService` uses the shared decimal consumption walk for canonical FIFO/LIFO/HIFO/SpecificId/AverageCost selection and retains transaction and functional basis separately. It refuses mixed security, position, book, quantity-basis, and currency scopes. The durable disposal writer and reporting capture consume the canonical evidence contract. Durable AverageCost posting restates the surviving pool atomically; discrete relief subsequently consumes that current basis and retains exact remaining basis. Acquisition facts stay immutable, and Reporting reproduces the certified posted result.
+
+`LotBasisRelief` owns exact proportional basis allocation for canonical relief and Backtesting's
+actual long-close and short-cover paths. Closing slices take the exact remaining basis; pooled
+relief assigns the division residual to the last slice. Canonical callers allocate transaction and
+functional basis independently from retained amounts. Consumer-specific ordering, currency rounding
+and historical journal reconstruction remain at their existing boundaries.
+Positive pools fail closed when decimal precision cannot retain a positive basis for every consumed
+slice; an exhausted residual is never redistributed into zero-basis parcels. This does not round
+otherwise valid exact allocations to a storage scale. Atomic disposal separately requires positive
+basis exactly representable at its durable twelve-decimal precision.
 
 `ValuationFreshnessPolicy` owns mark admission with required observation dates, complete coverage, a minimum confidence floor, and rejection of future or over-age marks. Compatibility settings can tighten this policy; Allow, Flag, or disabled settings cannot authorize stale values. `ValuationMarkEvidenceGuard` checks the retained position/date evidence at governed lifecycle boundaries. Read-only previews expose which positions would block before any valuation draft is created.
 
@@ -112,6 +132,10 @@ vendor composite → matrix/model → manual) and stamps the resolving tier's fa
 `AutomatedJournalDraft` (kind `FairValueMarkAdjustment`) with per-mark price evidence so daily
 fair-value adjustments flow through `AutomatedJournalApproval` before posting; the
 Application-layer `DailyMarkToMarketService` wires provider-chain close prices into this path.
+Entity-scoped daily valuation reads the same entity's retained carrying balance and preserves that
+entity in both journal legs, calculation evidence, and the draft fingerprint. Shared book/account
+balances from other entities cannot change the valuation delta. Intake and lifecycle validation
+reject an entity that differs from the retained calculation scope.
 `FixedIncomeAmortizationProjector` produces balanced coupon accrual, discount accretion, and
 premium amortization lines for bond accounting workflows before persistence or approval posting.
 `FixedAssetDepreciationProjector` is the depreciation analogue: it projects balanced
@@ -278,6 +302,10 @@ posting-ready status instead of silently merging incompatible capital-account su
 Capital-account impact rows preserve each journal entry's
 capital-account and investor metadata before falling back to the event-level identity, so blocked
 conflicts remain auditable without making them report-ready.
+
+`LedgerTaxLot` implements `IUnitizedLot`; `LedgerTaxLotBasisAdjuster` carries the unit kind and
+multiplier onto adjusted lots, so a face-value lot keeps its per-100 multiplier through basis
+adjustments.
 
 ## Diagrams
 

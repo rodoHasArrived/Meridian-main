@@ -9,6 +9,13 @@ public sealed partial class PostgresLedgerJournalStore
         LedgerJournalEntryWrite entry,
         LedgerBookRecord book)
     {
+        // The retained book designation is authoritative. Omitting reserved tags or claiming a
+        // different caller policy cannot turn a dedicated elimination book into a manual book.
+        if (RequiredAuthoritativeTextEquals(book.AccountingPolicyId, "consolidation-v1")
+            && ConsolidationPostingEvidenceGuard.Validate(entry) is null)
+            throw new LedgerValidationException(
+                "Dedicated consolidation books require reviewed consolidation evidence; ordinary journals cannot be appended.");
+
         if (!LegacyCompatibleAuthoritativeTextEquals(book.AccountingPolicyId, entry.AccountingPolicyId) ||
             !LegacyCompatibleAuthoritativeTextEquals(book.AccountingPolicyVersion, entry.AccountingPolicyVersion))
         {

@@ -190,7 +190,8 @@ public sealed record MarkToMarketCarryingValueRequest(
     Guid? LedgerBookId,
     DateTimeOffset AsOf,
     string BaseCurrency,
-    IReadOnlyList<MarkToMarketPosition> Positions);
+    IReadOnlyList<MarkToMarketPosition> Positions,
+    string? EntityId = null);
 
 /// <summary>
 /// Supplies current durable securities-account carrying values in one scoped read. Implementations
@@ -215,7 +216,8 @@ public sealed record DailyMarkToMarketRequest(
     string Actor,
     string Reason,
     MarkPriceQualityPolicy? QualityPolicy = null,
-    Guid? LedgerBookId = null);
+    Guid? LedgerBookId = null,
+    string? EntityId = null);
 
 /// <summary>
 /// Outcome of a daily mark-to-market preparation run. <see cref="Approval"/> is a
@@ -336,7 +338,8 @@ public sealed class DailyMarkToMarketService
                 request.LedgerBookId,
                 request.AsOf,
                 request.BaseCurrency,
-                request.Positions),
+                request.Positions,
+                request.EntityId),
             ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Carrying-value source returned no result set.");
 
@@ -447,7 +450,8 @@ public sealed class DailyMarkToMarketService
             request.PeriodId,
             request.AsOf,
             request.BaseCurrency,
-            marks));
+            marks,
+            request.EntityId));
 
         var drafts = DailyPortfolioPricingDraftBuilder.BuildDrafts(projection);
         if (drafts.Count == 0)

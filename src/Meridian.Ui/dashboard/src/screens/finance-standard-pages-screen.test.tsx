@@ -409,6 +409,9 @@ describe("finance standard pages", () => {
     expect(screen.getByLabelText("Ledger book")).toBeInTheDocument();
     expect(screen.getByLabelText("Ledger period")).toBeInTheDocument();
     expect(screen.queryByLabelText("Run / period")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Group consolidation" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Elimination book ID")).toHaveValue(LEDGER_BOOK_ID);
+    expect(screen.getByLabelText("Elimination period ID")).toHaveValue(LEDGER_PERIOD_ID);
 
     // The drill-through carries the period, which is how the detail screen resolves a posted
     // entry. It used to carry a runId, which no posted entry has.

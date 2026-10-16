@@ -4,7 +4,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
-public sealed record Dk1TrustGateReadinessOptions(string AutomationRoot)
+public sealed record Dk1TrustGateReadinessOptions(
+    string AutomationRoot,
+    TimeSpan? PromotionEvidenceMaximumAge = null)
 {
     public static Dk1TrustGateReadinessOptions Default { get; } = new(
         Path.Combine("artifacts", "provider-validation", "_automation"));
@@ -73,6 +75,38 @@ public sealed class Dk1TrustGateReadinessService
         }
 
         return snapshot.Readiness;
+    }
+
+    /// <summary>Reads the run's retained packet directly, without the cockpit's latest-packet cache.</summary>
+    internal async Task<TradingTrustGateReadinessDto?> GetRetainedPacketAsync(
+        string packetReference,
+        CancellationToken ct)
+    {
+        var automationRoot = ResolveAutomationRoot();
+        if (automationRoot is null || Path.IsPathRooted(packetReference))
+        {
+            return null;
+        }
+
+        try
+        {
+            var packetPath = Path.GetFullPath(Path.Combine(automationRoot, packetReference));
+            var relativePath = Path.GetRelativePath(automationRoot, packetPath);
+            if (relativePath == ".." || relativePath.StartsWith($"..{Path.DirectorySeparatorChar}", StringComparison.Ordinal) ||
+                !string.Equals(Path.GetFileName(packetPath), "dk1-pilot-parity-packet.json", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            await using var stream = File.OpenRead(packetPath);
+            using var document = await JsonDocument.ParseAsync(stream, cancellationToken: ct).ConfigureAwait(false);
+            return BuildReadinessFromPacket(packetPath, automationRoot, document.RootElement, includeLatestBundleMetadata: false);
+        }
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+        {
+            _logger.LogWarning(ex, "Unable to read retained DK1 promotion trust packet.");
+            return null;
+        }
     }
 
     private bool PacketStateMatchesCachedPath(PacketCacheState cachedState)
@@ -181,7 +215,11 @@ public sealed class Dk1TrustGateReadinessService
         }
     }
 
-    private TradingTrustGateReadinessDto BuildReadinessFromPacket(string packetPath, string automationRoot, JsonElement root)
+    private TradingTrustGateReadinessDto BuildReadinessFromPacket(
+        string packetPath,
+        string automationRoot,
+        JsonElement root,
+        bool includeLatestBundleMetadata = true)
     {
         var status = GetString(root, "status") ?? "unknown";
         var generatedAt = TryParseDateTimeOffset(GetString(root, "generatedAtUtc"));
@@ -233,7 +271,7 @@ public sealed class Dk1TrustGateReadinessService
             MissingOwners: missingOwners,
             CompletedAt: operatorSignoffCompletedAt,
             SourcePath: operatorSignoffSourcePath);
-        var latestEvidenceBundle = TryGetLatestEvidenceBundle(automationRoot);
+        var latestEvidenceBundle = includeLatestBundleMetadata ? TryGetLatestEvidenceBundle(automationRoot) : null;
 
         return new TradingTrustGateReadinessDto(
             GateId: "DK1",

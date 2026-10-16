@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-05
+**Reviewed:** 2026-10-15
 
 This is the canonical developer and agent entrypoint for Meridian engineering and contribution work.
 It replaces hand-built planning and historical engineering prose with active operating guidance.
@@ -25,7 +25,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **CI/CD ownership and rollout:** [CI/CD validation ownership](ci-cd-optimization.md)
 - **Pipeline budget measurements (PRD-112):** [Bounded benchmark lane and retained evidence](pipeline-benchmark.md)
 - **Docs regeneration automation constraints:** [Docs Regeneration Automation — Design Constraints](docs-regeneration-automation-design.md)
-- **Browser/docs regeneration and generated merge conflicts:** [Run the complete maintained generation sequence](generated-merge-recovery.md)
+- **Browser/docs regeneration and generated merge conflicts:** [Prepare an isolated repair and reviewed-hash merge](generated-merge-recovery.md)
 - **Free development tools:** [Free Development Tools](free-development-tools.md)
 - **C#/WPF market study companion:** [Practical C# and WPF for Financial Markets](practical-csharp-wpf-financial-markets.md)
 
@@ -63,6 +63,11 @@ cross-blueprint contracts that stop two independently written designs from colli
 
 Prefer the narrowest proof lane for the files you change.
 
+Enable the [staged-source Git hook](../development/git-hooks.md) with
+`./scripts/dev/install-git-hooks.sh` or `make install-hooks`, including in linked worktrees.
+The hook checks an isolated snapshot of staged C#/VB whitespace and skips .NET for commits
+without supported source files. CI continues to check whitespace across `Meridian.sln`.
+
 For hosted CI cache behavior, artifact locations, and timing comparisons, see
 [dependency caches and artifacts](../../.github/workflows/README.md#dependency-caches-and-artifacts).
 
@@ -80,6 +85,22 @@ there. Do not bypass GitHub branch protections; for PR-ready publishing, use a
 The four-lane `Meridian CI / quality-gate` keeps its identity. The always-reported
 `Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
 Production Certification, including pull requests and merge groups.
+
+For tracked-output drift or conflicts after updating from main, prepare a candidate without
+changing your branch or index:
+
+```powershell
+git fetch origin main
+python build/scripts/repair-generated.py --base-ref origin/main --head-ref HEAD --install-dependencies
+```
+
+Inspect `artifacts/generated-repair/report.json` and any successful repair patches. Source/prose
+conflicts and reviewed module hashes that match neither parent require review. Eligible hosted PRs
+can receive an App-backed repair commit with fresh CI; forks retain the contributor path.
+See [repair and fallback details](generated-merge-recovery.md) and
+[hosted activation](ci-cd-optimization.md#generated-repair-and-maintenance-activation).
+Merge-group freshness checks still fail when combined output is stale; refresh the affected
+branches and rebuild the group.
 
 The .NET lane builds the web host, then all unique default test projects in one generated
 solution-filter build for the standard `Release` configuration. The filter follows shared
@@ -189,21 +210,39 @@ $baselineSha = git rev-parse --verify 'origin/main^{commit}'
 # Local, database-free migration inventory and safety checks
 python build/scripts/schema-control.py inventory --base-ref $baselineSha
 
-# Rebuild and verify against a disposable PostgreSQL database
+# Scaffold the next free migration ordinal and regenerate the reservation table
+python build/scripts/schema-control.py new-migration --migration-set ledger --name example
+python build/scripts/schema-control.py generate-migration-docs --check
+
+# Rebuild and verify with an owned disposable PostgreSQL container (requires Docker)
 python -m pip install --requirement tools/schema_control/requirements.txt
-python build/scripts/schema-control.py verify `
-  --database-url "postgresql://meridian:meridian@localhost:5432/meridian_schema_control" `
+python build/scripts/schema-control.py local `
   --base-ref $baselineSha
 
 # Generate a hosted snapshot artifact for review
 gh workflow run schema-control.yml --ref <branch> -f mode=snapshot -f baseline_ref=$baselineSha
 ```
 
+The local command allocates a fresh container, host port, and retained candidate directory for
+each run, so consecutive and concurrent worktree checks need no manual database reset or port
+selection. It retains verification and PostgreSQL logs and cleans up its owned resources after
+completion or cancellation. Use `local --mode snapshot` to prepare a reviewed candidate;
+`promote --candidate-root <printed-candidate-directory>` remains an explicit separate command.
+
 PR checks compare against the pull-request event's base SHA. Both manual modes require an explicit
 `baseline_ref`, resolved once to a commit. Run evidence records the baseline and the actual
 checked-out candidate SHA (normally the GitHub merge commit for PRs). Use that same pair to
 reproduce a comparison independently of later `origin/main` advances; see the schema-control guide
 for evidence paths and local working-tree details.
+
+The [machine-readable migration reservation register](../../database/migration-reservations.json)
+owns pending ordinal claims; the [blueprint table](blueprints/README.md#ledger-migration-ordinals)
+is generated from it and existing SQL filenames. `new-migration` advances past the highest on-disk
+ordinal and skips reservations. An explicit `--ordinal N` also refuses occupied or reserved numbers.
+Release a pending claim before scaffolding its implementation, and run
+`python build/scripts/schema-control.py generate-migration-docs` after editing reservations.
+Preserve applied filenames and ordinals, including the two historical Ledger `008` scripts.
+PR-base comparison rejects newly introduced ordinal collisions.
 
 Never point `snapshot` or `verify` at a shared or production database. The workflow's check mode is
 read-only with respect to the repository and fails when `database/manifest/**` or

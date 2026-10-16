@@ -22,6 +22,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         await database.JournalStore.SaveLedgerBookAsync(new LedgerBookRecord(
             ledgerBookId, "fund-average-cost", Guid.NewGuid(), FundStructureNodeKindDto.Fund,
             "Average Cost Book", "USD", openedAt, openedAt));
+        await database.SeedLotReferenceAuthorityAsync(ledgerBookId, TestSecurityId, TestBookPositionId);
         var period = await database.JournalStore.SavePeriodAsync(
             new LedgerAccountingPeriod(periodId, ledgerBookId, 2026, 5, "2026-05",
                 new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 31), "Open", openedAt, ClosedAt: null, Version: 0),
@@ -131,7 +132,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 new DateOnly(2026, 5, 12), null, [acquisitionEvidence]));
         return AtomicTaxLotJournalCommand.Create(mutationBatchId, ledgerBookId, journal, sourceEventId,
             idempotencyKey, expectedPeriodVersion, AtomicTaxLotMutationKind.Acquisition, [evidence],
-            acquisitionLot: lot);
+            acquisitionLot: lot, referenceVersions: new(1, 1));
     }
 
     private static AtomicTaxLotJournalCommand BuildAverageCostDisposal(
@@ -166,6 +167,6 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             [evidence],
             disposalSelections: selections,
             reliefMethod: "AverageCost",
-            policyRevision: "tax-policy-avg");
+            policyRevision: "tax-policy-avg", referenceVersions: new(1, 1));
     }
 }

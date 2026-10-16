@@ -21,6 +21,8 @@ Start with:
 - [Corporate Action Case](corporate-action-case.md)
 - [Fund Event](fund-event.md)
 - [Operational Evidence Graph](operational-evidence-graph.md)
+- [Account Oversight Evidence](account-oversight-evidence.md)
+- [Intercompany Consolidation](intercompany-consolidation.md)
 - [Recurring Journal](recurring-journal.md)
 - [Security](security.md)
 

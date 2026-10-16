@@ -32,7 +32,13 @@ public static class FaceValueLotExtensions
             lot.AcquiredDate,
             quantity: lot.OriginalFace / LedgerLotParBasis,
             unitCost: lot.PricePercentOfPar * LedgerLotParBasis / lot.ParBasis,
-            lot.SecurityId);
+            lot.SecurityId)
+        {
+            // One ledger unit is one hundred of face, so the shared lot shape states it: the
+            // quantity times the multiplier is the lot's face amount.
+            UnitKind = SecurityLotUnitKind.FaceValue,
+            Multiplier = LedgerLotParBasis
+        };
     }
 
     public static IReadOnlyList<LedgerTaxLot> ToLedgerTaxLots(this IEnumerable<FaceValueLot> lots)

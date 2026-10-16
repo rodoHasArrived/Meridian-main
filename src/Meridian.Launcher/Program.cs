@@ -13,6 +13,14 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
+        if (!LauncherCommandPolicy.TryResolveStartupCommand(args, out var command))
+        {
+            MessageBox(
+                "Meridian accepts a single startup command: start or open.\n\n" +
+                "Use Meridian.LifecycleSupervisor for run, status, stop, restart, preflight, or help.");
+            return 2;
+        }
+
         var serviceDataRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Meridian",
@@ -21,6 +29,7 @@ internal static class Program
         var supervisorLogPath = Path.Combine(serviceDataRoot, "logs", "lifecycle-supervisor.log");
         var requestId = Guid.NewGuid().ToString("N");
         var launchStartedAtUtc = DateTimeOffset.UtcNow;
+        var observationTimer = Stopwatch.StartNew();
         var supervisorPath = Path.Combine(AppContext.BaseDirectory, "Meridian.LifecycleSupervisor.exe");
         if (!File.Exists(supervisorPath))
         {
@@ -45,17 +54,9 @@ internal static class Program
             WorkingDirectory = AppContext.BaseDirectory
         };
         start.Environment["MDC_LIFECYCLE_REQUEST_ID"] = requestId;
-        if (args.Length == 0)
-        {
-            start.ArgumentList.Add("start");
-        }
-        else
-        {
-            foreach (var argument in args)
-                start.ArgumentList.Add(argument);
-        }
+        start.ArgumentList.Add(command);
 
-        var existingReceipts = StartupOutcomeReceiptMonitor.Capture(receiptRoot);
+        var existingReceipts = StartupOutcomeReceiptMonitor.Capture(receiptRoot, requestId);
         Process? startedProcess;
         try
         {
@@ -97,9 +98,9 @@ internal static class Program
             return 1;
         }
 
-        var startupDeadline = launchStartedAtUtc.AddSeconds(
-            ReadStartupTimeoutSeconds(AppContext.BaseDirectory) + 30);
-        while (DateTimeOffset.UtcNow < startupDeadline)
+        var observationTimeout = ReadStartupObservationTimeout(AppContext.BaseDirectory);
+        var startupDeadline = launchStartedAtUtc.Add(observationTimeout);
+        while (observationTimer.Elapsed < observationTimeout)
         {
             if (TryCompleteFromOutcome(
                     receiptRoot,
@@ -128,6 +129,15 @@ internal static class Program
                     supervisorPath);
             }
         }
+
+        if (TryCompleteFromOutcome(
+                receiptRoot,
+                existingReceipts,
+                requestId,
+                launchStartedAtUtc,
+                serviceDataRoot,
+                out var finalOutcomeExitCode))
+            return finalOutcomeExitCode;
 
         var timeoutMessage =
             $"Meridian startup did not produce a verified terminal outcome by {startupDeadline:O}.";
@@ -251,21 +261,24 @@ internal static class Program
         }
     }
 
-    private static int ReadStartupTimeoutSeconds(string installRoot)
+    private static TimeSpan ReadStartupObservationTimeout(string installRoot)
     {
         var manifestPath = Path.Combine(installRoot, "service", "lifecycle-supervisor.json");
+        var defaultTimeout = LifecycleStartupTiming.GetStartupBudget(new LifecycleSupervisorManifestDto()) +
+                             TimeSpan.FromSeconds(30);
         if (!File.Exists(manifestPath))
-            return 60;
+            return defaultTimeout;
         try
         {
             var manifest = JsonSerializer.Deserialize(
                 File.ReadAllText(manifestPath),
                 LifecycleContractsJsonContext.Default.LifecycleSupervisorManifestDto);
-            return Math.Clamp(manifest?.StartupTimeoutSeconds ?? 60, 1, 600);
+            return LifecycleStartupTiming.GetStartupBudget(manifest ?? new LifecycleSupervisorManifestDto()) +
+                   TimeSpan.FromSeconds(30);
         }
-        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException or ArgumentException)
         {
-            return 60;
+            return defaultTimeout;
         }
     }
 

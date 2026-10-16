@@ -190,6 +190,34 @@ The Asset Accounting Event Spine remains the only route to candidate preparation
 evidence validation, maker-checker approval, optimistic-concurrency checks, and durable posting.
 Neither the projector nor the mapper can append a journal directly.
 
+### Canonical successor lots
+
+The bounded `W10-LOT-002` continuation uses one retained successor instruction for cashless
+Reg S/144A exchange, whole-unit splits, stock merger and proportional two-successor advance
+refunding. The mapped projection retains the exact reviewed lot instruction through the governed
+spine. Independent approval is required. The PostgreSQL posting boundary locks current source and
+target scope and commits predecessor closure, successor openings, journal and immutable receipts
+in one transaction. Same-security splits explicitly opt into a basis-transfer journal.
+Atomic successor commands require the canonical `AssetAccounting.CorporateAction` source type,
+approved state, retained approval identity, named actor and complete typed accounting context.
+Corrected-batch/source-journal metadata, reversal/rebook intents and closing-entry posting kinds
+are refused by this bounded path; the general case restatement workflow does not authorize them.
+
+Successors preserve acquisition/holding dates, original FX, original and current currency bases,
+and immutable source-action lineage after later disposal. Refunded successors alone carry
+Schedule D tracking. Storage follows immutable birth receipts through the full predecessor ancestry
+and resolves each stable source action from its retained version/hash-bound source-event evidence.
+Historical absent lineage or stable-ID fields keep their original shape; an intervening action,
+later disposal or fresh case/version cannot hide a repeated ancestor action. Missing, contradictory,
+cyclic or foreign-book ancestry blocks a new posting, while exact retries replay the committed receipt.
+Reporting validates the retained posting receipts and includes exact lot
+evidence under the report pack's checksums and signature. Unsupported cash components,
+corporate-action corrections and successor amortization require separately reviewed continuations.
+See the [lot convergence blueprint](../engineering/blueprints/security-lot-convergence-blueprint.md).
+Successor storage uses migration 042. Migration 043 is a separate forward correction for approved
+amortization reversal restoring a retained null prior basis; it does not expand corporate-action
+correction authority or change the case approval lifecycle.
+
 ## Future Expansion Notes
 
 Initial implementation uses the Clearwater corporate-action methodology as an effective-dated

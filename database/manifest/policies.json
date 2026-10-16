@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 242,
-    "warning": 242
+    "total": 243,
+    "warning": 243
   },
   "failed": false,
   "findings": [
@@ -1570,6 +1570,16 @@
     {
       "details": {
         "schema": "security_master",
+        "table": "security_workbench_generations"
+      },
+      "message": "Business table security_master.security_workbench_generations does not have a table comment.",
+      "object": "security_master.security_workbench_generations",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
         "table": "servicer_position_report_line"
       },
       "message": "Business table security_master.servicer_position_report_line does not have a table comment.",
@@ -2645,5 +2655,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "5f42a5569c832ebb0cb47298c898ec7d2c3add0cb56163f91609fab2bdcde32d"
+  "fingerprint": "7b8e72fb06f84fc1e785be066b77a4543deab85df8d5a9fee585845583dd504f"
 }

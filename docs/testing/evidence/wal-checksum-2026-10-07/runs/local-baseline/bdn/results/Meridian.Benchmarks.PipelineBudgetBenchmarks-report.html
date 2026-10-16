@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-171058</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Linux Debian GNU/Linux 13 (trixie)
+AMD EPYC 9V74 2.60GHz, 1 CPU, 5 logical and 5 physical cores
+.NET SDK 10.0.100
+  [Host]     : .NET 10.0.0 (10.0.0, 10.0.25.52411), X64 RyuJIT x86-64-v4
+  Job-HDUCDG : .NET 10.0.0 (10.0.0, 10.0.25.52411), X64 RyuJIT x86-64-v4
+</code></pre>
+<pre><code>IterationCount=8  IterationTime=250ms  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                     </th><th>Mean  </th><th>Error </th><th>StdDev</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>DedupKey_CacheHit</td><td>56.792 ns</td><td>5.811 ns</td><td>2.5802 ns</td><td>-</td><td>-</td>
+</tr><tr><td>DedupKey_CacheMiss</td><td>847.912 ns</td><td>124.660 ns</td><td>55.3498 ns</td><td>0.0061</td><td>128 B</td>
+</tr><tr><td>WalChecksum_Small</td><td>854.762 ns</td><td>73.877 ns</td><td>32.8020 ns</td><td>-</td><td>-</td>
+</tr><tr><td>WalChecksum_Medium_1KB</td><td>1,603.454 ns</td><td>354.937 ns</td><td>185.6387 ns</td><td>-</td><td>-</td>
+</tr><tr><td>WalChecksum_Large_4KB</td><td>5,053.999 ns</td><td>1,665.128 ns</td><td>870.8941 ns</td><td>-</td><td>-</td>
+</tr><tr><td>NewlineScan_Portable</td><td>1.645 ns</td><td>1.097 ns</td><td>0.5738 ns</td><td>-</td><td>-</td>
+</tr><tr><td>AlpacaParse_Trade_SourceGenerated</td><td>733.887 ns</td><td>106.158 ns</td><td>47.1348 ns</td><td>0.0226</td><td>384 B</td>
+</tr><tr><td>AlpacaParse_Quote_SourceGenerated</td><td>1,104.177 ns</td><td>240.394 ns</td><td>106.7365 ns</td><td>0.0249</td><td>472 B</td>
+</tr></tbody></table>
+</body>
+</html>

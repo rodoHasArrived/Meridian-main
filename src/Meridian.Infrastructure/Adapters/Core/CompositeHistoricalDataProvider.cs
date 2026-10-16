@@ -220,8 +220,9 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     /// with an error-level log so consumers cannot mistake it for fresh coverage. If every
     /// candidate is rate limited it waits (bounded by <see cref="_maxRateLimitRetryBudget"/>,
     /// with jitter) for the earliest reset and retries. When all providers fail it raises the
-    /// exhausted progress event and throws an <see cref="AggregateException"/>; when they
-    /// simply return no data it returns an empty list.
+    /// exhausted progress event and throws an <see cref="AggregateException"/>. Skipped
+    /// candidates remain unavailable coverage; an empty list requires every candidate to
+    /// have successfully returned no data.
     /// </summary>
     private async Task<IReadOnlyList<TResult>> ExecuteWithFailoverAsync<TResult>(
         string symbol,
@@ -244,7 +245,11 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
 
         for (var attempt = 0; ; attempt++)
         {
+            ct.ThrowIfCancellationRequested();
+            var candidates = candidateSelector().ToArray();
             List<(string Provider, Exception Error)> errors = [];
+            List<IHistoricalDataProvider> rateLimitedCandidates = [];
+            var hasNonRateLimitFailure = false;
 
             void Report(
                 string providerName,
@@ -264,13 +269,20 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     attempt,
                     operationLabel);
 
-            foreach (var provider in candidateSelector())
+            foreach (var provider in candidates)
             {
+                ct.ThrowIfCancellationRequested();
+
                 // Skip providers in backoff period
                 if (_health.IsInBackoffPeriod(provider.Name))
                 {
                     _log.Debug("Skipping {Provider} - in backoff period", provider.Name);
-                    Report(provider.Name, "skipped-backoff");
+                    var unavailable = new DataProviderException(
+                        "Provider is unavailable during failure backoff; coverage was not checked.",
+                        provider: provider.Name,
+                        symbol: symbol);
+                    errors.Add((provider.Name, unavailable));
+                    Report(provider.Name, "skipped-backoff", error: unavailable.Message);
                     continue;
                 }
 
@@ -279,7 +291,14 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                 {
                     var resetTime = _rotation.GetTimeUntilReset(provider.Name);
                     _log.Debug("Skipping {Provider} - rate limited, resets in {ResetTime}", provider.Name, resetTime);
-                    Report(provider.Name, "skipped-rate-limited");
+                    var unavailable = new RateLimitException(
+                        "Provider is rate limited; coverage was not checked.",
+                        provider: provider.Name,
+                        symbol: symbol,
+                        retryAfter: resetTime);
+                    errors.Add((provider.Name, unavailable));
+                    rateLimitedCandidates.Add(provider);
+                    Report(provider.Name, "skipped-rate-limited", error: unavailable.Message);
                     continue;
                 }
 
@@ -299,6 +318,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     _rotation.RecordRequest(provider.Name);
 
                     var results = await fetchAsync(provider, resolvedSymbol, ct).ConfigureAwait(false);
+                    ct.ThrowIfCancellationRequested();
                     var elapsed = DateTimeOffset.UtcNow - startTime;
 
                     if (results is { Count: > 0 })
@@ -354,12 +374,14 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                     {
                         var retryAfter = ExtractRetryAfter(ex);
                         _rotation.RecordRateLimitHit(provider.Name, retryAfter);
+                        rateLimitedCandidates.Add(provider);
                         _log.Warning("Provider {Provider} hit rate limit for {Symbol} {Operation}, rotating to next provider",
                             provider.Name, symbol, operationLabel);
                         Report(provider.Name, "rate-limited", error: ex.Message);
                     }
                     else
                     {
+                        hasNonRateLimitFailure = true;
                         _log.Warning(ex, "Provider {Provider} failed for {Symbol} {Operation}", provider.Name, symbol, operationLabel);
                         _health.RecordFailure(provider.Name, ex.Message);
                         Report(provider.Name, "failed", error: ex.Message);
@@ -368,18 +390,20 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                 }
             }
 
-            // All providers failed - if they were all just rate limited and we still have retry
-            // attempts and time budget left, wait for the earliest reset (with jitter) and retry.
+            ct.ThrowIfCancellationRequested();
+
+            // A throttled candidate can still recover even when another candidate is already
+            // backed off. Preserve the retry policy for fresh failures and the shared time budget.
             if (_rotation.Enabled
-                && errors.Count > 0
-                && errors.All(e => IsRateLimitException(e.Error))
+                && rateLimitedCandidates.Count > 0
+                && !hasNonRateLimitFailure
                 && attempt < MaxRateLimitRetries)
             {
-                var wait = _rotation.ComputeRateLimitWait(_providers, retryDeadline);
+                var wait = _rotation.ComputeRateLimitWait(rateLimitedCandidates, retryDeadline);
                 if (wait.HasValue)
                 {
                     _log.Information(
-                        "All providers rate limited for {Symbol} {Operation} (attempt {Attempt}/{MaxRetries}). Waiting {WaitTime} for rate limit reset...",
+                        "Waiting for rate-limited coverage for {Symbol} {Operation} (attempt {Attempt}/{MaxRetries}). Waiting {WaitTime} for rate limit reset...",
                         symbol, operationLabel, attempt + 1, MaxRateLimitRetries, wait.Value);
                     Report(Name, "waiting-for-rate-limit");
                     await Task.Delay(wait.Value, ct).ConfigureAwait(false);
@@ -405,6 +429,14 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
                 var errorSummary = string.Join("; ", errors.Select(e => $"{e.Provider}: {e.Error.Message}"));
                 Report(Name, "all-providers-failed", error: errorSummary);
                 throw new AggregateException(allFailedMessageFactory(errorSummary), errors.Select(e => e.Error));
+            }
+
+            if (candidates.Length == 0)
+            {
+                const string error = "No eligible providers are available; coverage was not checked.";
+                Report(Name, "all-providers-failed", error: error);
+                throw new AggregateException(allFailedMessageFactory(error),
+                    new DataProviderException(error, provider: Name, symbol: symbol));
             }
 
             _log.Warning("No data found from any provider for {Symbol} {Operation}", symbol, operationLabel);

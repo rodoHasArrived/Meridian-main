@@ -551,7 +551,7 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
                     _pendingOpenRequests.Add(operationRequest.RequestId, operationRequest);
                 pendingOutcome = _openOutcomeGate.WaitAsync(
                     operationRequest.RequestId,
-                    TimeSpan.FromSeconds(_configuration.Manifest.StartupTimeoutSeconds + 15));
+                    LifecycleStartupTiming.GetStartupBudget(_configuration.Manifest) + TimeSpan.FromSeconds(15));
             }
         }
 
@@ -614,7 +614,7 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
             _openOutcomeGate.Remove(operationRequest.RequestId);
             var terminalMessage =
                 $"Meridian open request {operationRequest.RequestId} did not reach exact Ready status " +
-                $"within {_configuration.Manifest.StartupTimeoutSeconds + 15} seconds.";
+                $"within {LifecycleStartupTiming.GetStartupBudget(_configuration.Manifest).TotalSeconds + 15} seconds.";
             AppendSupervisorLog(terminalMessage);
             var receipt = TryPersistStartupOutcome(
                 operationRequest,
@@ -924,7 +924,7 @@ internal sealed class LifecycleSupervisorRuntime : IAsyncDisposable
                 _configuration,
                 request,
                 _sessionId,
-                _startedAtUtc.Value,
+                request.StartedAtUtc,
                 state,
                 _preflightSucceeded,
                 readinessSatisfied,

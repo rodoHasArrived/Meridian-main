@@ -58,9 +58,9 @@ evidence cannot establish a real production outcome.
 
 ## Startup recovery
 
-The launcher opens the workstation only after exact `/readyz` success and a readiness receipt bound
-to the current request. Its terminal receipt records the browser attempt. Request retries append
-numbered attempt files and do not overwrite prior evidence. On malformed configuration, timeout,
+The lifecycle supervisor opens the workstation only after exact `/readyz` success and a readiness
+receipt bound to the current request. Its terminal receipt records the browser attempt. Request
+retries append numbered attempt files and do not overwrite prior evidence. On malformed configuration, timeout,
 process-start failure, or early process exit, preserve the supervisor or launcher failure receipt
 and logs, use the reported repair action, and retry. A zero process exit without the bound receipt
 is still a failed startup. `Degraded` health never satisfies the launch gate.

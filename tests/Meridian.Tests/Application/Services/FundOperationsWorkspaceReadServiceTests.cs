@@ -113,8 +113,9 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             Source: "custody",
             RecordedBy: "test",
             SecuritiesMarketValue: 200m));
+        var bankBatchId = Guid.NewGuid();
         await accountService.IngestBankStatementAsync(new IngestBankStatementRequest(
-            BatchId: Guid.NewGuid(),
+            BatchId: bankBatchId,
             AccountId: bankAccount.AccountId,
             StatementDate: new DateOnly(2026, 4, 11),
             BankName: "Meridian Bank",
@@ -123,7 +124,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             [
                 new BankStatementLineDto(
                     LineId: Guid.NewGuid(),
-                    BatchId: Guid.NewGuid(),
+                    BatchId: bankBatchId,
                     AccountId: bankAccount.AccountId,
                     TransactionDate: new DateOnly(2026, 4, 11),
                     ValueDate: new DateOnly(2026, 4, 11),

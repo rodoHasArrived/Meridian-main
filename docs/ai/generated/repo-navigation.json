@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-04T00:49:22Z",
+  "generatedAt": "2026-10-07T18:21:09Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "pr-3011",
+  "repositoryRoot": "Meridian-consolidation-publish",
   "subsystems": [
     {
       "id": "host-shell",
@@ -11,13 +11,19 @@
         "Meridian",
         "Meridian.Application",
         "Meridian.Contracts",
-        "Meridian.Core"
+        "Meridian.Core",
+        "Meridian.Launcher",
+        "Meridian.LifecycleSupervisor",
+        "Meridian.Setup"
       ],
       "projectPaths": [
         "src/Meridian",
         "src/Meridian.Application",
         "src/Meridian.Contracts",
-        "src/Meridian.Core"
+        "src/Meridian.Core",
+        "src/Meridian.Launcher",
+        "src/Meridian.LifecycleSupervisor",
+        "src/Meridian.Setup"
       ],
       "commonTasks": [
         "startup debugging",
@@ -32,23 +38,39 @@
         "cli",
         "composition",
         "config",
+        "consumer",
         "contracts",
         "core",
         "dto",
         "exceptions",
         "host",
+        "installed",
+        "installer",
+        "launcher",
+        "lifecycle",
         "logging",
         "orchestration",
+        "payload",
         "pipeline",
+        "postgresql",
+        "readiness",
+        "repair",
         "serialization",
         "services",
         "shared",
-        "startup"
+        "startup",
+        "startup receipt",
+        "supervisor"
       ],
       "keyContracts": [
         "src/Meridian.Application/Pipeline/EventPipeline.cs",
         "src/Meridian.Contracts",
+        "src/Meridian.Contracts/Lifecycle",
+        "src/Meridian.Contracts/Operations",
         "src/Meridian.Core/Serialization/MarketDataJsonContext.cs",
+        "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs",
+        "src/Meridian.Setup/InstallationTransaction.cs",
+        "src/Meridian.Setup/PayloadPackage.cs",
         "src/Meridian/Program.cs"
       ],
       "entrypoints": [
@@ -56,15 +78,25 @@
         "src/Meridian.Application/Pipeline",
         "src/Meridian.Contracts",
         "src/Meridian.Core/Serialization",
+        "src/Meridian.Launcher/LauncherCommandPolicy.cs",
+        "src/Meridian.Launcher/Program.cs",
+        "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs",
+        "src/Meridian.LifecycleSupervisor/LifecycleStartupOutcome.cs",
+        "src/Meridian.LifecycleSupervisor/LifecycleSupervisorRuntime.cs",
+        "src/Meridian.LifecycleSupervisor/Program.cs",
+        "src/Meridian.Setup/InstallationTransaction.cs",
+        "src/Meridian.Setup/PayloadPackage.cs",
+        "src/Meridian.Setup/Program.cs",
         "src/Meridian/Program.cs"
       ],
       "relatedDocs": [
         "docs/ai/README.md",
         "docs/ai/ai-known-errors.md",
-        "docs/ai/navigation/README.md"
+        "docs/ai/navigation/README.md",
+        "docs/reference/verified-operation-outcomes.md"
       ],
       "recommendedStart": "Meridian",
-      "docCoverageHint": "medium"
+      "docCoverageHint": "high"
     },
     {
       "id": "providers-data",
@@ -453,7 +485,9 @@
         "Meridian.Ui.Services",
         "Meridian.Ui.Shared"
       ],
-      "relatedDocs": []
+      "relatedDocs": [
+        "docs/reference/verified-operation-outcomes.md"
+      ]
     },
     {
       "name": "Meridian.Application",
@@ -750,6 +784,42 @@
       ]
     },
     {
+      "name": "Meridian.Launcher",
+      "path": "src/Meridian.Launcher",
+      "kind": "launcher",
+      "subsystem": "host-shell",
+      "summary": "Installed Windows entrypoint that validates consumer commands and verifies request-bound startup outcomes.",
+      "commonTasks": [
+        "consumer launch",
+        "startup receipt verification",
+        "launcher command validation"
+      ],
+      "keywords": [
+        "consumer",
+        "installed",
+        "launcher",
+        "lifecycle",
+        "startup receipt"
+      ],
+      "entrypoints": [
+        "src/Meridian.Launcher/Program.cs",
+        "src/Meridian.Launcher/LauncherCommandPolicy.cs",
+        "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs"
+      ],
+      "keyContracts": [
+        "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs",
+        "src/Meridian.Contracts/Lifecycle"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts"
+      ],
+      "relatedDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/operators/browser-workstation-installer.md",
+        "docs/reference/verified-operation-outcomes.md"
+      ]
+    },
+    {
       "name": "Meridian.Ledger",
       "path": "src/Meridian.Ledger",
       "kind": "ledger",
@@ -776,6 +846,42 @@
         "Meridian.FSharp.Ledger"
       ],
       "relatedDocs": []
+    },
+    {
+      "name": "Meridian.LifecycleSupervisor",
+      "path": "src/Meridian.LifecycleSupervisor",
+      "kind": "supervisor",
+      "subsystem": "host-shell",
+      "summary": "Persistent per-user ownership of installed host/database startup, readiness, browser opening, and shutdown.",
+      "commonTasks": [
+        "installed startup debugging",
+        "lifecycle control",
+        "database process ownership"
+      ],
+      "keywords": [
+        "installed",
+        "lifecycle",
+        "postgresql",
+        "readiness",
+        "supervisor"
+      ],
+      "entrypoints": [
+        "src/Meridian.LifecycleSupervisor/Program.cs",
+        "src/Meridian.LifecycleSupervisor/LifecycleSupervisorRuntime.cs",
+        "src/Meridian.LifecycleSupervisor/LifecycleStartupOutcome.cs"
+      ],
+      "keyContracts": [
+        "src/Meridian.Contracts/Lifecycle",
+        "src/Meridian.Contracts/Operations"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts"
+      ],
+      "relatedDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/operators/browser-workstation-installer.md",
+        "docs/reference/verified-operation-outcomes.md"
+      ]
     },
     {
       "name": "Meridian.Mcp",
@@ -909,6 +1015,39 @@
       "relatedDocs": []
     },
     {
+      "name": "Meridian.Setup",
+      "path": "src/Meridian.Setup",
+      "kind": "installer",
+      "subsystem": "host-shell",
+      "summary": "Consumer executable payload installation, repair, and uninstall.",
+      "commonTasks": [
+        "consumer installation",
+        "payload verification",
+        "installed repair"
+      ],
+      "keywords": [
+        "consumer",
+        "installed",
+        "installer",
+        "payload",
+        "repair"
+      ],
+      "entrypoints": [
+        "src/Meridian.Setup/Program.cs",
+        "src/Meridian.Setup/PayloadPackage.cs",
+        "src/Meridian.Setup/InstallationTransaction.cs"
+      ],
+      "keyContracts": [
+        "src/Meridian.Setup/PayloadPackage.cs",
+        "src/Meridian.Setup/InstallationTransaction.cs"
+      ],
+      "projectReferences": [],
+      "relatedDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/operators/browser-workstation-installer.md"
+      ]
+    },
+    {
       "name": "Meridian.Storage",
       "path": "src/Meridian.Storage",
       "kind": "storage",
@@ -981,7 +1120,10 @@
         "Meridian.Infrastructure",
         "Meridian.Instruments"
       ],
-      "relatedDocs": []
+      "relatedDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/reference/verified-operation-outcomes.md"
+      ]
     },
     {
       "name": "Meridian.Ui.Services",
@@ -1258,6 +1400,45 @@
   ],
   "documents": [
     {
+      "path": "docs/reference/lifecycle-control-plane.md",
+      "title": "Installed lifecycle control plane",
+      "area": "runtime",
+      "whenToConsult": "When debugging installed launcher commands, supervisor ownership, database startup, readiness, or receipts.",
+      "keywords": [
+        "launcher",
+        "supervisor",
+        "installed",
+        "lifecycle",
+        "readiness"
+      ]
+    },
+    {
+      "path": "docs/operators/browser-workstation-installer.md",
+      "title": "Consumer workstation installation",
+      "area": "runtime",
+      "whenToConsult": "When packaging, installing, repairing, or validating the consumer workstation.",
+      "keywords": [
+        "installer",
+        "installed",
+        "consumer",
+        "payload",
+        "repair"
+      ]
+    },
+    {
+      "path": "docs/reference/verified-operation-outcomes.md",
+      "title": "Verified operation outcomes",
+      "area": "runtime",
+      "whenToConsult": "When changing request-bound launcher receipts, terminal outcome validation, or recovery evidence.",
+      "keywords": [
+        "launcher",
+        "supervisor",
+        "lifecycle",
+        "startup receipt",
+        "verified outcome"
+      ]
+    },
+    {
       "path": "CLAUDE.md",
       "title": "Root project context",
       "area": "root-context",
@@ -1511,6 +1692,39 @@
     }
   ],
   "taskRoutes": [
+    {
+      "id": "installed-runtime",
+      "title": "Consumer launcher, lifecycle supervisor, and installation",
+      "description": "Use when auditing or debugging the installed entrypoint, request-bound startup receipts, host/database ownership, or consumer installation.",
+      "keywords": [
+        "launcher",
+        "supervisor",
+        "installed",
+        "installer",
+        "consumer",
+        "lifecycle",
+        "startup receipt"
+      ],
+      "subsystems": [
+        "host-shell"
+      ],
+      "subsystemTitles": [
+        "Host and Composition"
+      ],
+      "startProjects": [
+        "Meridian.Launcher",
+        "Meridian.LifecycleSupervisor",
+        "Meridian.Setup"
+      ],
+      "startSymbols": [],
+      "authoritativeDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/reference/verified-operation-outcomes.md",
+        "docs/operators/browser-workstation-installer.md"
+      ],
+      "recommendedSkill": "meridian-code-review",
+      "recommendedAgent": "code-review-agent"
+    },
     {
       "id": "provider-work",
       "title": "Provider implementation and provider bugs",
@@ -1928,6 +2142,11 @@
       "reason": "Meridian.Infrastructure references Meridian.ProviderSdk directly via project reference."
     },
     {
+      "from": "Meridian.Launcher",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Launcher references Meridian.Contracts directly via project reference."
+    },
+    {
       "from": "Meridian.Ledger",
       "to": "Meridian.Core",
       "reason": "Meridian.Ledger references Meridian.Core directly via project reference."
@@ -1936,6 +2155,11 @@
       "from": "Meridian.Ledger",
       "to": "Meridian.FSharp.Ledger",
       "reason": "Meridian.Ledger references Meridian.FSharp.Ledger directly via project reference."
+    },
+    {
+      "from": "Meridian.LifecycleSupervisor",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.LifecycleSupervisor references Meridian.Contracts directly via project reference."
     },
     {
       "from": "Meridian.Mcp",
@@ -2220,323 +2444,323 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Contracts/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 9
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T17:17:54Z",
+      "lastCommit": "baeea857d",
+      "lastSummary": "Preserve canonical consolidation header and posting lineage",
+      "touches": 6
     },
     {
-      "path": "src/Meridian.FinancialOperations/README.md",
+      "path": "src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 9
+      "lastModified": "2026-10-07T17:17:54Z",
+      "lastCommit": "baeea857d",
+      "lastSummary": "Preserve canonical consolidation header and posting lineage",
+      "touches": 5
     },
     {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 9
+      "path": "src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T17:17:54Z",
+      "lastCommit": "baeea857d",
+      "lastSummary": "Preserve canonical consolidation header and posting lineage",
+      "touches": 5
     },
     {
-      "path": "src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.cs",
+      "path": "src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ledger/LedgerTaxLotReliefProjector.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ledger/README.md",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/ILedgerJournalStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AtomicTaxLots.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLotDisposalHistory.cs",
+      "path": "src/Meridian.Contracts/Ledger/ConsolidationDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Consolidation.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types/consolidation.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Contracts/Ledger/LedgerBookDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ConsolidationChartValidation.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T16:17:55Z",
+      "lastCommit": "4c039f269",
+      "lastSummary": "Apply canonical formatting to consolidation authority leases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/FundStructure/PostgresFundStructureStore.Consolidation.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
+      "lastModified": "2026-10-07T16:17:55Z",
+      "lastCommit": "4c039f269",
+      "lastSummary": "Apply canonical formatting to consolidation authority leases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
+      "touches": 30
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Consolidation/ConsolidationPerimeterResolver.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 2
+      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
+      "touches": 3
     },
     {
-      "path": "src/Meridian.Ledger/LedgerTaxLotReliefHistoryProjector.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs",
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Validation.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/AtomicTaxLotJournalFingerprint.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_039__tax_lot_proceeds_allocation.sql",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.ProceedsAllocation.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T18:13:40-07:00",
-      "lastCommit": "e4d01ca49",
-      "lastSummary": "fix(ledger): version retained disposal allocation and preserve exact quotes",
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
       "touches": 1
     },
     {
       "path": "src/Meridian.Application/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 18
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 22
     },
     {
-      "path": "src/Meridian.Infrastructure/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Application/Pipeline/EventPipeline.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/ConfigurationFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Platform/README.md",
+      "path": "src/Meridian.FinancialOperations/README.md",
       "subsystem": "Unmapped",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 2
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 16
     },
     {
-      "path": "src/Meridian.Platform/Tracing/OpenTelemetrySetup.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-02T13:47:30-07:00",
-      "lastCommit": "d1f68e14a",
-      "lastSummary": "Fix backfill timeout spans and preserve opt-in pipeline telemetry",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.WashSale.cs",
+      "path": "src/Meridian.Storage/README.md",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T13:42:28-07:00",
-      "lastCommit": "fdcb99488",
-      "lastSummary": "fix(ledger): preserve parcel signs and account-scoped wash-sale identities",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Core/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/Composition/ServiceCompositionRoot.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Core/Config/AppConfig.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/Composition/HostStartup.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Core/Config/SensitiveKeyRegistry.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Core/Config/TracingConfig.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Core/Serialization/MarketDataJsonContext.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/Backfill/MarketDataTracing.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:46:21-07:00",
-      "lastCommit": "0f87603b9",
-      "lastSummary": "Enable opt-in host tracing and preserve queued operation context",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.ProviderSdk/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
-      "touches": 5
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 15
     },
     {
       "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
-      "touches": 5
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 11
     },
     {
       "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/IConsolidationPostingAuthority.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/LedgerStoreExtensions.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Contracts/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 15
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.MutationRecovery.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.cs",
+      "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.Runtime.cs",
+      "path": "src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
+      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Lifecycle.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Infrastructure/Reconciliation/StatementDurabilityInfrastructure.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
+      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Application/Composition/Features/BackfillFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-02T10:43:05-07:00",
-      "lastCommit": "d8ed2299d",
-      "lastSummary": "Fix PRD-108 Infrastructure persistence boundary and validate project references",
+      "path": "src/Meridian.Ui/dashboard/src/screens/finance-standard-pages-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/finance-standard-pages-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Entities/FundStructure/FundStructurePolicyService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Entities/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 1
     }
   ],

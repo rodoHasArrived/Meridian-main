@@ -331,7 +331,8 @@ class ReleasePromotionTests(unittest.TestCase):
     def test_release_dependency_graph_and_signing_preconditions_cannot_be_bypassed_by_rehearsal(self):
         workflow = yaml.load((ROOT / '.github/workflows/desktop-installer-packaging.yml').read_text(encoding='utf-8'), Loader=yaml.BaseLoader)
         jobs = workflow['jobs']
-        self.assertEqual(workflow['concurrency']['group'], 'desktop-installer-release')
+        self.assertEqual(workflow['concurrency']['group'],
+                         "${{ github.event_name == 'schedule' && 'desktop-installer-rehearsal' || 'desktop-installer-release' }}")
         self.assertEqual(workflow['concurrency']['cancel-in-progress'], 'false')
         self.assertEqual(set(jobs['release']['needs']), self.gate.GATES)
         self.assertNotIn('if', jobs['release'])
@@ -342,8 +343,15 @@ class ReleasePromotionTests(unittest.TestCase):
         self.assertEqual(jobs['certify-installed-consumer']['runs-on'], 'windows-latest')
         self.assertEqual(set(jobs['certify-installed-consumer']['needs']), {'eligibility', 'build-consumer-setup'})
         signing = next(s for s in jobs['eligibility']['steps'] if s.get('name') == 'Validate signing prerequisites before builds')
-        self.assertIn('IsNullOrWhiteSpace($env:SIGNING_PFX)', signing['run'])
-        self.assertIn('IsNullOrWhiteSpace($env:SIGNING_PASSWORD)', signing['run'])
+        self.assertEqual(signing['run'], './build/scripts/ci/check-release-signing.ps1')
+        prerequisite = (ROOT / 'build/scripts/ci/check-release-signing.ps1').read_text(encoding='utf-8')
+        self.assertIn('IsNullOrWhiteSpace($env:SIGNING_PFX)', prerequisite)
+        self.assertIn('IsNullOrWhiteSpace($env:SIGNING_PASSWORD)', prerequisite)
+        self.assertIn('EphemeralKeySet', prerequisite)
+        self.assertIn('$certificate.HasPrivateKey', prerequisite)
+        self.assertIn('$certificate.Subject -eq $manifest.Package.Identity.Publisher', prerequisite)
+        self.assertIn('$certificate.NotAfter.ToUniversalTime() -le [DateTime]::UtcNow', prerequisite)
+        self.assertIn("if ($receipt.status -ne 'passed') { exit 1 }", prerequisite)
         for job in ('ci', 'secrets', 'codeql', 'production', 'smoke', 'release-preflight'):
             self.assertEqual(jobs[job]['needs'], 'eligibility')
         self.assertEqual(jobs['smoke']['with']['project'], 'web-workstation')

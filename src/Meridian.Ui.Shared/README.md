@@ -6,10 +6,78 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-05
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Ui.Shared
+
+Late-adjustment review requires the authenticated operator's built-in role or named role profile
+to match the review role retained on the adjustment's materiality policy, alongside ledger mutation
+permission and an independent requester/reviewer. Administrative mutation permission does not
+substitute for that review role. Daily valuation carries its entity through ledger carrying-value
+lookup, retained evidence, draft dimensions, intake, and lifecycle validation.
+Previously retained entity-scoped valuation drafts without entity-bound mark evidence require a
+fresh valuation assessment before approval or posting.
+
+`LedgerEndpoints.AccountOversight` provides shared account-owned ledger-book routes for durable
+cash cases, retained replay/assignment, independently approved close-price sets and cash forecasts.
+Authenticated tenant/company and retained book ownership establish exact scope; client actor and
+tenant assertions cannot establish authority. `AccountCashForecastEvidenceAdapter` supports typed
+balance/flow/FX JSON from independently reviewed account Evidence Vault documents. It verifies
+original bytes, hashes, review provenance, version and every economic field before capture;
+unsupported inputs fail closed. File histories require explicit administrative provisioning.
+See [bounded account oversight](../../docs/operators/account-oversight.md) for route and source
+format contracts. These seams do not grant accounting-close or payment authority.
+The browser receives exact decimal text through this HTTP transport without changing retained
+domain digests. Scoped access context supplies current session capabilities; close-price history
+loads all exact account/book/date versions after durable evidence validation.
+Close-price capture accepts an optional stable request identity. Identical retries recover the
+retained snapshot before price evaluation; changing its immutable command conflicts. The HTTP
+actor remains session-derived on both initial capture and recovery.
+
+Security Master override PATCH and decision endpoints return HTTP 409 when another instance
+advances the durable workbench generation. The governed workbench endpoints use their existing
+conflict response for the same condition. Operators must reload before retrying the edit or review.
+
+Trading readiness includes every supplied acceptance gate in aggregate status and evidence
+summaries, including broker execution reconciliation and portfolio recovery. Every non-ready
+acceptance gate contributes a live-operation blocker independently of aggregate status, so new
+gate IDs cannot disappear from the shared browser and desktop readiness contract.
+
+`LedgerDisposalTaxReadService` serves the bounded W10-TAX-001 retained-disposal slice through
+`GET /api/ledger/periods/{periodId}/journal-entries/{journalEntryId}/tax-results`. The existing
+journal-detail browser surface consumes the same shared contract available to other clients. The
+endpoint reads only the requested journal within its authorized book and period.
+The service certifies economics and holding-period character with `CanonicalDisposalHistoryProjector`,
+keeps economic gain, recognized gain and deferred loss separate, and exposes the exact retained
+batch policy revision. It never substitutes the current mutable account policy or rematches purchases
+on a read. Missing canonical/policy evidence stays explicit; a partial deferral without attribution
+across multiple loss parcels leaves their recognized amounts null while preserving certified disposal
+totals. Single-loss and fully deferred parcels have unambiguous attribution. Amounts and parcel
+quantities cross the browser boundary as invariant decimal strings; display formatting preserves
+every retained digit without floating-point conversion or client tax calculations.
+
+Settled means no relieved parcel has a loss, or retained matching exactly covers both loss quantity
+and amount. Replacement quantities exceeding the loss parcels fail certification, including for
+face-based lots and mixed gain/loss disposals. A known, unsaturated replacement window is provisional
+through its inclusive end date and remains provisional afterwards with re-evaluation required.
+Neither read time nor batch recording
+time proves finalization. Refresh only reads newly retained evidence. Historical loss rows without
+retained wash-sale settings remain missing-evidence; this slice adds no finalization workflow,
+policy changes, pending-disposal comparison, or WPF surface and does not complete W10-TAX-001.
+
+`ConsolidationWorkbenchService` exposes gross, incremental proposed, posted and actual consolidated
+balances with exact source drill-through. The consolidation HTTP routes resolve authenticated scope
+and use authoritative PostgreSQL sources. Drafts enter the existing journal queue; the manual
+workbench guards submit/approve/post and recovery against changed sources, preserves server evidence
+through edits and routes corrections back to the consolidation calculation. Composition supplies a
+deferred posting authority that retains ownership and policy locks until ledger commit. Draft
+intake rejects intercompany chart accounts with symbol or financial-account scopes. See
+[first-slice limits](../../docs/domain/intercompany-consolidation.md).
+
+Ledger managers who can prepare consolidation drafts can also load the manual-journal review
+workbench. Both its permission declaration and fund ownership guard accept `ManageLedgerReports`;
+read-only ledger report permission remains excluded from pre-posting workflow.
 
 `OnboardingEndpoints` exposes tenant/company-scoped workspaces under
 `/api/accounting/onboarding/workspaces`. Authenticated identity owns configuration and capture;
@@ -209,6 +277,15 @@ checklist reflects finished work rather than page visits.
 
 ## Shared close and lot convergence
 
+`LedgerReportingAuthoritativeSource` reconciles corporate-action successor journals against the
+immutable batches returned by `ILedgerOpenLotSuccessorHistory`. It verifies predecessor closeout,
+every new lot, both allocated currency bases, acquisition FX, holding dates and the refunded-only
+`ScheduleD` tag against the approved instruction. Exact batch JSON, its SHA-256 hash and the
+instruction fingerprint become evidence columns on existing journal rows in the retained Reporting
+dataset/checkpoint. This adds no monetary rows and does not use later live lot balances to restate
+past reports. Missing history, contradictory snapshots or mismatched owner/book/period scope block
+authoritative reporting.
+
 Manual-journal commands retain a durable intent before changing drafts or appending a journal.
 The receipt includes the original actor, before/after drafts, exact posting write, deterministic
 audit identifiers, and the command result. A retry repairs the audit before returning success.
@@ -332,6 +409,12 @@ startup refusal checks the effective authentication account source, including co
 environment accounts and development demo fallback, so a multi-company login source cannot
 silently run against an unpartitioned graph. This startup check does not certify account changes
 after startup or activate strict reads automatically.
+
+Canonical Reporting verifies unified successor receipts against the complete journal and retained
+reviewed instruction. It preserves exact evidence JSON and fingerprints on certified journal rows
+and adds verified predecessor/successor snapshots to `corporate-action-lot-evidence.json` in the
+signed ledger report pack. Whole-unit split legs sharing a security and position remain separate
+through their reviewed lot labels; only refunded successors receive Schedule D treatment.
 
 ## Purpose
 
@@ -509,7 +592,8 @@ institution and external-account evidence match the statement source. `AdminMain
 override account scope; other callers require account-scoped `ManageDirectLending` authorization.
 `SecurityMasterWorkbenchQueryService` is published under
 `Meridian.Ui.Shared.Services` and composes Application Security Master services into the shared
-workstation drill-in projection. `FamilyOfficeReadService` composes the family-office
+workstation drill-in projection. The Security Master alias upsert route accepts corrections to an
+existing alias ID as a new revision; re-pointing an alias at a different security returns 409. `FamilyOfficeReadService` composes the family-office
 workstation overview from fund-structure, fund-account, reconciliation, and strategy-run read
 services, and emits degraded guidance when linked accounts cannot provide balances, liabilities,
 reconciliation state, or evidence completeness. Workstation endpoint registration is split by domain through
@@ -1490,6 +1574,10 @@ accounting-record launch lists.
 
 Evidence Vault packet exports stream retained local artifacts through a bounded 64 KiB read
 window into private staging while the canonical SHA-256 primitive hashes the same bytes. The
+copy boundary buffers smaller digest reads so a source that fills the window does not incur extra
+staging writes and durable quota checkpoints at the hash implementation's read size. Each actual
+staging write still reserves capacity, flushes its bytes, and reconciles the reservation before
+the next source read; partial reads retain the same accounting and cancellation behavior. The
 100 MiB per-artifact limit applies to bytes actually read, including growth after the initial
 file-size check. Source hash mismatches, read failures, and cancellation abort the package.
 Artifacts, manifest, and index are staged before publication; no-overwrite moves publish the
@@ -2152,6 +2240,9 @@ provider-to-Security-Master trust without rebuilding mapping logic locally. The 
 composes the Security Master operations workbench with identity confidence, provider evidence,
 terms, readiness, and handoff panels, keeping valuation-ready, ledger-ready, reconciliation-ready,
 close-ready, and report-ready posture server-owned for browser and WPF clients.
+Scoped run-snapshot open lots use retained component cost basis for unrealized P&L in both
+directions, including legacy short lots whose direction is recovered from the account position.
+Their displayed entry price does not replace the retained basis when the two differ.
 Security Master trust and conflict summaries use downstream Data, Accounting, and Reporting
 workflow labels so browser and WPF clients do not surface retained Governance-era wording for
 operator-facing review.
@@ -2526,6 +2617,10 @@ including close readiness, balances, sync history, statements, positions, bank l
 reconciliation runs/results, resolve the owning account before returning or mutating data; write
 payloads must match the route account id so callers cannot authorize one account in the URL while
 submitting another account in the request body.
+Statement intake rejects null line collections, null rows, and line/account mismatches before
+calling the configured account service. The Portfolio Records service also validates retained batch
+lineage and custodian as-of dates before writing evidence. These validation failures and malformed
+JSON fields return HTTP 400; account scope authorization still runs first.
 Operations Continuity reconciliation bridge payloads now also populate the shared cash, position,
 trade, income, MBS factor, bank, and GL support lane summaries from provider-ledger reconciliation
 detail, retained evidence, and open break materialization. Browser, WPF, and host callers should
@@ -2610,6 +2705,17 @@ cross-run positions the Portfolio workspace reports, valuing them at live marks 
 marks are fresh, reserving accepted-but-unfilled orders, and reporting option reference prices per
 contract while keeping the contract multiplier in exposure totals.
 
+`/api/security-master/asset-classes` and `/api/security-master/asset-classes/{assetClass}`
+return the Security Master asset-class registry (fields, validation, projection, lot and
+cash-flow behaviour, editor hints) for schema-driven forms. Override decisions return 403 when the
+reviewer staged the values being approved.
+
+Security Master also serves `GET /api/security-master/{securityId}/income-cash-flows`
+(declared dividends and distributions, with `from`/`to` pay-date bounds),
+`GET /api/security-master/{securityId}/factor-history`, and
+`PUT /api/security-master/{securityId}/terms/{blockKey}` (governed like the generic amend route;
+400 for an undeclared block or JSON kind).
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
@@ -2619,6 +2725,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-UI-SHARED -->
 | Roadmap item | Title |
 | --- | --- |
+| `W10-LOT-002` | Security-identified open-lot convergence |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W2-TRD-001` | Paper trading cockpit reliability |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |

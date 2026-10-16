@@ -598,7 +598,7 @@ public sealed class SymbolRegistryServiceTests : IDisposable
             "the first retained canonical stays stable when no effective-date authority is supplied");
         retained.Aliases.Should().ContainSingle(alias =>
             alias.Alias == "IDENTITY.NEW" &&
-            alias.Source == SymbolMappingSources.SecurityMaster &&
+            alias.Source == SymbolMappingSources.Registry &&
             alias.IsActive);
         retained.Identifiers.Figi.Should().Be("BBG-IDENTITY-1");
         retained.ProviderSymbols.Should().ContainKey("provider-a").WhoseValue.Should().Be("IDENTITY-A");
