@@ -64,7 +64,7 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
     // Idea 2: delegate to the domain function instead of duplicating the match.
     let assetClass = SecurityKind.assetClass record.Kind
 
-    let assetSpecificTermsJson =
+    let unstampedAssetSpecificTermsJson =
         match record.Kind with
         | SecurityKind.Equity terms ->
             let preferredTermsToLegacy (preferred: PreferredTerms) =
@@ -428,6 +428,14 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
             // schemaVersion (the CustomAssetProfile family) and its dynamic, profile-governed
             // keys must survive serialize → deserialize → serialize without loss.
             terms.TermsJson
+
+    // Flat payloads are stamped with their format and asset-class terms version so readers
+    // dispatch on what the document declares rather than on the shared schemaVersion integer.
+    // The custom-asset profile document is the one exception: it is emitted verbatim.
+    let assetSpecificTermsJson =
+        match record.Kind with
+        | SecurityKind.CustomAsset _ -> unstampedAssetSpecificTermsJson
+        | _ -> SecurityTermsEnvelope.StampFlat(unstampedAssetSpecificTermsJson, assetClass)
 
     let commonTermsJson =
         JsonSerializer.Serialize(

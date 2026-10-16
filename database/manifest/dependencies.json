@@ -10318,6 +10318,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloadDescriptor"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloads"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterImportRequest"
     },
     {
@@ -10439,6 +10451,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermReader"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsEnvelope"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsFormats"
     },
     {
       "kind": "contract-set-member",
@@ -22882,6 +22906,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloadDescriptor"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloads"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterImportRequest"
     },
     {
@@ -23003,6 +23039,18 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermReader"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsEnvelope"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsFormats"
     },
     {
       "kind": "contract-set-member",
@@ -47982,6 +48030,12 @@
       "target": "database:security_master.security_close_price_snapshots.version"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_events_payload_version_check on security_master.security_events",
+      "target": "database:security_master.security_events.payload_version"
+    },
+    {
       "constraint": "security_identifiers_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -49642,7 +49696,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "5aa30ad4197563e650d56e59123fe17fada25f42dd089e25a245ee2f19bbfa67",
+  "fingerprint": "a6052ec26d25bf53ffb5e78146837921f19dbe6834d594ceddfadea91588a4b5",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -60010,6 +60064,18 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityMasterEventEnvelope"
     },
     {
+      "classification": "record_struct",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloadDescriptor",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloadDescriptor"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloads",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityMasterEventPayloads"
+    },
+    {
       "classification": "request",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityMasterImportRequest",
       "kind": "contract-type",
@@ -60134,6 +60200,18 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermReader",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityTermReader"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsEnvelope",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityTermsEnvelope"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsFormats",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityTermsFormats"
     },
     {
       "classification": "dto",
@@ -72186,10 +72264,20 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.security_events.payload_version",
+      "kind": "database-object",
+      "label": "security_master.security_events.payload_version"
+    },
+    {
       "id": "database:security_master.security_events_global_sequence_seq",
       "kind": "database-sequence",
       "label": "security_master.security_events_global_sequence_seq",
       "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_events_payload_version_check on security_master.security_events",
+      "kind": "database-object",
+      "label": "security_master.security_events_payload_version_check on security_master.security_events"
     },
     {
       "id": "database:security_master.security_field_provenance",
@@ -72580,10 +72668,10 @@
   ],
   "summary": {
     "contract_references": 3277,
-    "contract_set_memberships": 3862,
-    "edges": 8248,
+    "contract_set_memberships": 3870,
+    "edges": 8257,
     "foreign_keys": 137,
     "logical_references": 6,
-    "nodes": 3974
+    "nodes": 3980
   }
 }

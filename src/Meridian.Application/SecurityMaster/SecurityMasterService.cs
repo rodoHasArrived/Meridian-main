@@ -108,11 +108,13 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var assetClassOverride = GetProfileBackedAssetClassOverride(currentProjection, request.AssetSpecificTermsPatch);
         var assetTermsOverride = GetProfileBackedAssetSpecificTermsOverride(currentProjection, request.AssetSpecificTermsPatch);
         var result = SecurityMasterCommandFacade.Amend(currentRecord, SecurityMasterMapping.ToAmendCommand(request, kindSourceProjection));
-        var projection = CreateProjectionFromResult(
-            result,
-            currentProjection.Aliases,
-            assetClassOverride,
-            assetTermsOverride);
+        var projection = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
+            currentProjection,
+            CreateProjectionFromResult(
+                result,
+                currentProjection.Aliases,
+                assetClassOverride,
+                assetTermsOverride));
         EnsureProfileBackedTermsAreCatalogValid(projection, request.EffectiveFrom);
 
         // The amend seam is the one place the pre-write golden copy and the incoming revision are
@@ -258,11 +260,13 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         EnsureAssetClassRoundTripsSafely(currentProjection);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
         var result = SecurityMasterCommandFacade.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
-        var projection = CreateProjectionFromResult(
-            result,
-            currentProjection.Aliases,
-            GetProfileBackedAssetClassOverride(currentProjection),
-            GetProfileBackedAssetSpecificTermsOverride(currentProjection, assetSpecificTermsPatch: null));
+        var projection = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
+            currentProjection,
+            CreateProjectionFromResult(
+                result,
+                currentProjection.Aliases,
+                GetProfileBackedAssetClassOverride(currentProjection),
+                GetProfileBackedAssetSpecificTermsOverride(currentProjection, assetSpecificTermsPatch: null)));
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,

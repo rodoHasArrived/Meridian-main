@@ -902,6 +902,8 @@ erDiagram
         uuid causation_id
         jsonb payload
         jsonb metadata
+        text payload_type
+        integer payload_version
     }
     security_master_security_events_global_sequence_seq {
         text catalogued_object
@@ -1365,7 +1367,7 @@ erDiagram
 | `security_cashflow_source_assignments` | table | 6 | `security_id` | 1 | 2 | - |
 | `security_close_price_approvals` | table | 4 | `snapshot_id` | 1 | 1 | Immutable independent review receipt bound to the exact close price snapshot SHA-256. |
 | `security_close_price_snapshots` | table | 9 | `snapshot_id` | 1 | 4 | Immutable exact account/book/date price-set versions retaining selected receipts, quote units, overrides, source rows and blockers. |
-| `security_events` | table | 10 | `global_sequence` | 0 | 3 | - |
+| `security_events` | table | 12 | `global_sequence` | 0 | 4 | - |
 | `security_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_field_provenance` | table | 10 | `security_id`, `field_path`, `origin` | 0 | 2 | - |
 | `security_identifiers` | table | 12 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from` | 1 | 3 | - |

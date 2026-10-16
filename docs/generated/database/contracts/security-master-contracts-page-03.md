@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 3 of 4
 
-Objects 161-240 of 271. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 275. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -24,7 +24,7 @@ classDiagram
         +bool SupportsCashflowScheduleByDefault
         +bool SupportsIdentifierOnlyImport
         +bool SupportsProfileBackedTerms
-        +bool UsesFaceValueLots
+        +int TermsVersion
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetPackDescriptor["SecurityAssetPackDescriptor"] {
         +AssetPackAccountingRules AccountingRules
@@ -414,8 +414,17 @@ classDiagram
         +long? GlobalSequence
         +JsonElement Metadata
         +JsonElement Payload
+        +string? PayloadType
+        +int? PayloadVersion
         +Guid SecurityId
         +long StreamVersion
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterEventPayloadDescriptor["SecurityMasterEventPayloadDescriptor"] {
+        +string PayloadType
+        +int PayloadVersion
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterEventPayloads["SecurityMasterEventPayloads"] {
+        +IReadOnlyDictionary~string__int~ SupportedVersions
     }
     class Meridian_Contracts_SecurityMaster_SecurityMasterImportRequest["SecurityMasterImportRequest"] {
         +string FileContent
@@ -515,22 +524,6 @@ classDiagram
         +string? SourceRecordId
         +string SourceSystem
         +string? UpdatedBy
-    }
-    class Meridian_Contracts_SecurityMaster_SecuritySearchRequest["SecuritySearchRequest"] {
-        +bool ActiveOnly
-        +string? CustomProfileId
-        +string? ProfileFieldKey
-        +string? ProfileFieldValue
-        +int? ProfileVersion
-        +string Query
-        +int Skip
-        +int Take
-    }
-    class Meridian_Contracts_SecurityMaster_SecuritySnapshotRecord["SecuritySnapshotRecord"] {
-        +JsonElement Payload
-        +Guid SecurityId
-        +DateTimeOffset SnapshotTimestamp
-        +long Version
     }
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto

@@ -13,6 +13,17 @@ internal static class SecurityEconomicDefinitionAdapter
     {
         var definition = ToEconomicDefinition(projection);
 
+        // A projection rebuilt from an economic event that predates retained flat terms carries the
+        // original economic document under retainedEconomicTerms. Fold it back so modules and fields
+        // the flat family cannot express (call and put schedules, redemption, issuer identity, fund
+        // and structured-product detail) are written into the next economic event instead of being
+        // erased by it. Values the flat revision does express always win.
+        var economicTerms = BuildEconomicTermsJson(definition);
+        if (SecurityTermsEnvelope.TryGetRetainedEconomicTerms(projection.AssetSpecificTerms, out var retained))
+        {
+            economicTerms = SecurityTermsEnvelope.FoldRetainedEconomicTerms(economicTerms, retained);
+        }
+
         return new SecurityEconomicDefinitionRecord(
             projection.SecurityId,
             definition.Classification.AssetClass.ToString(),
@@ -26,7 +37,7 @@ internal static class SecurityEconomicDefinitionAdapter
             projection.Currency,
             BuildClassificationJson(definition),
             projection.CommonTerms,
-            BuildEconomicTermsJson(definition),
+            economicTerms,
             projection.Provenance,
             projection.Version,
             projection.EffectiveFrom,
@@ -100,6 +111,28 @@ internal static class SecurityEconomicDefinitionAdapter
             aliases ?? Array.Empty<SecurityAliasDto>());
     }
 
+    /// <summary>
+    /// Keeps a retained economic-terms document attached across a revision rebuilt through the
+    /// domain codec. The codec serializes only declared flat keys, so without this an amendment or
+    /// deactivation of a projection rebuilt from an economic-only event would drop the retained
+    /// document and, with it, every economic value the flat keys cannot hold.
+    /// </summary>
+    public static SecurityProjectionRecord CarryRetainedEconomicTerms(
+        SecurityProjectionRecord previous,
+        SecurityProjectionRecord next)
+    {
+        if (!SecurityTermsEnvelope.TryGetRetainedEconomicTerms(previous.AssetSpecificTerms, out _)
+            || SecurityTermsEnvelope.TryGetRetainedEconomicTerms(next.AssetSpecificTerms, out _))
+        {
+            return next;
+        }
+
+        return next with
+        {
+            AssetSpecificTerms = SecurityTermsEnvelope.CarryRetainedEconomicTerms(previous.AssetSpecificTerms, next.AssetSpecificTerms)
+        };
+    }
+
     private static bool HasPreferredClassification(SecurityEconomicDefinitionRecord economic)
     {
         static bool IsPreferredLabel(string? value)
@@ -133,6 +166,7 @@ internal static class SecurityEconomicDefinitionAdapter
         => JsonSerializer.SerializeToElement(new
         {
             schemaVersion = SecurityMasterSchemaVersions.EconomicTerms,
+            termsFormat = SecurityTermsFormats.Economic,
             maturity = definition.Terms.Maturity is null ? null : new
             {
                 effectiveDate = definition.Terms.Maturity.Value.EffectiveDate,

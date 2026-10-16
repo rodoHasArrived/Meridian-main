@@ -84,6 +84,11 @@ carrier definitions; withdrawal requires the source-aware reconciliation writer 
 Equity replay without retained flat terms refuses economic-only reconstruction: the old economic
 family cannot distinguish common, preferred and convertible preferred shares reliably.
 
+Security Master replay reads each stored event through `SecurityMasterMapping.FromEventEnvelope`,
+which refuses payload types or versions newer than this build understands. Amend and deactivate
+carry the stored economic terms that a flat rebuild cannot express (`retainedEconomicTerms`), so a
+newer-to-older terms conversion keeps the data rather than silently dropping it.
+
 Security Master event replay that lacks retained flat terms flattens the economic-terms document onto
 the record's asset class, so carried values land at that class's declared keys. The Postgres
 composition registers `SecurityMasterProjectionChangeListener` (disable with
