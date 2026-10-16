@@ -8,10 +8,10 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1094 |
+| Total code blocks | 1096 |
 | Valid | 634 |
 | Invalid | 0 |
-| Skipped | 460 |
+| Skipped | 462 |
 
 ## Summary by Language
 
@@ -30,7 +30,7 @@
 | `markdown` | 6 | 0 | 0 | 6 |
 | `md` | 10 | 0 | 0 | 10 |
 | `mermaid` | 40 | 0 | 0 | 40 |
-| `powershell` | 98 | 0 | 0 | 98 |
+| `powershell` | 100 | 0 | 0 | 100 |
 | `python` | 3 | 3 | 0 | 0 |
 | `sql` | 13 | 0 | 0 | 13 |
 | `text` | 74 | 0 | 0 | 74 |
