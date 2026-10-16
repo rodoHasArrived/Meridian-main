@@ -17,8 +17,9 @@ permissions:
 
 concurrency:
   # Coverage runs must not share a cancellation group with main pushes.
-  group: ${{ github.workflow }}-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group' }}
+  # Each manual coverage request keeps its own group, including while pending.
+  group: ${{ github.workflow }}-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'latest' }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
 
 env:
   CI: true

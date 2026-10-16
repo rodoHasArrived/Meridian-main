@@ -25,7 +25,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **CI/CD ownership and rollout:** [CI/CD validation ownership](ci-cd-optimization.md)
 - **Pipeline budget measurements (PRD-112):** [Bounded benchmark lane and retained evidence](pipeline-benchmark.md)
 - **Docs regeneration automation constraints:** [Docs Regeneration Automation — Design Constraints](docs-regeneration-automation-design.md)
-- **Browser/docs regeneration and generated merge conflicts:** [Run the complete maintained generation sequence](generated-merge-recovery.md)
+- **Browser/docs regeneration and generated merge conflicts:** [Prepare an isolated repair and reviewed-hash merge](generated-merge-recovery.md)
 - **Free development tools:** [Free Development Tools](free-development-tools.md)
 - **C#/WPF market study companion:** [Practical C# and WPF for Financial Markets](practical-csharp-wpf-financial-markets.md)
 
@@ -119,6 +119,22 @@ there. Do not bypass GitHub branch protections; for PR-ready publishing, use a
 The four-lane `Meridian CI / quality-gate` keeps its identity. The always-reported
 `Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
 Production Certification, including pull requests and merge groups.
+
+For tracked-output drift or conflicts after updating from main, prepare a candidate without
+changing your branch or index:
+
+```powershell
+git fetch origin main
+python build/scripts/repair-generated.py --base-ref origin/main --head-ref HEAD --install-dependencies
+```
+
+Inspect `artifacts/generated-repair/report.json` and any successful repair patches. Source/prose
+conflicts and reviewed module hashes that match neither parent require review. Eligible hosted PRs
+can receive an App-backed repair commit with fresh CI; forks retain the contributor path.
+See [repair and fallback details](generated-merge-recovery.md) and
+[hosted activation](ci-cd-optimization.md#generated-repair-and-maintenance-activation).
+Merge-group freshness checks still fail when combined output is stale; refresh the affected
+branches and rebuild the group.
 
 The .NET lane builds the web host, then all unique default test projects in one generated
 solution-filter build for the standard `Release` configuration. The filter follows shared

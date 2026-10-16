@@ -50,15 +50,15 @@ class WorkflowSchedulingTests(unittest.TestCase):
             self.assertIsNotNone(match, "Emit one bounded, lowercase digest, even for multiline inputs.")
             return match.group(1)
 
-    def test_ci_separates_event_groups_and_only_supersedes_change_validation(self) -> None:
+    def test_ci_separates_event_groups_and_preserves_each_manual_coverage_dispatch(self) -> None:
         concurrency = load_workflow("ci")["concurrency"]
         self.assertEqual(
             concurrency["group"],
-            "${{ github.workflow }}-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}",
+            "${{ github.workflow }}-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'latest' }}",
         )
         self.assertEqual(
             concurrency["cancel-in-progress"],
-            "${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group' }}",
+            "${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}",
         )
 
     def test_manual_jobs_wait_for_identity_and_preserve_running_validation(self) -> None:

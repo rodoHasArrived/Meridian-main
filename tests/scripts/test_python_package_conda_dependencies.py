@@ -46,8 +46,8 @@ class PythonPackageCondaDependencyTests(unittest.TestCase):
         steps = workflow["jobs"]["verify-workflows"]["steps"]
         dependency_command = "python -m pip install --requirement build/scripts/ci/requirements.txt"
         validation_command = "bash scripts/ci.sh --lane verify-workflows"
-        dependency_steps = [step for step in steps if step.get("run") == dependency_command]
-        validation_steps = [step for step in steps if step.get("run") == validation_command]
+        dependency_steps = [step for step in steps if step.get("run", "").strip() == dependency_command]
+        validation_steps = [step for step in steps if step.get("run", "").strip() == validation_command]
 
         self.assertEqual(len(dependency_steps), 1)
         self.assertEqual(len(validation_steps), 1)
@@ -57,7 +57,7 @@ class PythonPackageCondaDependencyTests(unittest.TestCase):
             self.assertNotIn("continue-on-error", step)
 
         requirements = (ROOT / "build/scripts/ci/requirements.txt").read_text(encoding="utf-8")
-        self.assertRegex(requirements, r"(?m)^Pillow==\d+\.\d+\.\d+\s*$")
+        self.assertRegex(requirements, r"(?mi)^Pillow==\d+\.\d+\.\d+\s*$")
 
     def test_workflow_lane_executes_script_tests(self) -> None:
         ci_script = (ROOT / "scripts/ci.sh").read_text(encoding="utf-8")

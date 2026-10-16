@@ -12,6 +12,7 @@ import json
 import re
 import shlex
 import shutil
+import stat
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -32,16 +33,18 @@ POLICY = "build/scripts/maintained-generation-outputs.json"
 REPORT = "artifacts/maintained-generation/report.json"
 
 
-def discover_steps(root: Path) -> list[Step]:
+def discover_steps(root: Path, *, docs_only: bool = False) -> list[Step]:
     """Read all generation steps, rejecting unfamiliar workflow commands.
 
     Setup and CI comparison steps are deliberately excluded. New generation run
     steps are automatically included; unsupported shell syntax requires review.
     """
-    steps = [
+    browser_steps = [
         Step("Generate UI API routes", ("python3", "build/scripts/generate-ui-api-routes-ts.py")),
         Step("Generate workspace catalog", ("python3", "build/scripts/generate-workspace-catalog-ts.py")),
         Step("Build browser workstation", ("npm", "--prefix", "src/Meridian.Ui/dashboard", "run", "build")),
+    ]
+    steps = ([] if docs_only else browser_steps) + [
         Step("Render adapter readiness", ("python3", "build/scripts/docs/render-adapter-readiness.py")),
         Step("Render roadmap docs", ("python3", "build/scripts/docs/render-roadmap-docs.py", "--summary")),
         Step("Render source docs", ("python3", "build/scripts/docs/render-source-docs.py", "--summary")),
@@ -51,6 +54,7 @@ def discover_steps(root: Path) -> list[Step]:
         "Install docs script dependencies", "Install diagram dependencies",
         "Compare dashboard readiness deltas vs previous commit",
         "Check generated docs are current", "Check whitespace",
+        "Converge maintained documentation",
     }
     found_core = False
     for item in job["steps"]:
@@ -221,6 +225,7 @@ def run_generation(root: Path, steps: list[Step], policy: dict, max_passes: int 
     if max_passes < 1:
         raise ValueError("max_passes must be positive")
     before = snapshot(root)
+    before_modes = {path: stat.S_IMODE((root / path).stat().st_mode) for path in before}
     # Check hybrid boundaries before any subprocess can use an append fallback.
     for path in policy["hybrid_files"]:
         protected_content(path, before.get(path, b""), policy)
@@ -255,10 +260,18 @@ def run_generation(root: Path, steps: list[Step], policy: dict, max_passes: int 
                 restore_paths(root, before, links)
             after = snapshot(root)
             violations = validate_changes(before, after, policy)
+            mode_changes = [
+                path for path in after
+                if (stat.S_IMODE((root / path).stat().st_mode) & 0o111)
+                != (before_modes.get(path, 0) & 0o111)
+            ]
+            violations = sorted(set(violations + mode_changes))
             if violations or links:
                 # Roll back only unauthorized changes, to invocation-start bytes,
                 # preserving user edits that existed before this command.
                 restore_paths(root, before, violations)
+                for path in set(violations + links) & before_modes.keys():
+                    (root / path).chmod(before_modes[path])
                 report["protection_violations"] = sorted(set(violations + links))
                 break
         current = snapshot(root)
@@ -282,11 +295,12 @@ def main() -> int:
     parser.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument("--max-passes", type=int, default=3, choices=range(1, 11), metavar="1..10")
     parser.add_argument("--dry-run", action="store_true", help="Show the discovered sequence without writing anything")
+    parser.add_argument("--docs-only", action="store_true", help="Run source/roadmap and workflow documentation generators; browser validation remains in its own lane")
     parser.add_argument("--report", type=Path, default=Path(REPORT), help="JSON report under ignored artifacts/")
     args = parser.parse_args()
     root = args.repo.resolve()
     try:
-        steps = discover_steps(root)
+        steps = discover_steps(root, docs_only=args.docs_only)
         if args.dry_run:
             for step in steps:
                 print(f"{'Advisory' if step.optional else 'Required'}: {step.name}: {shlex.join(step.command)}")
