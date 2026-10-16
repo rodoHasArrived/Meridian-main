@@ -358,7 +358,7 @@
       "ordinal": 40,
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/040_security_master_governance_events.sql",
       "schema": "security_master",
-      "sha256": "2a7e21db98f67c7c1535b51a7792ae6f103957fddcb4685f75dd9c9e18c281d1"
+      "sha256": "f6c8be6775d87290020b63ddeb83252a16ce19074cf48375f9d11f708072faad"
     },
     {
       "filename": "001_direct_lending.sql",
@@ -1163,7 +1163,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "927070262756aca31e13da1e7e12061da3401d0520c4734cce418d7ff939518a",
+  "fingerprint": "5983c2e8601ee6ea23e11e5afa099b4a9c47b28f22f27087e77ccec0f470fc49",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1403,7 +1403,7 @@
     "errors": 0,
     "files": 129,
     "migration_sets": 10,
-    "waivers": 18,
+    "waivers": 17,
     "warnings": 0
   },
   "waivers": [
@@ -1517,13 +1517,6 @@
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/038_security_master_alias_revisions.sql",
       "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects deletion of the append-only alias revision history; no data is truncated. PostgreSQL regression coverage attempts update, delete, and truncate and verifies that the revision is retained.",
       "review_after": "2027-04-10",
-      "rule_id": "migration-truncate"
-    },
-    {
-      "category": "destructive_changes",
-      "path": "src/Meridian.Storage/SecurityMaster/Migrations/040_security_master_governance_events.sql",
-      "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects deletion of the append-only governance event log; no data is truncated. PostgreSQL regression coverage attempts update, delete and truncate and verifies the events are retained.",
-      "review_after": "2027-04-15",
       "rule_id": "migration-truncate"
     },
     {
