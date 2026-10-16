@@ -755,6 +755,39 @@ public static partial class SecurityMasterEndpoints
         .Produces(StatusCodes.Status404NotFound);
 
         /// <summary>
+        /// Returns the dated factor history: the declared factor schedule, factors observed on
+        /// effective principal paydowns, and the dated scalar factor, with same-day disagreements.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterFactorHistory, async (
+            Guid securityId,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
+        {
+            var security = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (security is null)
+            {
+                return Results.NotFound();
+            }
+
+            var actions = await queryService.GetCorporateActionsAsync(securityId, ct).ConfigureAwait(false);
+            var termSources = security.AssetSpecificTerms.ValueKind == System.Text.Json.JsonValueKind.Object
+                && SecurityTermReader.TryGetProperty(security.AssetSpecificTerms, "profileFields", out var profileFields)
+                && profileFields.ValueKind == System.Text.Json.JsonValueKind.Object
+                    ? new[] { profileFields, security.AssetSpecificTerms }
+                    : new[] { security.AssetSpecificTerms };
+            var history = SecurityFactorHistoryProjector.Build(
+                securityId,
+                StructuredCashFlowTermsResolver.Resolve(security),
+                SecurityTermReader.ReadDate(termSources, "factorDate", "currentFactorDate"),
+                actions,
+                DateTimeOffset.UtcNow);
+            return Results.Json(history, jsonOptions);
+        })
+        .WithName("GetSecurityMasterFactorHistory").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<SecurityFactorHistoryDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
         /// Records a new corporate action event for a security (dividend, split, merger, etc.).
         /// </summary>
         /// <remarks>

@@ -46,6 +46,7 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(SecurityAssetClassDefinitionDto[]))]
 [JsonSerializable(typeof(IReadOnlyList<SecurityAssetClassDefinitionDto>))]
 [JsonSerializable(typeof(SecurityIncomeCashFlowScheduleDto))]
+[JsonSerializable(typeof(SecurityFactorHistoryDto))]
 [JsonSerializable(typeof(SecurityAssetProfileDefinitionDto))]
 [JsonSerializable(typeof(SecurityAssetProfileDefinitionDto[]))]
 [JsonSerializable(typeof(List<SecurityAssetProfileDefinitionDto>))]
