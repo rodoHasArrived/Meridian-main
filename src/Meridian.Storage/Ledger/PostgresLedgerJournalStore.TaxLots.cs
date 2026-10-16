@@ -19,6 +19,12 @@ public sealed partial class PostgresLedgerJournalStore
         RequireWriteTenant();
         ValidateTaxLot(lot);
 
+        if (_options.RequireGovernedPostingCommand)
+        {
+            throw new LedgerValidationException(
+                "Production tax-lot writes require IAtomicTaxLotJournalStore; standalone lot saves are restricted to compatibility stores.");
+        }
+
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
         await EnsureBookWriteAuthorityAsync(connection, transaction, lot.LedgerBookId, ct).ConfigureAwait(false);
