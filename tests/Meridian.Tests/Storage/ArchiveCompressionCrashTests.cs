@@ -1,0 +1,342 @@
+using System.IO.Compression;
+using System.Text;
+using System.Text.Json;
+using FluentAssertions;
+using Meridian.Contracts.Domain.Enums;
+using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Store;
+using Meridian.Core.Serialization;
+using Meridian.Domain.Events;
+using Meridian.Storage;
+using Meridian.Storage.Archival;
+using Meridian.Storage.Replay;
+using Meridian.Storage.Services;
+using Meridian.Storage.Store;
+using Meridian.Tests.Infrastructure;
+using Xunit;
+
+namespace Meridian.Tests.Storage;
+
+/// <summary>
+/// Deterministic publication fault injection and fresh-reader/restart regressions. These
+/// execute the real maintenance and replay implementations; they do not claim to simulate
+/// host power loss or filesystem write reordering.
+/// </summary>
+public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
+{
+    [Theory]
+    [InlineData("StagedVerified")]
+    [InlineData("Published")]
+    [InlineData("PublicationSynced")]
+    [InlineData("SourceDeleted")]
+    [InlineData("SidecarDeleted")]
+    public async Task InterruptionAtPublicationBoundary_RestartReplaysEachEventOnce(string stageName)
+    {
+        var path = await CreateSourceAsync();
+        var expected = ExpectedLines();
+        var stage = Enum.Parse<CompressionPublicationStage>(stageName);
+        var checkpointReached = false;
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot })
+        {
+            CompressionCheckpoint = checkpoint =>
+            {
+                if (checkpoint == stage)
+                {
+                    checkpointReached = true;
+                    throw new IOException($"Injected interruption at {checkpoint}");
+                }
+            }
+        };
+
+        var interrupted = await service.CompressAsync(new FileCompressionOptions());
+
+        checkpointReached.Should().BeTrue();
+        interrupted.Success.Should().BeFalse();
+        interrupted.RecoveryCopies.Should().HaveCount(2);
+        var backups = interrupted.RecoveryCopies.ToDictionary(copy => copy, File.ReadAllBytes);
+        if (stage == CompressionPublicationStage.StagedVerified)
+        {
+            File.Exists(path).Should().BeTrue();
+            File.Exists(path + ".gz").Should().BeFalse();
+        }
+        if (stage is CompressionPublicationStage.Published or CompressionPublicationStage.PublicationSynced)
+        {
+            File.Exists(path).Should().BeTrue();
+            File.Exists(path + ".gz").Should().BeTrue();
+        }
+
+        // New reader instances, twice: no in-memory completion marker may be required.
+        for (var pass = 0; pass < 2; pass++)
+            for (var reader = 0; reader < 4; reader++)
+                (await ReadAllAsync(Read(reader))).Should().Equal(expected);
+
+        var restarted = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        var resumed = await restarted.CompressAsync(new FileCompressionOptions());
+        resumed.Success.Should().BeTrue();
+        File.Exists(path).Should().BeFalse();
+        File.Exists(path + ".gz").Should().BeTrue();
+        for (var reader = 0; reader < 4; reader++)
+            (await ReadAllAsync(Read(reader))).Should().Equal(expected);
+        foreach (var backup in backups)
+            File.ReadAllBytes(backup.Key).Should().Equal(backup.Value);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public async Task PublishedAndUnpublishedArtifacts_AreNotAdditionalEventStreams(int reader)
+    {
+        var path = await CreateSourceAsync();
+        var payload = await File.ReadAllBytesAsync(path);
+        await WriteGzipAsync(path + ".gz.unpublished.recompress.tmp", payload);
+        await File.WriteAllBytesAsync(path + ".pre-compression.retained.bak", payload);
+        await File.WriteAllBytesAsync(path + ".corrupt-lines", payload);
+        await File.WriteAllBytesAsync(path + ".sha256.pre-compression.retained.bak", payload);
+
+        (await ReadAllAsync(Read(reader))).Should().Equal(ExpectedLines());
+        await WriteGzipAsync(path + ".gz", payload);
+        (await ReadAllAsync(Read(reader))).Should().Equal(ExpectedLines());
+        File.Exists(path + ".pre-compression.retained.bak").Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public async Task CompressionDuringReplay_KeepsResolvedHandleAndDoesNotDiscoverSecondCopy(int reader)
+    {
+        var path = await CreateSourceAsync();
+        var expected = ExpectedLines();
+        var observed = new List<string>();
+        await using (var replay = Read(reader).GetAsyncEnumerator())
+        {
+            (await replay.MoveNextAsync()).Should().BeTrue();
+            observed.Add(Serialize(replay.Current));
+            var maintenance = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+            var result = await maintenance.CompressAsync(new FileCompressionOptions());
+
+            // Windows can refuse deletion while the source is memory-mapped. A published
+            // verified destination must still be retained, errors reported, and replay safe.
+            File.Exists(path + ".gz").Should().BeTrue();
+            if (!result.Success)
+            {
+                result.Errors.Should().NotBeEmpty();
+                File.Exists(path).Should().BeTrue();
+            }
+            while (await replay.MoveNextAsync())
+                observed.Add(Serialize(replay.Current));
+        }
+        observed.Should().Equal(expected);
+        (await ReadAllAsync(Read(reader))).Should().Equal(expected);
+        var restarted = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        (await restarted.CompressAsync(new FileCompressionOptions())).Success.Should().BeTrue();
+        File.Exists(path).Should().BeFalse();
+        (await ReadAllAsync(Read(reader))).Should().Equal(expected);
+    }
+
+    [Fact]
+    public async Task DiscoverySnapshotBeforeCleanup_ResolvesTheNewRepresentationAtOpen()
+    {
+        var path = await CreateSourceAsync();
+        var snapshot = JsonlArchiveFiles.Enumerate(TestDataRoot);
+        snapshot.Should().ContainSingle().Which.Should().Be(path);
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        (await service.CompressAsync(new FileCompressionOptions())).Success.Should().BeTrue();
+
+        await using var file = await JsonlArchiveFiles.OpenReadAsync(snapshot.Single(), CancellationToken.None);
+        file.Name.Should().Be(path + ".gz");
+        (await ReadAllAsync(new JsonlReplayer(path).ReadEventsAsync())).Should().Equal(ExpectedLines());
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public async Task ConflictingRepresentations_RefuseBeforeFirstEventAndPreserveBoth(int reader)
+    {
+        var path = await CreateSourceAsync();
+        await WriteGzipAsync(path + ".gz", Encoding.UTF8.GetBytes(Serialize(BuildTrade(99)) + "\n"));
+        var sourceBytes = await File.ReadAllBytesAsync(path);
+        var gzipBytes = await File.ReadAllBytesAsync(path + ".gz");
+        var observed = new List<MarketEvent>();
+
+        var error = await Record.ExceptionAsync(async () =>
+        {
+            await foreach (var evt in Read(reader))
+                observed.Add(evt);
+        });
+
+        error.Should().BeOfType<IOException>().Which.Message.Should().Contain("Conflicting");
+        observed.Should().BeEmpty();
+        (await File.ReadAllBytesAsync(path)).Should().Equal(sourceBytes);
+        (await File.ReadAllBytesAsync(path + ".gz")).Should().Equal(gzipBytes);
+    }
+
+    [Fact]
+    public async Task ResumeWithDifferentDestination_PreservesOriginalAndChecksumEvidence()
+    {
+        var path = await CreateSourceAsync();
+        await WriteGzipAsync(path + ".gz", Encoding.UTF8.GetBytes(Serialize(BuildTrade(99)) + "\n"));
+        var before = Directory.GetFiles(TestDataRoot).ToDictionary(file => file, File.ReadAllBytes);
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        var result = await service.CompressAsync(new FileCompressionOptions());
+
+        result.Success.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.Contains("recovery verification failed"));
+        foreach (var file in before)
+            File.ReadAllBytes(file.Key).Should().Equal(file.Value);
+    }
+
+    [Fact]
+    public async Task RequiredBackupFailure_PreventsPublicationAndResumeCleanup()
+    {
+        var path = await CreateSourceAsync();
+        await WriteGzipAsync(path + ".gz", await File.ReadAllBytesAsync(path));
+        var blocked = Path.Combine(TestDataRoot, "blocked-backup-directory");
+        await File.WriteAllTextAsync(blocked, "not a directory");
+        var before = Directory.GetFiles(TestDataRoot).ToDictionary(file => file, File.ReadAllBytes);
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        var result = await service.CompressAsync(new FileCompressionOptions(BackupPath: blocked));
+
+        result.Success.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.Contains("Backup failed"));
+        foreach (var file in before)
+            File.ReadAllBytes(file.Key).Should().Equal(file.Value);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public async Task CancellationDuringReplay_DoesNotAffectFreshReplay(int reader)
+    {
+        await CreateSourceAsync();
+        using var cancelled = new CancellationTokenSource();
+        await using (var replay = Read(reader, cancelled.Token).GetAsyncEnumerator())
+        {
+            (await replay.MoveNextAsync()).Should().BeTrue();
+            cancelled.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => { await replay.MoveNextAsync(); });
+        }
+        (await ReadAllAsync(Read(reader))).Should().Equal(ExpectedLines());
+    }
+
+    [Fact]
+    public async Task SameArchiveNameInDifferentDirectories_RemainsTwoIndependentInputs()
+    {
+        var first = await CreateSourceAsync("alpaca");
+        var second = await CreateSourceAsync("polygon");
+        await WriteGzipAsync(first + ".gz", await File.ReadAllBytesAsync(first));
+        await WriteGzipAsync(second + ".gz", await File.ReadAllBytesAsync(second));
+        for (var reader = 0; reader < 4; reader++)
+            (await ReadAllAsync(Read(reader))).Should().Equal(ExpectedLines().Concat(ExpectedLines()));
+    }
+
+    [Fact]
+    public async Task UppercaseGzipSuffix_PreservesActualPathWhenSelectingRepresentation()
+    {
+        var path = await CreateSourceAsync();
+        await WriteGzipAsync(path + ".GZ", await File.ReadAllBytesAsync(path));
+        for (var reader = 0; reader < 4; reader++)
+            (await ReadAllAsync(Read(reader))).Should().Equal(ExpectedLines());
+    }
+
+    [Fact]
+    public async Task ChangedSourceChecksum_RefusesCompressionAndPreservesEvidence()
+    {
+        var path = await CreateSourceAsync();
+        await File.AppendAllTextAsync(path, Serialize(BuildTrade(99)) + "\n");
+        var before = Directory.GetFiles(TestDataRoot).ToDictionary(file => file, File.ReadAllBytes);
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        var result = await service.CompressAsync(new FileCompressionOptions());
+
+        result.Success.Should().BeFalse();
+        result.Errors.Should().NotBeEmpty();
+        File.Exists(path + ".gz").Should().BeFalse();
+        foreach (var file in before)
+            File.ReadAllBytes(file.Key).Should().Equal(file.Value);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public async Task CorruptGzipAlongsideSource_RefusesBeforeFirstEvent(int reader)
+    {
+        var path = await CreateSourceAsync();
+        await File.WriteAllBytesAsync(path + ".gz", Encoding.UTF8.GetBytes("not a gzip archive"));
+        var before = Directory.GetFiles(TestDataRoot).ToDictionary(file => file, File.ReadAllBytes);
+        var observed = new List<MarketEvent>();
+
+        var error = await Record.ExceptionAsync(async () =>
+        {
+            await foreach (var evt in Read(reader))
+                observed.Add(evt);
+        });
+
+        error.Should().NotBeNull();
+        observed.Should().BeEmpty();
+        foreach (var file in before)
+            File.ReadAllBytes(file.Key).Should().Equal(file.Value);
+    }
+
+    private async Task<string> CreateSourceAsync(string? subdirectory = null)
+    {
+        var directory = subdirectory is null ? TestDataRoot : Path.Combine(TestDataRoot, subdirectory);
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "SPY_trade_20260102.jsonl");
+        await AtomicFileWriter.WriteWithChecksumAsync(path,
+            Encoding.UTF8.GetBytes(string.Join("\n", ExpectedLines()) + "\n"));
+        return path;
+    }
+
+    private IAsyncEnumerable<MarketEvent> Read(int reader, CancellationToken ct = default) => reader switch
+    {
+        0 => new JsonlReplayer(TestDataRoot).ReadEventsAsync(ct),
+        1 => new JsonlMarketDataStore(TestDataRoot).QueryAsync(new MarketDataQuery(), ct),
+        2 => new MemoryMappedJsonlReader(TestDataRoot, new MemoryMappedReaderOptions
+        { MinFileSizeForMapping = long.MaxValue, BatchSize = 1 }).ReadEventsAsync(ct),
+        3 => new MemoryMappedJsonlReader(TestDataRoot, new MemoryMappedReaderOptions
+        { MinFileSizeForMapping = 1, BatchSize = 1 }).ReadEventsAsync(ct),
+        _ => throw new ArgumentOutOfRangeException(nameof(reader))
+    };
+
+    private static async Task<IReadOnlyList<string>> ReadAllAsync(IAsyncEnumerable<MarketEvent> events)
+    {
+        var result = new List<string>();
+        await foreach (var evt in events)
+            result.Add(Serialize(evt));
+        return result;
+    }
+
+    private static string[] ExpectedLines() => Enumerable.Range(1, 3)
+        .Select(sequence => Serialize(BuildTrade(sequence))).ToArray();
+
+    private static MarketEvent BuildTrade(long sequence)
+    {
+        var timestamp = new DateTimeOffset(2026, 1, 2, 14, 30, 0, TimeSpan.Zero).AddSeconds(sequence);
+        var trade = new Trade(timestamp, "SPY", 100m + sequence, 10, AggressorSide.Buy, sequence, "TEST", "XNYS");
+        return MarketEvent.Trade(timestamp, "SPY", trade, "TEST", sequence);
+    }
+
+    private static string Serialize(MarketEvent evt) =>
+        JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions);
+
+    private static async Task WriteGzipAsync(string path, byte[] payload)
+    {
+        await using var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
+        await using (var gzip = new GZipStream(file, CompressionLevel.Optimal, leaveOpen: true))
+            await gzip.WriteAsync(payload);
+        file.Flush(flushToDisk: true);
+    }
+}

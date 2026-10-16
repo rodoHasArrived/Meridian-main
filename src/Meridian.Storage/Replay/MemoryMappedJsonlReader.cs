@@ -140,8 +140,7 @@ public sealed class MemoryMappedJsonlReader
         if (!Directory.Exists(_root))
             yield break;
 
-        var files = Directory.EnumerateFiles(_root, "*.jsonl*", SearchOption.AllDirectories)
-            .OrderBy(f => f, StringComparer.OrdinalIgnoreCase);
+        var files = JsonlArchiveFiles.Enumerate(_root);
 
         foreach (var file in files)
         {
@@ -161,21 +160,21 @@ public sealed class MemoryMappedJsonlReader
     {
         Interlocked.Increment(ref _filesRead);
 
+        await using var backing = await JsonlArchiveFiles.OpenReadAsync(file, ct);
+        file = backing.Name;
         var isCompressed = CompressedJsonlStream.IsCompressed(file);
-
-        var fileInfo = new FileInfo(file);
-        var useMemoryMapping = !isCompressed && fileInfo.Length >= _options.MinFileSizeForMapping;
+        var useMemoryMapping = !isCompressed && backing.Length >= _options.MinFileSizeForMapping;
 
         if (useMemoryMapping)
         {
-            await foreach (var evt in ReadFileMemoryMappedAsync(file, fileInfo.Length, ct))
+            await foreach (var evt in ReadFileMemoryMappedAsync(backing, backing.Length, ct))
             {
                 yield return evt;
             }
         }
         else
         {
-            await foreach (var evt in ReadFileStreamingAsync(file, ct))
+            await foreach (var evt in ReadFileStreamingAsync(backing, ct))
             {
                 yield return evt;
             }
@@ -211,19 +210,15 @@ public sealed class MemoryMappedJsonlReader
     /// Reads a file using memory-mapped I/O for maximum performance on large files.
     /// </summary>
     private async IAsyncEnumerable<MarketEvent> ReadFileMemoryMappedAsync(
-        string file,
+        FileStream backing,
         long fileSize,
         [EnumeratorCancellation] CancellationToken ct)
     {
         Interlocked.Increment(ref _memoryMappedFilesUsed);
 
-        // Open the backing stream explicitly with ReadWrite|Delete sharing: the string-path
-        // overload requests exclusive-ish sharing that conflicts with the sink's persistent
-        // append handle on the active day file.
-        using var backing = new FileStream(
-            file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 4096, useAsync: false);
+        // Keep the resolved handle: reopening the old path could race compression cleanup.
         using var mmf = MemoryMappedFile.CreateFromFile(
-            backing, null, 0, MemoryMappedFileAccess.Read, HandleInheritability.None, leaveOpen: false);
+            backing, null, 0, MemoryMappedFileAccess.Read, HandleInheritability.None, leaveOpen: true);
 
         long position = 0;
         var pendingLines = new List<string>(_options.BatchSize);
@@ -322,13 +317,10 @@ public sealed class MemoryMappedJsonlReader
     /// Reads a file using standard streaming for compressed or small files.
     /// </summary>
     private async IAsyncEnumerable<MarketEvent> ReadFileStreamingAsync(
-        string file,
+        FileStream fs,
         [EnumeratorCancellation] CancellationToken ct)
     {
-        // ReadWrite|Delete sharing: the sink holds a persistent append handle on the active
-        // day file, and retention may delete files mid-enumeration; neither should fail reads.
-        await using var fs = new FileStream(
-            file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 64 * 1024, useAsync: true);
+        var file = fs.Name;
         // Shared codec detection (magic bytes, extension fallback) so streaming replay honors every
         // compression suffix the storage policy can emit, not just gzip.
         Stream stream = CompressedJsonlStream.Decompress(fs, file);
@@ -489,7 +481,8 @@ public sealed class MemoryMappedJsonlReader
             return new FileStatistics(0, 0, 0, 0);
         }
 
-        var files = Directory.EnumerateFiles(_root, "*.jsonl*", SearchOption.AllDirectories).ToList();
+        var files = Directory.EnumerateFiles(_root, "*", SearchOption.AllDirectories)
+            .Where(JsonlArchiveFiles.IsCanonicalArchivePath).ToList();
         var totalSize = files.Sum(f => new FileInfo(f).Length);
         var compressedCount = files.Count(CompressedJsonlStream.IsCompressed);
 
