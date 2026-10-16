@@ -48,13 +48,14 @@ opening-age tax rules from silently certifying a short cover.
 
 Security Master migration `040_security_master_governance_events.sql` adds the append-only
 `security_governance_events` log (streams `OperatorOverrides`, `Aliases`, `ProjectionRebuild`);
-triggers refuse update and delete. Override patches and decisions, alias revisions and
+triggers refuse update and delete, and migration `041_security_master_governance_events_truncate_guard.sql` adds a statement-level BEFORE TRUNCATE rejection. Override patches and decisions, alias revisions and
 projection batch rebuilds append in the same transaction as the change, and an override reviewer
 cannot approve values they staged. The event store and projection store join
 `PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap and
 Commodity projections are now declarative registry plans rather than hand-written writers.
 Asset-operations migration `005_asset_operations_write_events.sql` adds an append-only write-event
-log for direct projection writes.
+log for direct projection writes; migration `006_asset_operations_write_events_truncate_guard.sql`
+rejects TRUNCATE on it as well.
 
 Security Master migration `039_security_master_event_payload_version.sql` adds non-null
 `payload_type`/`payload_version` columns to `security_events`, backfilled from the stored payload

@@ -365,7 +365,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "02ad84afde7b6d421389119b3adb633550efc8082734afb17139e1d1ab0fea74",
+  "fingerprint": "c9c7114b8157b870e9bbc3899c624a8bdde4718961189d649a389dcc4ff7cce4",
   "foreign_tables": [],
   "functions": [
     {
@@ -2953,7 +2953,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "ed195dad909c3fb6bb8e99b671fb8298c1a17bb2cedfa249fd163849896aa0c6",
+      "fingerprint": "8aefe02e3d78f1ad362f682c9be81951501d3fe6d660c1ca77ec4308c4fd3d80",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -3030,6 +3030,23 @@
           "function_signature": "reject_asset_operations_write_event_mutation()",
           "level": "row",
           "name": "trg_asset_operations_write_event_no_delete",
+          "relation": "asset_operations_write_events",
+          "schema": "asset_operations",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_asset_operations_write_event_no_truncate BEFORE TRUNCATE ON asset_operations.asset_operations_write_events FOR EACH STATEMENT EXECUTE FUNCTION asset_operations.reject_asset_operations_write_event_mutation()",
+          "definition_hash": "e0988b50e81cd6f33fd2fef1fc61fcbfab13d79c40cbda7d6a87acd0edb88902",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "f7fe2e10607e1b017166bdf612673f4a295965a687e28452c617d475a581053c",
+          "function_schema": "asset_operations",
+          "function_signature": "reject_asset_operations_write_event_mutation()",
+          "level": "statement",
+          "name": "trg_asset_operations_write_event_no_truncate",
           "relation": "asset_operations_write_events",
           "schema": "asset_operations",
           "timing": "before"
@@ -8800,7 +8817,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "ed195dad909c3fb6bb8e99b671fb8298c1a17bb2cedfa249fd163849896aa0c6",
+      "fingerprint": "8aefe02e3d78f1ad362f682c9be81951501d3fe6d660c1ca77ec4308c4fd3d80",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -8877,6 +8894,23 @@
           "function_signature": "reject_asset_operations_write_event_mutation()",
           "level": "row",
           "name": "trg_asset_operations_write_event_no_delete",
+          "relation": "asset_operations_write_events",
+          "schema": "asset_operations",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_asset_operations_write_event_no_truncate BEFORE TRUNCATE ON asset_operations.asset_operations_write_events FOR EACH STATEMENT EXECUTE FUNCTION asset_operations.reject_asset_operations_write_event_mutation()",
+          "definition_hash": "e0988b50e81cd6f33fd2fef1fc61fcbfab13d79c40cbda7d6a87acd0edb88902",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "f7fe2e10607e1b017166bdf612673f4a295965a687e28452c617d475a581053c",
+          "function_schema": "asset_operations",
+          "function_signature": "reject_asset_operations_write_event_mutation()",
+          "level": "statement",
+          "name": "trg_asset_operations_write_event_no_truncate",
           "relation": "asset_operations_write_events",
           "schema": "asset_operations",
           "timing": "before"
@@ -11935,6 +11969,23 @@
       "function_signature": "reject_asset_operations_write_event_mutation()",
       "level": "row",
       "name": "trg_asset_operations_write_event_no_delete",
+      "relation": "asset_operations_write_events",
+      "schema": "asset_operations",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_asset_operations_write_event_no_truncate BEFORE TRUNCATE ON asset_operations.asset_operations_write_events FOR EACH STATEMENT EXECUTE FUNCTION asset_operations.reject_asset_operations_write_event_mutation()",
+      "definition_hash": "e0988b50e81cd6f33fd2fef1fc61fcbfab13d79c40cbda7d6a87acd0edb88902",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "f7fe2e10607e1b017166bdf612673f4a295965a687e28452c617d475a581053c",
+      "function_schema": "asset_operations",
+      "function_signature": "reject_asset_operations_write_event_mutation()",
+      "level": "statement",
+      "name": "trg_asset_operations_write_event_no_truncate",
       "relation": "asset_operations_write_events",
       "schema": "asset_operations",
       "timing": "before"
