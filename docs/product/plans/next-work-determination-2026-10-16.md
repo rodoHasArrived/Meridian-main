@@ -85,6 +85,13 @@ commit with all lanes green, and the last commit with a retained eight-workflow 
 of the time while merges proceed is not gating anything, and the tracker's release gate requires
 every P0 complete **on the same release commit**.
 
+**The lane is intermittent, not broken, and that is the harder problem.** This document's own PR
+([#3187](https://github.com/rodoHasArrived/Meridian-main/pull/3187)) ran `verify-workflows` **green**
+on `d38694dd` at 16:24 UTC, with all 17 checks passing. A lane that passes most of the time is
+exactly the one that gets waved through, which is how four red pushes accumulated on `main` without
+anyone stopping. Pass/fail on a single head proves nothing either way here; the four runs tabulated
+above are the evidence.
+
 **Recommendation.** Fix the two named races — `ignore_cleanup_errors=True` across the
 `tests/scripts` `TemporaryDirectory` call sites, and the cancellation/allocation window in
 `disposable.py` — then re-run the lane on the head before anyone picks an RC commit. **Do not
@@ -94,7 +101,18 @@ certified on a gate that was silenced to pass.
 
 ## New P1: the `Generated Repair Publisher` has never once succeeded
 
-The workflow landed on `main` yesterday at 00:00 UTC in
+**Read the workflow file, not the check name.** Two sibling workflows share the "generated repair"
+prefix, and only one is broken:
+
+| Workflow file | Trigger | Check surfaced on a PR | State |
+| --- | --- | --- | --- |
+| `.github/workflows/generated-repair.yml` | `pull_request_target` (`prepare`) | `Prepare generated repair patch` | **works** — green on this document's own PR |
+| `.github/workflows/generated-repair-publish.yml` | `workflow_run` (`inspect` → `publish`) | none; runs after the fact on `main` | **never green** |
+
+The finding below is **only** about the second. A green `Prepare generated repair patch` check does
+not contradict it, and mistaking one for the other is the easiest way to dismiss this.
+
+`generated-repair-publish.yml` landed on `main` yesterday at 00:00 UTC in
 [#3179](https://github.com/rodoHasArrived/Meridian-main/pull/3179). Of its **38 runs**, the 7
 `push`/`schedule` runs were `skipped` and **all 31 `workflow_run` runs failed. There is no green run
 in its history.**
