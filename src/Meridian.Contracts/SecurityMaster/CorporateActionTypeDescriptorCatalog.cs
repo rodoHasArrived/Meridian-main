@@ -17,7 +17,7 @@ public static class CorporateActionTypeDescriptorCatalog
             DisplayName: "Cash dividend",
             Description: "Regular cash dividend paid per share in the instrument's currency.",
             Aliases: ["CashDividend", "DividendPayment", "DIV", "DVCA"],
-            ValidSecurityMasterAssetClasses: ["Equity", "MoneyMarketFund", "PrivateCompanyEquity", "PrivateFundInterest"],
+            ValidSecurityMasterAssetClasses: ["Equity", "MoneyMarketFund", "InvestmentFund", "PrivateCompanyEquity", "PrivateFundInterest"],
             RequiredFields: [CorporateActionField.DividendPerShare, CorporateActionField.Currency],
             AdjustmentBehavior: CorporateActionAdjustmentBehavior.CashDistribution,
             LedgerPostingKind: CorporateActionLedgerPostingKind.DividendDeclaration,

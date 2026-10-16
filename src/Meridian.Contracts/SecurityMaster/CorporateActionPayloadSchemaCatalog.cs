@@ -20,6 +20,10 @@ public static class CorporateActionPayloadSchemaCatalog
                 Boolean(CorporateActionPayloads.IsPartialTender),
                 Boolean(CorporateActionPayloads.IsVoluntary),
             ],
+            [CorporateActionEventTypes.Dividend] =
+            [
+                String(CorporateActionPayloads.DistributionComponent),
+            ],
             [CorporateActionEventTypes.ReturnOfCapital] =
             [
                 Decimal(CorporateActionPayloads.CapitalReturnPerShare),

@@ -663,6 +663,37 @@ public static partial class SecurityMasterEndpoints
         .Produces<IReadOnlyList<CorporateActionDto>>(StatusCodes.Status200OK);
 
         /// <summary>
+        /// Returns the declared income schedule (dividends, special dividends, fund distributions,
+        /// returns of capital) built from the security's effective corporate actions.
+        /// </summary>
+        /// <remarks>
+        /// <para>Amounts are per unit held. Distributions without a pay date, amount, currency or a
+        /// recognised <c>distributionComponent</c> are reported under <c>gaps</c>.</para>
+        /// <para><c>from</c>/<c>to</c> bound the payment date inclusively. Returns 404 for an unknown security.</para>
+        /// </remarks>
+        group.MapGet(UiApiRoutes.SecurityMasterIncomeCashFlows, async (
+            Guid securityId,
+            [FromQuery] DateOnly? from,
+            [FromQuery] DateOnly? to,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
+        {
+            var security = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (security is null)
+            {
+                return Results.NotFound();
+            }
+
+            var actions = await queryService.GetCorporateActionsAsync(securityId, ct).ConfigureAwait(false);
+            var schedule = SecurityIncomeCashFlowProjector.Build(
+                securityId, security.AssetClass, actions, DateTimeOffset.UtcNow, from, to);
+            return Results.Json(schedule, jsonOptions);
+        })
+        .WithName("GetSecurityMasterIncomeCashFlows").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<SecurityIncomeCashFlowScheduleDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
         /// Records a new corporate action event for a security (dividend, split, merger, etc.).
         /// </summary>
         /// <remarks>
