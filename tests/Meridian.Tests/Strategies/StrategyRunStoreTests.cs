@@ -7,7 +7,9 @@ using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Operations;
 using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Live;
 using Meridian.Strategies.Models;
+using Meridian.Strategies.Serialization;
 using Meridian.Strategies.Storage;
 using Xunit;
 
@@ -15,6 +17,252 @@ namespace Meridian.Tests.Strategies;
 
 public sealed class StrategyRunStoreTests
 {
+    [Theory]
+    [InlineData("NaN", true)]
+    [InlineData("Infinity", false)]
+    [InlineData("-Infinity", false)]
+    [InlineData("nan", false)]
+    [InlineData("0.1", false)]
+    public async Task Replay_LegacyNamedXirr_AcceptsOnlyTheExactUnavailableSentinel(string legacyValue, bool accepted)
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var store = new StrategyRunStore(history);
+            var run = StrategyRunEntry.StartForFundAccount("summary", "Summary Strategy", RunType.Live, Guid.NewGuid());
+            await store.RecordRunAsync(run);
+            run = (await store.GetRunByIdAsync(run.RunId))!;
+            var result = new LiveRunMetricsTracker(100m, run.StartedAt).Build(
+                "BrokerLive", new HashSet<string>(), 100m, new Meridian.Ledger.Ledger(), DateTimeOffset.UtcNow);
+            var completed = run.Complete(result);
+            var snapshot = JsonSerializer.SerializeToNode(completed, StrategyRunPersistenceJson.Options)!;
+            snapshot.AsObject().Remove("lifecycleFacts");
+            snapshot["metrics"]!["metrics"]!["xirr"] = legacyValue;
+            await AppendRawSnapshotAsync(history, completed, run.LastLifecycleEvent,
+                snapshot.ToJsonString(), StrategyRunStore.CreateLifecycleOutcome(completed, completed.LastLifecycleEvent));
+
+            var restarted = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            if (!accepted)
+            {
+                var read = () => restarted.GetRunByIdAsync(run.RunId);
+                await read.Should().ThrowAsync<InvalidDataException>().WithMessage("*invalid snapshot*");
+                return;
+            }
+
+            var retained = (await restarted.GetRunByIdAsync(run.RunId))!;
+            retained.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            double.IsNaN(retained.Metrics!.Metrics.Xirr).Should().BeTrue();
+            retained.FundAccountId.Should().Be(run.FundAccountId);
+            retained.InputHashSha256.Should().Be(run.InputHashSha256);
+            var rewritten = JsonSerializer.SerializeToNode(retained, StrategyRunPersistenceJson.Options)!;
+            rewritten["metrics"]!["metrics"]!["xirr"].Should().BeNull();
+            retained.LifecycleFacts.Should().BeEmpty();
+
+            await restarted.RecordRunAsync(retained);
+            var records = await history.ReadAsync(new OperationalCaseHistoryQuery
+            {
+                CaseId = $"strategy-run:{run.RunId}",
+                CaseType = StrategyRunStore.CaseType
+            });
+            records.Should().HaveCount(2, "retrying an unchanged legacy snapshot must not append a new event");
+            records[^1].Data["strategyRunSnapshotJson"].Should().Be(snapshot.ToJsonString(),
+                "replay must preserve the original retained bytes and their hash");
+            var outcome = await ((IStrategyRepository)restarted).RecordLifecycleEventWithOutcomeAsync(
+                retained, StrategyRunLifecycleEventType.Completed);
+            outcome.Should().BeEquivalentTo(records[^1].TerminalOutcome);
+            outcome!.OperationId.Should().Be(records[^1].HistoryEventId,
+                "an unchanged legacy retry must return the receipt for the actual retained bytes");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task RecordRunAsync_LegacySnapshotRetryPreservesLatestProjectionAndRejectsChangedScopeOrFacts()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            var started = StrategyRunEntry.StartForFundAccount(
+                "legacy-retry", "Legacy retry", RunType.Paper, Guid.NewGuid());
+            var snapshot = JsonSerializer.SerializeToNode(started, StrategyRunPersistenceJson.Options)!;
+            snapshot.AsObject().Remove("lifecycleFacts");
+            var originalJson = snapshot.ToJsonString();
+            await AppendRawSnapshotAsync(history, started, started.LastLifecycleEvent, originalJson,
+                StrategyRunStore.CreateLifecycleOutcome(started, started.LastLifecycleEvent));
+
+            var store = new StrategyRunStore(history);
+            var legacy = (await store.GetRunByIdAsync(started.RunId))!;
+            var completed = legacy.Complete(metrics: null) with { LifecycleFacts = ["strategy-stopped"] };
+            await store.RecordRunAsync(completed);
+
+            var restarted = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            await restarted.RecordRunAsync(legacy);
+            var latest = (await restarted.GetRunByIdAsync(started.RunId))!;
+            latest.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            latest.LifecycleFacts.Should().Equal("strategy-stopped");
+            latest.FundAccountId.Should().Be(started.FundAccountId);
+            latest.InputHashSha256.Should().Be(started.InputHashSha256);
+
+            var changedAccount = legacy with { FundAccountId = Guid.NewGuid(), InputHashSha256 = null };
+            var retryChangedAccount = () => restarted.RecordRunAsync(changedAccount);
+            await retryChangedAccount.Should().ThrowAsync<InvalidOperationException>()
+                .WithMessage("*immutable run identity changed*");
+            var changedFacts = legacy with { LifecycleFacts = ["strategy-running-entered"] };
+            var retryChangedFacts = () => restarted.RecordRunAsync(changedFacts);
+            await retryChangedFacts.Should().ThrowAsync<InvalidOperationException>();
+            (await restarted.GetRunByIdAsync(started.RunId)).Should().BeEquivalentTo(latest,
+                "rejected changed retries must preserve the latest retained projection");
+
+            var records = await history.ReadAsync(new OperationalCaseHistoryQuery
+            {
+                CaseId = $"strategy-run:{started.RunId}",
+                CaseType = StrategyRunStore.CaseType
+            });
+            records.Should().HaveCount(2);
+            records[0].Data["strategyRunSnapshotJson"].Should().Be(originalJson);
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task DurableStore_TerminalReceiptBindsTheCapturedCaseInsensitiveMetricUniverse()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var history = new FileOperationalCaseHistoryStore(dataRoot);
+            IStrategyRepository store = new StrategyRunStore(history);
+            var run = StrategyRunEntry.StartForFundAccount("summary", "Summary Strategy", RunType.Live, Guid.NewGuid());
+            var result = new LiveRunMetricsTracker(100m, run.StartedAt).Build(
+                "BrokerLive", new HashSet<string>(StringComparer.Ordinal) { "SPY", "spy" }, 100m,
+                new Meridian.Ledger.Ledger(), DateTimeOffset.UtcNow);
+            await store.RecordRunAsync(run);
+
+            var outcome = await store.RecordLifecycleEventWithOutcomeAsync(
+                run.Complete(result), StrategyRunLifecycleEventType.Completed);
+
+            var retained = (await store.GetRunByIdAsync(run.RunId))!;
+            retained.Metrics!.Universe.Should().ContainSingle().Which.Should().Be("SPY");
+            var records = await history.ReadAsync(new OperationalCaseHistoryQuery
+            {
+                CaseId = $"strategy-run:{run.RunId}",
+                CaseType = StrategyRunStore.CaseType
+            });
+            outcome.Should().BeEquivalentTo(records[^1].TerminalOutcome);
+            outcome!.OperationId.Should().Be(records[^1].HistoryEventId);
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task DurableStore_SummaryMetricsRetainUnavailableXirrAfterRestart()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var run = StrategyRunEntry.StartForFundAccount("summary", "Summary Strategy", RunType.Live, Guid.NewGuid());
+            var result = new LiveRunMetricsTracker(100m, run.StartedAt).Build(
+                "BrokerLive", new HashSet<string>(), 100m, new Meridian.Ledger.Ledger(), DateTimeOffset.UtcNow);
+            await store.RecordRunAsync(run);
+            var invalid = result with { Metrics = result.Metrics with { SharpeRatio = double.NaN } };
+            var rejectInvalidMetric = () => store.RecordRunAsync(run.Complete(invalid));
+            await rejectInvalidMetric.Should().ThrowAsync<ArgumentException>();
+            await store.RecordRunAsync(run.Complete(result));
+
+            var replayed = (await new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot))
+                .GetRunByIdAsync(run.RunId))!;
+            replayed.LastLifecycleEvent.Should().Be(StrategyRunLifecycleEventType.Completed);
+            replayed.Metrics!.EngineMetadata!.ResultKind.Should().Be(BacktestResultKinds.SummaryOnly);
+            double.IsNaN(replayed.Metrics.Metrics.Xirr).Should().BeTrue();
+            replayed.FundAccountId.Should().Be(run.FundAccountId);
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void StartForFundAccount_RequiresAnExplicitNonEmptyAccount()
+    {
+        var create = () => StrategyRunEntry.StartForFundAccount("strategy-account", "Scoped Strategy", RunType.Live, Guid.Empty);
+
+        create.Should().Throw<ArgumentException>().WithParameterName("fundAccountId");
+    }
+
+    [Fact]
+    public async Task DurableStore_FundAccountSurvivesRestartAndCannotChangeOrLoseItsHashBinding()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var accountId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+            var entry = StrategyRunEntry.StartForFundAccount("strategy-account", "Scoped Strategy", RunType.Live, accountId);
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            await store.RecordRunAsync(entry);
+
+            var restarted = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var retained = (await restarted.GetRunByIdAsync(entry.RunId))!;
+            retained.FundAccountId.Should().Be(accountId);
+            retained.InputHashSha256.Should().Be(StrategyRunEntry.ComputeAccountBoundInputHash(retained));
+
+            var changed = retained.ActivationDeferred("Retry scoped launch.") with { FundAccountId = Guid.NewGuid() };
+            var changeWithOldHash = () => restarted.RecordRunAsync(changed);
+            await changeWithOldHash.Should().ThrowAsync<ArgumentException>().WithMessage("*fund account*");
+
+            var changeWithNewHash = () => restarted.RecordRunAsync(changed with
+            {
+                InputHashSha256 = StrategyRunEntry.ComputeAccountBoundInputHash(changed)
+            });
+            await changeWithNewHash.Should().ThrowAsync<InvalidOperationException>().WithMessage("*immutable*");
+
+            var removed = retained.ActivationDeferred("Retry without scope.") with
+            {
+                FundAccountId = null,
+                InputHashSha256 = null
+            };
+            var removeScope = () => restarted.RecordRunAsync(removed);
+            await removeScope.Should().ThrowAsync<InvalidOperationException>().WithMessage("*immutable*");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task DurableStore_UnscopedHashCannotAuthorizeNewFundAccount()
+    {
+        var dataRoot = CreateDataRoot();
+        try
+        {
+            var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
+            var entry = StrategyRunEntry.Start("strategy-account", "Scoped Strategy", RunType.Live) with
+            {
+                FundAccountId = Guid.NewGuid()
+            };
+            var record = () => store.RecordRunAsync(entry);
+
+            await record.Should().ThrowAsync<ArgumentException>().WithMessage("*fund account*");
+        }
+        finally
+        {
+            Directory.Delete(dataRoot, recursive: true);
+        }
+    }
+
     [Fact]
     public async Task GetRunByIdAsync_ReturnsRecordedRun()
     {
@@ -1267,11 +1515,15 @@ public sealed class StrategyRunStoreTests
     private static async Task AppendRawSnapshotAsync(
         FileOperationalCaseHistoryStore history,
         StrategyRunEntry entry,
-        StrategyRunLifecycleEventType previousEvent)
+        StrategyRunLifecycleEventType previousEvent,
+        string? snapshotJsonOverride = null,
+        VerifiedOperationOutcome? terminalOutcome = null)
     {
         var eventAt = entry.LifecycleEventAtUtc!.Value;
-        var snapshotJson = JsonSerializer.Serialize(entry);
+        var snapshotJson = snapshotJsonOverride ?? JsonSerializer.Serialize(entry);
         var snapshotHash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(snapshotJson)));
+        var eventId = $"strategy-run:{entry.RunId}:{entry.LastLifecycleEvent}:{snapshotHash}";
+        terminalOutcome = terminalOutcome is null ? null : terminalOutcome with { OperationId = eventId };
         var caseId = $"strategy-run:{entry.RunId}";
         var predecessor = (await history.ReadAsync(new OperationalCaseHistoryQuery
         {
@@ -1295,13 +1547,15 @@ public sealed class StrategyRunStoreTests
         {
             CaseId = caseId,
             CaseType = StrategyRunStore.CaseType,
-            HistoryEventId = $"strategy-run:{entry.RunId}:{entry.LastLifecycleEvent}:{snapshotHash}",
+            HistoryEventId = eventId,
             EventType = entry.LastLifecycleEvent.ToString(),
             OccurredAtUtc = eventAt,
             ActorId = entry.ActorId!,
             Reason = entry.Reason!,
             CorrelationId = entry.CorrelationId!,
             InputHashSha256 = entry.InputHashSha256!,
+            Evidence = terminalOutcome?.Evidence ?? [],
+            TerminalOutcome = terminalOutcome,
             Data = data,
             Transition = new OperationalCaseStateTransition
             {

@@ -23,6 +23,8 @@ public sealed class StrategyLifecycleRecoveryTests : IDisposable
     [Theory]
     [InlineData(StrategyRunLifecycleEventType.StartFailed)]
     [InlineData(StrategyRunLifecycleEventType.Cancelled)]
+    [InlineData(StrategyRunLifecycleEventType.Failed)]
+    [InlineData(StrategyRunLifecycleEventType.EvidencePersistenceFailed)]
     public async Task DurableCleanup_PreservesTerminalAttemptIdentityAndReplaysAfterRestart(
         StrategyRunLifecycleEventType terminalEvent)
     {
@@ -58,8 +60,8 @@ public sealed class StrategyLifecycleRecoveryTests : IDisposable
         events.Select(static record => record.EventType).Should().Equal(
             "StartRequested", terminalEvent.ToString(), "StopRequested", "Completed");
         events[1].TerminalOutcome.Should().NotBeNull();
-        events[1].TerminalOutcome!.State.Should().Be(terminalEvent == StrategyRunLifecycleEventType.StartFailed
-            ? OperationTerminalState.Failed : OperationTerminalState.Blocked);
+        events[1].TerminalOutcome!.State.Should().Be(terminal.TerminalStatus == StrategyRunStatus.Cancelled
+            ? OperationTerminalState.Blocked : OperationTerminalState.Failed);
         events[^1].TerminalOutcome!.State.Should().Be(OperationTerminalState.Succeeded);
         events.Where(static record => record.TerminalOutcome is not null).Should()
             .OnlyContain(static record => VerifiedOperationOutcomeValidator.Validate(record.TerminalOutcome!).Count == 0);
@@ -100,6 +102,8 @@ public sealed class StrategyLifecycleRecoveryTests : IDisposable
     [Theory]
     [InlineData(StrategyRunLifecycleEventType.StartFailed)]
     [InlineData(StrategyRunLifecycleEventType.Cancelled)]
+    [InlineData(StrategyRunLifecycleEventType.Failed)]
+    [InlineData(StrategyRunLifecycleEventType.EvidencePersistenceFailed)]
     public async Task DurableCleanup_RejectsChangesToTerminalTimestampOrStatus(StrategyRunLifecycleEventType terminalEvent)
     {
         var store = NewStore();
@@ -192,18 +196,17 @@ public sealed class StrategyLifecycleRecoveryTests : IDisposable
     }
 
     [Fact]
-    public async Task DurableCleanup_DoesNotPermitOtherTerminalRunsToReopen()
+    public async Task DurableCleanup_DoesNotPermitSuccessfullyCompletedRunsToReopen()
     {
-        foreach (var terminalEvent in new[] { StrategyRunLifecycleEventType.Completed, StrategyRunLifecycleEventType.Failed })
-        {
-            var store = NewStore();
-            var run = StrategyRunEntry.Start("other-strategy", "Other Strategy", RunType.Paper, $"run-{terminalEvent}");
-            var terminal = terminalEvent == StrategyRunLifecycleEventType.Completed
-                ? run.Complete(metrics: null) : run.Fail(new InvalidOperationException("Execution failed."));
-            await store.RecordLifecycleEventAsync(terminal, terminalEvent);
-            var reopen = () => store.RecordLifecycleEventAsync(terminal.RequestStop(), StrategyRunLifecycleEventType.StopRequested);
-            await reopen.Should().ThrowAsync<InvalidOperationException>();
-        }
+        var store = NewStore();
+        var terminal = StrategyRunEntry.Start("other-strategy", "Other Strategy", RunType.Paper, "run-completed")
+            .Complete(metrics: null);
+        await store.RecordLifecycleEventAsync(terminal, StrategyRunLifecycleEventType.Completed);
+
+        var reopen = () => store.RecordLifecycleEventAsync(terminal.RequestStop(), StrategyRunLifecycleEventType.StopRequested);
+
+        await reopen.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*non-terminal lifecycle event*retains a run end timestamp*");
     }
 
     [Fact]
@@ -272,9 +275,16 @@ public sealed class StrategyLifecycleRecoveryTests : IDisposable
             retainedEvidenceReferences: ["evidence://strategy-runs/recovery-run"]);
         var requested = run.RequestStart();
         await store.RecordLifecycleEventAsync(requested, StrategyRunLifecycleEventType.StartRequested);
-        var terminal = terminalEvent == StrategyRunLifecycleEventType.StartFailed
-            ? requested.StartFailed(new InvalidOperationException("Warmup failed."))
-            : requested.Cancel(new OperationCanceledException("Warmup was cancelled."));
+        var failure = new InvalidOperationException("Strategy execution or cleanup failed.");
+        var terminal = terminalEvent switch
+        {
+            StrategyRunLifecycleEventType.StartFailed => requested.StartFailed(failure),
+            StrategyRunLifecycleEventType.Cancelled => requested.Cancel(new OperationCanceledException("Warmup was cancelled.")),
+            StrategyRunLifecycleEventType.Failed => requested.Fail(failure),
+            StrategyRunLifecycleEventType.EvidencePersistenceFailed => requested.Fail(failure)
+                .EvidencePersistenceFailed(new IOException("Terminal append failed."), "Strategy failure and persistence failure."),
+            _ => throw new ArgumentOutOfRangeException(nameof(terminalEvent))
+        };
         await store.RecordLifecycleEventAsync(terminal, terminalEvent);
         return terminal;
     }

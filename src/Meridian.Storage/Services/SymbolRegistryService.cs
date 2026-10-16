@@ -13,8 +13,9 @@ namespace Meridian.Storage.Services;
 /// Service for managing the symbol registry with comprehensive alias resolution.
 /// Stored at _catalog/symbols.json.
 /// </summary>
-public sealed class SymbolRegistryService :
+public sealed partial class SymbolRegistryService :
     ISymbolRegistryService,
+    ISymbolRegistrySecurityMasterWriter,
     ISymbolRegistryMigrationWriter
 {
     private const string CatalogDirectoryName = "_catalog";
@@ -130,7 +131,7 @@ public sealed class SymbolRegistryService :
         var normalizedQuery = query.Trim().ToUpperInvariant();
 
         // 1. Try canonical match
-        if (_symbolCache.TryGetValue(normalizedQuery, out var entry))
+        if (_symbolCache.TryGetValue(normalizedQuery, out var entry) && HasResolvableCanonical(entry))
         {
             return new SymbolLookupResult
             {
@@ -202,7 +203,9 @@ public sealed class SymbolRegistryService :
         }
 
         // 5. Not found - suggest similar symbols
-        var suggestions = _symbolCache.Keys
+        var suggestions = _symbolCache
+            .Where(static pair => HasResolvableCanonical(pair.Value))
+            .Select(static pair => pair.Key)
             .Where(s => s.Contains(normalizedQuery) ||
                         normalizedQuery.Contains(s) ||
                         LevenshteinDistance(s, normalizedQuery) <= 2)
@@ -574,7 +577,8 @@ public sealed class SymbolRegistryService :
             if (entry.SecurityId is Guid securityId &&
                 entriesBySecurityId.TryGetValue(securityId, out var identityEntry))
             {
-                AddCanonicalTickerAlias(identityEntry, entry.Canonical);
+                AddCanonicalTickerAlias(identityEntry, entry.Canonical,
+                    entry.SecurityMasterOwnsCanonical ? SymbolMappingSources.SecurityMaster : SymbolMappingSources.Registry);
                 MergeEntry(identityEntry, entry, _log);
                 _log.Warning(
                     "Collapsed duplicate canonical symbol {DuplicateCanonical} into {RetainedCanonical} for SecurityId {SecurityId}",
@@ -707,7 +711,8 @@ public sealed class SymbolRegistryService :
                     $"SecurityId '{incoming.SecurityId}' is retained under '{identityEntry.Canonical}'.");
             }
 
-            AddCanonicalTickerAlias(identityEntry, incoming.Canonical);
+            AddCanonicalTickerAlias(identityEntry, incoming.Canonical,
+                incoming.SecurityMasterOwnsCanonical ? SymbolMappingSources.SecurityMaster : SymbolMappingSources.Registry);
             MergeEntry(identityEntry, incoming, log);
             return identityEntry;
         }
@@ -717,6 +722,10 @@ public sealed class SymbolRegistryService :
             if (merge)
             {
                 MergeEntry(canonicalEntry, incoming, log);
+                // A registration outside reconciliation independently retains this spelling.
+                canonicalEntry.SecurityMasterOwnsCanonical &= incoming.SecurityMasterOwnsCanonical;
+                if (!canonicalEntry.SecurityMasterOwnsCanonical)
+                    canonicalEntry.SecurityMasterCanonicalWithdrawn = false;
                 return canonicalEntry;
             }
 
@@ -743,12 +752,13 @@ public sealed class SymbolRegistryService :
         return registry.Symbols.Values.FirstOrDefault(entry => entry.SecurityId == securityId);
     }
 
-    private static void AddCanonicalTickerAlias(SymbolRegistryEntry entry, string canonicalTicker)
+    private static void AddCanonicalTickerAlias(SymbolRegistryEntry entry, string canonicalTicker, string source)
     {
         if (string.IsNullOrWhiteSpace(canonicalTicker) ||
             canonicalTicker.Equals(entry.Canonical, StringComparison.OrdinalIgnoreCase) ||
             entry.Aliases.Any(alias =>
                 string.IsNullOrWhiteSpace(alias.Provider) &&
+                string.Equals(alias.Source, source, StringComparison.OrdinalIgnoreCase) &&
                 alias.Alias.Equals(canonicalTicker, StringComparison.OrdinalIgnoreCase)))
         {
             return;
@@ -757,7 +767,7 @@ public sealed class SymbolRegistryService :
         entry.Aliases.Add(new SymbolAlias
         {
             Alias = canonicalTicker.Trim().ToUpperInvariant(),
-            Source = SymbolMappingSources.SecurityMaster,
+            Source = source,
             Type = "ticker",
             IsActive = true
         });
@@ -815,9 +825,21 @@ public sealed class SymbolRegistryService :
         entry.Aliases = entry.Aliases
             .Where(static alias => !string.IsNullOrWhiteSpace(alias.Alias))
             .GroupBy(
-                static alias => $"{alias.Provider}\u001f{alias.Alias}",
+                static alias => $"{alias.Provider}\u001f{alias.Alias}\u001f{alias.Source}",
                 StringComparer.OrdinalIgnoreCase)
-            .Select(static group => group.First())
+            // This is the live registry projection, not the authoritative alias history.
+            // Prefer the caller's active representative so expired/disabled windows cannot
+            // hide a renewed alias. The seeder owns the clock decision; never reevaluate it
+            // against the registry host's wall clock. Ties are deterministic across load order.
+            .OrderBy(static group => group.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group
+                .OrderByDescending(static alias => alias.IsActive)
+                .ThenByDescending(static alias => alias.ValidFrom ?? DateTime.MinValue)
+                .ThenByDescending(static alias => alias.ValidTo ?? DateTime.MaxValue)
+                .ThenBy(static alias => alias.Alias, StringComparer.Ordinal)
+                .ThenBy(static alias => alias.Source, StringComparer.Ordinal)
+                .ThenBy(static alias => alias.Type, StringComparer.Ordinal)
+                .First())
             .ToList();
 
         var providerSymbols = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -955,9 +977,13 @@ public sealed class SymbolRegistryService :
     private static bool IsGenericResolvableAlias(SymbolAlias alias)
         => alias.IsActive && string.IsNullOrWhiteSpace(alias.Provider);
 
+    private static bool HasResolvableCanonical(SymbolRegistryEntry entry)
+        => !entry.SecurityMasterOwnsCanonical || !entry.SecurityMasterCanonicalWithdrawn;
+
     private static bool AliasIdentityMatches(SymbolAlias left, SymbolAlias right)
         => left.Alias.Equals(right.Alias, StringComparison.OrdinalIgnoreCase)
-           && string.Equals(left.Provider, right.Provider, StringComparison.OrdinalIgnoreCase);
+           && string.Equals(left.Provider, right.Provider, StringComparison.OrdinalIgnoreCase)
+           && string.Equals(left.Source, right.Source, StringComparison.OrdinalIgnoreCase);
 
     private void UpdateIdentifierIndex(SymbolRegistryEntry entry)
         => UpdateIdentifierIndex(_registry, entry);

@@ -132,6 +132,10 @@ vendor composite → matrix/model → manual) and stamps the resolving tier's fa
 `AutomatedJournalDraft` (kind `FairValueMarkAdjustment`) with per-mark price evidence so daily
 fair-value adjustments flow through `AutomatedJournalApproval` before posting; the
 Application-layer `DailyMarkToMarketService` wires provider-chain close prices into this path.
+Entity-scoped daily valuation reads the same entity's retained carrying balance and preserves that
+entity in both journal legs, calculation evidence, and the draft fingerprint. Shared book/account
+balances from other entities cannot change the valuation delta. Intake and lifecycle validation
+reject an entity that differs from the retained calculation scope.
 `FixedIncomeAmortizationProjector` produces balanced coupon accrual, discount accretion, and
 premium amortization lines for bond accounting workflows before persistence or approval posting.
 `FixedAssetDepreciationProjector` is the depreciation analogue: it projects balanced
@@ -298,6 +302,10 @@ posting-ready status instead of silently merging incompatible capital-account su
 Capital-account impact rows preserve each journal entry's
 capital-account and investor metadata before falling back to the event-level identity, so blocked
 conflicts remain auditable without making them report-ready.
+
+`LedgerTaxLot` implements `IUnitizedLot`; `LedgerTaxLotBasisAdjuster` carries the unit kind and
+multiplier onto adjusted lots, so a face-value lot keeps its per-100 multiplier through basis
+adjustments.
 
 ## Diagrams
 

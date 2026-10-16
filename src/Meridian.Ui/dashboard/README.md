@@ -11,6 +11,17 @@ last_reviewed: 2026-10-11
 
 # src/Meridian.Ui/dashboard
 
+Historical price charts require a complete successful historical query before showing prices
+or indicators. Failed and partial queries show an explicit incomplete state with failed source
+paths and Retry; incomplete comparison series are withheld and named in an alert. The shared
+API retains recovered bars and `fileFailures` for investigation without presenting them as a
+complete series. Focused coverage lives in `historical-chart.test.tsx`.
+
+Loan book accepts numeric and named host enums and preserves unknown values without inventing
+USD. Server `currencyTotals` retain their denomination and an explicit no-FX notice; scalar
+totals without a currency are withheld. Principal and undrawn amounts group by facility base
+currency, while collateral retains its own appraisal currency.
+
 The generated `api-routes.ts` catalog includes exact account-owned ledger-book oversight routes
 for cash continuity, reviewed close prices and cash forecasts. Regenerate it from shared
 `UiApiRoutes` and rebuild the tracked workstation bundle when those routes change; server-owned
@@ -1493,6 +1504,14 @@ reference shapes. Candidate, posting-command, and Asset Operations payload field
 for older JSON. The browser submits posting intent and assertions only; server services resolve
 authority, and the same shared contracts remain available to WPF without browser-owned accounting
 logic or a new route.
+
+`ui-api-routes.generated.ts` includes `SecurityMasterAssetClasses` and
+`SecurityMasterAssetClassDefinition`. `SecurityIdentifierKind` includes `LoanX` and `Clip`.
+
+The passport editor builds its term picker from `GET /api/security-master/asset-classes/{assetClass}`
+(`security-master-schema.api.ts`): scalar-editable terms grouped as the registry declares them,
+a value control per editor kind, and a client pre-check
+(`security-passport-schema-fields.view-model.ts`). The free-text field path stays as a fallback.
 
 ## Diagrams
 

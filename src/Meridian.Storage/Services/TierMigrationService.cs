@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Replay;
 
 namespace Meridian.Storage.Services;
 
@@ -17,6 +18,8 @@ public sealed class TierMigrationService : ITierMigrationService
         ".jsonl.gz",
         ".jsonl.zst",
         ".jsonl.lz4",
+        ".jsonl.br",
+        ".jsonl.gzip",
         ".parquet"
     ];
 
@@ -342,14 +345,20 @@ public sealed class TierMigrationService : ITierMigrationService
                     "for tier migration. Configure the tier with Gzip or no compression.");
             }
 
-            if (!targetPath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase))
-                targetPath = ApplyCompressionExtension(targetPath, ".gz");
+            targetPath = RemoveCompressionExtension(targetPath) + ".gz";
         }
+        else if (targetTier.Compression == CompressionCodec.None)
+        {
+            targetPath = RemoveCompressionExtension(targetPath);
+        }
+
+        if (string.Equals(sourcePath, targetPath, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+            throw new InvalidOperationException("Tier migration source and target must be different files.");
 
         Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
 
         // Copy and optionally compress
-        if (options.VerifyChecksum)
+        if (options.VerifyChecksum || options.DeleteSource)
         {
             await CopyWithVerificationAsync(sourcePath, targetPath, targetTier, ct);
         }
@@ -409,29 +418,34 @@ public sealed class TierMigrationService : ITierMigrationService
         await AtomicFileWriter.WriteStreamAsync(target, async targetStream =>
         {
             await using var sourceStream = File.OpenRead(source);
+            // Decode with the same magic-byte/codec rules as the production replay readers.
+            // A configured codec is a transcode; an unspecified codec preserves the source bytes.
+            await using var payload = tierConfig.Compression.HasValue
+                ? CompressedJsonlStream.Decompress(sourceStream, source)
+                : sourceStream;
 
             if (tierConfig.Compression == CompressionCodec.Gzip)
             {
                 // leaveOpen so the GZipStream trailer is flushed on dispose without closing
                 // the temp stream the atomic writer still needs to fsync.
                 await using var gzip = new GZipStream(targetStream, CompressionLevel.Optimal, leaveOpen: true);
-                await sourceStream.CopyToAsync(gzip, ct);
+                await payload.CopyToAsync(gzip, ct);
             }
             else
             {
-                await sourceStream.CopyToAsync(targetStream, ct);
+                await payload.CopyToAsync(targetStream, ct);
             }
         }, ct);
     }
 
     private async Task CopyWithVerificationAsync(string source, string target, TierConfig tierConfig, CancellationToken ct)
     {
-        var sourceHash = await ComputeSourceHashAsync(source, ct).ConfigureAwait(false);
+        var sourceHash = await ComputeLogicalPayloadHashAsync(source, ct).ConfigureAwait(false);
 
         // Copy file
         await CopyFileAsync(source, target, tierConfig, ct).ConfigureAwait(false);
 
-        var targetHash = await ComputeMigratedPayloadHashAsync(target, tierConfig, ct).ConfigureAwait(false);
+        var targetHash = await ComputeLogicalPayloadHashAsync(target, ct).ConfigureAwait(false);
         if (!sourceHash.AsSpan().SequenceEqual(targetHash))
         {
             File.Delete(target);
@@ -439,36 +453,22 @@ public sealed class TierMigrationService : ITierMigrationService
         }
     }
 
-    private static async Task<byte[]> ComputeSourceHashAsync(string source, CancellationToken ct)
+    private static async Task<byte[]> ComputeLogicalPayloadHashAsync(string path, CancellationToken ct)
     {
         using var sha256 = SHA256.Create();
-        await using var sourceStream = File.OpenRead(source);
-        return await sha256.ComputeHashAsync(sourceStream, ct).ConfigureAwait(false);
+        await using var fileStream = File.OpenRead(path);
+        await using var payload = CompressedJsonlStream.Decompress(fileStream, path);
+        return await sha256.ComputeHashAsync(payload, ct).ConfigureAwait(false);
     }
 
-    private static async Task<byte[]> ComputeMigratedPayloadHashAsync(
-        string target,
-        TierConfig tierConfig,
-        CancellationToken ct)
+    private static string RemoveCompressionExtension(string path)
     {
-        using var sha256 = SHA256.Create();
-        await using var targetStream = File.OpenRead(target);
-
-        if (tierConfig.Compression == CompressionCodec.Gzip)
+        foreach (var extension in new[] { ".gzip", ".gz", ".zst", ".lz4", ".br" })
         {
-            await using var gzip = new GZipStream(targetStream, CompressionMode.Decompress);
-            return await sha256.ComputeHashAsync(gzip, ct).ConfigureAwait(false);
+            if (path.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+                return path[..^extension.Length];
         }
-
-        return await sha256.ComputeHashAsync(targetStream, ct).ConfigureAwait(false);
-    }
-
-    private static string ApplyCompressionExtension(string targetPath, string extension)
-    {
-        if (targetPath.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
-            return targetPath;
-
-        return targetPath + extension;
+        return path;
     }
 
     private long EstimateSavings(FileInfo file, TierConfig source, TierConfig target)

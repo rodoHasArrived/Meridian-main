@@ -1,0 +1,163 @@
+version: 1
+goal_id: operational-integrity-fixes
+objective: Resolve the fourteen supplied operational integrity defects with focused regression coverage.
+status: active
+started_at: '2026-10-15T16:35:32Z'
+updated_at: '2026-10-15T18:37:03Z'
+active_task_descriptor: .codex/memory/tasks/operational-integrity-fixes.yml
+progress_inventory:
+- id: offline-retention
+  status: completed
+  summary: Offline evidence survives actual cleanup alongside recognized market files; 33 production-source
+    service tests passed.
+  evidence_refs:
+  - tests/Meridian.Wpf.Tests/Services/RetentionAssuranceServiceTests.cs
+  updated_at: '2026-10-15T16:48:06Z'
+- id: oms-brokerage-limits
+  status: completed
+  summary: Serialized production OMS admission and amendment enforce notional/open-order caps, including
+    concurrent and external brokerage orders.
+  evidence_refs:
+  - src/Meridian.Execution/OrderManagementSystem.cs
+  - tests/Meridian.Tests/Execution/BrokerageExecutionAdmissionLimitTests.cs
+  updated_at: '2026-10-15T18:01:22Z'
+- id: late-adjustment-role
+  status: completed
+  summary: Authenticated configured ReviewRole, generic permission, and requester independence are all
+    required.
+  evidence_refs:
+  - src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs
+  - tests/Meridian.Tests/Ui/WorkstationEndpointsTests.LateAdjustmentAuthority.cs
+  updated_at: '2026-10-15T18:01:22Z'
+- id: valuation-entity-scope
+  status: completed
+  summary: Entity dimensions scope carrying values, calculations, evidence, draft intake, and posting
+    checks.
+  evidence_refs:
+  - src/Meridian.Ui.Shared/Services/LedgerMarkToMarketCarryingValueSource.cs
+  - tests/Meridian.Tests/Ui/LedgerMarkToMarketCarryingValueSourceTests.cs
+  updated_at: '2026-10-15T18:01:22Z'
+- id: etl-delivery-identity
+  status: completed
+  summary: Staged file identity is rechecked before and after an atomic destructive-cleanup claim; replacement
+    deliveries survive.
+  evidence_refs:
+  - src/Meridian.Infrastructure/Etl/LocalFileSourceReader.cs
+  - tests/Meridian.Tests/Infrastructure/Etl/LocalFileSourceReaderPostProcessingTests.cs
+  updated_at: '2026-10-15T18:01:22Z'
+- id: tier-migration-codec
+  status: completed
+  summary: Decode and encode once, compare logical content, and verify before source deletion; production
+    storage probes passed.
+  evidence_refs:
+  - src/Meridian.Storage/Services/TierMigrationService.cs
+  - tests/Meridian.Tests/Storage/TierMigrationServiceTests.cs
+  updated_at: '2026-10-15T18:01:22Z'
+- id: percentage-drawdown
+  status: completed
+  summary: Independent worst dollar and percentage drawdowns are retained for backtest/live metrics and
+    promotion checks.
+  evidence_refs:
+  - src/Meridian.Strategies/Live/LiveRunMetricsTracker.cs
+  - tests/Meridian.Backtesting.Tests/BacktestMetricsEngineTests.cs
+  updated_at: '2026-10-15T18:01:22Z'
+- id: live-strategy-account
+  status: completed
+  summary: Immutable account scope survives launch, promotion, recovery and pause/resume; scoped recovery
+    uses v5 hashes and original account approval. Exact legacy XIRR reads preserve durable history.
+  evidence_refs:
+  - tests/Meridian.Tests/Strategies/LiveTradingEngineTests.cs
+  - src/Meridian.Strategies/Serialization/StrategyRunPersistenceJsonContext.cs
+  - src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+  - tests/Meridian.Tests/Strategies/StrategyLifecycleManagerTests.cs
+  updated_at: '2026-10-15T18:26:52Z'
+- id: loan-wire-enums
+  status: completed
+  summary: Browser numeric enum normalization verified against the actual compiled host serialization
+    contract.
+  evidence_refs:
+  - src/Meridian.Ui/dashboard/src/screens/loan-book-screen.view-model.ts
+  - tests/Meridian.Tests/Ui/LoanPortfolioWireContractTests.cs
+  updated_at: '2026-10-15T18:01:22Z'
+- id: loan-currency-totals
+  status: completed
+  summary: Shared currency-specific summaries preserve denominations and mark mixed/unknown legacy scalars
+    unavailable in browser and WPF.
+  evidence_refs:
+  - src/Meridian.Application/DirectLending/PostgresDirectLendingQueryService.cs
+  - tests/Meridian.DirectLending.Tests/DirectLendingServiceTests.cs
+  updated_at: '2026-10-15T18:01:22Z'
+- id: loan-collateral-totals
+  status: completed
+  summary: Real PostgreSQL verifies retained collateral add, revalue, remove, and reload; all 13 integration
+    facts passed.
+  evidence_refs:
+  - src/Meridian.Application/DirectLending/PostgresDirectLendingQueryService.cs
+  - tests/Meridian.DirectLending.Tests/DirectLendingPostgresIntegrationTests.cs
+  updated_at: '2026-10-15T18:01:22Z'
+- id: normalized-export-window
+  status: completed
+  summary: Plain/gzip normalized exports use inclusive UTC dates and staged replacement, including mixed-date
+    sources.
+  evidence_refs:
+  - src/Meridian.DataIntegration/Etl/EtlExportService.cs
+  - tests/Meridian.Tests/DataIntegration/Etl/EtlExportServiceTests.cs
+  updated_at: '2026-10-15T18:01:22Z'
+- id: historical-completeness
+  status: completed
+  summary: Failures and partial results are explicit, incomplete chart/Quant values are withheld, and
+    cancellation propagates.
+  evidence_refs:
+  - src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs
+  - tests/Meridian.Tests/DataIntegration/Historical/HistoricalDataQueryServiceTests.cs
+  updated_at: '2026-10-15T18:01:22Z'
+- id: setup-uninstall-races
+  status: completed
+  summary: Shared setup/uninstall lease and unique captured cleanup paths protect reinstall/rollback;
+    15 helper tests passed.
+  evidence_refs:
+  - src/Meridian.Setup/Program.cs
+  - tests/Meridian.Setup.Tests/InstallationTransactionTests.cs
+  updated_at: '2026-10-15T18:01:22Z'
+next_actions:
+- Run the canonical local gate on the integrated branch and verify required GitHub Actions, including
+  available Windows validation.
+open_questions: []
+promotion_candidates: []
+validation_results:
+  code_commit: 7ad3ec5ab
+  local_quality_gate:
+    command: bash scripts/ci.sh
+    status: passed
+    report: artifacts/ci-summary/quality-gate/summary.md
+    dotnet_passed: 20528
+    dotnet_skipped: 5
+    browser_passed: 3882
+    script_tests_run: 1649
+    script_failures: 0
+    script_errors: 0
+    script_skipped: 16
+    existing_quarantined_modules: 7
+  focused_real_postgres:
+    passed: 13
+    skipped: 0
+  native_windows: Not run in this Linux environment; setup helpers and production-source WPF probes passed.
+  github_actions: 'Draft PR #3173 conflict-free. PR9 phase marker added; generated schema, API coverage,
+    documentation coverage, and WPF tracker refreshed for hosted verification.'
+  main_integration:
+    base_commit: 32d1dba81
+    strategy_tests_passed: 773
+    final_store_tests_passed: 74
+    summary: Preserve main lifecycle/governance behavior, bind scoped recovery hashes and approved accounts,
+      and read exact legacy XIRR NaN while keeping other metrics strict.
+  generated_schema:
+    status: passed
+    postgres_version: '16.15'
+    migrations_applied: 125
+    artifact_drift: 0
+    schema_differences: 0
+    summary: Refreshed exactly eight generated contract/catalog files for the lending DTO changes; hosted
+      pinned PostgreSQL 16.14 check pending.
+publication_authorization: User explicitly approved pushing the final commits and opening a draft pull
+  request in this chat.
+pull_request_url: https://github.com/rodoHasArrived/Meridian-main/pull/3173

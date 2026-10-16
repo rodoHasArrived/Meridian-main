@@ -358,6 +358,8 @@ public static class UiApiRoutes
     public const string SecurityMasterValidation = "/api/security-master/{securityId:guid}/validation";
     public const string SecurityMasterResolve = "/api/security-master/resolve";
     public const string SecurityMasterSearch = "/api/security-master/search";
+    public const string SecurityMasterAssetClasses = "/api/security-master/asset-classes";
+    public const string SecurityMasterAssetClassDefinition = "/api/security-master/asset-classes/{assetClass}";
     public const string SecurityMasterAssetProfiles = "/api/security-master/asset-profiles";
     public const string SecurityMasterAssetProfilePromotionCandidates = "/api/security-master/asset-profiles/promotion-candidates";
     public const string SecurityMasterAssetProfileLineage = "/api/security-master/asset-profiles/{profileId}/lineage";
@@ -372,7 +374,10 @@ public static class UiApiRoutes
     public const string SecurityMasterTradingParameters = "/api/security-master/{securityId:guid}/trading-parameters";
     public const string SecurityMasterPreferredEquityTerms = "/api/security-master/{securityId:guid}/preferred-equity-terms";
     public const string SecurityMasterConvertibleEquityTerms = "/api/security-master/{securityId:guid}/convertible-equity-terms";
+    public const string SecurityMasterTermBlock = "/api/security-master/{securityId:guid}/terms/{blockKey}";
     public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
+    public const string SecurityMasterIncomeCashFlows = "/api/security-master/{securityId:guid}/income-cash-flows";
+    public const string SecurityMasterFactorHistory = "/api/security-master/{securityId:guid}/factor-history";
     public const string SecurityMasterCorporateActionsIngest = "/api/security-master/corporate-actions/ingest";
     public const string SecurityMasterCorporateActionsInbox = "/api/security-master/corporate-actions/inbox";
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";

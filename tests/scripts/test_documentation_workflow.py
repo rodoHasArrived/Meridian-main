@@ -42,6 +42,24 @@ class DocumentationWorkflowTests(unittest.TestCase):
         self.assertIn("npm ci --no-fund --no-audit", self.workflow)
         self.assertNotIn("npm install --no-fund --no-audit", self.workflow)
 
+    def test_whole_repository_inputs_and_merge_groups_receive_drift_validation(self) -> None:
+        events = yaml.load(self.workflow, Loader=yaml.BaseLoader)["on"]
+        self.assertIn("merge_group", events)
+        for event in ("pull_request", "push"):
+            self.assertNotIn("paths", events[event])
+            self.assertNotIn("paths-ignore", events[event])
+
+    def test_drift_check_follows_convergence_and_exports_failure_evidence(self) -> None:
+        steps = yaml.load(self.workflow, Loader=yaml.BaseLoader)["jobs"]["regenerate-docs"]["steps"]
+        converge = next(step for step in steps if step.get("name") == "Converge maintained documentation")
+        gate = next(step for step in steps if step.get("name") == "Check generated docs are current")
+        upload = next(step for step in steps if step.get("name") == "Upload documentation repair evidence")
+        self.assertLess(steps.index(converge), steps.index(gate))
+        self.assertIn("--docs-only", converge["run"])
+        self.assertIn("check-generated-output.py", gate["run"])
+        self.assertEqual("always()", upload["if"])
+        self.assertIn("artifacts/docs/", upload["with"]["path"])
+
 
 if __name__ == "__main__":
     unittest.main()

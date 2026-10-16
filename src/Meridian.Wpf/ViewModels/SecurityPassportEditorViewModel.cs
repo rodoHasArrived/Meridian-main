@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Services;
 
@@ -64,6 +67,50 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         StatusText = SecurityId == Guid.Empty
             ? string.Empty
             : $"Editing {(string.IsNullOrWhiteSpace(Symbol) ? SecurityId.ToString("D") : Symbol)} at v{Version}.";
+
+        _ = LoadSchemaAsync(AssetClass);
+    }
+
+    private CancellationTokenSource? _schemaLoad;
+
+    /// <summary>
+    /// Loads the asset-class registry definition that the term picker is built from. A failed or
+    /// missing schema leaves the free-text field path in place.
+    /// </summary>
+    public async Task LoadSchemaAsync(string? assetClass)
+    {
+        _schemaLoad?.Cancel();
+        _schemaLoad = new CancellationTokenSource();
+        var ct = _schemaLoad.Token;
+        SchemaFields.Clear();
+        SelectedSchemaField = null;
+        if (string.IsNullOrWhiteSpace(assetClass))
+        {
+            return;
+        }
+
+        try
+        {
+            var definition = await _client.GetAssetClassDefinitionAsync(assetClass, ct);
+            if (ct.IsCancellationRequested)
+            {
+                return;
+            }
+
+            foreach (var field in SecurityAssetTermFormModel.PickableFields(definition))
+            {
+                SchemaFields.Add(field);
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+        }
+        catch (Exception)
+        {
+            SchemaFields.Clear();
+        }
+
+        OnPropertyChanged(nameof(HasSchemaFields));
     }
 
     /// <summary>Clears every field-edit, source-conflict, and approval write input to its default.</summary>
@@ -133,7 +180,50 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
     [NotifyCanExecuteChangedFor(nameof(SaveDraftCommand))]
     private string _fieldPath = string.Empty;
 
-    [ObservableProperty] private string? _newValue;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SchemaValueError))]
+    [NotifyCanExecuteChangedFor(nameof(SaveDraftCommand))]
+    private string? _newValue;
+
+    // ── Schema-driven term picker ─────────────────────────────────────────────
+    /// <summary>The scalar-editable terms of the passport's asset class, from the registry.</summary>
+    public ObservableCollection<SecurityAssetTermFieldDefinitionDto> SchemaFields { get; } = new();
+
+    public bool HasSchemaFields => SchemaFields.Count > 0;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SchemaValueChoices))]
+    [NotifyPropertyChangedFor(nameof(HasSchemaValueChoices))]
+    [NotifyPropertyChangedFor(nameof(SchemaValueError))]
+    [NotifyCanExecuteChangedFor(nameof(SaveDraftCommand))]
+    private SecurityAssetTermFieldDefinitionDto? _selectedSchemaField;
+
+    /// <summary>Typing a different field path detaches the picked term so its rules stop applying.</summary>
+    partial void OnFieldPathChanged(string value)
+    {
+        if (SelectedSchemaField is not null
+            && !string.Equals(SelectedSchemaField.FieldPath, value?.Trim(), StringComparison.Ordinal))
+        {
+            SelectedSchemaField = null;
+        }
+    }
+
+    /// <summary>Picking a term fills the governed field path and clears a value typed for another term.</summary>
+    partial void OnSelectedSchemaFieldChanged(SecurityAssetTermFieldDefinitionDto? value)
+    {
+        if (value is not null)
+        {
+            FieldPath = value.FieldPath;
+            NewValue = null;
+        }
+    }
+
+    public IReadOnlyList<string> SchemaValueChoices => SecurityAssetTermFormModel.ValueChoices(SelectedSchemaField);
+
+    public bool HasSchemaValueChoices => SchemaValueChoices.Count > 0;
+
+    /// <summary>Client-side pre-check of the value against the selected term; the server stays authoritative.</summary>
+    public string? SchemaValueError => SecurityAssetTermFormModel.Validate(SelectedSchemaField, NewValue);
     [ObservableProperty] private DateTime? _effectiveFrom;
 
     [ObservableProperty]
@@ -197,7 +287,11 @@ public sealed partial class SecurityPassportEditorViewModel : BindableBase
         || !string.IsNullOrWhiteSpace(ReportPackId);
 
     private bool CanSaveDraft()
-        => HasLoadedPassport && !IsBusy && !string.IsNullOrWhiteSpace(FieldPath) && !string.IsNullOrWhiteSpace(Justification);
+        => HasLoadedPassport
+           && !IsBusy
+           && !string.IsNullOrWhiteSpace(FieldPath)
+           && !string.IsNullOrWhiteSpace(Justification)
+           && SchemaValueError is null;
 
     private bool CanResolveConflict()
         => HasLoadedPassport

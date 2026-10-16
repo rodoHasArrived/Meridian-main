@@ -16,6 +16,30 @@
   "comment": null,
   "comments": [
     {
+      "comment": "Earliest recorded cutoff supported by a migrated current-row baseline; null for revisions recorded after history retention began. This boundary does not reconstruct discarded pre-migration revisions.",
+      "fingerprint": "d0a593e3bdd7e57d384d4d2b53d925745939a94b492a291ed56ea52ab74764f1",
+      "object": "security_master.security_alias_revisions.history_available_from",
+      "object_type": "column"
+    },
+    {
+      "comment": "Payload family of the event (SecurityEconomicDefinition or the legacy SecurityProjection). Replay refuses unknown families.",
+      "fingerprint": "8d90a1d9d965dae90865ec9382f3cf0e72ae2ce203ead303725e5eda7035a290",
+      "object": "security_master.security_events.payload_type",
+      "object_type": "column"
+    },
+    {
+      "comment": "Schema version of the payload family. Replay refuses versions newer than the node supports.",
+      "fingerprint": "1b1ec7d1c8e917b9b739e9ea1671773f7f35bb297cf2d8c4ca2010f845e00b8d",
+      "object": "security_master.security_events.payload_version",
+      "object_type": "column"
+    },
+    {
+      "comment": "Affected security; null only for batch-level events such as a projection rebuild batch, whose payload lists the securities.",
+      "fingerprint": "c2f4004315b7be99f33afd159f365894723c460a5f5a94347a15875dfd155034",
+      "object": "security_master.security_governance_events.security_id",
+      "object_type": "column"
+    },
+    {
       "comment": "Covenants declared by a projected direct loan, in terms-document order (ordinal). Threshold is text because the canonical covenant term is written prose (\"4.5x\"), not a number.",
       "fingerprint": "d399b9d84a3b9df22253a6932e06bf3f5cb85a9d5bc820d539fe64449dd0c441",
       "object": "security_master.direct_loan_covenant_projection",
@@ -34,6 +58,12 @@
       "object_type": "table"
     },
     {
+      "comment": "Append-only Security Master alias revisions. Recorded-as-of reads select the latest available revision at or before the cutoff. Pre-migration current-row baselines retain their creation metadata but are available only from history_available_from; earlier alias history is unknown.",
+      "fingerprint": "9bb929ffc1fe3efad198ba9a7117c445544745396d866b6e870fb067219f10b2",
+      "object": "security_master.security_alias_revisions",
+      "object_type": "table"
+    },
+    {
       "comment": "Immutable independent review receipt bound to the exact close price snapshot SHA-256.",
       "fingerprint": "04ebc252aad8c9a1362ba630d083932b86da9ed2d727a062f8c1630d6e63ff12",
       "object": "security_master.security_close_price_approvals",
@@ -43,6 +73,12 @@
       "comment": "Immutable exact account/book/date price-set versions retaining selected receipts, quote units, overrides, source rows and blockers.",
       "fingerprint": "71f0c2b337cc3d542df7e0a7212fee4ade1adecd89146b63403d4d9a215f4fdc",
       "object": "security_master.security_close_price_snapshots",
+      "object_type": "table"
+    },
+    {
+      "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds), written in the same transaction as the state change.",
+      "fingerprint": "9d38710299092ec1d2d6af0a81be7060f7a590181aac1a84432eb2327b70a613",
+      "object": "security_master.security_governance_events",
       "object_type": "table"
     },
     {
@@ -2413,6 +2449,42 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "a6df3c99f467a5b4f50a38630291a5e1458af279262d5707a4a228b0174d2712",
+      "kind": "normal",
+      "source": "security_master.security_alias_revisions_revision_check on security_master.security_alias_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_alias_revisions.revision",
+      "target_kind": "table column",
+      "target_name": "security_alias_revisions",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "a6a7fb6503033f303ee76109fb40fb4aa19a62b925ca472ff44bdbae3aa9046d",
+      "kind": "normal",
+      "source": "security_master.security_alias_revisions_security_id_fkey on security_master.security_alias_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities.security_id",
+      "target_kind": "table column",
+      "target_name": "securities",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "e58665166aacd3248784dea69082b4166263efdc6103f6238e6cc86989b47f2f",
+      "kind": "normal",
+      "source": "security_master.security_alias_revisions_security_id_fkey on security_master.security_alias_revisions",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities_pkey",
+      "target_kind": "index",
+      "target_name": "securities_pkey",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "cbef63669c16d3a1dc925bb4fa53b3d486ac54cc496bc183208b17a960c5fa40",
       "kind": "normal",
       "source": "security_master.security_aliases_security_id_fkey on security_master.security_aliases",
@@ -2626,6 +2698,42 @@
       "target": "security_master.security_close_price_snapshots.version",
       "target_kind": "table column",
       "target_name": "security_close_price_snapshots",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "86181ff76e01540b54a5ba1db113f3b8229b64c116d7b8e5064b163e1a23a96e",
+      "kind": "normal",
+      "source": "security_master.security_events_payload_version_check on security_master.security_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_events.payload_version",
+      "target_kind": "table column",
+      "target_name": "security_events",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "edca14194e774f8cf0c010777eedefffa1154f16b0e7ab0192a7a6ad5c04dab9",
+      "kind": "normal",
+      "source": "security_master.security_governance_events_payload_version_check on security_master.security_governance_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_governance_events.payload_version",
+      "target_kind": "table column",
+      "target_name": "security_governance_events",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "266c0f8a600d61ba30d20197e07a7f84d4c1408f185904f18401b26d572d85b2",
+      "kind": "normal",
+      "source": "security_master.security_governance_events_stream_check on security_master.security_governance_events",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_governance_events.stream",
+      "target_kind": "table column",
+      "target_name": "security_governance_events",
       "target_schema": "security_master"
     },
     {
@@ -3041,7 +3149,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "1954ae447d505dc0e090b233b0415d23678c70f63206f8db385ff5f419a58644",
+  "fingerprint": "f613fcd9c897004081f07613e154ffa33a0bc8d9b8c48a71ba8ddfe61163a3ee",
   "foreign_tables": [],
   "functions": [
     {
@@ -3134,6 +3242,68 @@
       "security_definer": false,
       "security_labels": [],
       "signature": "reject_price_selection_receipt_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "ab4fd0df15a28adbb5527f686922ce7f2fbf4433d8cd15c2f7af9b1f2343c538",
+      "fingerprint": "c8bfe15453fd4fcf28194d328cd6b1289fc0eff883844fbef44f4b2b3d14bb4b",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_security_alias_revision_mutation",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "security_master",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_security_alias_revision_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "09ee6efbd261703d39c8a79ef739cfe562fd8a76645cc6c5146ece8824aba4f4",
+      "fingerprint": "1e2b6992e7f6d3be838defbe9598445a1ca89b8ee60a9383e1eefa162e70fedc",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_security_governance_event_mutation",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "security_master",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_security_governance_event_mutation()",
       "strict": false,
       "volatility": "volatile"
     },
@@ -25798,6 +25968,496 @@
         {
           "collation": null,
           "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "9ac0fab373a46741d3831f072485ead0fc9380909713b065f03446901ed4c929",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "revision",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "c64c418a06f3baf7a82dc3d9672038480d237b8ae304896f6b0135461d5c82ac",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "5f37a182312d62b5e07392e2b1041a1f9a3b2beb642327c4a2c259f56780ed78",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "alias_kind",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "3efbd948df6ed41c3831783c5403b5c94cf53d564fb0fdcc0103cc1af70fd47d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "alias_value",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "dd64011806bd50138d949d700bc9ead8b0ee04c34a8cf1d95250acea12d04261",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "normalized_alias_value",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "b0994bc65b0ce34c42ee1b88a88987bed5351bbbc4c94b96088d6b7b46a32282",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "provider",
+          "nullable": true,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "816ef8bb1ec7bafa9ec886ab0390ba1977098137edee2a20e0ffd0c275a5af12",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "normalized_provider",
+          "nullable": true,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "242051ba95ad53088ec4a16b3248ff158d40e7da10e9261d5bacc90d3f0548b9",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "scope",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "d99d1ae51d3697c8e6e24760fcdb99ad883c2f7be0cc07de7331cc9773a918ce",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "reason",
+          "nullable": true,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "760d491ec3eadc2a7a45f55f43d5cf81dd2d7cc03e1fbab79ef5237b4e836822",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "valid_from",
+          "nullable": false,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "1fa8a2f2bef8fd0262b6e557de3f296f356e34b1952afc598d0e6f579a33aba3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "valid_to",
+          "nullable": true,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": null,
+          "fingerprint": "61a41299f7d3671467847534f3492a1c295ce38982852b0deb52d04b9fe0c2f9",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "is_enabled",
+          "nullable": false,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": "false",
+          "fingerprint": "2eb63973c956b207cc2ccc6461c7357f34588d3f2fdee5b79af1d6def04fc03e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "is_retired",
+          "nullable": false,
+          "ordinal_position": 14,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "077477318a79f585701757a74f9e089981d64a997b7532dd3615fad4fc452950",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_by",
+          "nullable": false,
+          "ordinal_position": 15,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "7f8de17212694bd730d6c48cd902f708176357a2aea5e3398fd7e44a1a0e9989",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 16,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": "Earliest recorded cutoff supported by a migrated current-row baseline; null for revisions recorded after history retention began. This boundary does not reconstruct discarded pre-migration revisions.",
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "7982dc15aa7690a2c5b8ff6685b3cdc9c747c63b26a9e21bd8053f4397810040",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "history_available_from",
+          "nullable": true,
+          "ordinal_position": 17,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Append-only Security Master alias revisions. Recorded-as-of reads select the latest available revision at or before the cutoff. Pre-migration current-row baselines retain their creation metadata but are available only from history_available_from; earlier alias history is unknown.",
+      "constraints": [
+        {
+          "columns": [
+            "revision"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (revision >= 1)",
+          "delete_action": null,
+          "fingerprint": "dcd09569da9b06cd3c983aab6a44592408531ca22be4e783d30e0d657e92896e",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_alias_revisions_revision_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.securities(security_id)",
+          "delete_action": "no_action",
+          "fingerprint": "debefff3f9f905d1b52ce58e285874d4311fdc56607517cc95ef4e2a86e014cd",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_alias_revisions_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "securities",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "alias_id",
+            "revision"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (alias_id, revision)",
+          "delete_action": null,
+          "fingerprint": "e4d39136d49e9fca9dfd58b42feb179921bbb328c8c5814d502f9b41ad9edb3e",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_alias_revisions_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "eea2044b4b775457936a725dfd76f105e419afc2fb1900b42a84c49b5bb9984a",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_alias_revisions_security_recorded ON security_master.security_alias_revisions USING btree (security_id, alias_id, recorded_at)",
+          "expression": null,
+          "fingerprint": "2a1c47fb52e9f6de91bb0450d73855d27832110d790dbcbb10d8a44c26862596",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "alias_id",
+            "recorded_at"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_alias_revisions_security_recorded",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_alias_revisions_pkey ON security_master.security_alias_revisions USING btree (alias_id, revision)",
+          "expression": null,
+          "fingerprint": "12e4619f912e991818d129d08d2fab100e6d6b75ff3ff9e38d8baf77227f817e",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "alias_id",
+            "revision"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_alias_revisions_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_alias_revisions",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_alias_revisions_append_only BEFORE DELETE OR UPDATE ON security_master.security_alias_revisions FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_alias_revision_mutation()",
+          "definition_hash": "d140a552dbe7ce9663d3a6df82bfd8a261f33e78f65329411a2ea5932154598c",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "a25f9fa32330751bf5464dd892b7545043540e44ba88b7b80a41cf321d46b2c2",
+          "function_schema": "security_master",
+          "function_signature": "reject_security_alias_revision_mutation()",
+          "level": "row",
+          "name": "security_alias_revisions_append_only",
+          "relation": "security_alias_revisions",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_alias_revisions_no_truncate BEFORE TRUNCATE ON security_master.security_alias_revisions FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_alias_revision_mutation()",
+          "definition_hash": "00698511641c13939fcb72e897ce1dcfa83ddcbd0c265f8ee05773fd8511c934",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "170cdf64f626576e09bdf014bec4185755f93c317796ce24efa7c4bef36653d6",
+          "function_schema": "security_master",
+          "function_signature": "reject_security_alias_revision_mutation()",
+          "level": "statement",
+          "name": "security_alias_revisions_no_truncate",
+          "relation": "security_alias_revisions",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "faf4eab9cbef07c20b11df01bc184e805fb83ff1930c456ef43c98f3ef1c2d49",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "alias_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
           "data_type": "uuid",
           "default": null,
           "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
@@ -27440,10 +28100,62 @@
           "security_labels": [],
           "type_name": "jsonb",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": "Payload family of the event (SecurityEconomicDefinition or the legacy SecurityProjection). Replay refuses unknown families.",
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "c7bb03a4232c947bfb4b39ab06adad82886957b75e41c6245aa9f4459417128d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_type",
+          "nullable": false,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": "Schema version of the payload family. Replay refuses versions newer than the node supports.",
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "57aa3926185c852ebe9cbbbfdc0134f62144d78293e4419c95e0cefa3a1661aa",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_version",
+          "nullable": false,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "payload_version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (payload_version >= 1)",
+          "delete_action": null,
+          "fingerprint": "d937a4a7f59c06547c8600857cfc8751c21b7fbe63a272a0ec26599c68871bc9",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_events_payload_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "global_sequence"
@@ -27488,10 +28200,33 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "34b01b698a6c76a025bb9151ab7d1a7fdea4f3a0b9d966b62682d38a5bc23bbf",
+      "fingerprint": "3e60257c940e8778b43cb68ff44007a26ac5b7cb36d1243ee36e02873c5c23f5",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_events_payload_type_version ON security_master.security_events USING btree (payload_type, payload_version)",
+          "expression": null,
+          "fingerprint": "447b5afab77264d1243fd3c1cd2ccbb050eedd258dfdbe1bc28a41ab2a71f20a",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "payload_type",
+            "payload_version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_events_payload_type_version",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
         {
           "comment": null,
           "definition": "CREATE INDEX ix_security_events_security_id_sequence ON security_master.security_events USING btree (security_id, stream_version)",
@@ -27927,6 +28662,406 @@
       "schema": "security_master",
       "security_labels": [],
       "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "nextval('security_master.security_governance_events_global_sequence_seq'::regclass)",
+          "fingerprint": "da239035e7c62f50535715971bd7e64a4a84b1e8ec87bef5ddc74b42daf14486",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "global_sequence",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": "Affected security; null only for batch-level events such as a projection rebuild batch, whose payload lists the securities.",
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "9bb097c7ee11b8dce7c297b938351024b9b5d1addd126c24064114cb5ed2c695",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": true,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "e5cfe149522d49790f0e40303165572a3283e9a9f66a36bbdc7620d3370fa6f2",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "stream",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "42684e3718217edf4ddb938d8b9fe429a9d216e4f98a4339a2e238aa876fe24d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "event_type",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "5f3acf49f78325e1e7e4b978617dddd6379da7057b81c6ffab03b07f1a5a97da",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "actor",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "dae4380c54b79b08c1d373a05b6ae2534024766bf06ca0ceeddea8ac01e68343",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "occurred_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "1c1787b5d97cda2158c4f74af4e3dda466f532ad1ef4f7bfa08016e6ad02993e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": "1",
+          "fingerprint": "8422a0fdd32e55d3e85d1c3226a9bc864a227ee8a1aa346b584551bc3921155b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_version",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds), written in the same transaction as the state change.",
+      "constraints": [
+        {
+          "columns": [
+            "payload_version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (payload_version >= 1)",
+          "delete_action": null,
+          "fingerprint": "224c29a3e74571d15b42b17789cfd95e2df071c6a0adc134ba7237d868934dca",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_governance_events_payload_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "stream"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (stream = ANY (ARRAY['OperatorOverrides'::text, 'Aliases'::text, 'ProjectionRebuild'::text]))",
+          "delete_action": null,
+          "fingerprint": "99d79b450b12d1ec02b15cf39ad33fce8a696ac57ba3d5bbfb8e4cfd0f261365",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_governance_events_stream_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "global_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (global_sequence)",
+          "delete_action": null,
+          "fingerprint": "053f9feaea6c19ad70262c36fcf15ae61a10eb5663e7c78524ed351e48befb32",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_governance_events_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "f2e7e2da8ed65ccc4eb024afb13d703d49252a7b53fe35f29c71dd3a707c0351",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_governance_events_security_sequence ON security_master.security_governance_events USING btree (security_id, global_sequence)",
+          "expression": null,
+          "fingerprint": "1090d96afbd9c9498a0ce6131e875f18ddf2bfefe417ab376835d4c178037dbd",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "global_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_governance_events_security_sequence",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_governance_events_stream_sequence ON security_master.security_governance_events USING btree (stream, global_sequence)",
+          "expression": null,
+          "fingerprint": "097bce34a1f1cc0cb361de9f948aae298ffe36389e77b0fef87fdb95b8fa9a04",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "stream",
+            "global_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_governance_events_stream_sequence",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_governance_events_pkey ON security_master.security_governance_events USING btree (global_sequence)",
+          "expression": null,
+          "fingerprint": "d627d484c73c36f4ccbda32ad44763480f581d11740b3b5c6c1a4cbf21e3c115",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "global_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_governance_events_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_governance_events",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_governance_events_append_only BEFORE DELETE OR UPDATE ON security_master.security_governance_events FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_governance_event_mutation()",
+          "definition_hash": "db58f3ff4970b394a8db87a439b014038baa4007360572f576a796c40952e269",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "b406ca337ee266facd364d02f5977378da53c3a449df3d3c528d24f1c638071c",
+          "function_schema": "security_master",
+          "function_signature": "reject_security_governance_event_mutation()",
+          "level": "row",
+          "name": "security_governance_events_append_only",
+          "relation": "security_governance_events",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "usage"
+        }
+      ],
+      "columns": [],
+      "comment": null,
+      "constraints": [],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "ac818723d51541fad2cc6571065a6fccf88e680deaff70e0803bb2f27c192eca",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [],
+      "is_partition": false,
+      "kind": "sequence",
+      "name": "security_governance_events_global_sequence_seq",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "nothing",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": {
+        "cache": 1,
+        "cycle": false,
+        "data_type": "bigint",
+        "increment": 1,
+        "maximum": 9223372036854775807,
+        "minimum": 1,
+        "start": 1
+      },
       "triggers": []
     },
     {
@@ -36108,6 +37243,14 @@
     },
     {
       "enabled": false,
+      "fingerprint": "421665357b38769b4822d01714b29c0ec7d68e8896466a71692f18f7f488f06d",
+      "forced": false,
+      "policies": [],
+      "relation": "security_alias_revisions",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
       "fingerprint": "d4f9517344647a7957967ce542d868440bc6fb22debe08c13e190d207cf0a604",
       "forced": false,
       "policies": [],
@@ -36152,6 +37295,14 @@
       "forced": false,
       "policies": [],
       "relation": "security_field_provenance",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "8620ac2622842eee57d7aac6a2819a5b8e6f91671e74252ceacc0e391be6c1e8",
+      "forced": false,
+      "policies": [],
+      "relation": "security_governance_events",
       "schema": "security_master"
     },
     {
@@ -36488,6 +37639,59 @@
       "is_partition": false,
       "kind": "sequence",
       "name": "security_events_global_sequence_seq",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "nothing",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": {
+        "cache": 1,
+        "cycle": false,
+        "data_type": "bigint",
+        "increment": 1,
+        "maximum": 9223372036854775807,
+        "minimum": 1,
+        "start": 1
+      },
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "usage"
+        }
+      ],
+      "columns": [],
+      "comment": null,
+      "constraints": [],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "ac818723d51541fad2cc6571065a6fccf88e680deaff70e0803bb2f27c192eca",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [],
+      "is_partition": false,
+      "kind": "sequence",
+      "name": "security_governance_events_global_sequence_seq",
       "options": [],
       "owner": "meridian",
       "persistence": "permanent",
@@ -59044,6 +60248,496 @@
         {
           "collation": null,
           "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "9ac0fab373a46741d3831f072485ead0fc9380909713b065f03446901ed4c929",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "revision",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "c64c418a06f3baf7a82dc3d9672038480d237b8ae304896f6b0135461d5c82ac",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "5f37a182312d62b5e07392e2b1041a1f9a3b2beb642327c4a2c259f56780ed78",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "alias_kind",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "3efbd948df6ed41c3831783c5403b5c94cf53d564fb0fdcc0103cc1af70fd47d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "alias_value",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "dd64011806bd50138d949d700bc9ead8b0ee04c34a8cf1d95250acea12d04261",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "normalized_alias_value",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "b0994bc65b0ce34c42ee1b88a88987bed5351bbbc4c94b96088d6b7b46a32282",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "provider",
+          "nullable": true,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "816ef8bb1ec7bafa9ec886ab0390ba1977098137edee2a20e0ffd0c275a5af12",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "normalized_provider",
+          "nullable": true,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "242051ba95ad53088ec4a16b3248ff158d40e7da10e9261d5bacc90d3f0548b9",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "scope",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "d99d1ae51d3697c8e6e24760fcdb99ad883c2f7be0cc07de7331cc9773a918ce",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "reason",
+          "nullable": true,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "760d491ec3eadc2a7a45f55f43d5cf81dd2d7cc03e1fbab79ef5237b4e836822",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "valid_from",
+          "nullable": false,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "1fa8a2f2bef8fd0262b6e557de3f296f356e34b1952afc598d0e6f579a33aba3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "valid_to",
+          "nullable": true,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": null,
+          "fingerprint": "61a41299f7d3671467847534f3492a1c295ce38982852b0deb52d04b9fe0c2f9",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "is_enabled",
+          "nullable": false,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": "false",
+          "fingerprint": "2eb63973c956b207cc2ccc6461c7357f34588d3f2fdee5b79af1d6def04fc03e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "is_retired",
+          "nullable": false,
+          "ordinal_position": 14,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "077477318a79f585701757a74f9e089981d64a997b7532dd3615fad4fc452950",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_by",
+          "nullable": false,
+          "ordinal_position": 15,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "7f8de17212694bd730d6c48cd902f708176357a2aea5e3398fd7e44a1a0e9989",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 16,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": "Earliest recorded cutoff supported by a migrated current-row baseline; null for revisions recorded after history retention began. This boundary does not reconstruct discarded pre-migration revisions.",
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "7982dc15aa7690a2c5b8ff6685b3cdc9c747c63b26a9e21bd8053f4397810040",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "history_available_from",
+          "nullable": true,
+          "ordinal_position": 17,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Append-only Security Master alias revisions. Recorded-as-of reads select the latest available revision at or before the cutoff. Pre-migration current-row baselines retain their creation metadata but are available only from history_available_from; earlier alias history is unknown.",
+      "constraints": [
+        {
+          "columns": [
+            "revision"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (revision >= 1)",
+          "delete_action": null,
+          "fingerprint": "dcd09569da9b06cd3c983aab6a44592408531ca22be4e783d30e0d657e92896e",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_alias_revisions_revision_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (security_id) REFERENCES security_master.securities(security_id)",
+          "delete_action": "no_action",
+          "fingerprint": "debefff3f9f905d1b52ce58e285874d4311fdc56607517cc95ef4e2a86e014cd",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "security_alias_revisions_security_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "security_id"
+          ],
+          "referenced_schema": "security_master",
+          "referenced_table": "securities",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
+            "alias_id",
+            "revision"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (alias_id, revision)",
+          "delete_action": null,
+          "fingerprint": "e4d39136d49e9fca9dfd58b42feb179921bbb328c8c5814d502f9b41ad9edb3e",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_alias_revisions_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "eea2044b4b775457936a725dfd76f105e419afc2fb1900b42a84c49b5bb9984a",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_alias_revisions_security_recorded ON security_master.security_alias_revisions USING btree (security_id, alias_id, recorded_at)",
+          "expression": null,
+          "fingerprint": "2a1c47fb52e9f6de91bb0450d73855d27832110d790dbcbb10d8a44c26862596",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "alias_id",
+            "recorded_at"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_alias_revisions_security_recorded",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_alias_revisions_pkey ON security_master.security_alias_revisions USING btree (alias_id, revision)",
+          "expression": null,
+          "fingerprint": "12e4619f912e991818d129d08d2fab100e6d6b75ff3ff9e38d8baf77227f817e",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "alias_id",
+            "revision"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_alias_revisions_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_alias_revisions",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_alias_revisions_append_only BEFORE DELETE OR UPDATE ON security_master.security_alias_revisions FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_alias_revision_mutation()",
+          "definition_hash": "d140a552dbe7ce9663d3a6df82bfd8a261f33e78f65329411a2ea5932154598c",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "a25f9fa32330751bf5464dd892b7545043540e44ba88b7b80a41cf321d46b2c2",
+          "function_schema": "security_master",
+          "function_signature": "reject_security_alias_revision_mutation()",
+          "level": "row",
+          "name": "security_alias_revisions_append_only",
+          "relation": "security_alias_revisions",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_alias_revisions_no_truncate BEFORE TRUNCATE ON security_master.security_alias_revisions FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_alias_revision_mutation()",
+          "definition_hash": "00698511641c13939fcb72e897ce1dcfa83ddcbd0c265f8ee05773fd8511c934",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "170cdf64f626576e09bdf014bec4185755f93c317796ce24efa7c4bef36653d6",
+          "function_schema": "security_master",
+          "function_signature": "reject_security_alias_revision_mutation()",
+          "level": "statement",
+          "name": "security_alias_revisions_no_truncate",
+          "relation": "security_alias_revisions",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "faf4eab9cbef07c20b11df01bc184e805fb83ff1930c456ef43c98f3ef1c2d49",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "alias_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
           "data_type": "uuid",
           "default": null,
           "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
@@ -60686,10 +62380,62 @@
           "security_labels": [],
           "type_name": "jsonb",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": "Payload family of the event (SecurityEconomicDefinition or the legacy SecurityProjection). Replay refuses unknown families.",
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "c7bb03a4232c947bfb4b39ab06adad82886957b75e41c6245aa9f4459417128d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_type",
+          "nullable": false,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": "Schema version of the payload family. Replay refuses versions newer than the node supports.",
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "57aa3926185c852ebe9cbbbfdc0134f62144d78293e4419c95e0cefa3a1661aa",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_version",
+          "nullable": false,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "payload_version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (payload_version >= 1)",
+          "delete_action": null,
+          "fingerprint": "d937a4a7f59c06547c8600857cfc8751c21b7fbe63a272a0ec26599c68871bc9",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_events_payload_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "global_sequence"
@@ -60734,10 +62480,33 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "34b01b698a6c76a025bb9151ab7d1a7fdea4f3a0b9d966b62682d38a5bc23bbf",
+      "fingerprint": "3e60257c940e8778b43cb68ff44007a26ac5b7cb36d1243ee36e02873c5c23f5",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_events_payload_type_version ON security_master.security_events USING btree (payload_type, payload_version)",
+          "expression": null,
+          "fingerprint": "447b5afab77264d1243fd3c1cd2ccbb050eedd258dfdbe1bc28a41ab2a71f20a",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "payload_type",
+            "payload_version"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_events_payload_type_version",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
         {
           "comment": null,
           "definition": "CREATE INDEX ix_security_events_security_id_sequence ON security_master.security_events USING btree (security_id, stream_version)",
@@ -61121,6 +62890,353 @@
       "security_labels": [],
       "sequence": null,
       "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "nextval('security_master.security_governance_events_global_sequence_seq'::regclass)",
+          "fingerprint": "da239035e7c62f50535715971bd7e64a4a84b1e8ec87bef5ddc74b42daf14486",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "global_sequence",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": "Affected security; null only for batch-level events such as a projection rebuild batch, whose payload lists the securities.",
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "9bb097c7ee11b8dce7c297b938351024b9b5d1addd126c24064114cb5ed2c695",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": true,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "e5cfe149522d49790f0e40303165572a3283e9a9f66a36bbdc7620d3370fa6f2",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "stream",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "42684e3718217edf4ddb938d8b9fe429a9d216e4f98a4339a2e238aa876fe24d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "event_type",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "5f3acf49f78325e1e7e4b978617dddd6379da7057b81c6ffab03b07f1a5a97da",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "actor",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "dae4380c54b79b08c1d373a05b6ae2534024766bf06ca0ceeddea8ac01e68343",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "occurred_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "1c1787b5d97cda2158c4f74af4e3dda466f532ad1ef4f7bfa08016e6ad02993e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": "1",
+          "fingerprint": "8422a0fdd32e55d3e85d1c3226a9bc864a227ee8a1aa346b584551bc3921155b",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "payload_version",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds), written in the same transaction as the state change.",
+      "constraints": [
+        {
+          "columns": [
+            "payload_version"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (payload_version >= 1)",
+          "delete_action": null,
+          "fingerprint": "224c29a3e74571d15b42b17789cfd95e2df071c6a0adc134ba7237d868934dca",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_governance_events_payload_version_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "stream"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (stream = ANY (ARRAY['OperatorOverrides'::text, 'Aliases'::text, 'ProjectionRebuild'::text]))",
+          "delete_action": null,
+          "fingerprint": "99d79b450b12d1ec02b15cf39ad33fce8a696ac57ba3d5bbfb8e4cfd0f261365",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_governance_events_stream_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "global_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (global_sequence)",
+          "delete_action": null,
+          "fingerprint": "053f9feaea6c19ad70262c36fcf15ae61a10eb5663e7c78524ed351e48befb32",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_governance_events_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "f2e7e2da8ed65ccc4eb024afb13d703d49252a7b53fe35f29c71dd3a707c0351",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_governance_events_security_sequence ON security_master.security_governance_events USING btree (security_id, global_sequence)",
+          "expression": null,
+          "fingerprint": "1090d96afbd9c9498a0ce6131e875f18ddf2bfefe417ab376835d4c178037dbd",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "global_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_governance_events_security_sequence",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_governance_events_stream_sequence ON security_master.security_governance_events USING btree (stream, global_sequence)",
+          "expression": null,
+          "fingerprint": "097bce34a1f1cc0cb361de9f948aae298ffe36389e77b0fef87fdb95b8fa9a04",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "stream",
+            "global_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_governance_events_stream_sequence",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_governance_events_pkey ON security_master.security_governance_events USING btree (global_sequence)",
+          "expression": null,
+          "fingerprint": "d627d484c73c36f4ccbda32ad44763480f581d11740b3b5c6c1a4cbf21e3c115",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "global_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_governance_events_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_governance_events",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_governance_events_append_only BEFORE DELETE OR UPDATE ON security_master.security_governance_events FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_governance_event_mutation()",
+          "definition_hash": "db58f3ff4970b394a8db87a439b014038baa4007360572f576a796c40952e269",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "b406ca337ee266facd364d02f5977378da53c3a449df3d3c528d24f1c638071c",
+          "function_schema": "security_master",
+          "function_signature": "reject_security_governance_event_mutation()",
+          "level": "row",
+          "name": "security_governance_events_append_only",
+          "relation": "security_governance_events",
+          "schema": "security_master",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -68830,6 +70946,41 @@
     },
     {
       "comment": null,
+      "definition": "CREATE TRIGGER security_alias_revisions_append_only BEFORE DELETE OR UPDATE ON security_master.security_alias_revisions FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_alias_revision_mutation()",
+      "definition_hash": "d140a552dbe7ce9663d3a6df82bfd8a261f33e78f65329411a2ea5932154598c",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "a25f9fa32330751bf5464dd892b7545043540e44ba88b7b80a41cf321d46b2c2",
+      "function_schema": "security_master",
+      "function_signature": "reject_security_alias_revision_mutation()",
+      "level": "row",
+      "name": "security_alias_revisions_append_only",
+      "relation": "security_alias_revisions",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER security_alias_revisions_no_truncate BEFORE TRUNCATE ON security_master.security_alias_revisions FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_alias_revision_mutation()",
+      "definition_hash": "00698511641c13939fcb72e897ce1dcfa83ddcbd0c265f8ee05773fd8511c934",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "170cdf64f626576e09bdf014bec4185755f93c317796ce24efa7c4bef36653d6",
+      "function_schema": "security_master",
+      "function_signature": "reject_security_alias_revision_mutation()",
+      "level": "statement",
+      "name": "security_alias_revisions_no_truncate",
+      "relation": "security_alias_revisions",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
       "definition": "CREATE TRIGGER security_close_price_approvals_append_guard BEFORE INSERT ON security_master.security_close_price_approvals FOR EACH ROW EXECUTE FUNCTION security_master.guard_close_price_approval_append()",
       "definition_hash": "a75b429db834178f9f94bbf085605dc73be17b4df797d3a5124bf8085ef5227c",
       "enabled": "origin",
@@ -68929,6 +71080,24 @@
       "level": "statement",
       "name": "security_close_price_snapshots_no_truncate",
       "relation": "security_close_price_snapshots",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER security_governance_events_append_only BEFORE DELETE OR UPDATE ON security_master.security_governance_events FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_governance_event_mutation()",
+      "definition_hash": "db58f3ff4970b394a8db87a439b014038baa4007360572f576a796c40952e269",
+      "enabled": "origin",
+      "events": [
+        "delete",
+        "update"
+      ],
+      "fingerprint": "b406ca337ee266facd364d02f5977378da53c3a449df3d3c528d24f1c638071c",
+      "function_schema": "security_master",
+      "function_signature": "reject_security_governance_event_mutation()",
+      "level": "row",
+      "name": "security_governance_events_append_only",
+      "relation": "security_governance_events",
       "schema": "security_master",
       "timing": "before"
     },
