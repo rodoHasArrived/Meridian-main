@@ -20,8 +20,9 @@ with retained evidence and carries no ranking.
 
 | Plan | Purpose |
 |---|---|
+| [What To Work On Next (2026-10-16)](next-work-determination-2026-10-16.md) | Latest prioritization input. Does not re-rank: it carries the unmerged 2026-10-15 determination (#3170) forward intact and adds three delivery-system findings — a red `Meridian CI / quality-gate` on `main`, a `Generated Repair Publisher` with no green run in its history, and an open-queue conflict load that is entirely generated files |
 | [Certification Unblock Verification (2026-10-12)](certification-unblock-verification-2026-10-12.md) | Verifies that #3133 clears the `GHSA-vfj7-8cjw-p6xm` certification blocker and states the merge order; carries no ranking of its own |
-| [What To Work On Next (2026-10-05)](next-work-determination-2026-10-05.md) | Latest prioritization input on `main`; its ranking is carried forward by the unmerged 2026-10-10 determination (#3132) |
+| [What To Work On Next (2026-10-05)](next-work-determination-2026-10-05.md) | Newest determination merged to `main` before 2026-10-16; its ranking was carried forward by the unmerged 2026-10-15 determination (#3170). The 2026-10-10 determination (#3132) was closed unmerged on 2026-10-16 |
 | [What To Work On Next (2026-10-04)](next-work-determination-2026-10-04.md) | Superseded by the 2026-10-05 determination |
 | [What To Work On Next (2026-10-02)](next-work-determination-2026-10-02.md) | Superseded by the 2026-10-05 determination |
 | [What To Work On Next (2026-09-27)](next-work-determination-2026-09-27.md) | Superseded by the 2026-10-05 determination; retained in place because `docs/roadmap/data/program-state.yml` and the readiness tracker cite it as the recorded operator-session plan |
