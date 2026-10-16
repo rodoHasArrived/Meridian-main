@@ -163,15 +163,17 @@ public sealed class StrategyLifecyclePostconditionTests
 
         var resume = () => manager.StartAsync(strategy.StrategyId, Context(), requestedType);
         await resume.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*Stop the strategy before changing its run type.*");
+            .WithMessage("*Use the promotion workflow to approve a different run type.*");
 
         strategy.Status.Should().Be(StrategyStatus.Paused);
         (await repository.GetLatestRunAsync(strategy.StrategyId)).Should().BeEquivalentTo(retained);
         var stopped = await manager.StopAsync(strategy.StrategyId);
         stopped.State.Should().Be(OperationTerminalState.Succeeded);
-        var restarted = await manager.StartAsync(strategy.StrategyId, Context(), requestedType);
-        restarted.State.Should().Be(OperationTerminalState.Succeeded);
-        (await repository.GetLatestRunAsync(strategy.StrategyId))!.RunType.Should().Be(requestedType);
+        var restart = () => manager.StartAsync(strategy.StrategyId, Context(), requestedType);
+        await restart.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Use the promotion workflow to approve a different run type.*");
+        strategy.Status.Should().Be(StrategyStatus.Stopped);
+        (await repository.GetLatestRunAsync(strategy.StrategyId))!.RunType.Should().Be(originalType);
     }
 
     [Fact]

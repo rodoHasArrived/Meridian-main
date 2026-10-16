@@ -9,8 +9,9 @@ using NSubstitute;
 namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
-/// Alias rows feed recorded-as-of reconstruction. Until the schema retains append-only alias
-/// revisions, a material edit must fail closed instead of rewriting what an older view reports.
+/// Alias rows feed recorded-as-of reconstruction. The store records corrections as append-only alias
+/// revisions; the service must surface the persisted creation facts and fail closed when the store
+/// cannot confirm a write.
 /// </summary>
 public sealed class SecurityMasterAliasRecordedHistoryTests
 {
@@ -72,7 +73,7 @@ public sealed class SecurityMasterAliasRecordedHistoryTests
             Reason: null));
 
         await act.Should().ThrowAsync<SecurityAliasHistoryConflictException>()
-            .WithMessage("*append-only alias revisions*");
+            .WithMessage("*conflicts with its recorded history*");
     }
 
     private static SecurityMasterService CreateService(ISecurityMasterStore store)

@@ -8,6 +8,52 @@ namespace Meridian.DirectLending.Tests;
 [Trait("Category", "Integration")]
 public sealed class DirectLendingPostgresIntegrationTests
 {
+    [DirectLendingDatabaseFact]
+    public async Task PortfolioSummary_ShouldReadCollateralChangesAfterReloadAndKeepCurrenciesSeparate()
+    {
+        await using var db = await DirectLendingPostgresTestDatabase.CreateOrSkipAsync();
+        if (db is null)
+            return;
+        var usd = await db.Service.CreateLoanAsync(BuildCreateRequest());
+        var eurRequest = BuildCreateRequest();
+        await db.Service.CreateLoanAsync(eurRequest with
+        {
+            Terms = eurRequest.Terms with { BaseCurrency = CurrencyCode.EUR, CommitmentAmount = 2_000_000m }
+        });
+
+        // Construct a new reader each time to prove retained servicing state, not
+        // the command result or an in-process cached summary, supply collateral values.
+        async Task<LoanPortfolioSummaryDto> ReloadSummaryAsync()
+        {
+            var store = new PostgresDirectLendingStateStore(db.Options);
+            var reader = new Meridian.Application.DirectLending.PostgresDirectLendingQueryService(
+                store, store, new Meridian.Application.DirectLending.DirectLendingEventRebuilder());
+            return await reader.GetPortfolioSummaryAsync();
+        }
+
+        var before = await ReloadSummaryAsync();
+        before.CurrencyTotals!.Should().OnlyContain(item => item.TotalCollateralValue == 0m);
+        var state = await db.Service.AddCollateralAsync(usd.LoanId,
+            new AddCollateralRequest(CollateralType.Equipment, "EUR appraisal", 300_000m,
+                CurrencyCode.EUR, new DateOnly(2026, 3, 22)));
+        var collateralId = state!.Collateral!.Single().CollateralId;
+        var added = await ReloadSummaryAsync();
+        added.TotalCurrency.Should().BeNull();
+        added.TotalCommitment.Should().BeNull();
+        added.TotalCollateralValue.Should().BeNull();
+        added.CurrencyTotals!.Single(item => item.Currency == CurrencyCode.USD)
+            .Should().Be(new LoanPortfolioCurrencyTotalsDto(CurrencyCode.USD, 1_000_000m, 0m, 0m, 0m, 1_000_000m, 0m));
+        added.CurrencyTotals!.Single(item => item.Currency == CurrencyCode.EUR)
+            .Should().Be(new LoanPortfolioCurrencyTotalsDto(CurrencyCode.EUR, 2_000_000m, 0m, 0m, 0m, 2_000_000m, 300_000m));
+
+        await db.Service.UpdateCollateralValueAsync(usd.LoanId,
+            new UpdateCollateralValueRequest(collateralId, 350_000m, new DateOnly(2026, 3, 23)));
+        (await ReloadSummaryAsync()).CurrencyTotals!
+            .Single(item => item.Currency == CurrencyCode.EUR).TotalCollateralValue.Should().Be(350_000m);
+        await db.Service.RemoveCollateralAsync(usd.LoanId, new RemoveCollateralRequest(collateralId, "Released"));
+        (await ReloadSummaryAsync()).CurrencyTotals!.Should().OnlyContain(item => item.TotalCollateralValue == 0m);
+    }
+
     private const string WorkflowIdPrefix = "wf-";
 
     private static async Task AssertPendingPublicationAsync(DirectLendingPostgresTestDatabase db,

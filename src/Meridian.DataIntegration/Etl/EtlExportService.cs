@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.IO.Compression;
+using System.Text.Json;
 using Meridian.Contracts.Etl;
 using Meridian.Contracts.Pipeline;
 using Meridian.Storage.Packaging;
@@ -6,6 +9,7 @@ namespace Meridian.DataIntegration.Etl;
 
 public sealed class EtlExportService : IEtlExportService
 {
+    private static readonly object DirectoryPublicationLock = new();
     private readonly string _dataRoot;
     private readonly IEnumerable<ISftpFilePublisher> _publishers;
 
@@ -60,13 +64,27 @@ public sealed class EtlExportService : IEtlExportService
                 if (Directory.Exists(artifact))
                 {
                     var localRoot = targetPath;
-                    Directory.CreateDirectory(localRoot);
-                    foreach (var file in Directory.EnumerateFiles(artifact, "*", SearchOption.AllDirectories))
+                    if (PathsOverlap(artifact, localRoot))
+                        throw new IOException("The export source and destination directories must not overlap.");
+                    var localStaging = localRoot + ".staging-" + Guid.NewGuid().ToString("N");
+                    try
                     {
-                        var relative = Path.GetRelativePath(artifact, file);
-                        var copyPath = Path.Combine(localRoot, relative);
-                        Directory.CreateDirectory(Path.GetDirectoryName(copyPath)!);
-                        File.Copy(file, copyPath, overwrite: definition.Destination.OverwriteIfExists);
+                        Directory.CreateDirectory(localStaging);
+                        foreach (var file in Directory.EnumerateFiles(artifact, "*", SearchOption.AllDirectories))
+                        {
+                            ct.ThrowIfCancellationRequested();
+                            var relative = Path.GetRelativePath(artifact, file);
+                            var copyPath = Path.Combine(localStaging, relative);
+                            Directory.CreateDirectory(Path.GetDirectoryName(copyPath)!);
+                            File.Copy(file, copyPath);
+                        }
+                        ct.ThrowIfCancellationRequested();
+                        PublishDirectory(localStaging, localRoot, definition.Destination.OverwriteIfExists);
+                    }
+                    finally
+                    {
+                        if (Directory.Exists(localStaging))
+                            Directory.Delete(localStaging, recursive: true);
                     }
                 }
                 else
@@ -94,18 +112,126 @@ public sealed class EtlExportService : IEtlExportService
 
     private async Task CopyMatchingStorageFilesAsync(string exportRoot, EtlJobDefinition definition, CancellationToken ct)
     {
-        Directory.CreateDirectory(exportRoot);
-        foreach (var file in Directory.EnumerateFiles(_dataRoot, "*.jsonl", SearchOption.AllDirectories)
-                     .Concat(Directory.EnumerateFiles(_dataRoot, "*.jsonl.gz", SearchOption.AllDirectories))
-                     .Where(path => !path.Contains(Path.DirectorySeparatorChar + "_etl" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
-                     .Where(path => Matches(path, definition)))
+        ct.ThrowIfCancellationRequested();
+        var stagingRoot = exportRoot + ".staging-" + Guid.NewGuid().ToString("N");
+        Directory.CreateDirectory(stagingRoot);
+        try
         {
-            var relative = Path.GetRelativePath(_dataRoot, file);
-            var destination = Path.Combine(exportRoot, relative);
-            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-            await using var source = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
-            await using var destinationStream = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true);
-            await source.CopyToAsync(destinationStream, ct).ConfigureAwait(false);
+            foreach (var file in Directory.EnumerateFiles(_dataRoot, "*.jsonl", SearchOption.AllDirectories)
+                         .Concat(Directory.EnumerateFiles(_dataRoot, "*.jsonl.gz", SearchOption.AllDirectories))
+                         .Where(path => !path.Contains(Path.DirectorySeparatorChar + "_etl" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                         .Where(path => Matches(path, definition)))
+            {
+                var relative = Path.GetRelativePath(_dataRoot, file);
+                var destination = Path.Combine(stagingRoot, relative);
+                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+                if (definition.FromDateUtc.HasValue || definition.ToDateUtc.HasValue)
+                {
+                    await CopyDateRangeAsync(file, destination, definition, ct).ConfigureAwait(false);
+                    continue;
+                }
+                await using var source = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
+                await using var destinationStream = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None, 81920, useAsync: true);
+                await source.CopyToAsync(destinationStream, ct).ConfigureAwait(false);
+            }
+            ct.ThrowIfCancellationRequested();
+            PublishDirectory(stagingRoot, exportRoot, overwrite: true);
+        }
+        finally
+        {
+            if (Directory.Exists(stagingRoot))
+                Directory.Delete(stagingRoot, recursive: true);
+        }
+    }
+
+    private static bool PathsOverlap(string first, string second)
+    {
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        var firstPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(first));
+        var secondPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(second));
+        return firstPath.Equals(secondPath, comparison) ||
+            firstPath.StartsWith(secondPath + Path.DirectorySeparatorChar, comparison) ||
+            secondPath.StartsWith(firstPath + Path.DirectorySeparatorChar, comparison);
+    }
+
+    private static void PublishDirectory(string staging, string destination, bool overwrite)
+    {
+        string? previous = null;
+        // Serialize the short publication/rollback sequence; all I/O to build the snapshot is complete.
+        lock (DirectoryPublicationLock)
+        {
+            if (Directory.Exists(destination))
+            {
+                if (!overwrite)
+                    throw new IOException($"Export destination already exists: {destination}");
+                previous = destination + ".previous-" + Guid.NewGuid().ToString("N");
+                Directory.Move(destination, previous);
+            }
+            try
+            {
+                Directory.Move(staging, destination);
+            }
+            catch
+            {
+                if (previous is not null)
+                    Directory.Move(previous, destination);
+                throw;
+            }
+        }
+        if (previous is not null)
+            Directory.Delete(previous, recursive: true);
+    }
+
+    private static async Task CopyDateRangeAsync(string sourcePath, string destination, EtlJobDefinition definition, CancellationToken ct)
+    {
+        // Bounds are inclusive UTC calendar dates, matching the portable-package contract.
+        var from = definition.FromDateUtc?.Date;
+        var to = definition.ToDateUtc?.Date;
+        var temporaryPath = destination + ".tmp";
+        var recordsWritten = 0;
+        try
+        {
+            await using (var source = File.OpenRead(sourcePath))
+            await using (var target = File.Create(temporaryPath))
+            {
+                var compressed = sourcePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
+                await using var input = compressed ? new GZipStream(source, CompressionMode.Decompress, leaveOpen: true) : (Stream)source;
+                await using var output = compressed ? new GZipStream(target, CompressionLevel.Optimal, leaveOpen: true) : (Stream)target;
+                using var reader = new StreamReader(input);
+                await using var writer = new StreamWriter(output);
+                while (await reader.ReadLineAsync(ct).ConfigureAwait(false) is { } line)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    if (string.IsNullOrWhiteSpace(line))
+                        continue;
+
+                    using var document = JsonDocument.Parse(line);
+                    var root = document.RootElement;
+                    if ((!root.TryGetProperty("timestamp", out var timestamp) && !root.TryGetProperty("Timestamp", out timestamp)) ||
+                        timestamp.ValueKind != JsonValueKind.String ||
+                        !DateTimeOffset.TryParse(timestamp.GetString(), CultureInfo.InvariantCulture,
+                            DateTimeStyles.AssumeUniversal, out var instant))
+                    {
+                        throw new InvalidDataException($"Cannot apply the export date range to a record without a valid timestamp in {Path.GetFileName(sourcePath)}.");
+                    }
+
+                    var date = instant.UtcDateTime.Date;
+                    if ((from.HasValue && date < from.Value) || (to.HasValue && date > to.Value))
+                        continue;
+
+                    await writer.WriteLineAsync(line.AsMemory(), ct).ConfigureAwait(false);
+                    recordsWritten++;
+                }
+            }
+
+            ct.ThrowIfCancellationRequested();
+            if (recordsWritten > 0)
+                File.Move(temporaryPath, destination, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+                File.Delete(temporaryPath);
         }
     }
 

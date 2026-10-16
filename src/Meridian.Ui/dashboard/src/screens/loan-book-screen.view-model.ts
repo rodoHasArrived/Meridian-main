@@ -17,7 +17,7 @@
  */
 
 import { formatCurrency, formatNumber } from "@/lib/format";
-import type { LoanPortfolioSummary, LoanSummary } from "@/types/direct-lending.types";
+import type { LoanCurrency, LoanStatusName, LoanPortfolioSummary, LoanSummary } from "@/types/direct-lending.types";
 
 export type LoanBookTone = "default" | "success" | "warning" | "danger";
 
@@ -52,6 +52,7 @@ export interface LoanBookViewModel {
   description: string;
   loaded: boolean;
   metrics: LoanBookMetricViewModel[];
+  currencyNotice: string | null;
   rows: LoanBookRowViewModel[];
   hasLoans: boolean;
   emptyText: string;
@@ -63,16 +64,30 @@ export interface LoanBookViewModel {
 const NOT_REPORTED = "—";
 
 /**
- * Statuses that mean the facility needs attention. Compared case-insensitively because the
- * server serializes the enum by name and casing has varied across contract revisions.
+ * Statuses that mean the facility needs attention. Normalize numeric host enums and
+ * compare named enums case-insensitively across contract revisions.
  */
 const IMPAIRED_STATUSES = new Set(["defaulted", "nonperforming", "non-performing", "workout"]);
 
-function normalizeStatus(status: string | null | undefined): string {
-  return (status ?? "").trim().toLowerCase().replace(/\s+/g, "");
+const STATUS_NAMES = ["Draft", "Approved", "Active", "Suspended", "Matured", "Closed", "Defaulted", "NonPerforming", "Workout"];
+const CURRENCY_NAMES = ["USD", "EUR", "GBP", "JPY", "Other"];
+
+function enumLabel(value: string | number | null | undefined, names: string[], fallback: string): string {
+  if (typeof value === "number") return names[value] ?? `${fallback} (${value})`;
+  const label = typeof value === "string" ? value.trim() : "";
+  if (/^\d+$/.test(label)) return names[Number(label)] ?? `${fallback} (${label})`;
+  return label || fallback;
 }
 
-export function loanStatusTone(status: string | null | undefined): LoanBookTone {
+function currencyLabel(value: LoanCurrency | null | undefined): string {
+  return enumLabel(value, CURRENCY_NAMES, "Unknown currency");
+}
+
+function normalizeStatus(status: LoanStatusName | null | undefined): string {
+  return enumLabel(status, STATUS_NAMES, "Unknown").toLowerCase().replace(/\s+/g, "");
+}
+
+export function loanStatusTone(status: LoanStatusName | null | undefined): LoanBookTone {
   const normalized = normalizeStatus(status);
   if (!normalized) {
     return "default";
@@ -96,7 +111,7 @@ function dateLabel(value: string | null | undefined): string {
 }
 
 export function buildLoanBookRow(loan: LoanSummary): LoanBookRowViewModel {
-  const currency = (loan.baseCurrency ?? "").trim() || "USD";
+  const currency = currencyLabel(loan.baseCurrency);
   const missing: string[] = [];
 
   if (!isReportedNumber(loan.commitmentAmount)) missing.push("Commitment");
@@ -104,7 +119,7 @@ export function buildLoanBookRow(loan: LoanSummary): LoanBookRowViewModel {
   if (!isReportedNumber(loan.interestAccruedUnpaid)) missing.push("Interest accrued");
   if (!isReportedNumber(loan.availableToDraw)) missing.push("Available to draw");
 
-  const statusLabel = (loan.status ?? "").trim() || "Unknown";
+  const statusLabel = enumLabel(loan.status, STATUS_NAMES, "Unknown");
   const facilityName = (loan.facilityName ?? "").trim() || "Unnamed facility";
   const borrowerName = (loan.borrowerName ?? "").trim() || "Unknown borrower";
 
@@ -185,43 +200,47 @@ export function buildLoanBookViewModel(summary: LoanPortfolioSummary | null): Lo
       ...base,
       loaded: false,
       metrics: [],
+      currencyNotice: null,
       rows: [],
       hasLoans: false,
       statusAnnouncement: "Loan book has not loaded."
     };
   }
 
-  const money = (value: number | null | undefined) =>
-    formatCurrency(value, { currency: "USD", fallback: NOT_REPORTED });
+  // A legacy payload has no currency evidence for its scalar totals. Do not infer it
+  // from a subset of rows, or silently label an unconverted mixed sum as USD.
+  const totals = summary.currencyTotals ?? (summary.totalCurrency != null ? [{
+    ...summary,
+    currency: summary.totalCurrency
+  }] : []);
 
   const metrics: LoanBookMetricViewModel[] = [
     countMetric("total-loans", "Facilities", summary.totalLoans, "default"),
     countMetric("active-loans", "Active", summary.activeLoans, "success"),
     countMetric("defaulted-loans", "Defaulted", summary.defaultedLoans, "danger"),
     countMetric("non-performing-loans", "Non-performing", summary.nonPerformingLoans, "danger"),
-    countMetric("workout-loans", "Workout", summary.workoutLoans, "warning"),
-    {
-      id: "principal-outstanding",
-      label: "Principal outstanding",
-      value: money(summary.totalPrincipalOutstanding),
-      tone: "default",
-      ariaLabel: `Principal outstanding: ${money(summary.totalPrincipalOutstanding)}`
-    },
-    {
-      id: "available-to-draw",
-      label: "Available to draw",
-      value: money(summary.totalAvailableToDraw),
-      tone: "default",
-      ariaLabel: `Available to draw: ${money(summary.totalAvailableToDraw)}`
-    },
-    {
-      id: "collateral-value",
-      label: "Collateral value",
-      value: money(summary.totalCollateralValue),
-      tone: "default",
-      ariaLabel: `Collateral value: ${money(summary.totalCollateralValue)}`
-    }
+    countMetric("workout-loans", "Workout", summary.workoutLoans, "warning")
   ];
+
+  for (const total of totals) {
+    const currency = currencyLabel(total.currency);
+    const fields = [
+      ["principal-outstanding", "Principal outstanding", total.totalPrincipalOutstanding],
+      ["available-to-draw", "Available to draw", total.totalAvailableToDraw],
+      ["collateral-value", "Collateral value", total.totalCollateralValue]
+    ] as const;
+    for (const [id, label, amount] of fields) {
+      const value = /^[a-z]{3}$/i.test(currency)
+        ? formatCurrency(amount, { currency, fallback: NOT_REPORTED }) : NOT_REPORTED;
+      metrics.push({
+        id: totals.length === 1 ? id : `${id}-${currency}`,
+        label: `${label} (${currency})`,
+        value,
+        tone: "default",
+        ariaLabel: `${label} (${currency}): ${value}`
+      });
+    }
+  }
 
   const rows = (summary.loans ?? []).map(buildLoanBookRow);
   const impaired = impairedCount(summary);
@@ -233,6 +252,13 @@ export function buildLoanBookViewModel(summary: LoanPortfolioSummary | null): Lo
     ...base,
     loaded: true,
     metrics,
+    currencyNotice: totals.some(total => !/^[a-z]{3}$/i.test(currencyLabel(total.currency)))
+      ? "Totals for unspecified currencies are unavailable. No FX conversion has been applied."
+      : totals.length > 1
+      ? "Totals are grouped by currency. No FX conversion has been applied."
+      : totals.length === 0 && summary.totalLoans > 0
+        ? "Portfolio totals are unavailable because the service did not report their currency."
+        : null,
     rows,
     hasLoans: rows.length > 0,
     statusAnnouncement:

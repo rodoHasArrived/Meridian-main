@@ -581,22 +581,8 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                     s.LastPaymentDate);
             }).ToList();
 
-            var totalCollateral = _loans.Values.Sum(s =>
-                s.Servicing.Collateral?.Sum(c => c.EstimatedValue) ?? 0m);
-
-            var result = new LoanPortfolioSummaryDto(
-                summaries.Count,
-                summaries.Count(s => s.Status == LoanStatus.Active),
-                summaries.Count(s => s.Status == LoanStatus.Defaulted),
-                summaries.Count(s => s.Status == LoanStatus.NonPerforming),
-                summaries.Count(s => s.Status == LoanStatus.Workout),
-                summaries.Sum(s => s.CommitmentAmount),
-                summaries.Sum(s => s.PrincipalOutstanding),
-                summaries.Sum(s => s.InterestAccruedUnpaid),
-                summaries.Sum(s => s.PenaltyAccruedUnpaid),
-                summaries.Sum(s => s.AvailableToDraw),
-                totalCollateral,
-                summaries);
+            var collateral = _loans.Values.SelectMany(loan => loan.Servicing.Collateral ?? []).ToArray();
+            var result = LoanPortfolioSummaryBuilder.Build(summaries, collateral);
 
             return Task.FromResult(result);
         }

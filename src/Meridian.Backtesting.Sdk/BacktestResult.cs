@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Ledger;
 
 namespace Meridian.Backtesting.Sdk;
@@ -27,6 +28,10 @@ public sealed record SymbolAttribution(
 /// and <c>LiveRunMetricsTracker</c> all emit fractions, and the workstation multiplies by 100
 /// at render time. Emitting percent units here reads as a 100x drawdown downstream.
 /// </param>
+/// <param name="Xirr">
+/// Cash-weighted IRR, or <see cref="double.NaN"/> when unavailable. JSON preserves that
+/// unavailable value as the named string <c>"NaN"</c>, rather than a measured zero return.
+/// </param>
 public sealed record BacktestMetrics(
     decimal InitialCapital,
     decimal FinalEquity,
@@ -48,7 +53,7 @@ public sealed record BacktestMetrics(
     decimal TotalCommissions,
     decimal TotalMarginInterest,
     decimal TotalShortRebates,
-    double Xirr,                    // cash-weighted IRR over all cash flows
+    [property: JsonNumberHandling(JsonNumberHandling.AllowNamedFloatingPointLiterals)] double Xirr,
     IReadOnlyDictionary<string, SymbolAttribution> SymbolAttribution);
 
 /// <summary>Metadata about the engine and normalization path that produced a backtest result.</summary>

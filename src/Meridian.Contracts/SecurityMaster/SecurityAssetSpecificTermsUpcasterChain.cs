@@ -12,19 +12,21 @@ namespace Meridian.Contracts.SecurityMaster;
 /// an economic-terms document landing in the asset-specific-terms slot failed every read with
 /// "Unsupported schemaVersion '2'".
 /// <para>
-/// <b>The bridge is lossy, and callers must treat it as such.</b> The flat v1 family is keyed per
-/// asset class (a callable bond's <c>callDate</c>, an MBS's <c>currentFactor</c>, a sweep vehicle's
-/// <c>programName</c>) and this conversion does not know the asset class, so it can only carry the
-/// modules whose fields have one class-independent flat spelling. It reads the
-/// <see cref="BridgedModules"/> — <c>maturity</c>, <c>coupon</c>, <c>payment</c>, <c>accrual</c>,
-/// <c>discount</c> — and drops every other module the economic serializer emits
-/// (<see cref="DroppedModules"/>: redemption, call, auction, sweep, financing, issuer, equity
-/// behaviour, fund, structured product), plus the accrual and payment fields that have no flat
-/// counterpart. A callable bond comes out as a bullet bond with the same coupon; an MBS loses its
-/// pool factor; every class loses its issuer identity. The authoritative economic record remains
-/// stored separately — this conversion only feeds read compatibility — and the output is stamped
-/// with <see cref="FlattenedFromMarkerProperty"/> so a projection rebuilt through this route is
-/// distinguishable from one that always carried the flat terms.
+/// <b>The flat keys are lossy; the payload is not.</b> The flat v1 family is keyed per asset class
+/// (a callable bond's <c>callDate</c>, an MBS's <c>currentFactor</c>, a sweep vehicle's
+/// <c>programName</c>) and cannot express every economic module. When the caller knows the class it
+/// should use <see cref="Convert(JsonElement, string?)"/>, which writes every value the economic
+/// document carries at the class's declared flat key. The class-independent
+/// <see cref="Convert(JsonElement)"/> is the fallback for an unknown class and can only place the
+/// <see cref="BridgedModules"/>; it places nothing from the <see cref="DroppedModules"/>
+/// (redemption, call, auction, sweep, financing, issuer, equity behaviour, fund, structured product).
+/// Both conversions therefore also carry the complete source document verbatim under
+/// <see cref="SecurityTermsEnvelope.RetainedEconomicTermsKey"/>, stamp the result with the explicit
+/// flat <see cref="SecurityTermsEnvelope.FormatKey"/>, and mark it with
+/// <see cref="FlattenedFromMarkerProperty"/>, so a projection rebuilt through this route keeps every
+/// economic value and stays distinguishable from one that always carried the flat terms. The
+/// economic definition adapter folds the retained document back into the economic record on the
+/// next write, so data the flat keys cannot hold survives a replay-then-amend cycle.
 /// </para>
 /// </summary>
 public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchemaUpcaster<SecurityAssetSpecificTerms>
@@ -83,14 +85,26 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     }
 
     /// <summary>
-    /// Whether the payload has the economic-terms family's shape: an object stamped
+    /// Whether the payload is an economic-terms document. A payload that declares
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/> is classified by that declaration alone, so a
+    /// tagged document never depends on its <c>schemaVersion</c> integer; an untagged payload falls
+    /// back to <see cref="IsEconomicTermsShape"/>.
+    /// </summary>
+    public static bool IsEconomicTermsDocument(JsonElement payload)
+        => SecurityTermsEnvelope.GetDeclaredFormat(payload) is { } declared
+            ? string.Equals(declared, SecurityTermsFormats.Economic, StringComparison.Ordinal)
+            : IsEconomicTermsShape(payload);
+
+    /// <summary>
+    /// The historical shape rule for untagged payloads: an object stamped
     /// <see cref="EconomicTermsSchema.Current"/> that carries at least one of the
     /// <see cref="EconomicTermsModules"/> keys. The two payload families share one
     /// <c>schemaVersion</c> key, so the integer alone cannot tell a v2 economic-terms document from
     /// a (reserved, never declared) flat v2; the module keys can, because the economic serializer
-    /// always writes them and a flat document never does.
+    /// always writes them and a flat document never does. Payloads written after
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/> existed declare their family instead.
     /// </summary>
-    public static bool IsEconomicTermsDocument(JsonElement payload)
+    public static bool IsEconomicTermsShape(JsonElement payload)
     {
         if (payload.ValueKind != JsonValueKind.Object
             || SecurityAssetSpecificTermsV0ToCurrentUpcaster.ResolveSchemaVersion(payload) != EconomicTermsSchema.Current)
@@ -132,9 +146,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
-            writer.WriteStartObject();
-            writer.WriteNumber("schemaVersion", AssetSpecificTermsSchema.Legacy);
-            writer.WriteNumber(FlattenedFromMarkerProperty, EconomicTermsSchema.Current);
+            WriteFlatEnvelope(writer, SecurityTermsEnvelope.DefaultAssetClassTermsVersion);
 
             var maturity = GetObject(economicTerms, "maturity");
             WriteIfPresent(writer, "maturityDate", maturity, "maturityDate");
@@ -163,11 +175,302 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             WriteIfPresent(writer, "discountRate", discount, "discountRate");
             WriteIfPresent(writer, "yieldRate", discount, "yieldRate");
 
+            WriteRetainedEconomicTerms(writer, economicTerms);
             writer.WriteEndObject();
         }
 
         using var flattened = JsonDocument.Parse(buffer.ToArray());
         return new SecurityAssetSpecificTerms(flattened.RootElement.Clone(), AssetSpecificTermsSchema.Legacy);
+    }
+
+    /// <summary>
+    /// Asset-class-aware flattening: inverts the per-class module assignment the economic
+    /// definition makes (<c>SecurityMasterLegacyUpgrade.termsFromKind</c>) so every value the
+    /// economic-terms document carries lands at the flat key <see cref="SecurityAssetTermsSchema"/>
+    /// declares for <paramref name="assetClass"/> — a callable CD's first call date at
+    /// <c>callableDate</c>, a bond's at <c>callDate</c>, an MBS tranche's factor at
+    /// <c>currentFactor</c>, a deposit's institution at <c>institutionName</c>. Only declared keys are
+    /// written (<c>SecurityEconomicTermsV2BridgeCoverageTests</c> asserts it), so the result reads like
+    /// an original v1 write for that class.
+    /// <para>
+    /// What remains lost is what the economic-terms document never carried: an option's strike and
+    /// put/call, a swap's legs, a bond's subclass and schedules. Those keys are listed by
+    /// <see cref="UnrecoverableKeys"/> and the result keeps the <see cref="FlattenedFromMarkerProperty"/>
+    /// marker. When <paramref name="assetClass"/> is not a declared class (or is <see langword="null"/>)
+    /// this falls back to the class-independent <see cref="Convert(JsonElement)"/>.
+    /// </para>
+    /// </summary>
+    public static SecurityAssetSpecificTerms Convert(JsonElement economicTerms, string? assetClass)
+    {
+        if (!TryGetClassFlattening(assetClass, out var mappings))
+        {
+            return Convert(economicTerms);
+        }
+
+        if (string.Equals(assetClass, "Equity", StringComparison.OrdinalIgnoreCase))
+        {
+            // Structural CommonEquity/CommonShare metadata also labels legacy preferred equity.
+            // Absence of preferred modules therefore cannot establish Common classification.
+            // The old economic family lacks a complete independent equity discriminant and loses
+            // preferred/convertible economics; all economic-only Equity replay must refuse.
+            throw new InvalidOperationException(
+                "Equity economic replay requires retained legacy asset-specific terms; " +
+                "the economic payload cannot reconstruct the complete classification and preferred/convertible terms.");
+        }
+
+        using var buffer = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(buffer))
+        {
+            WriteFlatEnvelope(writer, SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion);
+
+            foreach (var mapping in mappings)
+            {
+                var written = false;
+                foreach (var (module, field) in mapping.Sources)
+                {
+                    var source = GetObject(economicTerms, module);
+                    if (source is not JsonElement element
+                        || !element.TryGetProperty(field, out var value)
+                        || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+                    {
+                        continue;
+                    }
+
+                    writer.WritePropertyName(mapping.FlatKey);
+                    if (mapping.EqualsLabel is { } label)
+                    {
+                        writer.WriteBooleanValue(value.ValueKind == JsonValueKind.String
+                                                 && string.Equals(value.GetString(), label, StringComparison.Ordinal));
+                    }
+                    else
+                    {
+                        value.WriteTo(writer);
+                    }
+
+                    written = true;
+                    break;
+                }
+
+                // A label flag is false when its label is absent: the economic definition writes a
+                // null issuerProgram for commercial paper that is not asset-backed, and the flat
+                // schema declares isAssetBacked required.
+                if (!written && mapping.EqualsLabel is not null)
+                {
+                    writer.WriteBoolean(mapping.FlatKey, false);
+                }
+            }
+
+            WriteRetainedEconomicTerms(writer, economicTerms);
+            writer.WriteEndObject();
+        }
+
+        using var flattened = JsonDocument.Parse(buffer.ToArray());
+        return new SecurityAssetSpecificTerms(flattened.RootElement.Clone(), AssetSpecificTermsSchema.Legacy);
+    }
+
+    /// <summary>
+    /// The flat keys <see cref="Convert(JsonElement, string?)"/> can reconstruct for
+    /// <paramref name="assetClass"/>; empty for a class with no class-aware flattening.
+    /// </summary>
+    public static IReadOnlyList<string> RecoverableKeys(string assetClass)
+        => TryGetClassFlattening(assetClass, out var mappings)
+            ? mappings.Select(static mapping => mapping.FlatKey).ToArray()
+            : [];
+
+    /// <summary>
+    /// The declared flat keys for <paramref name="assetClass"/> that no economic-terms module
+    /// carries, so a projection rebuilt through this route cannot recover them. Required keys in
+    /// this list are why the rebuilt record still carries the <see cref="FlattenedFromMarkerProperty"/>.
+    /// </summary>
+    public static IReadOnlyList<string> UnrecoverableKeys(string assetClass)
+    {
+        if (!SecurityAssetTermsSchema.TryGetFields(assetClass, out var fields))
+        {
+            return [];
+        }
+
+        var recoverable = RecoverableKeys(assetClass).ToHashSet(StringComparer.Ordinal);
+        return fields.Select(static field => field.Key).Where(key => !recoverable.Contains(key)).ToArray();
+    }
+
+    private static bool TryGetClassFlattening(string? assetClass, out IReadOnlyList<FlatTermMapping> mappings)
+    {
+        mappings = [];
+        if (string.IsNullOrWhiteSpace(assetClass))
+        {
+            return false;
+        }
+
+        foreach (var (name, candidate) in ClassFlattenings)
+        {
+            if (string.Equals(name, assetClass, StringComparison.OrdinalIgnoreCase))
+            {
+                mappings = candidate;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// One flat key and the economic-terms <c>(module, field)</c> sources that feed it, in priority
+    /// order. <see cref="EqualsLabel"/> turns a label into a flag (commercial paper's
+    /// <c>isAssetBacked</c> is carried as <c>issuer.issuerProgram = "AssetBacked"</c>).
+    /// </summary>
+    private sealed record FlatTermMapping(string FlatKey, (string Module, string Field)[] Sources, string? EqualsLabel = null);
+
+    private static FlatTermMapping Map(string flatKey, params (string Module, string Field)[] sources) => new(flatKey, sources);
+
+    private static readonly (string Module, string Field) MaturityDate = ("maturity", "maturityDate");
+
+    /// <summary>
+    /// Per-class inverse of <c>SecurityMasterLegacyUpgrade.termsFromKind</c>. Kept beside the
+    /// class-independent bridge so the two are reviewed together; the coverage test asserts every
+    /// target key is declared for its class and that a fully populated v1 record survives
+    /// v1 → economic → v1 at every key listed here.
+    /// </summary>
+    private static readonly IReadOnlyList<(string AssetClass, IReadOnlyList<FlatTermMapping> Mappings)> ClassFlattenings =
+    [
+        ("Equity", [Map("shareClass", ("equityBehavior", "shareClass")), Map("votingRightsCat", ("equityBehavior", "votingRights"))]),
+        ("Option", [Map("expiry", MaturityDate)]),
+        ("Future", [Map("expiry", MaturityDate)]),
+        ("Bond",
+        [
+            Map("maturity", MaturityDate),
+            Map("issueDate", ("maturity", "issueDate")),
+            Map("couponType", ("coupon", "couponType")),
+            Map("couponRate", ("coupon", "couponRate")),
+            Map("dayCount", ("coupon", "dayCount"), ("accrual", "dayCount")),
+            Map("paymentFrequency", ("coupon", "paymentFrequency"), ("payment", "paymentFrequency")),
+            Map("isCallable", ("call", "isCallable")),
+            Map("callDate", ("call", "firstCallDate")),
+            Map("issuerName", ("issuer", "issuerName"))
+        ]),
+        ("Deposit",
+        [
+            Map("depositType", ("issuer", "issuerProgram")),
+            Map("institutionName", ("issuer", "institutionName")),
+            Map("maturity", MaturityDate),
+            Map("interestRate", ("coupon", "couponRate")),
+            Map("dayCount", ("coupon", "dayCount")),
+            Map("isCallable", ("call", "isCallable"))
+        ]),
+        ("MoneyMarketFund",
+        [
+            Map("fundFamily", ("fund", "fundFamily")),
+            Map("sweepEligible", ("fund", "sweepEligible")),
+            Map("weightedAverageMaturityDays", ("fund", "weightedAverageMaturityDays")),
+            Map("liquidityFeeEligible", ("fund", "liquidityFeeEligible"))
+        ]),
+        ("CertificateOfDeposit",
+        [
+            Map("issuerName", ("issuer", "issuerName")),
+            Map("maturity", MaturityDate),
+            Map("couponRate", ("coupon", "couponRate")),
+            Map("callableDate", ("call", "firstCallDate")),
+            Map("dayCount", ("coupon", "dayCount"))
+        ]),
+        ("CommercialPaper",
+        [
+            Map("issuerName", ("issuer", "issuerName")),
+            Map("maturity", MaturityDate),
+            Map("discountRate", ("discount", "discountRate")),
+            Map("dayCount", ("coupon", "dayCount")),
+            new FlatTermMapping("isAssetBacked", [("issuer", "issuerProgram")], EqualsLabel: "AssetBacked")
+        ]),
+        ("TreasuryBill",
+        [
+            Map("maturity", MaturityDate),
+            Map("auctionDate", ("auction", "auctionDate")),
+            Map("cusip", ("issuer", "issuerProgram")),
+            Map("discountRate", ("discount", "discountRate"))
+        ]),
+        ("Repo",
+        [
+            Map("counterparty", ("financing", "counterparty")),
+            Map("startDate", ("financing", "openDate"), ("maturity", "effectiveDate")),
+            Map("endDate", ("financing", "closeDate"), MaturityDate),
+            Map("repoRate", ("discount", "yieldRate")),
+            Map("collateralType", ("financing", "collateralType")),
+            Map("haircut", ("financing", "haircut"))
+        ]),
+        ("CashSweep",
+        [
+            Map("programName", ("sweep", "programName")),
+            Map("sweepVehicleType", ("sweep", "sweepVehicleType")),
+            Map("sweepFrequency", ("sweep", "sweepFrequency")),
+            Map("targetAccountType", ("sweep", "targetAccountType")),
+            Map("yieldRate", ("discount", "yieldRate"))
+        ]),
+        ("OtherSecurity",
+        [
+            Map("maturity", MaturityDate),
+            Map("issuerName", ("issuer", "issuerName")),
+            Map("settlementType", ("issuer", "issuerProgram"))
+        ]),
+        ("Swap", [Map("effectiveDate", ("maturity", "effectiveDate")), Map("maturityDate", MaturityDate)]),
+        ("DirectLoan", [Map("borrower", ("issuer", "issuerName")), Map("maturity", MaturityDate)]),
+        ("StructuredCredit",
+        [
+            Map("tranche", ("structuredProduct", "trancheClass")),
+            Map("poolId", ("structuredProduct", "poolIdentifier"), ("issuer", "issuerName")),
+            Map("collateralType", ("structuredProduct", "collateralType"), ("issuer", "issuerProgram")),
+            Map("originalFace", ("structuredProduct", "notionalBalance")),
+            Map("currentFactor", ("structuredProduct", "factor")),
+            Map("couponOrIndex", ("coupon", "couponType")),
+            Map("factorSchedule", ("coupon", "paymentFrequency")),
+            Map("maturity", MaturityDate)
+        ]),
+        ("PrivateFundInterest", [Map("gpSponsor", ("issuer", "issuerName"), ("fund", "fundFamily")), Map("strategy", ("issuer", "issuerProgram"))]),
+        ("PrivateCompanyEquity",
+        [
+            Map("issuer", ("issuer", "issuerName")),
+            Map("shareClass", ("equityBehavior", "shareClass")),
+            Map("round", ("issuer", "issuerProgram"))
+        ]),
+        ("RealEstateHolding", [Map("propertyType", ("issuer", "issuerProgram")), Map("sponsor", ("issuer", "issuerName"))]),
+        ("CommitmentGuarantee",
+        [
+            Map("counterparty", ("issuer", "issuerName")),
+            Map("beneficiary", ("issuer", "issuerProgram")),
+            Map("effectiveDate", ("maturity", "effectiveDate")),
+            Map("expiryDate", MaturityDate)
+        ]),
+        ("Warrant", [Map("expiry", MaturityDate)]),
+        ("InvestmentFund", [Map("fundFamily", ("fund", "fundFamily"))])
+    ];
+
+    /// <summary>
+    /// Opens a flattened payload with its envelope: the flat codec version, the explicit flat format
+    /// and asset-class terms version, and the marker naming the economic version it came from.
+    /// </summary>
+    private static void WriteFlatEnvelope(Utf8JsonWriter writer, int assetClassTermsVersion)
+    {
+        writer.WriteStartObject();
+        writer.WriteNumber(SecurityTermsEnvelope.SchemaVersionKey, AssetSpecificTermsSchema.Legacy);
+        writer.WriteString(SecurityTermsEnvelope.FormatKey, SecurityTermsFormats.Flat);
+        writer.WriteNumber(SecurityTermsEnvelope.AssetClassTermsVersionKey, assetClassTermsVersion);
+        writer.WriteNumber(FlattenedFromMarkerProperty, EconomicTermsSchema.Current);
+    }
+
+    /// <summary>
+    /// Carries the source economic document verbatim under
+    /// <see cref="SecurityTermsEnvelope.RetainedEconomicTermsKey"/>. The flat family cannot express
+    /// every module (redemption, call and put schedules, issuer identity, fund and structured-product
+    /// detail), so instead of dropping what it cannot place, the bridge keeps the whole document
+    /// beside the flat keys; <c>SecurityEconomicDefinitionAdapter</c> folds it back into the economic
+    /// record on the next write, so a replay-then-amend cycle never erases it.
+    /// </summary>
+    private static void WriteRetainedEconomicTerms(Utf8JsonWriter writer, JsonElement economicTerms)
+    {
+        if (economicTerms.ValueKind != JsonValueKind.Object)
+        {
+            return;
+        }
+
+        writer.WritePropertyName(SecurityTermsEnvelope.RetainedEconomicTermsKey);
+        economicTerms.WriteTo(writer);
     }
 
     private static JsonElement? GetObject(JsonElement source, string propertyName)
@@ -214,6 +517,17 @@ public static class SecurityAssetSpecificTermsUpcasterChain
     public static SecurityAssetSpecificTerms Normalize(JsonElement payload)
         => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument(payload)
             ? SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(payload)
+            : SecurityAssetSpecificTermsV0ToCurrentUpcaster.Normalize(payload);
+
+    /// <summary>
+    /// Class-aware variant: a cross-family economic-terms document is flattened onto the flat keys
+    /// <paramref name="assetClass"/> declares (see
+    /// <see cref="SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(JsonElement, string?)"/>).
+    /// Every other payload normalizes exactly as <see cref="Normalize(JsonElement)"/>.
+    /// </summary>
+    public static SecurityAssetSpecificTerms Normalize(JsonElement payload, string? assetClass)
+        => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsDocument(payload)
+            ? SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(payload, assetClass)
             : SecurityAssetSpecificTermsV0ToCurrentUpcaster.Normalize(payload);
 
     /// <summary>Text-input variant; returns <see langword="null"/> when the text is not JSON.</summary>

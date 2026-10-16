@@ -83,6 +83,58 @@ public sealed class LocalFileSourceReaderPostProcessingTests : IDisposable
         Directory.GetFiles(archiveDir).Should().HaveCount(2);
     }
 
+    [Theory]
+    [InlineData(EtlSourcePostProcessingAction.Delete)]
+    [InlineData(EtlSourcePostProcessingAction.MoveToArchive)]
+    [InlineData(EtlSourcePostProcessingAction.MoveToError)]
+    public async Task PostProcessFileAsync_ProducerReplacesStagedDelivery_PreservesUnprocessedReplacement(EtlSourcePostProcessingAction action)
+    {
+        var (sourceDir, archiveDir) = CreateDirectories();
+        var incoming = await DropAsync(sourceDir, "positions.csv", MondayContent);
+        var originalModified = File.GetLastWriteTimeUtc(incoming);
+        var reader = new LocalFileSourceReader(new EtlStagingStore(_root));
+        var source = new EtlSourceDefinition
+        {
+            Kind = EtlSourceKind.Local,
+            Location = sourceDir,
+            PostProcessingAction = action,
+            ArchiveLocation = archiveDir,
+            ErrorLocation = archiveDir
+        };
+        var file = (await reader.ListFilesAsync(source)).Single();
+        var staged = await reader.StageFileAsync("original-delivery", source, file);
+
+        // The producer delivers the next file while the first is being processed. Even matching
+        // length and modification time do not establish that these are the bytes we staged.
+        var replacement = await DropAsync(sourceDir, "next.csv", TuesdayContent);
+        File.SetLastWriteTimeUtc(replacement, originalModified);
+        File.Move(replacement, incoming, overwrite: true);
+
+        var cleanup = () => reader.PostProcessFileAsync(source, file,
+            succeeded: action != EtlSourcePostProcessingAction.MoveToError);
+
+        await cleanup.Should().ThrowAsync<InvalidOperationException>().WithMessage("*changed since staging*");
+        (await File.ReadAllTextAsync(staged.StagedPath)).Should().Be(MondayContent);
+        (await File.ReadAllTextAsync(incoming)).Should().Be(TuesdayContent);
+        Directory.GetFiles(archiveDir).Should().BeEmpty();
+        Directory.GetFiles(sourceDir).Should().ContainSingle().Which.Should().Be(incoming);
+    }
+
+    [Fact]
+    public async Task PostProcessFileAsync_WithoutStagingIdentity_RefusesDestructiveCleanup()
+    {
+        var (sourceDir, _) = CreateDirectories();
+        var incoming = await DropAsync(sourceDir, "positions.csv", MondayContent);
+        var reader = new LocalFileSourceReader(new EtlStagingStore(_root));
+        var source = new EtlSourceDefinition { Kind = EtlSourceKind.Local, Location = sourceDir, DeleteAfterSuccess = true };
+        var file = (await reader.ListFilesAsync(source)).Single();
+
+        var cleanup = () => reader.PostProcessFileAsync(source, file, succeeded: true);
+
+        await cleanup.Should().ThrowAsync<InvalidOperationException>().WithMessage("*identity captured while staging*");
+        (await File.ReadAllTextAsync(incoming)).Should().Be(MondayContent);
+    }
+
     private (string SourceDir, string ArchiveDir) CreateDirectories()
     {
         var sourceDir = Path.Combine(_root, "drop");
@@ -99,7 +151,7 @@ public sealed class LocalFileSourceReaderPostProcessingTests : IDisposable
         return path;
     }
 
-    private Task ArchiveAsync(string sourceDir, string archiveDir, string incoming)
+    private async Task ArchiveAsync(string sourceDir, string archiveDir, string incoming)
     {
         var reader = new LocalFileSourceReader(new EtlStagingStore(_root));
         var source = new EtlSourceDefinition
@@ -110,10 +162,9 @@ public sealed class LocalFileSourceReaderPostProcessingTests : IDisposable
             ArchiveLocation = archiveDir
         };
 
-        return reader.PostProcessFileAsync(
-            source,
-            new EtlRemoteFile { Path = incoming, Name = Path.GetFileName(incoming), SizeBytes = 0 },
-            succeeded: true);
+        var file = new EtlRemoteFile { Path = incoming, Name = Path.GetFileName(incoming), SizeBytes = new FileInfo(incoming).Length };
+        await reader.StageFileAsync(Guid.NewGuid().ToString("N"), source, file);
+        await reader.PostProcessFileAsync(source, file, succeeded: true);
     }
 
     public void Dispose()

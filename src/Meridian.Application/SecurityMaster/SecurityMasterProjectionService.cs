@@ -43,12 +43,68 @@ public sealed class SecurityMasterProjectionService
         return rebuiltRecords;
     }
 
+    /// <summary>
+    /// Re-reads one security from the durable store, rebuilds it exactly as a warm would, and
+    /// applies it to the cache through the version-guarded <see cref="SecurityMasterProjectionCache.Upsert"/>
+    /// (so an older read never downgrades a newer cached record). A security the durable store no
+    /// longer holds is evicted; deactivated securities stay cached with their inactive status, as
+    /// a full warm leaves them.
+    /// </summary>
+    public async Task<SecurityProjectionRefreshResult> RefreshSecurityAsync(Guid securityId, CancellationToken ct = default)
+    {
+        var seed = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false);
+        var rebuiltEconomic = await _rebuilder.RebuildEconomicDefinitionAsync(securityId, seed, ct).ConfigureAwait(false);
+        if (seed is null || rebuiltEconomic is null)
+        {
+            return _cache.Remove(securityId)
+                ? SecurityProjectionRefreshResult.Evicted
+                : SecurityProjectionRefreshResult.NotFound;
+        }
+
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(rebuiltEconomic, seed.Aliases);
+        // A reread older than the cached terms still counts as a refresh when its newer-stamped
+        // aliases were merged in, so callers reseed the canonical registry for the correction.
+        return _cache.Upsert(rebuilt)
+            ? SecurityProjectionRefreshResult.Refreshed
+            : SecurityProjectionRefreshResult.KeptNewer;
+    }
+
     public async Task WarmAsync(CancellationToken ct = default)
     {
-        var rebuiltRecords = await BuildWarmSetAsync(ct).ConfigureAwait(false);
-        _cache.ReplaceAll(rebuiltRecords);
+        // Held across the durable read and the swap, so an alias refresh that commits during a warm
+        // (startup, periodic, or a listener resync) either lands before the warm reads or waits and
+        // lands after the swap; otherwise the swap could reinstate the superseded equal-version record.
+        IReadOnlyList<SecurityProjectionRecord> rebuiltRecords;
+        await _cache.RefreshGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            // The replacement capture opens before the durable read, so a local create or amend
+            // upserted while the warm reads or rebuilds is replayed into the swap, not dropped.
+            rebuiltRecords = await _cache.ReplaceAllAsync(BuildWarmSetAsync, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _cache.RefreshGate.Release();
+        }
+
         _logger.LogInformation(
             "Warmed security master projection cache with {Count} rebuilt records from snapshots/events",
             rebuiltRecords.Count);
     }
+}
+
+/// <summary>Outcome of <see cref="SecurityMasterProjectionService.RefreshSecurityAsync"/>.</summary>
+public enum SecurityProjectionRefreshResult
+{
+    /// <summary>The durable record was installed in the cache.</summary>
+    Refreshed,
+
+    /// <summary>The cache already held a newer version; the durable read did not downgrade it.</summary>
+    KeptNewer,
+
+    /// <summary>The durable store no longer holds the security; the cached entry was evicted.</summary>
+    Evicted,
+
+    /// <summary>Neither the durable store nor the cache holds the security.</summary>
+    NotFound
 }
