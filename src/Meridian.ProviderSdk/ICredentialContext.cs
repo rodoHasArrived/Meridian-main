@@ -7,6 +7,16 @@ namespace Meridian.Infrastructure.Contracts;
 public interface ICredentialContext
 {
     /// <summary>
+    /// Whether this context owns the complete selected record, including missing fields.
+    /// Factories must not replace or supplement an authoritative context with module,
+    /// environment, or configuration credentials.
+    /// </summary>
+    bool IsAuthoritative => false;
+
+    /// <summary>The selected record's provider environment, when the resolver owns one.</summary>
+    string? CredentialEnvironment => null;
+
+    /// <summary>
     /// Returns the resolved credential value for the given logical <paramref name="name"/>,
     /// or <see langword="null"/> when the credential is not configured.
     /// </summary>

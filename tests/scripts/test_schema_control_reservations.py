@@ -273,6 +273,20 @@ class SchemaControlReservationTests(unittest.TestCase):
             scaffold_migration(self.root, self.config, "ledger", "new_feature")
         self.assertEqual(before, self._snapshot())
 
+    def test_external_register_paths_keep_backslash_and_escape_protections(self) -> None:
+        before = self._snapshot()
+        for register_path in (
+            r"database\migration-reservations.json",
+            r"..\outside.json",
+            "../outside.json",
+            self.register_path.resolve().as_posix(),
+        ):
+            with self.subTest(register_path=register_path):
+                config = {**self.config, "migration_reservations": register_path}
+                with self.assertRaises(ValueError):
+                    scaffold_migration(self.root, config, "ledger", "new_feature")
+                self.assertEqual(before, self._snapshot())
+
     def test_occupied_reservation_is_reported_and_prevents_scaffolding(self) -> None:
         self._migration(42, "some_already_applied_feature")
 

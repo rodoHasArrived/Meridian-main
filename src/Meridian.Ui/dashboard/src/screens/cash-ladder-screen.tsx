@@ -129,37 +129,51 @@ export interface CashLadderScreenProps {
 }
 
 export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) {
-  const [ladder, setLadder] = useState<PortfolioCashLadder | null>(null);
+  // Account changes discard controls and evidence together, before the next paint.
+  return <AccountCashLadderScreen key={fundAccountId ?? ""} fundAccountId={fundAccountId} />;
+}
+
+function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
+  const [result, setResult] = useState<{ requestKey: string; ladder: PortfolioCashLadder } | null>(null);
   const [scenarioId, setScenarioId] = useState("base");
   const [minimumCashInput, setMinimumCashInput] = useState("");
   const [appliedMinimumCash, setAppliedMinimumCash] = useState<number | undefined>(undefined);
-  const [selectedBucket, setSelectedBucket] = useState<number | null>(null);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const requestId = useRef(0);
+  const [bucketSelection, setBucketSelection] = useState<{ requestKey: string; index: number | null } | null>(null);
+  const [requestStatus, setRequestStatus] = useState<{ requestKey: string; value: "ready" | "error" } | null>(null);
   const minimumCashDirty = useRef(false);
+  const requestKey = JSON.stringify([fundAccountId, scenarioId, appliedMinimumCash]);
+  const status = requestStatus?.requestKey === requestKey ? requestStatus.value : "loading";
+  const ladder = status === "ready" && result?.requestKey === requestKey ? result.ladder : null;
+  const selectedBucket = ladder && bucketSelection?.requestKey === requestKey ? bucketSelection.index : null;
+
+  function setSelectedBucket(index: number | null) {
+    setBucketSelection({ requestKey, index });
+  }
 
   useEffect(() => {
-    const currentRequest = ++requestId.current;
-    setStatus("loading");
-    getPortfolioCashLadder({ scenario: scenarioId, minimumCash: appliedMinimumCash, fundAccountId })
+    const controller = new AbortController();
+    setRequestStatus(null);
+    setBucketSelection(null);
+    getPortfolioCashLadder({ scenario: scenarioId, minimumCash: appliedMinimumCash, fundAccountId }, { signal: controller.signal })
       .then((response) => {
-        if (requestId.current === currentRequest) {
-          setLadder(response);
+        if (!controller.signal.aborted) {
+          setResult({ requestKey, ladder: response });
           if (!minimumCashDirty.current) {
             setMinimumCashInput(String(response.minimumCashThreshold));
           }
-          setStatus("ready");
+          setRequestStatus({ requestKey, value: "ready" });
         }
       })
       .catch(() => {
-        if (requestId.current === currentRequest) {
-          setStatus("error");
+        if (!controller.signal.aborted) {
+          setRequestStatus({ requestKey, value: "error" });
         }
       });
-  }, [scenarioId, appliedMinimumCash, fundAccountId]);
+    return () => controller.abort();
+  }, [scenarioId, appliedMinimumCash, fundAccountId, requestKey]);
 
   const chart = buildCashLadderChart(ladder);
-  const scenarioOptions = selectScenarioOptions(ladder);
+  const scenarioOptions = selectScenarioOptions(result?.ladder ?? null);
   const activeScenario = selectActiveScenario(ladder);
   const summaryCards = selectSummaryCards(ladder);
   const drillRows = selectBucketContributions(ladder, selectedBucket);
@@ -267,7 +281,7 @@ export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) 
             <CardHeader className="pb-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <CardTitle>Projected cash by bucket</CardTitle>
+                  <CardTitle aria-level={2}>Projected cash by bucket</CardTitle>
                   <CardDescription>
                     {ladder
                       ? `${ladder.horizonDays}-day horizon from ${formatCashLadderDate(ladder.asOfDate)} · scenario: ${activeScenario?.displayName ?? ladder.scenarioId}`
@@ -303,7 +317,7 @@ export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) 
                 <svg
                   viewBox={`0 0 ${CASH_LADDER_CHART_WIDTH} ${CASH_LADDER_CHART_HEIGHT}`}
                   className="w-full"
-                  role="img"
+                  role="group"
                   aria-label="Portfolio cash ladder: stacked projected flows per bucket with cumulative cash line and minimum-balance band"
                 >
                   {chart.yTicks.map((tick) => (
@@ -456,7 +470,7 @@ export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) 
           <div className="grid gap-4 xl:grid-cols-3">
             <Card className="xl:col-span-2">
               <CardHeader className="pb-2">
-                <CardTitle>
+                <CardTitle aria-level={2}>
                   {selectedBucketLabel ? `Contributing flows · ${selectedBucketLabel}` : "Contributing flows"}
                 </CardTitle>
                 <CardDescription>
@@ -482,7 +496,7 @@ export function CashLadderScreen({ fundAccountId }: CashLadderScreenProps = {}) 
 
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle>Scenario semantics</CardTitle>
+                <CardTitle aria-level={2}>Scenario semantics</CardTitle>
                 <CardDescription>What this scenario models versus what it assumes.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">

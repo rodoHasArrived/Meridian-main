@@ -24,6 +24,7 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
     private const int MaxTradeUpdateMessageBytes = 4 * 1024 * 1024;
 
     private readonly AlpacaOptions _options;
+    private readonly AlpacaCredentialSnapshot? _resolvedCredentials;
     private readonly IAtomicFileWriter _atomicFileWriter;
     private readonly ILogger<AlpacaTradeUpdatesClient> _logger;
     private readonly Channel<TradeUpdateEnvelope> _reports = Channel.CreateUnbounded<TradeUpdateEnvelope>(
@@ -62,10 +63,12 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
         Func<CancellationToken, Task<IReadOnlyList<ExecutionReport>>>? reconcile = null,
         TimeProvider? clock = null,
         TimeSpan? staleAfter = null,
-        IAlpacaTradeUpdateCursorStore? cursorStore = null)
+        IAlpacaTradeUpdateCursorStore? cursorStore = null,
+        AlpacaCredentialSnapshot? resolvedCredentials = null)
     {
         _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
         _options = options;
+        _resolvedCredentials = resolvedCredentials;
         _logger = logger;
         _reconcile = reconcile is null
             ? static (_, _) => Task.FromResult<IReadOnlyList<AlpacaReconciliationReport>>([])
@@ -122,6 +125,8 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
 
     public IAsyncEnumerable<ExecutionReport> Reports => ReadReportsAsync();
 
+    private AlpacaCredentialSnapshot CurrentCredentials => _resolvedCredentials ?? AlpacaCredentialEnvironment.Resolve(_options);
+
     public Task StartAsync(CancellationToken ct = default)
     {
         ObjectDisposedException.ThrowIf(Volatile.Read(ref _disposeState) != 0, this);
@@ -158,7 +163,7 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
         var identityScope = FileAlpacaTradeUpdateCursorStore.CreateIdentityScope(
             providerAccountId,
             tradingEnvironment);
-        var credentials = AlpacaCredentialEnvironment.Resolve(_options);
+        var credentials = CurrentCredentials;
 
         lock (_cursorGate)
         {
@@ -395,7 +400,7 @@ public sealed class AlpacaTradeUpdatesClient : IAsyncDisposable
             Interlocked.Increment(ref _connectionGeneration);
             try
             {
-                var credentials = _scopedCredentials ?? AlpacaCredentialEnvironment.Resolve(_options);
+                var credentials = _scopedCredentials ?? CurrentCredentials;
                 _socket = new ClientWebSocket();
                 ConfigureTransportLiveness(_socket);
                 await _socket.ConnectAsync(

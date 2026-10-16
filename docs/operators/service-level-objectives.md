@@ -207,7 +207,13 @@ series: if the process is down, it cannot export its own unavailability.
 | Runbook | [Freshness SLA violation](./operator-runbook.md#freshness-sla-violation) |
 
 The count of symbols currently outside threshold is exported separately as
-`mdc_sla_violation_symbols`; the composite score is `mdc_sla_freshness_score`.
+`mdc_sla_violation_symbols`; the composite score is `mdc_sla_freshness_score` and the monitored
+population is `mdc_sla_monitored_symbols`. Live price arrivals feed the monitor independently of
+storage acceptance. Its timer exports snapshots every 10 seconds by default, including during
+stalls. Recovery or a configured market close clears the current violation gauges at the next
+snapshot. The compliance alert requires a monitored population and includes a score of zero.
+Freshness is arrival age per symbol, not exchange-event latency or provider-specific availability;
+the existing weekday/UTC-hours policy does not include exchange holidays or daylight-saving rules.
 
 ## Storage Plane
 
@@ -254,18 +260,15 @@ threshold rather than on equality with `Open`. Per-symbol breaker counts are exp
 
 ## Objectives Awaiting Instrumentation
 
-Three metrics are declared by the exporter but never written, so objectives and alerts that
-depend on them cannot report truthfully today. This is recorded here rather than hidden because a
-metric that exists but is never updated looks identical, to a validator, to one that works.
+The processing-latency histogram is declared by the exporter but has no event-path writer.
+Its documented percentile objective therefore still lacks direct measurement.
 
 | Metric | Writer | Consequence |
 | --- | --- | --- |
-| `mdc_sla_freshness_score`, `mdc_sla_violation_symbols`, and the other `mdc_sla_*` series | `PrometheusMetrics.UpdateSlaMetrics` has no caller | SLO-DF-001 and the composite compliance objective are unmonitored. `MeridianDataFreshnessViolation` and `MeridianSlaComplianceLow` carry a `> 0` guard that suppresses them rather than firing permanently against a default-zero gauge. |
 | `mdc_processing_latency_microseconds` | `PrometheusMetrics.RecordProcessingLatency` has no caller on the event path | The histogram's buckets never fill. SLO-ING-001 is alerted from `mdc_average_latency_microseconds`, a mean rather than the documented P99. |
 
-Closing this requires wiring `DataFreshnessSlaMonitor` into the periodic metrics exporter and
-recording per-event latency on the pipeline path. Until then, treat these two objectives as
-declared but not measured, and do not read a quiet alert as evidence of health.
+Closing this requires recording per-event latency on the pipeline path. Until then, the P99
+latency objective remains declared but not directly measured by its histogram.
 
 Two further objectives are measured over the wrong window: `mdc_drop_rate_percent` and
 `mdc_validation_pass_rate_percent` are computed from process-lifetime totals, not the rolling

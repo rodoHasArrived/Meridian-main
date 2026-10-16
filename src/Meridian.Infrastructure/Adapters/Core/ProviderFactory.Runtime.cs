@@ -39,7 +39,7 @@ public sealed partial class ProviderFactory
             .AddInMemoryCollection(configuredValues.Select(value =>
                 new KeyValuePair<string, string?>(value.Name, credentials.Get(value.Name))))
             .Build();
-        return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration);
+        return ActivatorUtilities.CreateInstance<TProvider>(Services, configuration, credentials);
     }
 
     private IServiceProvider Services => _services ?? throw new InvalidOperationException(
@@ -47,15 +47,24 @@ public sealed partial class ProviderFactory
 
     private ICredentialContext WithModuleCredentials(Type implementation, ICredentialContext fallback)
     {
+        if (fallback.IsAuthoritative)
+            return fallback;
         var id = implementation.GetDataSourceMetadata()?.Id;
-        return id is not null && _moduleContexts?.TryGetValue(ProviderIdentity.NormalizeId(id), out var context) == true
-            ? new ModuleCredentialContext(context.Credentials, fallback)
+        return id is not null && _moduleContexts?.TryGetValue(ProviderIdentity.NormalizeId(id), out var context) == true &&
+            (context.HasCredentialRecord || context.Credentials.Count > 0)
+            ? new ModuleCredentialContext(context)
             : fallback;
     }
 
     private sealed class ModuleCredentialContext(
-        IReadOnlyDictionary<string, string?> credentials, ICredentialContext fallback) : ICredentialContext
+        ProviderModuleContext context) : ICredentialContext
     {
+        private readonly IReadOnlyDictionary<string, string?> _credentials = context.Credentials;
+        public bool IsAuthoritative => true;
+        public string? CredentialEnvironment => bool.TryParse(context.GetSetting("useSandbox"), out var sandbox)
+            ? sandbox ? AlpacaCredentialEnvironment.PaperEnvironment : AlpacaCredentialEnvironment.LiveEnvironment
+            : null;
+
         public string? Get(string name)
         {
             var key = name switch
@@ -67,10 +76,10 @@ public sealed partial class ProviderFactory
                 _ when name.EndsWith("_ACCESS_TOKEN", StringComparison.Ordinal) => "accessToken",
                 _ => name
             };
-            if ((credentials.TryGetValue(name, out var value) || credentials.TryGetValue(key, out value)) &&
+            if ((_credentials.TryGetValue(name, out var value) || _credentials.TryGetValue(key, out value)) &&
                 !string.IsNullOrWhiteSpace(value))
                 return value;
-            return fallback.Get(name);
+            return null;
         }
 
         public bool IsConfigured(string name) => !string.IsNullOrWhiteSpace(Get(name));
@@ -108,11 +117,14 @@ public sealed partial class ProviderFactory
         Services.GetRequiredService<QuoteCollector>(),
         ResolveAlpacaOptions());
 
-    private AlpacaOptions ResolveAlpacaOptions()
+    private AlpacaOptions ResolveAlpacaOptions() => ResolveAlpacaOptions(out _);
+
+    private AlpacaOptions ResolveAlpacaOptions(out string? credentialEnvironment)
     {
         var credentials = CreateCredentialContext<AlpacaMarketDataClient>(
             ("ALPACA_KEY_ID", FirstNonBlank(_config.Alpaca?.KeyId, _config.Backfill?.Providers?.Alpaca?.KeyId)),
             ("ALPACA_SECRET_KEY", FirstNonBlank(_config.Alpaca?.SecretKey, _config.Backfill?.Providers?.Alpaca?.SecretKey)));
+        credentialEnvironment = credentials.CredentialEnvironment;
         return ApplyAlpacaModuleSettings(_config.Alpaca ?? new AlpacaOptions()) with
         {
             KeyId = credentials.Get("ALPACA_KEY_ID") ?? string.Empty,
@@ -154,7 +166,7 @@ public sealed partial class ProviderFactory
     internal IMarketDataClient CreateRobinhoodStreamingClient() => new RobinhoodMarketDataClient(
         Services.GetRequiredService<IHttpClientFactory>(),
         Services.GetRequiredService<QuoteCollector>(),
-        Services.GetRequiredService<ILogger<RobinhoodMarketDataClient>>(), GetRobinhoodAccessToken());
+        Services.GetRequiredService<ILogger<RobinhoodMarketDataClient>>(), GetRobinhoodAccessToken() ?? string.Empty);
 
     internal IMarketDataClient CreateSyntheticStreamingClient() => new SyntheticMarketDataClient(
         Services.GetRequiredService<IMarketEventPublisher>(), _config.Synthetic);
@@ -181,20 +193,27 @@ public sealed partial class ProviderFactory
 
     internal IOptionsChainProvider CreateRobinhoodOptionsProvider() => new RobinhoodOptionsChainProvider(
         Services.GetRequiredService<IHttpClientFactory>(),
-        Services.GetRequiredService<ILogger<RobinhoodOptionsChainProvider>>(), GetRobinhoodAccessToken());
+        Services.GetRequiredService<ILogger<RobinhoodOptionsChainProvider>>(), GetRobinhoodAccessToken() ?? string.Empty);
 
     internal IBrokerageGateway CreateIbBrokerageGateway() => new IBBrokerageGateway(
         _config.IB ?? new IBOptions(), Services.GetRequiredService<ILogger<IBBrokerageGateway>>());
 
     internal IBrokerageGateway CreateAlpacaBrokerageGateway()
     {
-        var options = ResolveAlpacaOptions();
-        var stream = new AlpacaTradeUpdatesClient(options, Services.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>(), Services.GetRequiredService<IAtomicFileWriter>());
+        var options = ResolveAlpacaOptions(out var credentialEnvironment);
+        // The selected record owns its trading environment. Legacy contexts without one
+        // retain the paper default; market-data sandbox settings do not authorize live trading.
+        var useSandbox = !string.Equals(credentialEnvironment, AlpacaCredentialEnvironment.LiveEnvironment, StringComparison.OrdinalIgnoreCase);
+        var credentials = new AlpacaCredentialSnapshot(options.KeyId, options.SecretKey,
+            useSandbox ? AlpacaCredentialEnvironment.PaperEnvironment : AlpacaCredentialEnvironment.LiveEnvironment,
+            useSandbox);
+        var stream = new AlpacaTradeUpdatesClient(options, Services.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>(),
+            Services.GetRequiredService<IAtomicFileWriter>(), resolvedCredentials: credentials);
         return new AlpacaBrokerageGateway(Services.GetRequiredService<IHttpClientFactory>(), options,
-            Services.GetRequiredService<ILogger<AlpacaBrokerageGateway>>(), stream);
+            Services.GetRequiredService<ILogger<AlpacaBrokerageGateway>>(), stream, resolvedCredentials: credentials);
     }
 
     internal IBrokerageGateway CreateRobinhoodBrokerageGateway() => new RobinhoodBrokerageGateway(
         Services.GetRequiredService<IHttpClientFactory>(),
-        Services.GetRequiredService<ILogger<RobinhoodBrokerageGateway>>(), GetRobinhoodAccessToken());
+        Services.GetRequiredService<ILogger<RobinhoodBrokerageGateway>>(), GetRobinhoodAccessToken() ?? string.Empty);
 }

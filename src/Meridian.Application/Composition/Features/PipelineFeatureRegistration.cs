@@ -66,7 +66,14 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<Microsoft.Extensions.Logging.ILogger<CompositeDataQualityReadService>>()));
 
         // DataFreshnessSlaMonitor - monitors data freshness SLA compliance
-        services.AddSingleton<DataFreshnessSlaMonitor>();
+        services.AddSingleton<DataFreshnessSlaMonitor>(sp =>
+        {
+            var monitor = new DataFreshnessSlaMonitor(
+                sp.GetService<SlaConfig>(), sp.GetService<TimeProvider>());
+            monitor.OnSnapshotUpdated += PrometheusMetrics.UpdateSlaMetrics;
+            PrometheusMetrics.UpdateSlaMetrics(monitor.GetSnapshot());
+            return monitor;
+        });
 
         // JsonlStoragePolicy - controls file path generation
         services.AddSingleton<JsonlStoragePolicy>(sp =>
@@ -245,7 +252,8 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
             return new QualityMonitoringPublisher(
                 publisher,
                 sp.GetRequiredService<DataQualityMonitoringService>(),
-                sp.GetService<Microsoft.Extensions.Logging.ILogger<QualityMonitoringPublisher>>());
+                sp.GetService<Microsoft.Extensions.Logging.ILogger<QualityMonitoringPublisher>>(),
+                freshness: sp.GetRequiredService<DataFreshnessSlaMonitor>());
         });
 
         return services;

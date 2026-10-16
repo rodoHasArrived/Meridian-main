@@ -24,8 +24,9 @@ public sealed record LedgerCashFlowLine(
 
 /// <summary>
 /// Direct-method statement of cash flows derived from the period's journal activity: each entry
-/// touching a cash account attributes its net cash movement to operating, investing, or financing
-/// activity by the account type of its counterpart legs. Reconciles beginning cash to ending cash.
+/// with cash activity classifies its signed non-cash counterpart amounts as operating, investing,
+/// or financing activity. Gross inflows and outflows are retained even when the journal's cash
+/// movement nets to zero. Reconciles beginning cash to ending cash.
 /// </summary>
 public sealed record LedgerCashFlowStatement(
     DateTimeOffset PeriodStart,

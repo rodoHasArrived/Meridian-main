@@ -131,7 +131,7 @@ actually missing so the band has a plan rather than a label.
 
 | Row | Change |
 | --- | --- |
-| `PRD-109` | **Closed.** Its own remainder was "representative C#/TypeScript serialization parity beyond one fixture". `build/scripts/ci/check-contract-type-parity.py` now compares an enumerated registry on member sets, nullability and collection shape, wired into the docs lane. Of 136 name-matched record/interface pairs, 98 agree and are enforced; 38 already diverge and are recorded as a ratchet that fails once a listed pair is repaired but not promoted. |
+| `PRD-109` | **Closed.** Its own remainder was "representative C#/TypeScript serialization parity beyond one fixture". `build/scripts/ci/check-contract-type-parity.py` compares an enumerated registry on member sets, nullability and collection shape, wired into the docs lane. The [2026-10-15 parser repair and exemption reassessment](../../build/config/contracts/README.md#exemption-reassessment-2026-10-15) enforces 103 pairs and retains 37 review exemptions. Array parsing caused false differences, and remaining parser findings are not all proven contract defects; the registry still requires promotion when a listed pair agrees. |
 | `PRD-113` | **Advanced.** The overdue KV-2026-001 DotNetZip acceptance is retired with evidence (the package is absent from the tracked build, and the certification NuGet scan, which ignores suppressions, reports nothing), and the CC8 control source no longer cites a deleted workflow. Remaining: the SOC 2 readiness assessment itself, control owners, and the evidence calendar. |
 | `PRD-103` | **Confirmed closed.** Re-read against source; the tracker's evidence text is accurate. |
 

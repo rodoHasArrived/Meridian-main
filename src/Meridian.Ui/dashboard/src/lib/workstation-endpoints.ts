@@ -221,12 +221,16 @@ export const BANKING_API_ENDPOINTS = {
   transactions: "/api/banking/transactions"
 } as const;
 
-export function bankingPaymentApproveEndpoint(pendingPaymentId: string): string {
-  return routeWithParam(BANKING_API_ENDPOINTS.paymentApprove, "pendingPaymentId", pendingPaymentId);
+export function bankingPendingPaymentsEndpoint(entityId: string): string {
+  return `${BANKING_API_ENDPOINTS.pendingPayments}${queryString({ entityId })}`;
 }
 
-export function bankingPaymentRejectEndpoint(pendingPaymentId: string): string {
-  return routeWithParam(BANKING_API_ENDPOINTS.paymentReject, "pendingPaymentId", pendingPaymentId);
+export function bankingPaymentApproveEndpoint(pendingPaymentId: string, entityId: string): string {
+  return `${routeWithParam(BANKING_API_ENDPOINTS.paymentApprove, "pendingPaymentId", pendingPaymentId)}${queryString({ entityId })}`;
+}
+
+export function bankingPaymentRejectEndpoint(pendingPaymentId: string, entityId: string): string {
+  return `${routeWithParam(BANKING_API_ENDPOINTS.paymentReject, "pendingPaymentId", pendingPaymentId)}${queryString({ entityId })}`;
 }
 
 export function bankingTransactionsEndpoint(entityId?: string): string {

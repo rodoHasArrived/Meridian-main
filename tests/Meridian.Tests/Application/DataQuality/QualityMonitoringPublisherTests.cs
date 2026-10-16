@@ -104,6 +104,33 @@ public sealed class QualityMonitoringPublisherTests
         sut.SamplesDropped.Should().Be(0);
     }
 
+    [Fact]
+    public async Task TryPublish_RejectedLiveEventStillRefreshesSlaImmediately()
+    {
+        await using var quality = new DataQualityMonitoringService();
+        using var freshness = new DataFreshnessSlaMonitor(new SlaConfig { SkipOutsideMarketHours = false });
+        await using var sut = new QualityMonitoringPublisher(
+            new RecordingPublisher { Result = false }, quality, sampleCapacity: 1, freshness: freshness);
+
+        sut.TryPublish(CreateTradeEvent("SPY", 1)).Should().BeFalse();
+
+        freshness.GetSymbolStatus("SPY")!.State.Should().Be(SlaState.Healthy);
+    }
+
+    [Fact]
+    public async Task TryPublish_HeartbeatAndHistoricalEventsDoNotRefreshSla()
+    {
+        await using var quality = new DataQualityMonitoringService();
+        using var freshness = new DataFreshnessSlaMonitor();
+        await using var sut = new QualityMonitoringPublisher(new RecordingPublisher(), quality, freshness: freshness);
+        var historical = CreateTradeEvent("SPY", 1) with { Type = MarketEventType.HistoricalTrade };
+
+        sut.TryPublish(MarketEvent.Heartbeat(DateTimeOffset.UtcNow, "TEST"));
+        sut.TryPublish(historical);
+
+        freshness.GetSnapshot().TotalSymbols.Should().Be(0);
+    }
+
     private static MarketEvent CreateTradeEvent(string symbol, long sequence)
     {
         var now = DateTimeOffset.UtcNow;

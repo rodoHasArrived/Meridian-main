@@ -274,7 +274,16 @@ Alert: `MeridianDataFreshnessViolation` — severity critical, priority P1, obje
 [SLO-DF-001](./service-level-objectives.md#slo-df-001).
 
 One or more symbols have exceeded their freshness threshold. Downstream valuation and reporting
-read stale prices until this clears.
+read stale prices until this clears. Live price-event arrivals update the monitor independently of
+storage acceptance; its periodic snapshot refreshes Prometheus even when a feed stops. A fully
+stalled feed can have a freshness score of zero and still fires this alert. Resumed events clear
+exported violations on the next check (10 seconds by default).
+
+With `SkipOutsideMarketHours` enabled, weekday sessions use the configured UTC open/close times;
+weekends and closed hours suppress freshness violations and export a score of 100. This policy
+does not supply an exchange holiday calendar or daylight-saving conversion. The monitor aggregates
+activity by symbol, so another provider delivering that symbol can keep its arrival freshness healthy.
+Symbols with no observed event retain `NoData`; this is not proof that an expected subscription is live.
 
 **Probable causes:** provider stream stalled; subscription dropped; processing pipeline blocked.
 

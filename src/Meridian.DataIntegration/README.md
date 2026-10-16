@@ -193,6 +193,16 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
 
+Live ingestion now records arrival activity in `DataFreshnessSlaMonitor` through the composed
+`QualityMonitoringPublisher`, independently of the bounded quality-analysis queue or storage
+backpressure. The monitor uses an injectable clock/timer and publishes periodic snapshots even
+without new events. Application composition forwards those snapshots to Prometheus; resumed
+live trades or quotes clear violations on the next snapshot. Historical event types and
+heartbeats do not refresh live freshness. The existing weekday/UTC market-hours policy suppresses
+closed-session violations, including clearing exported violations when the session closes.
+`LiveFreshnessWorkflowTests` covers the composed publisher, timer, monitor and `/metrics` exporter;
+`deploy/monitoring/alert-rules.test.yml` covers full stalls, recovery, and market-closed snapshots.
+
 Connection-health ping cancellation and linked-token disposal execute outside the operation-state
 lock, so provider callbacks and completion cleanup can re-enter the monitor without deadlocking.
 Cleanup requested during cancellation is deferred until the active cancellation calls return;

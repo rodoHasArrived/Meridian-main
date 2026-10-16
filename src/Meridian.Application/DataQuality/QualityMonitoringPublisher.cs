@@ -31,6 +31,7 @@ public sealed class QualityMonitoringPublisher : IMarketEventPublisher, IAsyncDi
 
     private readonly IMarketEventPublisher _inner;
     private readonly DataQualityMonitoringService _quality;
+    private readonly DataFreshnessSlaMonitor? _freshness;
     private readonly ILogger<QualityMonitoringPublisher> _logger;
     private readonly Channel<MarketEvent> _samples;
     private readonly Task _consumer;
@@ -45,10 +46,12 @@ public sealed class QualityMonitoringPublisher : IMarketEventPublisher, IAsyncDi
         IMarketEventPublisher inner,
         DataQualityMonitoringService quality,
         ILogger<QualityMonitoringPublisher>? logger = null,
-        int sampleCapacity = DefaultSampleCapacity)
+        int sampleCapacity = DefaultSampleCapacity,
+        DataFreshnessSlaMonitor? freshness = null)
     {
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));
         _quality = quality ?? throw new ArgumentNullException(nameof(quality));
+        _freshness = freshness;
         _logger = logger ?? NullLogger<QualityMonitoringPublisher>.Instance;
 
         if (sampleCapacity < 1)
@@ -76,6 +79,16 @@ public sealed class QualityMonitoringPublisher : IMarketEventPublisher, IAsyncDi
     /// <inheritdoc/>
     public bool TryPublish(in MarketEvent evt)
     {
+        // Arrival freshness must not depend on the asynchronous quality sample buffer or
+        // persistence backpressure. Historical event types and heartbeats are not live prices.
+        if (Volatile.Read(ref _disposed) == 0 && evt.Type is
+            MarketEventType.Trade or MarketEventType.BboQuote or MarketEventType.Quote or
+            MarketEventType.L2Snapshot or MarketEventType.Depth or MarketEventType.AggregateBar or
+            MarketEventType.OptionQuote or MarketEventType.OptionTrade)
+        {
+            _freshness?.RecordEvent(evt.EffectiveSymbol);
+        }
+
         var accepted = _inner.TryPublish(in evt);
 
         if (evt.Type is MarketEventType.Trade or MarketEventType.BboQuote

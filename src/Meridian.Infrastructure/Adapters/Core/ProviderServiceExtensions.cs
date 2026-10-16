@@ -29,8 +29,8 @@ public static partial class ProviderServiceExtensions
     /// <param name="log">Optional logger.</param>
     /// <param name="sidecars">
     /// Optional pre-loaded sidecar credentials keyed by module ID then credential key.
-    /// Values from this snapshot take priority over env-var-mapped credentials, matching
-    /// the same resolution order used in <c>ProviderModuleSetupService.TestModuleAsync</c>.
+    /// A selected sidecar owns its whole record, including missing or empty fields;
+    /// environment mappings are used only when no sidecar record exists.
     /// Load from <c>IProviderCredentialStore</c> before calling this method.
     /// </param>
     /// <returns>The service collection for chaining.</returns>
@@ -120,9 +120,9 @@ public static partial class ProviderServiceExtensions
 
     // Resolves ProviderModulesConfig entries into ProviderModuleContext instances.
     // Resolution order (highest priority first):
-    //   1. Sidecar store values (from provider-credentials.json via IProviderCredentialStore)
-    //   2. Env-var-mapped values (settings.Credentials maps key → env var name)
-    // This matches the same priority used by ProviderModuleSetupService.TestModuleAsync.
+    //   1. Complete sidecar record (from provider-credentials.json via IProviderCredentialStore)
+    //   2. Env-var-mapped record when no sidecar was selected (key → env var name)
+    // A partial or empty selected sidecar must never borrow fields from environment mappings.
     private static IReadOnlyDictionary<string, ProviderModuleContext> BuildModuleContexts(
         Dictionary<string, ProviderModuleSettings> modules,
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? sidecars = null)
@@ -135,23 +135,22 @@ public static partial class ProviderServiceExtensions
             var canonicalId = ProviderIdentity.NormalizeId(moduleId);
             var resolvedCredentials = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
 
-            // 1. Sidecar values take priority (actual values saved by the setup UI)
-            if (canonicalSidecars is not null && canonicalSidecars.TryGetValue(canonicalId, out var sidecar))
+            var hasSidecar = canonicalSidecars?.TryGetValue(canonicalId, out _) == true;
+            // 1. Sidecar values own the complete record (actual values saved by the setup UI).
+            if (hasSidecar)
             {
-                foreach (var (key, value) in sidecar)
-                    if (!string.IsNullOrEmpty(value))
-                        resolvedCredentials[key] = value;
+                foreach (var (key, value) in canonicalSidecars![canonicalId])
+                    resolvedCredentials[key] = value;
             }
 
-            // 2. Env-var mappings fill in any keys not already satisfied by the sidecar
-            if (settings.Credentials is not null)
+            // 2. Environment mappings are an alternative record, never a field-level fallback.
+            else if (settings.Credentials is not null)
             {
                 foreach (var (key, envVarName) in settings.Credentials)
                 {
-                    if (!resolvedCredentials.ContainsKey(key))
-                        resolvedCredentials[key] = envVarName is null
-                            ? null
-                            : Environment.GetEnvironmentVariable(envVarName);
+                    resolvedCredentials[key] = envVarName is null
+                        ? null
+                        : Environment.GetEnvironmentVariable(envVarName);
                 }
             }
 
@@ -167,6 +166,7 @@ public static partial class ProviderServiceExtensions
                 Enabled = settings.Enabled,
                 Priority = settings.Priority,
                 Credentials = resolvedCredentials,
+                HasCredentialRecord = hasSidecar || settings.Credentials?.Count > 0,
                 Settings = resolvedSettings
             });
         }

@@ -7,7 +7,7 @@
  * workflow, alongside the bank evidence recorded against it.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Landmark, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,12 @@ import type { BankTransaction, PendingPayment } from "@/types/banking-payments.t
 
 type DecisionKind = "approve" | "reject";
 
-export function BankingPaymentApprovalsPanel() {
+export function BankingPaymentApprovalsPanel({ entityId }: { entityId?: string | null }) {
+  const scope = entityId?.trim() || "";
+  return <EntityPaymentApprovalsPanel key={scope} entityId={scope} />;
+}
+
+function EntityPaymentApprovalsPanel({ entityId }: { entityId: string }) {
   const [payments, setPayments] = useState<PendingPayment[]>([]);
   const [transactions, setTransactions] = useState<BankTransaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,30 +43,44 @@ export function BankingPaymentApprovalsPanel() {
   const [decision, setDecision] = useState<{ id: string; kind: DecisionKind } | null>(null);
   const [decisionText, setDecisionText] = useState("");
   const [busy, setBusy] = useState(false);
+  const active = useRef(true);
+  const readController = useRef<AbortController | null>(null);
 
   const refresh = useCallback(async () => {
+    if (!entityId || !active.current) return;
+    readController.current?.abort();
+    const controller = new AbortController();
+    readController.current = controller;
     setLoading(true);
     setError(null);
     const [paymentResult, transactionResult] = await Promise.allSettled([
-      getPendingPayments(),
-      getBankTransactions()
+      getPendingPayments(entityId, { signal: controller.signal }),
+      getBankTransactions(entityId, { signal: controller.signal })
     ]);
 
+    if (!active.current || controller.signal.aborted) return;
     setPayments(paymentResult.status === "fulfilled" ? paymentResult.value : []);
     setTransactions(transactionResult.status === "fulfilled" ? transactionResult.value : []);
     if (paymentResult.status === "rejected") {
       setError(errorMessage(paymentResult.reason));
     }
     setLoading(false);
-  }, []);
+  }, [entityId]);
 
-  useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => {
+    active.current = true;
+    void refresh();
+    return () => {
+      active.current = false;
+      readController.current?.abort();
+    };
+  }, [refresh]);
 
   const rows = useMemo(() => payments.map(buildPendingPaymentRow), [payments]);
   const summary = useMemo(() => buildPaymentQueueSummary(payments, transactions), [payments, transactions]);
 
   async function submitDecision() {
-    if (!decision) {
+    if (!entityId || !decision || busy) {
       return;
     }
 
@@ -78,16 +97,17 @@ export function BankingPaymentApprovalsPanel() {
     setNotice(null);
     try {
       const result = decision.kind === "approve"
-        ? await approvePendingPayment(decision.id, { reviewNotes: reason || null, actionOrigin: "HumanOperator" })
-        : await rejectPendingPayment(decision.id, { reason, actionOrigin: "HumanOperator" });
+        ? await approvePendingPayment(decision.id, entityId, { reviewNotes: reason || null, actionOrigin: "HumanOperator" })
+        : await rejectPendingPayment(decision.id, entityId, { reason, actionOrigin: "HumanOperator" });
+      if (!active.current) return;
       setNotice(`Payment ${result.pendingPaymentId} is now ${buildPendingPaymentRow(result).statusLabel}.`);
       setDecision(null);
       setDecisionText("");
       await refresh();
     } catch (reason_) {
-      setError(errorMessage(reason_));
+      if (active.current) setError(errorMessage(reason_));
     } finally {
-      setBusy(false);
+      if (active.current) setBusy(false);
     }
   }
 
@@ -105,7 +125,7 @@ export function BankingPaymentApprovalsPanel() {
               Payment intents awaiting review, with the bank evidence already recorded against them.
             </CardDescription>
           </div>
-          <Button size="sm" variant="outline" onClick={() => void refresh()}>
+          <Button size="sm" variant="outline" disabled={!entityId} onClick={() => void refresh()}>
             <RefreshCcw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
@@ -142,7 +162,7 @@ export function BankingPaymentApprovalsPanel() {
             {rows.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-4 text-center text-muted-foreground">
-                  {loading ? "Loading payment intents…" : summary.emptyMessage}
+                  {!entityId ? "Select an entity to review its payment intents." : loading ? "Loading payment intents…" : summary.emptyMessage}
                 </td>
               </tr>
             ) : rows.map((row) => (

@@ -30,7 +30,9 @@ Lookup surfaces (what credentials exist, names, and binding paths) are maintaine
 
 Catalog-managed providers use Meridian's encrypted credential store. A stored/scoped record owns
 its complete credential set; missing fields are not silently filled from another account's
-environment or configuration. Environment fallback is a Development/Test or explicitly enabled
+environment or configuration. Provider construction and subsequent credentialed requests retain
+that selection, including partial records and scoped deletions. Rotate the record and construct a
+new provider connection to apply replacement credentials. Environment fallback is a Development/Test or explicitly enabled
 migration path and is disabled by default for packaged/customer builds. See
 [environment controls](../reference/environment-variables.md).
 
