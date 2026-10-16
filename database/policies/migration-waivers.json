@@ -61,12 +61,6 @@
       "review_after": "2027-04-13"
     },
     {
-      "path": "src/Meridian.Storage/SecurityMaster/Migrations/040_security_master_governance_events.sql",
-      "rule_id": "migration-truncate",
-      "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects deletion of the append-only governance event log; no data is truncated. PostgreSQL regression coverage attempts update, delete and truncate and verifies the events are retained.",
-      "review_after": "2027-04-15"
-    },
-    {
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/038_security_master_alias_revisions.sql",
       "rule_id": "migration-truncate",
       "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects deletion of the append-only alias revision history; no data is truncated. PostgreSQL regression coverage attempts update, delete, and truncate and verifies that the revision is retained.",
