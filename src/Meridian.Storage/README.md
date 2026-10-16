@@ -48,7 +48,7 @@ opening-age tax rules from silently certifying a short cover.
 
 Security Master migration `040_security_master_governance_events.sql` adds the append-only
 `security_governance_events` log (streams `OperatorOverrides`, `Aliases`, `ProjectionRebuild`);
-triggers refuse update, delete and truncate. Override patches and decisions, alias revisions and
+triggers refuse update and delete. Override patches and decisions, alias revisions and
 projection batch rebuilds append in the same transaction as the change, and an override reviewer
 cannot approve values they staged. The event store and projection store join
 `PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap and

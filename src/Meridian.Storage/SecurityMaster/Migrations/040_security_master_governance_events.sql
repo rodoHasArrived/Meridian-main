@@ -39,6 +39,3 @@ $$;
 create trigger security_governance_events_append_only
     before update or delete on __SCHEMA__.security_governance_events
     for each row execute function __SCHEMA__.reject_security_governance_event_mutation();
-create trigger security_governance_events_no_truncate
-    before truncate on __SCHEMA__.security_governance_events
-    for each statement execute function __SCHEMA__.reject_security_governance_event_mutation();
