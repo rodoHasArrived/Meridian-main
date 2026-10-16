@@ -6202,7 +6202,8 @@ Meridian-main
 │   │   │   │   ├── 002_instrument_position_projections.sql
 │   │   │   │   ├── 003_instrument_position_projection_guards.sql
 │   │   │   │   ├── 004_asset_accounting_event_spine.sql
-│   │   │   │   └── 005_asset_operations_write_events.sql
+│   │   │   │   ├── 005_asset_operations_write_events.sql
+│   │   │   │   └── 006_asset_operations_write_events_truncate_guard.sql
 │   │   │   ├── AssetOperationsMigrationRunner.cs
 │   │   │   ├── FileAccountCashForecastStore.cs
 │   │   │   ├── IAssetAccountingEventProjectionStore.cs
@@ -6533,7 +6534,8 @@ Meridian-main
 │   │   │   │   ├── 037_security_master_close_price_snapshots.sql
 │   │   │   │   ├── 038_security_master_alias_revisions.sql
 │   │   │   │   ├── 039_security_master_event_payload_version.sql
-│   │   │   │   └── 040_security_master_governance_events.sql
+│   │   │   │   ├── 040_security_master_governance_events.sql
+│   │   │   │   └── 041_security_master_governance_events_truncate_guard.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs

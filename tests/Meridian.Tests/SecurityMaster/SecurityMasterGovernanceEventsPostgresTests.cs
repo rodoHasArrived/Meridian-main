@@ -98,7 +98,8 @@ public sealed class SecurityMasterGovernanceEventsPostgresTests : IClassFixture<
         foreach (var mutation in new[]
                  {
                      $"update {_fixture.Options.Schema}.security_governance_events set actor = 'rewrite' where security_id = @id",
-                     $"delete from {_fixture.Options.Schema}.security_governance_events where security_id = @id"
+                     $"delete from {_fixture.Options.Schema}.security_governance_events where security_id = @id",
+                     $"truncate {_fixture.Options.Schema}.security_governance_events"
                  })
         {
             await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);

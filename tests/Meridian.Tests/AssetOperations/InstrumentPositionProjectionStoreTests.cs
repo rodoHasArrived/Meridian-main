@@ -110,10 +110,21 @@ public sealed class PostgresInstrumentPositionProjectionStoreTests : IAsyncLifet
             reader.GetString(1).Should().Be(InstrumentPositionProjectionFixture.Approval.Actor);
         }
 
-        await using var delete = new Npgsql.NpgsqlCommand(
-            $"delete from \"{_options.Schema}\".asset_operations_write_events", connection);
-        var act = () => delete.ExecuteNonQueryAsync();
-        await act.Should().ThrowAsync<Npgsql.PostgresException>();
+        foreach (var mutation in new[]
+                 {
+                     $"delete from \"{_options.Schema}\".asset_operations_write_events",
+                     $"truncate \"{_options.Schema}\".asset_operations_write_events"
+                 })
+        {
+            await using var refused = new Npgsql.NpgsqlCommand(mutation, connection);
+            var act = () => refused.ExecuteNonQueryAsync();
+            await act.Should().ThrowAsync<Npgsql.PostgresException>().Where(e => e.SqlState == "55000", mutation);
+        }
+
+        await using var retained = new Npgsql.NpgsqlCommand(
+            $"select count(*) from \"{_options.Schema}\".asset_operations_write_events where security_id = @id", connection);
+        retained.Parameters.AddWithValue("id", InstrumentPositionProjectionFixture.SecurityId);
+        ((long)(await retained.ExecuteScalarAsync())!).Should().Be(2, "refused mutations leave the write events in place");
     }
 
     [AssetOperationsDatabaseFact]
