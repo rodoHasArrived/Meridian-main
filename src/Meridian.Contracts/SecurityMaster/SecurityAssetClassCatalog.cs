@@ -28,7 +28,7 @@ public static class SecurityAssetClassCatalog
             AssetClass: "Equity",
             LotUnit: SecurityLotUnitKind.Shares,
             CashFlowBehavior: SecurityCashFlowBehavior.Dividends,
-            ProjectionKind: SecurityTermsProjectionKind.Specialized,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: true,
             PreferredIdentifierKinds:
             [
@@ -65,7 +65,7 @@ public static class SecurityAssetClassCatalog
             AssetClass: "Future",
             LotUnit: SecurityLotUnitKind.Contracts,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.Specialized,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             LotMultiplierTermKey: "multiplier",
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
@@ -102,7 +102,7 @@ public static class SecurityAssetClassCatalog
             AssetClass: "FxSpot",
             LotUnit: SecurityLotUnitKind.CurrencyAmount,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.Specialized,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -250,7 +250,7 @@ public static class SecurityAssetClassCatalog
             AssetClass: "Swap",
             LotUnit: SecurityLotUnitKind.Notional,
             CashFlowBehavior: SecurityCashFlowBehavior.SwapLegs,
-            ProjectionKind: SecurityTermsProjectionKind.Specialized,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -356,7 +356,7 @@ public static class SecurityAssetClassCatalog
             AssetClass: "Commodity",
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.Specialized,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             LotMultiplierTermKey: "contractSize",
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:

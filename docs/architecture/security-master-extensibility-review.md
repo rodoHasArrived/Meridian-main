@@ -5761,3 +5761,11 @@ tracked with priority 1's registry work below.
 The governance log is a separate stream from `security_events`, so governance activity never
 advances the economic stream version that amendments are fenced on. `ISecurityGovernanceEventReader`
 reads it per security.
+
+### Priority 3 — hand-written projection writers
+
+| Finding | What landed |
+| --- | --- |
+| Most asset classes write their typed tables through hand-written code | `SecurityTermsProjectionColumn.Derived` lets a descriptor column compute its value from the whole record (common terms, fallback chains, derived states) while the registry owns the gate, delete branch, identity spine and generated upsert. Equity, FxSpot, Future, Swap and Commodity moved onto descriptors. Their derived columns call the same readers the writers used. Nine of the eleven original writers are now declarative, and the catalog's `ProjectionKind` says so (locked by `SecurityAssetClassRegistryCoverageTests`). |
+| Each move needs a regression test | `SpecializedProjectionGoldenTests` is a PostgreSQL golden-row matrix covering gate hits and misses, stale rows cleared on a gate miss or class change, verbatim and normalized strings, common-terms columns, derived columns and wrong JSON kinds. It passed against the hand-written writers before they were deleted, and the descriptors are held to the same rows. |
+| Still specialized | Bond and Option. Option's tables are keyed by contract symbol and option chain, not by security; three of Bond's four tables carry no identity spine, and Bond keeps a legacy nested-coupon fallback. Both keep their existing writer tests. |
