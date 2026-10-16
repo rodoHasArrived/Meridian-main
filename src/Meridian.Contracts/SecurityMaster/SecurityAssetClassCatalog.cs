@@ -269,6 +269,8 @@ public static class SecurityAssetClassCatalog
             PreferredIdentifierKinds:
             [
                 SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.LoanX,
+                SecurityIdentifierKind.Clip,
                 SecurityIdentifierKind.PermId,
                 SecurityIdentifierKind.Lei,
                 SecurityIdentifierKind.ProviderSymbol
@@ -285,6 +287,7 @@ public static class SecurityAssetClassCatalog
             PreferredIdentifierKinds:
             [
                 SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.Clip,
                 SecurityIdentifierKind.Cusip,
                 SecurityIdentifierKind.Isin,
                 SecurityIdentifierKind.Figi,

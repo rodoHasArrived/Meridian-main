@@ -48,6 +48,8 @@ type SecurityIdentifierSnapshot(identifier: Identifier) =
         | IdentifierKind.PermTicker -> "PermTicker"
         | IdentifierKind.Ric -> "Ric"
         | IdentifierKind.Cik -> "Cik"
+        | IdentifierKind.LoanX -> "LoanX"
+        | IdentifierKind.Clip -> "Clip"
 
     member _.Kind = kind
     member _.Value = identifier.Value

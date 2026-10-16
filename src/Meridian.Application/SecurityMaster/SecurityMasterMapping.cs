@@ -208,6 +208,8 @@ internal static class SecurityMasterMapping
             SecurityIdentifierKind.PermTicker => IdentifierKind.PermTicker,
             SecurityIdentifierKind.Ric => IdentifierKind.Ric,
             SecurityIdentifierKind.Cik => IdentifierKind.Cik,
+            SecurityIdentifierKind.LoanX => IdentifierKind.LoanX,
+            SecurityIdentifierKind.Clip => IdentifierKind.Clip,
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unsupported security identifier kind.")
         };
 
