@@ -76,7 +76,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         await AssertCurrentBasisReportAsync(database.JournalStore, scenario, partial.Command, partial.Relief);
 
         // A new store instance must reproduce the retained posting before it can finish relief.
-        var restarted = new PostgresLedgerJournalStore(database.Options);
+        var restarted = database.RestartJournalStore();
         var auditBeforeReplay = (await restarted.VerifyLedgerEventAuditAsync()).ChainedEvents;
         var recovered = await restarted.GetAtomicTaxLotPostingAsync(partial.Command.MutationBatchId);
         recovered.Should().NotBeNull();
@@ -214,7 +214,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             [invalid.Journal.Entry.JournalEntryId])).Should().BeEmpty();
         (await database.JournalStore.VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBefore);
 
-        var restarted = new PostgresLedgerJournalStore(database.Options);
+        var restarted = database.RestartJournalStore();
         var retried = await restarted.AppendAssetPostingAsync(disposal.Command);
         retried.IsExactReplay.Should().BeFalse();
         retried.Mutations.Should().HaveCount(2);
@@ -247,7 +247,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         AssertCurrentBasisConservation(originalTransaction, originalFunctional, partial.Relief, after);
         await AssertCurrentBasisReportAsync(database.JournalStore, scenario, partial.Command, partial.Relief);
 
-        var restarted = new PostgresLedgerJournalStore(database.Options);
+        var restarted = database.RestartJournalStore();
         var closing = BuildCurrentBasisDisposal(scenario, after, LedgerTaxLotReliefMethod.Fifo,
             after.Sum(static lot => lot.OpenQuantity), "current-basis:decimal:closing");
         await restarted.AppendAssetPostingAsync(closing.Command);
@@ -299,6 +299,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         await database.JournalStore.SaveLedgerBookAsync(new LedgerBookRecord(ledgerBookId,
             "fund-current-basis", Guid.NewGuid(), FundStructureNodeKindDto.Fund,
             "Current Basis Book", "USD", openedAt, openedAt));
+        await database.SeedLotReferenceAuthorityAsync(ledgerBookId, TestSecurityId, TestBookPositionId, "EUR");
         var period = await database.JournalStore.SavePeriodAsync(new LedgerAccountingPeriod(Guid.NewGuid(),
             ledgerBookId, 2026, 5, "2026-05", new DateOnly(2026, 5, 1), new DateOnly(2026, 5, 31),
             "Open", openedAt, ClosedAt: null, Version: 0), expectedVersion: 0);
@@ -395,7 +396,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 debitAccount: "Cash", creditAccount: AverageCostAccount.Name, amount: relief.FunctionalCostBasis),
             sourceEventId, idempotencyKey, scenario.Period.Version, AtomicTaxLotMutationKind.Disposal,
             [evidence], disposalSelections: selections, reliefMethod: method.ToString(),
-            policyRevision: policyRevision ?? CurrentBasisPolicyRevision(method));
+            policyRevision: policyRevision ?? CurrentBasisPolicyRevision(method), referenceVersions: new(1, 1));
         return (command, relief);
     }
 

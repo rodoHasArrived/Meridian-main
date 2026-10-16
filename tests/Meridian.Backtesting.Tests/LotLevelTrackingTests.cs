@@ -206,7 +206,7 @@ public sealed class LotLevelTrackingTests
         }
 
         var originalLots = portfolio.GetOpenLots(symbol);
-        var originalQuantity = originalLots.Sum(static lot => lot.Quantity);
+        var originalQuantity = (long)originalLots.Sum(static lot => lot.Quantity);
         var reliefQuantity = BoundedLong(quantitySeed, 1, originalQuantity);
         var targetLotId = lotMethod == LotSelectionMethod.SpecificId
             ? originalLots[(int)BoundedLong(targetLotSeed, 0, originalLots.Count - 1)].LotId

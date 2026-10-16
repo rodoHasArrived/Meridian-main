@@ -6,10 +6,15 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Wpf
+
+Offline retention recognizes market JSONL/parquet files only from explicit event-type names and supported storage layouts. Unknown files and the workstation Evidence Vault remain retained and appear as skipped in the dry run, even when aged evidence shares the market-data root. Depth files use their own policy cutoff.
+
+The loan summary lists principal amounts by their recorded currency; mixed, unspecified, and
+unavailable amounts cannot become a dollar-denominated scalar summary.
 
 Accounting Configure shows recurring occurrences beside retained journal drafts through
 `WorkstationRecurringJournalQueueClient`, using the same server contract as the browser.
@@ -899,6 +904,13 @@ Accounting, Portfolio, Reporting, and Settings/Admin cockpit home decisions bind
 collections through `WorkspaceDecisionQueueControl`, preserving existing page tags while reusing
 `WorkspaceTone` queue-card and badge semantics for summary, approval, exception, and delivery
 decisions, including primary, secondary, and blocked cockpit actions.
+
+The Security Master edit view labels the `LoanX` and `Clip` identifier kinds, and the Strategy
+feature module registers the canonical write scope next to the Security Master service.
+
+The desktop passport editor loads the asset-class registry definition and offers a term picker,
+a choice list for vocabulary and convention terms, and the shared `SecurityAssetTermFormModel`
+pre-check; the free-text field path remains available.
 
 ## Diagrams
 

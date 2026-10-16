@@ -11,6 +11,30 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Ui.Shared
 
+Late-adjustment review requires the authenticated operator's built-in role or named role profile
+to match the review role retained on the adjustment's materiality policy, alongside ledger mutation
+permission and an independent requester/reviewer. Administrative mutation permission does not
+substitute for that review role. Daily valuation carries its entity through ledger carrying-value
+lookup, retained evidence, draft dimensions, intake, and lifecycle validation.
+Previously retained entity-scoped valuation drafts without entity-bound mark evidence require a
+fresh valuation assessment before approval or posting.
+
+`LedgerEndpoints.AccountOversight` provides shared account-owned ledger-book routes for durable
+cash cases, retained replay/assignment, independently approved close-price sets and cash forecasts.
+Authenticated tenant/company and retained book ownership establish exact scope; client actor and
+tenant assertions cannot establish authority. `AccountCashForecastEvidenceAdapter` supports typed
+balance/flow/FX JSON from independently reviewed account Evidence Vault documents. It verifies
+original bytes, hashes, review provenance, version and every economic field before capture;
+unsupported inputs fail closed. File histories require explicit administrative provisioning.
+See [bounded account oversight](../../docs/operators/account-oversight.md) for route and source
+format contracts. These seams do not grant accounting-close or payment authority.
+The browser receives exact decimal text through this HTTP transport without changing retained
+domain digests. Scoped access context supplies current session capabilities; close-price history
+loads all exact account/book/date versions after durable evidence validation.
+Close-price capture accepts an optional stable request identity. Identical retries recover the
+retained snapshot before price evaluation; changing its immutable command conflicts. The HTTP
+actor remains session-derived on both initial capture and recovery.
+
 Security Master override PATCH and decision endpoints return HTTP 409 when another instance
 advances the durable workbench generation. The governed workbench endpoints use their existing
 conflict response for the same condition. Operators must reload before retrying the edit or review.
@@ -568,7 +592,8 @@ institution and external-account evidence match the statement source. `AdminMain
 override account scope; other callers require account-scoped `ManageDirectLending` authorization.
 `SecurityMasterWorkbenchQueryService` is published under
 `Meridian.Ui.Shared.Services` and composes Application Security Master services into the shared
-workstation drill-in projection. `FamilyOfficeReadService` composes the family-office
+workstation drill-in projection. The Security Master alias upsert route accepts corrections to an
+existing alias ID as a new revision; re-pointing an alias at a different security returns 409. `FamilyOfficeReadService` composes the family-office
 workstation overview from fund-structure, fund-account, reconciliation, and strategy-run read
 services, and emits degraded guidance when linked accounts cannot provide balances, liabilities,
 reconciliation state, or evidence completeness. Workstation endpoint registration is split by domain through
@@ -1549,6 +1574,10 @@ accounting-record launch lists.
 
 Evidence Vault packet exports stream retained local artifacts through a bounded 64 KiB read
 window into private staging while the canonical SHA-256 primitive hashes the same bytes. The
+copy boundary buffers smaller digest reads so a source that fills the window does not incur extra
+staging writes and durable quota checkpoints at the hash implementation's read size. Each actual
+staging write still reserves capacity, flushes its bytes, and reconciles the reservation before
+the next source read; partial reads retain the same accounting and cancellation behavior. The
 100 MiB per-artifact limit applies to bytes actually read, including growth after the initial
 file-size check. Source hash mismatches, read failures, and cancellation abort the package.
 Artifacts, manifest, and index are staged before publication; no-overwrite moves publish the
@@ -2675,6 +2704,17 @@ read a park as a failure and resubmit — each resubmission mints a new client o
 cross-run positions the Portfolio workspace reports, valuing them at live marks only while those
 marks are fresh, reserving accepted-but-unfilled orders, and reporting option reference prices per
 contract while keeping the contract multiplier in exposure totals.
+
+`/api/security-master/asset-classes` and `/api/security-master/asset-classes/{assetClass}`
+return the Security Master asset-class registry (fields, validation, projection, lot and
+cash-flow behaviour, editor hints) for schema-driven forms. Override decisions return 403 when the
+reviewer staged the values being approved.
+
+Security Master also serves `GET /api/security-master/{securityId}/income-cash-flows`
+(declared dividends and distributions, with `from`/`to` pay-date bounds),
+`GET /api/security-master/{securityId}/factor-history`, and
+`PUT /api/security-master/{securityId}/terms/{blockKey}` (governed like the generic amend route;
+400 for an undeclared block or JSON kind).
 
 ## Diagrams
 

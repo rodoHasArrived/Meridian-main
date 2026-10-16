@@ -6,10 +6,67 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-13
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Contracts
+
+`LoanPortfolioSummaryDto.CurrencyTotals` carries separately denominated lending and collateral
+balances. `TotalCurrency` identifies a single-currency scalar summary; mixed-currency legacy
+scalar totals are `null`. These amounts do not imply an FX conversion. Loan currency and status
+enums follow the host JSON options; browser wire normalization accepts their numeric values.
+Amounts for `Other` or undefined currency values are unavailable, including within currency groups,
+because those values do not establish a comparable denomination.
+
+The class-aware economic replay bridge refuses Equity fallback when the legacy flat payload is
+missing. The old economic family cannot reliably distinguish common, preferred and convertible
+preferred shares or recover their complete terms. Retained flat payloads remain authoritative and replay unchanged;
+historical incomplete events require authoritative terms recovery.
+
+`GetRecordedByIdentifierAsOfAsync` separates the recording cutoff from identifier validity and
+resolves only retained event identifiers and alias revisions. It returns no match for missing or
+ambiguous historical identity and never substitutes current projections. Compatibility lookups can
+use later alias corrections. Backfilled pre-038 aliases have an explicit history-availability
+boundary; omission before that boundary is missing evidence, not proof that the alias never existed.
+These timestamps supply eligibility among rows read now, not historical commit visibility or a
+transaction snapshot. A later commit can change a repeated query with the same cutoffs.
+
+`SecurityTermsEnvelope` stamps asset-specific terms with `termsFormat` (flat, economic or custom
+profile) and a per-asset-class `assetClassTermsVersion` taken from `SecurityAssetClassCatalog`.
+Terms newer than the declared class version fail loudly; economic modules a flat conversion cannot
+express travel under the reserved `retainedEconomicTerms` key and fold back on the next economic
+rebuild. Reserved envelope keys are rejected as user-editable term fields.
+`SecurityMasterEventEnvelope` carries `PayloadType`/`PayloadVersion`;
+`SecurityMasterEventPayloads.EnsureReplayable` refuses unknown or newer payloads.
+
+`SecurityMasterCanonicalWithdrawn` records when independently retained registry evidence keeps an
+internal canonical key after Security Master withdraws its input authority. That spelling no longer
+resolves as a canonical input; independent identifiers and provider mappings remain available.
+The Security Master reconciliation writer also uses this state when no unique current primary
+exists, retaining current mappings through a hidden internal carrier. Ordinary registration ignores
+caller-supplied Security Master ownership and withdrawal flags.
+
+`SecurityMasterClosePrices` describes immutable account/book/UTC valuation-date close-price
+sets, retained selection observations and quote units, supported overrides, visible blockers,
+linked correction versions and independent reviewer approvals bound to a snapshot digest.
+`AccountCashForecastDtos` retains account/book-scoped settled balances, expected/observed flow
+versions, separate economic/settlement/receipt dates and declared dated FX direction. Forecast
+certification conveys cash evidence reconciliation and never payment authority. These shared
+contracts use dedicated source-generated JSON contexts. See
+[account oversight evidence](../../docs/domain/account-oversight-evidence.md).
+Close-price evidence validation retains a dispersion blocker when its derived percentage exceeds
+the decimal range, so immutable retention and approval checks agree on unsupported calculations.
+An optional close-price creation `RequestId` binds the snapshot identity to a normalized command.
+`CreationCommandDigest` and `RequestedKnowledgeAsOf` let durable validation reproduce that command,
+including whether its knowledge cutoff was explicit or chosen at capture. Absent metadata is
+omitted from canonical JSON, preserving legacy snapshot and approval digests.
+
+Canonical acquisition facts and lot instructions retain an explicit `OpenLotDirection` while
+quantities remain non-negative. Historical `Long` is the omitted zero value, preserving existing
+JSON and receipt fingerprints; `Short` is serialized explicitly. The contract can describe a short
+lot for calculation and shadow comparison, but current posting instructions, amortization,
+capital returns and successor transformations refuse short accounting until their direction-aware
+authority is implemented and reviewed.
 
 `AssetAcquisitionTermsCompletionDto` is an optional supplement on
 `PostPostingRuleJournalCandidateRequestDto`. It supplies only the missing amortization method and
@@ -64,8 +121,16 @@ drafting and posting. Only the exact reversal's reviewed Security Master evidenc
 exception; acquisition, event and approval evidence keep their existing date requirements.
 Constant yield counts contractual calendar coupons for monthly, quarterly, semiannual and annual
 schedules, including month ends and leap dates. Day-count fractions interpolate within the current
-coupon period; they do not determine the number of coupons. Odd schedules and schedules exceeding
-1200 periods are refused, and retained yield must reconcile to the acquisition price even at maturity.
+coupon period; they do not determine the number of coupons. Calculation model v2 refuses odd
+schedules and schedules exceeding 1200 periods, and retained yield must reconcile to the acquisition
+price even at maturity. The public `FaceValueLot.ConstantYieldAmortizedBasisAsOf` kernel additionally
+supports an odd (short) first period for mid-period acquisitions: coupons are generated backward from
+maturity, the stub is discounted with its day-count period fraction, the clean acquisition price
+excludes purchased accrued interest (`coupon × (1 − f)`), and a retained yield must reconcile through
+the same odd-period pricing. Its 30E/360 ISDA fractions use contractual maturity for both the stub
+and reference-period endpoints, preserving the final-February termination exception while leaving
+intermediate February coupons under ordinary month-end rules. Odd last periods are not modelled. Posting odd-first schedules requires a
+new governed calculation version.
 New instructions identify calculation model v2. Retained JSON without a calculation version keeps
 the original v1 calculation and serialized shape for receipt replay; unposted legacy instructions
 require a fresh preview. Unknown calculation versions are refused.
@@ -169,6 +234,14 @@ Every successor must receive positive functional
 carrying basis before journal drafting, including the final residual. Currency-specific allocations
 share `Ledger/CurrencyMinorUnits` with the corporate-action projector, including four decimals for
 CLF and UYW; original acquisition and current carrying bases retain independent currency rounding.
+
+`OpenLotCapitalReturnInstructionDto` retains the reviewed return-of-capital projection, exact
+canonical lot and source reference version/hash. It binds the approved carrying reduction to
+functional basis and the independently reviewed `BasisAmount` to acquisition-currency basis;
+neither value is a tax-basis determination or a new FX translation. The transition preserves
+quantity, acquisition facts and holding date and refuses reductions beyond either remaining basis.
+Optional capital-return fields on the event spine, posting command and basis adjustment are
+omitted from historical JSON when absent.
 
 `AssetLotMutationInstructionDto.DisposalSalePrice` optionally retains the original disposal quote
 through governed drafting and posting. It is omitted from JSON when absent so existing retained
@@ -1642,7 +1715,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 Canonical symbol registries retain their stable read/write interfaces. Implementations that can
 apply a startup seed batch atomically opt into `ICanonicalSymbolRegistryMigrationWriter`; callers
 must require that additive capability rather than widening the general registry contract or
-falling back to per-definition writes.
+falling back to per-definition writes. Security Master seeding similarly requires the additive
+`ICanonicalSymbolRegistrySecurityMasterWriter` capability. It supplies an explicit security-ID scope
+and the current active definitions, replacing only that source's aliases and non-override provider
+mappings while preserving independent authority.
 
 `WorkstationWorkspaceCatalog` classifies browser workspaces by product maturity only:
 `Preview`, `Setup`, or `Available`. Execution environment (`Demo`, `Paper`, or `Live`) and runtime
@@ -1664,6 +1740,33 @@ operating fund account before the execution layer routes a broker order.
 `TradingLiveOperationRequirementDto` extend the trading operator readiness contract with broker
 open-order reconciliation posture and explicit live-operation checklist evidence for the bounded
 W7 live-readiness gate.
+
+### Security Master asset-class registry
+
+`SecurityAssetClassRegistry` composes, per asset class, the catalog entry (lot unit, cash-flow
+behaviour, projection kind, preferred identifiers, terms version, multiplier key), the term
+schema, validators and editor hints. `SecurityAssetClassRegistryCoverageTests` fails when an F#
+`SecurityKind` case has no definition. The registry backs `/api/security-master/asset-classes`.
+`SecurityTermConventions` types day count, settlement method and option right as canonical
+vocabularies. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
+one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `SecurityIdentifierKind` adds
+`LoanX` (`LX` plus six digits) and `Clip` (nine alphanumerics).
+
+### Security Master income, curves, factors and corporate-action terms
+
+`SecurityIncomeCashFlowProjector` builds the declared income schedule (dividends, special
+dividends, fund distributions with a typed `distributionComponent`, returns of capital) from
+effective corporate actions and lists unschedulable distributions as gaps.
+`SecurityForwardCurve` and `ISecurityForwardCurveProvider` supply per-index forward fixings for
+floating legs. `SecurityFactorHistoryProjector` merges the declared factor schedule, paydown
+factors and the dated scalar factor into one dated history with same-day conflicts.
+`CorporateActionTerms.From` reads a `CorporateActionDto` into its event family's typed terms
+(cash distribution, split, exchange, redemption, principal paydown and others); a coverage test
+holds every catalog event type to a family. `SecurityTermBlocks` lists each class's nested blocks
+from the registry. `SecurityAssetTermRole` marks operational fields (pricing sources) apart from
+economics. `SecurityAssetTermFormModel` holds the schema-driven editor rules. The unused
+`BondAccountingElectionsDto` and `BondYieldAdjustmentMethod` are retired; accounting elections live
+on the lot.
 
 ## Validation
 

@@ -156,7 +156,9 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var successor = created.Mutations.Single(mutation => mutation.LotBefore is null).LotAfter;
         var openingDate = successorCommand.CorporateAction!.Projection.EconomicEvent!.EffectiveDate;
         successor.AcquiredDate.Should().BeBefore(openingDate);
-        var early = SuccessorDisposalCommand(successorCommand, successor, openingDate.AddDays(-1));
+        var referenceVersions = new AtomicLotReferenceVersions((await fixture.Securities.GetProjectionAsync(successor.SecurityId))!.Version,
+            (await fixture.Positions.GetBookPositionAsync(successor.BookPositionId))!.Version);
+        var early = SuccessorDisposalCommand(successorCommand, successor, openingDate.AddDays(-1), referenceVersions);
 
         var fail = () => fixture.Restart().AppendAssetPostingAsync(early);
         await fail.Should().ThrowAsync<LedgerValidationException>().WithMessage("*authoritative open tax lots*");
@@ -167,7 +169,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         (await fixture.Store.ListOpenTaxLotsByAssetScopeAsync(fixture.BookId, successor.SecurityId,
             successor.BookPositionId, openingDate.AddDays(-1))).Should().BeEmpty();
 
-        var onOpening = SuccessorDisposalCommand(successorCommand, successor, openingDate);
+        var onOpening = SuccessorDisposalCommand(successorCommand, successor, openingDate, referenceVersions);
         var disposed = await fixture.Restart().AppendAssetPostingAsync(onOpening);
         disposed.MutatedLots.Should().ContainSingle().Which.OpenQuantity.Should().Be(0m);
         (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Should().HaveCount(2);
@@ -176,7 +178,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     }
 
     private static AtomicTaxLotJournalCommand SuccessorDisposalCommand(AtomicTaxLotJournalCommand opening,
-        LedgerTaxLotRecord successor, DateOnly effectiveDate)
+        LedgerTaxLotRecord successor, DateOnly effectiveDate, AtomicLotReferenceVersions referenceVersions)
     {
         var id = Guid.NewGuid();
         var sourceId = Guid.NewGuid();
@@ -201,7 +203,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             opening.ExpectedPeriodVersion, AtomicTaxLotMutationKind.Disposal, opening.RetainedEvidence,
             disposalSelections: [new(successor.TaxLotRecordId, successor.LotId, successor.Version, successor.OpenQuantity,
                 successor.OpenQuantity, 0, successor.EvidenceRef!, successor.UnitCost, canonical.OpenFunctionalCostBasis)],
-            reliefMethod: "Fifo", policyRevision: "amort-fifo-v1");
+            reliefMethod: "Fifo", policyRevision: "amort-fifo-v1", referenceVersions: referenceVersions);
     }
 
     private static async Task SeedPublicationPositionAsync(IInstrumentPositionProjectionStore store,
@@ -221,7 +223,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             request.EconomicEvent.EventVersion, 1, request.EconomicEvent.EffectiveDate, request.EventAmount, request.Currency,
             request.Scope, request.EconomicEvent, request.ProjectionLineage, request.RetainedEvidence,
             [new(AssetAccountingLifecycleStageDto.Expected, at, "projector", [evidence], "expected-successor")],
-            CorporateAction: command.CorporateAction);
+            CorporateAction: command.CorporateAction, CapitalReturn: command.CapitalReturn);
         var projected = expected with
         {
             SpineVersion = 2,

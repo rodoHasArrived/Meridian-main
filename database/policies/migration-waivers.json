@@ -55,6 +55,30 @@
       "review_after": "2027-03-22"
     },
     {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/037_security_master_close_price_snapshots.sql",
+      "rule_id": "migration-truncate",
+      "reason": "Requires independent human schema/storage review. The lexical TRUNCATE matches declare BEFORE TRUNCATE rejection triggers that preserve immutable close-price snapshots and approval receipts. No truncation or data removal is executed by this migration. Preserve both guards; PostgreSQL regression coverage attempts update, delete, and truncate and verifies that the retained approved snapshot remains replayable.",
+      "review_after": "2027-04-13"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/041_security_master_governance_events_truncate_guard.sql",
+      "rule_id": "migration-truncate",
+      "reason": "Requires human schema/storage review. Authorized by the repository owner on 2026-10-16. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only Security Master governance event log; no data is truncated. PostgreSQL regression coverage attempts update, delete and truncate and verifies the events are retained.",
+      "review_after": "2027-04-16"
+    },
+    {
+      "path": "src/Meridian.Storage/AssetOperations/Migrations/006_asset_operations_write_events_truncate_guard.sql",
+      "rule_id": "migration-truncate",
+      "reason": "Requires human schema/storage review. Authorized by the repository owner on 2026-10-16. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only Asset Operations write-event log; no data is truncated. PostgreSQL regression coverage attempts delete and truncate and verifies refusal.",
+      "review_after": "2027-04-16"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/038_security_master_alias_revisions.sql",
+      "rule_id": "migration-truncate",
+      "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects deletion of the append-only alias revision history; no data is truncated. PostgreSQL regression coverage attempts update, delete, and truncate and verifies that the revision is retained.",
+      "review_after": "2027-04-10"
+    },
+    {
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_037__open_lot_basis_adjustment.sql",
       "rule_id": "migration-drop-table-member",
       "reason": "Constraint widening, not data loss: ck_tax_lot_mutations_kind, ck_tax_lot_mutations_quantities, and ck_tax_lot_mutations_cost are dropped and immediately re-created in the same transaction as strict supersets that admit the governed AverageCost BasisRedistribution mutation kind and pooled relief basis. Every existing row still satisfies the re-created checks, and no column or data is removed.",
@@ -77,6 +101,12 @@
       "rule_id": "migration-drop-table-member",
       "reason": "Requires human schema/storage review. Replaces only named check constraints transactionally with supersets admitting governed CorporateAction predecessor closeout and successor opening. Existing acquisition, disposal, redistribution and amortization rules remain valid; no table, column, row or acquisition fact is removed. The new nullable instruction is required only for new successor batches, preserving historical replay. AtomicTaxLotSuccessorMigrationTests exercises a populated through-041 upgrade, preserves legacy row values and migration receipts, reapplies 042 after successor rows exist, and recreates the migration runner on restart. Its injected DDL failure verifies restoration of the prior constraints, absence of the new column and unchanged receipts before retry. This rollback evidence covers an unsuccessful upgrade transaction; it does not authorize a downgrade that removes retained successor instructions.",
       "review_after": "2027-04-06"
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_050__atomic_lot_capital_return.sql",
+      "rule_id": "migration-drop-table-member",
+      "reason": "Requires independent human schema/storage review. Transactionally replaces four existing named CHECK constraints with supersets admitting a basis-only CapitalReturn and replaces the new instruction constraint on explicit reapply. No table, column, row, acquisition fact or historical instruction is removed. The nullable capital_return_instruction is required only for new CapitalReturn batches. Populated through-043 upgrade, retained history, explicit reapply/restart and injected post-drop DDL failure tests are included; hosted PostgreSQL execution is required before release. This permits failed-upgrade rollback, not a downgrade that discards retained capital-return instructions.",
+      "review_after": "2027-04-13"
     }
   ],
   "removed_migrations": [

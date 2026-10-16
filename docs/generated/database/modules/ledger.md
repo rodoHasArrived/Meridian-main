@@ -152,6 +152,7 @@ erDiagram
         integer proceeds_allocation_version
         numeric disposal_sale_price
         jsonb corporate_action_instruction
+        jsonb capital_return_instruction
     }
     ledger_fund_profile_tenancy {
         text fund_profile_id PK
@@ -524,7 +525,7 @@ erDiagram
 | `accounting_configuration_workspaces` | table | 9 | `tenant_id`, `company_id`, `fund_profile_id`, `configuration_scope_id` | 0 | 1 | - |
 | `accounting_periods` | table | 14 | `period_id` | 1 | 8 | - |
 | `accounting_policies` | table | 14 | `accounting_policy_key` | 0 | 3 | - |
-| `atomic_tax_lot_posting_batches` | table | 19 | `mutation_batch_id` | 4 | 5 | - |
+| `atomic_tax_lot_posting_batches` | table | 20 | `mutation_batch_id` | 4 | 5 | - |
 | `fund_profile_tenancy` | table | 4 | `fund_profile_id` | 0 | 2 | - |
 | `journal_entries` | table | 19 | `global_sequence` | 0 | 16 | - |
 | `journal_entries_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |

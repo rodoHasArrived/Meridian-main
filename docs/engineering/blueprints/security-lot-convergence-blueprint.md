@@ -267,12 +267,55 @@ concurrent relief, replay, correction, and cancellation.
 7. **Contract retirement:** remove symbol/long `TaxLot` and calculation ownership from
    `FaceValueLot` only after compatibility telemetry is zero for one release.
 
+### Shared basis-allocation increment (2026-10-13)
+
+`LotBasisRelief` now supplies exact proportional and pooled carrying-basis allocation to
+`OpenLotReliefService` and the actual Backtesting long-close/short-cover paths. Canonical relief
+invokes it independently for retained transaction and functional bases, including the final pooled
+division residual. The simulation supplies exact lot/component basis and keeps its existing
+selection order, short-cover economics and SpecificId fallback. No runtime canonical identity or
+FX is synthesized from simulation fills.
+
+Fill-level parity tests exercise FIFO, LIFO, HIFO and fully specified SpecificId plans against
+canonical long-lot relief with independently retained acquisition FX. Separate short-cover cases
+check positive lot quantities, direction and proceeds conservation. Exact closing and fractional
+pooled-basis tests cover the shared allocator. Valid pool plans preserve their existing decimal
+evaluation order and exact parcel values. Only a plan that would produce a negative slice is
+reallocated with bounds on the remaining basis. These are calculation and consumer-path evidence;
+different tie-breaking, functional-FX HIFO ordering and SpecificId fallback policies still require
+explicit shadow comparison.
+Execution cutover, canonical short posting, retained-history compatibility and live shadow
+acceptance remain open. This increment does not satisfy the full W10-LOT-002 exit gate.
+
+### Paper execution basis continuation (2026-10-14)
+
+The actual `PaperTradingPortfolio` fill path also uses `LotBasisRelief`, retaining remaining total
+basis on its internal lots. Partial long sales and short covers no longer reconstruct relief from
+the entry quote; further fills and unrealized P&L consume the same retained basis. The native live
+corporate-action adjuster accepts that total through an additive interface overload, preserves it
+through splits and subtracts projected principal during paydowns. Rescaling distributes the exact
+remaining basis across lots and rejects a basis-bearing quantity lost below decimal precision.
+Lot version and object identity guard asynchronous adjustments against intervening fills.
+
+`PaperTradingPortfolioBasisParityTests` covers fractional exhaustion of session-ledger assets and
+short payables, partial-close/additional-fill read values, native split/paydown paths and stale
+adjustments. Legacy custom adjusters still expose quantity/quote compatibility behavior and return
+no exact-total evidence. Selection/tie policy, canonical identities and acquisition FX, governed
+short and corporate-action posting, compatibility retirement and live shadow acceptance remain
+separate gates. This continuation does not close W10-LOT-002.
+
+Local regression evidence for [PR #3163](https://github.com/rodoHasArrived/Meridian-main/pull/3163):
+821 execution/shared-basis tests and the complete 417-test Backtesting project passed with zero
+skips, including all 24 new paper-basis cases. The six original fractional-close cases failed
+against the unchanged production implementation with the expected `1e-28` journal residual.
+Full repository validation and hosted checks remain required in addition to this focused proof.
+
 ## 9. Open Questions and Risks
 
 | Question | Owner | Blocking decision |
 | --- | --- | --- |
 | Which retained source establishes acquisition FX for legacy rows? | Accounting | Backfill and non-null FX cutover |
-| Are short lots represented by signed quantity or a separate direction? | Ledger/Execution | Final contract validation |
+| Short lots use a separate `Long`/`Short` direction with non-negative quantities (decision 2026-10-13). | Ledger/Execution | Direction-aware posting, relief and consumer certification before enabling shorts |
 | Which rule pack owns successor-basis allocation by action type? | Accounting policy | Corporate-action posting |
 
 | Risk | Mitigation |
@@ -282,6 +325,37 @@ concurrent relief, replay, correction, and cancellation.
 | Corporate actions double-adjust basis | Idempotency by action, lot, effective date, and version |
 | Face and unit price conventions mix | Required quantity basis and conditional face-value terms |
 | Historical symbols re-key lots | Mandatory `SecurityId`; symbol is display evidence only |
+
+### Short-lot direction decision (2026-10-13)
+
+The user delegated this decision on 2026-10-13. Canonical lots will use an explicit long/short
+direction and non-negative original/open quantities, consistent with Backtesting's separate
+position direction. Ledger effects and realized P&L will apply the direction explicitly; a
+negative quantity will not implicitly establish a short position. Existing canonical records
+retain their long behavior. Migration compatibility, borrow/cover journal rules, relief and
+all consumer parity tests must pass before short-lot writes become available. This decision
+resolves representation only; it does not certify or enable short accounting.
+
+### Direction admission increment (2026-10-13)
+
+Canonical acquisition facts and lot instructions now carry `OpenLotDirection`. `Long` is the
+omitted default, preserving historical JSON and atomic fingerprints, while `Short` is explicit.
+Quantities and carrying bases remain non-negative. Relief calculations reject mixed directions
+and retain independent transaction/functional basis for a homogeneous pool.
+
+This increment does not enable short writes. The existing acquisition/disposal spine requires a
+Long or Asset position, including when drafting from a retained projection. Atomic commands bind
+direction to acquisition facts and refuse new short writes after exact receipt replay; direct
+saves cannot bypass that boundary. Backfill review/application and the current amortization,
+capital-return, successor, consumer-adapter and disposal-reporting paths also refuse short scope.
+The tax read surface reports missing evidence rather than deriving short-sale character from the
+opening-lot holding period.
+
+`OpenLotDirectionTests`, the spine and atomic direction fixtures, the backfill PostgreSQL fixture
+and the disposal tax-economics fixture cover these boundaries. Executed results belong to the PR
+receipt. Short opening/cover journals, transactional position/security authority, delivered-property
+and short-sale tax evidence, Reporting and production-consumer shadow parity remain required before
+short accounting is enabled. Full W10-LOT-002 acceptance remains open.
 
 ## Acceptance Gate
 
@@ -379,7 +453,12 @@ unadjusted bullet principal, explicit supported day-count terms, and level const
 Constant yield consumes the retained annual decimal yield and verifies it against acquisition price.
 Coupon counts follow regular calendar boundaries, including month ends and leap years, for monthly,
 quarterly, semiannual and annual schedules. Actual day-count fractions interpolate within the current
-coupon period rather than being rounded into coupon counts; odd schedules remain unsupported.
+coupon period rather than being rounded into coupon counts; model v2 still refuses odd schedules.
+The shared `FaceValueLot` constant-yield kernel now prices an odd (short) first period for
+mid-period acquisitions (schedule generated backward from maturity, fractional stub exponent, clean
+price excluding purchased accrued interest, retained-yield reconciliation through the same pricing);
+admitting those schedules to posting needs a new governed calculation version. Odd last periods
+remain unmodelled.
 New instructions carry calculation model v2. Previously retained unversioned instructions preserve
 v1 economics and their original serialization so receipt replay remains recoverable. Unposted legacy
 instructions require a fresh preview before approval/posting.
@@ -575,6 +654,17 @@ journal rows, and includes `corporate-action-lot-evidence.json` under report-pac
 AverageCost reporting compares acquisition evidence and successor lineage by value against its
 retained pre-relief pool; changed provenance fails certification even when all monetary facts match.
 
+`AtomicTaxLotJournalStoreTests.AdvanceRefundingReport` connects the PostgreSQL successor receipt
+to `LedgerReportingAuthoritativeSource` and the signed report pack. Its two scenarios start with
+a partially disposed face lot, with and without subsequent amortization, using one persisted
+Statutory book and organization scope. They assert the refunded/unrefunded allocations, separate
+original and current bases in both currencies, retained acquisition FX and holding dates, and
+exclusive Schedule D treatment. They then close the period, reconstruct the stores and reporting
+service, replay the committed action, and compare the complete checkpoint and artifacts. Journals
+and lot histories come from PostgreSQL; tenancy and organization configuration are fixture inputs.
+Execution results belong to the PR's exact head. This test boundary does not supply operator or
+production shadow-operation acceptance.
+
 Amortization reversal/rebook uses the latest unchanged retained mutation and exact original journal.
 A reviewed reversal restores the complete prior basis adjustment and inverses every financial line
 atomically. A same-date rebook requires that reversal receipt and approved correction lineage.
@@ -689,3 +779,33 @@ rounded quote projection/relief and refusal of changed quotes or missing lineage
 results belong to the PR's exact head.
 `W10-LOT-002` remains in progress for its remaining action types, successor amortization, complete
 consumer parity, compatibility retirement and live shadow-operation acceptance.
+
+## Reviewed in-place capital returns (2026-10-13)
+
+This increment binds the existing approved return-of-capital projection to canonical lot storage.
+It preserves the quantity, acquisition facts, acquisition FX and holding-period date while reducing
+the current functional and acquisition-currency carrying bases by their separately reviewed
+amounts. `CarryingValue` retains functional carrying basis and `BasisAmount` retains
+acquisition-currency carrying basis in this canonical plan. The instruction does not calculate
+tax basis or derive an exchange rate. Reductions above either remaining basis, mixed successor
+instructions and unsupported correction recipes refuse preparation.
+
+The mapper and `CanonicalLotCorporateActionService` carry one exact instruction through
+Projected and Drafted. Independent approval binds the candidate fingerprint before the existing
+posting service dispatches `CapitalReturn` to the serializable journal/lot transaction. Storage
+locks the period, Security Master, position and lot authority; it validates dated holdings,
+carrying-account identity and stable source-action history through predecessor birth receipts.
+A stale version or previously applied source return cannot append a new journal or change basis.
+An exact committed retry returns the retained receipt. A missing Posted projection may recover
+only from that verified receipt, including its exact before/after mutation and source evidence.
+
+Forward migration 050 follows delivered migrations through 043 and preserves reservations
+044–049. It adds a nullable instruction column and admits the zero-quantity basis reduction.
+Existing acquisition, relief, amortization and successor records remain valid. Migration tests
+exercise a populated upgrade, explicit reapply and restart, and a failure after constraint drops
+that must restore old constraints, rows and migration receipts before retry. PostgreSQL execution
+and independent Accounting/Ledger and Storage review remain required before release.
+
+This is an additional bounded posting path. W10-LOT-002 remains in progress: broader corporate-
+action corrections, later amortization policy after capital returns, short-lot posting and consumer parity,
+production-consumer cutover and live shadow acceptance retain their existing gates.

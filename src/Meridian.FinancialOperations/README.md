@@ -6,10 +6,43 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-13
+last_reviewed: 2026-10-14
 ---
 
 # src/Meridian.FinancialOperations
+
+`AccountCashReconciliationService` adds a bounded two-source cash-balance continuity aggregate.
+Exact tenant/company/account/book, source identities and currency determine a stable case;
+amounts, row IDs and tolerance versions remain observation evidence. Corrected sources change
+or clear the same case after restart, retaining ownership, UTC calendar-day aging and prior
+resolutions. Each run freezes original source rows, normalized balances, complete executed
+tolerances and canonical matching evidence for deterministic replay. Missing/partial populations,
+duplicate balances, unrelated accounts and changed source identities fail closed. Distinct evidence
+references and original row payloads are required for independence. Each scoped source/version
+binds its complete normalized source content across all retained runs; rebinding is rejected under
+the store lease before any case changes. Unchanged revisions can be reused; corrections require
+new versions. Null cash-tolerance entries are rejected before rule evaluation. Explicitly
+provision `FileAccountCashReconciliationStore.InitializeAsync` before use; loss of retained state
+cannot silently restart history. Source clearing confers no governed close approval.
+See [account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
+`AccountCashReconciliationContinuityTests` for the first `W10-RECON-001` acceptance slice.
+Tolerance profile IDs and versions also bind immutable complete rules across the scoped history.
+Owner assignment timestamps cannot precede the latest case observation or assignment.
+
+`AccountingPostingCandidatePostService` passes the retained approved Security Master and position
+versions into new atomic acquisitions/disposals. Storage revalidates and holds that authority in
+the posting transaction. A replay may omit the new reference-version field only when the complete
+historical command fingerprint equals the immutable retained receipt; new receipts cannot
+downgrade their version assertions. This additive internal handoff adds no workstation request
+field or schema migration. Drain older writers when deploying the stricter new-write admission.
+Separate journal/atomic compositions may lack optional receipt reads. In that case the service
+keeps the approved version assertions and delegates replay/collision validation to the atomic
+writer; only a readable exact receipt can authorize the historical omitted-version shape.
+
+The bounded lot acquisition/disposal spine resolves a Long or Asset book position before retaining
+a projection or drafting a candidate. A Short, Liability or unknown side cannot acquire the long
+writer's accounting semantics merely by supplying positive quantity. Explicit short lot
+instructions remain refused pending direction-aware opening, cover and reporting authority.
 
 `Consolidation/ConsolidationService` resolves two directly wholly owned entities from authoritative
 effective-dated ownership, compares reciprocal receivables/payables using posting entity and
@@ -210,6 +243,14 @@ Preview binds the source chart path to its mapped predecessor credit and rereads
 and versioned source/successor reference authority; the candidate/storage boundary retains durable
 account identity checks. Drafting
 retains the mapped instruction and requires independent approval before posting.
+
+The same service now prepares reviewed in-place return-of-capital reductions. Preview rereads
+the exact canonical lot and reference/position authority; drafting retains the complete reduction
+instruction through the existing event spine and requires independent posting approval. The
+candidate retains the durable carrying-account identity. Posting dispatches a `CapitalReturn`
+batch to the atomic journal/lot store; ordinary journal append cannot consume that instruction.
+Corrections and distributions beyond remaining carrying basis remain blocked pending separate
+reviewed policy and implementation.
 
 ## Purpose
 

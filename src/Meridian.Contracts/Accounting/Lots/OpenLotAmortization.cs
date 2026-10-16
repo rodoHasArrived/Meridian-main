@@ -78,6 +78,8 @@ public static class OpenLotAmortization
             throw new ArgumentException("Amortization calculation version is unsupported.");
         var lot = instruction.ExpectedLot;
         OpenLotValidation.Validate(lot);
+        if (lot.Acquisition.Direction != OpenLotDirection.Long)
+            throw new ArgumentException("Canonical amortization currently supports Long lots only; short liability amortization requires a separately reviewed rule.");
         var security = instruction.Security;
         var evidence = instruction.SecurityEvidence;
         ArgumentNullException.ThrowIfNull(security);
@@ -158,8 +160,10 @@ public static class OpenLotAmortization
             {
                 // The shared kernel validates calendar coupon boundaries. An Actual day-count
                 // year fraction measures accrual, not the number of contractual payments.
-                fullBasis = faceLot.ConstantYieldAmortizedBasisAsOf(convention, maturity, instruction.AsOfDate, coupon,
-                    frequency, annualYield);
+                // Model v2 admits regular calendar schedules only: the kernel's odd-first-period
+                // support needs a new governed calculation version before it can post.
+                fullBasis = faceLot.RegularScheduleConstantYieldAmortizedBasisAsOf(convention, maturity,
+                    instruction.AsOfDate, coupon, frequency, annualYield);
             }
         }
         else

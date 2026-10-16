@@ -2,7 +2,7 @@
 
 # `direct-lending-contracts` data objects - page 1 of 2
 
-Objects 1-80 of 98. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 99. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -398,19 +398,28 @@ classDiagram
         +bool ReplayFlag
         +string? SourceSystem
     }
+    class Meridian_Contracts_DirectLending_LoanPortfolioCurrencyTotalsDto["LoanPortfolioCurrencyTotalsDto"] {
+        +CurrencyCode Currency
+        +decimal? TotalAvailableToDraw
+        +decimal? TotalCollateralValue
+        +decimal? TotalCommitment
+        +decimal? TotalInterestAccruedUnpaid
+        +decimal? TotalPenaltyAccruedUnpaid
+        +decimal? TotalPrincipalOutstanding
+    }
     class Meridian_Contracts_DirectLending_LoanPortfolioSummaryDto["LoanPortfolioSummaryDto"] {
         +int ActiveLoans
+        +IReadOnlyList~LoanPortfolioCurrencyTotalsDto~? CurrencyTotals
         +int DefaultedLoans
         +IReadOnlyList~LoanSummaryDto~ Loans
         +int NonPerformingLoans
-        +decimal TotalAvailableToDraw
-        +decimal TotalCollateralValue
-        +decimal TotalCommitment
-        +decimal TotalInterestAccruedUnpaid
+        +decimal? TotalAvailableToDraw
+        +decimal? TotalCollateralValue
+        +decimal? TotalCommitment
+        +CurrencyCode? TotalCurrency
+        +decimal? TotalInterestAccruedUnpaid
         +int TotalLoans
-        +decimal TotalPenaltyAccruedUnpaid
-        +decimal TotalPrincipalOutstanding
-        +int WorkoutLoans
+        +decimal? TotalPenaltyAccruedUnpaid
     }
     class Meridian_Contracts_DirectLending_LoanServicingStateDto["LoanServicingStateDto"] {
         +IReadOnlyList~DailyAccrualEntryDto~ AccrualEntries
@@ -603,20 +612,6 @@ classDiagram
     }
     class Meridian_Contracts_DirectLending_RestructuringType["RestructuringType"] {
     }
-    class Meridian_Contracts_DirectLending_ServicerPositionReportLineDto["ServicerPositionReportLineDto"] {
-        +decimal? CommitmentAvailable
-        +string? DelinquencyStatus
-        +decimal? FeesAccruedUnpaid
-        +decimal? InterestAccruedUnpaid
-        +Guid LoanId
-        +decimal? NextDueAmount
-        +DateOnly? NextDueDate
-        +decimal? PenaltyAccruedUnpaid
-        +decimal? PrincipalOutstanding
-        +string RawPayloadJson
-        +DateOnly ReportAsOfDate
-        +Guid ServicerReportBatchId
-    }
     Meridian_Contracts_DirectLending_AddCollateralRequest --> Meridian_Contracts_DirectLending_CollateralType
     Meridian_Contracts_DirectLending_AddCollateralRequest --> Meridian_Contracts_DirectLending_CurrencyCode
     Meridian_Contracts_DirectLending_AmendLoanTermsRequest --> Meridian_Contracts_DirectLending_DirectLendingTermsDto
@@ -658,6 +653,9 @@ classDiagram
     Meridian_Contracts_DirectLending_LoanContractDetailDto --> Meridian_Contracts_DirectLending_DirectLendingTermsDto
     Meridian_Contracts_DirectLending_LoanContractDetailDto --> Meridian_Contracts_DirectLending_LoanStatus
     Meridian_Contracts_DirectLending_LoanContractDetailDto --> Meridian_Contracts_DirectLending_LoanTermsVersionDto
+    Meridian_Contracts_DirectLending_LoanPortfolioCurrencyTotalsDto --> Meridian_Contracts_DirectLending_CurrencyCode
+    Meridian_Contracts_DirectLending_LoanPortfolioSummaryDto --> Meridian_Contracts_DirectLending_CurrencyCode
+    Meridian_Contracts_DirectLending_LoanPortfolioSummaryDto --> Meridian_Contracts_DirectLending_LoanPortfolioCurrencyTotalsDto
     Meridian_Contracts_DirectLending_LoanPortfolioSummaryDto --> Meridian_Contracts_DirectLending_LoanSummaryDto
     Meridian_Contracts_DirectLending_LoanServicingStateDto --> Meridian_Contracts_DirectLending_CollateralDto
     Meridian_Contracts_DirectLending_LoanServicingStateDto --> Meridian_Contracts_DirectLending_DailyAccrualEntryDto

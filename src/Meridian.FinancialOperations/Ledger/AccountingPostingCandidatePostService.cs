@@ -21,7 +21,7 @@ public interface IAccountingPostingCandidatePostService
         CancellationToken ct = default);
 }
 
-public sealed class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService
+public sealed partial class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService
 {
     private static readonly JsonSerializerOptions CanonicalJsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -310,6 +310,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                     ledgerBook,
                     sourceEventId,
                     assetAuthority ?? throw new InvalidOperationException("Asset lot posting authority is required."),
+                    existing is not null,
                     ct)
                 .ConfigureAwait(false);
             var journalImpact = BuildJournalImpact(atomicResult.Journal, ledgerBook.BaseCurrency);
@@ -830,6 +831,8 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             tags["assetAccountingLotMutationFingerprint"] = projection.DraftedLotMutationFingerprint;
         if (projection.DraftedLotMutation?.CorporateAction is { } successorInstruction)
             tags[OpenLotSuccessors.JournalFingerprintTag] = OpenLotSuccessors.Fingerprint(successorInstruction);
+        if (projection.DraftedLotMutation?.CapitalReturn is { } capitalReturnInstruction)
+            tags[OpenLotCapitalReturn.JournalFingerprintTag] = OpenLotCapitalReturn.Fingerprint(capitalReturnInstruction);
 
         var generatedLines = projection.DraftedCandidateResult?.GeneratedPostingLines
             ?? throw new InvalidOperationException("The retained Drafted candidate is missing generated posting lines.");
@@ -1089,6 +1092,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         LedgerBookRecord ledgerBook,
         Guid sourceEventId,
         AssetPostingAuthoritySnapshot authority,
+        bool hasExistingJournal,
         CancellationToken ct)
     {
         var atomicStore = _atomicTaxLotStore
@@ -1106,7 +1110,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         if ((instruction.Intent == AssetLotMutationIntentDto.Acquire && eventKind != AssetAccountingEventKindDto.Acquisition) ||
             (instruction.Intent == AssetLotMutationIntentDto.Dispose && eventKind != AssetAccountingEventKindDto.Disposal) ||
             (instruction.Intent == AssetLotMutationIntentDto.Amortize && eventKind != AssetAccountingEventKindDto.DepreciationAmortization) ||
-            (instruction.Intent == AssetLotMutationIntentDto.CorporateAction && eventKind != AssetAccountingEventKindDto.CorporateAction))
+            (instruction.Intent is AssetLotMutationIntentDto.CorporateAction or AssetLotMutationIntentDto.CapitalReturn && eventKind != AssetAccountingEventKindDto.CorporateAction))
         {
             throw new InvalidOperationException(
                 "Asset lot mutation intent must match the canonical acquisition or disposal event kind.");
@@ -1256,6 +1260,11 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                 "Amortization asset posting must equal the reviewed carrying-value movement.");
             mutationKind = AtomicTaxLotMutationKind.Amortization;
         }
+        else if (instruction.Intent == AssetLotMutationIntentDto.CapitalReturn)
+        {
+            ValidateCapitalReturnPosting(instruction, request, approvedWrite, ledgerBook, sourceEventId, authority);
+            mutationKind = AtomicTaxLotMutationKind.CapitalReturn;
+        }
         else if (instruction.Intent == AssetLotMutationIntentDto.CorporateAction)
         {
             var inputs = instruction.CorporateAction
@@ -1298,7 +1307,9 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             instruction.PolicyRevision,
             instruction.DisposalSalePrice,
             instruction.Amortization,
-            instruction.CorporateAction);
+            instruction.CorporateAction,
+            instruction.CapitalReturn);
+        command = await BindRetainedReferenceVersionsAsync(command, authority.Context, hasExistingJournal, ct).ConfigureAwait(false);
         return await atomicStore.AppendAssetPostingAsync(command, ct).ConfigureAwait(false);
     }
 

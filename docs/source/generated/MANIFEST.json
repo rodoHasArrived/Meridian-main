@@ -6,7 +6,7 @@
   "inputs": [
     {
       "path": "docs/source/data/adapter-readiness.yml",
-      "sha256": "f154c131638cc92fe1d995e39c114ab4291d32097282815ab926cb3e59720d18"
+      "sha256": "040e843361f5284c3657fa24394918e7fdfbdd3a88af1baaf009cc51a019ee88"
     },
     {
       "path": "docs/source/data/diagram-index.yml",
@@ -14,7 +14,7 @@
     },
     {
       "path": "docs/source/data/source-modules.yml",
-      "sha256": "2ac1f754c22badbca9317ed9a894fd559582bdea8418cd7e4ea0579ac65a7b28"
+      "sha256": "40ee016b178cb707f1045f7d822d899b0e69203eecfb3da50037aa2bca6816e0"
     },
     {
       "path": "docs/source/data/source-readme-coverage.yml",

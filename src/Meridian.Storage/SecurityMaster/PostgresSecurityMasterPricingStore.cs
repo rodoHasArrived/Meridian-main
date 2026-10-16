@@ -7,7 +7,7 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
-public sealed class PostgresSecurityMasterPricingStore : ISecurityMasterPricingStore
+public sealed partial class PostgresSecurityMasterPricingStore : ISecurityMasterPricingStore
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {

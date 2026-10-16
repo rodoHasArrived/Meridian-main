@@ -11,6 +11,20 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Instruments
 
+`AccountCashForecastEngine` and `AccountCashForecastService` retain bounded account/book cash
+forecasts over the shared `PortfolioCashLadderEngine`. Opening settled cash, expected and observed
+flows, economic/settlement/receipt dates, terms/projection provenance and exact dated FX remain
+inspectable. Observed flows replace corresponding predictions in the ladder; only validated
+observed cash reconciles to closing cash. Missing scope, source evidence, FX or unexplained closing
+variance blocks certification. Corrections retain linked earlier snapshots and factor predictions.
+Opening and closing cash require independently identifiable retained observations, including
+single-day periods with equal balances. Linked expected and actual flows must agree on security
+identity, including whether an identity is absent. Existing receipts remain immutable; formerly
+certified inputs violating these guards fail replay closed and require source review.
+Certification describes cash evidence reconciliation and grants no payment authority. See
+[account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
+`AccountCashForecastTests` for the bounded contract.
+
 Direct-lending Asset Operations publication derives terms, status, and ledger row identities
 from retained loan/security facts so retries preserve those visible IDs. Ledger projection dates
 come from the retained projection as-of date, or the contract effective date when no run exists.
@@ -139,6 +153,10 @@ functional carrying basis as their event amount, including sub-minor-unit basis 
 or partial relief. Ordinary projections retain currency rounding; successor allocations conserve
 the exact total through the final allocation residual. The successor handoff refuses non-`Successor`
 Reg S/144A roles and zero functional carrying allocations before governed drafting.
+Return-of-capital mapping requires the exact `OpenLotCapitalReturnInstructionDto` and its
+reviewed in-place lot plan. Missing, changed or mixed successor/capital-return inputs refuse
+mapping. Its fingerprint binds the event handoff to both independent carrying-basis reductions;
+the mapper retains the approved cash/return-of-capital recipe without approving or writing it.
 The factor-paydown model computes `held face x (prior factor - current factor)`. Equal factors emit
 no posting candidate; factor increases, missing evidence, stale versions, invalid face/factors, and
 unrepresentable currency results fail closed. Its event identity excludes run timestamps so replay
@@ -151,6 +169,9 @@ Option-chain discovery and quote/snapshot caching also live here because option 
 expirations, strikes, and chain snapshots are instrument-market data rather than host
 orchestration. Application composition still wires provider implementations and collectors, while
 UI Shared and strategy adapters consume `Meridian.Instruments.Options.OptionsChainService`.
+
+The bond reference read model no longer emits `cashFlowSource` from bond accounting elections;
+those elections were never populated and are retired from the Security Master terms.
 
 ## Diagrams
 

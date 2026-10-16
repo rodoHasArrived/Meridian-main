@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Text;
@@ -30,6 +31,8 @@ public static class AtomicTaxLotJournalFingerprint
         // idempotently. A lot that does state them participates in the digest, which is correct:
         // two acquisitions differing only in the factor their face was booked at are different
         // commands and must not share an idempotency identity.
+        // Historical Long direction is also omitted; an explicit Short joins the immutable
+        // fingerprint and cannot reuse the identity of a retained long acquisition or disposal.
         var payload = new FingerprintPayload(
             FingerprintVersion: 1,
             command.MutationBatchId,
@@ -49,7 +52,10 @@ public static class AtomicTaxLotJournalFingerprint
             TextPrimitives.NormalizeOptional(command.PolicyRevision),
             command.DisposalSalePrice,
             command.Amortization,
-            command.CorporateAction);
+            command.CorporateAction,
+            command.CapitalReturn,
+            command.Direction,
+            command.ReferenceVersions);
 
         var element = JsonSerializer.SerializeToElement(payload, SerializerOptions);
         using var stream = new MemoryStream();
@@ -170,5 +176,11 @@ public static class AtomicTaxLotJournalFingerprint
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? Amortization,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction);
+        Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        OpenLotDirection Direction,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        AtomicLotReferenceVersions? ReferenceVersions);
 }

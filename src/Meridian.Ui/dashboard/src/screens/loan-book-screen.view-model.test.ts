@@ -41,6 +41,7 @@ function summary(overrides: Partial<LoanPortfolioSummary> = {}): LoanPortfolioSu
     totalPenaltyAccruedUnpaid: 5_000,
     totalAvailableToDraw: 3_900_000,
     totalCollateralValue: 14_500_000,
+    totalCurrency: "USD",
     loans: [loan()],
     ...overrides
   };
@@ -111,6 +112,63 @@ describe("loan book view model", () => {
     const row = buildLoanBookRow(loan({ baseCurrency: "EUR", commitmentAmount: 1_000_000 }));
 
     expect(row.commitmentLabel).toBe("€1,000,000.00");
+  });
+
+  it.each([[0, "USD"], [1, "EUR"], [2, "GBP"], [3, "JPY"], [4, "Other"]])(
+    "accepts numeric host currency %s",
+    (currency, label) => {
+      const row = buildLoanBookRow(loan({ baseCurrency: currency }));
+      expect(row.currency).toBe(label);
+      expect(row.commitmentLabel).not.toBe("—");
+    }
+  );
+
+  it.each([[0, "Draft", "default"], [2, "Active", "success"], [6, "Defaulted", "danger"],
+    [7, "NonPerforming", "danger"], [8, "Workout", "danger"]])(
+    "renders numeric host status %s with its lifecycle tone",
+    (status, label, tone) => {
+      const row = buildLoanBookRow(loan({ status }));
+      expect(row.statusLabel).toBe(label);
+      expect(row.statusTone).toBe(tone);
+    }
+  );
+
+  it("preserves unknown enums and never invents a USD denomination", () => {
+    const row = buildLoanBookRow(loan({ baseCurrency: 99, status: 99 }));
+    expect(row.statusLabel).toBe("Unknown (99)");
+    expect(row.currency).toBe("Unknown currency (99)");
+    expect(row.commitmentLabel).not.toContain("$");
+    expect(buildLoanBookRow(loan({ baseCurrency: "" })).currency).toBe("Unknown currency");
+  });
+
+  it("keeps USD and EUR totals separate and ignores legacy mixed sums", () => {
+    const view = buildLoanBookViewModel(summary({ currencyTotals: [
+      { currency: 0, totalCommitment: 1_000_000, totalPrincipalOutstanding: 750_000,
+        totalInterestAccruedUnpaid: 0, totalPenaltyAccruedUnpaid: 0,
+        totalAvailableToDraw: 250_000, totalCollateralValue: 900_000 },
+      { currency: 1, totalCommitment: 2_000_000, totalPrincipalOutstanding: 1_500_000,
+        totalInterestAccruedUnpaid: 0, totalPenaltyAccruedUnpaid: 0,
+        totalAvailableToDraw: 500_000, totalCollateralValue: 1_800_000 }
+    ] }));
+    expect(view.metrics.find(metric => metric.id === "principal-outstanding-USD")?.value).toBe("$750,000.00");
+    expect(view.metrics.find(metric => metric.id === "principal-outstanding-EUR")?.value).toBe("€1,500,000.00");
+    expect(view.metrics.some(metric => metric.value === "$8,100,000.00")).toBe(false);
+    expect(view.currencyNotice).toContain("No FX conversion");
+  });
+
+  it("withholds legacy totals without currency evidence", () => {
+    const view = buildLoanBookViewModel(summary({ totalCurrency: null }));
+    expect(view.metrics.some(metric => metric.id === "principal-outstanding")).toBe(false);
+    expect(view.currencyNotice).toContain("did not report their currency");
+  });
+
+  it("withholds sums for Other even if an older service reports a mixed unknown amount", () => {
+    const view = buildLoanBookViewModel(summary({ currencyTotals: [{ currency: 4,
+      totalCommitment: 3_000_000, totalPrincipalOutstanding: 2_000_000,
+      totalInterestAccruedUnpaid: 0, totalPenaltyAccruedUnpaid: 0,
+      totalAvailableToDraw: 1_000_000, totalCollateralValue: 4_000_000 }] }));
+    expect(view.metrics.find(metric => metric.id === "principal-outstanding")?.value).toBe("—");
+    expect(view.currencyNotice).toContain("unspecified currencies are unavailable");
   });
 
   it("falls back to placeholder identity text rather than rendering a blank row", () => {

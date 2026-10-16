@@ -279,6 +279,11 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
         services.TryAddSingleton<IPortfolioCashBalanceProvider, PortfolioLedgerCashBalanceProvider>();
         services.TryAddSingleton<IPortfolioCashLadderQueryService, PortfolioCashLadderReadService>();
+        // Durable account forecast state is explicitly provisioned by operations, never on reads or capture.
+        services.TryAddSingleton<FileAccountCashForecastStore>(sp =>
+            new FileAccountCashForecastStore(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<IAccountCashForecastStore>(sp => sp.GetRequiredService<FileAccountCashForecastStore>());
+        services.TryAddSingleton<IAccountCashForecastService, AccountCashForecastService>();
         services.TryAddSingleton<ISecurityMasterOperationalReadinessService, SecurityMasterOperationalReadinessService>();
         services.TryAddSingleton<IMultiAssetCoverageReadService, MultiAssetCoverageReadService>();
         services.TryAddSingleton<LedgerReadService>();
@@ -413,8 +418,7 @@ public static class WorkstationServiceCollectionExtensions
 
         services.TryAddSingleton<ICashSyncOrchestrationService, CashSyncOrchestrationService>();
 
-        services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
-        services.TryAddSingleton<Dk1TrustGateReadinessService>();
+        services.AddPromotionTrustEvidenceServices();
         services.TryAddSingleton<TradingOperatorReadinessService>();
         services.TryAddSingleton<ITradingOperatorReadinessProvider>(sp =>
             sp.GetRequiredService<TradingOperatorReadinessService>());

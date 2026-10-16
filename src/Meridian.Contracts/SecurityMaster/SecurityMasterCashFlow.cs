@@ -111,9 +111,10 @@ public enum CashFlowLegDirection
 /// One leg of a multi-leg or floating-rate cash-flow structure (swap leg, floating-rate note,
 /// funding leg). Per-leg terms fall back to the security-level <see cref="StructuredCashFlowTerms"/>
 /// values when absent: <see cref="Notional"/> to <c>PrincipalFace</c>, <see cref="PaymentFrequency"/>
-/// and <see cref="DayCountConvention"/> to the security-level equivalents. Floating legs project at
-/// <see cref="CurrentIndexRate"/> (the last fixing) plus <see cref="SpreadBps"/> — a deliberate
-/// flat-forward simplification; no forward curve is implied.
+/// and <see cref="DayCountConvention"/> to the security-level equivalents. Floating legs reset each
+/// future period at the <see cref="SecurityForwardCurve"/> for <see cref="IndexName"/> plus
+/// <see cref="SpreadBps"/> when a curve is supplied; otherwise they project flat at
+/// <see cref="CurrentIndexRate"/> (the last fixing) plus spread.
 /// </summary>
 /// <param name="Direction">
 /// Null when the source terms carry no direction information. A single directionless leg projects
@@ -134,11 +135,16 @@ public sealed record StructuredCashFlowLeg(
     bool ExchangesPrincipal = false);
 
 /// <summary>A single leg's projected schedule, always unsigned (direction is carried alongside).</summary>
+/// <param name="RateSource">
+/// How the leg's rates were projected: <c>fixed</c>, <c>flatForward:lastFixing</c>, or the forward
+/// curve used (<see cref="SecurityForwardCurve.Describe"/>). Null on projections from older nodes.
+/// </param>
 public sealed record StructuredCashFlowLegSchedule(
     string LegId,
     CashFlowLegRateKind RateKind,
     CashFlowLegDirection? Direction,
-    IReadOnlyList<StructuredCashFlowScheduleEntry> Schedule);
+    IReadOnlyList<StructuredCashFlowScheduleEntry> Schedule,
+    string? RateSource = null);
 
 /// <summary>
 /// Full projected cash flow schedule for a security under one rate scenario.

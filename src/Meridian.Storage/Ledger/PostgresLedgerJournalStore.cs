@@ -102,6 +102,9 @@ public sealed partial class PostgresLedgerJournalStore :
 
     private static void RejectJournalOnlySuccessorPosting(LedgerJournalEntryWrite entry)
     {
+        if (entry.PostingCommand?.LotCapitalReturn is not null
+            || entry.Entry.Metadata.Tags?.ContainsKey(Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturn.JournalFingerprintTag) == true)
+            throw new LedgerValidationException("Capital-return journals require the atomic journal/lot posting boundary.");
         if (entry.PostingCommand?.LotCorporateAction is not null
             || entry.Entry.Metadata.Tags?.ContainsKey(Meridian.Contracts.Accounting.Lots.OpenLotSuccessors.JournalFingerprintTag) == true)
             throw new LedgerValidationException("Successor journals require the atomic predecessor/successor posting boundary.");

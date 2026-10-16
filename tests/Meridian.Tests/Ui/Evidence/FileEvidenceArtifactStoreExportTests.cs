@@ -62,7 +62,11 @@ public sealed class FileEvidenceArtifactStoreExportTests : IDisposable
         result.SizeBytes.Should().Be(length);
         target.BytesWritten.Should().Be(length);
         source.LargestReadRequest.Should().BeLessThanOrEqualTo(FileEvidenceArtifactStore.ExportCopyBufferBytes);
-        Sha256Digest.IsCanonical(result.ContentHashSha256).Should().BeTrue();
+        target.WriteOperations.Should().BeLessThanOrEqualTo(
+            (length + FileEvidenceArtifactStore.ExportCopyBufferBytes - 1) / FileEvidenceArtifactStore.ExportCopyBufferBytes,
+            "digest read sizes must not multiply staged writes and durable quota checkpoints");
+        using var expectedSource = new GeneratedStream(length);
+        result.ContentHashSha256.Should().Be(await Sha256Digest.ComputeAsync(expectedSource));
     }
 
     [Fact]
@@ -319,6 +323,7 @@ public sealed class FileEvidenceArtifactStoreExportTests : IDisposable
     private sealed class CountingStream : Stream
     {
         public long BytesWritten { get; private set; }
+        public long WriteOperations { get; private set; }
         public override bool CanRead => false;
         public override bool CanSeek => false;
         public override bool CanWrite => true;
@@ -328,6 +333,7 @@ public sealed class FileEvidenceArtifactStoreExportTests : IDisposable
         {
             ct.ThrowIfCancellationRequested();
             BytesWritten += buffer.Length;
+            WriteOperations++;
             return ValueTask.CompletedTask;
         }
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken ct) =>
@@ -336,7 +342,11 @@ public sealed class FileEvidenceArtifactStoreExportTests : IDisposable
         public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
         public override void SetLength(long value) => throw new NotSupportedException();
-        public override void Write(byte[] buffer, int offset, int count) => BytesWritten += count;
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            BytesWritten += count;
+            WriteOperations++;
+        }
     }
 
     private sealed class ReadHookStream(Stream inner, Action firstRead) : Stream

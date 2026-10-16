@@ -118,6 +118,9 @@ public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaste
     public Task<SecurityDetailDto> AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default)
         => NotConfigured<SecurityDetailDto>();
 
+    public Task<SecurityDetailDto> AmendTermBlockAsync(Guid securityId, string blockKey, AmendSecurityTermBlockRequest request, CancellationToken ct = default)
+        => NotConfigured<SecurityDetailDto>();
+
     public Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
         => Task.FromException(new InvalidOperationException(
             "Security Master is not configured. " +

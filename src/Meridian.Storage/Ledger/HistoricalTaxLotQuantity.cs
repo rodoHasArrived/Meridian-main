@@ -58,7 +58,7 @@ internal static class HistoricalTaxLotQuantity
                     throw Missing();
             }
             // An average-cost survivor restatement changes basis only; it never moves quantity.
-            else if (mutation.Kind is AtomicTaxLotMutationKind.BasisRedistribution or AtomicTaxLotMutationKind.Amortization
+            else if (mutation.Kind is AtomicTaxLotMutationKind.BasisRedistribution or AtomicTaxLotMutationKind.Amortization or AtomicTaxLotMutationKind.CapitalReturn
                     ? mutation.Delta != 0m || mutation.Before <= 0m
                     : mutation.Kind != AtomicTaxLotMutationKind.Disposal || mutation.Delta >= 0m)
                 throw Missing();

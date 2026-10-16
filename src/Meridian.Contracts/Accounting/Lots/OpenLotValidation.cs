@@ -16,11 +16,11 @@ public static class OpenLotValidation
             throw new ArgumentException("Open-lot quantity, basis, or version is invalid.");
         var acquisition = lot.Acquisition;
         ArgumentNullException.ThrowIfNull(acquisition);
-        if (!Enum.IsDefined(acquisition.QuantityBasis) || !Currency(acquisition.AcquisitionCurrency)
+        if (!Enum.IsDefined(acquisition.Direction) || !Enum.IsDefined(acquisition.QuantityBasis) || !Currency(acquisition.AcquisitionCurrency)
             || !Currency(acquisition.FunctionalCurrency) || acquisition.AcquisitionFxRateToFunctional <= 0
             || acquisition.TransactionCostBasis < 0 || acquisition.FunctionalCostBasis < 0
             || acquisition.HoldingPeriodStartDate > lot.AcquiredDate)
-            throw new ArgumentException("Open lots require explicit valid acquisition currency, FX, basis, and holding-period facts.");
+            throw new ArgumentException("Open lots require valid direction and explicit acquisition currency, FX, basis, and holding-period facts.");
         if (acquisition.AcquisitionCurrency == acquisition.FunctionalCurrency
             && (acquisition.AcquisitionFxRateToFunctional != 1m || acquisition.TransactionCostBasis != acquisition.FunctionalCostBasis))
             throw new ArgumentException("Same-currency acquisition FX must equal one and retained transaction and functional bases must agree exactly.");
