@@ -6,16 +6,133 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Application
+
+`SecurityMasterPricingService.ClosePrices` builds independently reviewed immutable close-price
+sets through the existing hierarchy and retained selection receipts. Exact account/book/UTC
+valuation date, quote units, source observations, override support and blocker assessments are
+frozen before review. Approval binds an independent reviewer and rationale to that snapshot;
+later quotes cannot change it. Corrections append linked versions with unchanged security coverage.
+Missing Security Master composition fails closed. Proof is in `SecurityMasterClosePriceServiceTests`
+and `PostgresSecurityMasterClosePriceTests`; this extends `W10-MARK-001` without claiming its
+live operator acceptance or adding dealer RFQ.
+Unrepresentable comparison percentages preserve exact raw prices; close-price snapshots retain
+an explicit dispersion blocker rather than losing the exception evidence.
+Exact account/book/date history returns retained price versions and approvals after restart.
+Concurrent identical approval retries return the canonical retained decision; conflicting reviews
+remain immutable-write conflicts.
+An explicit creation `RequestId` becomes the immutable snapshot identity. Retrying that same
+normalized command after a lost response or restart returns its retained observations and review
+before reading live prices. Changed commands conflict; concurrent identical captures converge on
+the committed snapshot. Callers without an identity retain the existing new-command behavior.
+
+`ILivePositionCorporateActionAdjuster` exposes an additive overload for retained total carrying
+basis. Native paper-execution adjustments use it to avoid rebuilding basis from rounded unit
+quotes. Legacy implementers retain their original overload; a null `AdjustedTotalCostBasis`
+explicitly identifies that compatibility result and remains absent from serialized output.
+
+Security Master governed edits now validate and stage the overlay and draft in one PostgreSQL
+transaction guarded by a durable per-security generation. Competing instances receive a conflict
+and must reload before retrying; they cannot combine independently valid edits against a stale
+overlay. Approval scans, generic-patch guards, submission, discard and final publish transitions
+use the same mutation boundary. Overlay and revision stores must use the same database and schema.
+Optional discard provenance and approval convergence use recoverable savepoints; a SQL error in
+those steps cannot silently undo the revision rejection and overlay withdrawal.
+See [the concurrency and rollout contract](../../docs/domain/security.md#governed-edit-concurrency).
+
+PostgreSQL ledger composition resolves consolidation posting authority through a deferred factory.
+The workstation supplies the authoritative ownership and policy provider, avoiding a dependency
+cycle with the ledger reader; missing providers block consolidation posting.
+
+Composition accepts host-owned runtime settings through `CompositionOptions.Configuration`.
+An explicit configuration is authoritative for storage, governance and deployment posture, including
+missing values, without writing environment defaults; omitted configuration preserves process-startup
+resolution. Unified database URLs are resolved locally for explicit configurations.
+
+Ledger composition registers the read-only `CanonicalLotAmortizationService` alongside existing governed candidate services. Its registration preserves workstation startup when amortization stores are absent; preview requires the authoritative ledger, Security Master, and book-position stores and rejects missing authority before any read. Amortization posting remains on the shared Asset Accounting Event Spine approval and atomic ledger path.
+`CanonicalLotCorporateActionService` uses the same deferred authoritative stores to prepare the
+single retained successor instruction and draft it through the event spine. Preview preserves
+the chart path separately from the durable ledger account; posting requires independent approval.
+
+PostgreSQL composition registers the canonical-symbol seeder and its security-ID lookup as one
+singleton. Failed post-write reseeds retry with bounded backoff and coalesced requests until success
+or service cancellation. Production reseeding reads durable membership without populating a lazy cache,
+so reconnects can discover missed creations and incomplete cache warmup cannot withdraw valid names.
+Startup seeds even when cache preloading and notifications
+are disabled, and failed startup or periodic reseeds retry. Create, amend and deactivation install
+their committed projection and request reseeding before optional snapshot work; request cancellation
+after the projection commit cannot skip that coherence step. A later snapshot failure can still
+fail the request after commit, so callers must reread durable state before retrying.
+Post-write cache updates and identifier-conflict scans use effective durable state, because another
+instance may already have persisted a newer projection. A failed cache readback retries; the prepared
+older candidate is never installed as a fallback. Rebuilds likewise reread after version-guarded
+batch persistence instead of publishing their prepared candidates.
+The hosted lifecycle also reseeds at the next identifier validity boundary, including with lazy
+cache loading, notifications disabled and no periodic projection refresh. A successful write seed
+can move that deadline earlier. Canonical selection uses the sole primary identifier valid at the
+seed timestamp, rather than the denormalized primary text. Zero or multiple eligible primaries
+withdraw the Security Master canonical claim while retaining independently valid aliases, standard
+identifiers and provider mappings. A hidden internal carrier preserves their SecurityId enrichment
+without reserving an expired or future primary name. Primary boundaries remain scheduled during
+gaps, including future-only startup. Minimal composition omits the seeder when symbol management and
+an explicit canonical registry are both absent; full symbol management shares one seeder/lookup.
+Hosts implementing only the base registry retain merge-only behavior and do not receive hidden
+carrier definitions; withdrawal requires the source-aware reconciliation writer used in production.
+Equity replay without retained flat terms refuses economic-only reconstruction: the old economic
+family cannot distinguish common, preferred and convertible preferred shares reliably.
+
+Security Master replay reads each stored event through `SecurityMasterMapping.FromEventEnvelope`,
+which refuses payload types or versions newer than this build understands. Amend and deactivate
+carry the stored economic terms that a flat rebuild cannot express (`retainedEconomicTerms`), so a
+newer-to-older terms conversion keeps the data rather than silently dropping it.
+
+Security Master event replay that lacks retained flat terms flattens the economic-terms document onto
+the record's asset class, so carried values land at that class's declared keys. The Postgres
+composition registers `SecurityMasterProjectionChangeListener` (disable with
+`MERIDIAN_SECURITY_MASTER_PROJECTION_NOTIFICATIONS=false`) to keep the projection cache coherent
+across nodes; it re-synchronises on first subscription and after every reconnect. Failed durable
+refreshes schedule a monotonic 30-second retry that incoming notifications cannot postpone; with
+pre-warm disabled the retry rereads the failed securities directly, so a remote creation the lazy
+cache never held is not lost. A local alias write whose post-commit cache reread fails retries that
+reread in the background with backoff, since the node ignores its own notification. Canonical
+reseeds are serialized and reconcile Security-Master-owned aliases and non-override provider mappings
+for authoritative security IDs, including the ISIN/CUSIP/FIGI/SEDOL identifiers Security Master supplies;
+operator/provider authority outside that ownership remains intact.
+Historical identifier reads use `GetRecordedByIdentifierAsOfAsync`: the recorded cutoff
+filters stored event and alias-revision timestamps, and the separate effective cutoff selects
+identifier validity. Those timestamps can precede lock acquisition and commit; they do not establish
+what was committed or visible at the cutoff. A transaction that becomes visible later can change
+the result for the same cutoffs. This API supplies timestamp eligibility, without a retained
+evaluation receipt or a historical transaction snapshot. Missing or ambiguous retained identity
+returns no match. The compatibility identifier API
+can use later alias corrections and stable-identity fallbacks. Alias baselines imported by migration
+038 carry a migration availability timestamp; earlier alias history is unknown. That timestamp
+also supplies an eligibility boundary rather than commit-visibility evidence.
+Primary-host storage composition supplies deferred Security Master and book-position resolvers to
+the PostgreSQL journal store. Deferred resolution preserves the shared singleton authorities while
+avoiding the journal/position constructor cycle; absent durable authority fails closed at posting.
+
+Governed statement reconciliation carries its resolved fund, primary ledger book, and exact period
+through the retained population provider into journal queries. The journal source validates that
+authority before reading, excludes journals from other periods, and denominates legacy cash legs
+in the retained book currency. Scope-free legacy callers retain their existing account/window
+behavior. Focused coverage lives in `LedgerJournalInternalTransactionSourceTests` and
+`RetainedInternalReconciliationPopulationProviderTests`.
 
 Derived lending runs commit their Asset Operations publication message in the same PostgreSQL
 transaction as the run and its details. HTTP requests return the committed run without calling
 the publisher. The outbox worker publishes retained state and retries failures; missing publisher
 configuration for a Security Master-backed loan remains a failed delivery. Identified replays
 retain one message per run. Integration tests cover concurrent retries and enqueue-failure rollback.
+
+Loan portfolio summaries group principal, commitments, accruals, available capacity, and retained
+collateral appraisals by their recorded currency in both in-memory and PostgreSQL readers.
+Mixed-currency scalar totals are unavailable; no FX conversion is implied. PostgreSQL collateral
+totals are rebuilt from servicing state, including revaluations and removals after reload.
+Unspecified (`Other`) and undefined currency values leave monetary totals unavailable.
 
 
 Direct-lending outbox deliveries with unsupported topics or missing journal source evidence
@@ -31,6 +148,8 @@ legacy new-run behavior and must not be treated as safe automatic retries.
 
 
 `DailyMarkToMarketService` uses the shared `ValuationFreshnessPolicy` for both impact previews and draft generation. Missing, future-dated, low-confidence, or over-age marks produce position-specific review reasons and prevent partial valuation batches from becoming approved support. Previewing returns affected position and valuation counts without retaining a draft.
+The valuation request carries the posting entity into the carrying-value read and projection.
+Retained mark evidence and draft identity preserve that entity through governed intake and posting.
 
 ## Credential source ownership
 
@@ -148,12 +267,40 @@ service attribution when no operator initiated the call.
 
 ### Reviewed tenant maintenance and strict hosts
 
+Core/browser and desktop hosts share `TenantGuardedLocalFundStructureService` and
+`TenantGuardedLocalFundAccountService` for unpartitioned JSON-backed fallbacks. Strict enforcement
+refuses every local read and mutation with explicit migration guidance, including account query
+and management aliases. Files remain retained; selecting a current company does not attribute
+historical snapshots. Explicit deployment-boundary compatibility keeps reviewed single-company
+migration access available. Production composition still rejects these nonproduction services.
+The migration-required refusal derives from `MeridianException`, preserving shared domain-error
+classification while the HTTP boundary continues to report the specific migration guidance.
+
+One-shot command dispatch uses the same Portfolio Records registration as runtime hosts. Configured
+fund-account PostgreSQL persistence remains authoritative for command reconciliation reads, and
+local command reads pass through the same migration gate. Account query, management, and fund-account
+ports resolve to one shared service instance.
+Command reconciliation resolves account authority when reading retained populations, keeping help
+and configuration diagnostics available even when account tenant configuration requires repair.
+
 The explicit `--fund-tenant-backfill --action preview|apply` command previews retained ownership
-and applies only the reviewed fingerprint; it performs no automatic migration or cutover.
+across the graph, ledger books and periods, close workflows, and configured fund accounts, then
+applies only the reviewed fingerprint. `preview-resolution|resolve` separately reviews and releases
+previously quarantined rows only when their current retained evidence derives one owner. Every
+remaining exception stays in the retained queue and blocks strict startup. Audited legacy periods
+remain unchanged and require a governed repair, preserving their existing audit evidence.
 [The operator runbook](../../docs/operators/fund-structure-tenant-backfill.md) describes attribution,
-quarantine, immutable receipts, and recovery. Core hosts now register the configured tenant read
-posture and retained worker authority; HTTP hosts replace only that fallback with their request
-accessor. Direct-lending accrual/outbox workers are constructed and started only when the final
+quarantine, immutable receipts, and recovery. Core hosts default to strict tenant reads and check
+migration readiness before serving retained data. `TenantScopeEnforcement` is the supported
+configuration setting. Application settings accept only the exact `fail-closed` and
+`deployment-boundary` values; legacy aliases are confined to the environment override documented
+in the runbook. Explicit
+`deployment-boundary` is a temporary migration posture. Core hosts register retained worker
+authority; HTTP hosts replace only that fallback with their request accessor.
+`TenantCutoverStartupPrerequisites` reuses the registered ledger, fund-account, and fund-structure
+migration/import paths so WPF can finish preparation and tenant inspection before activating its
+workspaces or shell. This preparation does not start unrelated background workers.
+Direct-lending accrual/outbox workers are constructed and started only when the final
 DI-resolved posture permits unattributed process work. Strict hosts log that these workers are
 withheld, including when a host supplies a later instance/factory override. Strict operation still
 requires per-loan tenant authority before those workers can be enabled.
@@ -258,8 +405,11 @@ Core workstation host. Do not introduce a second listener or independent monitor
   manual CSV upload, custodian positions, brokerage transactions, and fixed income security master.
   The setup service saves draft manifests and connection instances through the Storage-owned
   integration manifest store, preserving tenant partitioning and returning readiness blockers before
-  dry runs or activation. The OpenAPI import service parses OpenAPI/Swagger JSON into tenant-scoped
-  draft `OpenApiRest` manifests, imports endpoint definitions, response record paths, query
+  dry runs or activation. Setup edits and activation publish new immutable manifest revisions with
+  an expected-current-version guard; stale concurrent edits fail instead of replacing retained
+  mappings or approvals. Manual CSV and REST runs bind their payloads and run summaries to the
+  exact manifest version and digest selected for execution. The OpenAPI import service parses
+  OpenAPI/Swagger JSON into tenant-scoped draft `OpenApiRest` manifests, imports endpoint definitions, response record paths, query
   parameters, and schema-backed mapping suggestions, and keeps trading actions blocked behind
   certified-adapter activation readiness. The manual CSV dry-run service consumes contract-owned manifests and the
   Storage-owned integration manifest store, parses operator-uploaded samples, applies configured
@@ -317,9 +467,15 @@ Core workstation host. Do not introduce a second listener or independent monitor
   record, so retrying a row that already has handoff evidence is blocked and surfaced as a
   retained-history review issue. The quarantine
   review service groups rejected records by operator-safe issue code and records durable review decisions
-  without mutating the retained raw rejected records. The quarantine replay service remaps reviewed
-  rejected records after mapping changes, writes a replay raw payload, stages accepted records, and
-  re-quarantines records that still fail validation. The activation-readiness service evaluates
+  without mutating the retained raw rejected records. The quarantine replay service distinguishes
+  original-mapping replay from remediation with an explicitly selected newer revision. It verifies
+  the retained version and digest, preserves source and execution provenance, writes a replay raw
+  payload, stages accepted records, and re-quarantines records that still fail validation. Missing
+  historical provenance blocks both replay modes rather than substituting the current mapping.
+  Retained manual CSV rows reuse the ingestion mapper during replay, preserving case-insensitive
+  literal column names and conditional transforms inside the retained `fields` wrapper. Repeated
+  replay keeps that raw wrapper intact; REST records retain their JSON-path mapping semantics.
+  The activation-readiness service evaluates
   those manifests before enablement, blocking unresolved required mappings, missing approval
   evidence, and order-preview/place/cancel capabilities unless they use a certified provider
   adapter with production-write activation policy. The activation service
@@ -340,6 +496,11 @@ Core workstation host. Do not introduce a second listener or independent monitor
   Explicit flush waits for completed consumption, which already includes rejected events.
   Rejected batches cannot be counted twice to acknowledge a later valid event before its
   storage append finishes; gated regression cases cover that ordering across separate batches.
+  Trade and quote dedup keys retain their existing SHA-256 identity and 128-bit lowercase
+  digest suffix. Hashing uses the canonical `Sha256Digest` span overload with a reusable provider
+  per thread, primed on each constructor thread. Key construction uses the runtime span-based hex
+  encoder inside a single `string.Create` allocation; culture and Unicode/pooled-buffer regressions
+  compare the complete key with the original identity format.
 - Event pipeline queueing consumes `Meridian.Platform.Tracing.EventTraceContext` for trace
   propagation, platform-owned OpenTelemetry helpers for market-data activity/counter telemetry,
   the Platform `DefaultEventMetrics` implementation, and the Platform `TracedEventMetrics`
@@ -723,6 +884,24 @@ Core workstation host. Do not introduce a second listener or independent monitor
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
 
+`ApplicationLifecycleCoordinator` routes POSIX SIGTERM through the same cooperative stop-work,
+drain, and flush lifecycle as external cancellation. This lets `dotnet watch` restart the host
+without leaving its listener behind. The signal registration is disposed with the coordinator;
+Windows retains the existing console-cancellation path. Signal callback coverage lives in
+`tests/Meridian.Lifecycle.Tests/ApplicationLifecycleCoordinatorTests.cs`.
+
+Shared host composition registers the Platform tracing provider only when `AppConfig.Tracing.Enabled`
+or the legacy code option `CompositionOptions.EnableOpenTelemetry` explicitly opts in. Registration
+is idempotent, and a desktop child graph reuses its parent host's ownership. `PipelineFeatureRegistration`
+selects traced metrics for `EnableOpenTelemetry`; that compatibility option also registers one
+host-owned `Meridian.Pipeline` meter provider with the explicitly selected console/OTLP exporters.
+`Tracing.Enabled` alone does not add pipeline metrics instrumentation. The event pipeline preserves each producer context across
+queueing and storage; mixed-producer batches link the other contexts while each event retains its own
+parent. Each consumer reuses batch-link scratch collections to avoid steady-state link-construction
+allocations. Processing and storage failures retain error/exception evidence on the affected spans.
+See [Distributed Tracing Operations](../../docs/operators/distributed-tracing.md) for exporter setup
+and stop/disposal semantics.
+
 Host startup and mode runners preserve one owner for every started resource. Database
 initialization is asynchronous and cancellation-aware; failed UI starts still stop and dispose the
 created server, and an internally owned lifecycle coordinator is released for failures anywhere
@@ -808,6 +987,22 @@ ingests (`--provider polygon`, `--provider edgar`, `--provider corporate-actions
 this guard and keep their existing provider attribution. Verify this lane with
 `SecurityMasterCommandsEdgarTests`.
 
+Security Master canonical writes run under `ISecurityMasterCanonicalWriteScope`. With the
+PostgreSQL scope registered, create, amend and deactivate append the event, upsert the projection
+and record canonical field attribution in one transaction; a failed attribution rolls back the
+event and projection. Workbench restorations mark `RestoresPriorDecision`, the only override
+decision exempt from independent review. `FaceValueLotExtensions.ToLedgerTaxLot` emits `FaceValue`
+lots with multiplier 100. Writes reject non-canonical values for typed term conventions
+(day count, settlement method, option right).
+
+`SecurityMasterCashFlowService` projects floating legs from an `ISecurityForwardCurveProvider` when
+one is registered (the default is the in-process `InMemorySecurityForwardCurveProvider`): each
+future reset reads the index curve at its accrual start, the period already reset keeps the
+retained fixing, and each leg schedule records its `RateSource`. Without a curve, legs stay flat
+forward. `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
+block (preferred terms, call schedules, swap legs) through the normal amend path and records
+`TermBlockAmended`.
+
 ## API contract notes
 
 - Instruments-owned options-chain provider IDs are normalized with trim plus invariant lowercase
@@ -846,6 +1041,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ```bash
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~TracingIntegrationTests|FullyQualifiedName~EventPipelineTracePropagationTests" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests|FullyQualifiedName~ProviderModuleCompositionTests" --logger "console;verbosity=normal"
 ```
 

@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -307,6 +308,7 @@ public sealed class AlpacaTradeUpdatesClientTests
         await using var sut = new AlpacaTradeUpdatesClient(
             new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret", UseSandbox: true),
             NullLogger<AlpacaTradeUpdatesClient>.Instance,
+            new AtomicFileWriterAdapter(),
             _ => Task.FromResult<IReadOnlyList<ExecutionReport>>([report]),
             cursorStore: store);
         sut.ConfigureDurableStateScope("paper-account-42", AlpacaCredentialEnvironment.PaperEnvironment);
@@ -407,6 +409,7 @@ public sealed class AlpacaTradeUpdatesClientTests
         var sut = new AlpacaTradeUpdatesClient(
             new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret", UseSandbox: true),
             NullLogger<AlpacaTradeUpdatesClient>.Instance,
+            new AtomicFileWriterAdapter(),
             _ => Task.FromResult<IReadOnlyList<ExecutionReport>>([CreateReconciledReport()]),
             cursorStore: store);
         sut.ConfigureDurableStateScope("paper-account-42", AlpacaCredentialEnvironment.PaperEnvironment);
@@ -431,8 +434,8 @@ public sealed class AlpacaTradeUpdatesClientTests
 
         try
         {
-            var firstStore = new FileAlpacaTradeUpdateCursorStore(path);
-            var secondStore = new FileAlpacaTradeUpdateCursorStore(path);
+            var firstStore = new FileAlpacaTradeUpdateCursorStore(path, new AtomicFileWriterAdapter());
+            var secondStore = new FileAlpacaTradeUpdateCursorStore(path, new AtomicFileWriterAdapter());
             await using var first = CreateSut(firstStore);
             await using var second = CreateSut(secondStore);
 
@@ -460,14 +463,17 @@ public sealed class AlpacaTradeUpdatesClientTests
             var paper = new FileAlpacaTradeUpdateCursorStore(
                 "provider-account-1",
                 AlpacaCredentialEnvironment.PaperEnvironment,
+                new AtomicFileWriterAdapter(),
                 directory);
             var live = new FileAlpacaTradeUpdateCursorStore(
                 "provider-account-1",
                 AlpacaCredentialEnvironment.LiveEnvironment,
+                new AtomicFileWriterAdapter(),
                 directory);
             var anotherPaperAccount = new FileAlpacaTradeUpdateCursorStore(
                 "provider-account-2",
                 AlpacaCredentialEnvironment.PaperEnvironment,
+                new AtomicFileWriterAdapter(),
                 directory);
 
             paper.StatePath.Should().NotBe(live.StatePath);
@@ -690,7 +696,7 @@ public sealed class AlpacaTradeUpdatesClientTests
             File.WriteAllText(
                 path,
                 """{"Watermark":"2026-08-04T21:00:00+00:00","EventIds":["legacy-event-1","legacy-event-2"]}""");
-            var sut = new FileAlpacaTradeUpdateCursorStore(path);
+            var sut = new FileAlpacaTradeUpdateCursorStore(path, new AtomicFileWriterAdapter());
 
             var loaded = sut.LoadState();
             loaded.Version.Should().Be(AlpacaTradeUpdateCursorState.CurrentVersion);
@@ -724,7 +730,7 @@ public sealed class AlpacaTradeUpdatesClientTests
 
         try
         {
-            var store = new FileAlpacaTradeUpdateCursorStore(path);
+            var store = new FileAlpacaTradeUpdateCursorStore(path, new AtomicFileWriterAdapter());
             await using var sut = CreateSut(store);
             const string eventId = "01JJ3WE73W5PG672TC4XACXH63";
 
@@ -753,7 +759,7 @@ public sealed class AlpacaTradeUpdatesClientTests
         try
         {
             File.WriteAllText(path, "{\"Version\":2,\"PendingEnvelopes\":[");
-            var store = new FileAlpacaTradeUpdateCursorStore(path);
+            var store = new FileAlpacaTradeUpdateCursorStore(path, new AtomicFileWriterAdapter());
             await using var sut = CreateSut(store);
 
             Action load = () => store.LoadState();
@@ -780,7 +786,7 @@ public sealed class AlpacaTradeUpdatesClientTests
             File.WriteAllText(
                 path,
                 $"{{\"Version\":2,\"Watermark\":null,\"EventIds\":[],\"EventHashes\":{{}},\"PendingEnvelopes\":[{pending}]}}");
-            var sut = new FileAlpacaTradeUpdateCursorStore(path);
+            var sut = new FileAlpacaTradeUpdateCursorStore(path, new AtomicFileWriterAdapter());
 
             Action load = () => sut.LoadState();
             load.Should().Throw<InvalidDataException>()
@@ -812,6 +818,7 @@ public sealed class AlpacaTradeUpdatesClientTests
         new(
             new AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret", UseSandbox: true),
             NullLogger<AlpacaTradeUpdatesClient>.Instance,
+            new AtomicFileWriterAdapter(),
             cursorStore: cursorStore);
 
     private static string CreateTradeUpdate(

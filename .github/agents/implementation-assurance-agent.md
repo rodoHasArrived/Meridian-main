@@ -145,4 +145,7 @@ A task is complete when **all** of the following are true:
 CI/CD validation ownership and administrator rollout are maintained in
 [CI/CD ownership and rollout](../../docs/engineering/ci-cd-optimization.md). Meridian CI owns the four canonical
 `scripts/ci.sh` lanes; legacy CI owns Secret Scan and nightly/manual coverage.
+The four-lane `Meridian CI / quality-gate` keeps its identity. The always-reported
+`Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
+Production Certification, including pull requests and merge groups.
 All CI governance changes require human review.

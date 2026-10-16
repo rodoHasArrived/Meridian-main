@@ -13,6 +13,30 @@ namespace Meridian.Ui.Shared.Evidence;
 
 public sealed partial class FileEvidenceArtifactStore
 {
+    public async Task<bool> VerifyRetainedContentAsync(string vaultId, string tenantId, string scope, CancellationToken ct = default)
+    {
+        var identity = await TryGetVaultIdentityAsync(vaultId, tenantId, scope, ct).ConfigureAwait(false);
+        if (identity is null || identity.Artifacts.Count == 0)
+            return false;
+        long remaining = _documentVerificationByteLimit;
+        foreach (var artifact in identity.Artifacts)
+        {
+            var document = artifact.Document;
+            if (document is null || artifact.SizeBytes < 0 || artifact.SizeBytes > remaining ||
+                artifact.SizeBytes > MaxRetainedArtifactBytes ||
+                !TryResolveUniqueDocument(identity, document.DocumentId, out var retainedDocument) ||
+                retainedDocument is null || !DocumentSemanticsMatch(document, retainedDocument) ||
+                !TryResolveUniqueDocumentArtifact(identity, document, out var uniqueArtifact) ||
+                uniqueArtifact != artifact || !ArtifactContentMatchesDocument(artifact, document) ||
+                !ManifestSnapshotDocumentMatches(identity, document))
+                return false;
+            remaining -= artifact.SizeBytes;
+            if (!await HasVerifiedRetainedDocumentContentAsync(new VerifiedDocumentCandidate(identity, document, artifact), ct).ConfigureAwait(false))
+                return false;
+        }
+        return true;
+    }
+
     private const int DocumentVerificationOverscan = 8;
     private const int MinDocumentLocatorInspections = 64;
     private const int MaxDocumentLocatorInspections = 512;

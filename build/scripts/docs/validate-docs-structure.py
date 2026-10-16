@@ -7,7 +7,11 @@ Checks:
   2. docs/ top-level directories are known to the documentation rebuild model
   3. Hand-authored markdown files have front-matter lifecycle fields
      (Status, Owner, Reviewed) — warns when absent
-  4. Stale documents: Reviewed date older than 180 days — warns
+  4. Invalid Reviewed dates and dates older than 180 days — warns
+
+Lifecycle fields must appear in opening YAML front matter or title/metadata, not examples
+or document body text. Generated outputs are counted separately using directory,
+automation-registry, or explicit generated-header ownership.
 
 Exit codes:
   0 — all checks passed (warnings printed but not fatal)
@@ -23,10 +27,20 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import ast
 import re
 import sys
-from datetime import date, datetime, timezone
+from collections import Counter
+from datetime import date, datetime
 from pathlib import Path
+
+try:
+    import yaml
+except ImportError as exc:
+    raise SystemExit(
+        "PyYAML is required; install it with "
+        "python3 -m pip install --requirement build/scripts/docs/requirements.txt"
+    ) from exc
 
 # Directories whose contents are generated or build-produced
 # and should be excluded from hand-authored structure checks.
@@ -177,57 +191,130 @@ def check_top_level_model(docs_dir: Path, github_actions: bool) -> tuple[list[st
     return errors, warnings
 
 
+def read_yaml_front_matter(lines: list[str]) -> dict:
+    """Parse an opening YAML block; incomplete or malformed blocks are findings."""
+    end = next((i for i in range(1, len(lines)) if lines[i].strip() in {"---", "..."}), None)
+    if end is None:
+        raise ValueError("Unterminated YAML front matter; expected closing ---")
+    try:
+        metadata = yaml.safe_load("\n".join(lines[1:end]))
+    except (yaml.YAMLError, ValueError) as exc:
+        raise ValueError(f"Invalid YAML front matter: {exc}") from exc
+    if not isinstance(metadata, dict):
+        raise ValueError("YAML front matter must be a mapping")
+    return metadata
+
+
+def extract_lifecycle_header(content: str) -> dict[str, str]:
+    """Read opening YAML front matter or the Markdown title/metadata block.
+
+    Stop at prose, a section, or a code fence. A later example or an Owner label
+    in a procedure must not supply the document's lifecycle metadata.
+    """
+    lines = content.lstrip("\ufeff \t\r\n").splitlines()
+    if lines and lines[0].strip() == "---":
+        metadata = read_yaml_front_matter(lines)
+        return {
+            key.casefold(): str(value).strip()
+            for key, value in metadata.items()
+            if isinstance(key, str) and isinstance(value, (str, date))
+        }
+
+    fields: dict[str, str] = {}
+    title_seen = False
+    for raw_line in lines:
+        line = raw_line.strip()
+        if not line:
+            continue
+        if not title_seen and re.match(r"^#\s+", line):
+            title_seen = True
+            continue
+        match = re.fullmatch(r"\*\*([^*]+):\*\*[ \t]*(.*)", line)
+        if not match:
+            break
+        fields.setdefault(match.group(1).casefold(), match.group(2).strip())
+    return fields
+
+
 def extract_field(content: str, field: str) -> str | None:
-    """Extract a front-matter field value like **Field:** value."""
-    pattern = rf"\*\*{field}:\*\*\s*(.+)"
-    m = re.search(pattern, content, re.IGNORECASE)
-    if m:
-        return m.group(1).strip()
+    """Read one lifecycle field; empty values are missing metadata."""
+    return extract_lifecycle_header(content).get(field.casefold()) or None
+
+
+def automation_outputs(repo_root: Path) -> set[Path]:
+    """Read literal output declarations without executing the automation runner.
+
+    A registry entry containing computed values cannot establish an exemption.
+    Keep checking its documents unless they have another ownership signal.
+    """
+    registry = repo_root / "build/scripts/docs/run-docs-automation.py"
+    if not registry.is_file():
+        return set()
+    tree = ast.parse(registry.read_text(encoding="utf-8"), filename=str(registry))
+    outputs: set[Path] = set()
+    for node in tree.body:
+        if not (isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name)
+                and node.target.id == "SCRIPT_CONFIG" and isinstance(node.value, ast.Dict)):
+            continue
+        for entry in node.value.values:
+            try:
+                config = ast.literal_eval(entry)
+            except (ValueError, TypeError):
+                continue
+            if not isinstance(config, dict):
+                continue
+            candidates = [config.get("output")]
+            args = config.get("args", [])
+            if isinstance(args, (list, tuple)):
+                candidates.extend(args[i + 1] for i, arg in enumerate(args[:-1]) if arg == "--output")
+            for output in candidates:
+                if isinstance(output, str) and output.endswith(".md"):
+                    outputs.add((repo_root / output).resolve())
+    return outputs
+
+
+def generated_ownership(md_file: Path, docs_dir: Path, content: str, outputs: set[Path]) -> str | None:
+    """Identify file-level generation contracts, never a whole status folder.
+
+    Headers are only recognized before body text, so a guide discussing a
+    generator or showing a generated-header example still needs lifecycle fields.
+    """
+    if any(part in GENERATED_DIRS for part in md_file.relative_to(docs_dir).parts):
+        return "generated directory"
+    if md_file.resolve() in outputs:
+        return "automation registry"
+
+    header = content.lstrip("\ufeff \t\r\n")
+    lines = header.splitlines()
+    if lines and lines[0].strip() == "---":
+        try:
+            metadata = read_yaml_front_matter(lines)
+        except ValueError:
+            return None  # Lifecycle validation reports the malformed header.
+        generator = metadata.get("generator")
+        if metadata.get("generated") is True and isinstance(generator, str) and generator.strip():
+            return "generated header"
+    if header.startswith("# "):
+        header = header.partition("\n")[2].lstrip()
+    if header.startswith("<!--"):
+        comment, end, _ = header.partition("-->")
+        if end and (
+            (re.search(r"^generated:\s*true\s*$", comment, re.MULTILINE)
+             and re.search(r"^generator:\s*\S+", comment, re.MULTILINE))
+            or re.match(r"<!--\s*Generated by\s+\S+.*Do not edit", comment, re.IGNORECASE | re.DOTALL)
+        ):
+            return "generated header"
+    first_line = header.partition("\n")[0].strip()
+    if (re.match(r"^(?:>\s*|[_*])Auto-generated\b", first_line, re.IGNORECASE)
+            or re.match(r"^This file is generated from `[^`]+`", first_line)):
+        return "generated header"
     return None
 
 
 def check_front_matter(docs_dir: Path, github_actions: bool, strict: bool) -> list[str]:
-    """
-    Check that hand-authored markdown files in key dirs have lifecycle front matter.
-    Returns list of warning/error messages.
-    """
-    issues = []
-    today = date.today()
-
-    # Only check hand-authored sections
-    check_dirs = [d for d in docs_dir.iterdir()
-                  if d.is_dir() and d.name not in GENERATED_DIRS and not d.name.startswith(".")]
-
-    for subdir in sorted(check_dirs):
-        for md_file in sorted(subdir.rglob("*.md")):
-            if md_file.name.lower() in {r.lower() for r in README_EXEMPT_FILES}:
-                continue
-            if any(part in GENERATED_DIRS for part in md_file.relative_to(docs_dir).parts):
-                continue
-
-            content = md_file.read_text(encoding="utf-8", errors="replace")
-            rel = md_file.relative_to(docs_dir.parent)
-
-            for field in ENCOURAGED_FIELDS:
-                value = extract_field(content, field)
-                if value is None:
-                    msg = f"Missing front-matter field '**{field}:**' in {rel}"
-                    emit("warning", str(rel), msg, github_actions)
-                    issues.append(msg)
-                elif field == "Reviewed":
-                    # Check staleness
-                    try:
-                        reviewed_date = datetime.strptime(value, "%Y-%m-%d").date()
-                        age = (today - reviewed_date).days
-                        if age > STALE_DAYS:
-                            msg = (f"Stale document in {rel}: "
-                                   f"'Reviewed: {value}' is {age} days old (threshold: {STALE_DAYS})")
-                            emit("warning", str(rel), msg, github_actions)
-                            issues.append(msg)
-                    except ValueError:
-                        pass  # Non-standard date format — skip
-
-    return issues
+    """Check lifecycle metadata in all non-hidden top-level docs directories."""
+    check_dirs = [d for d in docs_dir.iterdir() if d.is_dir() and not d.name.startswith(".")]
+    return check_front_matter_in_dirs(docs_dir, check_dirs, github_actions, strict)
 
 
 def resolve_top_level_scope(docs_dir: Path, names: list[str], github_actions: bool) -> tuple[list[Path], list[str]]:
@@ -264,25 +351,42 @@ def check_front_matter_in_dirs(
     """
     issues = []
     today = date.today()
+    outputs = automation_outputs(docs_dir.parent)
+    generated: Counter[str] = Counter()
+    checked = 0
+    entrypoints = 0
 
     for subdir in sorted(markdown_dirs):
         for md_file in sorted(subdir.rglob("*.md")):
             if md_file.name.lower() in {r.lower() for r in README_EXEMPT_FILES}:
+                entrypoints += 1
                 continue
-            if any(part in GENERATED_DIRS for part in md_file.relative_to(docs_dir).parts):
+            content = md_file.read_text(encoding="utf-8", errors="replace")
+            ownership = generated_ownership(md_file, docs_dir, content, outputs)
+            if ownership:
+                generated[ownership] += 1
                 continue
 
-            content = md_file.read_text(encoding="utf-8", errors="replace")
-            rel = md_file.relative_to(docs_dir.parent)
+            checked += 1
+            rel = md_file.relative_to(docs_dir.parent).as_posix()
+            try:
+                fields = extract_lifecycle_header(content)
+            except ValueError as exc:
+                msg = f"Invalid lifecycle header in {rel}: {exc}"
+                emit("warning", str(rel), msg, github_actions)
+                issues.append(msg)
+                continue
 
             for field in ENCOURAGED_FIELDS:
-                value = extract_field(content, field)
+                value = fields.get(field.casefold()) or None
                 if value is None:
                     msg = f"Missing front-matter field '**{field}:**' in {rel}"
                     emit("warning", str(rel), msg, github_actions)
                     issues.append(msg)
                 elif field == "Reviewed":
                     try:
+                        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+                            raise ValueError("Expected YYYY-MM-DD")
                         reviewed_date = datetime.strptime(value, "%Y-%m-%d").date()
                         age = (today - reviewed_date).days
                         if age > STALE_DAYS:
@@ -291,8 +395,17 @@ def check_front_matter_in_dirs(
                             emit("warning", str(rel), msg, github_actions)
                             issues.append(msg)
                     except ValueError:
-                        pass
+                        msg = f"Invalid Reviewed date '{value}' in {rel}; expected YYYY-MM-DD"
+                        emit("warning", str(rel), msg, github_actions)
+                        issues.append(msg)
 
+    print(f"  Lifecycle scope: {checked} hand-authored document(s) checked; "
+          f"{sum(generated.values())} generated output(s) excluded; "
+          f"{entrypoints} entrypoint/meta file(s) excluded.")
+    if generated:
+        print("  Generated ownership: " + "; ".join(
+            f"{reason}: {count}" for reason, count in sorted(generated.items())
+        ))
     return issues
 
 

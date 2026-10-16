@@ -65,6 +65,13 @@ public sealed class ConfigJsonSchemaGenerator
             return;
         }
 
+        properties["TenantScopeEnforcement"] = new JsonObject
+        {
+            ["type"] = new JsonArray("string", "null"),
+            ["default"] = "fail-closed",
+            ["description"] = "Strict tenant isolation by default. deployment-boundary is explicit, temporary single-company migration compatibility. Requires restart."
+        };
+
         properties["ApiHost"] = AllowNull(new JsonObject
         {
             ["$ref"] = "#/$defs/ApiHostOptions"

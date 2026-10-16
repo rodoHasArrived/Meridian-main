@@ -15,6 +15,7 @@ public sealed partial class PostgresLedgerJournalStore
         DateOnly effectiveDate,
         CancellationToken ct = default)
     {
+        RequireWriteTenant();
         if (ledgerBookId == Guid.Empty)
         {
             throw new ArgumentException("Ledger book id is required.", nameof(ledgerBookId));
@@ -32,6 +33,7 @@ public sealed partial class PostgresLedgerJournalStore
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct).ConfigureAwait(false);
+        await EnsureBookWriteAuthorityAsync(connection, transaction, ledgerBookId, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =

@@ -1,0 +1,661 @@
+{
+  "retrievedAt": "2026-10-05T18:05:58.666241+00:00",
+  "commit": "e3bf60bae577c132d8444a827ca4dc3181cc48a1",
+  "files": [
+    {
+      "path": "src/Meridian.Ui/dashboard/tailwind.config.ts",
+      "source_sha256": "3dbe1875c20796e85f924ca116e3d41d569b75d00bae9592edbfc44c66841ad1",
+      "excerpts": [
+        {
+          "line": 3,
+          "text": "export default {"
+        },
+        {
+          "line": 4,
+          "text": "  content: [\"./index.html\", \"./src/**/*.{ts,tsx}\"],"
+        },
+        {
+          "line": 5,
+          "text": "  // The workstation is light-first. Class dark mode stays available for local"
+        },
+        {
+          "line": 6,
+          "text": "  // experiments, but the production visual contract is token-driven in CSS."
+        },
+        {
+          "line": 7,
+          "text": "  darkMode: [\"class\"],"
+        },
+        {
+          "line": 83,
+          "text": "      boxShadow: {"
+        },
+        {
+          "line": 84,
+          "text": "        workstation: \"var(--shadow-workstation)\","
+        },
+        {
+          "line": 85,
+          "text": "        panel: \"var(--shadow-panel)\","
+        },
+        {
+          "line": 86,
+          "text": "        float: \"var(--shadow-float)\","
+        }
+      ]
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/postcss.config.cjs",
+      "source_sha256": "c3275e0c1ab2639ab056915eac2a806b997a7879c31edce8898ec443a4823a06",
+      "excerpts": [
+        {
+          "line": 2,
+          "text": "  plugins: {"
+        },
+        {
+          "line": 3,
+          "text": "    tailwindcss: {},"
+        },
+        {
+          "line": 4,
+          "text": "    autoprefixer: {}"
+        },
+        {
+          "line": 5,
+          "text": "  }"
+        }
+      ]
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/package.json",
+      "source_sha256": "17a4a582d9890c9ab89808b6f4114101c913894539f97e02f7f39f1cd8a35ea0",
+      "excerpts": [
+        {
+          "line": 1,
+          "text": "{"
+        },
+        {
+          "line": 2,
+          "text": "  \"name\": \"@meridian/workstation-dashboard\","
+        },
+        {
+          "line": 3,
+          "text": "  \"version\": \"0.1.0\","
+        },
+        {
+          "line": 4,
+          "text": "  \"private\": true,"
+        },
+        {
+          "line": 7,
+          "text": "    \"dev\": \"vite --host 127.0.0.1\","
+        },
+        {
+          "line": 8,
+          "text": "    \"preview\": \"vite preview --host 127.0.0.1 --outDir ../wwwroot/workstation\","
+        },
+        {
+          "line": 9,
+          "text": "    \"build\": \"tsc --noEmit && vite build\","
+        },
+        {
+          "line": 10,
+          "text": "    \"screenshots\": \"node ../../../scripts/dev/capture-web-screenshots.mjs\","
+        },
+        {
+          "line": 11,
+          "text": "    \"smoke:workstation\": \"node scripts/smoke-workstation.mjs\","
+        },
+        {
+          "line": 12,
+          "text": "    \"lint\": \"eslint src\","
+        },
+        {
+          "line": 13,
+          "text": "    \"typecheck:strict\": \"tsc --noEmit -p tsconfig.strict.json\","
+        }
+      ]
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/package-lock.json",
+      "source_sha256": "7f0d4034ab6cc9a3be9d805a3bca15278df7e82959ac113539de3fbf86062772",
+      "selected_packages": {
+        "braces": {
+          "version": "3.0.3",
+          "resolved": "https://registry.npmjs.org/braces/-/braces-3.0.3.tgz",
+          "integrity": "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==",
+          "dev": true,
+          "license": "MIT",
+          "dependencies": {
+            "fill-range": "^7.1.1"
+          },
+          "engines": {
+            "node": ">=8"
+          }
+        },
+        "chokidar": {
+          "version": "3.6.0",
+          "resolved": "https://registry.npmjs.org/chokidar/-/chokidar-3.6.0.tgz",
+          "integrity": "sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==",
+          "dev": true,
+          "license": "MIT",
+          "dependencies": {
+            "anymatch": "~3.1.2",
+            "braces": "~3.0.2",
+            "glob-parent": "~5.1.2",
+            "is-binary-path": "~2.1.0",
+            "is-glob": "~4.0.1",
+            "normalize-path": "~3.0.0",
+            "readdirp": "~3.6.0"
+          },
+          "engines": {
+            "node": ">= 8.10.0"
+          },
+          "funding": {
+            "url": "https://paulmillr.com/funding/"
+          },
+          "optionalDependencies": {
+            "fsevents": "~2.3.2"
+          }
+        },
+        "fast-glob": {
+          "version": "3.3.3",
+          "resolved": "https://registry.npmjs.org/fast-glob/-/fast-glob-3.3.3.tgz",
+          "integrity": "sha512-7MptL8U0cqcFdzIzwOTHoilX9x5BrNqye7Z/LuC7kCMRio1EMSyqRK3BEAUD7sXRq4iT4AzTVuZdhgQ2TCvYLg==",
+          "dev": true,
+          "license": "MIT",
+          "dependencies": {
+            "@nodelib/fs.stat": "^2.0.2",
+            "@nodelib/fs.walk": "^1.2.3",
+            "glob-parent": "^5.1.2",
+            "merge2": "^1.3.0",
+            "micromatch": "^4.0.8"
+          },
+          "engines": {
+            "node": ">=8.6.0"
+          }
+        },
+        "micromatch": {
+          "version": "4.0.8",
+          "resolved": "https://registry.npmjs.org/micromatch/-/micromatch-4.0.8.tgz",
+          "integrity": "sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==",
+          "dev": true,
+          "license": "MIT",
+          "dependencies": {
+            "braces": "^3.0.3",
+            "picomatch": "^2.3.1"
+          },
+          "engines": {
+            "node": ">=8.6"
+          }
+        },
+        "tailwindcss": {
+          "version": "3.4.15",
+          "resolved": "https://registry.npmjs.org/tailwindcss/-/tailwindcss-3.4.15.tgz",
+          "integrity": "sha512-r4MeXnfBmSOuKUWmXe6h2CcyfzJCEk4F0pptO5jlnYSIViUkVmsawj80N5h2lO3gwcmSb4n3PuN+e+GC1Guylw==",
+          "dev": true,
+          "license": "MIT",
+          "dependencies": {
+            "@alloc/quick-lru": "^5.2.0",
+            "arg": "^5.0.2",
+            "chokidar": "^3.6.0",
+            "didyoumean": "^1.2.2",
+            "dlv": "^1.1.3",
+            "fast-glob": "^3.3.2",
+            "glob-parent": "^6.0.2",
+            "is-glob": "^4.0.3",
+            "jiti": "^1.21.6",
+            "lilconfig": "^2.1.0",
+            "micromatch": "^4.0.8",
+            "normalize-path": "^3.0.0",
+            "object-hash": "^3.0.0",
+            "picocolors": "^1.1.1",
+            "postcss": "^8.4.47",
+            "postcss-import": "^15.1.0",
+            "postcss-js": "^4.0.1",
+            "postcss-load-config": "^4.0.2",
+            "postcss-nested": "^6.2.0",
+            "postcss-selector-parser": "^6.1.2",
+            "resolve": "^1.22.8",
+            "sucrase": "^3.35.0"
+          },
+          "bin": {
+            "tailwind": "lib/cli.js",
+            "tailwindcss": "lib/cli.js"
+          },
+          "engines": {
+            "node": ">=14.0.0"
+          }
+        }
+      }
+    },
+    {
+      "path": "src/Meridian/Meridian.csproj",
+      "source_sha256": "40a36721c2235c97583b0d5d6a822537045698ccb40d6e849616c293ba70388c",
+      "excerpts": [
+        {
+          "line": 54,
+          "text": ""
+        },
+        {
+          "line": 55,
+          "text": "  <!-- QuantConnect Lean Engine integration is optional and excluded from normal workstation builds. -->"
+        },
+        {
+          "line": 56,
+          "text": "  <ItemGroup Condition=\"'$(EnableLeanIntegration)' == 'true'\">"
+        },
+        {
+          "line": 57,
+          "text": "    <PackageReference Include=\"QuantConnect.Lean\" />"
+        },
+        {
+          "line": 88,
+          "text": ""
+        },
+        {
+          "line": 89,
+          "text": "  <!-- Host static assets: the canonical tracked workstation bundle (PRD-018). Copying it beside"
+        },
+        {
+          "line": 90,
+          "text": "       the executable makes `dotnet run`, `dotnet publish`, and installed layouts serve the same"
+        },
+        {
+          "line": 91,
+          "text": "       tree the dashboard build writes, independent of launch directory. -->"
+        }
+      ]
+    },
+    {
+      "path": ".github/workflows/production-certification.yml",
+      "source_sha256": "d72da85954d1912976a8ddae619b851f5bded6c47a9f3d5968346af966052885",
+      "excerpts": [
+        {
+          "line": 11,
+          "text": ""
+        },
+        {
+          "line": 12,
+          "text": "permissions:"
+        },
+        {
+          "line": 13,
+          "text": "  contents: read"
+        },
+        {
+          "line": 14,
+          "text": ""
+        },
+        {
+          "line": 15,
+          "text": "concurrency:"
+        },
+        {
+          "line": 31,
+          "text": "      artifact-name: production-certification"
+        },
+        {
+          "line": 32,
+          "text": "      retention-days: 90"
+        },
+        {
+          "line": 33,
+          "text": ""
+        },
+        {
+          "line": 34,
+          "text": "  dependency-evidence:"
+        },
+        {
+          "line": 35,
+          "text": "    name: NuGet and npm dependency evidence"
+        },
+        {
+          "line": 36,
+          "text": "    runs-on: ubuntu-latest"
+        },
+        {
+          "line": 37,
+          "text": "    timeout-minutes: 35"
+        },
+        {
+          "line": 38,
+          "text": "    env:"
+        },
+        {
+          "line": 39,
+          "text": "      # Reuse cached tarballs; npm still fetches missing packages and enforces the lockfile."
+        },
+        {
+          "line": 44,
+          "text": "        with:"
+        },
+        {
+          "line": 45,
+          "text": "          persist-credentials: false"
+        },
+        {
+          "line": 46,
+          "text": "          ref: ${{ github.sha }}"
+        },
+        {
+          "line": 47,
+          "text": "          fetch-depth: 1"
+        },
+        {
+          "line": 132,
+          "text": "          if-no-files-found: error"
+        },
+        {
+          "line": 133,
+          "text": "          retention-days: 90"
+        },
+        {
+          "line": 134,
+          "text": ""
+        },
+        {
+          "line": 135,
+          "text": "  recovery-drill:"
+        },
+        {
+          "line": 136,
+          "text": "    name: encrypted backup and clean restore drill"
+        },
+        {
+          "line": 137,
+          "text": "    runs-on: ubuntu-latest"
+        },
+        {
+          "line": 138,
+          "text": "    timeout-minutes: 35"
+        },
+        {
+          "line": 139,
+          "text": "    services:"
+        },
+        {
+          "line": 140,
+          "text": "      postgres:"
+        },
+        {
+          "line": 162,
+          "text": "        with:"
+        },
+        {
+          "line": 163,
+          "text": "          persist-credentials: false"
+        },
+        {
+          "line": 164,
+          "text": "          ref: ${{ github.sha }}"
+        },
+        {
+          "line": 165,
+          "text": "          fetch-depth: 1"
+        },
+        {
+          "line": 287,
+          "text": "          if-no-files-found: error"
+        },
+        {
+          "line": 288,
+          "text": "          retention-days: 90"
+        },
+        {
+          "line": 289,
+          "text": ""
+        },
+        {
+          "line": 290,
+          "text": "  documentation-evidence:"
+        },
+        {
+          "line": 291,
+          "text": "    name: same-commit documentation evidence"
+        },
+        {
+          "line": 292,
+          "text": "    runs-on: ubuntu-latest"
+        },
+        {
+          "line": 293,
+          "text": "    timeout-minutes: 25"
+        },
+        {
+          "line": 294,
+          "text": "    steps:"
+        },
+        {
+          "line": 297,
+          "text": "        with:"
+        },
+        {
+          "line": 298,
+          "text": "          persist-credentials: false"
+        },
+        {
+          "line": 299,
+          "text": "          ref: ${{ github.sha }}"
+        },
+        {
+          "line": 300,
+          "text": "          fetch-depth: 1"
+        },
+        {
+          "line": 330,
+          "text": "          if-no-files-found: error"
+        },
+        {
+          "line": 331,
+          "text": "          retention-days: 90"
+        }
+      ]
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/node_modules/tailwindcss/lib/lib/content.js",
+      "source_sha256": "4359c04e05c1ac359cd18cbc114637cdb8758ca6fb4bf2a8665eb9ee58c3c932",
+      "excerpts": [
+        {
+          "line": 42,
+          "text": "    // Split into included and excluded globs"
+        },
+        {
+          "line": 43,
+          "text": "    let tasks = _fastglob.default.generateTasks(files);"
+        },
+        {
+          "line": 44,
+          "text": "    /** @type {ContentPath[]} */ let included = [];"
+        },
+        {
+          "line": 45,
+          "text": "    /** @type {ContentPath[]} */ let excluded = [];"
+        },
+        {
+          "line": 143,
+          "text": "    let changedContent = context.tailwindConfig.content.files.filter((item)=>typeof item.raw === \"string\").map(({ raw , extension =\"html\"  })=>({"
+        },
+        {
+          "line": 144,
+          "text": "            content: raw,"
+        },
+        {
+          "line": 145,
+          "text": "            extension"
+        },
+        {
+          "line": 146,
+          "text": "        }));"
+        },
+        {
+          "line": 160,
+          "text": "const LARGE_DIRECTORIES = ["
+        },
+        {
+          "line": 161,
+          "text": "    \"node_modules\""
+        },
+        {
+          "line": 162,
+          "text": "];"
+        },
+        {
+          "line": 163,
+          "text": "// Ensures that `node_modules` has to match as-is, otherwise `mynode_modules`"
+        },
+        {
+          "line": 164,
+          "text": "// would match as well, but that is not a known large directory."
+        },
+        {
+          "line": 165,
+          "text": "const LARGE_DIRECTORIES_REGEX = new RegExp(`(${LARGE_DIRECTORIES.map((dir)=>String.raw`\\b${dir}\\b`).join(\"|\")})`);"
+        },
+        {
+          "line": 168,
+          "text": "    // - Includes `**`"
+        },
+        {
+          "line": 169,
+          "text": "    // - Does not include any of the known large directories (e.g.: node_modules)"
+        },
+        {
+          "line": 170,
+          "text": "    let maybeBroadPattern = paths.some((path)=>path.includes(\"**\") && !LARGE_DIRECTORIES_REGEX.test(path));"
+        },
+        {
+          "line": 171,
+          "text": "    // Didn't detect any potentially broad patterns, so we can skip further"
+        },
+        {
+          "line": 178,
+          "text": "    // All glob matchers that explicitly contain any of the known large"
+        },
+        {
+          "line": 179,
+          "text": "    // directories (e.g.: node_modules)."
+        },
+        {
+          "line": 180,
+          "text": "    let explicitMatchers = [];"
+        },
+        {
+          "line": 181,
+          "text": "    // Create matchers for all paths"
+        }
+      ]
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/node_modules/fast-glob/out/utils/pattern.js",
+      "source_sha256": "ada4ff0cfdfa804247dd1a8dc9fc00ec537b591c7ef7ded1ff602d2e3d0cd571",
+      "excerpts": [
+        {
+          "line": 136,
+          "text": "function expandBraceExpansion(pattern) {"
+        },
+        {
+          "line": 137,
+          "text": "    const patterns = micromatch.braces(pattern, { expand: true, nodupes: true, keepEscaping: true });"
+        },
+        {
+          "line": 138,
+          "text": "    /**"
+        },
+        {
+          "line": 139,
+          "text": "     * Sort the patterns by length so that the same depth patterns are processed side by side."
+        }
+      ]
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/node_modules/chokidar/index.js",
+      "source_sha256": "18ce2effe87d6379aa1d3756e5694c57c72cf97804056d688499a2bffcec66fd",
+      "excerpts": []
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/node_modules/braces/lib/parse.js",
+      "source_sha256": "e572166565f15fa6ad9865ae49d678218e32aabfd1b3720f6d0d43d39800d310",
+      "excerpts": [
+        {
+          "line": 9,
+          "text": "const {"
+        },
+        {
+          "line": 10,
+          "text": "  MAX_LENGTH,"
+        },
+        {
+          "line": 11,
+          "text": "  CHAR_BACKSLASH, /* \\ */"
+        },
+        {
+          "line": 12,
+          "text": "  CHAR_BACKTICK, /* ` */"
+        },
+        {
+          "line": 36,
+          "text": "  const opts = options || {};"
+        },
+        {
+          "line": 37,
+          "text": "  const max = typeof opts.maxLength === 'number' ? Math.min(MAX_LENGTH, opts.maxLength) : MAX_LENGTH;"
+        },
+        {
+          "line": 38,
+          "text": "  if (input.length > max) {"
+        },
+        {
+          "line": 39,
+          "text": "    throw new SyntaxError(`Input length (${input.length}), exceeds max characters (${max})`);"
+        }
+      ]
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/node_modules/braces/lib/compile.js",
+      "source_sha256": "dc98f22eee3d511785d92a00758d5f0d48efed5f5813bdecc2de430c529b5c9f",
+      "excerpts": [
+        {
+          "line": 49,
+          "text": "      for (const child of node.nodes) {"
+        },
+        {
+          "line": 50,
+          "text": "        output += walk(child, node);"
+        },
+        {
+          "line": 51,
+          "text": "      }"
+        },
+        {
+          "line": 52,
+          "text": "    }"
+        }
+      ]
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/node_modules/braces/lib/expand.js",
+      "source_sha256": "41ccc196ebfa7b7781a634e721eb744e4e7bcb54cba427a7e3d6806a1b9e58f7",
+      "excerpts": [
+        {
+          "line": 102,
+          "text": "      if (child.nodes) {"
+        },
+        {
+          "line": 103,
+          "text": "        walk(child, node);"
+        },
+        {
+          "line": 104,
+          "text": "      }"
+        },
+        {
+          "line": 105,
+          "text": "    }"
+        }
+      ]
+    }
+  ],
+  "note": "Source file SHA-256 hashes identify complete baseline files; excerpts are evidence selections, not complete source."
+}

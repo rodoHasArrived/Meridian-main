@@ -909,13 +909,44 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
         );
     }
 
+    // Each consumer reuses its own scratch storage, including when listeners sample
+    // a batch out. Clear it for retries too so links describe only the retained batch.
+    internal sealed class BatchTraceLinks
+    {
+        private readonly HashSet<ActivityContext> _contexts;
+        internal List<ActivityLink> Links { get; }
+
+        internal BatchTraceLinks(int capacity)
+        {
+            _contexts = new HashSet<ActivityContext>(capacity);
+            Links = new List<ActivityLink>(capacity);
+        }
+
+        internal void Clear()
+        {
+            _contexts.Clear();
+            Links.Clear();
+        }
+
+        internal void Add(ActivityContext context, ActivityContext batchParent)
+        {
+            if (context != default && context != batchParent && _contexts.Add(context))
+                Links.Add(new ActivityLink(context));
+        }
+    }
+
     private async Task ConsumeAsync(CancellationToken ct = default)
     {
+        // Long-running consumers must not inherit the activity that happened to be
+        // current during host composition. Every batch restores its queue context.
+        Activity.Current = null;
+
         // Set thread priority for consistent throughput
         ThreadingUtilities.SetAboveNormalPriority();
 
         var batchBuffer = new List<TracedMarketEvent>(_maxAdaptiveBatchSize);
         var reservationScratch = new List<DedupReservation>(_maxAdaptiveBatchSize);
+        var traceLinks = new BatchTraceLinks(_maxAdaptiveBatchSize);
         var nextPendingEventIndex = 0;
 
         try
@@ -930,6 +961,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
             {
                 Interlocked.Increment(ref _activeConsumers);
                 var startTs = Stopwatch.GetTimestamp();
+                Activity? batchActivity = null;
 
                 try
                 {
@@ -953,9 +985,19 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         }
                     }
 
-                    // [3.1] E2E trace propagation: start a per-batch activity so each consume
-                    // cycle appears as a structured span in distributed traces.
-                    using var batchActivity = MarketDataTracing.StartBatchConsumeActivity(batchBuffer.Count);
+                    // A batch may contain independent producer traces. Parent it to the
+                    // first event and link the others; per-event spans keep their own parent.
+                    if (OpenTelemetrySetup.ActivitySource.HasListeners())
+                    {
+                        var batchParent = batchBuffer.Count > 0
+                            ? batchBuffer[0].TraceContext.ParentContext
+                            : default;
+                        traceLinks.Clear();
+                        for (var i = 0; i < batchBuffer.Count; i++)
+                            traceLinks.Add(batchBuffer[i].TraceContext.ParentContext, batchParent);
+                        batchActivity = MarketDataTracing.StartBatchConsumeActivity(
+                            batchBuffer.Count, batchParent, traceLinks.Links);
+                    }
 
                     // Phase 1 — admission (resumable per event): validate, reserve the dedup
                     // identity, then append to the WAL. Validation precedes the dedup claim so a
@@ -977,6 +1019,9 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         }
 
                         var evt = tracedEvent.Event;
+                        // An unparented event in a mixed batch must not adopt another
+                        // producer's trace through the batch's ambient activity.
+                        Activity.Current = null;
                         using var processActivity = MarketDataTracing.StartProcessActivity(
                             GetEventTypeName(evt.Type),
                             evt.EffectiveSymbol,
@@ -995,98 +1040,107 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                             batchBuffer[i] = tracedEvent;
                         }
 
-                        // Validate event before persistence (when a validator is configured)
-                        if (_validator != null)
+                        try
                         {
-                            var validationResult = _validator.Validate(in evt);
-                            if (!validationResult.IsValid)
+                            // Validate event before persistence (when a validator is configured)
+                            if (_validator != null)
                             {
-                                if (_deadLetterSink != null)
+                                var validationResult = _validator.Validate(in evt);
+                                if (!validationResult.IsValid)
                                 {
-                                    await _deadLetterSink.RecordAsync(evt, validationResult.Errors, _cts.Token).ConfigureAwait(false);
+                                    if (_deadLetterSink != null)
+                                    {
+                                        await _deadLetterSink.RecordAsync(evt, validationResult.Errors, _cts.Token).ConfigureAwait(false);
+                                    }
+
+                                    Interlocked.Increment(ref _rejectedCount);
+                                    batchBuffer[i] = tracedEvent with { Suppressed = true };
+                                    admittedThroughIndex = i + 1;
+                                    continue; // Skip persisting invalid events
+                                }
+                            }
+
+                            // Reserve the dedup identity (when a dedup store is configured). The
+                            // claim is pending and memory-only until the sink flush confirms it.
+                            if (_dedupLedger != null)
+                            {
+                                var reservationResult = await _dedupLedger
+                                    .TryReserveAsync(evt, DedupLookupScope.LiveIngress, _cts.Token).ConfigureAwait(false);
+                                if (reservationResult.IsSuppressed)
+                                {
+                                    // A pending claim justifies discarding this delivery only when
+                                    // this batch holds the claim itself (a duplicate within the
+                                    // batch). An external memory-only claim proves nothing durable —
+                                    // its holder may abandon and release — so the event must be
+                                    // retained: raise a retryable fault and let the batch wait for
+                                    // the claim to commit (then a durable duplicate suppresses it)
+                                    // or release (then this batch claims it).
+                                    if (reservationResult.Status == DedupReservationStatus.PendingElsewhere &&
+                                        (reservationResult.Reservation.Key is null ||
+                                         !IsBatchLocalClaim(batchBuffer, reservationResult.Reservation.Key)))
+                                    {
+                                        // Never wait on an external claim while holding claims of our
+                                        // own: two consumers admitting crossed identity orders would
+                                        // otherwise each hold what the other waits for, deadlocked in
+                                        // their retry loops. Releasing our claims (and restarting
+                                        // admission on the retry) lets the external holder make
+                                        // progress; nothing here has touched the sink yet.
+                                        ReleaseAllReservations(batchBuffer);
+                                        admittedThroughIndex = 0;
+                                        throw new PendingExternalDedupClaimException(
+                                            "Event identity is claimed by an in-flight reservation outside this " +
+                                            "batch; batch claims were released and the delivery is retained until " +
+                                            "the external claim resolves.");
+                                    }
+
+                                    Interlocked.Increment(ref _deduplicatedCount);
+                                    batchBuffer[i] = tracedEvent with { Suppressed = true };
+                                    admittedThroughIndex = i + 1;
+                                    continue; // Skip duplicate events
                                 }
 
-                                Interlocked.Increment(ref _rejectedCount);
-                                batchBuffer[i] = tracedEvent with { Suppressed = true };
-                                admittedThroughIndex = i + 1;
-                                continue; // Skip persisting invalid events
+                                tracedEvent = tracedEvent with { Reservation = reservationResult.Reservation };
+                                batchBuffer[i] = tracedEvent;
                             }
-                        }
 
-                        // Reserve the dedup identity (when a dedup store is configured). The
-                        // claim is pending and memory-only until the sink flush confirms it.
-                        if (_dedupLedger != null)
-                        {
-                            var reservationResult = await _dedupLedger
-                                .TryReserveAsync(evt, DedupLookupScope.LiveIngress, _cts.Token).ConfigureAwait(false);
-                            if (reservationResult.IsSuppressed)
+                            if (_wal != null && tracedEvent.WalSequence == 0)
                             {
-                                // A pending claim justifies discarding this delivery only when
-                                // this batch holds the claim itself (a duplicate within the
-                                // batch). An external memory-only claim proves nothing durable —
-                                // its holder may abandon and release — so the event must be
-                                // retained: raise a retryable fault and let the batch wait for
-                                // the claim to commit (then a durable duplicate suppresses it)
-                                // or release (then this batch claims it).
-                                if (reservationResult.Status == DedupReservationStatus.PendingElsewhere &&
-                                    (reservationResult.Reservation.Key is null ||
-                                     !IsBatchLocalClaim(batchBuffer, reservationResult.Reservation.Key)))
+                                try
                                 {
-                                    // Never wait on an external claim while holding claims of our
-                                    // own: two consumers admitting crossed identity orders would
-                                    // otherwise each hold what the other waits for, deadlocked in
-                                    // their retry loops. Releasing our claims (and restarting
-                                    // admission on the retry) lets the external holder make
-                                    // progress; nothing here has touched the sink yet.
-                                    ReleaseAllReservations(batchBuffer);
-                                    admittedThroughIndex = 0;
-                                    throw new PendingExternalDedupClaimException(
-                                        "Event identity is claimed by an in-flight reservation outside this " +
-                                        "batch; batch claims were released and the delivery is retained until " +
-                                        "the external claim resolves.");
+                                    var walRecord = await _wal.AppendAsync(evt, GetEventTypeName(evt.Type), _cts.Token).ConfigureAwait(false);
+                                    batchBuffer[i] = tracedEvent with { WalSequence = walRecord.Sequence };
                                 }
-
-                                Interlocked.Increment(ref _deduplicatedCount);
-                                batchBuffer[i] = tracedEvent with { Suppressed = true };
-                                admittedThroughIndex = i + 1;
-                                continue; // Skip duplicate events
+                                catch (Exception walEx) when (walEx is not OperationCanceledException)
+                                {
+                                    // The identity claim must not outlive a failed admission: release
+                                    // it so the in-process retry can claim it again. The failure is
+                                    // wrapped as retryable — even when no record in the batch has a
+                                    // sequence yet — because an unavailable WAL is an unavailable
+                                    // durability store: the batch must wait for it rather than be
+                                    // abandoned, which without a dead-letter sink would silently
+                                    // drop events the producer can no longer retry.
+                                    ReleaseReservationAt(batchBuffer, i);
+                                    throw new WalAdmissionException(
+                                        "WAL append failed during batch admission; the batch is retained and retried.",
+                                        walEx);
+                                }
+                                catch
+                                {
+                                    ReleaseReservationAt(batchBuffer, i);
+                                    throw;
+                                }
                             }
 
-                            tracedEvent = tracedEvent with { Reservation = reservationResult.Reservation };
-                            batchBuffer[i] = tracedEvent;
+                            admittedThroughIndex = i + 1;
                         }
-
-                        if (_wal != null && tracedEvent.WalSequence == 0)
+                        catch (Exception ex) when (ex is not OperationCanceledException)
                         {
-                            try
-                            {
-                                var walRecord = await _wal.AppendAsync(evt, GetEventTypeName(evt.Type), _cts.Token).ConfigureAwait(false);
-                                batchBuffer[i] = tracedEvent with { WalSequence = walRecord.Sequence };
-                            }
-                            catch (Exception walEx) when (walEx is not OperationCanceledException)
-                            {
-                                // The identity claim must not outlive a failed admission: release
-                                // it so the in-process retry can claim it again. The failure is
-                                // wrapped as retryable — even when no record in the batch has a
-                                // sequence yet — because an unavailable WAL is an unavailable
-                                // durability store: the batch must wait for it rather than be
-                                // abandoned, which without a dead-letter sink would silently
-                                // drop events the producer can no longer retry.
-                                ReleaseReservationAt(batchBuffer, i);
-                                throw new WalAdmissionException(
-                                    "WAL append failed during batch admission; the batch is retained and retried.",
-                                    walEx);
-                            }
-                            catch
-                            {
-                                ReleaseReservationAt(batchBuffer, i);
-                                throw;
-                            }
+                            MarketDataTracing.RecordError(processActivity, ex);
+                            throw;
                         }
-
-                        admittedThroughIndex = i + 1;
                     }
 
+                    Activity.Current = batchActivity;
                     long maxWalSequence = _lastCommittedWalSequence;
                     var heldReservationCount = 0;
                     for (var i = 0; i < batchBuffer.Count; i++)
@@ -1121,6 +1175,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         }
 
                         var evt = tracedEvent.Event;
+                        Activity.Current = null;
                         using var storageActivity = MarketDataTracing.StartStorageActivity(
                             _sink.GetType().Name,
                             evt.EffectiveSymbol,
@@ -1130,13 +1185,22 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                         storageActivity?.SetTag("event.type", GetEventTypeName(evt.Type));
                         storageActivity?.SetTag("event.source", evt.Source);
 
-                        await _sink.AppendAsync(evt, _cts.Token).ConfigureAwait(false);
+                        try
+                        {
+                            await _sink.AppendAsync(evt, _cts.Token).ConfigureAwait(false);
+                        }
+                        catch (Exception ex) when (ex is not OperationCanceledException)
+                        {
+                            MarketDataTracing.RecordError(storageActivity, ex);
+                            throw;
+                        }
                         // AppendAsync returning successfully is the sink acknowledgement boundary.
                         // If a later append or the batch flush fails, retry only the suffix that has
                         // not crossed that boundary; arbitrary sinks are not necessarily idempotent.
                         nextPendingEventIndex = i + 1;
                     }
 
+                    Activity.Current = batchActivity;
                     // Phase 4 — sink flush: the batch's events become durable in primary storage.
                     // Required before any dedup identity may be durably committed, whether or not
                     // a WAL is configured.
@@ -1200,6 +1264,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
+                    MarketDataTracing.RecordError(batchActivity, ex);
                     // A persistence failure must not kill the consumer: before this catch existed,
                     // any sink/WAL/dedup exception silently faulted the consumer task (observed
                     // only at disposal) while producers kept publishing into a channel nobody
@@ -1348,6 +1413,7 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
                 }
                 finally
                 {
+                    batchActivity?.Dispose();
                     Interlocked.Decrement(ref _activeConsumers);
                 }
 
@@ -1448,6 +1514,8 @@ public sealed class EventPipeline : IMarketEventPublisher, IEtlEventPipeline, IB
 
     private async Task PeriodicFlushAsync(CancellationToken ct = default)
     {
+        // The host's construction activity is not the parent of this long-running loop.
+        Activity.Current = null;
         try
         {
             while (!_cts.Token.IsCancellationRequested)

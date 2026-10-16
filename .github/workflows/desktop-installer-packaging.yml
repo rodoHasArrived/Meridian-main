@@ -1,13 +1,17 @@
 name: Desktop Installer Release
 
 on:
+  # Opt-in after governance review and signing-environment configuration. A schedule
+  # uses GitHub's immutable event SHA on the default branch; it never creates a tag.
+  schedule:
+    - cron: "17 4 * * 0"
   push:
     tags:
       - "v*"
   workflow_dispatch:
     inputs:
       prior_release_tag:
-        description: Optional N-1 release tag used by installed lifecycle certification.
+        description: Optional published N-1 production release tag for MSIX and consumer EXE certification.
         required: false
         type: string
       rehearsal_version:
@@ -22,7 +26,10 @@ permissions:
 concurrency:
   # Serialize eligibility through publication so concurrent RC/stable tags cannot both
   # validate the same increasing MSIX version before either release is published.
-  group: desktop-installer-release
+  # A schedule enters workflow concurrency before the opt-in job condition is evaluated.
+  # Keep it separate even when disabled so it cannot evict a pending production release.
+  # Scheduled rehearsals never publish and do not need the publication version lock.
+  group: ${{ github.event_name == 'schedule' && 'desktop-installer-rehearsal' || 'desktop-installer-release' }}
   cancel-in-progress: false
 
 env:
@@ -35,6 +42,7 @@ env:
 jobs:
   eligibility:
     name: validate-release-eligibility
+    if: github.event_name != 'schedule' || (github.ref == 'refs/heads/main' && vars.MDC_ENABLE_RELEASE_REHEARSALS == 'true')
     runs-on: windows-latest
     timeout-minutes: 30
     environment: desktop-release-signing
@@ -56,25 +64,20 @@ jobs:
         env:
           SIGNING_PFX: ${{ secrets.MDC_SIGNING_CERT_PFX_BASE64 }}
           SIGNING_PASSWORD: ${{ secrets.MDC_SIGNING_CERT_PASSWORD }}
-        run: |
-          if ([string]::IsNullOrWhiteSpace($env:SIGNING_PFX) -or [string]::IsNullOrWhiteSpace($env:SIGNING_PASSWORD)) {
-            throw 'Signed releases and rehearsals require both signing secrets in desktop-release-signing.'
-          }
-          $certificate = [Security.Cryptography.X509Certificates.X509Certificate2]::new(
-            [Convert]::FromBase64String($env:SIGNING_PFX), $env:SIGNING_PASSWORD,
-            [Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet)
-          try {
-            [xml]$manifest = Get-Content src/Meridian.Wpf/Package.appxmanifest
-            if (-not $certificate.HasPrivateKey -or $certificate.NotAfter -le [DateTime]::Now -or $certificate.NotBefore -gt [DateTime]::Now) {
-              throw 'Signing certificate has no private key or is outside its validity window.'
-            }
-            if ($certificate.Subject -ne $manifest.Package.Identity.Publisher) { throw 'Signing publisher does not match the MSIX identity.' }
-          } finally { $certificate.Dispose() }
+        run: ./build/scripts/ci/check-release-signing.ps1
+      - name: Retain non-secret signing readiness evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-signing-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/release-readiness/signing.json
+          if-no-files-found: warn
+          retention-days: 90
       - name: Validate exact commit and increasing package identity
         id: identity
         env:
           GH_TOKEN: ${{ github.token }}
-          REHEARSAL_VERSION: ${{ inputs.rehearsal_version || '1.0.0-rehearsal' }}
+          REHEARSAL_VERSION: ${{ inputs.rehearsal_version || vars.MDC_RELEASE_REHEARSAL_VERSION || '1.0.0-rehearsal' }}
         run: python build/scripts/ci/release-preflight.py --rehearsal-version "$env:REHEARSAL_VERSION"
 
   ci:
@@ -145,7 +148,7 @@ jobs:
 
       - name: Upload release preflight test results
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: desktop-release-preflight-test-results-${{ github.run_number }}
           path: artifacts/test-results/desktop-release-preflight/
@@ -239,7 +242,7 @@ jobs:
       # only pointer a failed packaging run leaves is a path inside a discarded runner.
       - name: Upload desktop packaging diagnostics
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: desktop-packaging-diagnostics-${{ matrix.runtime }}-${{ github.run_id }}
           path: diagnostic-logs/
@@ -315,7 +318,7 @@ jobs:
           sbom-path: artifacts/release/${{ matrix.runtime }}/desktop-installer-${{ matrix.runtime }}-sbom.spdx.json
 
       - name: Upload packaged installer artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: meridian-desktop-installer-${{ matrix.runtime }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/release/${{ matrix.runtime }}/
@@ -325,7 +328,7 @@ jobs:
   build-consumer-setup:
     name: package-consumer-setup
     needs: [eligibility, ci, secrets, codeql, production, smoke, release-preflight]
-    runs-on: windows-latest
+    runs-on: windows-2025
     timeout-minutes: 120
     environment:
       name: desktop-release-signing
@@ -348,7 +351,7 @@ jobs:
           global-json-file: global.json
 
       - name: Set up Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
           cache: npm
@@ -373,35 +376,11 @@ jobs:
           [IO.File]::WriteAllBytes($certPath, [Convert]::FromBase64String($env:MDC_SIGNING_CERT_PFX_BASE64))
           "cert_path=$certPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
-      # Meridian-Setup.exe embeds a PostgreSQL server per bundled runtime. The hosted image ships
-      # one under C:\Program Files\PostgreSQL (x64 only) — the same source publish-smoke uses.
-      # PostgreSQL publishes no Windows ARM64 server build, so the one-click consumer setup is
-      # x64-only until an ARM64 payload is supplied out of band. The ARM64 *desktop MSIX* is
-      # unaffected and is still built and certified: it does not embed a database.
+      # The reviewed declaration fixes the runtime, exact version, and source. No fallback.
       - name: Materialize the PostgreSQL payload
-        id: pgpayload
         shell: pwsh
         run: |
-          # Runner PostgreSQL directories are major-only names like '17', which [version] refuses
-          # to parse; sort on the leading integer instead.
-          $postgres = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction Stop |
-            Where-Object { $_.Name -match '^\d+' } |
-            Sort-Object { [int]($_.Name -replace '^(\d+).*$', '$1') } -Descending | Select-Object -First 1
-          if ($null -eq $postgres) { throw 'The hosted Windows runner has no PostgreSQL runtime to bundle.' }
-
-          $payload = 'artifacts/postgresql-payload/win-x64'
-          New-Item -ItemType Directory -Path $payload -Force | Out-Null
-          Copy-Item -Path (Join-Path $postgres.FullName '*') -Destination $payload -Recurse -Force
-
-          $bundled = @('win-x64')
-          $armPayload = 'artifacts/postgresql-payload/win-arm64/bin/postgres.exe'
-          if (Test-Path -LiteralPath $armPayload) { $bundled += 'win-arm64' }
-
-          $excluded = @('win-x64', 'win-arm64') | Where-Object { $_ -notin $bundled }
-          if ($excluded.Count -gt 0) {
-            Write-Host "::warning::Consumer setup excludes $($excluded -join ', '): no PostgreSQL server payload is available for that runtime on this runner."
-          }
-          "runtimes=$($bundled -join ',')" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          & ./build/scripts/install/resolve-postgresql-payload.ps1
 
       - name: Build the consumer package
         shell: pwsh
@@ -410,7 +389,7 @@ jobs:
         run: |
           pwsh ./build/scripts/install/build-consumer-setup.ps1 `
             -PostgreSqlPayloadRoot artifacts/postgresql-payload `
-            -Runtimes ('${{ steps.pgpayload.outputs.runtimes }}'.Split(',')) `
+            -Runtimes @('win-x64') `
             -SigningCertificate '${{ steps.signing.outputs.cert_path }}' `
             -SigningCertificatePassword $env:MDC_SIGNING_CERT_PASSWORD
 
@@ -432,6 +411,7 @@ jobs:
         run: |
           python build/scripts/ci/generate-release-evidence-manifest.py `
             --project consumer-setup `
+            --postgresql-payload-receipt artifacts/consumer-setup/consumer-setup-win-x64-postgresql-payload.json `
             --runtime win-x64 `
             --artifact-root artifacts/consumer-setup `
             --output artifacts/consumer-setup/consumer-setup-win-x64-release-evidence.json `
@@ -443,7 +423,9 @@ jobs:
       - name: Generate consumer checksums
         shell: pwsh
         run: |
-          Get-ChildItem artifacts/consumer-setup -File | Where-Object { $_.Name -eq 'Meridian-Setup.exe' -or $_.Name -like 'consumer-setup-win-x64-*.json' } |
+          # The payload receipt is embedded in release evidence. Hash only published assets;
+          # intermediate JSON receipts are not separate release-promotion subjects.
+          Get-ChildItem artifacts/consumer-setup -File | Where-Object { $_.Name -in @('Meridian-Setup.exe', 'consumer-setup-win-x64-sbom.spdx.json', 'consumer-setup-win-x64-release-evidence.json') } |
             Sort-Object Name |
             ForEach-Object { "{0}  {1}" -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $_.Name } |
             Set-Content -LiteralPath artifacts/consumer-setup/consumer-setup-win-x64-SHA256SUMS -Encoding ascii
@@ -455,7 +437,7 @@ jobs:
           sbom-path: artifacts/consumer-setup/consumer-setup-win-x64-sbom.spdx.json
 
       - name: Upload consumer setup artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: meridian-consumer-setup-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -482,8 +464,8 @@ jobs:
           - runtime: win-x64
             architecture: x64
             runner: windows-latest
-          # GitHub-hosted Windows 11 ARM64. This repository is public, so the label is available
-          # at no cost and needs no self-hosted machine.
+          # Native ARM64 is required. The readiness workflow reports observed allocation
+          # and successful lifecycle evidence; a declared hosted label does not prove capacity.
           - runtime: win-arm64
             architecture: ARM64
             runner: windows-11-arm
@@ -497,7 +479,7 @@ jobs:
           fetch-depth: 1
 
       - name: Download current installer artifact
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: meridian-desktop-installer-${{ matrix.runtime }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/current
@@ -580,16 +562,85 @@ jobs:
 
       - name: Upload clean-machine lifecycle evidence
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: desktop-install-certification-${{ matrix.runtime }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/install-certification/${{ matrix.runtime }}/
           if-no-files-found: error
           retention-days: 90
 
+  # PRD-014: the consumer EXE needs its own installed evidence. MSIX receipts and
+  # publish-smoke cannot certify its bootstrapper or its bundled database.
+  # Governance: this release graph change requires human review before activation.
+  certify-installed-consumer:
+    name: clean consumer EXE lifecycle (win-x64)
+    needs: [eligibility, build-consumer-setup]
+    runs-on: windows-latest
+    timeout-minutes: 90
+    environment:
+      name: desktop-release-signing
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the coordinator commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Download the exact signed consumer EXE
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: meridian-consumer-setup-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/current-consumer
+
+      - name: Resolve the consumer N-1 package or explicit first-release exception
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CONFIGURED_PRIOR_TAG: ${{ inputs.prior_release_tag }}
+          CURRENT_RELEASE_TAG: v${{ needs.eligibility.outputs.version }}
+        run: |
+          $resolverArgs = @(
+            '--repository', $env:GITHUB_REPOSITORY,
+            '--current-tag', $env:CURRENT_RELEASE_TAG,
+            '--current-commit', $env:GITHUB_SHA,
+            '--output-dir', 'artifacts/prior-consumer',
+            '--evidence', 'artifacts/consumer-certification/consumer-predecessor.json'
+          )
+          if (-not [string]::IsNullOrWhiteSpace($env:CONFIGURED_PRIOR_TAG)) {
+            $resolverArgs += @('--prior-release-tag', $env:CONFIGURED_PRIOR_TAG)
+          }
+          python build/scripts/ci/resolve-consumer-predecessor.py @resolverArgs
+          if ($LASTEXITCODE -ne 0) { throw 'Consumer predecessor resolution failed.' }
+
+      - name: Certify the installed consumer EXE and bundled database
+        shell: pwsh
+        run: |
+          & ./build/scripts/install/certify-consumer-install-lifecycle.ps1 `
+            -CurrentPackage artifacts/current-consumer/Meridian-Setup.exe `
+            -PredecessorEvidencePath artifacts/consumer-certification/consumer-predecessor.json `
+            -ReceiptPath artifacts/consumer-certification/consumer-setup-win-x64-lifecycle.json `
+            -TimeoutSeconds 600
+
+      - name: Retain consumer lifecycle receipt and diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: consumer-install-certification-win-x64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/consumer-certification/
+          if-no-files-found: error
+          retention-days: 90
+
   release:
     name: verify-and-publish-release-evidence
-    needs: [eligibility, ci, secrets, codeql, production, smoke, release-preflight, build-msix, build-consumer-setup, certify-installed-desktop]
+    needs: [eligibility, ci, secrets, codeql, production, smoke, release-preflight, build-msix, build-consumer-setup, certify-installed-desktop, certify-installed-consumer]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -603,23 +654,28 @@ jobs:
         with:
           python-version: "3.12"
       - name: Download packaged installer artifacts
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: meridian-desktop-installer-*-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/release
       - name: Download consumer setup artifact
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: meridian-consumer-setup-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/release/consumer
       - name: Download native lifecycle evidence
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: desktop-install-certification-*-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/certification
           merge-multiple: true
+      - name: Download consumer EXE lifecycle evidence
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: consumer-install-certification-win-x64-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/certification
       - name: Download installed startup evidence
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: meridian-web-workstation-win-x64-${{ github.run_number }}-${{ github.run_attempt }}
           path: artifacts/startup
@@ -628,10 +684,17 @@ jobs:
           RELEASE_NEEDS: ${{ toJSON(needs) }}
         run: python build/scripts/ci/verify-release-promotion.py --root artifacts/release --receipts artifacts/certification --smoke artifacts/startup/release-evidence.json --output artifacts/publish-release
       - name: Retain validated release or rehearsal evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: validated-release-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/publish-release/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Retain compact promotion receipt for readiness reporting
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-promotion-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/publish-release/release-gate-evidence.json
           if-no-files-found: error
           retention-days: 90
       - name: Publish exact certified GitHub release assets
@@ -642,3 +705,42 @@ jobs:
           fail_on_unmatched_files: true
           generate_release_notes: true
           prerelease: ${{ contains(github.ref_name, '-') }}
+
+  readiness-summary:
+    name: release-readiness-summary
+    if: always() && (github.event_name != 'schedule' || (github.ref == 'refs/heads/main' && vars.MDC_ENABLE_RELEASE_REHEARSALS == 'true'))
+    needs: [eligibility, ci, secrets, codeql, production, smoke, release-preflight, build-msix, build-consumer-setup, certify-installed-desktop, certify-installed-consumer, release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Collect available readiness receipts
+        # Missing artifacts are reported explicitly below, including failed/skipped builds.
+        continue-on-error: true
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: release-*-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/readiness-input
+      - name: Summarize every gate and required evidence
+        if: always()
+        env:
+          RELEASE_NEEDS: ${{ toJSON(needs) }}
+          CERT_WARNING_DAYS: ${{ vars.MDC_SIGNING_CERT_WARNING_DAYS || '30' }}
+        run: python build/scripts/ci/release-readiness.py summary --mode coordinator --warning-days "$CERT_WARNING_DAYS" --output artifacts/release-readiness/report.json
+      - name: Retain readiness report even when a gate fails
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-readiness-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/release-readiness/report.*
+          if-no-files-found: error
+          retention-days: 90

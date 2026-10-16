@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Collections.Immutable;
 using System.Security.Cryptography;
 using System.Text;
@@ -713,10 +714,10 @@ public sealed class StatementToDeliveryAuthorityTests
                     Version: 1,
                     AccountingBasis: AccountingBasisKindDto.Gaap)
             ]);
-        var statementStore = new JsonCanonicalStatementStore(dataRoot);
-        var statementBreakStore = new JsonReconciliationBreakStore(dataRoot);
-        var statementCaseStore = new JsonReconciliationCaseStore(dataRoot);
-        var statementCaseworkCommitStore = new FileStatementCaseworkCommitStore(dataRoot);
+        var statementStore = new JsonCanonicalStatementStore(dataRoot, new AtomicFileWriterAdapter());
+        var statementBreakStore = new JsonReconciliationBreakStore(dataRoot, new AtomicFileWriterAdapter());
+        var statementCaseStore = new JsonReconciliationCaseStore(dataRoot, new AtomicFileWriterAdapter());
+        var statementCaseworkCommitStore = new FileStatementCaseworkCommitStore(dataRoot, new AtomicFileWriterAdapter());
         var statementRuns = StatementRunWorkflowService.CreateEphemeralForTesting(
             statementStore,
             statementCaseStore,

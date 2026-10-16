@@ -77,7 +77,7 @@ public sealed class CredentialFieldViewModel : BindableBase
 /// </summary>
 public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 {
-    private readonly WpfServices.NotificationService _notificationService;
+    private readonly NotificationServiceBase _notificationService;
     private readonly SettingsConfigurationService _settingsService;
 
     private bool _isBusy;
@@ -175,7 +175,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         ArgumentNullException.ThrowIfNull(credentialService);
     }
 
-    internal CredentialManagementViewModel(SettingsConfigurationService settingsService, WpfServices.NotificationService notificationService)
+    internal CredentialManagementViewModel(SettingsConfigurationService settingsService, NotificationServiceBase notificationService)
     {
         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
         _notificationService = notificationService ?? throw new ArgumentNullException(nameof(notificationService));

@@ -1,5 +1,6 @@
 using System.Reflection;
 using Meridian.Application.Composition;
+using Meridian.Application.Tenancy;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Meridian.Application.SecurityMaster;
@@ -77,7 +78,7 @@ public sealed class AppServiceRegistrationTests
             serviceProvider.GetRequiredService<IDataWorkspaceShellPresentationService>().Should().BeOfType<DataWorkspaceShellPresentationService>();
             serviceProvider.GetRequiredService<ISettingsWorkspaceShellSnapshotService>().Should().BeOfType<SettingsWorkspaceShellSnapshotService>();
             serviceProvider.GetRequiredService<ISettingsWorkspaceShellPresentationService>().Should().BeOfType<SettingsWorkspaceShellPresentationService>();
-            serviceProvider.GetRequiredService<IFundAccountService>().Should().BeOfType<InMemoryFundAccountService>();
+            serviceProvider.GetRequiredService<IFundAccountService>().Should().BeOfType<TenantGuardedLocalFundAccountService>();
             serviceProvider.GetRequiredService<FundAccountReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<CashFinancingReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<ReconciliationReadService>().Should().NotBeNull();

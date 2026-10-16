@@ -6,10 +6,13 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Application.FundStructure;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Reporting;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
@@ -532,6 +535,17 @@ public sealed class PilotAcceptanceHarnessTests
             builder.Services.AddSingleton<IReportingGovernanceEndpointCoordinator, PilotReportingGovernanceCoordinator>();
             builder.Services.AddSingleton<IReportingDeploymentReadinessService, PilotReportingDeploymentReadinessService>();
 
+            // The evidence harness owns deterministic account and structure fixtures. Keep the
+            // host's strict tenant options and request authority gates for the pilot requests.
+            var pilotAccounts = new InMemoryFundAccountService();
+            builder.Services.AddSingleton<IFundAccountService>(pilotAccounts);
+            builder.Services.AddSingleton<IAccountManagementService>(pilotAccounts);
+            builder.Services.AddSingleton<IAccountQueryService>(pilotAccounts);
+            builder.Services.AddSingleton<IFundStructureService>(sp =>
+                new InMemoryFundStructureService(
+                    sp.GetRequiredService<IFundAccountService>(),
+                    persistencePath: null));
+
             using (InMemoryGovernanceFixtureProfile.Enable())
             {
                 builder.Services.AddUiSharedServices(configPath);
@@ -682,8 +696,9 @@ public sealed class PilotAcceptanceHarnessTests
             RecordedBy: "pilot-harness",
             PendingSettlement: 0m));
 
+        var bankBatchId = Guid.NewGuid();
         await accountService.IngestBankStatementAsync(new IngestBankStatementRequest(
-            BatchId: Guid.NewGuid(),
+            BatchId: bankBatchId,
             AccountId: account.AccountId,
             StatementDate: new DateOnly(2026, 4, 11),
             BankName: "Meridian Bank",
@@ -692,7 +707,7 @@ public sealed class PilotAcceptanceHarnessTests
             [
                 new BankStatementLineDto(
                     LineId: Guid.NewGuid(),
-                    BatchId: Guid.NewGuid(),
+                    BatchId: bankBatchId,
                     AccountId: account.AccountId,
                     TransactionDate: new DateOnly(2026, 4, 11),
                     ValueDate: new DateOnly(2026, 4, 11),

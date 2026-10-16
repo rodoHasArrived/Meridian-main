@@ -103,27 +103,36 @@ ReadyForApproval -> Approved -> Scheduled -> Posted -> Reconciled -> Reported ->
 
 ## Accounting Integration Boundary
 
-The current foundation does not have an authoritative service that can enumerate every affected
-tenant and company, resolve the corresponding fund, account, portfolio, custody, ledger-book,
-period, basis, currency, and jurisdiction assignments, and apply one source decision to all scoped
-cases atomically. A decision against the global source proposal would otherwise let the first
-tenant accept or reject the observation for every other tenant.
+Source decisions require `ICorporateActionScopeFanOutGate`, backed by the authoritative affected-scope
+service. The gate resolves the security's holders at the event's record date, or ex-date when no
+record date exists, and permits a decision only when the complete affected set is exactly one
+accounting scope owned by the authenticated tenant and company. Unknown or incomplete authority,
+no affected scope, another tenant/company's scope, and multiple affected scopes are explicit
+refusals. Atomic application across multiple scopes remains unsupported.
 
-The public HTTP workflow is therefore explicitly read-only at the source-decision boundary.
+When that authority is absent from composition, the public HTTP source-decision boundary remains
+read-only: `CanAccept` and `CanReject` are false, and accept/reject commands return
+`corporate_action_persistence_unavailable`. When the authority is composed, those actions also
+depend on proposal state and caller permissions. Read-side availability is advisory; the command
+must still resolve the affected scope. Acceptance first replays an existing committed receipt,
+then resolves scope for a new command; rejection checks scope before calling the decision service.
+
 Proposal inbox, list, detail, retained source evidence, and existing scoped case views remain
-available. Their server-owned action availability sets both `CanAccept` and `CanReject` to false,
-sets `CanCompareEvidence` to false because the compact inbox does not yet carry the retained
-per-source candidates needed for an operable comparison, and returns a stable authoritative-fan-out
-blocker. Canonical accept and reject commands return the typed
-`corporate_action_persistence_unavailable` response without calling the decision service. The
-retired unscoped inbox-apply route remains a `410 Gone` tombstone. This hard boundary is not an
-operator-configurable feature toggle and must remain closed until trusted fan-out authority exists.
+available. `CanCompareEvidence` stays false because the compact inbox does not yet carry retained
+per-source candidates for comparison. The retired unscoped inbox-apply route remains a `410 Gone`
+tombstone. Composition of the authority is a service boundary, not an operator-configurable toggle.
 
-The endpoints still reject caller-supplied narrow scope on acceptance: assignments are read from
-the record, never asserted. Post-acceptance, narrowly scoped cases are readable, and every
+The endpoints reject caller-supplied narrow scope on acceptance: assignments are resolved by
+the authority, never supplied by the caller. Post-acceptance, narrowly scoped cases are readable, and every
 mutation on one requires a full-scope assertion that exactly matches the stored, server-resolved
 scope — the assertion proves the caller acts on the record it read; it cannot resolve or widen an
 assignment.
+
+Implementation references: [scope gate](../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionScopeFanOutGate.cs),
+[HTTP boundary](../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs),
+[acceptance and replay](../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionOperationsService.cs),
+[scope-gate tests](../../tests/Meridian.Tests/Tenancy/CorporateActionScopeFanOutGateTests.cs), and
+[endpoint tests](../../tests/Meridian.Tests/Ui/CorporateActionOperationsEndpointTests.cs).
 
 Production composition registers the deterministic corporate-action accounting projector and the
 Asset Accounting Event Spine mapper as singleton services. Registration makes the pure preparation
@@ -180,6 +189,34 @@ fresh exact-version binding — a superseded binding can never be posted twice.
 The Asset Accounting Event Spine remains the only route to candidate preparation, policy and
 evidence validation, maker-checker approval, optimistic-concurrency checks, and durable posting.
 Neither the projector nor the mapper can append a journal directly.
+
+### Canonical successor lots
+
+The bounded `W10-LOT-002` continuation uses one retained successor instruction for cashless
+Reg S/144A exchange, whole-unit splits, stock merger and proportional two-successor advance
+refunding. The mapped projection retains the exact reviewed lot instruction through the governed
+spine. Independent approval is required. The PostgreSQL posting boundary locks current source and
+target scope and commits predecessor closure, successor openings, journal and immutable receipts
+in one transaction. Same-security splits explicitly opt into a basis-transfer journal.
+Atomic successor commands require the canonical `AssetAccounting.CorporateAction` source type,
+approved state, retained approval identity, named actor and complete typed accounting context.
+Corrected-batch/source-journal metadata, reversal/rebook intents and closing-entry posting kinds
+are refused by this bounded path; the general case restatement workflow does not authorize them.
+
+Successors preserve acquisition/holding dates, original FX, original and current currency bases,
+and immutable source-action lineage after later disposal. Refunded successors alone carry
+Schedule D tracking. Storage follows immutable birth receipts through the full predecessor ancestry
+and resolves each stable source action from its retained version/hash-bound source-event evidence.
+Historical absent lineage or stable-ID fields keep their original shape; an intervening action,
+later disposal or fresh case/version cannot hide a repeated ancestor action. Missing, contradictory,
+cyclic or foreign-book ancestry blocks a new posting, while exact retries replay the committed receipt.
+Reporting validates the retained posting receipts and includes exact lot
+evidence under the report pack's checksums and signature. Unsupported cash components,
+corporate-action corrections and successor amortization require separately reviewed continuations.
+See the [lot convergence blueprint](../engineering/blueprints/security-lot-convergence-blueprint.md).
+Successor storage uses migration 042. Migration 043 is a separate forward correction for approved
+amortization reversal restoring a retained null prior basis; it does not expand corporate-action
+correction authority or change the case approval lifecycle.
 
 ## Future Expansion Notes
 

@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
+using Microsoft.Extensions.Configuration;
 using System.Reflection;
 using Xunit;
 
@@ -214,6 +215,35 @@ public sealed class LoginSessionServiceTests
                 Directory.Delete(root, recursive: true);
             }
         }
+    }
+
+    [Fact]
+    public void HostConfiguration_DoesNotInheritProcessCredentialsModeOrSessionStore()
+    {
+        var processSessionPath = Path.Combine(Path.GetTempPath(), $"meridian-unowned-session-{Guid.NewGuid():N}.json");
+        using var env = ConfigureUsers(("process-user", "process-password", UserRole.Admin))
+            .Set("MDC_AUTH_MODE", "invalid-process-mode")
+            .Set("MDC_PACKAGED_BUILD", "true")
+            .Set("MDC_SESSION_STORE_PATH", processSessionPath);
+        var settings = new ConfigurationBuilder().AddInMemoryCollection().Build();
+        var configuration = new AuthenticationConfiguration(settings);
+        var registry = new UserProfileRegistry(null, null, configuration: configuration);
+        var service = new LoginSessionService(new FakeHostEnvironment("Test"), registry,
+            configuration: configuration);
+
+        service.IsConfigured.Should().BeFalse();
+        service.AllowAnonymousWhenUnconfigured.Should().BeTrue();
+        service.CreateSession("process-user", "process-password").Should().BeNull();
+
+        settings["MDC_AUTH_MODE"] = "required";
+        service.AllowAnonymousWhenUnconfigured.Should().BeFalse();
+        settings["MDC_USERNAME"] = "host-user";
+        settings["MDC_PASSWORD_HASH"] = PasswordHashing.HashPassword("host-password");
+        var token = service.CreateSession("host-user", "host-password");
+        token.Should().NotBeNull();
+        service.ValidateSession(token!).Should().BeTrue();
+        File.Exists(processSessionPath).Should().BeFalse();
+        File.Exists(processSessionPath + ".lock").Should().BeFalse();
     }
 
     private static LoginSessionService CreateService(string environmentName)

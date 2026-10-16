@@ -4,6 +4,9 @@
 **Status:** Active  
 **Owner:** Core Team
 
+**Maintenance check (2026-10-05):** CI ownership, command routing, and generated-output retention
+were reconciled with the current scripts and workflow guide. The dated MW history remains below.
+
 This guide explains Meridian tooling as a layered system so contributors can pick the right command path quickly and understand how local commands map to CI. It treats the toolchain as one connected system — not just a list of commands — so you can tell which commands are the real source of truth and which are friendly shortcuts.
 
 ## How the pieces fit together
@@ -15,7 +18,10 @@ There are four layers, and each one is built on top of the layer below it:
 3. **CI orchestration** — the GitHub Actions workflows that run the same checks automatically on every pull request and branch push.
 4. **Generated documentation and inventories** — scripts that turn the repository's real state into committed reference files.
 
-A useful rule of thumb: `make` targets and npm scripts are *convenience wrappers*; the `dotnet`, `python3 build/...`, `npm --prefix ...`, and `pwsh` commands they call are the *authoritative* operations. CI runs the authoritative commands directly, so anything you can reproduce locally with the authoritative command will behave the same way in CI.
+GNU Make is optional. Use the direct commands in [Engineering](../engineering/README.md#buildtestrun)
+when Make is unavailable. The canonical local PR gate is `bash scripts/ci.sh`; hosted Actions
+checks remain authoritative because their operating system, services, and inputs can differ from
+a local run.
 
 ## 1) Command layering and ownership
 
@@ -23,7 +29,7 @@ A useful rule of thumb: `make` targets and npm scripts are *convenience wrappers
 | --- | --- | --- | --- | --- |
 | Runtime/build primitives | Canonical build, test, run, and publish operations | `dotnet`, `python3 build/python/cli/buildctl.py`, `npm --prefix src/Meridian.Ui/dashboard`, `pwsh ./scripts/dev/*.ps1` | n/a | Core Team |
 | Local orchestration | Human-friendly local workflows that compose primitives | `make/*.mk` targets | `make` aliases such as `build-quick`, `test-coverage`, `pre-pr` | Core Team |
-| CI orchestration | Pull-request and branch gates | `.github/workflows/ci.yml`, `windows-desktop-build.yml`, `golden-path-validation.yml`, `maintenance.yml`, `publish-smoke.yml` | manual `workflow_dispatch` entrypoints | Core Team |
+| CI orchestration | Pull-request and branch gates | `scripts/ci.sh`, `.github/workflows/meridian-ci.yml`, and specialized workflows in the [workflow guide](../../.github/workflows/README.md) | manual `workflow_dispatch` entrypoints | Core Team |
 | Generated documentation and inventories | Deterministic repo metadata outputs | `python3 build/scripts/docs/*.py`, `make gen-*`, `make docs*` | summary docs in `docs/generated/` | Core Team |
 
 ### Where npm scripts live
@@ -40,9 +46,9 @@ Use authoritative commands for scripting, CI parity work, and incident/debug ses
 | Use case | Authoritative | Convenience aliases |
 | --- | --- | --- |
 | Restore/build | `dotnet restore Meridian.sln /p:EnableWindowsTargeting=true` and `dotnet build ...` or `python3 build/python/cli/buildctl.py build ...` | `make build`, `make build-quick` |
-| Tests | `dotnet test ...` and `npm --prefix src/Meridian.Ui/dashboard run test` | `make test`, `make test-unit`, `make test-fsharp` |
+| Tests | `python3 build/python/cli/buildctl.py test --project <test-project> --filter <expression> --queue` and `npm --prefix src/Meridian.Ui/dashboard run test` | `make test`, `make test-unit`, `make test-fsharp` |
 | Documentation generation | `python3 build/scripts/docs/...` and `dotnet run --project build/dotnet/DocGenerator/...` | `make docs`, `make docs-all`, `make gen-*` |
-| Desktop validation | `dotnet test tests/Meridian.Wpf.Tests/...` and `pwsh ./scripts/dev/*.ps1` | `make desktop-build`, `make desktop-test*` |
+| Desktop validation | Windows: `pwsh ./scripts/dev/validate-wpf-dev.ps1 -Restore` | `make desktop-build`, `make desktop-test*` |
 | Environment diagnostics | `python3 build/python/cli/buildctl.py ...` | `make doctor*`, `make diagnose*`, `make collect-debug*` |
 
 ## 3) Generated artifacts and ownership
@@ -53,15 +59,20 @@ Use authoritative commands for scripting, CI parity work, and incident/debug ses
 | `artifacts/test-results/` and `TestResults/` | test logs and coverage | `dotnet test ... --results-directory ...`, `make test-all` | Core Team |
 | `artifacts/publish/` | publish smoke outputs | `pwsh ./build/scripts/publish/publish.ps1 ...`, `make publish*` | Core Team |
 | `artifacts/docs/` and `docs/generated/` | generated docs and parity reports | `make gen-*`, `make check-workflow-docs-parity`, docs automation scripts | Core Team |
-| `artifacts/build-logs/` | CI build logs and warning reporting | `.github/workflows/ci.yml` | Core Team |
+| `artifacts/build-logs/` | CI build logs and warning reporting | `.github/workflows/meridian-ci.yml` | Core Team |
 
-Generated outputs are disposable unless explicitly designated as governance evidence.
+Local build outputs and logs are disposable according to their retention policy. Tracked generated
+documentation and the tracked browser bundle must be regenerated and reviewed with their inputs;
+follow [documentation ownership](../documentation-ownership.md) and
+[generated merge recovery](../engineering/generated-merge-recovery.md). Do not delete a tracked
+artifact just because it was generated.
 
 ## 4) Local-to-CI mapping
 
 | CI workflow | Required local equivalent |
 | --- | --- |
-| `CI` (`.github/workflows/ci.yml`) | `dotnet restore Meridian.sln /p:EnableWindowsTargeting=true`, `dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore`, `dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false`, non-integration `dotnet test` lanes, dashboard `npm ... test/build` |
+| `Meridian CI` (`.github/workflows/meridian-ci.yml`) | `bash scripts/ci.sh`; its `.NET`, browser, docs, and workflow lanes also have `--lane` selectors. The hosted integration companion runs service-backed tests; see [CI ownership](../engineering/ci-cd-optimization.md) |
+| Legacy `CI` (`.github/workflows/ci.yml`) | Secret Scan and nightly/manual coverage; use the [workflow guide](../../.github/workflows/README.md) for their inputs |
 | `Windows Desktop Build` | WPF restore/build/test commands in [Engineering → Desktop slices](../engineering/README.md#desktop-slices) |
 | `Golden Path Validation` | pilot-acceptance test + dashboard generation commands in `.github/workflows/README.md` |
 | `Maintenance` | `python3 build/scripts/ci/check-workflow-hygiene.py` and related docs/tooling validation |
@@ -89,7 +100,7 @@ Project-level migration policy:
 
 - `make ai-verify`
 - `make ai-arch-check`
-- CI step: `Validate AI contract drift` in `.github/workflows/ci.yml`
+- The canonical docs lane (`bash scripts/ci.sh --lane verify-docs`) runs the AI/docs checks used by `Meridian CI`.
 
 ### Advisory tooling
 

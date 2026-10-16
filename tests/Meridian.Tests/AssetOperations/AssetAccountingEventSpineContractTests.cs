@@ -142,6 +142,25 @@ public sealed class AssetAccountingEventSpineContractTests
     }
 
     [Fact]
+    public void RetainedFaceAcquisition_WithoutMethod_RemainsReadableWithoutInventedDefaults()
+    {
+        var instruction = new AssetLotMutationInstructionDto(AssetLotMutationIntentDto.Acquire,
+            new AssetAcquisitionLotDto(Guid.NewGuid(), "retained-face-lot", new DateOnly(2026, 6, 30),
+                10m, 98.5m, "Assets:Investment", OriginalFace: 1_000m, BookedFactor: 1m, ParBasis: 100m));
+        var options = new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web);
+        var json = System.Text.Json.JsonSerializer.Serialize(instruction, options);
+        var restored = System.Text.Json.JsonSerializer.Deserialize<AssetLotMutationInstructionDto>(json, options)!;
+
+        json.Should().NotContain("amortizationMethod").And.NotContain("effectiveYield");
+        restored.Acquisition!.AmortizationMethod.Should().BeNull();
+        AssetLotMutationInstructionValidator.Fingerprint(restored)
+            .Should().Be(AssetLotMutationInstructionValidator.Fingerprint(instruction));
+        AssetLotMutationInstructionValidator.Validate(AssetAccountingEventKindDto.Acquisition, restored,
+            985m, new DateOnly(2026, 6, 30), BuildProjected().RetainedEvidence).Should().BeEmpty(
+                "retained envelopes remain readable; new-write admission owns the stricter requirement");
+    }
+
+    [Fact]
     public void AcquisitionLot_AmortizationInputsWithoutFaceTerms_FailClosed()
     {
         var instruction = new AssetLotMutationInstructionDto(
@@ -186,7 +205,23 @@ public sealed class AssetAccountingEventSpineContractTests
     }
 
     [Fact]
-    public void DisposalSelections_UnretainedEvidenceDuplicateOrdinalOrWrongCostBasis_FailClosed()
+    public void DisposalSelections_CurrentBasisMayDifferFromOriginalAcquisitionUnitCost()
+    {
+        var retained = BuildProjected().RetainedEvidence;
+        var valid = BuildDisposalInstruction(retained[0].EvidenceId);
+        var selection = valid.DisposalSelections[0];
+        var adjusted = valid with
+        {
+            DisposalSelections = [selection with { ExpectedCostBasis = 160m }]
+        };
+
+        AssetLotMutationInstructionValidator.Validate(
+                AssetAccountingEventKindDto.Disposal, adjusted, 160m, new DateOnly(2026, 6, 30), retained)
+            .Should().BeEmpty("the authoritative canonical pool certifies current basis independently of acquisition unit cost");
+    }
+
+    [Fact]
+    public void DisposalSelections_UnretainedEvidenceDuplicateOrdinalOrNonPositiveCostBasis_FailClosed()
     {
         var retained = BuildProjected().RetainedEvidence;
         var valid = BuildDisposalInstruction(retained[0].EvidenceId);
@@ -204,12 +239,12 @@ public sealed class AssetAccountingEventSpineContractTests
                 baseline with { TaxLotRecordId = Guid.NewGuid(), LotId = "lot-b" }
             ]
         };
-        var wrongCostBasis = valid with
+        var nonPositiveCostBasis = valid with
         {
-            DisposalSelections = [baseline with { ExpectedCostBasis = baseline.ExpectedCostBasis + 1m }]
+            DisposalSelections = [baseline with { ExpectedCostBasis = 0m }]
         };
 
-        foreach (var mutated in new[] { unretainedEvidence, duplicateOrdinal, wrongCostBasis })
+        foreach (var mutated in new[] { unretainedEvidence, duplicateOrdinal, nonPositiveCostBasis })
         {
             AssetLotMutationInstructionValidator.Validate(
                     AssetAccountingEventKindDto.Disposal,

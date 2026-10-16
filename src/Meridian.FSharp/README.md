@@ -38,11 +38,25 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   fixings, notionals, payment frequencies, and day-count conventions through serialization, plus
   the principal-exchange flag. Legacy legs may omit these terms. Supplied notionals must be
   positive and directions must be Pay or Receive; missing economics remain unresolved.
+- The bond economic definition carries the record's issue date, payment frequency, call flag and
+  first call date, and issuer name in its maturity, coupon, call, and issuer modules, so a replay
+  from economic terms alone keeps a callable bond callable.
+- `assetSpecificTermsJson` stamps flat terms with the shared terms-format envelope for every kind
+  except `CustomAsset`, whose profile owns its own document shape.
+- `IdentifierKind` includes `LoanX` and `Clip` for syndicated-loan identifiers; interop maps
+  them to the matching C# `SecurityIdentifierKind` values.
+- `SecurityTermModules` no longer carries `AccountingElections` or `Pci`. Amortization method,
+  yield updates, cash-flow source and PCI designation are lot- and account-level accounting
+  choices and live on the lot, not in security economics.
 - C# callers should enter through C#-friendly interop wrappers and should not depend on internal F# domain types.
 - Security Master identifier interop retains optional provider/source metadata for standard
   identifiers. For `ProviderSymbol`, the provider namespace carried by the identifier kind remains
   authoritative and contradictory provider metadata is rejected as structured validation.
 - Operations kernels should remain pure and deterministic: inputs in, decisions/issues/statuses out.
+- Trading readiness evaluates every supplied acceptance gate, including newly introduced and
+  duplicate IDs. Any blocked gate blocks the aggregate; all supplied gates must be ready for
+  ready status. Unsupported or missing statuses require review, and empty input remains unknown.
+  Evidence summaries use the same status classification.
 - Stream-oriented helpers should receive ordered, bounded inputs. Page large storage/backfill batches before crossing into F#, and keep `mergeStreams` / `bufferByTime` on timestamp-ordered streams so they can avoid whole-batch sorting and grouping.
 - Sensitive-action policy evaluates explicit guardrails such as MFA, dual approval, privileged roles, and segregation-of-duties before C# services write audit or workflow state.
 

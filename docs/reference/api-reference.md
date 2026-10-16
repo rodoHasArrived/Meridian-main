@@ -47,14 +47,17 @@ Use this map as a starting point before diving into generated type/member pages.
 - `EventPipeline` - Bounded channel for event routing.
 - `EventPipelinePolicy` - Shared bounded-channel policy configuration.
 - `ConfigurationService` - Wizard, auto-config, validation, and reload lifecycle.
-- `JsonlStorageSink` - Append-only JSONL persistence.
-- `ParquetStorageSink` - Columnar Parquet persistence (experimental).
-- `TieredStorageManager` - Hot/warm/cold storage tiering.
 - `StatusHttpServer` - Status + Prometheus metrics endpoint.
 - `BackfillService` - Historical backfill orchestration.
 
 ### Storage and archival layer
 
+- `JsonlStorageSink` - JSONL persistence under the configured storage policy.
+- `ParquetStorageSink` - Optional columnar sink; select it through `Storage.Sinks` (for example,
+  `["jsonl", "parquet"]`) or the compatibility `Storage.EnableParquetSink` setting. The config list
+  maps to runtime `StorageOptions.ActiveSinks`; see
+  [`StorageConfigExtensions`](../../src/Meridian.Storage/Config/StorageConfigExtensions.cs).
+- `TieredStorageManager` - Hot/warm/cold storage tiering.
 - `WriteAheadLog` - Crash-safe persistence with transaction semantics.
 - `ArchivalStorageService` - WAL-backed archival writes with checksums.
 - `CompressionProfileManager` - Compression profile selection (LZ4/ZSTD/Gzip).
@@ -99,6 +102,10 @@ Use this map as a starting point before diving into generated type/member pages.
 - `CredentialValidator` - API credential and configuration validation.
 
 ### Lean integration
+
+These optional types are excluded from the host's default build. See
+[Lean Integration](../integrations/lean-integration.md) for `EnableLeanIntegration=true`, data-path
+compatibility, and the separate Lean-host verification requirements.
 
 - `MeridianTradeData` - Lean `BaseData` implementation for trades.
 - `MeridianQuoteData` - Lean `BaseData` implementation for quotes.
@@ -368,6 +375,66 @@ This table is intentionally **path-first** to support API documentation validati
 | `/api/loans/rebuild-checkpoints` | GET | Direct Lending | Reads rebuild checkpoint posture before triggering rebuild mutation. |
 | `/api/loans/portfolio` | GET | Direct Lending | Reads aggregated direct-lending portfolio posture. |
 | `/api/security-master/corporate-actions/ingest` | POST | Security Master | Runs provider-backed corporate-action ingest across mastered tickers; requires Security Master mutation permission and returns retained ingest evidence. |
+
+### Ledger account oversight (`/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/*`)
+
+These bounded shared routes require an authenticated workstation session with tenant and company
+scope. The authoritative ledger book must identify the exact requested Account structure node,
+and its retained profile owner must match the session tenant and company. Unowned profiles and
+broader fund/entity books refuse access; requests do not establish ownership. Session identity
+supplies assignment, preparation and review actors. API-key authentication alone does not grant
+access to this route family.
+
+| Path | Method | Description |
+|---|---|---|
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/context` | GET | Returns the verified account/book/base currency, session actor and current cash, price-review and provisioning capabilities for the browser workbench. |
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/oversight/provision` | POST | Requires `AdminMaintenance`; explicitly provisions the durable cash-continuity and forecast stores without resetting missing or corrupt initialized history. |
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/runs` | POST | Accepts `AccountCashReconciliationRequest`; retains a complete two-source native-currency balance comparison, original rows and executed tolerance version, returning `AccountCashReconciliationRun`. |
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/cases` | GET | Returns exact-account `AccountCashReconciliationCase` history, owner, version, source resolution and aging as of the retained observation or resolution. |
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/cases/{caseId}/assignments` | POST | Accepts `AssignAccountCashCaseRequest` with `expectedVersion`, `owner` and `reason`; appends a session-actor assignment and returns the updated case. Stale versions conflict. |
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-reconciliation/runs/{runId}/replay` | GET | Reproduces the retained run's source and tolerance evidence without consulting current sources or changing case state. |
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}` | POST | Accepts `CreateSecurityClosePriceSetRequest`; returns an immutable `SecurityClosePriceSetDto` containing retained hierarchy selections, observations, units, supported overrides and visible blockers. Optional `requestId` binds an immutable normalized creation command to the snapshot identity; an identical retry recovers that retained set before reading later prices, while conflicting reuse fails. |
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}` | GET | Returns all retained exact-account/book/date versions in ascending order, including immutable approvals, after stored evidence validation. |
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}/{snapshotId:guid}` | GET | Returns the exact account/book/date snapshot and its retained approval, or `404` when no such snapshot exists. |
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/close-price-sets/{valuationDate}/{snapshotId:guid}/approval` | POST | Accepts `ApproveSecurityClosePriceSetRequest`; independently approves the immutable snapshot digest with reviewer rationale. Unresolved blockers, same-maker review and superseded drafts conflict. |
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts` | POST | Accepts `AccountCashForecastRequestDto`; verifies each selected balance, flow and dated FX input against independently reviewed typed Evidence Vault source bytes before retaining an `AccountCashForecastSnapshotDto`. |
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts` | GET | Returns exact-account forecast history after deterministic evidence replay, including linked prior predictions and certification blockers. |
+| `/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts/{snapshotId}` | GET | Returns the retained exact-account forecast snapshot after replay verification, or `404` when absent. |
+
+Reads require one of `AdminMaintenance`, `ManageDirectLending`, `ViewLedgerReports` or
+`ManageLedgerReports`; writes exclude `ViewLedgerReports`. Price reads additionally require
+`ViewSecurityMaster` or `ModifySecurityMaster`, and price preparation/approval additionally require
+`ModifySecurityMaster`. Provisioning requires `AdminMaintenance`. Mutations use the existing
+fund-write scope and mutation-rate-limit gates.
+
+Account/book IDs in request bodies must agree with the route; forecast base currency comes from
+the authoritative book. `valuationDate` uses `YYYY-MM-DD` and a UTC valuation cutoff. Observation
+and forecast-recording timestamps cannot exceed server capture time. Reconciliation HTTP
+`sourceType` values are `0` Prime, `1` Custodian, `2` Administrator and `3` InternalLedger. Forecast
+HTTP `status` values are `0` Expected and `1` Actual; `provenance.role` values are `0` Observation,
+`1` Projection and `2` DeclaredFx. The separately retained typed source JSON uses enum names;
+price units use `CurrencyPerUnit` or `PercentOfPar`.
+Amounts, prices, tolerances, FX rates and derived financial values in oversight HTTP responses
+use exact plain decimal strings. Integer versions remain JSON numbers. Decimal-text request
+values are supported; this transport representation does not change retained domain digests.
+Identical concurrent approval retries return the same retained decision and approval timestamp;
+different reviewers or rationales cannot replace that immutable decision.
+
+Incorrect account authority returns `403`; invalid inputs, including null forecast collection
+entries or future recording times, return `422`. Conflicting retained inputs and stale versions
+return `409`. Unsupported, unavailable or mismatched forecast source authority returns `409` with
+`CASH_FORECAST_SOURCE_AUTHORITY_REQUIRED`. Missing service composition or corrupt forecast
+history returns `503`. Corrected sources change the same cash case; corrected prices and forecast
+inputs append linked versions. Source clearing and cash-equation certification confer no journal,
+period-close, report-publication or payment-execution authority.
+
+Source: [shared endpoint mapper](../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs),
+[route constants](../../src/Meridian.Contracts/Api/UiApiRoutes.cs),
+[cash-continuity contracts](../../src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs),
+[close-price contracts](../../src/Meridian.Contracts/SecurityMaster/SecurityMasterClosePrices.cs) and
+[forecast contracts](../../src/Meridian.Contracts/AssetOperations/AccountCashForecastDtos.cs).
+For provisioning, source JSON and retained-review field requirements, see
+[bounded account oversight](../operators/account-oversight.md).
 
 ### Symbols (`/api/symbols/*`)
 

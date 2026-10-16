@@ -5,11 +5,8 @@ namespace Meridian.Contracts.Tenancy;
 /// server-resolved tenant may create or evaluate fund-scoped accounting artifacts.
 /// </summary>
 /// <remarks>
-/// This is a deliberate, deployment-gated contract change: today the legacy <c>MDC_USERNAME</c> admin
-/// profile has no <c>CompanyId</c>, so its resolved tenant is null and it can write in the global
-/// namespace. Requiring a tenant would 403 that supported single-company session, so enforcement is
-/// <b>off by default</b> and rolled out detection-first — a tenantless write is logged (so operators can
-/// see whether any real deployment still relies on it) but allowed until a deployment opts in. The
+/// Supported hosts enable enforcement by default. Explicit deployment-boundary compatibility may
+/// retain detection-only writes while a legacy installation completes reviewed attribution. The
 /// decision is isolated here so the three-way branch is unit-testable without spinning up the pipeline.
 /// </remarks>
 public enum FundScopedWriteTenantDecision

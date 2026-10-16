@@ -6,10 +6,89 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-08-04
+last_reviewed: 2026-10-11
 ---
 
 # src/Meridian.Ui/dashboard
+
+Historical price charts require a complete successful historical query before showing prices
+or indicators. Failed and partial queries show an explicit incomplete state with failed source
+paths and Retry; incomplete comparison series are withheld and named in an alert. The shared
+API retains recovered bars and `fileFailures` for investigation without presenting them as a
+complete series. Focused coverage lives in `historical-chart.test.tsx`.
+
+Loan book accepts numeric and named host enums and preserves unknown values without inventing
+USD. Server `currencyTotals` retain their denomination and an explicit no-FX notice; scalar
+totals without a currency are withheld. Principal and undrawn amounts group by facility base
+currency, while collateral retains its own appraisal currency.
+
+The generated `api-routes.ts` catalog includes exact account-owned ledger-book oversight routes
+for cash continuity, reviewed close prices and cash forecasts. Regenerate it from shared
+`UiApiRoutes` and rebuild the tracked workstation bundle when those routes change; server-owned
+scope and evidence verification are described in
+[bounded account oversight](../../../docs/operators/account-oversight.md).
+
+Accounting → Reconciliation includes an account-owned book oversight workbench with cash cases,
+exact replay and owner handoffs, independently reviewed close-price versions, and dated cash/FX
+forecasts. Supported handoff files receive a structured preview before capture. Explicit scope,
+server capabilities, immutable history, source evidence and certification blockers stay visible.
+API reads prohibit fixture fallback, financial values remain exact decimal strings, scope changes
+abort old requests, and failed writes retain inputs or require history reload before retry.
+Focused coverage lives in `accounting-screen.account-*.test.tsx` and `account-oversight.api.test.ts`.
+Close-price capture retains its request identity and submitted command after an uncertain response.
+After an authoritative history reload, the operator can explicitly recover or retry that same
+capture; a new command cannot silently replace the unresolved action.
+
+Governed Journal Entry Detail exposes retained disposal tax results from the shared period and
+journal read model. Operators can inspect mixed parcel character, carried holding-period starts,
+economic and recognized gain/loss, deferred loss, and the exact retained policy revision. Settled,
+provisional and missing-evidence results retain the server's reason, replacement-window end and
+re-evaluation posture. Refresh reads retained evidence only; the browser never derives character,
+settles an elapsed window, or recalculates tax amounts. Missing parcel allocation amounts stay
+unknown. Reads prohibit development fallback and reject a different book, period or journal.
+Focused coverage lives in `journal-entry-tax-results.test.tsx`,
+`journal-entry-detail-screen.test.tsx` and `ledger-tax-results-api.test.ts`.
+
+Tailwind and `@tailwindcss/postcss` are pinned to 4.3.3. The stylesheet uses the v4 import
+with the retained TypeScript theme configuration, and compiled-style regression tests preserve
+the workstation's utility behavior. Dependency updates must keep this pipeline and its built assets aligned.
+
+Trading includes an account-scoped brokerage recovery panel backed by the shared readiness and
+execution reconciliation projection. The operator can synchronize and reconcile Alpaca portfolio
+evidence through the governed recovery endpoint. Connection health, portfolio currency and cash,
+buying power, synchronization timestamps, completeness, impacted strategy runs, and retained-local
+versus broker-order discrepancies remain inspectable. Missing, stale, inconsistent, failed, pending,
+or wrong-account evidence stays visibly blocked; account changes abort and discard prior responses.
+The active account polls shared readiness every ten seconds without overlapping requests.
+Portfolio expiry uses the server's observation window and blocks locally even when a refresh fails;
+repeated delivery of the same snapshot cannot extend its lifetime. Recovery never resubmits orders
+or resumes runs. Focused coverage lives in
+`trading-screen.brokerage-recovery.test.tsx`, `trading-screen.view-model.test.ts`, and `api.trading.test.ts`.
+
+Reporting run status and governed run detail expose an investment-income comparison over two
+explicit retained run identities. Baseline options distinguish originally published and restated
+results. The shared service retains the manifests, snapshot diff, explanation, and supporting
+records; the browser never reattributes from live journals. Period, population, accounting basis,
+currency, unsupported residuals, and incompatibility remain visible. Each contribution opens its
+retained record in the shared accessible sheet. `incomeComparison` and `incomeContribution`
+query parameters preserve the comparison and drill-through across reloads; selection parameters
+retain both runs and the measure. Authoritative requests disable development fallback.
+Monetary values stay canonical decimal strings from the API through display and residual checks;
+the browser groups digits directly and rejects already-rounded JSON numbers.
+
+Provider integration setup retains the server's immutable manifest version and digest after saving
+or activating, and forwards that reference on later edits and activation. OpenAPI reimports retain
+the same compare-and-set guard. Quarantine replay explicitly uses the original retained mapping;
+applying an updated mapping requires an explicit remediation request with a selected version and digest.
+Legacy evidence leaves unavailable provenance absent rather than deriving historical mappings in React.
+
+Accounting's draft queue reads retained recurring occurrences through the shared scoped
+`/api/ledger/journal-automation/recurring/occurrences` contract. Rows retain schedule/template
+versions, draft identity, human approval status and source evidence references. Blocked rows
+include period lock ownership and the governed reopen path. Failed reads stay unavailable;
+the browser neither falls back to sample state nor infers approval or claims an occurrence.
+Changing scope discards previous rows and ignores late responses. Focused coverage lives in
+`RecurringJournalQueue.test.tsx` and `recurring-journals.api.test.ts`.
 
 The stable test runner retains eight files per batch, two Vitest workers and process recycling.
 Fresh JSON test evidence is written under `artifacts/test-results/browser/` at repository root.
@@ -21,6 +100,16 @@ journal detail debit/credit cells carry the entry and ledger-book identity; valu
 retained subject are never assigned inferred provenance. Reads disable development fallback and
 show loading, unavailable, empty, stale and mismatched-subject states. Escape and focus restoration
 use the shared sheet behavior. Full evidence links retain the selected ledger book.
+
+Statement import links to the exact retained Operations Continuity workflow, book, and period.
+An unavailable requested workflow fails closed. Close publication continues to require the full
+fund/account/entity/book/period scope and current server readiness; the import handoff alone
+does not supply that complete close authority.
+
+Ledger Explorer clears the selected amount when its tab becomes inactive, its book or period
+changes, or its posted journal no longer contains that amount. Returning to the prior scope
+requires a new amount click; a late evidence response cannot restore the previous drawer.
+`finance-standard-pages-screen.test.tsx` covers tab, book and period round trips and late responses.
 
 Reconciliation break details expose source observation state (New, Aging, Cleared, Recurring),
 lineage, occurrence and successful-run clearing independently of governed casework status.
@@ -48,8 +137,38 @@ Portfolio and Trading positions display the shared mark observation date, age, a
 
 Accounting and Operations Continuity require the shared decision to match all five selected close dimensions and the current workflow revision. Scope changes invalidate prior decisions and in-flight responses. Hard-lock requests forward that explicit scope to server-side close validation; a previously ready response cannot authorize a newly selected subject.
 
+Operations Continuity refreshes the selected workflow detail on every workflow-list refresh and
+close-scope change, including repairs that retain the workflow version but replace report evidence.
+Publication waits for matching summary/detail revisions and the refreshed shared decision. The
+decision's workflow must match the selected report pack and publication evidence identities (ID,
+source, route and capture time), including repairs that retain the workflow version. Failed,
+mismatched or superseded detail reads remain blocked, and late responses cannot restore old controls
+or evidence. Shared services still validate current close-plan and report-evidence versions.
+Focused proof: `operations-continuity-screen.test.tsx` and `operations-continuity-screen.view-model.test.ts`.
+
 Operations Continuity submits checklist controls from the shared workflow's explicit acknowledgment actor and time, including the first submission before any close package exists. Missing controls block submission. Rejected or reopened workflows can submit a newly reviewed cycle without reusing old package approvals. Approval decisions carry retained submission evidence; an assigned reviewer is not counted as having approved until the server records the actual decision. Close publication uses the current submission and decision history together with current prerequisite acknowledgments.
 Focused proof: `operations-continuity-screen.view-model.test.ts` and `operations-continuity-screen.test.tsx`.
+
+## Work-first Portfolio and Reporting
+
+Portfolio opens on selectable holdings before the supporting retained-record explorer and
+readiness handoff. Reporting opens on its selectable daily work queue before period production
+tools. Their compact data-confidence disclosures keep source, scope, freshness, completeness,
+and blockers visible; expanding them reveals explanations and recovery actions. The existing
+native disclosure pattern also retains full Portfolio readiness and Reporting production tools.
+
+Reporting queue selection uses `reportingWork` in the URL, preserving other query parameters
+and the hash. The selected item owns the inspector's evidence and actions. Removed or unknown
+items are explicitly unavailable, and changing financial scope clears the prior selection.
+The shared dense-row keyboard contract supports row selection, detail focus, and return focus.
+
+`src/lib/workstation-features.ts` supplies wired browser destinations to both sidebar navigation
+and local command search. Purpose descriptions and search-only aliases expose intents such as
+cash forecast, statement import, historical prices, and running reports. Local destinations remain
+searchable when remote command or entity search is unavailable; unwired routes stay excluded.
+Accounting onboarding searches open the existing External GL surface, which hosts the bounded
+onboarding workspace and its retained comparison and readiness evidence.
+The masthead places operator controls on a second row at laptop widths so search stays readable.
 
 ## Purpose
 
@@ -121,13 +240,20 @@ dropped transient notification cannot erase the retained execution/SLA record.
 
 ## Important workflows
 
+From the repository root, use `npm run dev` for the seeded backend with watch/restarts and Vite
+hot reload, or `npm run dev:fixtures` for explicit fixture-only responses without a backend.
+Backend-connected errors never fall back to fixtures. See the
+[browser development launcher](../../../docs/engineering/web-development.md) for prerequisites,
+port options, readiness, shutdown, and manual acceptance checks.
+
 The browser workstation exposes `/accounting/entity-setup` for the shared fund-structure setup wizard. The feature posts drafts to `/api/fund-structure/setup-drafts/validate` for validation and preview, then `/api/fund-structure/setup-drafts/create` for review-and-create instead of reimplementing setup orchestration in React.
 
 
 This is the active operator UI lane; keep shared contract compatibility with retained WPF consumers. Security
 Master Governance detail uses the workstation trust snapshot's `scheduleBook` and
 `openLotReadModel` projections for cash-flow schedules, factor provenance, and open-lot exposure
-review.
+review. Open-lot rows render explicit Long/Short direction in the table, detail panel, and accessible
+row description rather than inferring direction from the positive lot quantity.
 The Settings workspace also owns the browser asset-profile governance surface for custom Security
 Master assets: it reads approved profiles, drafts profile variants from starter templates, submits
 approval/rollback lineage actions through the shared Security Master endpoints, and creates
@@ -1296,6 +1422,26 @@ The final light-first workspace surface cascade now lives in `src/styles/workspa
 imported immediately after `src/styles/index.css` in `main.tsx`, so `index.css` stays focused on
 global tokens, Tailwind layers, and legacy shared rules while the workspace surface overrides remain
 order-pinned and reviewable.
+Tailwind 4 compilation uses `@tailwindcss/postcss`; the stylesheet imports `tailwindcss` and
+explicitly loads `tailwind.config.ts` with `@config`. Automatic monorepo scanning is disabled with
+`source(none)` so the config's existing dashboard content globs own utility discovery. Keep the
+Segoe UI/Cascadia font stacks, semantic colors, and radius/shadow tokens in that shared config.
+Tailwind handles CSS imports and vendor prefixes, so a separate Autoprefixer plugin is unnecessary.
+The pre-module startup CSS in `index.html` belongs to the base layer so it yields to the loaded
+workstation, and base button cursors and placeholder colors preserve the existing defaults.
+Focus utilities use `outline-hidden` to retain forced-colors outlines; `shadow-xs`,
+`backdrop-blur-sm`, and `shrink-0` retain their previous visual and flex behavior under v4.
+Semantic badges retain their unfilled backgrounds: Tailwind 3's opacity scale stopped at multiples
+of five, so the `/8` and `/12` color utilities never compiled and the surfaces naming them have
+always been unfilled. Tailwind 4 accepts any percentage, so keeping those utilities would introduce
+new tints and reduce text contrast rather than preserve the current appearance. Every other opacity
+modifier in the dashboard is a multiple of five and compiles identically under both majors.
+Card-title defaults live in the component layer so caller-supplied text-size utilities still win
+independently of Tailwind utility ordering.
+`src/tailwind-build.test.ts` compiles the real stylesheet through the configured PostCSS pipeline
+and checks token-backed components, responsive utilities, typography, opacity, and focus behavior.
+Any future separately processed stylesheet that uses `@apply` must first reference
+`src/styles/index.css` with `@reference` to access the workstation theme without emitting it twice.
 The root `Meridian Design System/` package is vendored as the visual source bundle for tokens,
 component references, patterns, templates, and governance scripts. The browser workstation consumes
 the package through copied `src/assets/` files and the `src/design-system/assets.ts` bridge, while
@@ -1359,6 +1505,14 @@ for older JSON. The browser submits posting intent and assertions only; server s
 authority, and the same shared contracts remain available to WPF without browser-owned accounting
 logic or a new route.
 
+`ui-api-routes.generated.ts` includes `SecurityMasterAssetClasses` and
+`SecurityMasterAssetClassDefinition`. `SecurityIdentifierKind` includes `LoanX` and `Clip`.
+
+The passport editor builds its term picker from `GET /api/security-master/asset-classes/{assetClass}`
+(`security-master-schema.api.ts`): scalar-editable terms grouped as the registry declares them,
+a value control per editor kind, and a client pre-check
+(`security-passport-schema-fields.view-model.ts`). The free-text field path stays as a fallback.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
@@ -1391,6 +1545,10 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 <!-- source-todos:end -->
 
 ## Validation
+
+Launcher/process ownership coverage runs from the repository root with
+`node --test scripts/dev/web-dev.test.mjs`. Focused Vite/API mode coverage is in
+`src/vite-config.test.ts` and `src/lib/api.development-modes.test.ts`.
 
 ```bash
 npm --prefix src/Meridian.Ui/dashboard run lint
@@ -1427,4 +1585,45 @@ Browser extensibility route helpers expose the shared core extensibility catalog
 
 ## Accounting close browser surface
 
+The External GL route also hosts bounded accounting onboarding for one entity, explicit account
+population and date range. Its shared onboarding API retains criteria revisions, exact import and
+mapping identities, comparison snapshots, difference ownership, independent reviewer decisions and
+frozen readiness packets. Historical comparisons can be reproduced from retained inputs. Readiness
+shows unresolved differences across every required date; a later clean period does not clear an
+earlier required period. The browser never substitutes fixtures for these authoritative reads or
+writes, computes readiness, imports missing sources automatically, or grants accounting authority.
+Focused workflow, stale-response and accessibility coverage lives in
+`accounting-screen.onboarding-panel.test.tsx`; API boundary coverage lives in
+`lib/api/accounting-onboarding.api.test.ts`.
+
 The Accounting route reuses fund-operations ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in `src/screens/accounting-screen.tsx` and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.
+
+Accounting Ledger Explorer also includes the first W10-CONSOL-001 consolidation slice. Operators
+preview an authoritative effective-dated ownership perimeter, inspect gross/proposed/posted and
+consolidated account balances, retain unmatched reciprocal differences, and create drafts for the
+existing journal approval workflow. Source disclosures show the exact posting entity, counterparty,
+journal, book, line, debit, credit, and effective date; correction links and renewed-review status stay
+visible. Changing scope discards prior results, and failed requests require another preview. All
+amounts and eligibility are server-owned. This slice supports exactly two directly wholly owned
+entities, Primary basis, one shared functional currency, and a dedicated elimination book; it excludes
+foreign currency translation, minority interests, and nested ownership. Browser regression coverage
+is in `accounting-screen.consolidation-panel.test.tsx`.
+
+The close workspace (`/accounting`) exposes **Prepare next period**. Operators select an
+authoritative source plan, capture or reuse a retained template version, specify each task's
+calendar rule, select an authoritative target book and period, and resolve owner and policy
+changes before previewing. Calendar dates, dependency preservation, fresh evidence and sign-off
+requirements, stale-preview checks, and duplicate prevention are owned by shared close services.
+The browser never calculates rollover deadlines or copies completed controls. Prior completions,
+approvals, reviewed evidence, journal references and locks remain on their original period.
+
+All preparation reads and writes disable development fallback. Target-book discovery uses the
+authoritative source book's fund identity; stale or mismatched responses are discarded. A lost or
+interrupted creation response is retried with the same preview and idempotency key. A typed stale
+or missing preview response requires a new preview. Before creation, the browser saves only the
+opaque request identity in session storage. Reload and navigation recover that same request after
+fresh authorized source, template and book reads; no cached approval or preview state is reused.
+The creation result retains template version and history
+and links back to the prepared close scope. Reloaded plans expose their retained preparation
+lineage and creation history through the shared plan configuration. Focused coverage lives in
+`accounting-screen.prepare-next-period.test.tsx` and `close-preparation.api.test.ts`.

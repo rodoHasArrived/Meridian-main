@@ -65,7 +65,8 @@ def collect_evidence(results_dir: Path, required_prefixes: list[str] | None = No
             else:
                 totals["other"] += 1
                 file_totals["other"] += 1
-        file_results.append({"trx": trx_file.as_posix(), "totals": file_totals})
+        file_results.append({"trx": trx_file.as_posix(), "totals": file_totals,
+                             "discovered": sum(file_totals.values())})
 
     required_suites = []
     for prefix in required_prefixes:
@@ -94,6 +95,7 @@ def collect_evidence(results_dir: Path, required_prefixes: list[str] | None = No
             and totals["skipped"] == 0
             and totals["other"] == 0
             and totals["passed"] > 0
+            and all(int(result["discovered"]) > 0 for result in file_results)
             and all(bool(suite["satisfied"]) for suite in required_suites)
         ),
     }
@@ -111,6 +113,9 @@ def validation_errors(evidence: dict[str, object]) -> list[str]:
         errors.append(f"production certification contains {totals['skipped']} skipped tests")
     if int(totals["other"]):
         errors.append(f"production certification contains {totals['other']} unknown outcomes")
+    for result in evidence["fileResults"]:
+        if int(result["discovered"]) == 0:
+            errors.append(f"TRX file '{result['trx']}' contains zero discovered tests")
     required_suites = evidence["requiredSuites"]
     assert isinstance(required_suites, list)
     for suite in required_suites:
@@ -124,18 +129,24 @@ def main() -> int:
     args = parse_args()
     try:
         evidence = collect_evidence(args.results_dir, args.require_trx_prefix)
+        errors = validation_errors(evidence)
     except (ET.ParseError, OSError, ValueError) as error:
-        print(error, file=sys.stderr)
-        return 1
+        errors = [str(error)]
+        evidence = {
+            "schemaVersion": 1,
+            "resultsDirectory": args.results_dir.as_posix(),
+            "requiredTrxPrefixes": args.require_trx_prefix,
+            "certifiable": False,
+            "errors": errors,
+        }
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
 
-    errors = validation_errors(evidence)
     if errors:
         for error in errors:
             print(error, file=sys.stderr)
-        skipped = evidence["skippedTests"]
+        skipped = evidence.get("skippedTests", [])
         assert isinstance(skipped, list)
         for item in skipped:
             assert isinstance(item, dict)

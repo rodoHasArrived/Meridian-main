@@ -1,6 +1,7 @@
 using Meridian.Contracts.Integrity;
 using System.Data;
 using System.Text.Json;
+using Meridian.Storage.FundAccounts;
 using Npgsql;
 
 namespace Meridian.Storage.FundStructure;
@@ -17,6 +18,7 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
     private readonly string _fundSchema;
     private readonly string _ledgerSchema;
     private readonly int _lockTimeoutSeconds;
+    private readonly FundAccountStoreOptions? _fundAccounts;
 
     private sealed record Table(string Name, string IdColumn, string Kind, bool IsNode,
         string[] Parents, string[] Children);
@@ -39,7 +41,7 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
 
     public PostgresFundStructureTenantBackfillStore(
         FundStructureStoreOptions fundOptions, string ledgerConnectionString, string ledgerSchema,
-        int lockTimeoutSeconds = 5)
+        int lockTimeoutSeconds = 5, FundAccountStoreOptions? fundAccounts = null)
     {
         ArgumentNullException.ThrowIfNull(fundOptions);
         ArgumentException.ThrowIfNullOrWhiteSpace(fundOptions.ConnectionString);
@@ -54,6 +56,13 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
         _fundConnection = fundOptions.ConnectionString;
         _ledgerConnection = ledgerConnectionString;
         _lockTimeoutSeconds = lockTimeoutSeconds;
+        if (fundAccounts is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(fundAccounts.ConnectionString);
+            if (string.IsNullOrWhiteSpace(new NpgsqlConnectionStringBuilder(fundAccounts.ConnectionString).Database))
+                throw new ArgumentException("The fund account connection requires an explicit database name.");
+            _fundAccounts = new() { ConnectionString = fundAccounts.ConnectionString, Schema = ValidateSchema(fundAccounts.Schema) };
+        }
     }
 
     public async Task<FundStructureTenantBackfillReceipt?> FindReceiptAsync(Guid runId, CancellationToken ct = default)
@@ -70,15 +79,21 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
         // on connection loss before another database commits. Separate databases support preview only.
         var ledger = new NpgsqlConnection(sameDatabase ? _fundConnection : _ledgerConnection);
         var fund = sameDatabase ? ledger : new NpgsqlConnection(_fundConnection);
+        var sameAccountDatabase = _fundAccounts is null || string.Equals(ConnectionIdentity(_fundConnection),
+            ConnectionIdentity(_fundAccounts.ConnectionString), StringComparison.Ordinal);
+        var accounts = _fundAccounts is null ? null : sameAccountDatabase ? fund : new NpgsqlConnection(_fundAccounts.ConnectionString);
         NpgsqlTransaction? ledgerTransaction = null;
         NpgsqlTransaction? fundTransaction = null;
+        NpgsqlTransaction? accountsTransaction = null;
         try
         {
             await ledger.OpenAsync(ct).ConfigureAwait(false);
             ledgerTransaction = await ledger.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct).ConfigureAwait(false);
             await ExecuteAsync(ledger, ledgerTransaction, $"SET LOCAL lock_timeout = '{_lockTimeoutSeconds}s'", ct).ConfigureAwait(false);
             await ExecuteAsync(ledger, ledgerTransaction,
-                $"LOCK TABLE {Q(_ledgerSchema, "fund_profile_tenancy")}, {Q(_ledgerSchema, "ledger_books")} IN SHARE MODE", ct).ConfigureAwait(false);
+                $"LOCK TABLE {Q(_ledgerSchema, "fund_profile_tenancy")}, {Q(_ledgerSchema, "ledger_event_audit_events")} IN SHARE MODE", ct).ConfigureAwait(false);
+            await ExecuteAsync(ledger, ledgerTransaction,
+                $"LOCK TABLE {Q(_ledgerSchema, "accounting_periods")}, {Q(_ledgerSchema, "ledger_books")}, {Q(_ledgerSchema, "operations_continuity_workflows")} IN SHARE ROW EXCLUSIVE MODE", ct).ConfigureAwait(false);
 
             if (sameDatabase)
                 fundTransaction = ledgerTransaction;
@@ -93,6 +108,19 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
                 .Order(StringComparer.Ordinal).Select(table => Q(_fundSchema, table));
             await ExecuteAsync(fund, fundTransaction,
                 $"LOCK TABLE {string.Join(", ", fundTables)} IN SHARE ROW EXCLUSIVE MODE", ct).ConfigureAwait(false);
+            if (accounts is not null)
+            {
+                if (sameAccountDatabase)
+                    accountsTransaction = fundTransaction;
+                else
+                {
+                    await accounts.OpenAsync(ct).ConfigureAwait(false);
+                    accountsTransaction = await accounts.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct).ConfigureAwait(false);
+                }
+                await ExecuteAsync(accounts, accountsTransaction, $"SET LOCAL lock_timeout = '{_lockTimeoutSeconds}s'", ct).ConfigureAwait(false);
+                await ExecuteAsync(accounts, accountsTransaction,
+                    $"LOCK TABLE {Q(_fundAccounts!.Schema, "account_definition")} IN SHARE ROW EXCLUSIVE MODE", ct).ConfigureAwait(false);
+            }
 
             var rows = new List<FundStructureTenantBackfillRow>();
             foreach (var table in Tables)
@@ -139,15 +167,51 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
                 }
             }
 
+            var books = evidence.GroupBy(item => item.BookId).ToDictionary(group => group.Key, group => group.First());
+            foreach (var book in books.Values)
+                rows.Add(new("ledger.ledger_books", book.BookId, "LedgerBook", false, ReadOptionalString(book.RetainedBook, "tenant_id"),
+                    [book.NodeId], [], book.RetainedBook));
+            var periods = await ReadJsonRowsAsync(ledger, ledgerTransaction, $"""
+                SELECT (to_jsonb(p) || jsonb_build_object('tenant_backfill_audit_protected', EXISTS (
+                    SELECT 1 FROM {Q(_ledgerSchema, "ledger_event_audit_events")} e
+                    WHERE e.subject_kind = 'period' AND e.subject_id = p.period_id)))::text
+                FROM {Q(_ledgerSchema, "accounting_periods")} p ORDER BY period_id
+                """, ct).ConfigureAwait(false);
+            foreach (var period in periods)
+                rows.Add(new("ledger.accounting_periods", period.GetProperty("period_id").GetGuid(), "AccountingPeriod", false,
+                    ReadOptionalString(period, "tenant_id"), BookOwner(period, "ledger_book_id", books), [], period));
+            var workflows = await ReadJsonRowsAsync(ledger, ledgerTransaction,
+                $"SELECT to_jsonb(w)::text FROM {Q(_ledgerSchema, "operations_continuity_workflows")} w ORDER BY workflow_id", ct).ConfigureAwait(false);
+            foreach (var workflow in workflows)
+                rows.Add(new("ledger.operations_continuity_workflows", workflow.GetProperty("workflow_id").GetGuid(), "OperationsWorkflow", false,
+                    ReadOptionalString(workflow, "tenant_id"), BookOwner(workflow.GetProperty("workflow_json"), "ledgerBookId", books), [], workflow));
+            if (accounts is not null)
+            {
+                var definitions = await ReadJsonRowsAsync(accounts, accountsTransaction!,
+                    $"SELECT to_jsonb(a)::text FROM {Q(_fundAccounts!.Schema, "account_definition")} a ORDER BY account_id", ct).ConfigureAwait(false);
+                foreach (var account in definitions)
+                {
+                    var id = account.GetProperty("account_id").GetGuid();
+                    var parents = ReadReferences(account, ["fund_id", "sleeve_id", "vehicle_id", "entity_id"]).ToList();
+                    if (knownNodes.Contains(id) || inferredAccounts.Contains(id))
+                        parents.Add(id);
+                    rows.Add(new("fund_accounts.account_definition", id, "AccountDefinition", false,
+                        ReadOptionalString(account, "tenant_id"), parents.Distinct().Order().ToArray(), [], account));
+                }
+            }
+
             var quarantine = await ReadJsonRowsAsync(fund, fundTransaction,
                 $"SELECT to_jsonb(q)::text FROM {Q(_fundSchema, "fund_structure_tenant_quarantine")} q ORDER BY node_id", ct).ConfigureAwait(false);
             var schema = await ReadSchemaAsync(fund, fundTransaction, _fundSchema, ct).ConfigureAwait(false);
             var ledgerSchema = await ReadSchemaAsync(ledger, ledgerTransaction, _ledgerSchema, ct).ConfigureAwait(false);
             var fundIdentity = await ReadDatabaseIdentityAsync(fund, fundTransaction, ct).ConfigureAwait(false);
             var ledgerIdentity = sameDatabase ? fundIdentity : await ReadDatabaseIdentityAsync(ledger, ledgerTransaction, ct).ConfigureAwait(false);
-            var identity = Hash($"{ConnectionIdentity(_ledgerConnection)}|{_ledgerSchema}|{ledgerIdentity}|{ConnectionIdentity(_fundConnection)}|{_fundSchema}|{fundIdentity}");
-            var snapshot = new FundStructureTenantBackfillSnapshot(identity, Hash(schema + "\n" + ledgerSchema), rows, evidence, quarantine, sameDatabase);
-            return new Session(fund, fundTransaction, ledger, ledgerTransaction, _fundSchema, snapshot);
+            var accountSchema = accounts is null ? "" : await ReadSchemaAsync(accounts, accountsTransaction!, _fundAccounts!.Schema, ct).ConfigureAwait(false);
+            var accountIdentity = accounts is null ? "" : await ReadDatabaseIdentityAsync(accounts, accountsTransaction!, ct).ConfigureAwait(false);
+            var identity = Hash($"{ConnectionIdentity(_ledgerConnection)}|{_ledgerSchema}|{ledgerIdentity}|{ConnectionIdentity(_fundConnection)}|{_fundSchema}|{fundIdentity}|{_fundAccounts?.Schema}|{accountIdentity}");
+            var snapshot = new FundStructureTenantBackfillSnapshot(identity, Hash(schema + "\n" + ledgerSchema + "\n" + accountSchema), rows, evidence, quarantine, sameDatabase && sameAccountDatabase);
+            return new Session(fund, fundTransaction, ledger, ledgerTransaction, accounts, accountsTransaction,
+                _fundSchema, _ledgerSchema, _fundAccounts?.Schema, snapshot);
         }
         catch
         {
@@ -159,6 +223,8 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
             {
                 if (!sameDatabase)
                     await DisposeConnectionAsync(ledger, ledgerTransaction).ConfigureAwait(false);
+                if (accounts is not null && !sameAccountDatabase)
+                    await DisposeConnectionAsync(accounts, accountsTransaction).ConfigureAwait(false);
             }
             throw;
         }
@@ -167,7 +233,8 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
     private sealed class Session(
         NpgsqlConnection fund, NpgsqlTransaction fundTransaction,
         NpgsqlConnection ledger, NpgsqlTransaction ledgerTransaction,
-        string schema, FundStructureTenantBackfillSnapshot snapshot) : IFundStructureTenantBackfillSession
+        NpgsqlConnection? accounts, NpgsqlTransaction? accountsTransaction,
+        string schema, string ledgerSchema, string? accountsSchema, FundStructureTenantBackfillSnapshot snapshot) : IFundStructureTenantBackfillSession
     {
         private bool _committed;
         public FundStructureTenantBackfillSnapshot Snapshot { get; } = snapshot;
@@ -179,6 +246,13 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
             Guid runId, string planHash, string operatorId, string reviewReference, JsonElement plan,
             IReadOnlyList<FundStructureTenantBackfillStamp> stamps,
             IReadOnlyList<FundStructureTenantBackfillException> exceptions, CancellationToken ct)
+            => await CommitReviewedAsync(runId, planHash, operatorId, reviewReference, plan, stamps, exceptions, [], ct).ConfigureAwait(false);
+
+        public async Task<FundStructureTenantBackfillReceipt> CommitReviewedAsync(
+            Guid runId, string planHash, string operatorId, string reviewReference, JsonElement plan,
+            IReadOnlyList<FundStructureTenantBackfillStamp> stamps,
+            IReadOnlyList<FundStructureTenantBackfillException> exceptions,
+            IReadOnlyList<FundStructureTenantQuarantineResolution> resolutions, CancellationToken ct)
         {
             if (_committed)
                 throw new InvalidOperationException("Backfill session has already committed.");
@@ -186,7 +260,14 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
                 throw new InvalidOperationException("Separate databases support preview only; atomic apply requires co-located schemas.");
             foreach (var stamp in stamps)
             {
-                var table = Tables.Single(table => table.Name == stamp.Table);
+                var (table, targetSchema) = stamp.Table switch
+                {
+                    "ledger.ledger_books" => (new Table("ledger_books", "ledger_book_id", "LedgerBook", false, [], []), ledgerSchema),
+                    "ledger.accounting_periods" => (new Table("accounting_periods", "period_id", "AccountingPeriod", false, [], []), ledgerSchema),
+                    "ledger.operations_continuity_workflows" => (new Table("operations_continuity_workflows", "workflow_id", "OperationsWorkflow", false, [], []), ledgerSchema),
+                    "fund_accounts.account_definition" when accountsSchema is not null => (new Table("account_definition", "account_id", "AccountDefinition", false, [], []), accountsSchema),
+                    _ => (Tables.Single(table => table.Name == stamp.Table), schema)
+                };
                 ArgumentException.ThrowIfNullOrWhiteSpace(stamp.TenantId);
                 var retainedRow = Snapshot.Rows.Single(row => row.Table == stamp.Table && row.Id == stamp.Id);
                 if (retainedRow.IsInferred)
@@ -199,13 +280,27 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
                     await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
                 }
                 await using var command = new NpgsqlCommand($"""
-                    UPDATE {Q(schema, table.Name)} SET tenant_id = @tenant
+                    UPDATE {Q(targetSchema, table.Name)} SET tenant_id = @tenant
                     WHERE {table.IdColumn} = @id AND (tenant_id IS NULL OR length(trim(tenant_id)) = 0)
                     """, fund, fundTransaction);
                 command.Parameters.AddWithValue("id", stamp.Id);
                 command.Parameters.AddWithValue("tenant", stamp.TenantId);
                 if (await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) != 1)
                     throw new InvalidOperationException("A backfill row no longer permits first attribution.");
+            }
+
+            foreach (var resolution in resolutions)
+            {
+                await using var command = new NpgsqlCommand($"""
+                    UPDATE {Q(schema, "fund_structure_tenant_quarantine")}
+                    SET resolved_at_utc = now(), resolved_tenant_id = @tenant, resolution_note = @note
+                    WHERE node_id = @id AND resolved_at_utc IS NULL
+                    """, fund, fundTransaction);
+                command.Parameters.AddWithValue("id", resolution.NodeId);
+                command.Parameters.AddWithValue("tenant", resolution.TenantId);
+                command.Parameters.AddWithValue("note", $"Reviewed backfill {runId:D}; operator={operatorId}; review={reviewReference}; plan={planHash}");
+                if (await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) != 1)
+                    throw new InvalidOperationException("The reviewed quarantine release no longer matches retained state.");
             }
 
             foreach (var exception in exceptions)
@@ -262,9 +357,16 @@ public sealed class PostgresFundStructureTenantBackfillStore : IFundStructureTen
                 {
                     await DisposeConnectionAsync(ledger, ledgerTransaction).ConfigureAwait(false);
                 }
+                if (accounts is not null && !ReferenceEquals(accounts, fund))
+                    await DisposeConnectionAsync(accounts, accountsTransaction).ConfigureAwait(false);
             }
         }
     }
+
+    private static IReadOnlyList<Guid> BookOwner(JsonElement row, string property,
+        IReadOnlyDictionary<Guid, FundStructureTenantBackfillEvidence> books)
+        => row.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.String &&
+            Guid.TryParse(value.GetString(), out var id) && books.TryGetValue(id, out var book) ? [book.NodeId] : [];
 
     private static async Task<FundStructureTenantBackfillReceipt?> ReadReceiptAsync(
         NpgsqlConnection connection, NpgsqlTransaction? transaction, string schema, Guid runId, CancellationToken ct)

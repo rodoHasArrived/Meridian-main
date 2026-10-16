@@ -6,10 +6,29 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-09-25
+last_reviewed: 2026-10-14
 ---
 
 # src/Meridian.Execution
+
+Broker-dispatched client IDs, run/account ownership and processed fill watermarks are retained by
+`FileBrokerageOrderRecoveryStore` before dispatch. An ambiguous acknowledgement keeps exposure
+reserved and requires authoritative lookup; the ID cannot be reused after restart or a terminal
+outcome. `BrokerageExecutionReconciliationService.RecoverOrdersAsync` applies working and uncertain
+order snapshots through the serialized OMS fill path, including cumulative partial-fill pricing.
+Open-order reconciliation is account-scoped and reports missing, conflicting, duplicate and pending
+handoff evidence. Recovery never submits a replacement order. Exactly one execution host may write
+each recovery directory; scope changes and unreadable state fail closed.
+Report checkpoints preserve newer submission uncertainty: a fill that began processing before a
+dispatch failure cannot clear the later recovery requirement in memory or in the retained store.
+`AddBrokerageExecution` requires the recovery store for every broker-backed gateway, including
+sandbox accounts; only in-process paper execution can omit it. At the configured retained-order
+limit, fully processed fills and definitive rejections without a broker identity become compact
+durable tombstones before their full state and sidecars are removed. These identities remain
+reserved across restart and duplicate callbacks cannot be adopted as new external fills. Version 1
+recovery files remain readable; new writes use version 2 with tombstones. Active orders, ambiguous
+outcomes, pending fill handoffs, and cancelled/expired orders retain their complete evidence for
+recovery and may exceed the display-cache limit. The permanent minimal identity index is not expired.
 
 ## Purpose
 
@@ -32,6 +51,15 @@ This layer implements execution behavior and broker-facing runtime services whil
 
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
 
+Paper session fills retain exact remaining carrying basis on each internal `PositionLot` and use
+Ledger's `LotBasisRelief` for partial long sales and short covers. Average unit cost remains a
+display quote; subsequent fills and unrealized P&L use the retained total. The native corporate-action
+adjuster carries that total through splits and principal paydowns, and lot rescaling assigns the
+exact aggregate remainder. An asynchronous adjustment cannot replace a lot book changed by intervening
+fills, including close/reopen at the same quantity and price. Legacy custom adjusters retain their
+quantity/quote behavior and do not claim exact total-basis evidence. This calculation convergence
+does not supply canonical security/book identity, acquisition FX or production short-posting authority.
+
 Both paper gateways resolve the final fill price through the shared trading-parameter helper.
 Tick-size rounding is best-effort: a rounded price is used only when it remains positive, stays
 inside the captured market-data envelope, and respects any limit or stop-limit price. Otherwise,
@@ -51,8 +79,10 @@ boundary:
 - gateway submission **throws after dispatch was attempted** — commit. The dispatch is ambiguous and
   the order may still execute, so a rate limiter has to over-count; under-counting would let a
   runaway algorithm bypass the ceiling by producing ambiguous submissions. That path is audited with
-  `Reason = OrderManagementSystem.AmbiguousSubmissionReason`, the only `OrderRejected` entry that
-  keeps its slot, and is persisted with `CancellationToken.None` so a cancelled caller cannot erase
+  `Action = OrderSubmissionUncertain`, `Outcome = RecoveryRequired`, and
+  `Reason = OrderManagementSystem.AmbiguousSubmissionReason`. Rate-status reconstruction also
+  recognizes retained legacy `OrderRejected` entries carrying that reason. The audit is persisted
+  with `CancellationToken.None` so a cancelled caller cannot erase
   the record of capacity the throttle still holds;
 - submission fails **before** the gateway call — roll back. Cancellation observed at the dispatch
   boundary is provably pre-dispatch, so it is not ambiguous and must not consume capacity.
@@ -61,6 +91,26 @@ The ambiguous path merges rather than overwrites the tracked order state. The re
 a fill before the acknowledgement throws, and replacing that with a rejected state built from the
 original request would erase a confirmed execution, make the client order id terminal and reusable,
 and contradict an accounting handoff that already happened. An order that executed stays executed.
+
+Broker-backed dispatches also retain their client identity and account-scoped order state through
+`FileBrokerageOrderRecoveryStore` before the broker call. Persistence failure prevents submission;
+corrupt recovery records fail startup closed. The store binds to the gateway's verified account and
+paper/live environment before dispatch or recovery. Broker-dispatched client IDs remain reserved
+after completion and restart, while generated IDs include a process-independent random identity.
+An ambiguous submission stays pending (or keeps confirmed fills), and incomplete recovery remains
+visible through `GetRecoveryOrders`. Pending cancellations continue reserving exposure. Late fills
+after cancellation advance actual exposure without reopening the cancelled remainder.
+
+Explicit synchronization uses `BrokerageExecutionReconciliationService.RecoverOrdersAsync` to look
+up retained client IDs, including terminal broker orders, and applies authoritative evidence through
+the existing idempotent fill path. Every explicit sync rechecks retained cancelled and expired
+orders for late fills, including within the same process; an unavailable terminal-order
+lookup blocks synchronization. A missing order, mismatched identity, regressive fill quantity, or
+unverifiable account/environment leaves recovery blocked; recovery never resubmits an order.
+Durably confirmed rejections keep their client IDs reserved across restart but do not require a
+lookup for an order the broker may never have created; an explicitly unresolved rejection stays blocked.
+Read-only reconciliation compares account-scoped exposure with the broker and reports duplicate
+client IDs, foreign-account matches, pending fill handoffs, and missing or inconsistent orders.
 
 Every path between the gate and the venue must settle exactly once; a leaked reservation
 permanently consumes capacity and eventually blocks every later order.
@@ -216,6 +266,14 @@ subsumes the other, and the service performs both.
 OMS runtime guardrails are configuration-backed under `Execution:OrderManagement`:
 `MaxRetainedOrders`, `ExecutionChannelCapacity`, and `CancelAllMaxConcurrency`. Reg T margin rates
 are configuration-bindable through `Execution:Margin:RegT` while preserving the standard defaults.
+`BrokerageConfiguration.MaxOrderNotional` and `MaxOpenOrders` are enforced by the OMS before
+broker dispatch, under the same serialized admission gate that registers working exposure.
+Open-order capacity includes pending acknowledgements, pending cancellations, ambiguous submissions,
+and broker orders outside the local book; matching broker/client identities are counted once.
+An unavailable broker snapshot blocks admission when the open-order cap is enabled. Definitive
+rejections release capacity, while ambiguous submissions retain it. The notional cap also checks
+quantity/price amendments, respects native dollar and face-value sizing and option multipliers,
+and refuses orders whose notional cannot be established (including unpriced multi-leg packages).
 Fill-report publication observes bounded-channel `WriteAsync` backpressure, and duplicate gateway
 reports resume only unfinished portfolio, durable-accounting, session, or subscriber side effects.
 Paper-session persistence resolves session identifiers through the Core rooted-path guard. It

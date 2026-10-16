@@ -53,9 +53,9 @@ public static class FundStructureTenantScope
             return true;
         }
 
-        var hasCallerTenant = !string.IsNullOrWhiteSpace(callerTenantId);
+        var hasCallerTenant = IsScopedTenant(callerTenantId);
         var isAttributed = tenants.NodeTenants.TryGetValue(nodeId, out var owner)
-            && !string.IsNullOrWhiteSpace(owner);
+            && IsScopedTenant(owner);
 
         if (!hasCallerTenant)
         {
@@ -88,7 +88,7 @@ public static class FundStructureTenantScope
 
         return !tenants.IsPartitioned
             || mode != TenantScopeEnforcementMode.FailClosed
-            || !string.IsNullOrWhiteSpace(callerTenantId);
+            || IsScopedTenant(callerTenantId);
     }
 
     /// <summary>
@@ -99,4 +99,7 @@ public static class FundStructureTenantScope
     /// </summary>
     private static bool IsHeldBy(string ownerTenantId, string callerTenantId)
         => string.Equals(ownerTenantId.Trim(), callerTenantId.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsScopedTenant(string? tenant)
+        => !string.IsNullOrWhiteSpace(tenant) && !tenant.Trim().Equals("all", StringComparison.OrdinalIgnoreCase);
 }

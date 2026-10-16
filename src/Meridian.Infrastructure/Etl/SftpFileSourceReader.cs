@@ -1,13 +1,12 @@
 using Meridian.Contracts.Etl;
 using Meridian.Contracts.Integrity;
 using Meridian.Infrastructure.Etl.Sftp;
-using Meridian.Storage.Etl;
 
 namespace Meridian.Infrastructure.Etl;
 
 public sealed class SftpFileSourceReader : IEtlSourceReader
 {
-    private readonly EtlStagingStore _stagingStore;
+    private readonly IEtlStagingStore _stagingStore;
     private readonly ISftpClientFactory _clientFactory;
     private readonly ISftpCredentialResolver _credentialResolver;
     private readonly ISftpCapabilityService _capabilityService;
@@ -25,7 +24,7 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
     /// matches <see cref="SftpFilePublisher"/>.
     /// </remarks>
     public SftpFileSourceReader(
-        EtlStagingStore stagingStore,
+        IEtlStagingStore stagingStore,
         ISftpClientFactory clientFactory,
         ISftpCredentialResolver credentialResolver,
         ISftpCapabilityService capabilityService)

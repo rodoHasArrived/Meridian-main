@@ -1,3 +1,4 @@
+using Meridian.Core.IO;
 using Meridian.Core.Config;
 using Meridian.Domain.Collectors;
 using Meridian.Execution.Sdk;
@@ -136,7 +137,7 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
             : sp.GetService<AlpacaOptions>() ?? new AlpacaOptions();
         var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
         var streamLogger = sp.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>();
-        var stream = new AlpacaTradeUpdatesClient(brokerageOptions, streamLogger);
+        var stream = new AlpacaTradeUpdatesClient(brokerageOptions, streamLogger, sp.GetRequiredService<IAtomicFileWriter>());
         return new AlpacaBrokerageGateway(httpFactory, brokerageOptions, logger, stream);
     });
         services.AddSingleton<IBrokerageAccountCatalog>(sp =>

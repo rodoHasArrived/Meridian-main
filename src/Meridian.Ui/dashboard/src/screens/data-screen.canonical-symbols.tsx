@@ -185,7 +185,7 @@ export function CanonicalSymbolRegistryRegion({
                   <div className="min-w-[720px] divide-y" role="list" aria-label="Canonical securities">
                     {panel.visibleSymbols.map((symbol) => (
                       <details key={symbol.canonicalTicker} role="listitem" className="group text-sm">
-                        <summary className="grid cursor-pointer list-none grid-cols-[8rem_1fr_auto] items-center gap-3 px-3 py-2 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                        <summary className="grid cursor-pointer list-none grid-cols-[8rem_1fr_auto] items-center gap-3 px-3 py-2 hover:bg-muted/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
                           <span className="font-mono font-semibold">{symbol.canonicalTicker}</span>
                           <span>
                             <span className="font-medium">{symbol.displayName ?? "Unnamed security"}</span>

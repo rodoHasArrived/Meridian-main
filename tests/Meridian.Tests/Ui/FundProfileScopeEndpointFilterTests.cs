@@ -1,5 +1,6 @@
 using System.Net;
 using FluentAssertions;
+using Meridian.Application.Composition;
 using Meridian.Contracts.Tenancy;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NSubstitute;
+using AuthEnvironmentScope = Meridian.Tests.Identity.EnvironmentVariableScope;
 
 namespace Meridian.Tests.Ui;
 
@@ -24,6 +26,7 @@ namespace Meridian.Tests.Ui;
 /// rather than defaulting it. Both postures are pinned here; a suite that only covered the tightened
 /// one would not notice single-company deployments breaking.
 /// </remarks>
+[Collection("IdentityEnvironment")]
 public sealed class FundProfileScopeEndpointFilterTests
 {
     [Fact]
@@ -144,6 +147,48 @@ public sealed class FundProfileScopeEndpointFilterTests
     }
 
     // ── Fail-closed posture (W9-GOV-008 criterion 2) ──────────────────────────
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(" ")]
+    [InlineData("tenant-foreign")]
+    public async Task UnconfiguredHost_RejectsMissingOrMismatchedRequestAuthority(string? callerTenantId)
+    {
+        using var environment = new AuthEnvironmentScope()
+            .Set(TenantScopeEnforcementOptions.EnvironmentVariable, null);
+        await using var app = await CreateAppAsync(
+            AllowingGuard(),
+            tenancyRegistry: RegistryOwning("fund-mine", "tenant-test"),
+            callerTenantId: callerTenantId,
+            useDefaultHostPosture: true);
+
+        using var worker = FundScopeTenantAuthority.Enter("tenant-test", "unrelated worker");
+        using var response = await app.GetTestClient().GetAsync("/probe?fundProfileId=fund-mine");
+
+        app.Services.GetRequiredService<TenantScopeEnforcementOptions>().IsFailClosed.Should().BeTrue();
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Theory]
+    [InlineData("/probe")]
+    [InlineData("/probe?fundProfileId=fund-mine")]
+    public async Task UnconfiguredHost_AllSentinelIsRefusedEvenWhenRegistryContainsTheSameSentinel(string route)
+    {
+        using var environment = new AuthEnvironmentScope()
+            .Set(TenantScopeEnforcementOptions.EnvironmentVariable, null);
+        var registry = RegistryOwning("fund-mine", "all");
+        var guard = AllowingGuard();
+        await using var app = await CreateAppAsync(
+            guard, tenancyRegistry: registry, callerTenantId: " AlL ", useDefaultHostPosture: true);
+        using var worker = FundScopeTenantAuthority.Enter("tenant-test", "unrelated worker");
+
+        using var response = await app.GetTestClient().GetAsync(route);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        await guard.DidNotReceive().EvaluateAsync(
+            Arg.Any<WorkstationTenantContext>(), Arg.Any<string?>(), Arg.Any<CancellationToken>());
+        await registry.DidNotReceive().ResolveAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
 
     [Fact]
     public async Task FailClosed_RefusesACallerWithNoResolvableTenantScope()
@@ -312,7 +357,7 @@ public sealed class FundProfileScopeEndpointFilterTests
     [Fact]
     public async Task DeploymentBoundary_StillAllowsATenantlessCallerWithNoFundProfile()
     {
-        // The default posture is unchanged: single-company deployments keep working.
+        // Explicit migration compatibility preserves the old single-company route behavior.
         var guard = Substitute.For<IFundProfileTenantGuard>();
         await using var app = await CreateAppAsync(guard, callerTenantId: null);
 
@@ -327,7 +372,8 @@ public sealed class FundProfileScopeEndpointFilterTests
         UserPermission[]? requiredReadPermissions = null,
         TenantScopeEnforcementOptions? tenantScope = null,
         IFundProfileTenancyRegistry? tenancyRegistry = null,
-        string? callerTenantId = "tenant-test")
+        string? callerTenantId = "tenant-test",
+        bool useDefaultHostPosture = false)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
@@ -336,9 +382,13 @@ public sealed class FundProfileScopeEndpointFilterTests
             builder.Services.AddSingleton(guard);
         }
 
-        if (tenantScope is not null)
+        if (useDefaultHostPosture)
         {
-            builder.Services.AddSingleton(tenantScope);
+            builder.Services.AddFundScopeTenantServices();
+        }
+        else
+        {
+            builder.Services.AddSingleton(tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary);
         }
 
         if (tenancyRegistry is not null)

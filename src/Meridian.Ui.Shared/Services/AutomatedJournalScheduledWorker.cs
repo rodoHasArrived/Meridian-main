@@ -37,18 +37,21 @@ public sealed class AutomatedJournalScheduledWorker
     private readonly AutomatedJournalIntakeRunner _intakeRunner;
     private readonly ILogger<AutomatedJournalScheduledWorker> _logger;
     private readonly IAutomatedJournalDividendPositionResolver? _dividendPositionResolver;
+    private readonly RecurringJournalRunner? _recurring;
     private readonly SemaphoreSlim _runGate = new(1, 1);
 
     public AutomatedJournalScheduledWorker(
         IAutomatedJournalScheduleStore store,
         AutomatedJournalIntakeRunner intakeRunner,
         ILogger<AutomatedJournalScheduledWorker> logger,
-        IAutomatedJournalDividendPositionResolver? dividendPositionResolver = null)
+        IAutomatedJournalDividendPositionResolver? dividendPositionResolver = null,
+        RecurringJournalRunner? recurring = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _intakeRunner = intakeRunner ?? throw new ArgumentNullException(nameof(intakeRunner));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _dividendPositionResolver = dividendPositionResolver;
+        _recurring = recurring;
     }
 
     public async Task<AutomatedJournalScheduledBatchResult> RunDueAsync(
@@ -102,6 +105,8 @@ public sealed class AutomatedJournalScheduledWorker
                 results.Add(await RunWorkItemAsync(item, nowUtc, ct).ConfigureAwait(false));
             }
 
+            if (_recurring is not null)
+                results.AddRange(await _recurring.RunDueAsync(nowUtc, tenantId, companyId, scopeSpecified, ct).ConfigureAwait(false));
             return new AutomatedJournalScheduledBatchResult(nowUtc, results);
         }
         finally

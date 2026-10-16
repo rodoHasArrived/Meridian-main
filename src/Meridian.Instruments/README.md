@@ -6,10 +6,24 @@ module_id: SRC-DESIGN-INSTRUMENTS
 path: src/Meridian.Instruments
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-13
+last_reviewed: 2026-10-06
 ---
 
 # src/Meridian.Instruments
+
+`AccountCashForecastEngine` and `AccountCashForecastService` retain bounded account/book cash
+forecasts over the shared `PortfolioCashLadderEngine`. Opening settled cash, expected and observed
+flows, economic/settlement/receipt dates, terms/projection provenance and exact dated FX remain
+inspectable. Observed flows replace corresponding predictions in the ladder; only validated
+observed cash reconciles to closing cash. Missing scope, source evidence, FX or unexplained closing
+variance blocks certification. Corrections retain linked earlier snapshots and factor predictions.
+Opening and closing cash require independently identifiable retained observations, including
+single-day periods with equal balances. Linked expected and actual flows must agree on security
+identity, including whether an identity is absent. Existing receipts remain immutable; formerly
+certified inputs violating these guards fail replay closed and require source review.
+Certification describes cash evidence reconciliation and grants no payment authority. See
+[account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
+`AccountCashForecastTests` for the bounded contract.
 
 Direct-lending Asset Operations publication derives terms, status, and ledger row identities
 from retained loan/security facts so retries preserve those visible IDs. Ledger projection dates
@@ -17,6 +31,13 @@ come from the retained projection as-of date, or the contract effective date whe
 Replay identity coverage is in `AssetOperationsReadServiceTests`; publication observation timestamps
 and cross-writer ordering require separate evidence before claiming exactly-once effects.
 
+
+Canonical split posting explicitly opts into `CanonicalLotTransferJournal`: the projection emits
+a reviewed cashless basis transfer for one whole-unit successor. Existing operational split
+callers retain their no-journal quantity projection. `CorporateActionAssetAccountingEventMapper`
+requires the complete canonical instruction for exchange/refunding and explicitly opted-in lot
+transfers; other split/merger projections keep their existing mapping behavior. Optional canonical
+instructions retain their exact reviewed payload on the Projected event.
 
 ## Purpose
 
@@ -66,6 +87,15 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.
 
+`PortfolioCashLadderEngine.GetContributionCurrencies` exposes raw currencies through the same
+latest-run, date-window, held-quantity, and capital-kind selectors used to build the ladder.
+The shared workstation read service uses this metadata before amount arithmetic to reject
+missing currency or unsupported FX aggregation. Superseded and out-of-window flows and
+unrecognized capital activities remain excluded; the engine retains its warning for an
+unrecognized in-window capital kind. Early-call validation excludes flows discarded after the
+selected call date while retaining coupons due on or before the call and every future principal
+flow that the scenario pulls into the requested window.
+
 Asset-specific instrument reference services live here because they expose financial instrument
 terms, lifecycle, contract, expiry, maturity, accrual, sweep, liquidity, fund-family, and
 chain-linkage details. Asset Operations projections also live here because they adapt instrument
@@ -107,6 +137,26 @@ SecurityId, book-position id and expected version, book/period/basis scope, econ
 projection lineage, projected balanced effect, and complete typed retained evidence. Generated
 obligations and service availability can explain pending work, but neither can manufacture evidence
 readiness or advance an event into Drafted or Posted state.
+`CorporateActionAssetAccountingEventMapper` requires a reviewed `OpenLotSuccessorInstructionDto`
+for cashless Reg S/144A exchange, advance-refunding handoffs and projections explicitly marked
+`CanonicalLotTransferJournal`. Whole-unit splits opt into that transfer mode; older operational and
+identifier-changing projections retain their existing mapping. The optional marker is omitted when
+false. Any supplied instruction must match the
+exact existing projection, source security version, predecessor and successor allocations, and
+retained evidence; its fingerprint participates in the posting identity. The mapper carries it as
+a typed corporate-action lot instruction into governed candidate preparation. It rejects missing
+or contradictory instructions and successor corrections, and cannot approve or persist lots.
+Corporate-action monetary projections use the Contracts `CurrencyMinorUnits` definition, including
+four-decimal CLF/UYW amounts, so projected carrying allocations and canonical successor validation
+agree. Explicit canonical split, stock-merger and non-taxable spin-off transfers retain the exact
+functional carrying basis as their event amount, including sub-minor-unit basis left by amortization
+or partial relief. Ordinary projections retain currency rounding; successor allocations conserve
+the exact total through the final allocation residual. The successor handoff refuses non-`Successor`
+Reg S/144A roles and zero functional carrying allocations before governed drafting.
+Return-of-capital mapping requires the exact `OpenLotCapitalReturnInstructionDto` and its
+reviewed in-place lot plan. Missing, changed or mixed successor/capital-return inputs refuse
+mapping. Its fingerprint binds the event handoff to both independent carrying-basis reductions;
+the mapper retains the approved cash/return-of-capital recipe without approving or writing it.
 The factor-paydown model computes `held face x (prior factor - current factor)`. Equal factors emit
 no posting candidate; factor increases, missing evidence, stale versions, invalid face/factors, and
 unrepresentable currency results fail closed. Its event identity excludes run timestamps so replay
@@ -120,6 +170,9 @@ expirations, strikes, and chain snapshots are instrument-market data rather than
 orchestration. Application composition still wires provider implementations and collectors, while
 UI Shared and strategy adapters consume `Meridian.Instruments.Options.OptionsChainService`.
 
+The bond reference read model no longer emits `cashFlowSource` from bond accounting elections;
+those elections were never populated and are retired from the Security Master terms.
+
 ## Diagrams
 
 `DIA-ASSURANCE-LOOP`
@@ -129,6 +182,7 @@ UI Shared and strategy adapters consume `Meridian.Instruments.Options.OptionsCha
 <!-- source-roadmap-traceability:begin module=SRC-DESIGN-INSTRUMENTS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W10-LOT-002` | Security-identified open-lot convergence |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `W9-ASSET-010` | Asset Accounting Event Spine and atomic lot posting |

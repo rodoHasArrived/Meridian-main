@@ -14,15 +14,18 @@ public sealed record FundStructureTenantBackfillPlan(
     IReadOnlyList<FundStructureTenantBackfillStamp> Stamps,
     IReadOnlyList<FundStructureTenantBackfillException> Exceptions,
     IReadOnlyList<FundStructureTenantReadCount> StrictReadCounts,
-    IReadOnlyList<string> BlockingReasons, bool AttributionComplete);
+    IReadOnlyList<string> BlockingReasons, bool AttributionComplete)
+{
+    public IReadOnlyList<FundStructureTenantQuarantineResolution> Resolutions { get; init; } = [];
+}
 
 /// <summary>Conservative component attribution over the complete retained graph.</summary>
 public static class FundStructureTenantBackfillPlanner
 {
-    public const string AlgorithmVersion = "fund-structure-tenant-backfill-v1";
+    public const string AlgorithmVersion = "tenant-cutover-backfill-v2";
     public const string SchemaVersion = "fund-structure-005";
 
-    public static FundStructureTenantBackfillPlan Create(FundStructureTenantBackfillSnapshot snapshot)
+    public static FundStructureTenantBackfillPlan Create(FundStructureTenantBackfillSnapshot snapshot, bool resolveQuarantine = false)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         // Canonical collection order is independent of provider enumeration. Retained PostgreSQL
@@ -37,7 +40,9 @@ public static class FundStructureTenantBackfillPlanner
         var blockers = new List<string>();
         if (!snapshot.SupportsAtomicApply)
             blockers.Add("Ledger evidence and fund structure use separate databases; coordinated migration is required before apply.");
-        var duplicateIds = snapshot.Rows.GroupBy(row => row.Id).Where(group => group.Count() != 1).Select(group => group.Key).ToHashSet();
+        // Account definitions intentionally share their identity with the graph's Account node.
+        var duplicateIds = snapshot.Rows.Where(row => row.IsNode).GroupBy(row => row.Id)
+            .Where(group => group.Count() != 1).Select(group => group.Key).ToHashSet();
         if (duplicateIds.Count > 0)
             blockers.Add("Retained row identities collide across fund-structure tables.");
         var nodes = snapshot.Rows.Where(row => row.IsNode && !duplicateIds.Contains(row.Id)).ToDictionary(row => row.Id);
@@ -146,6 +151,8 @@ public static class FundStructureTenantBackfillPlanner
         // child is stamped by falling back around an ambiguous ancestor or dependent row.
         foreach (var row in snapshot.Rows.Where(row => !row.IsNode))
         {
+            if (HasIndependentRetainedAuthority(row))
+                continue;
             var endpoints = row.Parents.Concat(row.Children).ToArray();
             var owners = endpoints.Where(derived.Attributions.ContainsKey).Select(id => derived.Attributions[id])
                 .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
@@ -156,6 +163,10 @@ public static class FundStructureTenantBackfillPlanner
                 foreach (var id in endpoints.Where(nodes.ContainsKey))
                     Reject(id, "DependentRowOwnershipConflict");
         }
+
+        var auditProtected = snapshot.Rows.Where(row => row.Kind == "AccountingPeriod" &&
+            string.IsNullOrWhiteSpace(row.TenantId) && row.RetainedRow.TryGetProperty("tenant_backfill_audit_protected", out var value) &&
+            value.ValueKind == JsonValueKind.True).Select(row => row.Id).ToHashSet();
 
         var adjacency = nodes.Keys.ToDictionary(id => id, _ => new HashSet<Guid>());
         foreach (var edge in edges)
@@ -196,6 +207,13 @@ public static class FundStructureTenantBackfillPlanner
         var exceptions = new List<FundStructureTenantBackfillException>();
         foreach (var row in snapshot.Rows)
         {
+            if (HasIndependentRetainedAuthority(row))
+                continue;
+            if (auditProtected.Contains(row.Id))
+            {
+                exceptions.Add(new(row.Id, row.Kind, "AuditedPeriodRequiresGovernedTenantRepair", []));
+                continue;
+            }
             var dependencies = row.IsNode ? new[] { row.Id } : row.Parents.Concat(row.Children).ToArray();
             var bad = dependencies.Where(quarantined.ContainsKey).Select(id => quarantined[id]).ToArray();
             if (duplicateIds.Contains(row.Id) || dependencies.Length == 0 || dependencies.Any(id => !nodes.ContainsKey(id)) || bad.Length > 0)
@@ -212,6 +230,11 @@ public static class FundStructureTenantBackfillPlanner
                 stamps.Add(new(row.Table, row.Id, tenants[0]));
         }
 
+        // A graph Account and its retained account definition have one quarantine identity.
+        exceptions = exceptions.GroupBy(item => item.NodeId).Select(group => new FundStructureTenantBackfillException(
+            group.Key, string.Join(";", group.Select(item => item.NodeKind).Distinct().Order()),
+            string.Join(";", group.Select(item => item.Reason).Distinct().Order()),
+            group.SelectMany(item => item.CandidateTenantIds).Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToArray())).ToList();
         var resolvedQuarantine = snapshot.RetainedQuarantine.Where(row =>
             row.TryGetProperty("resolved_at_utc", out var resolved) && resolved.ValueKind != JsonValueKind.Null)
             .Select(row => row.GetProperty("node_id").GetGuid()).ToHashSet();
@@ -220,20 +243,39 @@ public static class FundStructureTenantBackfillPlanner
         foreach (var retained in snapshot.RetainedQuarantine.Where(row => resolvedQuarantine.Contains(row.GetProperty("node_id").GetGuid())))
         {
             var id = retained.GetProperty("node_id").GetGuid();
-            var row = snapshot.Rows.FirstOrDefault(item => item.Id == id);
+            var rows = snapshot.Rows.Where(item => item.Id == id).ToArray();
             var resolution = retained.TryGetProperty("resolved_tenant_id", out var resolvedTenant) && resolvedTenant.ValueKind == JsonValueKind.String
                 ? NormalizeTenant(resolvedTenant.GetString()) : null;
-            Guid[] dependencies = row is null ? [] : row.IsNode ? new[] { row.Id } : row.Parents.Concat(row.Children).ToArray();
-            if (resolution is null || dependencies.Length == 0 || dependencies.Any(nodeId =>
+            var dependencies = rows.SelectMany(row => row.IsNode ? new[] { row.Id } : row.Parents.Concat(row.Children)).ToArray();
+            var independentOwners = rows.Where(HasIndependentRetainedAuthority).Select(row => NormalizeTenant(row.TenantId)).ToArray();
+            if (resolution is null || dependencies.Length == 0 && independentOwners.Length == 0 ||
+                independentOwners.Any(tenant => !string.Equals(tenant, resolution, StringComparison.OrdinalIgnoreCase)) || dependencies.Any(nodeId =>
                     !derived.Attributions.TryGetValue(nodeId, out var tenant) ||
                     !string.Equals(tenant, resolution, StringComparison.OrdinalIgnoreCase)))
                 blockers.Add("An existing quarantine resolution conflicts with the current evidence; review it separately.");
         }
         var currentExceptionIds = exceptions.Select(item => item.NodeId).ToHashSet();
-        if (snapshot.RetainedQuarantine.Any(row =>
+        var releasable = snapshot.RetainedQuarantine.Where(row =>
                 !resolvedQuarantine.Contains(row.GetProperty("node_id").GetGuid()) &&
-                !currentExceptionIds.Contains(row.GetProperty("node_id").GetGuid())))
+                !currentExceptionIds.Contains(row.GetProperty("node_id").GetGuid())).ToArray();
+        var resolutions = new List<FundStructureTenantQuarantineResolution>();
+        if (!resolveQuarantine && releasable.Length > 0)
             blockers.Add("Retained unresolved quarantine requires explicit resolution review before newly derivable rows can be stamped.");
+        if (resolveQuarantine)
+            foreach (var retained in releasable)
+            {
+                var id = retained.GetProperty("node_id").GetGuid();
+                var retainedRows = snapshot.Rows.Where(row => row.Id == id).ToArray();
+                var dependencies = retainedRows
+                    .SelectMany(row => row.IsNode ? new[] { row.Id } : row.Parents.Concat(row.Children)).ToArray();
+                var owners = dependencies.Where(derived.Attributions.ContainsKey).Select(nodeId => derived.Attributions[nodeId])
+                    .Concat(retainedRows.Where(HasIndependentRetainedAuthority).Select(row => NormalizeTenant(row.TenantId)!))
+                    .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+                if (dependencies.Any(nodeId => !derived.Attributions.ContainsKey(nodeId)) || owners.Length != 1)
+                    blockers.Add("A retained quarantine row has no current authoritative owner; retain it for separate repair review.");
+                else
+                    resolutions.Add(new(id, owners[0]));
+            }
 
         var before = nodes.Values.Where(row => !string.IsNullOrWhiteSpace(row.TenantId)).ToDictionary(row => row.Id, row => row.TenantId!);
         var after = new Dictionary<Guid, string>(before);
@@ -247,7 +289,8 @@ public static class FundStructureTenantBackfillPlanner
             $"{typeof(FundStructureTenantBackfillPlanner).Module.ModuleVersionId:D}/{typeof(IFundStructureTenantBackfillStore).Module.ModuleVersionId:D}", SchemaVersion, "", snapshot,
             stamps.OrderBy(row => row.Table, StringComparer.Ordinal).ThenBy(row => row.Id).ToArray(),
             exceptions.OrderBy(row => row.NodeId).ToArray(), counts, blockers.Distinct().Order().ToArray(),
-            exceptions.Count == 0 && blockers.Count == 0);
+            exceptions.Count == 0 && blockers.Count == 0)
+        { Resolutions = resolutions.OrderBy(item => item.NodeId).ToArray() };
         return plan with { PlanHash = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(plan)) };
     }
 
@@ -259,6 +302,18 @@ public static class FundStructureTenantBackfillPlanner
 
     private static string? NormalizeTenant(string? tenant)
         => string.IsNullOrWhiteSpace(tenant) || tenant.Trim().Equals("all", StringComparison.OrdinalIgnoreCase) ? null : tenant.Trim();
+
+    // Runtime writes can retain authenticated authority on an account or a book-less workflow.
+    // Absence of a relationship is valid; a supplied but broken relationship must still be reviewed.
+    private static bool HasIndependentRetainedAuthority(FundStructureTenantBackfillRow row)
+    {
+        if (row.Parents.Count != 0 || row.Children.Count != 0 || NormalizeTenant(row.TenantId) is null)
+            return false;
+        if (row.Kind == "AccountDefinition")
+            return true;
+        return row.Kind == "OperationsWorkflow" && row.RetainedRow.TryGetProperty("workflow_json", out var workflow) &&
+            workflow.ValueKind == JsonValueKind.Object && (!workflow.TryGetProperty("ledgerBookId", out var book) || book.ValueKind == JsonValueKind.Null);
+    }
 
     private static bool IsSupportedStructuralRelationship(string? relationship, string parentKind, string childKind)
         => relationship?.Trim().ToUpperInvariant() switch

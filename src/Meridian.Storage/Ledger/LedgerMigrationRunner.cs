@@ -23,8 +23,9 @@ public sealed class LedgerMigrationRunner
             DriftPolicy = MigrationDriftPolicy.Reapply,
             RepeatableMigrationFileNames = new HashSet<string>(StringComparer.Ordinal)
             {
-                "V_ledger_020__fund_scope_tenant_columns.sql",
-                "V_ledger_021__operations_continuity_tenant_column.sql",
+                // V020/V021 remain immutable first-install history. Their replacement runs
+                // ordered attribution after the audit schema exists, preserving protected facts.
+                "V_ledger_038__audit_safe_tenant_attribution.sql",
             },
         });
     }

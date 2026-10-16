@@ -22,6 +22,9 @@ public sealed record FundStructureTenantBackfillStamp(string Table, Guid Id, str
 public sealed record FundStructureTenantBackfillException(
     Guid NodeId, string NodeKind, string Reason, IReadOnlyList<string> CandidateTenantIds);
 
+/// <summary>A reviewed release from quarantine whose owner is recomputed from retained evidence.</summary>
+public sealed record FundStructureTenantQuarantineResolution(Guid NodeId, string TenantId);
+
 public sealed record FundStructureTenantBackfillReceipt(
     Guid RunId, string PlanHash, string OperatorId, string ReviewReference,
     DateTimeOffset AppliedAt, int StampedRows, int QuarantinedRows, JsonElement Plan);
@@ -35,6 +38,15 @@ public interface IFundStructureTenantBackfillSession : IAsyncDisposable
         Guid runId, string planHash, string operatorId, string reviewReference, JsonElement plan,
         IReadOnlyList<FundStructureTenantBackfillStamp> stamps,
         IReadOnlyList<FundStructureTenantBackfillException> exceptions, CancellationToken ct);
+
+    Task<FundStructureTenantBackfillReceipt> CommitReviewedAsync(
+        Guid runId, string planHash, string operatorId, string reviewReference, JsonElement plan,
+        IReadOnlyList<FundStructureTenantBackfillStamp> stamps,
+        IReadOnlyList<FundStructureTenantBackfillException> exceptions,
+        IReadOnlyList<FundStructureTenantQuarantineResolution> resolutions, CancellationToken ct)
+        => resolutions.Count == 0
+            ? CommitAsync(runId, planHash, operatorId, reviewReference, plan, stamps, exceptions, ct)
+            : throw new NotSupportedException("This store does not support reviewed quarantine resolution.");
 }
 
 public interface IFundStructureTenantBackfillStore

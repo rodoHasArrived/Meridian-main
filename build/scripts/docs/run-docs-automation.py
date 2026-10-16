@@ -72,9 +72,21 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
         "script": "validate-docs-structure.py",
         "args": ["--summary"],
     },
+    "check-docfx-navigation": {
+        "script": "check-docfx-navigation.py",
+        "args": ["--summary"],
+    },
     "validate-agent-definitions": {
         "script": "validate-agent-definitions.py",
         "args": [],
+    },
+    "validate-adapter-readiness": {
+        "script": "validate-adapter-readiness.py",
+        "args": ["--summary"],
+    },
+    "check-adapter-readiness-matrix": {
+        "script": "render-adapter-readiness.py",
+        "args": ["--check"],
     },
     "generate-health-dashboard": {
         "script": "generate-health-dashboard.py",
@@ -278,7 +290,10 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
     "quick": [
         "scan-todos",
         "validate-docs-structure",
+        "check-docfx-navigation",
         "validate-agent-definitions",
+        "validate-adapter-readiness",
+        "check-adapter-readiness-matrix",
         "validate-examples",
         "repair-links",
         "check-ai-inventory",
@@ -293,7 +308,10 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
     "core": [
         "scan-todos",
         "validate-docs-structure",
+        "check-docfx-navigation",
         "validate-agent-definitions",
+        "validate-adapter-readiness",
+        "check-adapter-readiness-matrix",
         "generate-structure-docs",
         "generate-health-dashboard",
         "validate-examples",
@@ -316,7 +334,10 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
     "full": [
         "scan-todos",
         "validate-docs-structure",
+        "check-docfx-navigation",
         "validate-agent-definitions",
+        "validate-adapter-readiness",
+        "check-adapter-readiness-matrix",
         "generate-structure-docs",
         "generate-health-dashboard",
         "repair-links",

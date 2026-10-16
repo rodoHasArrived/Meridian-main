@@ -639,7 +639,11 @@ public static class HostStartupFactory
         Action<IServiceCollection>? configureServices,
         CancellationToken cancellationToken)
         => HostStartup.CreateStartedHostAsync(
-            ResolveProfile(deployment) with { ConfigPath = configPath },
+            ResolveProfile(deployment) with
+            {
+                ConfigPath = configPath,
+                OwnsTracingProvider = deployment.Mode != DeploymentMode.Desktop
+            },
             enableProcessWideHostedServices: deployment.Mode != DeploymentMode.Desktop,
             configureServices,
             cancellationToken,
@@ -691,7 +695,11 @@ public static class HostStartupFactory
         Action<IServiceCollection>? configureServices,
         CancellationToken cancellationToken)
         => HostStartup.CreateStartedHostAsync(
-            CompositionOptions.BackfillOnly with { ConfigPath = configPath },
+            CompositionOptions.BackfillOnly with
+            {
+                ConfigPath = configPath,
+                OwnsTracingProvider = deployment.Mode != DeploymentMode.Desktop
+            },
             enableProcessWideHostedServices: deployment.Mode != DeploymentMode.Desktop,
             configureServices,
             cancellationToken,

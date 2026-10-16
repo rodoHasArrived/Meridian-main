@@ -1,0 +1,133 @@
+{
+  "candidate": "615abde90001ab33bd6e58e545edc7fce635e254",
+  "sourceHead": "615abde90001ab33bd6e58e545edc7fce635e254",
+  "sourceCandidateMatch": true,
+  "sessionStartUtc": "2026-10-02T22:26:25.450Z",
+  "sessionEndUtc": "2026-10-02T22:27:10.384Z",
+  "browserVersion": "151.0.7922.173",
+  "playwrightVersion": "1.63.0",
+  "nodeVersion": "v24.19.0",
+  "platform": "linux",
+  "osRelease": "6.18.44",
+  "browserPlugin": "not available; regular Playwright",
+  "url": "http://127.0.0.1:4173/workstation",
+  "sourceHashes": [
+    {
+      "file": "src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts",
+      "sha256": "fc8a71835dfb185bbd08e1d8c10e18c681bb6d62da685dac700c0594e293f39f"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.close-test-fixtures.ts",
+      "sha256": "2f0211b58ec7e472abc2c1b3acfdc32889a84357ec23ad9c44f1d697c5a6f376"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.test.tsx",
+      "sha256": "68ab80c1a1266959f5050a50503176acaaa01d0acd8439b26f9af56e08bb84be"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.mark-preview.test.tsx",
+      "sha256": "00b9324c943148f79bb0018d1664af8af4709431aa39c10f73f43ddfdaad5939"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/portfolio-screen.mark-freshness.test.ts",
+      "sha256": "83ab8ea39851445462f6ad9353a68f7452778dd30096bdaa154eea77c7fe6aac"
+    },
+    {
+      "file": "scripts/dev/web-screenshot-fixtures.json",
+      "sha256": "ff65478e972db1fbb6a659752abbd9b4881efde7eaf7e5bb795babc2d757fa7f"
+    }
+  ],
+  "client": "browser only",
+  "actualAccountingPopulation": "not provisioned",
+  "testPopulation": "one unit-contract-derived AAPL assessment; no population-wide claim",
+  "operatorIdentity": null,
+  "operatorDecision": "pending",
+  "implementationOrder": "LOT → MARK → SEAM → RECON",
+  "exerciseOrder": "SEAM → MARK; final SEAM screenshot-only resize check repeats completed scope",
+  "limitations": [
+    "All scenario responses supplied by Playwright route.fulfill",
+    "No backend persistence, authorization, PostgreSQL, governed approval, or installed WPF tested",
+    "Expired-override wording is response simulation only; actual expiry/recheck must be tested live",
+    "M7 representative accounting population and M9 retained lineage remain pending"
+  ],
+  "consoleMessages": [
+    {
+      "atUtc": "2026-10-02T22:26:26.794Z",
+      "phase": "fixture-helper-preflight",
+      "type": "http-error",
+      "status": 502,
+      "url": "http://127.0.0.1:4173/api/workstation/first-run/"
+    },
+    {
+      "atUtc": "2026-10-02T22:26:26.794Z",
+      "phase": "fixture-helper-preflight",
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+    },
+    {
+      "atUtc": "2026-10-02T22:26:26.795Z",
+      "phase": "fixture-helper-preflight",
+      "type": "http-error",
+      "status": 502,
+      "url": "http://127.0.0.1:4173/api/demo/mode"
+    },
+    {
+      "atUtc": "2026-10-02T22:26:26.795Z",
+      "phase": "fixture-helper-preflight",
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+    },
+    {
+      "atUtc": "2026-10-02T22:26:26.812Z",
+      "phase": "fixture-helper-preflight",
+      "type": "http-error",
+      "status": 502,
+      "url": "http://127.0.0.1:4173/api/workstation/first-run/"
+    },
+    {
+      "atUtc": "2026-10-02T22:26:26.812Z",
+      "phase": "fixture-helper-preflight",
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)"
+    },
+    {
+      "atUtc": "2026-10-02T22:26:32.647Z",
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 503,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/financial-operations-command-center?fundProfileId=fund-alpha&ledgerBookId=book-alpha&fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749&periodId=2026-05&entityId=entity-alpha"
+    },
+    {
+      "atUtc": "2026-10-02T22:26:32.647Z",
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    },
+    {
+      "atUtc": "2026-10-02T22:26:33.786Z",
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 409,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close"
+    },
+    {
+      "atUtc": "2026-10-02T22:26:33.787Z",
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+      "atUtc": "2026-10-02T22:27:02.909Z",
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 503,
+      "url": "http://127.0.0.1:4173/api/ledger/journal-automation/daily-mark-to-market-preview"
+    },
+    {
+      "atUtc": "2026-10-02T22:27:02.909Z",
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    }
+  ]
+}

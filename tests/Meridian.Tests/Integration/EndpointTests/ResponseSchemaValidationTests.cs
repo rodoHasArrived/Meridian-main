@@ -12,7 +12,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Part of B2 (tranche 1): endpoint integration coverage for health/status/config.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class ResponseSchemaValidationTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;

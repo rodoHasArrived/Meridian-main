@@ -11,6 +11,16 @@ last_reviewed: 2026-07-05
 
 # src/Meridian.Execution.Sdk
 
+`CanonicalTaxLotAdapter` admits only long execution and canonical lots. Positive quantity alone
+cannot make an explicitly short canonical acquisition compatible with the long consumer. Short
+production cutover still requires governed posting and consumer parity evidence.
+
+`BrokeragePortfolioSnapshotDto.IsComplete` defaults to false until a provider establishes complete
+account and holding evidence. `IBrokerageConnectionState` supplies a credential-free connection
+epoch and verified account/environment scope, so cached execution evidence cannot survive a
+connection switch. `IBrokerageOrderRecoveryGateway` reads a retained client identity without
+submitting or treating a missing broker response as permission to retry.
+
 ## Shared close and lot convergence
 
 `CanonicalTaxLotAdapter` validates legacy execution lot identity, quantity, acquisition date, and basis against a supplied retained canonical lot. Symbols remain display evidence. The adapter refuses shorts pending an explicit direction-model cutover and does not synthesize identity or FX facts.
@@ -40,6 +50,10 @@ Gateways whose providers keep client and broker order IDs in separate lookup nam
 `IExplicitOrderCancellationGateway`. Callers label the namespace with
 `OrderCancellationIdentifier`; identifier shape is never used to guess whether a value is a broker
 ID, because a UUID-shaped client ID can otherwise target an unrelated broker order.
+`IBrokerageOrderRecoveryGateway` adds authoritative lookup by retained client ID, including terminal
+orders. A null result means unresolved state and cannot authorize resubmission.
+`IBrokerageConnectionState` exposes an opaque connection generation and verified account/environment
+scope so synchronization and durable recovery revoke evidence when the active connection changes.
 Brokerage activity fill snapshots can carry explicit provider-reported realized P&L when a broker
 or custodian supplies it; callers should leave the field null rather than infer it from fill
 notional. Activity snapshots can also carry provider corporate-action/factor events such as
@@ -67,6 +81,9 @@ override routed face value.
 `IPosition.ExactQuantity` carries the unrounded signed size beside the whole-share `Quantity`;
 fund-ownership attribution is decimal, so deriving an unattributed remainder from the rounded value
 invents a contribution the book never held.
+
+`TaxLot` quantity is `decimal` and carries `UnitKind` (default `Shares`) and `Multiplier`
+(default 1) through `IUnitizedLot`, matching backtesting and ledger lots.
 
 ## Diagrams
 

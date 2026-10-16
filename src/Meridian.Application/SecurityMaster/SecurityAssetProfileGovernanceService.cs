@@ -44,6 +44,9 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
         "profileVersion",
         "provenance",
         "schemaVersion",
+        SecurityTermsEnvelope.FormatKey,
+        SecurityTermsEnvelope.AssetClassTermsVersionKey,
+        SecurityTermsEnvelope.RetainedEconomicTermsKey,
         "securityId",
         "status",
         "version"

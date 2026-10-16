@@ -304,14 +304,23 @@ public sealed class MeridianNativeBacktestStudioEngineTests : IDisposable
 
         public Task Started => _started.Task;
 
-        public async Task<IReadOnlyList<HistoricalBar>> AdjustAsync(
+        public async Task<CorporateActionAdjustmentPlan> PrepareAsync(
             IReadOnlyList<HistoricalBar> bars,
             string ticker,
+            DateTimeOffset effectiveThroughUtc,
             CancellationToken ct = default)
         {
             _started.TrySetResult(true);
             await Task.Delay(Timeout.InfiniteTimeSpan, ct);
-            return bars;
+            throw new InvalidOperationException("The cancellable delay should not complete normally.");
+        }
+
+        public Task<IReadOnlyList<HistoricalBar>> AdjustAsync(
+            IReadOnlyList<HistoricalBar> bars,
+            string ticker,
+            CancellationToken ct = default)
+        {
+            return Task.FromResult(bars);
         }
     }
 

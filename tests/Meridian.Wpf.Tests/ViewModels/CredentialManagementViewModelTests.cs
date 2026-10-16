@@ -11,6 +11,10 @@ namespace Meridian.Wpf.Tests.ViewModels;
 
 public sealed class CredentialManagementViewModelTests
 {
+    // Preserve real notification suppression behavior without inheriting another fixture's
+    // settings, deduplication window, or process-wide per-minute quota.
+    private sealed class TestNotificationService : NotificationServiceBase { }
+
     private const string Connections = """
         [{"connectionId":"paper-a","providerFamilyId":"alpaca","displayName":"Paper","tenantId":"tenant-a","externalAccountId":"account-a","credentialEnvironment":"paper"},
          {"connectionId":"live-b","providerFamilyId":"alpaca","displayName":"Live","tenantId":"tenant-a","externalAccountId":"account-b","credentialEnvironment":"live"}]
@@ -59,7 +63,7 @@ public sealed class CredentialManagementViewModelTests
                     ? await statusBody.Task : configuredStatus);
             });
             using var api = new ApiClientService(new Factory(handler));
-            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), new TestNotificationService());
             await viewModel.LoadCredentialsAsync();
             if (!testAll)
                 viewModel.SelectedCredential = viewModel.Credentials.Single(row => row.ConnectionId == "live-b");
@@ -126,7 +130,7 @@ public sealed class CredentialManagementViewModelTests
                 return await (request.RequestUri.Query.Contains("paper-a") ? first.Task : second.Task);
             });
             using var api = new ApiClientService(new Factory(handler));
-            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), new TestNotificationService());
             await viewModel.LoadCredentialsAsync();
             viewModel.SelectedCredential.Should().BeNull();
             viewModel.RemoveCredentialCommand.CanExecute(null).Should().BeFalse();
@@ -168,7 +172,7 @@ public sealed class CredentialManagementViewModelTests
                     ? Json(Connections, refused ? HttpStatusCode.Forbidden : HttpStatusCode.OK)
                     : Json("[{\"providerId\":\"alpaca\",\"credentialState\":3,\"credentialFields\":[{\"name\":\"KeyId\",\"label\":\"Key ID\",\"required\":true,\"inputKind\":1},{\"name\":\"SecretKey\",\"label\":\"Secret key\",\"required\":true,\"inputKind\":1}]}]")));
             using var api = new ApiClientService(new Factory(handler));
-            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), new TestNotificationService());
             await viewModel.LoadCredentialsAsync();
             viewModel.SelectedCredential = viewModel.Credentials.First();
             await viewModel.SelectionStatusLoad;
@@ -199,7 +203,7 @@ public sealed class CredentialManagementViewModelTests
                     ? Connections : "[{\"providerId\":\"alpaca\",\"credentialState\":1,\"credentialFields\":[{\"name\":\"KeyId\",\"label\":\"Key ID\",\"required\":true,\"inputKind\":1},{\"name\":\"SecretKey\",\"label\":\"Secret key\",\"required\":true,\"inputKind\":1}]}]"));
             });
             using var api = new ApiClientService(new Factory(handler));
-            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), new TestNotificationService());
             await viewModel.LoadCredentialsAsync();
             var selected = viewModel.Credentials.First();
             viewModel.SelectedCredential = selected;
@@ -243,7 +247,7 @@ public sealed class CredentialManagementViewModelTests
                     ? Connections : "[{\"providerId\":\"alpaca\",\"credentialState\":3,\"credentialFields\":[{\"name\":\"KeyId\",\"label\":\"Key ID\",\"required\":true,\"inputKind\":1},{\"name\":\"SecretKey\",\"label\":\"Secret key\",\"required\":true,\"inputKind\":1}]}]");
             });
             using var api = new ApiClientService(new Factory(handler));
-            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), new TestNotificationService());
             await viewModel.LoadCredentialsAsync();
             viewModel.SelectedCredential = viewModel.Credentials.Single(row => row.ConnectionId == "paper-a");
             await viewModel.SelectionStatusLoad;
@@ -273,8 +277,9 @@ public sealed class CredentialManagementViewModelTests
                 : Json(request.RequestUri!.AbsolutePath == "/api/provider-routing/connections"
                     ? Connections : "[{\"providerId\":\"alpaca\",\"credentialState\":1,\"credentialFields\":[{\"name\":\"KeyId\",\"label\":\"Key ID\",\"required\":true,\"inputKind\":1},{\"name\":\"SecretKey\",\"label\":\"Secret key\",\"required\":true,\"inputKind\":1}]}]")));
             using var api = new ApiClientService(new Factory(handler));
-            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
-            Meridian.Wpf.Services.NotificationService.Instance.NotificationReceived += Capture;
+            var notificationService = new TestNotificationService();
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), notificationService);
+            notificationService.NotificationReceived += Capture;
             try
             {
                 await viewModel.LoadCredentialsAsync();
@@ -291,7 +296,7 @@ public sealed class CredentialManagementViewModelTests
             }
             finally
             {
-                Meridian.Wpf.Services.NotificationService.Instance.NotificationReceived -= Capture;
+                notificationService.NotificationReceived -= Capture;
             }
         });
     }
@@ -319,7 +324,7 @@ public sealed class CredentialManagementViewModelTests
                 return Json(request.RequestUri!.AbsolutePath == "/api/provider-routing/connections" ? Connections : status);
             });
             using var api = new ApiClientService(new Factory(handler));
-            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), new TestNotificationService());
             await viewModel.LoadCredentialsAsync();
             viewModel.SelectedCredential = viewModel.Credentials.First();
             await viewModel.SelectionStatusLoad;
@@ -357,7 +362,7 @@ public sealed class CredentialManagementViewModelTests
                 return Json(await response.Content.ReadAsStringAsync());
             });
             using var api = new ApiClientService(new Factory(handler));
-            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), Meridian.Wpf.Services.NotificationService.Instance);
+            using var viewModel = new CredentialManagementViewModel(new SettingsConfigurationService(api), new TestNotificationService());
             await viewModel.LoadCredentialsAsync();
             viewModel.SelectedCredential = viewModel.Credentials.First();
 

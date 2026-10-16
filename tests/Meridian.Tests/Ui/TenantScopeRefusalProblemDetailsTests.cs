@@ -1,6 +1,9 @@
 using System.Net;
 using FluentAssertions;
 using Meridian.Application.FundStructure;
+using Meridian.Application.Tenancy;
+using Meridian.PortfolioRecords.FundAccounts;
+using System.Text.Json;
 using Meridian.Contracts.Tenancy;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
@@ -44,6 +47,24 @@ public sealed class TenantScopeRefusalProblemDetailsTests
         using var response = await app.GetTestClient().GetAsync("/probe");
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task UnattributedLocalRead_ReportsMigrationRequiredAndRetainedDataDisposition()
+    {
+        var service = new TenantGuardedLocalFundStructureService(
+            new InMemoryFundStructureService(new InMemoryFundAccountService()),
+            new LocalTenantMigrationGate(TenantScopeEnforcementOptions.FailClosed));
+        await using var app = await CreateAppAsync(() =>
+        {
+            _ = service.GetOrganizationStructureAsync(new());
+            return Results.Ok();
+        });
+
+        using var response = await app.GetTestClient().GetAsync("/probe");
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        using var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        body.RootElement.GetProperty("detail").GetString().Should().Be(LocalTenantMigrationGate.RefusalMessage);
     }
 
     [Fact]

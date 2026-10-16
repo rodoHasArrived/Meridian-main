@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using System.Text.Json;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
@@ -10,7 +11,7 @@ public sealed class ReconciliationCaseServiceTests
     public async Task Creates_open_cases_and_tracks_status_history()
     {
         var root = Path.Combine(Path.GetTempPath(), $"meridian-case-{Guid.NewGuid():N}");
-        var store = new JsonReconciliationCaseStore(root);
+        var store = new JsonReconciliationCaseStore(root, new AtomicFileWriterAdapter());
         var service = new ReconciliationCaseService(store);
         var created = await service.CreateOpenCasesAsync("imp1", [new MatchOutcome("x", "unmatched", "", 0.2m, "none")]);
         var assigned = await service.AssignAsync(created[0].CaseId, "alice", "primary owner");
@@ -52,7 +53,7 @@ public sealed class ReconciliationCaseServiceTests
     public async Task Store_preserves_durable_casework_metadata()
     {
         var root = Path.Combine(Path.GetTempPath(), $"meridian-case-{Guid.NewGuid():N}");
-        var store = new JsonReconciliationCaseStore(root);
+        var store = new JsonReconciliationCaseStore(root, new AtomicFileWriterAdapter());
         var now = DateTimeOffset.UtcNow;
         var reconciliationCase = new ReconciliationCase(
             "case-with-evidence",
@@ -110,7 +111,7 @@ public sealed class ReconciliationCaseServiceTests
     public async Task Rejects_invalid_or_terminal_status_transitions()
     {
         var root = Path.Combine(Path.GetTempPath(), $"meridian-case-{Guid.NewGuid():N}");
-        var service = new ReconciliationCaseService(new JsonReconciliationCaseStore(root));
+        var service = new ReconciliationCaseService(new JsonReconciliationCaseStore(root, new AtomicFileWriterAdapter()));
         var created = await service.CreateOpenCasesAsync("imp1", [new MatchOutcome("x", "unmatched", "", 0.2m, "none")]);
 
         await Assert.ThrowsAsync<ArgumentException>(
@@ -129,7 +130,7 @@ public sealed class ReconciliationCaseServiceTests
     public async Task Terminal_decisions_retain_evidence_references_and_decision_notes()
     {
         var root = Path.Combine(Path.GetTempPath(), $"meridian-case-{Guid.NewGuid():N}");
-        var store = new JsonReconciliationCaseStore(root);
+        var store = new JsonReconciliationCaseStore(root, new AtomicFileWriterAdapter());
         var service = new ReconciliationCaseService(store);
         var created = await service.CreateOpenCasesAsync("imp1", [new MatchOutcome("row-hash-1", "unmatched", "", 0.2m, "none")]);
 
@@ -158,7 +159,7 @@ public sealed class ReconciliationCaseServiceTests
     public async Task SaveAsync_WhenCancelledBeforeWrite_DoesNotCreateCaseOrAuditFiles()
     {
         var root = Path.Combine(Path.GetTempPath(), $"meridian-case-{Guid.NewGuid():N}");
-        var store = new JsonReconciliationCaseStore(root);
+        var store = new JsonReconciliationCaseStore(root, new AtomicFileWriterAdapter());
         var now = DateTimeOffset.UtcNow;
         var reconciliationCase = new ReconciliationCase(
             "case-cancelled",

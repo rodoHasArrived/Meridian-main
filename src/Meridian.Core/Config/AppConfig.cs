@@ -35,6 +35,8 @@ namespace Meridian.Core.Config;
 /// <param name="CoLocationProfile">When true, activates exchange colocation profile: low-latency GC settings and network tuning. Default is false.</param>
 /// <param name="ProviderConnections">Relationship-aware provider operations configuration (connections, bindings, policies).</param>
 /// <param name="FeatureCapabilities">Runtime feature capability overrides.</param>
+/// <param name="TenantScopeEnforcement">Tenant posture: fail-closed (default) or temporary deployment-boundary migration compatibility.</param>
+/// <param name="Tracing">Restart-required distributed tracing and exporter opt-in settings.</param>
 /// <param name="ProviderModules">
 /// Declares an arbitrary set of provider modules by family ID, each with credentials
 /// (as environment variable names) and operational settings. When present, the Application
@@ -68,7 +70,9 @@ public sealed record AppConfig(
     FeatureCapabilityOptions? FeatureCapabilities = null,
     FundOperationsPersistenceConfig? FundOperationsPersistence = null,
     ProviderModulesConfig? ProviderModules = null,
-    PipelineRuntimeConfig? Pipeline = null
+    PipelineRuntimeConfig? Pipeline = null,
+    string? TenantScopeEnforcement = null,
+    TracingConfig? Tracing = null
 )
 {
     /// <summary>

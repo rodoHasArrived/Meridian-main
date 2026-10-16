@@ -1660,6 +1660,9 @@ export interface ManualJournalEntryDraft {
   closeLockedBy?: string | null;
   reversal?: JournalEntryReversal | null;
   rebook?: JournalEntryRebook | null;
+  recurringJournalEvidenceJson?: string | null;
+  recurringJournalEvidenceDigest?: string | null;
+  requiresRecurringJournalEvidence?: boolean;
   tenantId?: string | null;
   companyId?: string | null;
 }

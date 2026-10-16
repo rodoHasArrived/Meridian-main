@@ -6,6 +6,7 @@ using Meridian.Application.Composition.Startup;
 using Meridian.Application.Composition.Startup.ModeRunners;
 using Meridian.Application.Composition.Startup.StartupModels;
 using Meridian.Application.Services;
+using Meridian.Contracts.Tenancy;
 using Meridian.Core.Config;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -15,6 +16,7 @@ using Meridian.Storage.Banking;
 using Meridian.Storage.FundAccounts;
 using Meridian.Storage.FundStructure;
 using Meridian.Storage.MoneyMarket;
+using Meridian.Storage.Tenancy;
 using Meridian.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -73,6 +75,10 @@ public sealed class HostStartupLifecycleTests
             var hostedServiceNames = hostedServices
                 .Select(service => service.GetType().Name)
                 .ToArray();
+            var cutoverIndex = Array.IndexOf(hostedServiceNames, nameof(TenantCutoverGuardService));
+            cutoverIndex.Should().BeGreaterThan(0, "production registration validation precedes tenant cutover");
+            cutoverIndex.Should().BeLessThan(Array.IndexOf(hostedServiceNames, nameof(RecordingHostedService)),
+                "tenant readiness is established before unrelated hosted work starts");
             if (profile is ExecutableProfile.DesktopCollector or ExecutableProfile.DesktopBackfill)
             {
                 hostedServiceNames.Should().NotContain(
@@ -84,6 +90,8 @@ public sealed class HostStartupLifecycleTests
                 hostedServiceNames.Should().Contain(
                     "DatabaseInitializationHostedService",
                     "headless and one-shot hosts own every configured database startup migration");
+                Array.IndexOf(hostedServiceNames, "DatabaseInitializationHostedService").Should().BeLessThan(cutoverIndex,
+                    "schema migrations must finish before strict retained-data inspection");
             }
 
             if (profile is ExecutableProfile.DesktopCollector
@@ -149,14 +157,21 @@ public sealed class HostStartupLifecycleTests
         Environment.SetEnvironmentVariable(BankingStartup.ConnectionStringVariable, connectionString);
         Environment.SetEnvironmentVariable(MoneyMarketStartup.ConnectionStringVariable, connectionString);
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var readiness = new Mock<ITenantCutoverReadinessCheck>();
+        readiness.Setup(check => check.InspectAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TenantCutoverReadiness([]));
 
         await using var startup = await HostStartup.CreateStartedHostAsync(
             CompositionOptions.Minimal with { ConfigPath = configPath },
             enableProcessWideHostedServices: false,
-            configureServices: null,
+            // This fixture proves DI composition against deliberately non-routable database URLs.
+            // Keep strict startup and replace only its database read; this fixture also skips migrations.
+            configureServices: services => services.AddSingleton(readiness.Object),
             timeout.Token,
             enableDatabaseInitialization: false);
 
+        startup.ServiceProvider.GetRequiredService<TenantScopeEnforcementOptions>().IsFailClosed.Should().BeTrue();
+        readiness.Verify(check => check.InspectAsync(It.IsAny<CancellationToken>()), Times.Once);
         startup.ServiceProvider.GetRequiredService<FundAccountStoreOptions>()
             .ConnectionString.Should().Be(connectionString);
         startup.ServiceProvider.GetRequiredService<IFundAccountStore>()
@@ -173,6 +188,36 @@ public sealed class HostStartupLifecycleTests
             .ConnectionString.Should().Be(connectionString);
         startup.ServiceProvider.GetRequiredService<IMoneyMarketFundAuxStore>()
             .Should().BeOfType<PostgresMoneyMarketFundStore>();
+    }
+
+    [Fact]
+    public async Task CreateStartedHostAsync_UnreviewedRetainedData_RefusesBeforeUnrelatedWorkerStarts()
+    {
+        using var environment = HostStartupTestEnvironment.Enable();
+        using var artifacts = TestArtifactDirectory.Create($"{nameof(HostStartupLifecycleTests)}-tenant-cutover");
+        var configPath = await WriteConfigAsync(artifacts.RootPath);
+        var probe = new RecordingHostedService();
+        var readiness = new Mock<ITenantCutoverReadinessCheck>();
+        readiness.Setup(check => check.InspectAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TenantCutoverReadiness(
+                [new TenantCutoverFinding("ledger", "ledger_books", "MissingTenantAttribution", 1)]));
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        Func<Task> start = async () =>
+        {
+            await using var host = await HostStartup.CreateStartedHostAsync(
+                CompositionOptions.Minimal with { ConfigPath = configPath },
+                enableProcessWideHostedServices: false,
+                services =>
+                {
+                    services.AddSingleton(readiness.Object);
+                    services.AddSingleton<IHostedService>(probe);
+                }, timeout.Token);
+        };
+
+        await start.Should().ThrowAsync<StartupRefusedException>().WithMessage("*retained data remains intact*");
+        readiness.Verify(check => check.InspectAsync(It.IsAny<CancellationToken>()), Times.Once);
+        probe.StartCount.Should().Be(0);
     }
 
     [Theory]
@@ -764,6 +809,7 @@ public sealed class HostStartupLifecycleTests
             "MERIDIAN_MODE",
             "MERIDIAN_API_DEPLOYMENT_MODE",
             "MERIDIAN_USE_INMEMORY_GOVERNANCE",
+            TenantScopeEnforcementOptions.EnvironmentVariable,
             MeridianDatabaseEnvironment.UnifiedVariable,
             .. MeridianDatabaseEnvironment.PropagatedConnectionStringVariables,
             SecurityMasterStartup.SchemaVariable,

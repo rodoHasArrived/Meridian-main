@@ -43,6 +43,9 @@ public sealed record WashSalePolicy(
     WashSaleReplacementScope Scope = WashSaleReplacementScope.LedgerBook,
     DateOnly? EffectiveDate = null)
 {
+    /// <summary>The configured tax-lot policy revision; null for an unversioned ad-hoc policy.</summary>
+    public string? PolicyId { get; init; }
+
     /// <summary>No wash-sale deferral; realized losses are always recognized in full.</summary>
     public static WashSalePolicy Disabled { get; } = new(false);
 
@@ -95,7 +98,7 @@ public sealed record WashSaleReplacementAcquisition(
 /// projection only when a wash sale was detected.
 /// </summary>
 /// <param name="DisallowedLoss">The portion of the realized loss deferred (never recognized this period).</param>
-/// <param name="AllowedLoss">The portion of the realized loss still recognized as a realized loss.</param>
+/// <param name="AllowedLoss">The sum of individual loss-lot losses still allowed, before offsetting gain lots.</param>
 /// <param name="MatchedReplacementQuantity">Replacement quantity (capped at the quantity sold) that drove the disallowance.</param>
 /// <param name="BasisIncreases">Per-replacement-lot cost-basis increases that carry the deferred loss forward, plus the holding-period carry date.</param>
 public sealed record WashSaleOutcome(
@@ -117,4 +120,21 @@ public sealed record WashSaleBasisIncrease(
     string ReplacementLotId,
     decimal Amount,
     DateOnly HoldingPeriodCarryDate,
-    LedgerAccount? ReplacementAccount = null);
+    LedgerAccount? ReplacementAccount = null)
+{
+    /// <summary>Exact policy settings and configured revision that explain this adjustment.</summary>
+    public WashSalePolicy? AppliedPolicy { get; init; }
+
+    /// <summary>Loss-lot contributions, including matched shares whose amount rounds to zero.</summary>
+    public IReadOnlyList<WashSaleSourceAllocation> SourceAllocations { get; init; } = [];
+}
+
+/// <summary>
+/// One relieved loss parcel's contribution to a replacement lot. The retained selection carries
+/// source identity, effective basis, proceeds and holding period; quantities and amounts sum to
+/// the replacement adjustment without re-deriving them from aggregate sale economics.
+/// </summary>
+public sealed record WashSaleSourceAllocation(
+    LedgerTaxLotReliefSelection Source,
+    decimal Quantity,
+    decimal Amount);

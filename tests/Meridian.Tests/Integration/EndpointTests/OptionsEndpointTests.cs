@@ -10,7 +10,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// These endpoints expose option chain, quote, greeks, and summary data.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class OptionsEndpointTests : IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;

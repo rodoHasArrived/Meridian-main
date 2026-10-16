@@ -18,7 +18,8 @@ public static class LedgerReportPackBuilder
         LedgerReportPackRequest request,
         ChartOfAccounts? chart = null,
         string? financialAccountId = null,
-        IReadOnlyList<LedgerTaxLotReliefProjection>? taxLotReliefProjections = null)
+        IReadOnlyList<LedgerTaxLotReliefProjection>? taxLotReliefProjections = null,
+        IReadOnlyList<CanonicalCorporateActionLotReport>? corporateActionLotReports = null)
     {
         ArgumentNullException.ThrowIfNull(ledger);
         ArgumentNullException.ThrowIfNull(request);
@@ -64,6 +65,14 @@ public static class LedgerReportPackBuilder
                 content, Sha256Digest.ComputeUtf8(content)));
         }
 
+        if (corporateActionLotReports is { Count: > 0 })
+        {
+            var content = JsonSerializer.Serialize(corporateActionLotReports
+                .OrderBy(static report => report.JournalEntryId).ToArray());
+            artifacts.Add(new LedgerReportPackArtifact("corporate-action-lot-evidence.json", "application/json",
+                content, Sha256Digest.ComputeUtf8(content)));
+        }
+
         artifacts.Add(CreateManifestArtifact(request, statements, artifacts));
 
         var payload = string.Join(
@@ -106,10 +115,15 @@ public static class LedgerReportPackBuilder
                 .ThenBy(static selection => selection.Lot.LotId, StringComparer.Ordinal)
                 .ToList();
 
-            // A wash sale defers part of the loss; the ledger recognized only the allowed portion.
-            // Spread the disallowed amount across the relieved lots by quantity so each row's
-            // recognized gain/loss nets to what was actually booked (residual on the final row),
-            // instead of the export overstating the current-period realized loss.
+            // Attribute current deferrals to the loss lots that actually supplied them. Retained
+            // legacy outcomes have no source allocations, so keep their original proportional
+            // attribution rather than inventing a new matching result from later history.
+            var disallowedBySourceLot = (projection.WashSale?.BasisIncreases ?? [])
+                .SelectMany(static increase => increase.SourceAllocations)
+                .GroupBy(static allocation => allocation.Source.Lot.LotId, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(static group => group.Key,
+                    static group => group.Sum(static allocation => allocation.Amount),
+                    StringComparer.OrdinalIgnoreCase);
             var disallowedTotal = projection.DisallowedWashSaleLoss;
             var totalQuantity = orderedSelections.Sum(static selection => selection.QuantityRelieved);
             var allocatedDisallowed = 0m;
@@ -119,7 +133,11 @@ public static class LedgerReportPackBuilder
                 var selection = orderedSelections[index];
 
                 decimal disallowed;
-                if (disallowedTotal == 0m)
+                if (disallowedBySourceLot.Count > 0)
+                {
+                    disallowed = disallowedBySourceLot.GetValueOrDefault(selection.Lot.LotId);
+                }
+                else if (disallowedTotal == 0m)
                 {
                     disallowed = 0m;
                 }

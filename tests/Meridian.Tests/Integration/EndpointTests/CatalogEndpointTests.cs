@@ -10,7 +10,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Validates search, timeline, symbols list, and coverage summary endpoints.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class CatalogEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     // The catalog reads answer the storage catalog's permissions -- ViewHistoricalData or

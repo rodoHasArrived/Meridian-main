@@ -22,6 +22,7 @@ internal sealed class EtlFeatureRegistration : IServiceFeatureRegistration
             var storageOptions = sp.GetRequiredService<Meridian.Storage.StorageOptions>();
             return new EtlStagingStore(storageOptions.RootPath);
         });
+        services.AddSingleton<IEtlStagingStore>(sp => sp.GetRequiredService<EtlStagingStore>());
         services.AddSingleton<EtlAuditStore>(sp =>
         {
             var storageOptions = sp.GetRequiredService<Meridian.Storage.StorageOptions>();
@@ -45,7 +46,7 @@ internal sealed class EtlFeatureRegistration : IServiceFeatureRegistration
         // reader picked the two-argument overload and defaulted its own resolver and capability,
         // which is how the read path stayed ungated while the write path was fixed.
         services.AddSingleton<IEtlSourceReader>(sp => new SftpFileSourceReader(
-            sp.GetRequiredService<EtlStagingStore>(),
+            sp.GetRequiredService<IEtlStagingStore>(),
             sp.GetRequiredService<ISftpClientFactory>(),
             sp.GetRequiredService<ISftpCredentialResolver>(),
             sp.GetRequiredService<ISftpCapabilityService>()));

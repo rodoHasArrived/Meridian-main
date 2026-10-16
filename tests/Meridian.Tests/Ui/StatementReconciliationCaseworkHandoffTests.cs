@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using FluentAssertions;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
@@ -59,8 +60,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             ResolvedAt = now
         };
         var command = BuildCommand(item, ReconciliationCaseworkAction.Resolve);
-        var breakStore = new JsonReconciliationBreakStore(_root);
-        var caseStore = new JsonReconciliationCaseStore(_root);
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
+        var caseStore = new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter());
         await breakStore.WriteAsync([sourceBreak], timeout.Token);
         await caseStore.SaveAsync(sourceCase, timeout.Token);
         var operations = CreateOperationsService(out var operationsRepository);
@@ -68,7 +69,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             BuildOperationsWorkflow(fundAccountId, import, now.AddDays(-1)),
             timeout.Token);
         var journalStore = CreateStrictJournalStore(import);
-        var firstCommitStore = new FileStatementCaseworkCommitStore(_root);
+        var firstCommitStore = new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter());
         var firstService = new StatementReconciliationCaseworkHandoffService(
             new StaticQueueRepository(item),
             breakStore,
@@ -82,7 +83,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         var first = async () => await firstService.ApplyAsync(QueueScope, command, timeout.Token);
         await first.Should().ThrowAsync<StatementReconciliationCaseworkHandoffException>();
 
-        var restartedCommitStore = new FileStatementCaseworkCommitStore(_root);
+        var restartedCommitStore = new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter());
         var restartedService = new StatementReconciliationCaseworkHandoffService(
             new StaticQueueRepository(item),
             breakStore,
@@ -127,8 +128,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             ResolvedAt = now
         };
         var command = BuildCommand(item, ReconciliationCaseworkAction.Resolve);
-        var breakStore = new JsonReconciliationBreakStore(_root);
-        var caseStore = new JsonReconciliationCaseStore(_root);
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
+        var caseStore = new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter());
         await breakStore.WriteAsync([sourceBreak], timeout.Token);
         await caseStore.SaveAsync(sourceCase, timeout.Token);
         var operations = CreateOperationsService(out var operationsRepository);
@@ -136,7 +137,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             BuildOperationsWorkflow(fundAccountId, import, now.AddDays(-1)),
             timeout.Token);
         var journalStore = CreateStrictJournalStore(import);
-        var firstCommitStore = new FileStatementCaseworkCommitStore(_root);
+        var firstCommitStore = new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter());
         var firstService = new StatementReconciliationCaseworkHandoffService(
             new StaticQueueRepository(item),
             breakStore,
@@ -168,7 +169,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             command.CommandId,
             timeout.Token)).Should().BeNull();
 
-        var restartedCommitStore = new FileStatementCaseworkCommitStore(_root);
+        var restartedCommitStore = new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter());
         var restartedService = new StatementReconciliationCaseworkHandoffService(
             new StaticQueueRepository(item),
             breakStore,
@@ -221,8 +222,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
         };
         var command = BuildCommand(item, ReconciliationCaseworkAction.Resolve);
         var queue = new StaticQueueRepository(item);
-        var breakStore = new JsonReconciliationBreakStore(_root);
-        var caseStore = new JsonReconciliationCaseStore(_root);
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
+        var caseStore = new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter());
         await breakStore.WriteAsync([sourceBreak]);
         await caseStore.SaveAsync(sourceCase);
         var operations = CreateOperationsService(out var operationsRepository);
@@ -235,7 +236,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             new StaticStatementRunWorkflowService(import),
             operations,
             journalStore.Object,
-            new FileStatementCaseworkCommitStore(_root));
+            new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter()));
 
         var first = await service.ApplyAsync(QueueScope, command);
         var replay = await service.ApplyAsync(QueueScope, command);
@@ -294,8 +295,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             Actor = "controller",
             Reason = item.ReopenReason
         };
-        var breakStore = new JsonReconciliationBreakStore(_root);
-        var caseStore = new JsonReconciliationCaseStore(_root);
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
+        var caseStore = new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter());
         await breakStore.WriteAsync([sourceBreak]);
         await caseStore.SaveAsync(sourceCase);
         var operations = CreateOperationsService(out var operationsRepository);
@@ -308,7 +309,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             new StaticStatementRunWorkflowService(import),
             operations,
             journalStore.Object,
-            new FileStatementCaseworkCommitStore(_root));
+            new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter()));
 
         await service.ApplyAsync(QueueScope, command);
 
@@ -339,8 +340,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             DispositionReason = "Reviewed statement variance."
         };
         var command = BuildCommand(item, ReconciliationCaseworkAction.Resolve);
-        var breakStore = new JsonReconciliationBreakStore(_root);
-        var caseStore = new JsonReconciliationCaseStore(_root);
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
+        var caseStore = new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter());
         await breakStore.WriteAsync([sourceBreak]);
         await caseStore.SaveAsync(sourceCase);
         var operations = CreateOperationsService(out var operationsRepository);
@@ -352,7 +353,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             new StaticStatementRunWorkflowService(import),
             operations,
             journalStore.Object,
-            new FileStatementCaseworkCommitStore(_root));
+            new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter()));
 
         var first = () => service.ApplyAsync(QueueScope, command);
         var failure = await first.Should().ThrowAsync<StatementReconciliationCaseworkHandoffException>();
@@ -398,8 +399,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             Disposition = ReconciliationBreakDispositionDto.Resolved,
             DispositionReason = "Reviewed against the canonical accounting period."
         };
-        var breakStore = new JsonReconciliationBreakStore(_root);
-        var caseStore = new JsonReconciliationCaseStore(_root);
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
+        var caseStore = new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter());
         await breakStore.WriteAsync([sourceBreak]);
         await caseStore.SaveAsync(sourceCase);
         var operations = CreateOperationsService(out var operationsRepository);
@@ -416,7 +417,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             new StaticStatementRunWorkflowService(import),
             operations,
             journalStore.Object,
-            new FileStatementCaseworkCommitStore(_root));
+            new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter()));
 
         await service.ApplyAsync(QueueScope, BuildCommand(item, ReconciliationCaseworkAction.Resolve));
 
@@ -454,8 +455,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             Disposition = ReconciliationBreakDispositionDto.Resolved
         };
         var queue = new StaticQueueRepository(item);
-        var breakStore = new JsonReconciliationBreakStore(_root);
-        var caseStore = new JsonReconciliationCaseStore(_root);
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
+        var caseStore = new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter());
         await breakStore.WriteAsync([sourceBreak]);
         await caseStore.SaveAsync(sourceCase);
         var operations = CreateOperationsService(out var operationsRepository);
@@ -474,7 +475,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             new StaticStatementRunWorkflowService(import),
             operations,
             journalStore.Object,
-            new FileStatementCaseworkCommitStore(_root));
+            new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter()));
 
         var apply = () => service.ApplyAsync(
             QueueScope,
@@ -514,8 +515,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             Disposition = ReconciliationBreakDispositionDto.Resolved
         };
         var queue = new StaticQueueRepository(item);
-        var breakStore = new JsonReconciliationBreakStore(_root);
-        var caseStore = new JsonReconciliationCaseStore(_root);
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
+        var caseStore = new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter());
         await breakStore.WriteAsync([sourceBreak]);
         await caseStore.SaveAsync(sourceCase);
         var operations = CreateOperationsService(out var operationsRepository);
@@ -534,7 +535,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             new StaticStatementRunWorkflowService(import),
             operations,
             journalStore.Object,
-            new FileStatementCaseworkCommitStore(_root));
+            new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter()));
 
         var apply = () => service.ApplyAsync(
             QueueScope,
@@ -579,8 +580,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             Path.Combine(_root, "bulk-projection-queue"),
             NullLogger<FileReconciliationBreakQueueRepository>.Instance);
         (await queue.CreateIfMissingAsync(initial)).Should().BeTrue();
-        var breakStore = new JsonReconciliationBreakStore(_root);
-        var caseStore = new JsonReconciliationCaseStore(_root);
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
+        var caseStore = new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter());
         await breakStore.WriteAsync([sourceBreak]);
         await caseStore.SaveAsync(sourceCase);
         var operations = CreateOperationsService(out var operationsRepository);
@@ -596,7 +597,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             new StaticStatementRunWorkflowService(import),
             operations,
             journalStore.Object,
-            new FileStatementCaseworkCommitStore(_root));
+            new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter()));
         var request = new ReconciliationBulkCaseworkRequest(
             BreakIds: [initial.BreakId],
             Action: ReconciliationCaseworkAction.Resolve,
@@ -701,8 +702,8 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
                 .Append("statement:corrected-cash-row")
                 .ToArray()
         };
-        var breakStore = new JsonReconciliationBreakStore(_root);
-        var caseStore = new JsonReconciliationCaseStore(_root);
+        var breakStore = new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter());
+        var caseStore = new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter());
         await breakStore.WriteAsync([sourceBreak]);
         await caseStore.SaveAsync(sourceCase);
         var operations = CreateOperationsService(out var operationsRepository);
@@ -714,7 +715,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             new StaticStatementRunWorkflowService(import),
             operations,
             journalStore.Object,
-            new FileStatementCaseworkCommitStore(_root));
+            new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter()));
 
         var first = () => service.ApplyAsync(QueueScope, command);
         var failure = await first.Should().ThrowAsync<StatementReconciliationCaseworkHandoffException>();
@@ -811,7 +812,7 @@ public sealed class StatementReconciliationCaseworkHandoffTests : IDisposable
             new StaticStatementRunWorkflowService(import),
             operations,
             journalStore.Object,
-            new FileStatementCaseworkCommitStore(_root));
+            new FileStatementCaseworkCommitStore(_root, new AtomicFileWriterAdapter()));
 
         var replay = await restartedService.ApplyAsync(QueueScope, command);
 

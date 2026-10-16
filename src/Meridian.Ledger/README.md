@@ -6,14 +6,42 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-07-10
+last_reviewed: 2026-10-02
 ---
 
 # src/Meridian.Ledger
 
+`OpenLotReliefService` treats explicit long/short direction as part of the pool scope. It never
+nets the two directions, and it allocates positive quantity and both retained currency bases for
+a homogeneous pool. This calculation does not authorize short journals or infer short-sale tax
+character; those posting and reporting paths remain gated separately.
+
+`RecurringJournalSchedule` remains a pure calendar and template projection. Durable claims live in
+Financial Operations, while `RecurringJournalEvidence` retains the exact schedule/template
+versions, full definitions, accounting scope, period version and source references on each generated
+approval draft. `RecurringJournalEvidenceGuard` rejects missing or changed provenance and removed
+source evidence at workbench validation and lifecycle boundaries. `RecurringTemplate` identifies
+the generated event without granting submission, approval or posting authority. See
+[Recurring Journal](../../docs/domain/recurring-journal.md) for the retention and recovery contract.
+
+`CanonicalCorporateActionLotReport` packages the immutable predecessor closeout and successor
+acquisition snapshots. `LedgerReportPackBuilder` includes `corporate-action-lot-evidence.json` in
+the artifact manifest and signature when governed reporting supplies verified successor receipts.
+This proof preserves original/current currency bases, acquisition dates/FX and immutable origins.
+
 ## Shared close and lot convergence
 
-`OpenLotReliefService` uses the shared decimal consumption walk for canonical FIFO/LIFO/HIFO/SpecificId/AverageCost selection and retains transaction and functional basis separately. It refuses mixed security, position, book, quantity-basis, and currency scopes. The durable disposal writer and reporting capture consume the canonical evidence contract. AverageCost selection is available for projection; durable posting still requires proof of remaining-lot basis redistribution.
+`OpenLotReliefService` uses the shared decimal consumption walk for canonical FIFO/LIFO/HIFO/SpecificId/AverageCost selection and retains transaction and functional basis separately. It refuses mixed security, position, book, quantity-basis, and currency scopes. The durable disposal writer and reporting capture consume the canonical evidence contract. Durable AverageCost posting restates the surviving pool atomically; discrete relief subsequently consumes that current basis and retains exact remaining basis. Acquisition facts stay immutable, and Reporting reproduces the certified posted result.
+
+`LotBasisRelief` owns exact proportional basis allocation for canonical relief and Backtesting's
+actual long-close and short-cover paths. Closing slices take the exact remaining basis; pooled
+relief assigns the division residual to the last slice. Canonical callers allocate transaction and
+functional basis independently from retained amounts. Consumer-specific ordering, currency rounding
+and historical journal reconstruction remain at their existing boundaries.
+Positive pools fail closed when decimal precision cannot retain a positive basis for every consumed
+slice; an exhausted residual is never redistributed into zero-basis parcels. This does not round
+otherwise valid exact allocations to a storage scale. Atomic disposal separately requires positive
+basis exactly representable at its durable twelve-decimal precision.
 
 `ValuationFreshnessPolicy` owns mark admission with required observation dates, complete coverage, a minimum confidence floor, and rejection of future or over-age marks. Compatibility settings can tighten this policy; Allow, Flag, or disabled settings cannot authorize stale values. `ValuationMarkEvidenceGuard` checks the retained position/date evidence at governed lifecycle boundaries. Read-only previews expose which positions would block before any valuation draft is created.
 
@@ -27,6 +55,8 @@ This layer should model ledger behavior and accounting evidence without owning U
 
 ## Key folders and files
 
+- `CurrencyCodeCatalog` preserves the Ledger API while delegating to Core's shared catalog, so
+  statement intake and accounting use the same recognized codes and current-payment restrictions.
 - `Meridian.Ledger.csproj` - ledger project boundary.
 - Ledger models, accounting services, and reconciliation support files.
 
@@ -102,6 +132,10 @@ vendor composite → matrix/model → manual) and stamps the resolving tier's fa
 `AutomatedJournalDraft` (kind `FairValueMarkAdjustment`) with per-mark price evidence so daily
 fair-value adjustments flow through `AutomatedJournalApproval` before posting; the
 Application-layer `DailyMarkToMarketService` wires provider-chain close prices into this path.
+Entity-scoped daily valuation reads the same entity's retained carrying balance and preserves that
+entity in both journal legs, calculation evidence, and the draft fingerprint. Shared book/account
+balances from other entities cannot change the valuation delta. Intake and lifecycle validation
+reject an entity that differs from the retained calculation scope.
 `FixedIncomeAmortizationProjector` produces balanced coupon accrual, discount accretion, and
 premium amortization lines for bond accounting workflows before persistence or approval posting.
 `FixedAssetDepreciationProjector` is the depreciation analogue: it projects balanced
@@ -117,10 +151,39 @@ ledger account level so accounting statements can follow front-office lot-relief
 `LedgerTaxLotReliefProjector` applies those account-level relief methods to open tax lots and
 prepares balanced cash, security cost-basis, and realized gain/loss lines before durable posting.
 For `AverageCost` it pools every open lot into a single average unit cost while still depleting lots
-oldest-first for deterministic lot closing. When a `WashSalePolicy` and replacement acquisitions are
-supplied, it defers the proportional disallowed loss on a realizing sale (US IRC §1091), recognizing
-only the allowed portion and capitalizing the deferred amount into the replacement lot's basis
-(`WashSaleOutcome`), so the entry still balances and no premature loss is booked.
+oldest-first for deterministic lot closing. Pooled proceeds preserve the sign of the pooled result
+so independent cent residuals cannot manufacture a loss inside a gain-producing pool.
+Discrete proceeds reserve rounded basis for gain/break-even parcels and cap loss parcels at their
+basis, preserving pre-rounding result signs while conserving the rounded sale proceeds. If the
+independently rounded bases make those sign bounds infeasible, projection fails explicitly.
+Unversioned retained disposal history uses the frozen legacy final-residual allocator, including
+when sign-preserving allocation would also succeed. Versioned history uses its explicit retained
+sale price when available, preserving per-lot results and tax character without recovering a
+different source quote from rounded proceeds. Aggregate-only current-version history retains no
+quote and derives its canonical price from journal proceeds after retained wash-sale deferrals.
+A `LedgerTaxLot` may carry an exact `CostBasis`; discrete or pooled relief that consumes the whole
+lot relieves that amount instead of a rounded unit-cost recalculation. Versioned history supplies
+each retained lot's exact basis and, without an explicit quote, its exact journal proceeds, so a
+governed current basis with fractional cents reconstructs as booked. Unknown versions or inconsistent retained economics fail closed. The
+history compatibility path does not relax the sign bounds for new projections.
+When a `WashSalePolicy` and replacement acquisitions are
+supplied, it evaluates each negative-result relief parcel even when the disposal has an aggregate
+gain or zero result. Loss parcels consume one shared replacement-quantity pool in relief order;
+replacements are ordered by acquisition date and lot/account identity. Inclusive policy windows,
+security matching, account scope and relieved-lot exclusions remain in force. Self-exclusion compares
+both account and lot ID; sibling-account acquisitions with the same ID remain eligible in LedgerBook
+scope. Duplicate candidate
+identities count once (conflicting facts are rejected). Each source loss is rounded once, with the
+residual assigned to its final replacement, so quantities and basis adjustments conserve exactly.
+`WashSaleOutcome` reports total disallowed loss and the remaining individual loss-lot losses before
+offsetting gains. Each `WashSaleBasisIncrease` retains its source selections, matched quantities,
+amounts, holding-period carry and applied policy, including the configured `PolicyId` revision when
+available. An ad-hoc unversioned policy retains a null revision rather than inventing one. Export rows
+use this source evidence, and the journal recognizes economic result plus deferral, including when
+that turns an aggregate loss into a gain. Recalculation is pure; replacement capacity is consumed
+only within that projection. Cross-disposal reservation and durable persistence remain owned by
+the resolver/posting workflow. Zero-cent matches remain in the projection as quantity evidence;
+the existing durable deferral store accepts only positive amounts.
 `LedgerTaxLot` carries an optional `SecurityId` so cost-basis lots link to Security Master
 reference data. `LedgerTaxLotBasisAdjuster` (fed via `LedgerTaxLotReliefInput.BasisAdjustments`)
 restates open lots by reference-data-derived `LedgerTaxLotBasisAdjustment`s — corporate-action
@@ -239,6 +302,10 @@ posting-ready status instead of silently merging incompatible capital-account su
 Capital-account impact rows preserve each journal entry's
 capital-account and investor metadata before falling back to the event-level identity, so blocked
 conflicts remain auditable without making them report-ready.
+
+`LedgerTaxLot` implements `IUnitizedLot`; `LedgerTaxLotBasisAdjuster` carries the unit kind and
+multiplier onto adjusted lots, so a face-value lot keeps its per-100 multiplier through basis
+adjustments.
 
 ## Diagrams
 

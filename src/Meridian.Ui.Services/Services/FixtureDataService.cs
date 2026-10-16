@@ -11,9 +11,16 @@ public sealed class FixtureDataService
     private static readonly Lazy<FixtureDataService> _instance = new(() => new());
     public static FixtureDataService Instance => _instance.Value;
 
+    private readonly TimeProvider _timeProvider;
     private volatile FixtureScenario _activeScenario = FixtureScenario.Connected;
 
-    private FixtureDataService() { }
+    private FixtureDataService() : this(TimeProvider.System) { }
+
+    internal FixtureDataService(TimeProvider timeProvider)
+    {
+        ArgumentNullException.ThrowIfNull(timeProvider);
+        _timeProvider = timeProvider;
+    }
 
     /// <summary>Gets the currently active fixture scenario.</summary>
     public FixtureScenario ActiveScenario => _activeScenario;
@@ -191,6 +198,6 @@ public sealed class FixtureDataService
     /// </summary>
     public async Task SimulateNetworkDelayAsync(CancellationToken ct = default)
     {
-        await Task.Delay(Random.Shared.Next(50, 150));
+        await Task.Delay(TimeSpan.FromMilliseconds(Random.Shared.Next(50, 150)), _timeProvider, ct);
     }
 }

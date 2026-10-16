@@ -1,3 +1,4 @@
+using Meridian.Core.IO;
 using Meridian.Core.Config;
 using Meridian.Core.Monitoring;
 using Meridian.Domain.Collectors;
@@ -188,7 +189,7 @@ public sealed partial class ProviderFactory
     internal IBrokerageGateway CreateAlpacaBrokerageGateway()
     {
         var options = ResolveAlpacaOptions();
-        var stream = new AlpacaTradeUpdatesClient(options, Services.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>());
+        var stream = new AlpacaTradeUpdatesClient(options, Services.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>(), Services.GetRequiredService<IAtomicFileWriter>());
         return new AlpacaBrokerageGateway(Services.GetRequiredService<IHttpClientFactory>(), options,
             Services.GetRequiredService<ILogger<AlpacaBrokerageGateway>>(), stream);
     }

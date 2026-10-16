@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Channels;
 using Meridian.Core.Logging;
@@ -113,6 +114,7 @@ public sealed class BackfillRequestQueue : IDisposable
             ct.ThrowIfCancellationRequested();
             foreach (var request in stagedRequests)
             {
+                request.CaptureTraceContext();
                 _pendingRequests.Enqueue(request, request.Priority);
             }
             _pendingCount += stagedRequests.Count;
@@ -211,6 +213,7 @@ public sealed class BackfillRequestQueue : IDisposable
         await _queueLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            request.CaptureTraceContext();
             _pendingRequests.Enqueue(request, request.Priority);
             _pendingCount++;
             NotifyQueueStateChanged();
@@ -700,6 +703,21 @@ public sealed class BackfillRequestQueue : IDisposable
 /// </summary>
 public sealed class BackfillRequest
 {
+    private bool _traceContextCaptured;
+
+    // Queue-only context: persisted job descriptors and request payloads stay unchanged.
+    // Retries retain the initiating producer instead of adopting a previous worker attempt.
+    internal ActivityContext ParentContext { get; private set; }
+
+    internal void CaptureTraceContext()
+    {
+        if (_traceContextCaptured)
+            return;
+
+        ParentContext = Activity.Current?.Context ?? default;
+        _traceContextCaptured = true;
+    }
+
     public string RequestId { get; init; } = Guid.NewGuid().ToString("N")[..12];
     public string JobId { get; init; } = string.Empty;
     public string Symbol { get; init; } = string.Empty;

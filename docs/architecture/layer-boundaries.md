@@ -1,8 +1,8 @@
 # Layer Boundary Rules
 
 This document defines the allowed dependency directions between layer assemblies.
-These boundaries are enforced by **project references** (compile-time) and
-**Roslyn analyzer rules** (IDE warnings).
+Project references determine compile-time visibility; architecture tests enforce the
+covered dependency rules. A successful build alone does not prove these boundaries.
 
 ## Dependency Graph
 
@@ -53,15 +53,65 @@ Meridian (Host/Exe)   →  Application (+ transitive)
 
 ## Enforcement Mechanisms
 
-1. **Project References**: Each `.csproj` only lists allowed `<ProjectReference>` entries.
-   MSBuild will fail if a type from an unreferenced assembly is used.
+1. **Compile-time visibility**: Removing a `<ProjectReference>` prevents consumers from
+   using types supplied only by that assembly. Adding a forbidden reference can still build;
+   the compiler does not know this dependency policy.
 
-2. **Roslyn Analyzer Rules**: `Directory.Build.targets` injects per-project
-   `RS0037` (Banned Symbols) rules that flag `using` statements importing
-   forbidden namespaces.
+2. **Compiled-type checks**: `tests/Meridian.Tests/Architecture/LayerBoundaryTests.cs`
+   checks the existing assembly/type rules. Such checks do not detect unused project references.
 
-3. **CI Gate**: The `ci.yml` workflow runs `dotnet build` which catches
-   any project reference violations at compile time.
+3. **Evaluated project graph**: `Infrastructure_ShouldNot_Reference_Storage_DirectlyOrTransitively`
+   in `LayerBoundaryTests` evaluates MSBuild's actual `ProjectReference` items for Debug and
+   Release, including imports, properties and conditions, then traverses the dependency closure.
+   Each child inherits the effective reference-specific global properties, including overrides
+   and removals, including `_GlobalPropertiesToRemoveFromProjectReferences`. For projects
+   importing `PrepareProjectReferences`, inspection runs that target and reads its prepared
+   `_MSBuildProjectReferenceExistent` items so negotiated framework/platform metadata is included.
+   Distinct declared contexts unmatched to prepared metadata are retained, including same-path references.
+   Reference-specific `ToolsVersion` is part of context identity and is forwarded to child MSBuild.
+   Unsupported toolsets fail closed, including when the same path also has a valid toolset context.
+   Bare projects without that target retain evaluation-only inspection. Neither route restores
+   or compiles projects. Residual MSBuild escapes are preserved as literal property values, matching the
+   [MSBuild task parser](https://source.dot.net/Microsoft.Build/parent/Shared/PropertyParser.cs.html)
+   and the task oracle for `Marker=west%253Beast=1`, and escaped for command-line forwarding. Traversal distinguishes the same project under different contexts,
+   with fail-closed budgets of 32 contexts per project and 1,024 overall; exceeding a budget
+   reports the project chain and possible non-stabilizing cycle rather than passing the gate.
+   A direct edge or any intermediate path from Infrastructure to Storage fails with its chain.
+   `ProjectReferenceGraphTests` includes source-free negative fixtures, including an unused
+   `ReferenceOutputAssembly="false"` edge, an indirect path, a conditional imported edge and
+   a transitive edge enabled by `AdditionalProperties` on its parent reference.
+   These tests require the repository checkout and .NET SDK; they do not compile fixture types.
+
+4. **CI gate**: The maintained .NET test lane executes the architecture tests. Run the scoped
+   check with `dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter
+   "FullyQualifiedName~LayerBoundaryTests|FullyQualifiedName~ProjectReferenceGraphTests"`.
+   This bounded PRD-108 check covers Infrastructure's Storage dependency. The remaining
+   module classifications and forbidden-edge coverage are still open in the
+   [implementation backlog](../product/implementation-todo-list.md).
+
+## PRD-108 Infrastructure-to-Storage correction
+
+The pre-correction inventory found nine Infrastructure files using concrete Storage types:
+
+| Infrastructure consumer | Prior Storage dependency | Lower-level seam |
+| --- | --- | --- |
+| `Adapters/Core/Backfill/BackfillJobManager.cs` | `AtomicFileWriter.WriteAsync` | `Core.IO.IAtomicFileWriter` |
+| `Adapters/Core/Backfill/BackfillWorkerService.cs` | `AtomicFileWriter`, `JsonlStoragePolicy`, `StorageOptions` | `ProviderSdk/Backfill/IBackfillBarWriter` |
+| `Etl/LocalFileSourceReader.cs`, `Etl/SftpFileSourceReader.cs` | `EtlStagingStore` | `Contracts.Etl.IEtlStagingStore` |
+| `Adapters/Alpaca/AlpacaTradeUpdatesClient.cs` | `AtomicFileWriter.Write` for the file cursor | `Core.IO.IAtomicFileWriter` |
+| `Adapters/Plaid/FilePlaidConnectionRepository.cs` | Atomic byte writes and line append | `Core.IO.IAtomicFileWriter` |
+| `Reconciliation/BrokerStatementInfrastructure.cs`, `Reconciliation/ReconciliationCaseInfrastructure.cs`, `Reconciliation/StatementDurabilityInfrastructure.cs` | Atomic writes, line append and directory sync | `Core.IO.IAtomicFileWriter` |
+
+Only the required persistence interfaces live in lower modules. The provider-facing bar writer
+uses the existing ProviderSdk granularity and Contracts historical-bar types. Storage keeps
+`AtomicFileWriter` (including its durability and security-metadata handling), its thin injected
+adapter, `EtlStagingStore`, and `JsonlBackfillBarWriter` with the existing JSONL policy.
+Application/host composition supplies these concrete implementations; Infrastructure has no
+Storage project reference, fallback construction, or intermediate project path to Storage.
+Existing provider/reconciliation store implementations remain in place and consume the port.
+
+This slice does not close PRD-108: Execution, Backtesting, QuantScript and Strategies dependency
+corrections, plus full module-kind classification and project-reference rule coverage, remain open.
 
 ## Examples
 
@@ -108,7 +158,8 @@ If a new cross-layer dependency is needed:
 3. Update the `.csproj` `<ProjectReference>` entries.
 4. Update this document.
 5. Verify with `dotnet build -c Release`.
-6. The `ci.yml` CI workflow will catch any violations on pull request.
+6. Run the relevant architecture tests as well as the build. Extend their project-reference
+   coverage for a new rule; do not assume an ordinary build rejects forbidden edges.
 
 ## BannedReferences.txt
 
@@ -128,5 +179,5 @@ See [Desktop & UI Layer Architecture](desktop-layers.md) for a detailed diagram 
 ---
 
 **Version:** 1.6.2
-**Last Updated:** 2026-03-18
+**Last Updated:** 2026-10-02
 **Audience:** Contributors and AI assistants working on project architecture and dependency management.

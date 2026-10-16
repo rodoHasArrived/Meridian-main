@@ -34,7 +34,7 @@ public class BackfillWorkerServiceTests
                 null!,
                 config,
                 new AppConfig(DataRoot: _testDataRoot),
-                _testDataRoot));
+                null!));
 
         ex.ParamName.Should().Be("config");
         ex.ActualValue.Should().Be(maxConcurrentRequests);
@@ -62,7 +62,7 @@ public class BackfillWorkerServiceTests
                 null!,
                 config,
                 new AppConfig(DataRoot: _testDataRoot),
-                _testDataRoot));
+                null!));
 
         ex.ParamName.Should().Be("config");
         ex.ActualValue.Should().Be(maxConcurrentRequests);
@@ -96,7 +96,7 @@ public class BackfillWorkerServiceTests
                     null!,
                     config,
                     new AppConfig(DataRoot: _testDataRoot),
-                    _testDataRoot);
+                    null!);
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -130,7 +130,7 @@ public class BackfillWorkerServiceTests
                     null!,
                     config,
                     new AppConfig(DataRoot: _testDataRoot),
-                    _testDataRoot);
+                    null!);
             }
             catch (ArgumentOutOfRangeException)
             {

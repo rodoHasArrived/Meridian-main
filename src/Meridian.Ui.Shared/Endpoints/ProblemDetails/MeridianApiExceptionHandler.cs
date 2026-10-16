@@ -1,4 +1,5 @@
 using Meridian.Application.FundStructure;
+using Meridian.Application.Tenancy;
 using Meridian.Contracts.Tenancy;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -54,6 +55,8 @@ public sealed class MeridianApiExceptionHandler : IExceptionHandler
             FundStructureTenantScopeException => ApiProblemDetails.Forbidden(
                 httpContext,
                 "A tenant-scoped session is required to read the fund structure."),
+            LocalTenantMigrationRequiredException => ApiProblemDetails.ServiceUnavailable(
+                httpContext, "tenant migration", LocalTenantMigrationGate.RefusalMessage),
             TimeoutException => ApiProblemDetails.Timeout(httpContext),
             OperationCanceledException => ApiProblemDetails.Timeout(httpContext),
             _ => ApiProblemDetails.Internal(httpContext)
@@ -63,11 +66,12 @@ public sealed class MeridianApiExceptionHandler : IExceptionHandler
             or ArgumentException
             or UnauthorizedAccessException
             or TenantScopeRejectedException
+            or LocalTenantMigrationRequiredException
             or FundStructureTenantScopeException)
         {
             _logger.LogWarning(
                 exception,
-                "Endpoint request failed with a handled client error at {RequestPath}.",
+                "Endpoint request failed with a handled request error at {RequestPath}.",
                 httpContext.Request.Path);
         }
         else

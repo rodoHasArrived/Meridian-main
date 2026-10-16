@@ -49,7 +49,7 @@ export function ActivityCenter() {
         aria-label={buttonLabel}
         title={buttonLabel}
         onClick={openDrawer}
-        className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-transparent text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
       >
         <History className="h-4 w-4" aria-hidden="true" />
         {unseenCount > 0 ? (
@@ -74,7 +74,7 @@ export function ActivityCenter() {
                     : `${entries.length} recorded action${entries.length === 1 ? "" : "s"} this session.`}
                 </SheetDescription>
               </div>
-              <div className="flex flex-shrink-0 items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 {entries.length > 0 ? (
                   <Button size="sm" variant="outline" type="button" onClick={() => log.clear()}>
                     <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -120,7 +120,7 @@ function ActivityRow({ entry, onUndo, onOpenRoute }: ActivityRowProps) {
   return (
     <li className="rounded-md border border-border/50 px-3 py-2.5 text-sm">
       <div className="flex items-start gap-2.5">
-        <span aria-hidden="true" className={cn("mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full", TONE_DOT[entry.tone])} />
+        <span aria-hidden="true" className={cn("mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full", TONE_DOT[entry.tone])} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="truncate font-medium">{entry.title}</span>
@@ -135,7 +135,7 @@ function ActivityRow({ entry, onUndo, onOpenRoute }: ActivityRowProps) {
             <p className="mt-1 text-xs text-danger" role="alert">{entry.undoError}</p>
           ) : null}
         </div>
-        <div className="flex flex-shrink-0 flex-col items-end gap-1.5">
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
           <UndoControl status={entry.undoStatus} onUndo={onUndo} />
           {entry.route ? (
             <Button asChild size="sm" variant="ghost">

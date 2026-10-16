@@ -25,6 +25,38 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         "meridian-accounting-configure-tests",
         Guid.NewGuid().ToString("N"));
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task ManualJournalSave_RetriesUnappliedIntentWithStableClientValues(int failedWrite)
+    {
+        Directory.CreateDirectory(_root);
+        var context = new FundContextService(Path.Combine(_root, "fund-context.json"));
+        var profile = await context.UpsertProfileAsync(new FundProfileDetail(
+            "alpha-fund", "Alpha Fund", "Alpha Fund LP", "USD", "accounting", "FundAccountingConfigure",
+            FundLedgerScope.Consolidated, ["entity-alpha"], ["sleeve-credit"], ["vehicle-master"], IsDefault: true));
+        await context.SelectFundProfileAsync(profile.FundProfileId);
+        var harness = CreateHarness(context, failedWrite);
+        await harness.ViewModel.LoadAsync();
+        await harness.ViewModel.SeedBaselineConfigurationAsync();
+        harness.ViewModel.DraftAmount = 100m;
+        if (failedWrite == 2)
+        {
+            await harness.ViewModel.SaveManualJournalDraftAsync();
+            harness.ViewModel.DraftMemo = "Second logical edit";
+        }
+        await harness.ViewModel.SaveManualJournalDraftAsync();
+        harness.ViewModel.ManualJournalStatusText.Should().Contain("could not be saved");
+        await harness.ViewModel.SaveManualJournalDraftAsync();
+        harness.ViewModel.ManualJournalStatusText.Should().Contain("saved as");
+        var drafts = await new FileManualJournalEntryDraftStore(harness.DraftsPath).ListAsync("alpha-fund");
+        drafts.Should().ContainSingle().Which.Version.Should().Be(failedWrite);
+        harness.ViewModel.DraftAmount = 125m;
+        await harness.ViewModel.SaveManualJournalDraftAsync();
+        (await new FileManualJournalEntryDraftStore(harness.DraftsPath).ListAsync("alpha-fund"))
+            .Should().ContainSingle().Which.Version.Should().Be(failedWrite + 1);
+    }
+
     [Fact]
     public void ManualJournalEntryTypePresets_ExposeAndApplyEveryAccountingEventType()
     {
@@ -1601,7 +1633,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         }
     }
 
-    private AccountingConfigureHarness CreateHarness(FundContextService fundContext)
+    private AccountingConfigureHarness CreateHarness(FundContextService fundContext, int failedDraftWrite = 0)
     {
         var configurationPath = Path.Combine(_root, "accounting-configuration.json");
         var draftsPath = Path.Combine(_root, "manual-journal-drafts.json");
@@ -1611,10 +1643,11 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         var draftStore = new FileManualJournalEntryDraftStore(draftsPath);
         var ledgerJournalStore = new RecordingLedgerJournalStore(ledgerBookService.Book);
         var manualJournalService = new ManualJournalEntryWorkbenchService(
-            draftStore,
+            failedDraftWrite == 0 ? draftStore : new InterruptDraftWriteStore(draftStore, failedDraftWrite),
             configurationService,
             configurationStore,
-            journalStore: ledgerJournalStore);
+            journalStore: ledgerJournalStore,
+            mutationRecovery: new FileManualJournalMutationRecoveryStore(draftsPath + ".mutations"));
         var capitalAccountWorkbenchService = new CapitalAccountWorkbenchService(manualJournalService);
         var accountingSystemIntegrationService = new AccountingSystemIntegrationService(
             [new QuickBooksFixtureAccountingProvider()]);
@@ -1673,6 +1706,21 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             migrationRunWorkerPlanStore,
             accountingSystemIntegrationService,
             ledgerBookService);
+    }
+
+    private sealed class InterruptDraftWriteStore(IManualJournalEntryDraftStore inner, int failedWrite) : IManualJournalEntryDraftStore
+    {
+        private int _writes;
+        public Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default) => inner.ListFundProfileIdsAsync(ct);
+        public Task<IReadOnlyList<ManualJournalEntryDraftDto>> ListAsync(string fundProfileId, Guid? ledgerBookId = null,
+            CancellationToken ct = default, string? tenantId = null, string? companyId = null)
+            => inner.ListAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId);
+        public Task<ManualJournalEntryDraftDto?> GetAsync(string fundProfileId, Guid journalEntryId,
+            CancellationToken ct = default, string? tenantId = null, string? companyId = null)
+            => inner.GetAsync(fundProfileId, journalEntryId, ct, tenantId, companyId);
+        public Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default) => SaveBatchAsync([draft], ct);
+        public Task SaveBatchAsync(IReadOnlyList<ManualJournalEntryDraftDto> drafts, CancellationToken ct = default)
+            => ++_writes == failedWrite ? Task.FromException(new IOException("Injected draft write interruption.")) : inner.SaveBatchAsync(drafts, ct);
     }
 
     private sealed record AccountingConfigureHarness(
@@ -1737,6 +1785,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            entry = AccountingPostingCommandValidator.NormalizeAndValidate(entry);
             if (!entry.Entry.IsBalanced)
             {
                 throw new LedgerValidationException("Journal entry must be balanced.");

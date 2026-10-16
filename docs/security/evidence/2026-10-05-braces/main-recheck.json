@@ -1,0 +1,36 @@
+{
+  "schema": "meridian.dependency-investigation-main-recheck.v1",
+  "observed_at_utc": "2026-10-05T18:44:12Z",
+  "baseline": "e3bf60bae577c132d8444a827ca4dc3181cc48a1",
+  "main": "600cde87be9de99c615594cb1a2b09f507cd2b2f",
+  "byte_identical_source_sha256": {
+    "src/Meridian.Ui/dashboard/package.json": "17a4a582d9890c9ab89808b6f4114101c913894539f97e02f7f39f1cd8a35ea0",
+    "src/Meridian.Ui/dashboard/package-lock.json": "7f0d4034ab6cc9a3be9d805a3bca15278df7e82959ac113539de3fbf86062772",
+    "build/config/security/npm-audit-accepted-advisories.json": "8895a530e09ef1631eed36c0a09b45cc8569485701ab5070da072a064c5c3720",
+    "build/scripts/ci/validate-npm-audit.py": "f162b0b997a736b727af38419345a6bc063697df945649be2c7d5994bf53244f",
+    ".github/workflows/production-certification.yml": "d72da85954d1912976a8ddae619b851f5bded6c47a9f3d5968346af966052885"
+  },
+  "latest_observed_workflow": {
+    "run_id": 37357037036,
+    "run_number": 150,
+    "head_sha": "600cde87be9de99c615594cb1a2b09f507cd2b2f",
+    "status": "pending",
+    "jobs": [],
+    "artifacts": [],
+    "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37357037036"
+  },
+  "limitation": "No complete certification or current-main NuGet pass inferred. Baseline artifact remains bound to its original commit.",
+  "acceptance_status": "proposed, not accepted",
+  "newest_completed_dependency_job": {
+    "run_id": 37356520129,
+    "run_number": 148,
+    "attempt": 1,
+    "head_sha": "8b382db63dd4b47fb32b8f4a199bcb0845700dee",
+    "job_id": 111920179861,
+    "conclusion": "failure",
+    "failure": "UNACCEPTED GHSA-vfj7-8cjw-p6xm (braces, high): no acceptance entry",
+    "overall_workflow_status": "in_progress",
+    "artifact_id": 11365097495,
+    "artifact_sha256": "408087207edd3cfbab16f630ee9b58ee7393b2bb64d5fd7db87cedd1fc769261"
+  }
+}

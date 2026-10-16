@@ -4,6 +4,8 @@ using Meridian.Application.Pipeline;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Contracts;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Meridian.Contracts.Monitoring;
 using Meridian.Platform.Monitoring;
 using Meridian.Platform.Tracing;
@@ -73,6 +75,7 @@ public static class ServiceCompositionRoot
         CompositionOptions? options = null)
     {
         options ??= CompositionOptions.Default;
+        services.TryAddSingleton(new CompositionConfiguration(options.Configuration));
 
         services.AddFundScopeTenantServices();
 
@@ -299,6 +302,12 @@ public sealed record CompositionOptions
     public string? ConfigPath { get; init; }
 
     /// <summary>
+    /// Host-owned runtime settings. When supplied, missing keys never fall back to the process
+    /// environment. Omit this for the existing environment-driven production startup contract.
+    /// </summary>
+    public IConfiguration? Configuration { get; init; }
+
+    /// <summary>
     /// Data root directory override. If null, uses value from configuration.
     /// </summary>
     public string? DataRoot { get; init; }
@@ -322,7 +331,14 @@ public sealed record CompositionOptions
     public bool EnableProcessWideHostedServices { get; init; } = true;
 
     /// <summary>
-    /// Whether to enable OpenTelemetry tracing and metrics instrumentation.
+    /// Explicit programmatic opt-in to tracing and the existing metrics decorator.
+    /// Operators normally opt in through AppConfig.Tracing.Enabled.
     /// </summary>
     public bool EnableOpenTelemetry { get; init; }
+
+    /// <summary>
+    /// Whether this graph owns a tracing provider. Desktop child graphs reuse their parent's
+    /// listener; independent utility and ETL hosts still own telemetry even without workers.
+    /// </summary>
+    public bool OwnsTracingProvider { get; init; } = true;
 }

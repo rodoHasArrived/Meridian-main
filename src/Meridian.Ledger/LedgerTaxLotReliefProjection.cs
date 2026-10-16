@@ -31,10 +31,9 @@ public sealed record LedgerTaxLotReliefProjection(
 
     /// <summary>
     /// Wash-sale deferral outcome when a realized loss was disallowed against replacement
-    /// acquisitions. Null when no wash sale applied (a gain, no replacements, or a policy that does
-    /// not govern this sale date). When present, <see cref="RealizedGainOrLoss"/> still reports the
-    /// full economic loss, while <see cref="Lines"/> recognize only
-    /// <see cref="WashSaleOutcome.AllowedLoss"/> and capitalize
+    /// acquisitions. Null when no loss parcels match or the policy does not govern this sale date.
+    /// When present, <see cref="RealizedGainOrLoss"/> still reports the full economic result,
+    /// while <see cref="Lines"/> recognize that result plus the disallowed loss and capitalize
     /// <see cref="WashSaleOutcome.DisallowedLoss"/> into the replacement lot's basis.
     /// </summary>
     public WashSaleOutcome? WashSale { get; init; }

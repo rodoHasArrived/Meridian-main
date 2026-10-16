@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
@@ -30,6 +31,22 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         {
             // Best-effort cleanup of the per-test temp directory.
         }
+    }
+
+    [Fact]
+    public async Task CreateAsync_ForwardsRetainedAccountingScopeToInternalPopulation()
+    {
+        var path = await WriteStatementAsync("scoped.csv",
+            "EXT-1,,0,0,2500,transaction,2026-05-31,2026-05-31,USD,,EXT-9");
+        var scope = new StatementAccountingScope(Guid.NewGuid().ToString("D"),
+            Guid.NewGuid(), Guid.NewGuid(), new DateOnly(2026, 5, 31));
+        var populations = new StubPopulationProvider(InternalReconciliationPopulations.Empty);
+
+        var result = await CreateWorkflow(populations).CreateAsync(Request(path) with { AccountingScope = scope });
+
+        result.Import.AccountingScope.Should().Be(scope);
+        populations.LastContext.Should().NotBeNull();
+        populations.LastContext!.AccountingScope.Should().Be(scope);
     }
 
     [Fact]
@@ -131,7 +148,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
 
         await act.Should().ThrowAsync<InvalidDataException>()
             .WithMessage("*external account*");
-        var imports = await new JsonCanonicalStatementStore(_root).ListImportsAsync();
+        var imports = await new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter()).ListImportsAsync();
         imports.Should().BeEmpty("an account-mismatched statement must not be retained as a reconcilable run");
     }
 
@@ -329,7 +346,7 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
 
         // The import must not be committed when tolerance resolution fails, so a corrected retry of the
         // same statement is not blocked by the duplicate-source guard.
-        var imports = await new JsonCanonicalStatementStore(_root).ListImportsAsync();
+        var imports = await new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter()).ListImportsAsync();
         imports.Should().BeEmpty("the import must not be persisted when the run fails before matching");
     }
 
@@ -374,11 +391,11 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
         IReconciliationFxRateProvider? fxRateProvider = null,
         IStatementToleranceProfileProvider? toleranceProfileProvider = null)
     {
-        var importStore = new JsonCanonicalStatementStore(_root);
+        var importStore = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         return StatementRunWorkflowService.CreateEphemeralForTesting(
             importStore,
-            new JsonReconciliationCaseStore(_root),
-            new JsonReconciliationBreakStore(_root),
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
             new CsvBrokerStatementService(importStore),
             new StatementReconciliationContextAdapter(new StatementReconciliationService()),
             populations,
@@ -415,9 +432,14 @@ public sealed class StatementRunWorkflowServiceTests : IDisposable
     private sealed class StubPopulationProvider(InternalReconciliationPopulations populations)
         : IInternalReconciliationPopulationProvider
     {
+        public InternalReconciliationPopulationContext? LastContext { get; private set; }
+
         public Task<InternalReconciliationPopulations> GetPopulationsAsync(
             InternalReconciliationPopulationContext context,
             CancellationToken ct = default)
-            => Task.FromResult(populations);
+        {
+            LastContext = context;
+            return Task.FromResult(populations);
+        }
     }
 }

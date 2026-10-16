@@ -84,6 +84,13 @@ public static class SecurityAssetTermsFieldEditValidator
             return false;
         }
 
+        if (SecurityTermsEnvelope.IsReservedKey(key))
+        {
+            error = $"assetSpecificTerms.{key} is part of the terms payload envelope (format, contract version, " +
+                "or retained source document) and is not operator-editable.";
+            return false;
+        }
+
         // The profile GOVERNANCE envelope is not operator-editable field by field: repinning
         // customProfileId or profileVersion through a scalar override would change the record's
         // profile identity while retaining the old profileFields and approval metadata, bypassing
@@ -184,6 +191,12 @@ public static class SecurityAssetTermsFieldEditValidator
         if (!field.Allows(newValue))
         {
             error = field.DescribeUndeclaredValue(assetClass, newValue);
+            return false;
+        }
+
+        if (!field.SatisfiesConvention(newValue))
+        {
+            error = SecurityTermConventions.DescribeUnrecognized(field.Convention, assetClass, field.Key, newValue);
             return false;
         }
 

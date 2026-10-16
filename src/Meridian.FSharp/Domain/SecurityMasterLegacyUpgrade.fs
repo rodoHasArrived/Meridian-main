@@ -148,7 +148,7 @@ module SecurityMasterLegacyUpgrade =
                     Maturity =
                         Some {
                             EffectiveDate = None
-                            IssueDate = None
+                            IssueDate = terms.IssueDate
                             MaturityDate = Some terms.Maturity
                         }
                     Coupon =
@@ -161,9 +161,33 @@ module SecurityMasterLegacyUpgrade =
                                       | BondCouponStructure.InflationLinked _ -> CouponKind.OtherCoupon "InflationLinked"
                                       | _ -> CouponKind.Fixed)
                             CouponRate = BondTerms.couponRate terms
-                            PaymentFrequency = None
+                            PaymentFrequency = terms.PaymentFrequency
                             DayCount = BondTerms.dayCount terms |> mapDayCount
                         }
+                    // Call and issuer terms are carried like the other callable / issued classes
+                    // (deposits, CDs), so the economic definition holds what the bond record holds.
+                    Call =
+                        Some {
+                            IsCallable = terms.IsCallable
+                            FirstCallDate = terms.CallDate
+                            CallPrice = None
+                            CallSchedule = []
+                            MakeWholeSpreadBps = None
+                            IsPuttable = false
+                            PutSchedule = []
+                        }
+                    Issuer =
+                        terms.IssuerName
+                        |> Option.map (fun issuerName ->
+                            {
+                                IssuerName = Some issuerName
+                                InstitutionName = None
+                                IssuerProgram = None
+                                LeiCode = None
+                                UltimateParentName = None
+                                IssuerSector = None
+                                IssuerCountry = None
+                            })
                     StructuredProduct = structuredTerms
             }
         | SecurityKind.FxSpot _ ->

@@ -3,6 +3,8 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
+from tests.scripts.workflow_assertions import assert_pinned_action
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "ci.yml"
@@ -37,8 +39,12 @@ class CiWorkflowContractTests(unittest.TestCase):
         secret_block = self._job_block("secret-scan")
 
         self.assertNotIn("if: github.event_name != 'pull_request'", secret_block)
-        self.assertIn("gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e", secret_block)
-        self.assertIn('GITLEAKS_VERSION: "8.25.1"', secret_block)
+        gitleaks = assert_pinned_action(self, self.workflow, "secret-scan", "gitleaks/gitleaks-action")
+        self.assertEqual(gitleaks.get("env", {}).get("GITLEAKS_VERSION"), "8.25.1")
+        self.assertEqual(gitleaks.get("env", {}).get("GITLEAKS_CONFIG"), ".gitleaks.toml")
+        checkout = assert_pinned_action(self, self.workflow, "secret-scan", "actions/checkout")
+        self.assertEqual(checkout.get("with", {}).get("persist-credentials"), "false")
+        self.assertEqual(checkout.get("with", {}).get("fetch-depth"), "0")
 
 
 if __name__ == "__main__":

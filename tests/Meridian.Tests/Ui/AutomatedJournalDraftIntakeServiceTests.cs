@@ -19,6 +19,39 @@ public sealed class AutomatedJournalDraftIntakeServiceTests
     private static readonly DateTimeOffset AsOf = new(2026, 07, 01, 16, 0, 0, TimeSpan.Zero);
 
     [Fact]
+    public async Task IntakeAsync_DuplicateAfterAuditFailure_RepairsBeforeReportingReady()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-intake-recovery-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            var audit = new FileAccountingConfigurationStore(Path.Combine(root, "audit.json"));
+            var request = BuildRequest(DividendDeclaredEvent());
+            var broken = await CreateFixtureAsync(true, new FailingIntakeAudit(audit), root);
+            await Assert.ThrowsAsync<IOException>(() => broken.Intake.IntakeAsync(request));
+            (await broken.DraftStore.ListAsync(FundProfileId, BookId)).Should().ContainSingle();
+            var stillBroken = await CreateFixtureAsync(true, new FailingIntakeAudit(audit), root);
+            await Assert.ThrowsAsync<IOException>(() => stillBroken.Intake.IntakeAsync(request));
+            var restarted = await CreateFixtureAsync(true, audit, root);
+            var repaired = await restarted.Intake.IntakeAsync(request);
+            repaired.Created.Should().BeEmpty();
+            repaired.Skipped.Should().ContainSingle().Which.IsReadyDuplicate.Should().BeTrue();
+            await (await CreateFixtureAsync(true, audit, root)).Intake.IntakeAsync(request);
+            (await audit.ListAsync()).Should().ContainSingle(item => item.Action == "manual-je.save-draft");
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    private sealed class FailingIntakeAudit(IAccountingActionAuditStore inner) : IAccountingActionAuditStore
+    {
+        public Task AppendAsync(AccountingActionAuditEventDto item, CancellationToken ct = default)
+            => Task.FromException(new IOException("Injected audit outage."));
+        public Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(string? fundProfileId = null,
+            Guid? ledgerBookId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null)
+            => inner.ListAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId);
+    }
+
+    [Fact]
     public async Task IntakeAsync_DividendAndFeeEvents_LandInWorkbenchQueueAsDrafts()
     {
         var fixture = await CreateFixtureAsync(seedChart: true);
@@ -288,9 +321,9 @@ public sealed class AutomatedJournalDraftIntakeServiceTests
     private sealed record Fixture(
         AutomatedJournalDraftIntakeService Intake,
         IManualJournalEntryWorkbenchService Workbench,
-        InMemoryManualJournalEntryDraftStore DraftStore);
+        IManualJournalEntryDraftStore DraftStore);
 
-    private static async Task<Fixture> CreateFixtureAsync(bool seedChart)
+    private static async Task<Fixture> CreateFixtureAsync(bool seedChart, IAccountingActionAuditStore? audit = null, string? dataRoot = null)
     {
         var configurationStore = new InMemoryAccountingConfigurationStore();
         if (seedChart)
@@ -312,11 +345,13 @@ public sealed class AutomatedJournalDraftIntakeServiceTests
         var configurationService = new AccountingConfigurationService(
             configurationStore,
             new InMemoryAccountingActionAuditStore());
-        var draftStore = new InMemoryManualJournalEntryDraftStore();
+        IManualJournalEntryDraftStore draftStore = dataRoot is null
+            ? new InMemoryManualJournalEntryDraftStore()
+            : new FileManualJournalEntryDraftStore(Path.Combine(dataRoot, "drafts.json"));
         var workbench = new ManualJournalEntryWorkbenchService(
             draftStore,
             configurationService,
-            new InMemoryAccountingActionAuditStore());
+            audit ?? new InMemoryAccountingActionAuditStore());
         var intake = new AutomatedJournalDraftIntakeService(workbench, draftStore, configurationService);
         return new Fixture(intake, workbench, draftStore);
     }

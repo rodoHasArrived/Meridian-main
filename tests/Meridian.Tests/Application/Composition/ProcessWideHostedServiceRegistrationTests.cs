@@ -41,6 +41,9 @@ public sealed class ProcessWideHostedServiceRegistrationTests
     public async Task AddMarketDataServices_ProcessWideWorkersDisabled_OmitsOnlyProcessOwnedHostedServices()
     {
         using var environment = CompositionRegistrationTestEnvironment.Enable();
+        // Exercise every legacy worker when comparing process ownership; the strict-default cases
+        // below separately prove that workers without per-unit authority remain withheld.
+        environment.Set(TenantScopeEnforcementOptions.EnvironmentVariable, "deployment-boundary");
         using var artifacts = TestArtifactDirectory.Create(nameof(ProcessWideHostedServiceRegistrationTests));
         var configPath = WriteConfig(artifacts.RootPath);
 

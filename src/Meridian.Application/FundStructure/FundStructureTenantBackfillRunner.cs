@@ -7,10 +7,16 @@ namespace Meridian.Application.FundStructure;
 public sealed class FundStructureTenantBackfillRunner(IFundStructureTenantBackfillStore store)
 {
     public async Task<FundStructureTenantBackfillPlan> PreviewAsync(CancellationToken ct = default)
+        => await PreviewCoreAsync(false, ct).ConfigureAwait(false);
+
+    public async Task<FundStructureTenantBackfillPlan> PreviewResolutionAsync(CancellationToken ct = default)
+        => await PreviewCoreAsync(true, ct).ConfigureAwait(false);
+
+    private async Task<FundStructureTenantBackfillPlan> PreviewCoreAsync(bool resolveQuarantine, CancellationToken ct)
     {
         await using var session = await store.OpenSessionAsync(ct).ConfigureAwait(false);
         ct.ThrowIfCancellationRequested();
-        var plan = FundStructureTenantBackfillPlanner.Create(session.Snapshot);
+        var plan = FundStructureTenantBackfillPlanner.Create(session.Snapshot, resolveQuarantine);
         ct.ThrowIfCancellationRequested();
         return plan;
     }
@@ -18,6 +24,16 @@ public sealed class FundStructureTenantBackfillRunner(IFundStructureTenantBackfi
     public async Task<FundStructureTenantBackfillReceipt> ApplyAsync(
         Guid runId, string reviewedPlanHash, string operatorId, string reviewReference,
         CancellationToken ct = default)
+        => await ApplyCoreAsync(runId, reviewedPlanHash, operatorId, reviewReference, false, ct).ConfigureAwait(false);
+
+    public async Task<FundStructureTenantBackfillReceipt> ResolveAsync(
+        Guid runId, string reviewedPlanHash, string operatorId, string reviewReference,
+        CancellationToken ct = default)
+        => await ApplyCoreAsync(runId, reviewedPlanHash, operatorId, reviewReference, true, ct).ConfigureAwait(false);
+
+    private async Task<FundStructureTenantBackfillReceipt> ApplyCoreAsync(
+        Guid runId, string reviewedPlanHash, string operatorId, string reviewReference,
+        bool resolveQuarantine, CancellationToken ct)
     {
         if (runId == Guid.Empty)
             throw new ArgumentException("A retained run identity is required.", nameof(runId));
@@ -40,15 +56,15 @@ public sealed class FundStructureTenantBackfillRunner(IFundStructureTenantBackfi
 
         // The caller supplies only the reviewed fingerprint, never proposed tenant values. Rebuild
         // the complete plan from locked authoritative rows, rather than trusting a local JSON edit.
-        var current = FundStructureTenantBackfillPlanner.Create(session.Snapshot);
+        var current = FundStructureTenantBackfillPlanner.Create(session.Snapshot, resolveQuarantine);
         ct.ThrowIfCancellationRequested();
         if (!string.Equals(current.PlanHash, reviewedPlanHash, StringComparison.Ordinal))
             throw new InvalidOperationException("The reviewed plan is stale or belongs to another code/schema/source identity; preview again.");
         if (current.BlockingReasons.Count != 0)
             throw new InvalidOperationException("The plan contains unresolved structural or retained-review blockers.");
 
-        return await session.CommitAsync(runId, current.PlanHash, operatorId, reviewReference,
-            JsonSerializer.SerializeToElement(current), current.Stamps, current.Exceptions, ct).ConfigureAwait(false);
+        return await session.CommitReviewedAsync(runId, current.PlanHash, operatorId, reviewReference,
+            JsonSerializer.SerializeToElement(current), current.Stamps, current.Exceptions, current.Resolutions, ct).ConfigureAwait(false);
     }
     private static FundStructureTenantBackfillReceipt ValidateReceipt(
         FundStructureTenantBackfillReceipt retained, string planHash, string operatorId, string reviewReference)

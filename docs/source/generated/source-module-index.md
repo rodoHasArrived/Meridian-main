@@ -6,6 +6,7 @@ render_contract: meridian.generated-docs.v1
 schema_versions:
   - meridian.source-modules@1.0.0
 inputs:
+  - docs/source/data/adapter-readiness.yml
   - docs/source/data/diagram-index.yml
   - docs/source/data/source-modules.yml
   - docs/source/data/source-readme-coverage.yml

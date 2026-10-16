@@ -24,6 +24,12 @@ internal static class StatementValueParser
         }
 
         var trimmed = value.Trim();
+        if (string.Equals(profile.ProfileId, StatementMappingProfileRegistry.CanonicalCsvV1ProfileId, StringComparison.OrdinalIgnoreCase))
+        {
+            return decimal.TryParse(trimmed, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
+                CultureInfo.InvariantCulture, out result);
+        }
+
         var culture = ResolveCulture(profile);
         return decimal.TryParse(trimmed, DecimalStyles, culture, out result)
             || decimal.TryParse(trimmed, DecimalStyles, CultureInfo.InvariantCulture, out result);

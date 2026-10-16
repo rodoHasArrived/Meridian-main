@@ -89,6 +89,7 @@ public static class DailyPortfolioPricingProjector
             var scope = line.FinancialAccountId ?? line.Symbol;
             var dimensions = new LedgerLineDimensionSet(
                 FundId: input.Policy.FundId,
+                EntityId: input.EntityId,
                 InstrumentId: line.SecurityId,
                 AccountId: line.FinancialAccountId);
 

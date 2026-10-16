@@ -13,7 +13,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Implements Phase 1A.7 from the roadmap.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class MaintenanceEndpointTests : IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;

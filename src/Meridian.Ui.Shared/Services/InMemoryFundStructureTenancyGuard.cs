@@ -1,4 +1,5 @@
 using Meridian.Application.Composition;
+using Meridian.Application.Tenancy;
 using Meridian.Contracts.Services;
 using Meridian.Identity;
 using Microsoft.Extensions.Hosting;
@@ -7,8 +8,8 @@ using Microsoft.Extensions.Logging;
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
-/// Refuses multi-company deployments without both a partitioned fund-structure store and strict
-/// tenant reads (PRD-001 / W9-GOV-008 criterion 2).
+/// Refuses multi-company access to unpartitioned local fund structure unless a strict migration
+/// wrapper already refuses that capability (PRD-001 / W9-GOV-008 criterion 2).
 /// </summary>
 /// <remarks>
 /// <para><b>The decision this records.</b> When no fund-structure database is configured,
@@ -51,9 +52,11 @@ public sealed class InMemoryFundStructureTenancyGuard : IStartupRefusalGuard
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        // A partitioned store is necessary but not sufficient: the deployment-boundary read
-        // setting still admits unattributed data and tenantless callers.
-        if (_fundStructureService is not INonProductionOnlyService)
+        // A strict migration wrapper refuses every local operation before touching unpartitioned
+        // records, so it can leave server-backed workspaces available. Otherwise a partitioned
+        // store is necessary but not sufficient: boundary reads still admit unattributed data.
+        if (_fundStructureService is TenantGuardedLocalFundStructureService { RefusesUnattributedAccess: true }
+            || _fundStructureService is not INonProductionOnlyService)
         {
             try
             {

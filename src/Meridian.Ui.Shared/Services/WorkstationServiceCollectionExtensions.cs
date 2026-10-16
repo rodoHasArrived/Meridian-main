@@ -1,3 +1,6 @@
+using Meridian.FinancialOperations.Consolidation;
+using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 using Meridian.Application.Accounting;
 using Meridian.Application.Composition;
 using Meridian.Application.Config.Credentials;
@@ -33,6 +36,7 @@ using Meridian.Execution.Services;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
+using Meridian.FinancialOperations.Onboarding;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.FinancialOperations.Reconciliation;
@@ -77,11 +81,25 @@ namespace Meridian.Ui.Shared.Services;
 /// </summary>
 public static class WorkstationServiceCollectionExtensions
 {
-    public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services)
+    public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null)
     {
+        services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
+        services.TryAddSingleton<Meridian.Ui.Shared.Endpoints.ReplayScanLifetime>();
+        services.AddHostedService(sp => sp.GetRequiredService<Meridian.Ui.Shared.Endpoints.ReplayScanLifetime>());
         // Unified persistence config must resolve before the reporting/scoped-access
         // registrations below read the per-domain connection-string variables.
-        Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+        var configuration = hostConfiguration is null
+            ? CompositionConfiguration.Resolve(services)
+            : new CompositionConfiguration(hostConfiguration);
+        services.TryAddSingleton(configuration);
+        if (configuration.HostConfiguration is { } authenticationConfiguration)
+            services.TryAddSingleton(new AuthenticationConfiguration(authenticationConfiguration));
+        if (configuration.UsesEnvironment)
+            Meridian.Storage.MeridianDatabaseEnvironment.ApplyUnifiedDatabaseUrl();
+        services.TryAddSingleton<Meridian.Contracts.Api.IProviderCatalog>(sp =>
+            sp.GetService<ProviderRegistry>() is { } registry
+                ? new Meridian.Contracts.Api.RuntimeProviderCatalog(registry.GetProviderCatalog, registry.GetProviderCatalogEntry)
+                : new Meridian.Contracts.Api.RuntimeProviderCatalog());
         services.TryAddSingleton<ProviderDataReadModelService>();
         // Persisted evidence does not enable live IB access in a guidance/non-vendor build.
         services.TryAddSingleton<IBDurableResultStore>(sp =>
@@ -114,7 +132,8 @@ public static class WorkstationServiceCollectionExtensions
             var configStore = sp.GetRequiredService<ConfigStore>();
             var registry = sp.GetService<ProviderRegistry>();
             var factory = sp.GetService<ProviderFactory>();
-            return new BackfillCoordinator(configStore, registry, factory);
+            return new BackfillCoordinator(configStore, registry, factory,
+                providerCatalog: sp.GetService<Meridian.Contracts.Api.IProviderCatalog>());
         });
 
         services.AddHttpClient();
@@ -138,7 +157,7 @@ public static class WorkstationServiceCollectionExtensions
         // tighten the single-company migration posture, but cannot weaken the strict posture.
         services.TryAddSingleton(sp => new FundScopedWriteTenantOptions(
             Enforce: sp.GetRequiredService<Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions>().IsFailClosed || string.Equals(
-                Environment.GetEnvironmentVariable("MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED"),
+                configuration["MERIDIAN_FUND_SCOPED_WRITE_TENANT_REQUIRED"],
                 "true",
                 StringComparison.OrdinalIgnoreCase)));
         // W9-GOV-008 criterion 2: the fund-structure implementation with no tenant partition must not
@@ -152,7 +171,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IComplianceApprovalResolver>(sp =>
             sp.GetRequiredService<IComplianceApprovalStore>());
         services.TryAddSingleton<ICompliancePolicyEngine, CompliancePolicyEngine>();
-        if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")))
+        if (!string.IsNullOrWhiteSpace(configuration.GetConnectionString("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")))
         {
             var hasProcessWideScopedAccessMigration = services.Any(
                 static descriptor =>
@@ -163,8 +182,8 @@ public static class WorkstationServiceCollectionExtensions
                         StringComparison.Ordinal));
             services.TryAddSingleton(new ScopedAccessStoreOptions
             {
-                ConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")!,
-                Schema = Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_SCHEMA") ?? "identity_access"
+                ConnectionString = configuration.GetConnectionString("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")!,
+                Schema = configuration["MERIDIAN_SCOPED_ACCESS_SCHEMA"] ?? "identity_access"
             });
             services.TryAddSingleton<PostgresScopedAccessAssignmentStore>(sp =>
                 new PostgresScopedAccessAssignmentStore(
@@ -260,6 +279,11 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IFactorPaydownProjectionService, FactorPaydownProjectionService>();
         services.TryAddSingleton<IPortfolioCashBalanceProvider, PortfolioLedgerCashBalanceProvider>();
         services.TryAddSingleton<IPortfolioCashLadderQueryService, PortfolioCashLadderReadService>();
+        // Durable account forecast state is explicitly provisioned by operations, never on reads or capture.
+        services.TryAddSingleton<FileAccountCashForecastStore>(sp =>
+            new FileAccountCashForecastStore(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<IAccountCashForecastStore>(sp => sp.GetRequiredService<FileAccountCashForecastStore>());
+        services.TryAddSingleton<IAccountCashForecastService, AccountCashForecastService>();
         services.TryAddSingleton<ISecurityMasterOperationalReadinessService, SecurityMasterOperationalReadinessService>();
         services.TryAddSingleton<IMultiAssetCoverageReadService, MultiAssetCoverageReadService>();
         services.TryAddSingleton<LedgerReadService>();
@@ -277,7 +301,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<StrategyRunContinuityService>();
         services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();
 
-        services.TryAddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
+        services.TryAddSingleton(BrokerageConnectionOptions.RobinhoodFromConfiguration(configuration));
         services.TryAddSingleton<BrokerageConnectionService>();
         services.TryAddSingleton<AlpacaBrokerageConnectionService>();
         services.AddDefaultProviderSetupHandlers();
@@ -299,6 +323,11 @@ public static class WorkstationServiceCollectionExtensions
         services.AddSingleton<IAccountingSystemProvider>(sp => sp.GetRequiredService<XeroAccountingProvider>());
         services.AddSingleton<IAccountingSystemProvider>(sp => sp.GetRequiredService<NetSuiteAccountingProvider>());
         services.TryAddSingleton<AccountingSystemIntegrationService>();
+        services.TryAddSingleton<IOnboardingWorkspaceStore>(sp => new FileOnboardingWorkspaceStore(
+            Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "onboarding-workspaces.json")));
+        services.TryAddSingleton<OnboardingComparisonSource>();
+        services.TryAddSingleton<IOnboardingSourceProvider>(sp => sp.GetRequiredService<OnboardingComparisonSource>());
+        services.TryAddSingleton<OnboardingWorkspaceService>();
         services.TryAddSingleton<IAccountingMigrationRunArtifactStore>(sp =>
             new FileAccountingMigrationRunArtifactStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "migration-run-artifacts.json"),
@@ -326,7 +355,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<AccountingProductionReadinessService>();
         services.TryAddSingleton(ResolvePlaidOptions);
         services.TryAddSingleton<IPlaidConnectionRepository>(sp =>
-            new FilePlaidConnectionRepository(ResolveWorkstationDataDirectory(sp)));
+            new FilePlaidConnectionRepository(ResolveWorkstationDataDirectory(sp), sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IPlaidClient>(sp =>
             new PlaidHttpClient(sp.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(PlaidHttpClient))));
         services.TryAddSingleton<PlaidWorkstationService>();
@@ -336,8 +365,26 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<IFundAccountService>(),
             sp.GetServices<IEtlSourceReader>(),
             sp.GetService<IPlaidIngestionService>()));
-        services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
+        services.TryAddSingleton(sp => configuration.UsesEnvironment
+            ? BrokeragePortfolioSyncOptions.Default
+            : BrokeragePortfolioSyncOptions.Default with
+            {
+                RootDirectory = Path.Combine(ResolveWorkstationDataDirectory(sp), "brokerage-sync")
+            });
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
+        services.TryAddSingleton<BrokerageExecutionReconciliationService>();
+        services.TryAddSingleton(sp => new LiveBrokeragePortfolioSyncService(
+            () => sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>() as Meridian.Execution.Sdk.IBrokerageGateway,
+            sp.GetService<Meridian.Execution.Sdk.IOrderManager>,
+            sp.GetRequiredService<BrokerageExecutionReconciliationService>(),
+            sp.GetService<TimeProvider>()));
+        services.TryAddSingleton(sp =>
+        {
+            var gatewayId = sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>()?.GatewayId ?? "paper";
+            var gatewayPath = Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(gatewayId);
+            return new FileBrokerageOrderRecoveryStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "execution", gatewayPath, "broker-orders.json"), gatewayId);
+        });
         services.TryAddSingleton<ProviderLedgerReconciliationService>();
         services.TryAddSingleton(sp => new MarginCertificationStore(ResolveWorkstationDataDirectory(sp)));
         services.TryAddSingleton<MarginControlCenterReadService>();
@@ -371,8 +418,7 @@ public static class WorkstationServiceCollectionExtensions
 
         services.TryAddSingleton<ICashSyncOrchestrationService, CashSyncOrchestrationService>();
 
-        services.TryAddSingleton(Dk1TrustGateReadinessOptions.Default);
-        services.TryAddSingleton<Dk1TrustGateReadinessService>();
+        services.AddPromotionTrustEvidenceServices();
         services.TryAddSingleton<TradingOperatorReadinessService>();
         services.TryAddSingleton<ITradingOperatorReadinessProvider>(sp =>
             sp.GetRequiredService<TradingOperatorReadinessService>());
@@ -428,7 +474,8 @@ public static class WorkstationServiceCollectionExtensions
                 // against a price the market left hours ago.
                 paperMatchingIsAuthoritative: () =>
                     sp.GetService<Meridian.Execution.Interfaces.IOrderGateway>()
-                        is Meridian.Execution.Adapters.PaperTradingGateway));
+                        is Meridian.Execution.Adapters.PaperTradingGateway,
+                livePortfolioAccessor: sp.GetService<LiveBrokeragePortfolioSyncService>));
         // Governed-approval queue for escalated orders (severity outcome: Escalate parks).
         // Queue transitions persist atomically so parked approvals survive restarts.
         services.TryAddSingleton<RiskEscalationQueueService>(sp => new RiskEscalationQueueService(
@@ -485,6 +532,7 @@ public static class WorkstationServiceCollectionExtensions
             }
 
             var exposureProvider = sp.GetRequiredService<Meridian.Risk.IPortfolioExposureProvider>();
+            rules.Add(new Meridian.Risk.Rules.BrokeragePortfolioStateRule(exposureProvider));
             // Fat-finger runs ahead of the portfolio-aware rules (Priority -10) so a mistyped
             // order is attributed to the mistake rather than to whichever exposure ceiling its
             // inflated size happened to breach.
@@ -602,8 +650,8 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<InvestmentAccountingTransactionLabService>();
         services.TryAddSingleton<ReportPackValidationService>();
-        var reportingConnectionString = Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_CONNECTION_STRING")
-            ?? Environment.GetEnvironmentVariable("MERIDIAN_LEDGER_CONNECTION_STRING");
+        var reportingConnectionString = configuration["MERIDIAN_REPORTING_CONNECTION_STRING"]
+            ?? configuration.GetConnectionString("MERIDIAN_LEDGER_CONNECTION_STRING");
         if (isProductionComposition && string.IsNullOrWhiteSpace(reportingConnectionString))
         {
             throw new InvalidOperationException(
@@ -617,7 +665,7 @@ public static class WorkstationServiceCollectionExtensions
             services.TryAddSingleton(new ReportingArtifactStoreOptions
             {
                 ConnectionString = reportingConnectionString,
-                Schema = Environment.GetEnvironmentVariable("MERIDIAN_REPORTING_SCHEMA") ?? "reporting"
+                Schema = configuration["MERIDIAN_REPORTING_SCHEMA"] ?? "reporting"
             });
             services.TryAddSingleton<ReportingMigrationRunner>();
             services.TryAddSingleton<IReportingMigrationStartup, ReportingMigrationStartup>();
@@ -648,6 +696,9 @@ public static class WorkstationServiceCollectionExtensions
             services.TryAddSingleton<IReportingGovernanceRepository>(sp =>
                 new PostgresReportingGovernanceRepository(
                     sp.GetRequiredService<ReportingArtifactStoreOptions>()));
+            // Retained comparisons require both the durable artifact store and governance graph.
+            // Local hosts still start without Reporting authority; readiness-gated routes stay unavailable.
+            services.TryAddSingleton<ReportingIncomeComparisonService>();
             services.TryAddSingleton<PostgresReportingReleaseConsistencyGate>(sp =>
                 new PostgresReportingReleaseConsistencyGate(
                     sp.GetRequiredService<ReportingArtifactStoreOptions>()));
@@ -851,6 +902,12 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
         services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
+        services.TryAddSingleton<IAccountingClosePreparationService>(sp => new AccountingClosePreparationService(
+            sp.GetRequiredService<IAccountingCloseManagementService>(),
+            sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
+            sp.GetRequiredService<ILedgerBookService>(),
+            sp.GetRequiredService<ILedgerJournalStore>(),
+            new StorageOptions { RootPath = ResolveWorkstationDataDirectory(sp) }));
         services.TryAddSingleton<IAccountingReportPackageService, AccountingReportPackageService>();
         services.TryAddSingleton<IAutomatedJournalCapitalAccountReconciliationResolver>(sp =>
             new LedgerCapitalAccountReconciliationResolver(
@@ -920,6 +977,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json")));
+        services.TryAddSingleton<IManualJournalMutationRecoveryStore>(sp =>
+            new FileManualJournalMutationRecoveryStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json.mutations")));
         services.TryAddSingleton<FileDailyValuationPortfolioSource>(sp =>
             new FileDailyValuationPortfolioSource(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "daily-valuation-schedules.json")));
@@ -951,6 +1011,25 @@ public static class WorkstationServiceCollectionExtensions
             new PositionSnapshotAutomatedJournalDividendPositionResolver(
                 sp.GetService<IPositionSnapshotStore>()));
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
+        services.TryAddSingleton<ConsolidationService>(sp =>
+            sp.GetService<IFundStructureService>() is PostgresFundStructureService structure &&
+            sp.GetService<ILedgerJournalStore>() is PostgresLedgerJournalStore ledger &&
+            sp.GetService<IAccountingPolicyService>() is { } policy &&
+            sp.GetService<IAccountingJournalDraftService>() is { } journalDrafts
+                ? new ConsolidationService(new ConsolidationPerimeterResolver(structure), ledger, policy, journalDrafts)
+                : null!);
+        services.TryAddSingleton<IConsolidationDraftGuard>(sp => sp.GetService<ConsolidationService>()!);
+        services.TryAddSingleton<IConsolidationPostingAuthority>(sp =>
+            sp.GetService<ConsolidationService>() is { } consolidation &&
+            sp.GetService<Meridian.Storage.FundStructure.IFundStructureStore>() is
+                Meridian.Storage.FundStructure.PostgresFundStructureStore structure &&
+            sp.GetService<IAccountingPolicyService>() is { } policies
+                ? new PostgresConsolidationPostingAuthority(consolidation, structure, policies) : null!);
+        services.TryAddSingleton<ConsolidationWorkbenchService>(sp =>
+            sp.GetService<ConsolidationService>() is { } consolidation &&
+            sp.GetService<IManualJournalEntryWorkbenchService>() is ManualJournalEntryWorkbenchService workbench
+                ? new ConsolidationWorkbenchService(consolidation, sp.GetRequiredService<IManualJournalEntryDraftStore>(),
+                    workbench, sp.GetRequiredService<IAccountingConfigurationService>()) : null!);
         services.TryAddSingleton<IManualJournalEntryWorkbenchService>(sp =>
             new ManualJournalEntryWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryDraftStore>(),
@@ -960,7 +1039,10 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<ReportPackWorkflowService>(),
                 sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>(),
-                sp.GetService<IGovernedLedgerPostingTarget>()));
+                sp.GetService<IGovernedLedgerPostingTarget>(),
+                sp.GetRequiredService<IManualJournalMutationRecoveryStore>(),
+                sp.GetRequiredService<Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore>(),
+                sp.GetService<IConsolidationDraftGuard>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<DailyValuationBatchLifecycleService>();
@@ -1010,6 +1092,15 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<DailyValuationScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());
+        services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore>(sp =>
+            new Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "recurring-journals")));
+        services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.IRecurringJournalStore>(sp =>
+            sp.GetRequiredService<Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore>());
+        services.TryAddSingleton<IRecurringJournalSubjectAuthority, RecurringJournalSubjectAuthority>();
+        services.TryAddSingleton<IRecurringJournalPeriodAuthority, RecurringJournalPeriodAuthority>();
+        services.TryAddSingleton<RecurringJournalRunner>();
+        services.TryAddSingleton<IRecurringJournalQueueSource>(sp => sp.GetRequiredService<RecurringJournalRunner>());
         services.TryAddSingleton<AutomatedJournalScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, AutomatedJournalSchedulerHostedService>());
@@ -1143,21 +1234,24 @@ public static class WorkstationServiceCollectionExtensions
     private static PlaidOptions ResolvePlaidOptions(IServiceProvider sp)
     {
         var configuration = sp.GetService<IConfiguration>();
-        var section = configuration?.GetSection("Plaid");
+        var hostConfiguration = sp.GetService<CompositionConfiguration>() ?? new CompositionConfiguration();
+        string? ReadSection(string name) => hostConfiguration.UsesEnvironment
+            ? configuration?["Plaid:" + name]
+            : hostConfiguration["Plaid:" + name];
         var environment = ParsePlaidEnvironment(
-            section?["Environment"] ??
-            Environment.GetEnvironmentVariable("PLAID_ENV") ??
-            Environment.GetEnvironmentVariable("PLAID_ENVIRONMENT"));
-        var products = ParsePlaidProducts(section?["DefaultProducts"]);
+            ReadSection("Environment") ??
+            hostConfiguration["PLAID_ENV"] ??
+            hostConfiguration["PLAID_ENVIRONMENT"]);
+        var products = ParsePlaidProducts(ReadSection("DefaultProducts"));
         return new PlaidOptions(
             Environment: environment,
-            ClientId: section?["ClientId"] ?? Environment.GetEnvironmentVariable("PLAID_CLIENT_ID"),
-            Secret: section?["Secret"] ?? Environment.GetEnvironmentVariable("PLAID_SECRET"),
-            WebhookBaseUrl: section?["WebhookBaseUrl"] ?? Environment.GetEnvironmentVariable("PLAID_WEBHOOK_BASE_URL"),
-            EnableTransfers: ParseBoolean(section?["EnableTransfers"]) || ParseBoolean(Environment.GetEnvironmentVariable("PLAID_ENABLE_TRANSFERS")),
-            EnableInvestments: !ParseBoolean(section?["DisableInvestments"]) && !ParseBoolean(Environment.GetEnvironmentVariable("PLAID_DISABLE_INVESTMENTS")),
+            ClientId: ReadSection("ClientId") ?? hostConfiguration["PLAID_CLIENT_ID"],
+            Secret: ReadSection("Secret") ?? hostConfiguration["PLAID_SECRET"],
+            WebhookBaseUrl: ReadSection("WebhookBaseUrl") ?? hostConfiguration["PLAID_WEBHOOK_BASE_URL"],
+            EnableTransfers: ParseBoolean(ReadSection("EnableTransfers")) || ParseBoolean(hostConfiguration["PLAID_ENABLE_TRANSFERS"]),
+            EnableInvestments: !ParseBoolean(ReadSection("DisableInvestments")) && !ParseBoolean(hostConfiguration["PLAID_DISABLE_INVESTMENTS"]),
             DefaultProducts: products.Length == 0 ? PlaidOptions.Default.DefaultProducts : products,
-            EnableLiveTransfers: ParseBoolean(section?["EnableLiveTransfers"]) || ParseBoolean(Environment.GetEnvironmentVariable("PLAID_ENABLE_LIVE_TRANSFERS")));
+            EnableLiveTransfers: ParseBoolean(ReadSection("EnableLiveTransfers")) || ParseBoolean(hostConfiguration["PLAID_ENABLE_LIVE_TRANSFERS"]));
     }
 
     private static PlaidEnvironmentDto ParsePlaidEnvironment(string? value)

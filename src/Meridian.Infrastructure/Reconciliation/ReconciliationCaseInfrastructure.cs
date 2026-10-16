@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Domain.Reconciliation;
-using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 using Meridian.Contracts.Integrity;
 
 namespace Meridian.Infrastructure.Reconciliation;
@@ -51,6 +51,7 @@ public interface IReconciliationCaseStore
 
 public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
 {
+    private readonly IAtomicFileWriter _atomicFileWriter;
     private readonly string _folder;
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly JsonSerializerOptions _jsonOptions = new()
@@ -67,8 +68,9 @@ public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
         }
     };
 
-    public JsonReconciliationCaseStore(string dataRoot)
+    public JsonReconciliationCaseStore(string dataRoot, IAtomicFileWriter atomicFileWriter)
     {
+        _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         _folder = Path.Combine(dataRoot, "reconciliation", "cases");
     }
@@ -78,7 +80,7 @@ public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
         ArgumentNullException.ThrowIfNull(reconciliationCase);
         ct.ThrowIfCancellationRequested();
         Directory.CreateDirectory(_folder);
-        await AtomicFileWriter
+        await _atomicFileWriter
             .WriteAsync(CasePath(reconciliationCase.CaseId), JsonSerializer.Serialize(reconciliationCase, _jsonOptions), ct)
             .ConfigureAwait(false);
         await AppendAuditAsync(reconciliationCase, ct).ConfigureAwait(false);
@@ -168,7 +170,7 @@ public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
 
             if (!alreadyApplied)
             {
-                await AtomicFileWriter
+                await _atomicFileWriter
                     .WriteAsync(
                         casePath,
                         JsonSerializer.Serialize(
@@ -248,7 +250,7 @@ public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
 
             if (retained is null || !SameArtifact(retained, authoritativeCase))
             {
-                await AtomicFileWriter
+                await _atomicFileWriter
                     .WriteAsync(
                         casePath,
                         JsonSerializer.Serialize(
@@ -260,7 +262,7 @@ public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
 
             if (retainedAudit is null)
             {
-                await AtomicFileWriter
+                await _atomicFileWriter
                     .WriteAsync(
                         auditPath,
                         JsonSerializer.Serialize(
@@ -409,7 +411,7 @@ public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
             return;
         }
 
-        await AtomicFileWriter
+        await _atomicFileWriter
             .WriteAsync(
                 auditPath,
                 JsonSerializer.Serialize(
@@ -531,7 +533,7 @@ public sealed class JsonReconciliationCaseStore : IReconciliationCaseStore
             reconciliationCase.LastUpdatedAtUtc,
             reconciliationCase.LastUpdatedBy,
             latestHistory);
-        await AtomicFileWriter
+        await _atomicFileWriter
             .AppendLinesAsync(auditPath, [JsonSerializer.Serialize(record, _auditJsonOptions)], ct)
             .ConfigureAwait(false);
     }

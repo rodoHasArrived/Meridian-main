@@ -15,6 +15,16 @@ namespace Meridian.Application.FundStructure;
 /// </remarks>
 public sealed partial class PostgresFundStructureService
 {
+    private string? ResolveMutationTenant()
+    {
+        var tenant = _tenantAccessor?.ResolveCallerTenant();
+        if (!_tenantScope.IsFailClosed)
+            return null;
+        if (string.IsNullOrWhiteSpace(tenant) || tenant.Trim().Equals("all", StringComparison.OrdinalIgnoreCase))
+            throw new FundStructureTenantScopeException("A tenant-scoped session is required to change the fund structure.");
+        return tenant.Trim();
+    }
+
     /// <summary>
     /// Restricts the loaded snapshot to what the calling session's tenant may see (W9-GOV-008
     /// criterion 2).

@@ -49,4 +49,7 @@ public enum AutomatedJournalEventKind
 
     /// <summary>Default interest accrued on an unfunded capital call past its grace period.</summary>
     CapitalCallDefaultInterestAccrued,
+
+    /// <summary>Occurrence of a retained versioned recurring journal template.</summary>
+    RecurringTemplate,
 }

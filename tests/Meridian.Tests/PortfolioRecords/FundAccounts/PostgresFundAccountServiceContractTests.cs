@@ -160,4 +160,37 @@ public sealed class PostgresFundAccountServiceContractTests : FundAccountService
 
     [FundAccountDatabaseFact]
     public Task RecordMarginSnapshotAsync_PreCancelledToken_ThrowsOperationCanceled() => RecordMarginSnapshotAsync_PreCancelledToken_ThrowsOperationCanceled_Core();
+
+    [FundAccountDatabaseFact]
+    public Task RecordBalanceSnapshotAsync_PreservesAccountFundOwnership() => RecordBalanceSnapshotAsync_PreservesAccountFundOwnership_Core();
+
+    [FundAccountDatabaseFact]
+    public Task ClosedAccount_ExplicitBackfillRecordsHistoricalEvidence() => ClosedAccount_ExplicitBackfillRecordsHistoricalEvidence_Core();
+
+    [FundAccountDatabaseFact]
+    public Task IngestCustodianStatementAsync_InvalidLineLineageRejectsEntireBatch() => IngestCustodianStatementAsync_InvalidLineLineageRejectsEntireBatch_Core();
+
+    [FundAccountDatabaseFact]
+    public Task IngestBankStatementAsync_InvalidLineLineageRejectsEntireBatch() => IngestBankStatementAsync_InvalidLineLineageRejectsEntireBatch_Core();
+
+    [FundAccountDatabaseFact]
+    public Task ReconcileAccountAsync_ForeignCurrencySyncCannotVerifyOrBreakCashContinuity() => ReconcileAccountAsync_ForeignCurrencySyncCannotVerifyOrBreakCashContinuity_Core();
+
+    [FundAccountDatabaseFact]
+    public Task ReconcileAccountAsync_UsesLatestSyncInInternalSnapshotCurrency() => ReconcileAccountAsync_UsesLatestSyncInInternalSnapshotCurrency_Core();
+
+    [FundAccountDatabaseFact]
+    public Task GetReadinessAsync_UnavailableAccountCannotBeReady() => GetReadinessAsync_UnavailableAccountCannotBeReady_Core();
+
+    [FundAccountDatabaseFact]
+    public Task GetReadinessAsync_IncompleteSyncCannotBeReady() => GetReadinessAsync_IncompleteSyncCannotBeReady_Core();
+
+    [FundAccountDatabaseFact]
+    public Task GetReadinessAsync_UnavailableProviderSyncCannotBeReady() => GetReadinessAsync_UnavailableProviderSyncCannotBeReady_Core();
+
+    [FundAccountDatabaseFact]
+    public Task RecordMarginSnapshotAsync_SameCorrelationCorrectedEffectiveTime_PreservesIdentity() => RecordMarginSnapshotAsync_SameCorrelationCorrectedEffectiveTime_PreservesIdentity_Core();
+
+    [FundAccountDatabaseFact]
+    public Task RecordMarginSnapshotAsync_CorrectedEffectiveTimeAlreadyOccupied_RejectsWithoutReplacing() => RecordMarginSnapshotAsync_CorrectedEffectiveTimeAlreadyOccupied_RejectsWithoutReplacing_Core();
 }

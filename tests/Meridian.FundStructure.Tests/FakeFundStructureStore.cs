@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Tenancy;
 using Meridian.Storage.FundStructure;
 
 namespace Meridian.FundStructure.Tests;
@@ -156,6 +157,22 @@ public sealed class FakeFundStructureStore : IFundStructureStore
         }
     }
 
+    public Task UpsertOwnershipLinkAsync(OwnershipLinkDto dto, string? tenantId, CancellationToken ct)
+    {
+        lock (_links)
+        {
+            if (!string.IsNullOrEmpty(tenantId))
+            {
+                if (_links.Any(link => link.OwnershipLinkId == dto.OwnershipLinkId) &&
+                    (!_nodeTenants.TryGetValue(dto.OwnershipLinkId, out var retainedTenant) ||
+                     !string.Equals(retainedTenant.Trim(), tenantId.Trim(), StringComparison.OrdinalIgnoreCase)))
+                    throw new TenantScopeRejectedException("a fund-structure link outside the caller's tenant");
+                _nodeTenants[dto.OwnershipLinkId] = tenantId;
+            }
+            return UpsertOwnershipLinkAsync(dto, ct);
+        }
+    }
+
     public Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, CancellationToken ct = default)
     {
         lock (_assignments)
@@ -172,6 +189,22 @@ public sealed class FakeFundStructureStore : IFundStructureStore
         lock (_assignments)
         {
             return Task.FromResult<IReadOnlyList<FundStructureAssignmentDto>>([.. _assignments]);
+        }
+    }
+
+    public Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, string? tenantId, CancellationToken ct)
+    {
+        lock (_assignments)
+        {
+            if (!string.IsNullOrEmpty(tenantId))
+            {
+                if (_assignments.Any(assignment => assignment.AssignmentId == dto.AssignmentId) &&
+                    (!_nodeTenants.TryGetValue(dto.AssignmentId, out var retainedTenant) ||
+                     !string.Equals(retainedTenant.Trim(), tenantId.Trim(), StringComparison.OrdinalIgnoreCase)))
+                    throw new TenantScopeRejectedException("a fund-structure assignment outside the caller's tenant");
+                _nodeTenants[dto.AssignmentId] = tenantId;
+            }
+            return UpsertAssignmentAsync(dto, ct);
         }
     }
 

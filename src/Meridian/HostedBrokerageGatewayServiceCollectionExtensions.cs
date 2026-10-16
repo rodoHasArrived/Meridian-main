@@ -1,3 +1,5 @@
+using Meridian.Storage.Archival;
+using Meridian.Core.IO;
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Alpaca;
@@ -17,12 +19,13 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
 {
     internal static IServiceCollection AddHostedBrokerageGateways(this IServiceCollection services)
     {
+        services.TryAddSingleton<IAtomicFileWriter, AtomicFileWriterAdapter>();
         services.TryAddSingleton<AlpacaTradeUpdatesClient>(sp =>
         {
             var options = sp.GetService<Meridian.Core.Config.AlpacaOptions>()
                 ?? new Meridian.Core.Config.AlpacaOptions();
             var logger = sp.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>();
-            return new AlpacaTradeUpdatesClient(options, logger);
+            return new AlpacaTradeUpdatesClient(options, logger, sp.GetRequiredService<IAtomicFileWriter>());
         });
         services.TryAddSingleton<AlpacaBrokerageGateway>(sp =>
         {

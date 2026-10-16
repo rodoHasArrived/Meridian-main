@@ -42,6 +42,15 @@ internal static class FundAccountsStartup
             return;
         }
 
+        await EnsureRegisteredDatabaseReadyAsync(serviceProvider, cancellationToken, logger).ConfigureAwait(false);
+    }
+
+    internal static async Task EnsureRegisteredDatabaseReadyAsync(
+        IServiceProvider serviceProvider,
+        CancellationToken cancellationToken,
+        ILogger? logger)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
         var options = serviceProvider.GetRequiredService<FundAccountStoreOptions>();
         var readiness = serviceProvider.GetRequiredService<DatabaseMigrationReadinessReceipt>();
         var runner = new FundAccountMigrationRunner(options);

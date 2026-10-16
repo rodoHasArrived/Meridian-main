@@ -115,7 +115,7 @@ public sealed class StatementColumnConfidenceScorerTests
     public void ScoreProfile_CanonicalHeaderRanksCanonicalProfileHighest()
     {
         string[] canonicalHeader =
-            ["account", "symbol", "quantity", "price", "cashAmount", "activityType", "tradeDate"];
+            ["account", "symbol", "quantity", "price", "cashAmount", "activityType", "tradeDate", "currency"];
         var sampleBroker = StatementBuiltInProfiles.All.Single(profile =>
             profile.ProfileId == StatementMappingProfileRegistry.SampleBrokerCsvV1ProfileId);
 

@@ -18,6 +18,9 @@ import sys
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "build" / "scripts" / "docs"))
+from common import load_data
+
 CANONICAL_ROADMAP_SCHEMA_ID = "meridian.roadmap-items"
 CANONICAL_ROADMAP_VALIDATOR = Path("build/scripts/docs/validate-roadmap-registry.py")
 SHA_PATTERN = re.compile(r"^[0-9a-fA-F]{7,40}$")
@@ -30,158 +33,6 @@ CANONICAL = {
 }
 REQUIRED_FIELDS = {"id", "title", "owner", "status", "health", "priority", "evidence_posture", "completion_term", "exit_criteria", "links", "created_at", "last_updated"}
 ALLOWED_FIELDS = REQUIRED_FIELDS | {"title", "summary", "exit_criteria", "links", "evidence", "created_at", "target_date", "notes", "extensions"}
-
-
-def _try_import_yaml() -> Any:
-    try:
-        import yaml  # type: ignore[import-untyped]
-
-        return yaml
-    except ImportError:
-        return None
-
-
-def _strip_yaml_quotes(value: str) -> str:
-    value = value.strip()
-    if len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'"):
-        return value[1:-1]
-    return value
-
-
-def _parse_yaml_value(raw: str) -> Any:
-    stripped = raw.strip()
-    if stripped in ("[]",):
-        return []
-    if stripped in ("{}",):
-        return {}
-    if stripped in ("~", "null", ""):
-        return None
-    if stripped in ("true", "True", "yes", "Yes", "on", "On"):
-        return True
-    if stripped in ("false", "False", "no", "No", "off", "Off"):
-        return False
-    try:
-        return int(stripped)
-    except ValueError:
-        pass
-    try:
-        return float(stripped)
-    except ValueError:
-        pass
-    return _strip_yaml_quotes(stripped)
-
-
-def _indent_level(line: str) -> int:
-    return len(line) - len(line.lstrip(" "))
-
-
-def _minimal_yaml_load(text: str) -> Any:
-    return _parse_block(text.splitlines(), 0)[0]
-
-
-def _parse_block(lines: list[str], idx: int) -> tuple[Any, int]:
-    while idx < len(lines) and (lines[idx].strip() == "" or lines[idx].strip().startswith("#")):
-        idx += 1
-    if idx >= len(lines):
-        return None, idx
-
-    stripped = lines[idx].lstrip(" ")
-    if stripped.startswith("- "):
-        return _parse_sequence(lines, idx, _indent_level(lines[idx]))
-    if ":" in stripped:
-        return _parse_mapping(lines, idx, _indent_level(lines[idx]))
-    return _parse_yaml_value(stripped), idx + 1
-
-
-def _parse_sequence(lines: list[str], idx: int, base_indent: int) -> tuple[list[Any], int]:
-    items: list[Any] = []
-    while idx < len(lines):
-        raw = lines[idx]
-        stripped = raw.strip()
-        if stripped == "" or stripped.startswith("#"):
-            idx += 1
-            continue
-
-        indent = _indent_level(raw)
-        if indent < base_indent or not raw.lstrip(" ").startswith("- "):
-            break
-
-        content = raw.lstrip(" ")[2:].strip()
-        if content == "":
-            sequence_item, idx = _parse_block(lines, idx + 1)
-            items.append(sequence_item)
-            continue
-
-        if ":" in content:
-            key, value = content.split(":", 1)
-            key = key.strip()
-            value = value.strip()
-            mapping_item: dict[str, Any] = {}
-            if value:
-                mapping_item[key] = _parse_yaml_value(value)
-                idx += 1
-            else:
-                nested, idx = _parse_block(lines, idx + 1)
-                mapping_item[key] = nested
-            while idx < len(lines):
-                child = lines[idx]
-                child_stripped = child.strip()
-                if child_stripped == "" or child_stripped.startswith("#"):
-                    idx += 1
-                    continue
-                child_indent = _indent_level(child)
-                if child_indent <= indent:
-                    break
-                if ":" not in child.lstrip(" "):
-                    break
-                child_key, child_value = child.lstrip(" ").split(":", 1)
-                child_key = child_key.strip()
-                child_value = child_value.strip()
-                if child_value:
-                    mapping_item[child_key] = _parse_yaml_value(child_value)
-                    idx += 1
-                else:
-                    nested, idx = _parse_block(lines, idx + 1)
-                    mapping_item[child_key] = nested
-            items.append(mapping_item)
-            continue
-
-        items.append(_parse_yaml_value(content))
-        idx += 1
-
-    return items, idx
-
-
-def _parse_mapping(lines: list[str], idx: int, base_indent: int) -> tuple[dict[str, Any], int]:
-    mapping: dict[str, Any] = {}
-    while idx < len(lines):
-        raw = lines[idx]
-        stripped = raw.strip()
-        if stripped == "" or stripped.startswith("#"):
-            idx += 1
-            continue
-
-        indent = _indent_level(raw)
-        if indent < base_indent:
-            break
-        if indent > base_indent:
-            raise ValueError(f"Unexpected indentation at line: {raw}")
-
-        if ":" not in raw.lstrip(" "):
-            break
-
-        key, value = raw.lstrip(" ").split(":", 1)
-        key = key.strip()
-        value = value.strip()
-        if value:
-            mapping[key] = _parse_yaml_value(value)
-            idx += 1
-            continue
-
-        nested, idx = _parse_block(lines, idx + 1)
-        mapping[key] = nested
-
-    return mapping, idx
 
 
 def parse_args() -> argparse.Namespace:
@@ -198,23 +49,9 @@ def parse_args() -> argparse.Namespace:
 
 
 def load_yaml(path: Path) -> dict[str, Any]:
-    with path.open("r", encoding="utf-8") as handle:
-        text = handle.read()
-
-    yaml_module = _try_import_yaml()
-    if yaml_module is not None:
-        try:
-            payload = yaml_module.safe_load(text)
-        except yaml_module.YAMLError:
-            fallback_payload = _minimal_yaml_load(text)
-            if not _is_canonical_roadmap_registry(fallback_payload):
-                raise
-            payload = fallback_payload
-    else:
-        payload = _minimal_yaml_load(text)
-    payload = payload or {}
+    payload = load_data(path)
     if not isinstance(payload, dict):
-        raise ValueError("Top-level roadmap payload must be a mapping/object.")
+        raise ValueError(f"{path}: top-level roadmap payload must be a mapping/object.")
     return payload
 
 

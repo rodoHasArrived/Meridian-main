@@ -504,17 +504,33 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var chartByPath = BuildChartByPath(configuration.ChartOfAccounts);
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         var lines = new List<ManualJournalEntryLineDto>(draft.Lines.Count);
+        if (draft.RequiresRecurringJournalEvidence || draft.RecurringJournalEvidenceJson is not null ||
+            RecurringJournalEvidenceGuard.IsRecurring(draft.TreasuryContext?.IdempotencyKey))
+        {
+            var recurringReason = RecurringJournalEvidenceGuard.Validate(draft);
+            if (_journalStore is null || !Guid.TryParse(draft.PeriodId, out _))
+                recurringReason ??= "Authoritative durable period state is unavailable for this recurring draft.";
+            if (recurringReason is not null)
+                issues.Add(Issue("manual-je.recurring-source-required",
+                    AccountingConfigurationValidationSeverityDto.Critical, recurringReason, "recurringJournalEvidence",
+                    "Restore the retained source evidence and accounting scope before human approval."));
+        }
         if (draft.RequiresValuationMarkEvidence || ValuationMarkEvidenceGuard.IsValuation(draft.TreasuryContext?.IdempotencyKey) ||
             draft.ValuationMarkEvidenceJson is not null)
         {
             var positions = draft.Lines.Where(static line => line.SecurityId.HasValue ||
                 !string.IsNullOrWhiteSpace(line.LedgerAccountSymbol)).ToArray();
             var reason = positions.Length == 0 ? "Valuation has no identified position lines." : null;
+            if (draft.Lines.Any(line => !string.Equals(
+                    (line.Dimensions?.EntityId ?? line.EntityId ?? draft.EntityId)?.Trim() ?? "",
+                    draft.EntityId?.Trim() ?? "", StringComparison.OrdinalIgnoreCase)))
+                reason ??= "Valuation journal dimensions do not match the retained entity scope.";
             foreach (var position in positions)
             {
                 reason ??= ValuationMarkEvidenceGuard.Validate(draft.ValuationMarkEvidenceJson,
                     fundProfileId, draft.AccountingDate, position.SecurityId,
-                    position.LedgerAccountFinancialAccountId, position.LedgerAccountSymbol, draft.ValuationMarkEvidenceDigest);
+                    position.LedgerAccountFinancialAccountId, position.LedgerAccountSymbol, draft.ValuationMarkEvidenceDigest,
+                    draft.EntityId);
             }
             if (reason is not null)
                 issues.Add(Issue("manual-je.valuation-mark-review-required",
@@ -574,7 +590,10 @@ public sealed partial class ManualJournalEntryWorkbenchService
             issues.Add(Issue("manual-je.lines-minimum", AccountingConfigurationValidationSeverityDto.Critical, "At least two journal lines are required for approval submission.", "lines", "Add debit and credit lines."));
         }
 
-        ValidateRequiredDimensions(headerDimensions, allowIncomplete, "manual-je.dimensions", issues);
+        // Consolidation spans two posting entities. Its guarded source lines retain each
+        // legal entity; assigning either entity (or the fund root) to the header is misleading.
+        ValidateRequiredDimensions(headerDimensions, allowIncomplete, "manual-je.dimensions", issues,
+            requireEntity: !IsConsolidationDraft(draft));
 
         if (!allowIncomplete && evidenceLinks.Count == 0)
         {
@@ -835,35 +854,6 @@ public sealed partial class ManualJournalEntryWorkbenchService
             "fair-value|",
             StringComparison.OrdinalIgnoreCase) == true;
 
-    private async Task AppendAuditAsync(
-        ManualJournalEntryDraftDto draft,
-        string action,
-        string actor,
-        string? correlationId,
-        IReadOnlyList<string> evidenceLinks,
-        IReadOnlyList<string>? reportGroupPrincipalIds,
-        CancellationToken ct)
-    {
-        var hash = Hash(draft);
-        await _auditStore.AppendAsync(
-            new AccountingActionAuditEventDto(
-                Guid.NewGuid(),
-                DateTimeOffset.UtcNow,
-                RequireText(actor, nameof(actor)),
-                action,
-                draft.FundProfileId,
-                draft.LedgerBookId,
-                NormalizeOptional(correlationId),
-                hash,
-                hash,
-                draft.ValidationIssues,
-                evidenceLinks,
-                draft.CompanyId,
-                NormalizePrincipalIds(reportGroupPrincipalIds),
-                draft.TenantId),
-            ct).ConfigureAwait(false);
-    }
-
     private static AccountingConfigurationValidationIssueDto Issue(
         string code,
         AccountingConfigurationValidationSeverityDto severity,
@@ -1007,7 +997,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
         LedgerDimensionSetDto? dimensions,
         bool allowIncomplete,
         string targetId,
-        List<AccountingConfigurationValidationIssueDto> issues)
+        List<AccountingConfigurationValidationIssueDto> issues,
+        bool requireEntity = true)
     {
         var severity = allowIncomplete
             ? AccountingConfigurationValidationSeverityDto.Warning
@@ -1022,7 +1013,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 "Attach the fund dimension before approval submission."));
         }
 
-        if (string.IsNullOrWhiteSpace(dimensions?.EntityId))
+        if (requireEntity && string.IsNullOrWhiteSpace(dimensions?.EntityId))
         {
             issues.Add(Issue(
                 "manual-je.dimension-entity-missing",

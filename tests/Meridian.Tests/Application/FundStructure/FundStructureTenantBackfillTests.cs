@@ -136,6 +136,122 @@ public sealed class FundStructureTenantBackfillTests
     }
 
     [Fact]
+    public async Task Resolve_NewlyDerivableQuarantine_RequiresItsOwnReviewedPlanAndRetainsRelease()
+    {
+        var snapshot = MakeSnapshot();
+        var node = snapshot.Rows.Single(row => row.Kind == "Fund");
+        var store = new MemoryStore(snapshot with
+        {
+            RetainedQuarantine = [JsonSerializer.SerializeToElement(new { node_id = node.Id, resolved_at_utc = (string?)null })]
+        });
+        var runner = new FundStructureTenantBackfillRunner(store);
+        var ordinary = await runner.PreviewAsync();
+        var reviewed = await runner.PreviewResolutionAsync();
+
+        ordinary.BlockingReasons.Should().ContainMatch("*unresolved quarantine*");
+        reviewed.BlockingReasons.Should().BeEmpty();
+        reviewed.Resolutions.Should().ContainSingle().Which.Should().Be(new FundStructureTenantQuarantineResolution(node.Id, "tenant-a"));
+        reviewed.PlanHash.Should().NotBe(ordinary.PlanHash);
+        var unreviewed = () => runner.ResolveAsync(Guid.NewGuid(), ordinary.PlanHash, "operator", "review/release");
+        await unreviewed.Should().ThrowAsync<InvalidOperationException>().WithMessage("*stale*");
+
+        var receipt = await runner.ResolveAsync(Guid.NewGuid(), reviewed.PlanHash, "operator", "review/release");
+        store.Resolutions.Should().Equal(reviewed.Resolutions);
+        receipt.Plan.GetProperty("Resolutions").GetArrayLength().Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Resolve_UnderivableQuarantine_RemainsRetainedWithoutInventedOwner()
+    {
+        var snapshot = MakeSnapshot();
+        var orphan = Row("legal_entity", Guid.NewGuid(), "Entity");
+        var store = new MemoryStore(snapshot with
+        {
+            Rows = [.. snapshot.Rows, orphan],
+            RetainedQuarantine = [JsonSerializer.SerializeToElement(new { node_id = orphan.Id, resolved_at_utc = (string?)null })]
+        });
+        var runner = new FundStructureTenantBackfillRunner(store);
+        var plan = await runner.PreviewResolutionAsync();
+        plan.Resolutions.Should().BeEmpty();
+        plan.Exceptions.Should().ContainSingle().Which.NodeId.Should().Be(orphan.Id);
+        plan.AttributionComplete.Should().BeFalse();
+        await runner.ResolveAsync(Guid.NewGuid(), plan.PlanHash, "operator", "review/unresolved");
+        store.Resolutions.Should().BeEmpty();
+        store.Receipt!.QuarantinedRows.Should().Be(1);
+    }
+
+    [Fact]
+    public void Preview_NonGraphLegacyRows_AreAttributedWithTheirGraphAuthority()
+    {
+        var snapshot = MakeSnapshot();
+        var fund = snapshot.Rows.Single(row => row.Kind == "Fund");
+        var book = snapshot.Evidence.Single();
+        var rows = new[]
+        {
+            Row("ledger.ledger_books", book.BookId, "LedgerBook", [fund.Id], isNode: false),
+            Row("ledger.accounting_periods", Guid.NewGuid(), "AccountingPeriod", [fund.Id], isNode: false),
+            Row("ledger.operations_continuity_workflows", Guid.NewGuid(), "OperationsWorkflow", [fund.Id], isNode: false),
+            Row("fund_accounts.account_definition", Guid.NewGuid(), "AccountDefinition", [fund.Id], isNode: false)
+        };
+        var plan = FundStructureTenantBackfillPlanner.Create(snapshot with { Rows = [.. snapshot.Rows, .. rows] });
+        plan.AttributionComplete.Should().BeTrue();
+        foreach (var row in rows)
+            plan.Stamps.Should().Contain(stamp => stamp.Table == row.Table && stamp.Id == row.Id && stamp.TenantId == "tenant-a");
+    }
+
+    [Fact]
+    public void Preview_AccountDefinitionSharesGraphIdentity_DoesNotInventCollision()
+    {
+        var snapshot = MakeSnapshot();
+        var fund = snapshot.Rows.Single(row => row.Kind == "Fund");
+        var id = Guid.NewGuid();
+        var plan = FundStructureTenantBackfillPlanner.Create(snapshot with
+        {
+            Rows = [.. snapshot.Rows, Row("fund_structure_linked_account", id, "Account", [fund.Id]),
+                Row("fund_accounts.account_definition", id, "AccountDefinition", [id, fund.Id], isNode: false)]
+        });
+        plan.AttributionComplete.Should().BeTrue();
+        plan.Stamps.Count(stamp => stamp.Id == id).Should().Be(2);
+    }
+
+    [Fact]
+    public void Preview_AuditedLegacyPeriod_RemainsQuarantinedInsteadOfInvalidatingAudit()
+    {
+        var snapshot = MakeSnapshot();
+        var fund = snapshot.Rows.Single(row => row.Kind == "Fund");
+        var period = Row("ledger.accounting_periods", Guid.NewGuid(), "AccountingPeriod", [fund.Id], isNode: false) with
+        {
+            RetainedRow = JsonSerializer.SerializeToElement(new { tenant_backfill_audit_protected = true })
+        };
+        var plan = FundStructureTenantBackfillPlanner.Create(snapshot with { Rows = [.. snapshot.Rows, period] }, resolveQuarantine: true);
+        plan.AttributionComplete.Should().BeFalse();
+        plan.Exceptions.Should().ContainSingle().Which.Reason.Should().Be("AuditedPeriodRequiresGovernedTenantRepair");
+        plan.Stamps.Should().NotContain(stamp => stamp.Id == period.Id);
+        plan.Resolutions.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("tenant-a", null, true)]
+    [InlineData(null, null, false)]
+    [InlineData("all", null, false)]
+    [InlineData("tenant-a", "malformed", false)]
+    [InlineData("tenant-a", "11111111-1111-1111-1111-111111111111", false)]
+    public void Preview_BooklessWorkflow_RespectsExistingAuthorityAndRejectsBrokenSuppliedReference(string? tenant, string? book, bool ready)
+    {
+        var snapshot = MakeSnapshot();
+        var workflow = Row("ledger.operations_continuity_workflows", Guid.NewGuid(), "OperationsWorkflow", isNode: false) with
+        {
+            TenantId = tenant,
+            RetainedRow = JsonSerializer.SerializeToElement(new { workflow_json = new { ledgerBookId = book } })
+        };
+        var plan = FundStructureTenantBackfillPlanner.Create(snapshot with { Rows = [.. snapshot.Rows, workflow] });
+        plan.AttributionComplete.Should().Be(ready);
+        plan.Stamps.Should().NotContain(stamp => stamp.Id == workflow.Id);
+        if (!ready)
+            plan.Exceptions.Should().Contain(item => item.NodeId == workflow.Id);
+    }
+
+    [Fact]
     public async Task Apply_ChangedEvidenceOrGraph_RejectsReviewedFingerprintWithoutWrites()
     {
         var store = new MemoryStore(MakeSnapshot());
@@ -290,6 +406,7 @@ public sealed class FundStructureTenantBackfillTests
         public int Disposals { get; set; }
         public int Commits { get; set; }
         public FundStructureTenantBackfillReceipt? Receipt { get; set; }
+        public IReadOnlyList<FundStructureTenantQuarantineResolution> Resolutions { get; set; } = [];
         public Task<IFundStructureTenantBackfillSession> OpenSessionAsync(CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
@@ -314,6 +431,14 @@ public sealed class FundStructureTenantBackfillTests
                 return Task.FromResult(store.Receipt!);
             }
             public ValueTask DisposeAsync() { store.Disposals++; return ValueTask.CompletedTask; }
+            public Task<FundStructureTenantBackfillReceipt> CommitReviewedAsync(Guid runId, string planHash, string operatorId,
+                string reviewReference, JsonElement plan, IReadOnlyList<FundStructureTenantBackfillStamp> stamps,
+                IReadOnlyList<FundStructureTenantBackfillException> exceptions,
+                IReadOnlyList<FundStructureTenantQuarantineResolution> resolutions, CancellationToken ct)
+            {
+                store.Resolutions = resolutions;
+                return CommitAsync(runId, planHash, operatorId, reviewReference, plan, stamps, exceptions, ct);
+            }
         }
     }
 }

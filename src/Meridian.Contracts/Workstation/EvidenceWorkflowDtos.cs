@@ -665,6 +665,8 @@ public sealed record EvidencePacketDto(
     IReadOnlyList<string> Warnings)
 {
     public EvidenceProofChainDto ProofChain { get; init; } = EvidenceProofChainDto.Empty;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerAmountProofDto? LedgerAmount { get; init; }
 }
 
 public sealed record EvidenceGraphDto(

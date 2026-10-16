@@ -1,9 +1,11 @@
+using Meridian.Application.Tenancy;
 using Meridian.Wpf.Tests.Features;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.PrivateCapital;
+using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;
@@ -23,8 +25,11 @@ public sealed class AccountingFeatureServiceRegistrationTests
 
         new AccountingFeatureModule().Register(services);
 
-        services.SingleDescriptor<InMemoryFundAccountService>().Lifetime.Should().Be(ServiceLifetime.Singleton);
+        services.SingleDescriptor<TenantGuardedLocalFundAccountService>().Lifetime.Should().Be(ServiceLifetime.Singleton);
+        services.Should().NotContain(descriptor => descriptor.ServiceType == typeof(InMemoryFundAccountService));
         services.SingleDescriptor<IFundAccountService>().Lifetime.Should().Be(ServiceLifetime.Singleton);
+        services.SingleDescriptor<IAccountManagementService>().Lifetime.Should().Be(ServiceLifetime.Singleton);
+        services.SingleDescriptor<IAccountQueryService>().Lifetime.Should().Be(ServiceLifetime.Singleton);
         services.SingleDescriptor<IFundStructureService>().Lifetime.Should().Be(ServiceLifetime.Singleton);
         services.SingleDescriptor<FundStructureSetupWorkflowService>().Lifetime.Should().Be(ServiceLifetime.Singleton);
         services.SingleDescriptor<FundAccountReadService>().Lifetime.Should().Be(ServiceLifetime.Singleton);

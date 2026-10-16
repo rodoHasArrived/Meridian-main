@@ -1,3 +1,4 @@
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
@@ -87,17 +88,34 @@ public sealed class DesktopWorkstationTenantContextAccessorTests
         currentReport = reviewedReport;
         (await guard.ValidateAsync(workflowId, 7, scope)).Should().BeEmpty();
 
-        (await guard.ValidateAsync(workflowId, 7, scope, "other-company", "other-company")).Should()
-            .ContainSingle(blocker => blocker.Code == "CLOSE_TENANT_SCOPE_MISMATCH");
+        await authority.Received(5).GetCommandCenterAsync(scope.FundProfileId, scope.LedgerBookId, scope.FundAccountId,
+            scope.PeriodId, scope.EntityId, Arg.Any<CancellationToken>(), "company-alpha", "company-alpha");
+        await reportAuthority.Received(5).ResolveAsync(workflow, "report-1", "company-alpha", "company-alpha", Arg.Any<CancellationToken>());
+        authority.ClearReceivedCalls();
+        reportAuthority.ClearReceivedCalls();
+        foreach (var (tenantId, companyId) in new[]
+        {
+            ("other-company", "company-alpha"),
+            ("company-alpha", "other-company"),
+            ("other-company", "other-company")
+        })
+        {
+            (await guard.ValidateAsync(workflowId, 7, scope, tenantId, companyId)).Should()
+                .ContainSingle(blocker => blocker.Code == "CLOSE_TENANT_SCOPE_MISMATCH");
+        }
+        authority.ReceivedCalls().Should().BeEmpty("a foreign scope is rejected before reading retained evidence");
+        reportAuthority.ReceivedCalls().Should().BeEmpty();
 
         session.SignOut();
         accessor.TryGetCurrent(out var signedOut).Should().BeFalse();
         signedOut.HasTenantScope.Should().BeFalse();
-        (await guard.ValidateAsync(workflowId, 7, scope)).Should()
-            .ContainSingle(blocker => blocker.Code == "CLOSE_TENANT_SCOPE_REQUIRED");
-        await authority.Received(5).GetCommandCenterAsync(scope.FundProfileId, scope.LedgerBookId, scope.FundAccountId,
-            scope.PeriodId, scope.EntityId, Arg.Any<CancellationToken>(), "company-alpha", "company-alpha");
-        await reportAuthority.Received(5).ResolveAsync(workflow, "report-1", "company-alpha", "company-alpha", Arg.Any<CancellationToken>());
+        using (FundScopeTenantAuthority.Enter("company-alpha", "unrelated desktop worker"))
+        {
+            (await guard.ValidateAsync(workflowId, 7, scope, "company-alpha", "company-alpha")).Should()
+                .ContainSingle(blocker => blocker.Code == "CLOSE_TENANT_SCOPE_REQUIRED");
+        }
+        authority.ReceivedCalls().Should().BeEmpty("worker authority and supplied subject scope cannot replace a signed-in desktop session");
+        reportAuthority.ReceivedCalls().Should().BeEmpty();
     }
 
     [Fact]

@@ -10,16 +10,15 @@ public enum TenantScopeEnforcementMode
     /// tenant reads unfiltered, with one-company-per-deployment as the actual control.
     /// </summary>
     /// <remarks>
-    /// Correct and load-bearing for a single-company deployment, and the only safe posture on a
-    /// database whose tenant attribution has not been run yet — a fail-closed reader over an
-    /// unstamped graph hides the retained data from everyone rather than closing a leak. It is a
-    /// staging posture, not a destination: it cannot satisfy a categorical cross-tenant criterion.
+    /// Explicit, temporary migration compatibility for a single-company deployment. Strict hosts
+    /// refuse startup while retained rows need attribution; operators may deliberately select this
+    /// posture during a reviewed maintenance window. It cannot satisfy cross-tenant isolation.
     /// </remarks>
     DeploymentBoundary = 0,
 
     /// <summary>
     /// Cross-tenant reads fail closed: a scoped caller sees only rows their tenant owns,
-    /// unattributed rows included, and a caller whose tenant cannot be resolved is refused rather
+    /// unattributed rows excluded, and a caller whose tenant cannot be resolved is refused rather
     /// than defaulted to an unfiltered read.
     /// </summary>
     FailClosed = 1,
@@ -40,6 +39,9 @@ public sealed record TenantScopeEnforcementOptions(TenantScopeEnforcementMode Mo
     /// <summary>Environment variable naming the posture, e.g. <c>deployment-boundary</c>.</summary>
     public const string EnvironmentVariable = "MERIDIAN_TENANT_SCOPE_ENFORCEMENT";
 
+    /// <summary>Supported appsettings key. The environment override takes precedence.</summary>
+    public const string ConfigurationKey = "TenantScopeEnforcement";
+
     public static readonly TenantScopeEnforcementOptions DeploymentBoundary =
         new(TenantScopeEnforcementMode.DeploymentBoundary);
 
@@ -49,6 +51,21 @@ public sealed record TenantScopeEnforcementOptions(TenantScopeEnforcementMode Mo
     public bool IsFailClosed => Mode == TenantScopeEnforcementMode.FailClosed;
 
     /// <summary>
+    /// Parses the supported appsettings values exactly. Omission selects strict enforcement;
+    /// compatibility aliases are accepted only by <see cref="FromEnvironmentValue"/>.
+    /// </summary>
+    /// <exception cref="ArgumentException">The value is not a supported appsettings posture.</exception>
+    public static TenantScopeEnforcementOptions FromConfigurationValue(string? value)
+        => value switch
+        {
+            null or "fail-closed" => FailClosed,
+            "deployment-boundary" => DeploymentBoundary,
+            _ => throw new ArgumentException(
+                $"{ConfigurationKey} must be 'fail-closed' or 'deployment-boundary'.",
+                nameof(value)),
+        };
+
+    /// <summary>
     /// Parses the deployment switch. An <b>absent</b> value keeps the current default; a value that
     /// is present but unrecognised is refused.
     /// </summary>
@@ -56,7 +73,7 @@ public sealed record TenantScopeEnforcementOptions(TenantScopeEnforcementMode Mo
     /// The two cases are deliberately not the same, though it is tempting to fold them together.
     /// Saying nothing is a deployment that has not chosen, and inheriting the default is right.
     /// Saying <c>fail_closed</c> or <c>failclosd</c> is a deployment that <i>has</i> chosen and been
-    /// misheard — and because the default is the open posture, silently falling back would start a
+    /// misheard — silently falling back could start a
     /// shared deployment with unattributed rows and tenantless reads exposed, by an operator who
     /// believed they had closed it. A refusal at startup is loud, immediate, and trivially fixed; a
     /// silent downgrade of a security posture is none of those.

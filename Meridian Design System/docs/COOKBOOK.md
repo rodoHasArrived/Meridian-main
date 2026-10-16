@@ -41,6 +41,21 @@ inspector → `StatusBar`.
 
 ---
 
+### Browser work queues and records
+
+Lead a working surface with its selectable queue or records. Keep source, scope, freshness,
+completeness, and blocker status visible in a compact summary; put explanations, receipts,
+and supporting tools in keyboard-accessible native disclosures. The browser adapter
+`OperationalTrustSummary` supports this with `disclosure`, while its default expanded view
+remains available for tasks that need fuller context. The disclosure must retain warning text
+and financially material values when closed, and recovery actions when opened.
+
+Use the shared dense-row/detail contract for selectable work: each row controls the selected
+inspector; Enter or Space selects it and moves focus into its panel, and Escape
+returns to its originating row. Keep the selected item's primary action before its supporting
+facts. Bind shareable selection to immutable item identity and current financial scope; show
+unavailable selection explicitly after removal rather than substituting another item's proof.
+
 ## 2 · Validated form
 
 **Goal:** an operator form that blocks submit until valid and states errors inline — new

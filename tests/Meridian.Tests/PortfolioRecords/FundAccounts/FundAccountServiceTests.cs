@@ -252,17 +252,18 @@ public sealed class FundAccountServiceTests
         var svc = CreateService();
         var acct = await svc.CreateAccountAsync(MakeCustodyRequest());
         var today = DateOnly.FromDateTime(DateTime.Today);
+        var batchId = Guid.NewGuid();
 
         var lines = new List<CustodianPositionLineDto>
         {
-            new(Guid.NewGuid(), Guid.NewGuid(), acct.AccountId, today,
+            new(Guid.NewGuid(), batchId, acct.AccountId, today,
                 "US0378331005", "ISIN", 100m, 17_000m, "USD", null, null, false),
-            new(Guid.NewGuid(), Guid.NewGuid(), acct.AccountId, today,
+            new(Guid.NewGuid(), batchId, acct.AccountId, today,
                 "US5949181045", "ISIN", 50m, 11_000m, "USD", null, null, false)
         };
 
         var batch = await svc.IngestCustodianStatementAsync(new IngestCustodianStatementRequest(
-            Guid.NewGuid(), acct.AccountId, today, "JPMorgan", "JSON", null, lines, "loader"));
+            batchId, acct.AccountId, today, "JPMorgan", "JSON", null, lines, "loader"));
 
         Assert.Equal(2, batch.LineCount);
 
@@ -276,15 +277,16 @@ public sealed class FundAccountServiceTests
         var svc = CreateService();
         var acct = await svc.CreateAccountAsync(MakeBankRequest());
         var today = DateOnly.FromDateTime(DateTime.Today);
+        var batchId = Guid.NewGuid();
 
         var lines = new List<BankStatementLineDto>
         {
-            new(Guid.NewGuid(), Guid.NewGuid(), acct.AccountId, today, today,
+            new(Guid.NewGuid(), batchId, acct.AccountId, today, today,
                 -50_000m, "USD", "Wire", "Payment to broker", null, 950_000m)
         };
 
         var batch = await svc.IngestBankStatementAsync(new IngestBankStatementRequest(
-            Guid.NewGuid(), acct.AccountId, today, "JPMorgan", null, lines, "loader"));
+            batchId, acct.AccountId, today, "JPMorgan", null, lines, "loader"));
 
         Assert.Equal(1, batch.LineCount);
 
@@ -398,6 +400,84 @@ public sealed class FundAccountServiceTests
 
         var runs = await svc.GetReconciliationRunsAsync(acct.AccountId);
         Assert.Equal(2, runs.Count);
+    }
+
+    [Fact]
+    public async Task GetReconciliationRuns_ReturnsSnapshotUnaffectedByLaterReconciliation()
+    {
+        var svc = CreateService();
+        var account = await svc.CreateAccountAsync(MakeBankRequest());
+        var request = new ReconcileAccountRequest(account.AccountId, new DateOnly(2026, 10, 7), "tests");
+        await svc.ReconcileAccountAsync(request);
+        var original = await svc.GetReconciliationRunsAsync(account.AccountId);
+
+        await svc.ReconcileAccountAsync(request);
+
+        Assert.Single(original);
+        Assert.Equal(2, (await svc.GetReconciliationRunsAsync(account.AccountId)).Count);
+    }
+
+    [Fact]
+    public async Task IngestBankStatement_PreservesAmountsDifferingBeyondEightDecimalPlaces()
+    {
+        var svc = CreateService();
+        var account = await svc.CreateAccountAsync(MakeBankRequest());
+        var date = new DateOnly(2026, 10, 7);
+        var batchId = Guid.NewGuid();
+        var first = new BankStatementLineDto(Guid.NewGuid(), batchId, account.AccountId, date, date,
+            0.000000001m, "USD", "CREDIT", "Precision-sensitive payment", "precision-test", null);
+        var second = first with { LineId = Guid.NewGuid(), Amount = 0.000000002m };
+
+        await svc.IngestBankStatementAsync(new IngestBankStatementRequest(
+            batchId, account.AccountId, date, "Bank", null, [first, second], "tests"));
+
+        var stored = await svc.GetBankStatementLinesAsync(account.AccountId);
+        Assert.Equal(2, stored.Count);
+        Assert.Equal(0.000000003m, stored.Sum(line => line.Amount));
+    }
+
+    [Theory]
+    [InlineData("create")]
+    [InlineData("update custodian")]
+    [InlineData("update bank")]
+    [InlineData("deactivate")]
+    [InlineData("balance snapshot")]
+    [InlineData("custodian statement")]
+    [InlineData("bank statement")]
+    [InlineData("reconciliation")]
+    public async Task PreCancelledWrite_DoesNotChangeAccountState(string operation)
+    {
+        var svc = CreateService();
+        var account = await svc.CreateAccountAsync(MakeBankRequest());
+        var date = new DateOnly(2026, 10, 7);
+        using var cancelled = new CancellationTokenSource();
+        cancelled.Cancel();
+        var ct = cancelled.Token;
+        Func<Task> mutation = operation switch
+        {
+            "create" => () => svc.CreateAccountAsync(MakeBankRequest(), ct),
+            "update custodian" => () => svc.UpdateCustodianDetailsAsync(account.AccountId,
+                new UpdateCustodianAccountDetailsRequest(new("sub", null, null, null, null, null, null, null), "tests"), ct),
+            "update bank" => () => svc.UpdateBankDetailsAsync(account.AccountId,
+                new UpdateBankAccountDetailsRequest(new("bank", null, null, null, null, null, null, null, null, null, null), "tests"), ct),
+            "deactivate" => () => svc.DeactivateAccountAsync(account.AccountId, "tests", ct),
+            "balance snapshot" => () => svc.RecordBalanceSnapshotAsync(new(account.AccountId, date, "USD", 100m, "manual"), ct),
+            "custodian statement" => () => svc.IngestCustodianStatementAsync(new(Guid.NewGuid(), account.AccountId, date,
+                "Custodian", "test", null, [], "tests"), ct),
+            "bank statement" => () => svc.IngestBankStatementAsync(new(Guid.NewGuid(), account.AccountId, date,
+                "Bank", null, [], "tests"), ct),
+            "reconciliation" => () => svc.ReconcileAccountAsync(new(account.AccountId, date, "tests"), ct),
+            _ => throw new ArgumentOutOfRangeException(nameof(operation))
+        };
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(mutation);
+
+        Assert.Equal(account, await svc.GetAccountAsync(account.AccountId));
+        Assert.Single(await svc.QueryAccountsAsync(new(ActiveOnly: false)));
+        Assert.Empty(await svc.GetBalanceHistoryAsync(account.AccountId));
+        Assert.Empty(await svc.GetReconciliationRunsAsync(account.AccountId));
+        var run = await svc.ReconcileAccountAsync(new(account.AccountId, date, "tests"));
+        Assert.Equal(0, run.TotalChecks);
     }
 
     // ── Deactivation ─────────────────────────────────────────────────────────

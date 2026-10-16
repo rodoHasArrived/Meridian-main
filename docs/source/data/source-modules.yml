@@ -41,7 +41,7 @@ modules:
       - dotnet test tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj --configuration Release --disable-build-servers /m:1
     diagrams: []
     todos: []
-    last_reviewed: 2026-07-17
+    last_reviewed: 2026-10-07
 
   - id: SRC-LAUNCHER
     path: src/Meridian.Launcher
@@ -49,7 +49,7 @@ modules:
     layer: Host
     status: active
     owner_lane: Runtime Host
-    purpose: Thin installed-workstation entrypoint that launches the lifecycle supervisor, verifies the bound startup outcome, and opens the workstation only after exact readiness succeeds.
+    purpose: Thin installed-workstation entrypoint for start and open commands that launches the lifecycle supervisor and verifies the bound startup outcome; the supervisor owns readiness and browser opening.
     readme: src/Meridian.Launcher/README.md
     roadmap_items: []
     stage_gates: []
@@ -57,7 +57,7 @@ modules:
       - dotnet test tests/Meridian.LifecycleSupervisor.Tests/Meridian.LifecycleSupervisor.Tests.csproj --configuration Release --disable-build-servers /m:1
     diagrams: []
     todos: []
-    last_reviewed: 2026-07-19
+    last_reviewed: 2026-10-07
 
   - id: SRC-APP
     path: src/Meridian.Application
@@ -84,7 +84,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-08-04
+    last_reviewed: 2026-10-14
 
   - id: SRC-CONTRACTS
     path: src/Meridian.Contracts
@@ -95,6 +95,7 @@ modules:
     purpose: Shared DTOs, pipeline statistics DTOs, monitoring webhook sink contracts, backfill run-result and per-symbol completeness payloads, coordination lease/leadership/ownership contracts, acceptance evidence payloads, provider integration template catalog/manifest/raw-payload/quarantine/staging contracts, fund-structure service contracts, accounting configuration and private-capital ledger payloads, canonical reporting run parameters, readiness, governance/action-availability, restatement, schedule-handoff, artifact, grant, delivery, and provider-receipt contracts, report-writer contracts, ETL job-definition store and SFTP publisher contracts, operational scheduler contracts, event-pipeline metrics contracts, and cross-layer contracts used by host, services, dashboard, and WPF.
     readme: src/Meridian.Contracts/README.md
     roadmap_items:
+      - W9-GOV-008
       - W1-DATA-001
       - W2-TRD-001
       - W3-CONT-001
@@ -140,7 +141,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-07-18
+    last_reviewed: 2026-10-02
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -151,6 +152,7 @@ modules:
     purpose: Shared configuration models, configuration JSON options, config JSON Schema generation, FluentValidation-based config validation, config validation pipeline stages, credential placeholder detection, default config-path resolution, environment overrides, configuration templates, config file hot-reload watching, Core-owned exception hierarchy, logging setup, pipeline policy helper, subscription model records, source-generated serialization contexts, redaction, masking, monitoring alert/health contracts, migration diagnostics, flush contracts, flush queue-diagnostics contracts, and cross-cutting infrastructure under Core-owned namespaces.
     readme: src/Meridian.Core/README.md
     roadmap_items:
+      - W9-GOV-008
       - W1-DATA-001
       - W2-TRD-001
       - W7-LIVE-001
@@ -165,7 +167,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-07
+    last_reviewed: 2026-09-28
 
   - id: SRC-DOMAIN
     path: src/Meridian.Domain
@@ -247,12 +249,14 @@ modules:
     purpose: WAL-backed persistence, archival packaging, backfill status/checkpoint sidecar persistence, shared-storage coordination lease persistence, storage catalogs, replay, ledger storage, immutable reporting artifact blobs/catalogs, hash-chained governance state and audit, exact close/reconciliation evidence, scoped access grants, durable delivery jobs and provider receipts, provider integration manifest/raw-payload/quarantine/staging stores, storage-option mapping from shared config, Core-flushable storage sinks, canonical symbol registry services, fund-structure state stores, ETL job-definition stores, and export support.
     readme: src/Meridian.Storage/README.md
     roadmap_items:
+      - W9-GOV-008
       - W1-DATA-001
       - W2-TRD-001
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
       - W9-ASSET-010
+      - W10-JRNL-001
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -272,7 +276,7 @@ modules:
       - DIA-ASSURANCE-LOOP
       - DIA-STORAGE-TOPOLOGY
     todos: []
-    last_reviewed: 2026-08-04
+    last_reviewed: 2026-10-02
 
   - id: SRC-EXECUTION
     path: src/Meridian.Execution
@@ -296,7 +300,7 @@ modules:
     diagrams:
       - DIA-PAPER-SESSION-REPLAY
     todos: []
-    last_reviewed: 2026-08-11
+    last_reviewed: 2026-10-14
 
   - id: SRC-EXECUTION-SDK
     path: src/Meridian.Execution.Sdk
@@ -393,7 +397,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-06
+    last_reviewed: 2026-10-14
 
   - id: SRC-BACKTESTING-SDK
     path: src/Meridian.Backtesting.Sdk
@@ -717,6 +721,7 @@ modules:
     purpose: Physical bounded-context module project for instrument terms, contracts, obligations, classifications, option-chain query/failover, asset operations projections, money-market liquidity and sweep projections, and ledger-projection ownership conformance.
     readme: src/Meridian.Instruments/README.md
     roadmap_items:
+      - W10-LOT-002
       - W4-RECON-001
       - W5-MASSET-001
       - W9-ASSET-010
@@ -751,11 +756,12 @@ modules:
       - AccountingRecords
     validation:
       - dotnet build src/Meridian.PortfolioRecords/Meridian.PortfolioRecords.csproj /p:EnableWindowsTargeting=true
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~FundAccountServiceTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PortfolioRecords|FullyQualifiedName~FundAccountEndpointAuthorizationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PostgresFundAccountStore" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-05
+    last_reviewed: 2026-10-07
 
   - id: SRC-DESIGN-FINANCIAL-OPERATIONS
     path: src/Meridian.FinancialOperations
@@ -766,6 +772,7 @@ modules:
     purpose: Physical bounded-context module project for reconciliation, portfolio-vs-ledger reconciliation engine behavior, accounting records, accounting-close projections, accounting-basis policy, ledger text-journal reporting, payment approvals, bank-transaction records, close workflows, casework, and operational-record ownership conformance.
     readme: src/Meridian.FinancialOperations/README.md
     roadmap_items:
+      - W9-GOV-008
       - W4-RECON-001
       - W5-ACCT-001
       - W5X-FINOPS-001
@@ -799,7 +806,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-07-18
+    last_reviewed: 2026-10-02
 
   - id: SRC-DESIGN-WORKFLOW
     path: src/Meridian.Workflow
@@ -874,7 +881,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Accounting and Ledger
-    purpose: Physical bounded-context module project for retained document attachments, document evidence, manifests, and document-management ownership conformance.
+    purpose: Bounded-context owner for retained document evidence, manifests, report rendering, and Evidence Vault storage-quota policy and durable reservations; broader document-runtime ownership remains shared with the vault adapter.
     readme: src/Meridian.Documents/README.md
     roadmap_items:
       - W4-RPT-001
@@ -884,10 +891,11 @@ modules:
       - AccountingRecords
     validation:
       - dotnet build src/Meridian.Documents/Meridian.Documents.csproj /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~EvidenceStorageQuotaCoordinatorTests|FullyQualifiedName~FileEvidenceArtifactStoreQuotaTests" /p:EnableWindowsTargeting=true
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-04
+    last_reviewed: 2026-10-05
 
   - id: SRC-IBAPI-SMOKESTUB
     path: src/Meridian.IbApi.SmokeStub
@@ -967,6 +975,8 @@ modules:
     purpose: Shared UI read models and endpoint adapters, including authoritative reporting capture, exact reconciliation readiness, certified artifact production/retention, governed lifecycle/restatement coordination, tenant-safe action projections, release-gated scheduling, recipient-bound secure distribution, provider receipts, and credential-free legacy reporting compatibility; also owns Security Master workbench projections, ledger/accounting configuration services, private-capital drill-through, identity/auth adapters, and acceptance filters consumed by browser and desktop surfaces.
     readme: src/Meridian.Ui.Shared/README.md
     roadmap_items:
+      - W10-LOT-002
+      - W9-GOV-008
       - W2-TRD-001
       - W4-RECON-001
       - W4-RPT-001
@@ -1001,7 +1011,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-08-11
+    last_reviewed: 2026-10-02
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
@@ -1050,6 +1060,7 @@ modules:
     purpose: Active Windows desktop operator workstation and co-equal UI lane alongside the browser workstation. Projects the seven canonical workspaces over shared contracts and read models, including governed reporting parameters/readiness, maker-checker actions, immutable evidence, restatements, transport capability, delivery history, and scoped access-grant management; current lane focus is closing web-UI parity gaps (W8-WPF-PARITY-001) without forking product state.
     readme: src/Meridian.Wpf/README.md
     roadmap_items:
+      - W9-GOV-008
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
@@ -1076,4 +1087,4 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-07-15
+    last_reviewed: 2026-09-28

@@ -51,10 +51,22 @@ public interface IFundStructureStore
 
     // Ownership Links
     Task UpsertOwnershipLinkAsync(OwnershipLinkDto dto, CancellationToken ct = default);
+    /// <summary>Persists a scoped link and its tenant in one write; existing foreign ownership cannot change.</summary>
+    /// <remarks>Stores must implement scoped persistence explicitly; the compatibility fallback accepts only an absent tenant.</remarks>
+    Task UpsertOwnershipLinkAsync(OwnershipLinkDto dto, string? tenantId, CancellationToken ct)
+        => string.IsNullOrEmpty(tenantId)
+            ? UpsertOwnershipLinkAsync(dto, ct)
+            : Task.FromException(new NotSupportedException("This fund-structure store does not support tenant-scoped ownership links."));
     Task<IReadOnlyList<OwnershipLinkDto>> GetAllOwnershipLinksAsync(CancellationToken ct = default);
 
     // Assignments
     Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, CancellationToken ct = default);
+    /// <summary>Persists a scoped assignment and its tenant in one write; existing foreign ownership cannot change.</summary>
+    /// <remarks>Stores must implement scoped persistence explicitly; the compatibility fallback accepts only an absent tenant.</remarks>
+    Task UpsertAssignmentAsync(FundStructureAssignmentDto dto, string? tenantId, CancellationToken ct)
+        => string.IsNullOrEmpty(tenantId)
+            ? UpsertAssignmentAsync(dto, ct)
+            : Task.FromException(new NotSupportedException("This fund-structure store does not support tenant-scoped assignments."));
     Task<IReadOnlyList<FundStructureAssignmentDto>> GetAllAssignmentsAsync(CancellationToken ct = default);
 
     // Account node identities retained independently from active links/assignments

@@ -14,6 +14,8 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// <remarks>
 /// This provides a unified entry point for all provider-related DI registration,
 /// replacing scattered provider creation logic throughout the codebase.
+/// Hosts must register <see cref="Meridian.Core.IO.IAtomicFileWriter"/> before resolving
+/// Alpaca trade-update services so their account-scoped cursors use host-selected persistence.
 /// </remarks>
 [ImplementsAdr("ADR-001", "Unified DI registration for all provider types")]
 public static partial class ProviderServiceExtensions

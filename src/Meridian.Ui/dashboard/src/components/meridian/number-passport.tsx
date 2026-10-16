@@ -1,3 +1,4 @@
+import type { LedgerAmountProof } from "@/types/ledger-amount-proof";
 import type {
   FinancialRecordExplorerDto,
   FinancialRecordExplorerSelectedRecordDto
@@ -9,23 +10,24 @@ export interface NumberPassportItem {
   detail: string;
 }
 
-export function NumberPassport({
-  explorer,
-  record
-}: {
+export function NumberPassport(props: {
   explorer: FinancialRecordExplorerDto;
   record: FinancialRecordExplorerSelectedRecordDto;
-}) {
-  const items = buildNumberPassportItems(explorer, record);
+} | { proof: LedgerAmountProof; title: string }) {
+  const items = "proof" in props
+    ? buildLedgerAmountPassportItems(props.proof)
+    : buildNumberPassportItems(props.explorer, props.record);
+  const title = "proof" in props ? props.title : props.record.title;
+  const Heading = "proof" in props ? "h3" : "h4";
 
   return (
-    <section className="rounded-md border border-border/70 bg-secondary/15 p-3" aria-label={`${record.title} Number Passport`}>
-      <h4 className="text-xs font-semibold uppercase text-muted-foreground">Number Passport</h4>
+    <section className="rounded-md border border-border/70 bg-secondary/15 p-3" aria-label={`${title} Number Passport`}>
+      <Heading className="text-xs font-semibold uppercase text-muted-foreground">Number Passport</Heading>
       <dl className="mt-2 grid gap-2">
         {items.map((item) => (
           <div key={item.label} className="rounded-md border border-border/60 bg-background/60 px-3 py-2">
             <dt className="text-[11px] text-muted-foreground">{item.label}</dt>
-            <dd className="mt-1 font-mono text-sm text-foreground">{item.value}</dd>
+            <dd className="mt-1 break-all font-mono text-sm text-foreground">{item.value}</dd>
             <dd className="mt-1 text-xs leading-5 text-muted-foreground">{item.detail}</dd>
           </div>
         ))}
@@ -38,25 +40,15 @@ export function buildNumberPassportItems(
   explorer: FinancialRecordExplorerDto,
   record: FinancialRecordExplorerSelectedRecordDto
 ): NumberPassportItem[] {
-  const reconciliation = findProofText(record, "reconciliation") ?? "No reconciliation link on selected record";
-  const approvals = findProofText(record, "approval", "approve") ?? "No approval link on selected record";
-  const reportUsage = findProofText(record, "report") ?? "No report usage link on selected record";
-  const evidencePacket = firstNonBlank(
-    findProofText(record, "evidence packet", "evidence", "supporting document", "document"),
-    findProofText(record, "passport"),
-    record.proofActions[0]?.href,
-    record.fullRecordHref
-  ) ?? "No evidence packet link";
-  const auditTrail = firstNonBlank(findProofText(record, "audit trail", "audit"), record.fullRecordHref, explorer.sourceState) ?? "No audit trail marker";
-  const freshness = firstNonBlank(
-    findFieldValue(record, "retrieved", "updated", "as of", "timestamp", "date"),
-    explorer.sourceState
-  ) ?? "No freshness marker";
-  const blockers = firstNonBlank(
-    findFieldValue(record, "blocker", "blocked", "blocking"),
-    findProofText(record, "blocker", "blocked", "blocking"),
-    record.tone === "Danger" ? record.description : null
-  ) ?? "No blocker flagged on selected record";
+  // Display copy and routes are never evidence identifiers. A similarly named account,
+  // symbol or action must not acquire another record's proof by substring matching.
+  const reconciliation = proofById(record, "reconciliation-case") ?? "Review required: no reconciliation evidence";
+  const approvals = proofById(record, "approval-gate") ?? "Review required: no approval evidence";
+  const reportUsage = proofById(record, "report-line") ?? "Review required: no report usage evidence";
+  const evidencePacket = proofById(record, "evidence-packet") ?? "Review required: no evidence packet";
+  const auditTrail = proofById(record, "audit-trail") ?? "Review required: no audit trail evidence";
+  const freshness = "Review required: no structured freshness marker";
+  const blockers = record.tone === "Danger" ? record.description : "Review required: proof completeness is unverified";
 
   return [
     {
@@ -72,17 +64,17 @@ export function buildNumberPassportItems(
     {
       label: "Reconciliation",
       value: reconciliation,
-      detail: "Reconciliation relationship or field retained by the selected FREX record."
+      detail: "Related record navigation; scoped amount evidence has not been verified."
     },
     {
       label: "Approvals",
       value: approvals,
-      detail: "Approval relationship, action, or field retained by the selected FREX record."
+      detail: "Related record navigation; scoped approval evidence has not been verified."
     },
     {
       label: "Report Usage",
       value: reportUsage,
-      detail: "Report-line or package relationship retained by the selected FREX record."
+      detail: "Related record navigation; scoped report usage has not been verified."
     },
     {
       label: "Blockers",
@@ -92,47 +84,36 @@ export function buildNumberPassportItems(
     {
       label: "Evidence Packet",
       value: evidencePacket,
-      detail: record.proofActions[0]?.description || "Primary evidence route for this selected number."
+      detail: "Evidence must be explicitly retained for this selected record."
     },
     {
       label: "Audit Trail",
       value: auditTrail,
-      detail: "Audit, full-record, or source-state route retained with the selected number."
+      detail: "Related record navigation; scoped audit evidence has not been verified."
     }
   ];
 }
 
-function findFieldValue(record: FinancialRecordExplorerSelectedRecordDto, ...tokens: string[]): string | null {
-  const item = record.fields.find((field) => {
-    const haystack = `${field.label} ${field.value} ${field.detail}`.toLowerCase();
-    return tokens.some((token) => haystack.includes(token));
-  });
-
-  return firstNonBlank(item?.value, item?.detail) ?? null;
+function proofById(record: FinancialRecordExplorerSelectedRecordDto, id: string): string | null {
+  const relationships = [...record.usedIn, ...record.impacts].filter((item) => item.relationshipId === id);
+  const actions = record.proofActions.filter((item) => item.actionId === id && item.isEnabled);
+  const matches = [...relationships, ...actions];
+  return matches.length === 1 && matches[0]?.href?.trim()
+    ? `Review required: unverified record navigation ${matches[0].href}` : null;
 }
 
-function findProofText(record: FinancialRecordExplorerSelectedRecordDto, ...tokens: string[]): string | null {
-  const relationship = [...record.usedIn, ...record.impacts].find((item) => {
-    const haystack = `${item.label} ${item.description} ${item.href}`.toLowerCase();
-    return tokens.some((token) => haystack.includes(token));
-  });
-
-  if (relationship) {
-    return firstNonBlank(relationship.href, relationship.label);
-  }
-
-  const action = record.proofActions.find((item) => {
-    const haystack = `${item.label} ${item.description} ${item.href}`.toLowerCase();
-    return tokens.some((token) => haystack.includes(token));
-  });
-
-  if (action) {
-    return firstNonBlank(action.href, action.label);
-  }
-
-  return findFieldValue(record, ...tokens);
-}
-
-function firstNonBlank(...values: Array<string | null | undefined>): string | null {
-  return values.find((value) => value !== undefined && value !== null && value.trim().length > 0) ?? null;
+export function buildLedgerAmountPassportItems(proof: LedgerAmountProof): NumberPassportItem[] {
+  const { scope } = proof;
+  const retained = proof.evidence.filter((item) => item.retainedAt && Number.isFinite(Date.parse(item.retainedAt)) && Date.parse(item.retainedAt) <= Date.now() && item.status === "Ready");
+  return [
+    { label: "Source", value: proof.subjectId, detail: "Immutable posted journal line and debit or credit side." },
+    { label: "Amount", value: `${proof.amount} ${proof.currency}`, detail: "Selected amount from the shared evidence payload." },
+    { label: "Tenant", value: scope.tenantId, detail: "Authenticated evidence scope." },
+    { label: "Company", value: scope.companyId, detail: "Authenticated evidence scope." },
+    { label: "Fund", value: scope.fundProfileId, detail: "Exact retained fund identity." },
+    { label: "Ledger book", value: scope.ledgerBookId, detail: "Exact posted book identity." },
+    { label: "Period", value: scope.periodId, detail: "Exact posted period identity." },
+    { label: "Freshness", value: retained.length ? retained.map((item) => item.retainedAt).join("; ") : "Review required: no current retained evidence", detail: "Retention timestamps supplied by the evidence service." },
+    { label: "Blockers", value: proof.warnings.length ? proof.warnings.join("; ") : proof.status === "Ready" ? "No blocker reported" : "Evidence review required", detail: "Shared evidence validation result." }
+  ];
 }

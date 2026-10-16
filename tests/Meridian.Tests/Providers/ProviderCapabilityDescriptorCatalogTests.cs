@@ -69,6 +69,55 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         };
 
     [Fact]
+    public void Built_in_descriptors_supply_explicit_factories_for_every_declared_runtime_capability()
+    {
+        foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
+        {
+            descriptor.FactoryOwner.Should().Be(ProviderCapabilityFactoryOwner.Descriptor);
+            (Type? Implementation, Delegate? Factory, string Capability)[] slots =
+            [
+                (descriptor.Streaming, descriptor.StreamingFactory, nameof(IMarketDataClient)),
+                (descriptor.Historical, descriptor.HistoricalFactory, nameof(IHistoricalDataProvider)),
+                (descriptor.Search, descriptor.SearchFactory, nameof(ISymbolSearchProvider)),
+                (descriptor.CorporateActions, descriptor.CorporateActionsFactory, nameof(ICorporateActionProvider)),
+                (descriptor.Options, descriptor.OptionsFactory, nameof(IOptionsChainProvider)),
+                (descriptor.Brokerage, descriptor.BrokerageFactory, nameof(IBrokerageGateway))
+            ];
+
+            foreach (var slot in slots.Where(slot => slot.Implementation is not null))
+                slot.Factory.Should().NotBeNull(
+                    $"{descriptor.ProviderId} must explicitly own the factory for its declared {slot.Capability}");
+
+            descriptor.Registrations().Should().HaveCount(slots.Count(slot => slot.Implementation is not null));
+        }
+    }
+
+    [Fact]
+    public void Descriptor_owned_capability_without_a_factory_cannot_become_a_runtime_registration()
+    {
+        var descriptor = new ProviderCapabilityDescriptor("unconfigured", Streaming: typeof(SyntheticMarketDataClient));
+
+        descriptor.HasStreaming.Should().BeTrue();
+        var registrations = () => descriptor.Registrations().ToArray();
+
+        registrations.Should().Throw<InvalidOperationException>()
+            .WithMessage("*unconfigured*IMarketDataClient*factory*module ownership*");
+    }
+
+    [Fact]
+    public void Module_owned_capability_is_inventory_until_module_discovery_supplies_its_factory()
+    {
+        var descriptor = new ProviderCapabilityDescriptor(
+            "module-streaming", Streaming: typeof(SyntheticMarketDataClient),
+            FactoryOwner: ProviderCapabilityFactoryOwner.Module);
+
+        descriptor.HasStreaming.Should().BeTrue();
+        descriptor.Implementations().Should().Equal(typeof(SyntheticMarketDataClient));
+        descriptor.Registrations().Should().BeEmpty(
+            "module-owned metadata cannot implicitly construct an adapter outside the configured module");
+    }
+
+    [Fact]
     public void Descriptors_match_expected_provider_inventory_and_capabilities()
     {
         var providerIds = ProviderCapabilityDescriptorCatalog.Descriptors
