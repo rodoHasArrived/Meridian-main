@@ -31,6 +31,14 @@ boundary; omission before that boundary is missing evidence, not proof that the 
 These timestamps supply eligibility among rows read now, not historical commit visibility or a
 transaction snapshot. A later commit can change a repeated query with the same cutoffs.
 
+`SecurityTermsEnvelope` stamps asset-specific terms with `termsFormat` (flat, economic or custom
+profile) and a per-asset-class `assetClassTermsVersion` taken from `SecurityAssetClassCatalog`.
+Terms newer than the declared class version fail loudly; economic modules a flat conversion cannot
+express travel under the reserved `retainedEconomicTerms` key and fold back on the next economic
+rebuild. Reserved envelope keys are rejected as user-editable term fields.
+`SecurityMasterEventEnvelope` carries `PayloadType`/`PayloadVersion`;
+`SecurityMasterEventPayloads.EnsureReplayable` refuses unknown or newer payloads.
+
 `SecurityMasterCanonicalWithdrawn` records when independently retained registry evidence keeps an
 internal canonical key after Security Master withdraws its input authority. That spelling no longer
 resolves as a canonical input; independent identifiers and provider mappings remain available.

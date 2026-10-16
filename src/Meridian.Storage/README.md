@@ -46,6 +46,10 @@ carrying account. Backfill review/application require a Long or Asset book posit
 disposal and tax-history projection also refuse short direction, preventing asset-credit or
 opening-age tax rules from silently certifying a short cover.
 
+Security Master migration `039_security_master_event_payload_version.sql` adds non-null
+`payload_type`/`payload_version` columns to `security_events`, backfilled from the stored payload
+shape, so replay can refuse events written by a newer build.
+
 Security Master migration `036_security_master_workbench_generations.sql` adds the durable
 compare-and-set generation used by `PostgresSecurityMasterMutation`. Overlay values, their audit
 trail, governed drafts and lifecycle transitions share one connection and transaction. Discard-time

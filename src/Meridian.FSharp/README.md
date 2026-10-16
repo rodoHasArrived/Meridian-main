@@ -41,6 +41,8 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 - The bond economic definition carries the record's issue date, payment frequency, call flag and
   first call date, and issuer name in its maturity, coupon, call, and issuer modules, so a replay
   from economic terms alone keeps a callable bond callable.
+- `assetSpecificTermsJson` stamps flat terms with the shared terms-format envelope for every kind
+  except `CustomAsset`, whose profile owns its own document shape.
 - C# callers should enter through C#-friendly interop wrappers and should not depend on internal F# domain types.
 - Security Master identifier interop retains optional provider/source metadata for standard
   identifiers. For `ProviderSymbol`, the provider namespace carried by the identifier kind remains
