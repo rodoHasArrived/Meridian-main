@@ -1,0 +1,2 @@
+Package=Blake3.Native-3.0.2; runtime=10.0.0; architecture=X64; iterations=50000; repetitions=3; StopwatchFrequency=1000000000
+All 9 official BLAKE3 vectors passed; pattern=i%251; output=32 bytes.

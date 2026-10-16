@@ -1,0 +1,2 @@
+K4os.LZ4=1.3.8; codec=192; runtime=10.0.0; tiered=0; iterations=10000; reps=3
+LZ4 lossless roundtrips=2048; x32/x64 compressed-byte mismatches=346; Enforce32 restored=False

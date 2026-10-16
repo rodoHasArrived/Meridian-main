@@ -13,20 +13,42 @@ last_reviewed: 2026-05-20
 
 ## Purpose
 
-FSharp Trading contains functional trading calculations and models that support execution and research workflows.
+FSharp Trading contains the deterministic strategy lifecycle state machine and its C# interoperability boundary.
 
 ## Layer responsibility
 
-This layer should keep trading calculations isolated from broker implementation and UI behavior.
+This layer decides lifecycle transitions without broker, storage, or UI side effects. C# adapters execute hooks and apply completion signals; the lifecycle manager retains intent and verified outcomes.
 
 ## Key folders and files
 
 - `Meridian.FSharp.Trading.fsproj` - F# trading project boundary.
-- Trading calculation modules and functional trading models.
+- `StrategyRunTypes.fs` and `StrategyLifecycleState.fs` - commands and lifecycle states.
+- `StrategyLifecycleTransitions.fs` - admission, completion, and recovery rules.
+- `Interop.fs` - structured transition verdicts and fault diagnostics for C# callers.
+- `PromotionReadiness.fs` - terminal-state classification; this does not establish promotion eligibility.
 
 ## Important workflows
 
-Use this module for trading calculations that need deterministic scenario coverage.
+Use this module for lifecycle decisions that need deterministic scenario coverage.
+
+Start enters `WarmingUp`; `WarmupCompleted` enters `Running`. Only a running strategy can pause.
+Starting a paused strategy resumes its warmed state without repeating initialization. Stop enters
+`Stopping`; only `StopCompleted`, after successful cleanup, enters `Stopped`. Repeated stop requests
+while stopping are invalid. A faulted strategy requires successful cleanup before restarting through
+warmup; failed or cancelled cleanup keeps it faulted.
+
+Interop requires an explicit, case-sensitive state token. Missing, blank, or unsupported state
+names return an invalid verdict with unchanged state and no emitted facts. Failure reasons must
+be nonblank. Overloads accept the current fault reason, and verdicts retain previous and next
+fault diagnostics separately from a command rejection reason.
+
+`EmittedFacts` are deterministic policy evidence. Production C# orchestration maps them through
+`StrategyLifecycleFactMapping` into the ordered `LifecycleFacts` of retained run events: request
+facts accompany intent, while running/paused/stopped facts accompany verified external outcomes.
+Fault facts accompany failed or cancelled events. They are not commands or a separate replay stream.
+Persistence retries reuse the unchanged snapshot and fact order; legacy snapshots may omit facts.
+The C# contract suite enumerates F# states and commands and compares every interop verdict with
+the kernel, including the intentional `EvaluateStart("Paused")` to `Resume` translation.
 
 ## Diagrams
 

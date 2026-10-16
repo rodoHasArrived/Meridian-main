@@ -1,0 +1,87 @@
+{
+  "cases": 16,
+  "casesPassed": 16,
+  "captureHead": "7cbdaff7293f91f9d486275e6386ced11f8e893b",
+  "currentHead": "7cbdaff7293f91f9d486275e6386ced11f8e893b",
+  "sourceHashesUnchanged": true,
+  "dependencyHashesUnchanged": true,
+  "console": [
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 409,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "http-error",
+      "status": 503,
+      "url": "http://127.0.0.1:4173/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6"
+    },
+    {
+      "phase": "rendered-response-simulation",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    }
+  ],
+  "lockHashes": [
+    {
+      "file": "package-lock.json",
+      "sha256": "b9f91d026f6567cfa0a607bd8c8ca8c380d9c6753b42de7eba1f6acb5fc4a3c2"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/package-lock.json",
+      "sha256": "ba2e05edf708bd2470d58f0cc8b17c52d467701203dde708c00398230fb8e364"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/node_modules/.package-lock.json",
+      "sha256": "fee90e7616c7bcc0cef65eec2330cec83deb1de38e4b0405e16871fdfa28a130"
+    }
+  ],
+  "run": [
+    "2026-10-07T15:31:56.963Z",
+    "2026-10-07T15:32:38.770Z"
+  ],
+  "fixtureAndComponentHashes": [
+    {
+      "file": "src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts",
+      "sha256": "ed0a5f471a1e17376b2da853c02ee552d132128700d2f5352a45abcdeef2f9ae",
+      "matchesHead": true
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts",
+      "sha256": "d9a0e366d831b03a8885db3ba68e5955356aa38120f4e72def8048afecf367df",
+      "matchesHead": true
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts",
+      "sha256": "4a9d31b614cb256298b551095c37f7a6b8c338490dac31a671637ed3202fced9",
+      "matchesHead": true
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.close-test-fixtures.ts",
+      "sha256": "2f0211b58ec7e472abc2c1b3acfdc32889a84357ec23ad9c44f1d697c5a6f376",
+      "matchesHead": true
+    },
+    {
+      "file": "scripts/dev/web-screenshot-fixtures.json",
+      "sha256": "ff65478e972db1fbb6a659752abbd9b4881efde7eaf7e5bb795babc2d757fa7f",
+      "matchesHead": true
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.tsx",
+      "sha256": "f778d5e63c5bcf8025297e39a9b862eec13a0942ea29d81ed019082f8747991b",
+      "matchesHead": true
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts",
+      "sha256": "90e7f68d6a8c5c1093ac4716e65e3872d38245a170c6b15b5886489482998abb",
+      "matchesHead": true
+    }
+  ]
+}

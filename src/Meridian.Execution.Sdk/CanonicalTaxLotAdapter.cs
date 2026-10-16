@@ -9,8 +9,8 @@ public static class CanonicalTaxLotAdapter
     {
         ArgumentNullException.ThrowIfNull(execution);
         OpenLotValidation.Validate(retained);
-        if (execution.IsShort)
-            throw new InvalidOperationException("Short-lot canonical cutover requires an explicitly approved direction model.");
+        if (execution.IsShort || retained.Acquisition.Direction != OpenLotDirection.Long)
+            throw new InvalidOperationException("Short-lot canonical cutover requires direction-aware posting and certified consumer parity.");
         if (execution.LotId != retained.TaxLotRecordId || execution.Quantity != retained.OpenQuantity
             || DateOnly.FromDateTime(execution.OpenedAt.UtcDateTime) != retained.AcquiredDate
             || retained.Acquisition.QuantityBasis != LotQuantityBasis.Units

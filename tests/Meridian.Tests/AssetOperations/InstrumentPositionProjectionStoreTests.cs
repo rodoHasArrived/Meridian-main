@@ -88,6 +88,46 @@ public sealed class PostgresInstrumentPositionProjectionStoreTests : IAsyncLifet
     }
 
     [AssetOperationsDatabaseFact]
+    public async Task UpsertAsync_AppendsAnAppendOnlyWriteEventPerReplacement()
+    {
+        await new AssetOperationsMigrationRunner(_options).EnsureMigratedAsync();
+        var store = new PostgresAssetOperationsProjectionStore(_options);
+        var projection = InstrumentPositionProjectionFixture.Create();
+
+        await store.UpsertAsync(projection, InstrumentPositionProjectionFixture.Approval);
+        await store.UpsertAsync(projection, InstrumentPositionProjectionFixture.Approval);
+
+        await using var connection = new Npgsql.NpgsqlConnection(_options.ConnectionString);
+        await connection.OpenAsync();
+        await using (var count = new Npgsql.NpgsqlCommand(
+            $"select count(*), min(approval_actor) from \"{_options.Schema}\".asset_operations_write_events where security_id = @id",
+            connection))
+        {
+            count.Parameters.AddWithValue("id", InstrumentPositionProjectionFixture.SecurityId);
+            await using var reader = await count.ExecuteReaderAsync();
+            (await reader.ReadAsync()).Should().BeTrue();
+            reader.GetInt64(0).Should().Be(2, "every wholesale replacement is recorded");
+            reader.GetString(1).Should().Be(InstrumentPositionProjectionFixture.Approval.Actor);
+        }
+
+        foreach (var mutation in new[]
+                 {
+                     $"delete from \"{_options.Schema}\".asset_operations_write_events",
+                     $"truncate \"{_options.Schema}\".asset_operations_write_events"
+                 })
+        {
+            await using var refused = new Npgsql.NpgsqlCommand(mutation, connection);
+            var act = () => refused.ExecuteNonQueryAsync();
+            await act.Should().ThrowAsync<Npgsql.PostgresException>().Where(e => e.SqlState == "55000", mutation);
+        }
+
+        await using var retained = new Npgsql.NpgsqlCommand(
+            $"select count(*) from \"{_options.Schema}\".asset_operations_write_events where security_id = @id", connection);
+        retained.Parameters.AddWithValue("id", InstrumentPositionProjectionFixture.SecurityId);
+        ((long)(await retained.ExecuteScalarAsync())!).Should().Be(2, "refused mutations leave the write events in place");
+    }
+
+    [AssetOperationsDatabaseFact]
     public async Task UpsertAsync_ShouldRoundTripTypedRolePositionStateAndLineageWithoutLegacyDeletion()
     {
         await new AssetOperationsMigrationRunner(_options).EnsureMigratedAsync();

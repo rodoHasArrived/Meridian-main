@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Order;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Benchmarks;
 
@@ -20,20 +21,20 @@ namespace Meridian.Benchmarks;
 /// </para>
 ///
 /// <para>
-/// The production <c>WriteAheadLog.ComputeChecksum</c> has since been updated to use
-/// <see cref="IncrementalHash"/> with <c>stackalloc</c> output and <see cref="System.Buffers.ArrayPool{T}"/>
-/// for large payloads.  These benchmarks retain the legacy string-concat approach as a historical
-/// baseline so the improvement remains measurable over time.
+/// The production core now uses the version 2, losslessly encoded BLAKE3 checksum.
+/// These benchmarks retain the SHA-256 approaches as historical measurements and expose the
+/// current core without final hex-string materialization, matching the portable budget boundary.
 /// </para>
 ///
 /// <para>
-/// These benchmarks measure three approaches:
+/// These benchmarks measure four approaches:
 /// <list type="bullet">
 ///   <item><see cref="Checksum_StringConcat_Legacy"/> — original string-concat approach (historical baseline)</item>
 ///   <item><see cref="Checksum_IncrementalHash"/> — hash fields individually with IncrementalHash to
 ///         avoid the full concatenated-string allocation</item>
 ///   <item><see cref="Checksum_IncrementalHash_StackAlloc"/> — IncrementalHash with stackalloc output
-///         buffer (eliminates the 32-byte hash array allocation; closest to the current production path)</item>
+///         buffer (eliminates the 32-byte hash array allocation)</item>
+///   <item><see cref="Checksum_ProductionCore"/> — current production encoding and cryptographic hashing</item>
 /// </list>
 /// </para>
 ///
@@ -75,6 +76,10 @@ public class WalChecksumBenchmarks
         "large" => _largePayload,
         _ => _mediumPayload
     };
+
+    [Benchmark]
+    public string Checksum_ProductionCore() => WriteAheadLog.ComputeChecksumForBenchmark(
+        _sequence, _timestamp.UtcDateTime, RecordType, CurrentPayload);
 
     /// <summary>
     /// Historical string-concat approach that was used in WriteAheadLog.ComputeChecksum

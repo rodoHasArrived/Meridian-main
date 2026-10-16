@@ -45,6 +45,23 @@ public class QuoteCollectorTests
     }
 
     [Fact]
+    public void OnQuote_PreservesSourceTimeAndStampsSeparateReceiptTimes()
+    {
+        var sourceTime = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var update = new MarketQuoteUpdate(sourceTime, "SPY", 450m, 100, 451m, 100, Source: "TEST");
+        var beforeReceipt = DateTimeOffset.UtcNow;
+
+        _collector.OnQuote(update);
+
+        var afterReceipt = DateTimeOffset.UtcNow;
+        var published = _publishedEvents.Should().ContainSingle().Subject;
+        published.Timestamp.Should().Be(sourceTime);
+        published.ExchangeTimestamp.Should().Be(sourceTime);
+        published.ReceivedAtUtc.Should().BeOnOrAfter(beforeReceipt).And.BeOnOrBefore(afterReceipt);
+        published.ReceivedAtMonotonic.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
     public void OnQuote_WithNullUpdate_ThrowsArgumentNullException()
     {
         // Act

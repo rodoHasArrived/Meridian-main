@@ -1,0 +1,1 @@
+var e=new Set;function t(t,n){if(typeof document>`u`||e.has(t))return;e.add(t);let r=document.createElement(`style`);r.setAttribute(`data-mds`,t),r.textContent=n,document.head.appendChild(r)}export{t};

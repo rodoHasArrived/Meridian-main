@@ -1,6 +1,5 @@
 using System.Net.WebSockets;
 using System.Security.Authentication;
-using System.Diagnostics;
 using FluentAssertions;
 using Meridian.Infrastructure.Resilience;
 using Xunit;
@@ -149,27 +148,36 @@ public sealed class ProviderConnectionSupervisorTests
             transactionEntered.TrySetResult(true);
             await releaseTransaction.Task;
         });
-        await transactionEntered.Task.WaitAsync(TimeSpan.FromSeconds(1));
+        try
+        {
+            await transactionEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            using var disconnectCts = new CancellationTokenSource();
+            var disconnectTask = supervisor.DisconnectAsync(static _ => Task.CompletedTask, disconnectCts.Token);
+            disconnectTask.IsCompleted.Should().BeFalse("the provider transaction is still blocked");
 
-        using var disconnectCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(40));
-        var elapsed = Stopwatch.StartNew();
-        Func<Task> disconnect = async () => await supervisor.DisconnectAsync(
-            static _ => Task.CompletedTask,
-            disconnectCts.Token);
+            disconnectCts.Cancel();
+            Func<Task> disconnect = () => disconnectTask.WaitAsync(TimeSpan.FromSeconds(5));
+            await disconnect.Should().ThrowAsync<OperationCanceledException>();
+            reconnectTask.IsCompleted.Should().BeFalse("caller cancellation must not depend on provider cooperation");
 
-        await disconnect.Should().ThrowAsync<OperationCanceledException>();
-        elapsed.Stop();
-        elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(750));
+            using var disposeCts = new CancellationTokenSource();
+            var disposeTask = supervisor.DisposeAsync(disposeCts.Token).AsTask();
+            disposeTask.IsCompleted.Should().BeFalse("disposal is waiting on the same blocked provider transaction");
+            disposeCts.Cancel();
+            await disposeTask.WaitAsync(TimeSpan.FromSeconds(5));
+            supervisor.GetSnapshot().LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
+            supervisor.IsReconnecting.Should().BeFalse();
+            reconnectTask.IsCompleted.Should().BeFalse();
 
-        using var disposeCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(40));
-        await supervisor.DisposeAsync(disposeCts.Token).AsTask().WaitAsync(TimeSpan.FromSeconds(1));
-        supervisor.GetSnapshot().LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
-        supervisor.IsReconnecting.Should().BeFalse();
-
-        releaseTransaction.TrySetResult(true);
-        (await reconnectTask.WaitAsync(TimeSpan.FromSeconds(1))).Should().BeFalse(
-            "a reconnect transaction that returns after disposal cannot reactivate the provider");
-        await supervisor.DisposeAsync();
+            releaseTransaction.TrySetResult(true);
+            (await reconnectTask.WaitAsync(TimeSpan.FromSeconds(5))).Should().BeFalse(
+                "a reconnect transaction that returns after disposal cannot reactivate the provider");
+        }
+        finally
+        {
+            releaseTransaction.TrySetResult(true);
+            await supervisor.DisposeAsync();
+        }
     }
 
     [Fact]
@@ -179,23 +187,22 @@ public sealed class ProviderConnectionSupervisorTests
         await supervisor.ConnectAsync(static _ => Task.CompletedTask);
         var cleanupEntered = NewSignal();
         var releaseCleanup = NewSignal();
-        using var disconnectCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(40));
-        var elapsed = Stopwatch.StartNew();
+        using var disconnectCts = new CancellationTokenSource();
 
         var disconnectTask = supervisor.DisconnectAsync(async _ =>
         {
             cleanupEntered.TrySetResult(true);
             await releaseCleanup.Task;
         }, disconnectCts.Token);
-        Func<Task> disconnect = async () => await disconnectTask;
+        Func<Task> disconnect = () => disconnectTask.WaitAsync(TimeSpan.FromSeconds(5));
 
         try
         {
-            await cleanupEntered.Task.WaitAsync(TimeSpan.FromSeconds(1));
+            await cleanupEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            disconnectTask.IsCompleted.Should().BeFalse("the provider cleanup is still blocked");
+            disconnectCts.Cancel();
             await disconnect.Should().ThrowAsync<OperationCanceledException>();
-            elapsed.Stop();
-
-            elapsed.Elapsed.Should().BeLessThan(TimeSpan.FromMilliseconds(750));
+            releaseCleanup.Task.IsCompleted.Should().BeFalse("caller cancellation must not depend on provider cleanup");
             supervisor.GetSnapshot().LifecycleState.Should().Be(ProviderConnectionLifecycleState.Disconnected);
         }
         finally

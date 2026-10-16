@@ -1,0 +1,78 @@
+{
+  "recordedAt": "2026-10-07T19:59:59.946351+00:00",
+  "validatedCommit": "00db380e0007b9a18ea3dd94a831b374c288ee3b",
+  "branch": "codex/wal-dedup-provider",
+  "testCounters": {
+    "total": "88",
+    "executed": "88",
+    "passed": "88",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "selectedTestsByClass": {
+    "Meridian.Tests.Performance.AllocationBudgetIntegrationTests": 9,
+    "Meridian.Tests.Application.Pipeline.DedupWalOrderingTests": 37,
+    "Meridian.Tests.Contracts.Integrity.Sha256DigestTests": 36,
+    "Meridian.Tests.Application.Pipeline.PersistentDedupLedgerTests": 6
+  },
+  "artifacts": [
+    {
+      "path": "artifacts/dedup-provider-validation/focused-tests.log",
+      "sha256": "7efa5f54fb1c359c4161c49c0f30ed96753a1222a7409fdda5d6c1242b1610ff",
+      "bytes": 143889,
+      "modifiedAtUnixNanoseconds": 1791403080145806963
+    },
+    {
+      "path": "artifacts/dedup-provider-validation/focused-test-receipt.json",
+      "sha256": "9e2095380fd7bbbd4da3cbbd870206f3e9043e2e64b397ccd4350288ee87d1f8",
+      "bytes": 1257,
+      "modifiedAtUnixNanoseconds": 1791403080224506250
+    },
+    {
+      "path": "artifacts/dedup-provider-validation/test-results/dedup-provider-focused.trx",
+      "sha256": "0c8d0cbc2d1c9db6024e25ca1bfba7ea127205763a5f0df7fe490f94c30f31b1",
+      "bytes": 128161,
+      "modifiedAtUnixNanoseconds": 1791403080141806888
+    },
+    {
+      "path": "artifacts/dedup-provider-validation/source-review-receipt.json",
+      "sha256": "e3ded17f544253f3edd06dd30309a8adf385d22ec6e14f43b158081d3cc10c09",
+      "bytes": 3040,
+      "modifiedAtUnixNanoseconds": 1791403199946279470
+    }
+  ],
+  "buildArtifacts": [
+    {
+      "path": "src/Meridian.Contracts/bin/Release/net10.0/Meridian.Contracts.dll",
+      "sha256": "fe54de2a76254ddf444ede339b6222a346a3ae1b6d24593e12bba5506139febb",
+      "bytes": 10589696,
+      "modifiedAtUnixNanoseconds": 1791402456054291362
+    },
+    {
+      "path": "src/Meridian.Application/bin/Release/net10.0/Meridian.Application.dll",
+      "sha256": "7b04b2f3d61cb327f53f68088c348abf20f66db28bccbddc976b9f022ec92553",
+      "bytes": 4497920,
+      "modifiedAtUnixNanoseconds": 1791402686338529502
+    },
+    {
+      "path": "tests/Meridian.Tests/bin/Release/net10.0/Meridian.Tests.dll",
+      "sha256": "db488f5a520ad694e776614c08134299f73b2063ed9c08bb1e88bb53e290949c",
+      "bytes": 27704320,
+      "modifiedAtUnixNanoseconds": 1791403046469193079
+    }
+  ],
+  "sourceFilesMatchReviewReceipt": true,
+  "reviewNote": "Thread gate exception capture was hardened during dependency build, before test compilation. The recorded final test source predates its compiled DLL. Production source remained unchanged after command start.",
+  "remainingValidation": "Root owns module/doc refresh, final canonicalCI and authoritative hosted portable stage benchmark."
+}

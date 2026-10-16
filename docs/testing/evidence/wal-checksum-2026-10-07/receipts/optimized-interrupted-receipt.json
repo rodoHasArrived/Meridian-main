@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "runDirectory": "artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1",
+  "sourceCommit": "5ce795c47fc7c67734c4baa970c3bc4434c0e3de",
+  "harnessStatus": "interrupted after BDN completed all eight stages; benchmark process exit was not captured",
+  "originalManifestPreserved": true,
+  "portableStageCompleteness": "passed existing check_full_measurements",
+  "validatorCommand": [
+    "python3",
+    "build/scripts/validate_budget.py",
+    "--bdn-results",
+    "artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/bdn/results",
+    "--budget-json",
+    "artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1/bdn/perf-budgets.json",
+    "--fail-on-violation",
+    "--json-output",
+    "artifacts/wal-checksum-profile/optimized-interrupted-budget-evidence.json"
+  ],
+  "validatorExitCode": 1,
+  "validatorMeasuredCount": 8,
+  "conclusion": "failure: DedupKey_CacheMiss exceeds unchanged latency budget",
+  "fileSha256": {
+    "bdn/Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-173115.log": "3fab8343b7512d7699ab57b127ad6643a5f895df4bc5f26b3b05e598814e2e42",
+    "bdn/perf-budgets.json": "73c03f00210faac0b1d7bd5838d491cb8daae989ddc4304b30d9283997ebedce",
+    "bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-full.json": "1bca637bd201b7e286305aaeb86785ca795d05e921ea6f68fc47933832ac58f4",
+    "bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report-github.md": "7114ae7eaa515e171ce6677a39ae0afbfba574bcd91e0394d4b7fe09f7cb0e91",
+    "bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.csv": "5fb7ca5477ff8af130b694879c292753b075b2b9b82c79ba6ac9561842208b4d",
+    "bdn/results/Meridian.Benchmarks.PipelineBudgetBenchmarks-report.html": "725087f1cf3fafa7a6e3fb8fbe4a233a702f925c3bbc7681c576a40747fee4e9",
+    "benchmark.log": "aa3a6c8f3a67a229bf458fa1203a1bc99b2b229cebe34c516e6c97dc2d2b4833",
+    "build.log": "d91b576b9bd18b3e62c55af3b06c939afaa67a011d172fa7c1114910f17e8d2d",
+    "dotnet-info.log": "9c8bd18f0e65fc688dfe0de1feb28f24da604926d090c38119a7716144150c3c",
+    "profile.json": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+    "restore.log": "1764ab81eccabd18330af48ad756d29096141ba2cbd758139af7bc4448fbf9a3",
+    "run.json": "8f6f347907e317af72d1e89e41eb15ee5b4e0bad11b64496ca90fe73d01f5957",
+    "runtime.log": "89d66fdbcce8963bd9b073960b906d27d109c3998e5e2b06ccb50b18cb80f76d",
+    "sdk.log": "a807ca80c392730f0b9a4114bcd64d2c7258ea2f97fbeab0b9c5b3f88194ce94"
+  }
+}

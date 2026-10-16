@@ -1,0 +1,16 @@
+{
+  "command": [
+    "bash",
+    "scripts/ci.sh"
+  ],
+  "sourceCommit": "a65c3f3db71868724d5a3813e70575f75a903279",
+  "startedAt": "2026-10-07T18:26:35.308079+00:00",
+  "toolPathPrefix": [
+    "/workspace/wal-tools/venv/bin",
+    "/workspace/wal-tools/bin",
+    "/workspace/dotnet-10.0.100"
+  ],
+  "DOTNET_ROOT": "/workspace/dotnet-10.0.100",
+  "exitCode": 1,
+  "completedAt": "2026-10-07T18:58:52.603256+00:00"
+}

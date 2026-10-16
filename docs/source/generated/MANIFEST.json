@@ -6,7 +6,7 @@
   "inputs": [
     {
       "path": "docs/source/data/adapter-readiness.yml",
-      "sha256": "f154c131638cc92fe1d995e39c114ab4291d32097282815ab926cb3e59720d18"
+      "sha256": "040e843361f5284c3657fa24394918e7fdfbdd3a88af1baaf009cc51a019ee88"
     },
     {
       "path": "docs/source/data/diagram-index.yml",
@@ -14,7 +14,7 @@
     },
     {
       "path": "docs/source/data/source-modules.yml",
-      "sha256": "bf714709c4cac686ea7581fa07c495f4d4412e99e2c9e19f32deca20322e269a"
+      "sha256": "40ee016b178cb707f1045f7d822d899b0e69203eecfb3da50037aa2bca6816e0"
     },
     {
       "path": "docs/source/data/source-readme-coverage.yml",
@@ -36,7 +36,7 @@
     },
     {
       "path": "docs/source/generated/source-roadmap-traceability.md",
-      "sha256": "81837293d03fb9990e6bed4a8ebab86a91a14ce7a7077f5c823ccd70e2bff172"
+      "sha256": "b6d7cdac47019a8dd3213752e4a695da9ad2c2c7d03aa4971b72a0f18e7a8543"
     },
     {
       "path": "docs/source/generated/source-todo-checklist.md",

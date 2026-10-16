@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-07T17:19:13Z",
+  "generatedAt": "2026-10-07T18:21:09Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "Meridian-main",
+  "repositoryRoot": "Meridian-consolidation-publish",
   "subsystems": [
     {
       "id": "host-shell",
@@ -2444,323 +2444,323 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Ui.Shared/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 27
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T17:17:54Z",
+      "lastCommit": "baeea857d",
+      "lastSummary": "Preserve canonical consolidation header and posting lineage",
+      "touches": 6
     },
     {
-      "path": "src/Meridian.Contracts/README.md",
+      "path": "src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T17:17:54Z",
+      "lastCommit": "baeea857d",
+      "lastSummary": "Preserve canonical consolidation header and posting lineage",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T17:17:54Z",
+      "lastCommit": "baeea857d",
+      "lastSummary": "Preserve canonical consolidation header and posting lineage",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Contracts/Ledger/ConsolidationDtos.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 14
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Consolidation.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types/consolidation.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Contracts/Ledger/LedgerBookDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ConsolidationChartValidation.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T16:17:55Z",
+      "lastCommit": "4c039f269",
+      "lastSummary": "Apply canonical formatting to consolidation authority leases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/FundStructure/PostgresFundStructureStore.Consolidation.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T16:17:55Z",
+      "lastCommit": "4c039f269",
+      "lastSummary": "Apply canonical formatting to consolidation authority leases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
+      "touches": 30
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Consolidation/ConsolidationPerimeterResolver.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Validation.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 22
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
       "subsystem": "Unmapped",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 14
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 16
+    },
+    {
+      "path": "src/Meridian.Storage/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 15
     },
     {
       "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 9
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/IConsolidationPostingAuthority.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/LedgerStoreExtensions.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Contracts/README.md",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 15
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 9
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 10
     },
     {
       "path": "src/Meridian.Ui/dashboard/src/types.ts",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Contracts/Api/UiApiRoutes.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/api.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Contracts/Workstation/OnboardingDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Onboarding/OnboardingWorkspaceService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/OnboardingEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/FileOnboardingWorkspaceStore.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/api/accounting-onboarding.api.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/api/accounting-onboarding.api.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.onboarding-panel.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.onboarding-panel.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/types/accounting-onboarding.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:19:30-07:00",
-      "lastCommit": "a701eee58",
-      "lastSummary": "Add bounded accounting onboarding workspace",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Instruments/AssetOperations/PortfolioCashLadderEngine.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-06T23:45:13-07:00",
-      "lastCommit": "5c6e222c4",
-      "lastSummary": "Validate cash ladder currency evidence after scenario selection (#2920)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Instruments/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-06T23:45:13-07:00",
-      "lastCommit": "5c6e222c4",
-      "lastSummary": "Validate cash ladder currency evidence after scenario selection (#2920)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/PortfolioCashLadderReadService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-06T23:45:13-07:00",
-      "lastCommit": "5c6e222c4",
-      "lastSummary": "Validate cash ladder currency evidence after scenario selection (#2920)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/package-lock.json",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-06T16:11:10-07:00",
-      "lastCommit": "4176336ec",
-      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 7
     },
     {
-      "path": "src/Meridian.Ui/dashboard/package.json",
+      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.MutationRecovery.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-06T16:11:10-07:00",
-      "lastCommit": "4176336ec",
-      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
-      "touches": 4
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 3
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/types/workstation-3.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-06T16:11:10-07:00",
-      "lastCommit": "4176336ec",
-      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Contracts/Ledger/AccountingClosePreparationDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-06T16:11:10-07:00",
-      "lastCommit": "4176336ec",
-      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
-      "touches": 1
+      "path": "src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-06T16:11:10-07:00",
-      "lastCommit": "4176336ec",
-      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
-      "touches": 1
+      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Lifecycle.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingCloseManagementService.PlanProjection.cs",
+      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/finance-standard-pages-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/finance-standard-pages-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Entities/FundStructure/FundStructurePolicyService.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-10-06T16:11:10-07:00",
-      "lastCommit": "4176336ec",
-      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 1
     },
     {
-      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingCloseManagementService.PreparationGuard.cs",
+      "path": "src/Meridian.Entities/README.md",
       "subsystem": "Unmapped",
-      "lastModified": "2026-10-06T16:11:10-07:00",
-      "lastCommit": "4176336ec",
-      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingCloseManagementService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-06T16:11:10-07:00",
-      "lastCommit": "4176336ec",
-      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingClosePreparationService.Authority.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-06T16:11:10-07:00",
-      "lastCommit": "4176336ec",
-      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingClosePreparationService.Persistence.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-06T16:11:10-07:00",
-      "lastCommit": "4176336ec",
-      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingClosePreparationService.Recovery.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-06T16:11:10-07:00",
-      "lastCommit": "4176336ec",
-      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/AccountingClose/AccountingClosePreparationService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-06T16:11:10-07:00",
-      "lastCommit": "4176336ec",
-      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityRepositories.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-06T16:11:10-07:00",
-      "lastCommit": "4176336ec",
-      "lastSummary": "Add versioned next-period preparation to the close workspace (#3101)",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 1
     }
   ],

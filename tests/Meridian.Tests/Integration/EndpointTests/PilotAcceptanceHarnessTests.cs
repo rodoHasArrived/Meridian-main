@@ -696,8 +696,9 @@ public sealed class PilotAcceptanceHarnessTests
             RecordedBy: "pilot-harness",
             PendingSettlement: 0m));
 
+        var bankBatchId = Guid.NewGuid();
         await accountService.IngestBankStatementAsync(new IngestBankStatementRequest(
-            BatchId: Guid.NewGuid(),
+            BatchId: bankBatchId,
             AccountId: account.AccountId,
             StatementDate: new DateOnly(2026, 4, 11),
             BankName: "Meridian Bank",
@@ -706,7 +707,7 @@ public sealed class PilotAcceptanceHarnessTests
             [
                 new BankStatementLineDto(
                     LineId: Guid.NewGuid(),
-                    BatchId: Guid.NewGuid(),
+                    BatchId: bankBatchId,
                     AccountId: account.AccountId,
                     TransactionDate: new DateOnly(2026, 4, 11),
                     ValueDate: new DateOnly(2026, 4, 11),

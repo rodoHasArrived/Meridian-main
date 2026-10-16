@@ -73,7 +73,7 @@ export function ReportingRunAuditDisclosure({ run }: ReportingRunStatusModulePro
                     target="_blank"
                     rel="noreferrer"
                     aria-label={link.ariaLabel}
-                    className="inline-flex min-h-9 min-w-0 items-center gap-2 rounded-sm border border-border/70 bg-secondary/35 px-2.5 py-1.5 text-xs text-foreground hover:bg-secondary/55 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="inline-flex min-h-9 min-w-0 items-center gap-2 rounded-sm border border-border/70 bg-secondary/35 px-2.5 py-1.5 text-xs text-foreground hover:bg-secondary/55 focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                   >
                     <Badge variant="outline">{link.kind}</Badge>
                     <span className="truncate">{link.label}</span>

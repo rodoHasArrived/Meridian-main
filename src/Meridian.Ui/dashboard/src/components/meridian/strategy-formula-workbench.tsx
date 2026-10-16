@@ -124,7 +124,7 @@ export function StrategyFormulaWorkbench({
                 <button
                   key={field.fieldId}
                   type="button"
-                  className="w-full rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-left transition-colors hover:border-primary/50 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-left transition-colors hover:border-primary/50 hover:bg-primary/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   onClick={() => insertText(field.fieldId)}
                   aria-label={`Insert ${field.fieldId}`}
                 >
@@ -152,7 +152,7 @@ export function StrategyFormulaWorkbench({
             <textarea
               value={source}
               onChange={(event) => setSource(event.target.value)}
-              className="min-h-52 w-full resize-y rounded-md border border-border bg-background px-3 py-2 font-mono text-sm leading-6 text-foreground shadow-[var(--shadow-panel)] outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/70 focus:ring-2 focus:ring-primary/35"
+              className="min-h-52 w-full resize-y rounded-md border border-border bg-background px-3 py-2 font-mono text-sm leading-6 text-foreground shadow-[var(--shadow-panel)] outline-hidden transition-colors placeholder:text-muted-foreground focus:border-primary/70 focus:ring-2 focus:ring-primary/35"
               aria-label="Strategy formula source"
               spellCheck={false}
             />
@@ -161,7 +161,7 @@ export function StrategyFormulaWorkbench({
                 <button
                   key={suggestion.suggestionId}
                   type="button"
-                  className="rounded-md border border-border/70 bg-secondary/20 p-3 text-left transition-colors hover:border-primary/50 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="rounded-md border border-border/70 bg-secondary/20 p-3 text-left transition-colors hover:border-primary/50 hover:bg-primary/10 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   onClick={() => insertText(suggestion.expression)}
                   aria-label={`Insert formula suggestion ${suggestion.expression}`}
                 >
@@ -205,7 +205,7 @@ export function StrategyFormulaWorkbench({
                   aria-pressed={cell.cellId === selectedCellId}
                   onClick={() => setSelectedCellId(cell.cellId)}
                   className={cn(
-                    "w-full rounded-md border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                    "w-full rounded-md border px-3 py-2 text-left transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                     cell.cellId === selectedCellId
                       ? "border-primary/60 bg-primary/10"
                       : "border-border/70 bg-secondary/20 hover:border-primary/50"

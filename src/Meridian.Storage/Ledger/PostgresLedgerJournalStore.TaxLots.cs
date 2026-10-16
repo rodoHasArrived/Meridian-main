@@ -362,7 +362,11 @@ public sealed partial class PostgresLedgerJournalStore
 
         ValidateFaceValueTerms(lot);
         if (lot.Acquisition is not null)
+        {
+            if (lot.Acquisition.Direction != Meridian.Contracts.Accounting.Lots.OpenLotDirection.Long)
+                throw new LedgerValidationException("Short lots require the governed opening/cover posting path; direct lot saves cannot enable short accounting.");
             _ = lot.ToOpenLot();
+        }
 
         if (lot.OriginatingMutationBatchId.HasValue || lot.LastMutationBatchId.HasValue)
         {

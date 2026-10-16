@@ -31,13 +31,15 @@ public sealed partial class PostgresLedgerJournalStore :
     // Deferred because the asset projection store itself consumes the ledger journal interface.
     private readonly Func<Meridian.Storage.SecurityMaster.ISecurityMasterStore?>? _backfillSecurityMaster;
     private readonly Func<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?>? _backfillPositions;
+    private readonly Func<IConsolidationPostingAuthority?>? _consolidationAuthority;
 
     public PostgresLedgerJournalStore(
         LedgerJournalStoreOptions options,
         IFundScopeTenantAccessor? tenantAccessor = null,
         TenantScopeEnforcementOptions? tenantScope = null,
         Func<Meridian.Storage.SecurityMaster.ISecurityMasterStore?>? backfillSecurityMaster = null,
-        Func<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?>? backfillPositions = null)
+        Func<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?>? backfillPositions = null,
+        Func<IConsolidationPostingAuthority?>? consolidationAuthority = null)
     {
         ArgumentNullException.ThrowIfNull(options);
         _options = options;
@@ -45,6 +47,7 @@ public sealed partial class PostgresLedgerJournalStore :
         _tenantScope = tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary;
         _backfillSecurityMaster = backfillSecurityMaster;
         _backfillPositions = backfillPositions;
+        _consolidationAuthority = consolidationAuthority;
     }
 
     // SEC-005 slice 4c-ii: the caller's tenant for the current ambient scope, or null (fail-open).
@@ -55,6 +58,7 @@ public sealed partial class PostgresLedgerJournalStore :
         RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(entry.Entry);
+        RejectJournalOnlySuccessorPosting(entry);
         entry = AccountingPostingCommandValidator.NormalizeAndValidate(
             entry,
             _options.RequireGovernedPostingCommand,
@@ -78,16 +82,55 @@ public sealed partial class PostgresLedgerJournalStore :
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
-        await AppendAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        await using var authority = await AcquireConsolidationAuthorityAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        await AppendCoreAsync(connection, transaction, entry, ct).ConfigureAwait(false);
 
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
-    public async Task AppendAsync(
+    public Task AppendAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         LedgerJournalEntryWrite entry,
         CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(entry.Entry);
+        RejectJournalOnlySuccessorPosting(entry);
+        return AppendJournalWithinTransactionAsync(connection, transaction, entry, ct);
+    }
+
+    private static void RejectJournalOnlySuccessorPosting(LedgerJournalEntryWrite entry)
+    {
+        if (entry.PostingCommand?.LotCapitalReturn is not null
+            || entry.Entry.Metadata.Tags?.ContainsKey(Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturn.JournalFingerprintTag) == true)
+            throw new LedgerValidationException("Capital-return journals require the atomic journal/lot posting boundary.");
+        if (entry.PostingCommand?.LotCorporateAction is not null
+            || entry.Entry.Metadata.Tags?.ContainsKey(Meridian.Contracts.Accounting.Lots.OpenLotSuccessors.JournalFingerprintTag) == true)
+            throw new LedgerValidationException("Successor journals require the atomic predecessor/successor posting boundary.");
+    }
+
+    private Task AppendJournalWithinTransactionAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        LedgerJournalEntryWrite entry,
+        CancellationToken ct,
+        bool verifiedAmortizationReversal = false)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(entry.Entry);
+        if (ConsolidationPostingEvidenceGuard.Validate(entry) is not null)
+            throw new LedgerValidationException(
+                "Consolidation requires the standalone append transaction so authoritative ownership and policy remain locked through commit.");
+        return AppendCoreAsync(connection, transaction, entry, ct, verifiedAmortizationReversal);
+    }
+
+    private async Task AppendCoreAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        LedgerJournalEntryWrite entry,
+        CancellationToken ct,
+        bool verifiedAmortizationReversal = false)
     {
         RequireWriteTenant();
         ArgumentNullException.ThrowIfNull(connection);
@@ -134,9 +177,13 @@ public sealed partial class PostgresLedgerJournalStore :
                 $"Accounting period version {period.Version} does not match expected version {expectedVersion}.");
         }
 
-        LedgerPeriodPostingGuard.Validate(entry, period);
+        if (verifiedAmortizationReversal)
+            LedgerPeriodPostingGuard.ValidateRetainedAmortizationReversal(entry, period);
+        else
+            LedgerPeriodPostingGuard.Validate(entry, period);
         await ValidateJournalBasisAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
+        await ValidateCurrentConsolidationSourcesAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await InsertJournalEntryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await InsertJournalLegsAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await AppendLedgerAuditAsync(connection, transaction, auditHead, "journal", entry.Entry.JournalEntryId, 1,
@@ -153,6 +200,7 @@ public sealed partial class PostgresLedgerJournalStore :
         if (!query.LedgerBookId.HasValue
             && !query.PeriodId.HasValue
             && !query.AggregateId.HasValue
+            && !query.JournalEntryId.HasValue
             && !query.SourceEventId.HasValue
             && string.IsNullOrWhiteSpace(query.AccountName)
             && !query.OccurredFrom.HasValue
@@ -171,6 +219,11 @@ public sealed partial class PostgresLedgerJournalStore :
             Qualified("journal_legs"),
             Qualified("accounting_periods"),
             query);
+
+        if (query.JournalEntryId.HasValue)
+        {
+            command.Parameters.AddWithValue("journal_entry_id", query.JournalEntryId.Value);
+        }
 
         if (query.SourceEventId.HasValue)
         {
@@ -1544,7 +1597,7 @@ public sealed partial class PostgresLedgerJournalStore :
                    created_at,
                    updated_at
             from {Qualified("ledger_books")}
-            where ledger_book_id = @ledger_book_id;
+            where ledger_book_id = @ledger_book_id for share;
             """;
         command.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
 

@@ -109,13 +109,30 @@ public static class ProviderDataQualityValidator
         return issues.Count == 0 ? Array.Empty<ProviderDataQualityIssue>() : issues;
     }
 
+    public static IReadOnlyList<ProviderDataQualityIssue> ValidateAggregate(
+        string providerName,
+        AggregateBar update,
+        DateTimeOffset? now = null,
+        TimeSpan? staleThreshold = null)
+    {
+        ArgumentNullException.ThrowIfNull(update);
+
+        // AggregateBar enforces price, volume and window ordering invariants at construction.
+        // Source window boundaries also need the same clock checks as trades and quotes.
+        var issues = new List<ProviderDataQualityIssue>(capacity: 2);
+        ValidateCommon(providerName, update.Symbol, update.StartTime, now, staleThreshold, issues, "startTime");
+        ValidateTimestamp(providerName, update.Symbol, update.EndTime, now, staleThreshold, issues, "endTime");
+        return issues.Count == 0 ? Array.Empty<ProviderDataQualityIssue>() : issues;
+    }
+
     private static void ValidateCommon(
         string providerName,
         string? symbol,
         DateTimeOffset timestamp,
         DateTimeOffset? now,
         TimeSpan? staleThreshold,
-        List<ProviderDataQualityIssue> issues)
+        List<ProviderDataQualityIssue> issues,
+        string timestampField = "timestamp")
     {
         if (string.IsNullOrWhiteSpace(symbol))
         {
@@ -127,11 +144,23 @@ public static class ProviderDataQualityValidator
                 "Drop the event and inspect provider symbol mapping."));
         }
 
+        ValidateTimestamp(providerName, symbol, timestamp, now, staleThreshold, issues, timestampField);
+    }
+
+    private static void ValidateTimestamp(
+        string providerName,
+        string? symbol,
+        DateTimeOffset timestamp,
+        DateTimeOffset? now,
+        TimeSpan? staleThreshold,
+        List<ProviderDataQualityIssue> issues,
+        string fieldPath)
+    {
         if (timestamp == default)
         {
             issues.Add(ProviderDataQualityIssue.Error(
                 providerName,
-                "timestamp",
+                fieldPath,
                 symbol,
                 "Timestamp is required.",
                 "Drop the event and inspect provider timestamp mapping."));
@@ -143,7 +172,7 @@ public static class ProviderDataQualityValidator
         {
             issues.Add(ProviderDataQualityIssue.Error(
                 providerName,
-                "timestamp",
+                fieldPath,
                 symbol,
                 "Timestamp is too far in the future.",
                 "Drop the event and inspect provider clock, timezone, or timestamp unit mapping."));
@@ -153,7 +182,7 @@ public static class ProviderDataQualityValidator
         {
             issues.Add(ProviderDataQualityIssue.Warning(
                 providerName,
-                "timestamp",
+                fieldPath,
                 symbol,
                 "Timestamp is stale for the configured provider boundary.",
                 "Flag the event and inspect provider latency, replay handoff, or subscription recovery state."));

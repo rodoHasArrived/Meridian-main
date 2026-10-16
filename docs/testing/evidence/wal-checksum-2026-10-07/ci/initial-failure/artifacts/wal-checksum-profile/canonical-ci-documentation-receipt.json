@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "sourceCommitAtCiStart": "a65c3f3db71868724d5a3813e70575f75a903279",
+  "documentationCommitDuringCi": "2068f34b42ba1fa5b685a0f509034d3bfb3f13b3",
+  "recordedAt": "2026-10-07T18:51:00.322916+00:00",
+  "sourceAndTestPathsCompared": [
+    "src",
+    "tests",
+    "benchmarks",
+    "Directory.Packages.props",
+    "Directory.Build.props",
+    "global.json"
+  ],
+  "sourceAndTestTreeUnchanged": true,
+  "note": "Only generated documentation changed while the same compiled production/test code continued through canonical CI."
+}

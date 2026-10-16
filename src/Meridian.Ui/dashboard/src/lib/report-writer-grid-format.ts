@@ -11,7 +11,8 @@ import type {
 
 const CELL_STYLE_CLASSES: Record<Exclude<ReportWriterCellStyle, "None">, string> = {
   Success: "bg-success/10 text-success",
-  Warning: "bg-warning/12 text-warning",
+  // Keep the unfilled warning presentation previously emitted by Tailwind 3.
+  Warning: "text-warning",
   Danger: "bg-danger/10 text-danger",
   // No dedicated "info" palette token in the dashboard theme; primary reads as informational.
   Info: "bg-primary/10 text-primary"

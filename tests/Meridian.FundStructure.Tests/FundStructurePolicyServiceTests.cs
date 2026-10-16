@@ -146,14 +146,14 @@ public sealed class FundStructurePolicyServiceTests
     }
 
     [Fact]
-    public void ValidateOwnershipLink_ThrowsWhenActiveSiblingOwnershipPercentagesExceedOneHundred()
+    public void ValidateOwnershipLink_ThrowsWhenActiveOwnersOfOneEntityExceedOneHundred()
     {
         var service = new FundStructurePolicyService();
         var fundId = Guid.NewGuid();
-        var firstEntityId = Guid.NewGuid();
-        var secondEntityId = Guid.NewGuid();
-        var existing = CreateLink(fundId, firstEntityId, OwnershipRelationshipTypeDto.Owns, ownershipPercent: 60m);
-        var candidate = CreateLink(fundId, secondEntityId, OwnershipRelationshipTypeDto.Owns, ownershipPercent: 50m);
+        var otherFundId = Guid.NewGuid();
+        var entityId = Guid.NewGuid();
+        var existing = CreateLink(fundId, entityId, OwnershipRelationshipTypeDto.Owns, ownershipPercent: 60m);
+        var candidate = CreateLink(otherFundId, entityId, OwnershipRelationshipTypeDto.Owns, ownershipPercent: 50m);
 
         Assert.Throws<InvalidOperationException>(() => service.ValidateOwnershipLink(
             candidate,
@@ -163,9 +163,67 @@ public sealed class FundStructurePolicyServiceTests
             new Dictionary<Guid, FundStructureNodeKindDto>
             {
                 [fundId] = FundStructureNodeKindDto.Fund,
+                [otherFundId] = FundStructureNodeKindDto.Fund,
+                [entityId] = FundStructureNodeKindDto.Entity
+            }));
+    }
+
+    [Fact]
+    public void ValidateOwnershipLink_AllowsTwoWhollyOwnedEntitiesUnderOneParent()
+    {
+        var fundId = Guid.NewGuid();
+        var firstEntityId = Guid.NewGuid();
+        var secondEntityId = Guid.NewGuid();
+        var existing = CreateLink(fundId, firstEntityId, OwnershipRelationshipTypeDto.Owns, ownershipPercent: 100m);
+        var candidate = CreateLink(fundId, secondEntityId, OwnershipRelationshipTypeDto.Owns, ownershipPercent: 100m);
+
+        new FundStructurePolicyService().ValidateOwnershipLink(candidate,
+            FundStructureNodeKindDto.Fund, FundStructureNodeKindDto.Entity, [existing],
+            new Dictionary<Guid, FundStructureNodeKindDto>
+            {
+                [fundId] = FundStructureNodeKindDto.Fund,
                 [firstEntityId] = FundStructureNodeKindDto.Entity,
                 [secondEntityId] = FundStructureNodeKindDto.Entity
+            });
+    }
+
+    [Fact]
+    public void ValidateOwnershipLink_AllocationStillCapsSiblingAllocationsAtOneHundred()
+    {
+        var fundId = Guid.NewGuid();
+        var firstSleeveId = Guid.NewGuid();
+        var secondSleeveId = Guid.NewGuid();
+        var existing = CreateLink(fundId, firstSleeveId, OwnershipRelationshipTypeDto.AllocatesTo, ownershipPercent: 60m);
+        var candidate = CreateLink(fundId, secondSleeveId, OwnershipRelationshipTypeDto.AllocatesTo, ownershipPercent: 50m);
+
+        Assert.Throws<InvalidOperationException>(() => new FundStructurePolicyService().ValidateOwnershipLink(candidate,
+            FundStructureNodeKindDto.Fund, FundStructureNodeKindDto.Sleeve, [existing],
+            new Dictionary<Guid, FundStructureNodeKindDto>
+            {
+                [fundId] = FundStructureNodeKindDto.Fund,
+                [firstSleeveId] = FundStructureNodeKindDto.Sleeve,
+                [secondSleeveId] = FundStructureNodeKindDto.Sleeve
             }));
+    }
+
+    [Fact]
+    public void ValidateOwnershipLink_WhollyOwnedReplacementCanStartAtPriorOwnersExpiry()
+    {
+        var fundId = Guid.NewGuid();
+        var nextFundId = Guid.NewGuid();
+        var entityId = Guid.NewGuid();
+        var cutover = new DateTimeOffset(2026, 02, 01, 0, 0, 0, TimeSpan.Zero);
+        var existing = CreateLink(fundId, entityId, OwnershipRelationshipTypeDto.Owns, ownershipPercent: 100m, effectiveTo: cutover);
+        var candidate = CreateLink(nextFundId, entityId, OwnershipRelationshipTypeDto.Owns, ownershipPercent: 100m, effectiveFrom: cutover);
+
+        new FundStructurePolicyService().ValidateOwnershipLink(candidate,
+            FundStructureNodeKindDto.Fund, FundStructureNodeKindDto.Entity, [existing],
+            new Dictionary<Guid, FundStructureNodeKindDto>
+            {
+                [fundId] = FundStructureNodeKindDto.Fund,
+                [nextFundId] = FundStructureNodeKindDto.Fund,
+                [entityId] = FundStructureNodeKindDto.Entity
+            });
     }
 
     [Fact]

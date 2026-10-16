@@ -1,0 +1,15 @@
+{
+  "head": "426cad76ff2c60186b931a16c8f5246389c42df5",
+  "baseline_source_sha256": "da44b84f0f9e33c42dd1888945538950ad860d23d84dec25d4707b6853263e95",
+  "candidate_source_sha256": "d406f7d2f15a11ee259a30aaf886e63c1445b114e6138979fe06f3a35ffdb770",
+  "tiered_compilation": "0",
+  "start_utc": "2026-10-07T18:21:51Z",
+  "cpu_before": "usage_usec 3294416482\nuser_usec 3053354775\nsystem_usec 241061707\nnice_usec 0\nnr_periods 19470\nnr_throttled 1842\nthrottled_usec 81333626\nnr_bursts 0\nburst_usec 0\n",
+  "candidate_source_sha256_after": "d406f7d2f15a11ee259a30aaf886e63c1445b114e6138979fe06f3a35ffdb770",
+  "cpu_after": "usage_usec 3317395448\nuser_usec 3071486858\nsystem_usec 245908589\nnice_usec 0\nnr_periods 19810\nnr_throttled 1842\nthrottled_usec 81333626\nnr_bursts 0\nburst_usec 0\n",
+  "end_utc": "2026-10-07T18:23:25Z",
+  "commands": [
+    "/workspace/dotnet-10.0.100/dotnet build /workspace/wal-hash-candidates/dedup/Profile.csproj -c Release",
+    "DOTNET_TieredCompilation=0 /workspace/dotnet-10.0.100/dotnet /workspace/wal-hash-candidates/dedup/bin/Release/net10.0/Profile.dll"
+  ]
+}

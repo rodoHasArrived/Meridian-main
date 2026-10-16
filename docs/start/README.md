@@ -158,6 +158,11 @@ npm --prefix src/Meridian.Ui/dashboard run build
 CI runs a freshness gate that fails when the tracked bundle lags `src/Meridian.Ui/dashboard`, so
 the served assets always match the same commit's dashboard source.
 
+When updating a feature branch causes generated bundle, documentation or hash conflicts, use the
+[isolated repair command](../engineering/generated-merge-recovery.md). It prepares pinned merge
+and generation evidence without changing your branch or local edits. Reviewed documentation hashes
+are reused only when they match the final module; combined source/prose changes still need review.
+
 ## First Help Commands
 
 Plain Windows/PowerShell path:

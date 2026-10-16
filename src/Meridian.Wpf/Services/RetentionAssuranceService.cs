@@ -31,6 +31,11 @@ public sealed class RetentionAssuranceService
         Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
     };
 
+    private static readonly string[] MarketDataExtensions =
+    {
+        ".jsonl.gz", ".jsonl.gzip", ".jsonl.zst", ".jsonl.lz4", ".jsonl.br", ".jsonl", ".parquet"
+    };
+
     private const string RetentionConfigKey = "RetentionConfig";
     private const string LegalHoldsKey = "LegalHolds";
     private const string AuditReportsFolder = "RetentionAudits";
@@ -42,10 +47,14 @@ public sealed class RetentionAssuranceService
 
     public static RetentionAssuranceService Instance => _instance.Value;
 
-    private RetentionAssuranceService()
+    private RetentionAssuranceService() : this(ApiClientService.Instance)
     {
-        _apiClient = ApiClientService.Instance;
         _ = LoadConfigurationAsync();
+    }
+
+    internal RetentionAssuranceService(ApiClientService apiClient)
+    {
+        _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
     }
 
     /// <summary>
@@ -239,6 +248,7 @@ public sealed class RetentionAssuranceService
             var cutoffDate = DateTime.UtcNow.AddDays(-policy.TickDataDays);
             var barCutoffDate = DateTime.UtcNow.AddDays(-policy.BarDataDays);
             var quoteCutoffDate = DateTime.UtcNow.AddDays(-policy.QuoteDataDays);
+            var depthCutoffDate = DateTime.UtcNow.AddDays(-policy.DepthDataDays);
 
             // Scan data directories
             await ScanDirectoryForDeletionsAsync(
@@ -247,6 +257,7 @@ public sealed class RetentionAssuranceService
                 cutoffDate,
                 barCutoffDate,
                 quoteCutoffDate,
+                depthCutoffDate,
                 heldSymbols,
                 result,
                 ct);
@@ -393,6 +404,7 @@ public sealed class RetentionAssuranceService
         DateTime tickCutoff,
         DateTime barCutoff,
         DateTime quoteCutoff,
+        DateTime depthCutoff,
         HashSet<string> heldSymbols,
         RetentionDryRunResult result,
         CancellationToken ct)
@@ -406,11 +418,19 @@ public sealed class RetentionAssuranceService
                 ct.ThrowIfCancellationRequested();
 
                 var fileInfo = new FileInfo(file);
-                var fileName = Path.GetFileNameWithoutExtension(file);
-
-                // Parse symbol from filename (assumes format: SYMBOL_type_date.ext)
-                var parts = fileName.Split('_');
-                var symbol = parts.Length > 0 ? parts[0] : "UNKNOWN";
+                // A shared data root also holds evidence, manifests and application state.
+                // Only explicit market-data names/layouts may enter a destructive retention plan.
+                if (!TryGetMarketDataIdentity(Path.GetRelativePath(directory, file), out var symbol, out var dataType))
+                {
+                    result.SkippedFiles.Add(new SkippedFileInfo
+                    {
+                        Path = file,
+                        Symbol = "UNKNOWN",
+                        Reason = "Not a recognized market-data file; retained",
+                        Size = fileInfo.Length
+                    });
+                    continue;
+                }
 
                 // Skip if under legal hold
                 if (heldSymbols.Contains(symbol.ToUpperInvariant()))
@@ -426,7 +446,13 @@ public sealed class RetentionAssuranceService
                 }
 
                 // Determine file type and applicable cutoff
-                var cutoff = GetCutoffForFile(file, tickCutoff, barCutoff, quoteCutoff);
+                var cutoff = dataType switch
+                {
+                    "Bar" => barCutoff,
+                    "Quote" => quoteCutoff,
+                    "Depth" => depthCutoff,
+                    _ => tickCutoff
+                };
 
                 if (fileInfo.LastWriteTimeUtc < cutoff)
                 {
@@ -436,7 +462,7 @@ public sealed class RetentionAssuranceService
                         Symbol = symbol,
                         Size = fileInfo.Length,
                         LastModified = fileInfo.LastWriteTimeUtc,
-                        DataType = GetDataTypeFromPath(file)
+                        DataType = dataType
                     });
                     result.TotalBytesToDelete += fileInfo.Length;
                 }
@@ -450,31 +476,68 @@ public sealed class RetentionAssuranceService
         }
     }
 
-    private static DateTime GetCutoffForFile(string path, DateTime tick, DateTime bar, DateTime quote)
+    private static bool TryGetMarketDataIdentity(string relativePath, out string symbol, out string dataType)
     {
-        var lower = path.ToLowerInvariant();
-        if (lower.Contains("trade") || lower.Contains("tick"))
-            return tick;
-        if (lower.Contains("bar") || lower.Contains("ohlc"))
-            return bar;
-        if (lower.Contains("quote") || lower.Contains("bbo"))
-            return quote;
-        return tick; // Default to tick data cutoff
+        symbol = "UNKNOWN";
+        dataType = "Unknown";
+        var segments = relativePath.Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar },
+            StringSplitOptions.RemoveEmptyEntries);
+        // Workstation Evidence Vault and private storage sidecars have their own retention owner.
+        if (segments.Any(part => part.StartsWith("_", StringComparison.Ordinal) ||
+            part.Equals("workstation", StringComparison.OrdinalIgnoreCase) ||
+            part.Equals("evidence", StringComparison.OrdinalIgnoreCase)))
+            return false;
+
+        var name = Path.GetFileName(relativePath);
+        var extension = MarketDataExtensions
+            .FirstOrDefault(ext => name.EndsWith(ext, StringComparison.OrdinalIgnoreCase));
+        if (extension == null)
+            return false;
+
+        var stem = name.Substring(0, name.Length - extension.Length);
+        var parts = stem.Split('_');
+        // Flat: SYMBOL_Type_date[_{provider}].jsonl
+        if (parts.Length >= 2 && ClassifyMarketDataType(parts[1]) is { } flatType)
+        {
+            symbol = parts[0];
+            dataType = flatType;
+            return !string.IsNullOrWhiteSpace(symbol);
+        }
+
+        // ByDate/Canonical: .../SYMBOL/Type.jsonl
+        if (segments.Length >= 2 && ClassifyMarketDataType(stem) is { } namedType)
+        {
+            symbol = segments[segments.Length - 2];
+            dataType = namedType;
+            return true;
+        }
+
+        // BySymbol/BySource/Hierarchical: .../SYMBOL/Type/date.jsonl
+        if (segments.Length >= 3 && ClassifyMarketDataType(segments[segments.Length - 2]) is { } folderType)
+        {
+            symbol = segments[segments.Length - 3];
+            dataType = folderType;
+            return true;
+        }
+
+        // ByType: Type/SYMBOL/date.jsonl
+        if (segments.Length == 3 && ClassifyMarketDataType(segments[0]) is { } leadingType)
+        {
+            symbol = segments[1];
+            dataType = leadingType;
+            return true;
+        }
+        return false;
     }
 
-    private static string GetDataTypeFromPath(string path)
+    private static string? ClassifyMarketDataType(string type) => type.ToLowerInvariant() switch
     {
-        var lower = path.ToLowerInvariant();
-        if (lower.Contains("trade") || lower.Contains("tick"))
-            return "Tick";
-        if (lower.Contains("bar") || lower.Contains("ohlc"))
-            return "Bar";
-        if (lower.Contains("quote") || lower.Contains("bbo"))
-            return "Quote";
-        if (lower.Contains("depth") || lower.Contains("l2"))
-            return "Depth";
-        return "Unknown";
-    }
+        "trade" or "trades" or "tick" or "ticks" or "historicaltrade" or "optiontrade" => "Tick",
+        "bar" or "bars" or "ohlc" or "historicalbar" or "aggregatebar" => "Bar",
+        "quote" or "quotes" or "bbo" or "bboquote" or "historicalquote" or "optionquote" => "Quote",
+        "depth" or "l2" or "l2snapshot" => "Depth",
+        _ => null
+    };
 
     /// <summary>
     /// Verifies file checksums before deletion.

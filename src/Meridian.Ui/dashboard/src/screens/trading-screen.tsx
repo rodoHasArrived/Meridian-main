@@ -1349,7 +1349,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 value={strategyLifecycle.strategyId}
                 aria-describedby={`${strategyLifecycle.strategyIdHelpId} ${strategyLifecycle.strategyIdStatusId}`}
                 onChange={(e) => strategyLifecycle.updateStrategyId(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
               />
               <p id={strategyLifecycle.strategyIdHelpId} className="text-xs text-muted-foreground">
                 {strategyLifecycle.helpText}
@@ -1579,7 +1579,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.runId.field, e.target.value)}
                   aria-describedby={promotionGate.fields.runId.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
                 {promotionGate.fields.runId.helpText ? (
                   <span id={promotionGate.fields.runId.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.runId.helpText}</span>
@@ -1595,7 +1595,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.approvedBy.field, e.target.value)}
                   aria-describedby={promotionGate.fields.approvedBy.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   required={promotionGate.fields.approvedBy.required}
                 />
               </label>
@@ -1610,7 +1610,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 onChange={(e) => promotionGate.updateField(promotionGate.fields.approvalReason.field, e.target.value)}
                 aria-describedby={promotionGate.fields.approvalReason.describedBy ?? undefined}
                 disabled={promotionGate.busy}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                 required={promotionGate.fields.approvalReason.required}
               />
             </label>
@@ -1624,7 +1624,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 onChange={(e) => promotionGate.updateField(promotionGate.fields.rejectionReason.field, e.target.value)}
                 aria-describedby={promotionGate.fields.rejectionReason.describedBy ?? undefined}
                 disabled={promotionGate.busy}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
               />
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -1638,7 +1638,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.reviewNotes.field, e.target.value)}
                   aria-describedby={promotionGate.fields.reviewNotes.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
               </label>
               <label htmlFor={promotionGate.fields.manualOverrideId.id} className="grid gap-1 text-sm">
@@ -1651,7 +1651,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.manualOverrideId.field, e.target.value)}
                   aria-describedby={promotionGate.fields.manualOverrideId.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                 />
               </label>
             </div>
@@ -1665,7 +1665,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 onChange={(e) => promotionGate.updateField(promotionGate.fields.evidenceReferences.field, e.target.value)}
                 aria-describedby={promotionGate.fields.evidenceReferences.describedBy ?? undefined}
                 disabled={promotionGate.busy}
-                className="min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
               />
               {promotionGate.fields.evidenceReferences.helpText ? (
                 <span id={promotionGate.fields.evidenceReferences.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.evidenceReferences.helpText}</span>
@@ -1756,7 +1756,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                     {promotionGate.approvalChecklist.map((item) => (
                       <li key={item.id} className="flex items-start gap-2" aria-label={item.ariaLabel}>
                         <span className={cn(
-                          "mt-0.5 inline-block h-2 w-2 rounded-full flex-shrink-0",
+                          "mt-0.5 inline-block h-2 w-2 rounded-full shrink-0",
                           promotionChecklistDotTone[item.status]
                         )} />
                         <div>

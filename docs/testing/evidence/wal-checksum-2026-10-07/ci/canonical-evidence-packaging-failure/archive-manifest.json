@@ -1,0 +1,103 @@
+{
+  "status": "failed",
+  "command": [
+    "bash",
+    "scripts/ci.sh"
+  ],
+  "launchSourceCommit": "ea846ee8fa26f37315a61420b7db2f4694c2e256",
+  "docsOnlyFinalCommit": "cfe44c6e09a3779a85439f205b524a86cc59ea67",
+  "dotnet": {
+    "shards": 19,
+    "passed": 19639,
+    "failed": 0,
+    "registeredSkipped": 5
+  },
+  "browser": {
+    "batches": 42,
+    "passed": 3651,
+    "failed": 0
+  },
+  "scripts": {
+    "tests": 1608,
+    "failures": 1,
+    "errors": 0,
+    "existingSkipped": 16,
+    "existingQuarantinedModules": 7
+  },
+  "failure": "Archived upstream csproj snapshots treated as Meridian project inputs by central-package discovery; preserve original bytes as gzip snapshots.",
+  "createdAt": "2026-10-07T19:58:00.536978+00:00",
+  "files": [
+    {
+      "path": "launch.json",
+      "bytes": 846,
+      "sha256": "556a0791db0418a9a9a38b077a8dab2b600e06f782b4ad6a3830fe09143cc0f3",
+      "encoding": "verbatim",
+      "originalBytes": 846,
+      "originalSha256": "556a0791db0418a9a9a38b077a8dab2b600e06f782b4ad6a3830fe09143cc0f3",
+      "originalSource": "/workspace/Meridian-main/artifacts/wal-checksum-profile/canonical-ci-subreaper-launch.json"
+    },
+    {
+      "path": "receipt.json",
+      "bytes": 35083,
+      "sha256": "c90e4e5b6b457fd2d01525b3e3dd21f4fe38f00da33b52ddf607ba7ba71a66b5",
+      "encoding": "verbatim",
+      "originalBytes": 35083,
+      "originalSha256": "c90e4e5b6b457fd2d01525b3e3dd21f4fe38f00da33b52ddf607ba7ba71a66b5",
+      "originalSource": "/workspace/Meridian-main/artifacts/wal-checksum-profile/canonical-ci-subreaper-receipt.json"
+    },
+    {
+      "path": "final-tree-binding.json",
+      "bytes": 597,
+      "sha256": "614e781f7dd6e7982b0fd6e7607400e4c0b701571d62a10e88dbf328ea46335c",
+      "encoding": "verbatim",
+      "originalBytes": 597,
+      "originalSha256": "614e781f7dd6e7982b0fd6e7607400e4c0b701571d62a10e88dbf328ea46335c",
+      "originalSource": "/workspace/Meridian-main/artifacts/wal-checksum-profile/canonical-ci-final-tree-binding.json"
+    },
+    {
+      "path": "command.log.gz",
+      "bytes": 50372,
+      "sha256": "d997aa8ce268c08b96c2db2c666c6d64411e61e4aadaa1c91899aa2831e8959e",
+      "encoding": "gzip",
+      "originalBytes": 519611,
+      "originalSha256": "d03973d274c17ae5d7e0c08ea171bb89496dc98e66f18f893903ae87b6a68c91",
+      "originalSource": "/workspace/Meridian-main/artifacts/wal-checksum-profile/canonical-ci-subreaper.log"
+    },
+    {
+      "path": "quality-gate-steps.tsv",
+      "bytes": 2311,
+      "sha256": "5cf235360e7168937c03e4e827893fcfe32fcf40c8af898fdaba6b964e7c16b0",
+      "encoding": "verbatim",
+      "originalBytes": 2311,
+      "originalSha256": "5cf235360e7168937c03e4e827893fcfe32fcf40c8af898fdaba6b964e7c16b0",
+      "originalSource": "/workspace/Meridian-main/artifacts/ci-summary/quality-gate/steps.tsv"
+    },
+    {
+      "path": "quality-gate-summary.md",
+      "bytes": 4974,
+      "sha256": "34660306c7f8838dc4c24ddbaf065ea3d111d71586fff23c105bacab0a396ec2",
+      "encoding": "verbatim",
+      "originalBytes": 4974,
+      "originalSha256": "34660306c7f8838dc4c24ddbaf065ea3d111d71586fff23c105bacab0a396ec2",
+      "originalSource": "/workspace/Meridian-main/artifacts/ci-summary/quality-gate/summary.md"
+    },
+    {
+      "path": "dotnet-test-summary.json.gz",
+      "bytes": 391749,
+      "sha256": "0e66e7851133119b97c54dfb5db867b6385fb91a34459adfa54d3aedf49d1e16",
+      "encoding": "gzip",
+      "originalBytes": 4044324,
+      "originalSha256": "be3681d0b1e4922c040e9f891a2423ef9321d95ccfc24de970fed0671f792300",
+      "originalSource": "/workspace/Meridian-main/artifacts/test-results/dotnet/ci-dotnet-test-summary.json"
+    },
+    {
+      "path": "dotnet-test-summary.md",
+      "bytes": 20821,
+      "sha256": "5eaf9173926ce20b1b996969c8cc0525fdd24e95414efe03fc72115af02905f0",
+      "encoding": "verbatim",
+      "originalBytes": 20821,
+      "originalSha256": "5eaf9173926ce20b1b996969c8cc0525fdd24e95414efe03fc72115af02905f0",
+      "originalSource": "/workspace/Meridian-main/artifacts/test-results/dotnet/ci-dotnet-test-summary.md"
+    }
+  ]
+}

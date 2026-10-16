@@ -26,9 +26,32 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
         if (events.Count == 0)
             return;
 
+        // Inside a canonical write scope the append joins the shared transaction, so the event, the
+        // projection and the field attribution commit together. The advisory stream lock and the
+        // expected-version check below keep the append serialized per security either way.
+        if (PostgresSecurityMasterMutation.IsActiveFor(_options, securityId))
+        {
+            await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+            await AppendCoreAsync(lease.Connection, lease.Transaction!, securityId, expectedVersion, events, ct).ConfigureAwait(false);
+            _logger.LogInformation("Appended {EventCount} security events for {SecurityId} in a canonical write scope", events.Count, securityId);
+            return;
+        }
+
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
+        await AppendCoreAsync(connection, transaction, securityId, expectedVersion, events, ct).ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        _logger.LogInformation("Appended {EventCount} security events for {SecurityId}", events.Count, securityId);
+    }
 
+    private async Task AppendCoreAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid securityId,
+        long expectedVersion,
+        IReadOnlyList<SecurityMasterEventEnvelope> events,
+        CancellationToken ct)
+    {
         // Overlay edits acquire the same transaction-scoped lock before checking the stream head.
         // This makes their expected-version guard atomic with canonical appends without placing
         // partial operator annotations in the replayed economic event stream.
@@ -54,7 +77,9 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                     correlation_id,
                     causation_id,
                     payload,
-                    metadata)
+                    metadata,
+                    payload_type,
+                    payload_version)
                 values (
                     @security_id,
                     @stream_version,
@@ -64,8 +89,14 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                     @correlation_id,
                     @causation_id,
                     @payload::jsonb,
-                    @metadata::jsonb);
+                    @metadata::jsonb,
+                    @payload_type,
+                    @payload_version);
                 """;
+
+            // Every appended event records its payload family and version in first-class columns
+            // so replay and audit dispatch on a declared version rather than on the payload's shape.
+            var payloadDescriptor = SecurityMasterEventPayloads.Resolve(@event);
 
             command.Parameters.AddWithValue("security_id", @event.SecurityId);
             command.Parameters.AddWithValue("stream_version", @event.StreamVersion);
@@ -80,12 +111,11 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
             command.Parameters.AddWithValue(
                 "metadata",
                 JsonSerializer.Serialize(@event.Metadata, SecurityMasterJsonContext.HighPerformanceOptions));
+            command.Parameters.AddWithValue("payload_type", payloadDescriptor.PayloadType);
+            command.Parameters.AddWithValue("payload_version", payloadDescriptor.PayloadVersion);
 
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
-
-        await transaction.CommitAsync(ct).ConfigureAwait(false);
-        _logger.LogInformation("Appended {EventCount} security events for {SecurityId}", events.Count, securityId);
     }
 
     public async Task<IReadOnlyList<SecurityMasterEventEnvelope>> LoadAsync(Guid securityId, CancellationToken ct = default)
@@ -103,7 +133,9 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                    correlation_id,
                    causation_id,
                    payload::text,
-                   metadata::text
+                   metadata::text,
+                   payload_type,
+                   payload_version
             from {Qualified("security_events")}
             where security_id = @security_id
             order by stream_version;
@@ -128,7 +160,9 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                    correlation_id,
                    causation_id,
                    payload::text,
-                   metadata::text
+                   metadata::text,
+                   payload_type,
+                   payload_version
             from {Qualified("security_events")}
             where global_sequence > @sequence
             order by global_sequence
@@ -195,7 +229,9 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
                 reader.IsDBNull(6) ? null : reader.GetGuid(6),
                 reader.IsDBNull(7) ? null : reader.GetGuid(7),
                 JsonDocument.Parse(reader.GetString(8)).RootElement.Clone(),
-                JsonDocument.Parse(reader.GetString(9)).RootElement.Clone()));
+                JsonDocument.Parse(reader.GetString(9)).RootElement.Clone(),
+                reader.IsDBNull(10) ? null : reader.GetString(10),
+                reader.IsDBNull(11) ? null : reader.GetInt32(11)));
         }
 
         return results;

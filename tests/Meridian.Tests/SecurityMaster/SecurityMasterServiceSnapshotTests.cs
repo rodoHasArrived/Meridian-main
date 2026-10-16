@@ -16,7 +16,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -70,7 +70,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var conflictService = Substitute.For<ISecurityMasterConflictService>();
         var options = new SecurityMasterOptions
         {
@@ -128,7 +128,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -217,7 +217,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -1811,7 +1811,7 @@ public sealed class SecurityMasterServiceSnapshotTests
     {
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -1846,7 +1846,7 @@ public sealed class SecurityMasterServiceSnapshotTests
     {
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -1917,7 +1917,7 @@ public sealed class SecurityMasterServiceSnapshotTests
     {
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -1961,7 +1961,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -2015,7 +2015,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -2120,7 +2120,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -2175,7 +2175,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -2229,7 +2229,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -2297,7 +2297,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -2392,7 +2392,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -2535,13 +2535,32 @@ public sealed class SecurityMasterServiceSnapshotTests
         var firstAmend = service.AmendTermsAsync(BuildConflictingAmend(securityId));
         await attributionEntered.Task;
 
-        var secondAmend = service.AmendTermsAsync(BuildConflictingAmend(securityId));
-        await Task.Delay(100);
-        secondAmend.IsCompleted.Should().BeFalse(
-            "a concurrent same-security amendment must wait until the prior amendment's attribution write lands");
-
-        releaseAttribution.TrySetResult();
-        await Task.WhenAll(firstAmend, secondAmend);
+        // The durable fixture now exposes the first committed v3 projection. Give the second
+        // command that expected version and a new value, so it reaches the attribution gate rather
+        // than failing the command facade's stale-version check before the gate.
+        var secondAmend = service.AmendTermsAsync(BuildConflictingAmend(securityId) with
+        {
+            ExpectedVersion = 3,
+            SourceSystem = "provC",
+            AssetSpecificTermsPatch = JsonSerializer.SerializeToElement(new
+            {
+                maturity = "2031-06-15",
+                couponRate = 4.75m,
+                par = 1000m
+            })
+        });
+        try
+        {
+            await Task.Delay(100);
+            secondAmend.IsCompleted.Should().BeFalse(
+                "a concurrent same-security amendment must wait until the prior amendment's attribution write lands");
+        }
+        finally
+        {
+            releaseAttribution.TrySetResult();
+        }
+        var amended = await Task.WhenAll(firstAmend, secondAmend);
+        amended.Select(detail => detail.Version).Should().Equal(3, 4);
     }
 
     [Fact]
@@ -2670,7 +2689,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var fieldProvenance = Substitute.For<ISecurityFieldProvenanceStore>();
         var options = new SecurityMasterOptions
         {
@@ -2730,7 +2749,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -2796,7 +2815,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -2865,7 +2884,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -2934,7 +2953,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -3003,7 +3022,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -3074,7 +3093,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -3178,7 +3197,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -3282,7 +3301,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -3382,7 +3401,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var options = new SecurityMasterOptions
         {
             SnapshotIntervalVersions = 50,
@@ -3483,7 +3502,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         var securityId = Guid.NewGuid();
         var eventStore = Substitute.For<ISecurityMasterEventStore>();
         snapshotStore ??= Substitute.For<ISecurityMasterSnapshotStore>();
-        var store = Substitute.For<ISecurityMasterStore>();
+        var store = CreateDurableProjectionStore();
         var conflictService = Substitute.For<ISecurityMasterConflictService>();
         var fieldProvenance = Substitute.For<ISecurityFieldProvenanceStore>();
         var options = new SecurityMasterOptions
@@ -3551,6 +3570,19 @@ public sealed class SecurityMasterServiceSnapshotTests
             UpdatedBy: "codex",
             SourceRecordId: null,
             Reason: "amend");
+
+    private static ISecurityMasterStore CreateDurableProjectionStore()
+    {
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.UpsertProjectionAsync(Arg.Any<SecurityProjectionRecord>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var persisted = call.Arg<SecurityProjectionRecord>();
+                store.GetProjectionAsync(persisted.SecurityId, Arg.Any<CancellationToken>()).Returns(persisted);
+                return Task.CompletedTask;
+            });
+        return store;
+    }
 
     private static SecurityProjectionRecord CreateProjection(
         Guid securityId,

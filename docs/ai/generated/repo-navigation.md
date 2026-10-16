@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-10-07T17:19:13Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-10-07T18:21:09Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 27 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | `a701eee58` (2026-10-07T08:19:30-07:00) | 14 |
-| `src/Meridian.FinancialOperations/README.md` | Unmapped | `a701eee58` (2026-10-07T08:19:30-07:00) | 14 |
-| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 9 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 9 |
-| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 6 |
-| `src/Meridian.Contracts/Api/UiApiRoutes.cs` | Host and Composition | `a701eee58` (2026-10-07T08:19:30-07:00) | 5 |
-| `src/Meridian.Ui/dashboard/src/lib/api.ts` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 4 |
-| `src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 4 |
-| `src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 3 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx` | Desktop and UI Workflows | `a701eee58` (2026-10-07T08:19:30-07:00) | 3 |
-| `src/Meridian.Ui/README.md` | Unmapped | `a701eee58` (2026-10-07T08:19:30-07:00) | 2 |
-| `src/Meridian.Contracts/Workstation/OnboardingDtos.cs` | Host and Composition | `a701eee58` (2026-10-07T08:19:30-07:00) | 1 |
-| `src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.Onboarding.cs` | Unmapped | `a701eee58` (2026-10-07T08:19:30-07:00) | 1 |
-| `src/Meridian.FinancialOperations/Onboarding/OnboardingInterfaces.cs` | Unmapped | `a701eee58` (2026-10-07T08:19:30-07:00) | 1 |
+| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs` | Providers and Storage | `baeea857d` (2026-10-07T17:17:54Z) | 6 |
+| `src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs` | Unmapped | `baeea857d` (2026-10-07T17:17:54Z) | 5 |
+| `src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs` | Desktop and UI Workflows | `baeea857d` (2026-10-07T17:17:54Z) | 5 |
+| `src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs` | Unmapped | `405dc1f3f` (2026-10-07T16:51:14Z) | 3 |
+| `src/Meridian.Contracts/Ledger/ConsolidationDtos.cs` | Host and Composition | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
+| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
+| `src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Consolidation.cs` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.test.tsx` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.tsx` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/types/consolidation.ts` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
+| `src/Meridian.Contracts/Ledger/LedgerBookDtos.cs` | Host and Composition | `405dc1f3f` (2026-10-07T16:51:14Z) | 1 |
+| `src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs` | Unmapped | `405dc1f3f` (2026-10-07T16:51:14Z) | 1 |
+| `src/Meridian.Ui.Shared/Services/ConsolidationChartValidation.cs` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 1 |
+| `src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs` | Unmapped | `4c039f269` (2026-10-07T16:17:55Z) | 2 |
+| `src/Meridian.Storage/FundStructure/PostgresFundStructureStore.Consolidation.cs` | Providers and Storage | `4c039f269` (2026-10-07T16:17:55Z) | 2 |
 
