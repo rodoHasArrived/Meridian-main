@@ -1,11 +1,11 @@
 {
-  "total_files": 737,
-  "total_lines": 162121,
+  "total_files": 735,
+  "total_lines": 161758,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 297,
-  "average_lines": 220.0,
+  "average_lines": 220.1,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2195,14 +2195,6 @@
       "stale": false
     },
     {
-      "path": "docs/engineering/actions-workflow-followup-2026-10-15.md",
-      "line_count": 144,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/engineering/blueprints/accounting/commitment-and-capital-call-engine.md",
       "line_count": 1033,
       "has_heading": true,
@@ -2252,7 +2244,7 @@
     },
     {
       "path": "docs/engineering/blueprints/README.md",
-      "line_count": 239,
+      "line_count": 238,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2308,7 +2300,7 @@
     },
     {
       "path": "docs/engineering/ci-cd-optimization.md",
-      "line_count": 551,
+      "line_count": 521,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2371,14 +2363,6 @@
       "stale": false
     },
     {
-      "path": "docs/engineering/plans/desktop-workstation-screen-blueprint.md",
-      "line_count": 132,
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
       "path": "docs/engineering/plans/god-file-burn-down-plan.md",
       "line_count": 290,
       "has_heading": true,
@@ -2388,7 +2372,7 @@
     },
     {
       "path": "docs/engineering/plans/README.md",
-      "line_count": 22,
+      "line_count": 21,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2436,7 +2420,7 @@
     },
     {
       "path": "docs/engineering/README.md",
-      "line_count": 440,
+      "line_count": 406,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2844,7 +2828,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12198,
+      "line_count": 12192,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2924,7 +2908,7 @@
     },
     {
       "path": "docs/operations/live-execution-controls.md",
-      "line_count": 14,
+      "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3164,7 +3148,7 @@
     },
     {
       "path": "docs/plans/desktop-workstation-screen-blueprint.md",
-      "line_count": 17,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3652,7 +3636,7 @@
     },
     {
       "path": "docs/reference/provider-capability-matrix.md",
-      "line_count": 101,
+      "line_count": 79,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4044,7 +4028,7 @@
     },
     {
       "path": "docs/start/README.md",
-      "line_count": 280,
+      "line_count": 278,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5932,7 +5916,7 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 420,
+      "line_count": 426,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6044,7 +6028,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1100,
+      "line_count": 1105,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

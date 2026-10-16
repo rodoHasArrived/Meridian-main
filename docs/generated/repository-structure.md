@@ -11039,6 +11039,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterPostgresProjectionNotificationTests.cs
 │   │   │   ├── SecurityMasterPostgresProjectionNotificationTests.Monotonicity.cs
 │   │   │   ├── SecurityMasterPostgresRoundTripTests.cs
+│   │   │   ├── SecurityMasterPostgresSearchPaginationTests.cs
 │   │   │   ├── SecurityMasterPostingAuthorityPostgresTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterPricingServiceTests.cs

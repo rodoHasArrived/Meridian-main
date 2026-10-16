@@ -570,6 +570,11 @@ lookup paths, and evidence trails those layers rely on.
 
 ## Important workflows
 
+Security Master PostgreSQL searches break equal display names and full-text ranks with the unique
+security ID, so offset scans such as corporate-action backfills visit every unchanged matching
+projection exactly once. Search closes its ID reader before hydrating those projections on the
+same connection. Separate page requests do not share a database snapshot when projections change.
+
 Portfolio Records creates accounts with `IFundAccountStore.TryCreateAccountAsync`, an atomic
 insert-only operation. A duplicate account ID returns false and retains the existing record;
 account updates and reviewed legacy imports continue to use the separate upsert operation.
