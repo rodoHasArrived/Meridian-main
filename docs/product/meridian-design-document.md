@@ -1,13 +1,14 @@
-# Meridian Design Document — Version 1.1
+# Meridian Design Document — Version 1.2
 
 **Status:** canonical
 **Owner:** core-team
-**Reviewed:** 2026-09-28
-**Supersedes:** Version 1.0 (registry snapshot 2026-08-03) and Version 0.25 (full text preserved at
+**Reviewed:** 2026-10-16
+**Supersedes:** Version 1.1 (registry snapshot 2026-09-28), Version 1.0 (registry snapshot
+2026-08-03), and Version 0.25 (full text preserved at
 [`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md))
 **Source:** Ground-up rewrite of the 0.15–0.25 charter lineage. Grounded in the roadmap registry
-(`docs/roadmap/data/*.yml`, snapshot 2026-09-28), the program state and P0 readiness tracker, the
-source-module registry, repository measurements taken 2026-07-28, the 2026-07 adversarial program
+(`docs/roadmap/data/*.yml`, program snapshot 2026-10-14), the program state and P0 readiness tracker
+(reviewed 2026-10-14), the source-module registry, repository measurements taken 2026-10-16, the 2026-07 adversarial program
 review (`docs/product/adversarial-program-review-2026-07.md`), the accepted W9 priority slate
 (`docs/product/plans/product-roadmap-priorities-2026-07.md`, decision `DEC-PRIORITY-SLATE-001`), the
 W9 acceptance decisions (`DEC-W9-ACCEPTANCE-001` through `-005`, `DEC-W9-DONE-001`), and the W10
@@ -194,11 +195,13 @@ means the capability exists in source with tests but is not the wired operator p
 | Hash-chained audit for the accounting ledger; route-level authorization; fail-closed tenancy (`AuditChainService` exists for storage; the journal ledger chain and blanket route coverage do not) | Partial foundation | `W9-GOV-008` |
 | Asset accounting event spine with atomic lot posting (`AssetAccountingEventSpineService`, `src/Meridian.FinancialOperations/Ledger/`) | Complete | `W9-ASSET-010` |
 | Corporate action approval and posting lane (`CorporateActionOperationsService` in `src/Meridian.Application/SecurityMaster/CorporateActions/`, `CorporateActionAccountingProjectionService` in `src/Meridian.Instruments/AssetOperations/`, `PostgresCorporateActionOperationsStore` in `src/Meridian.Storage/SecurityMaster/`) | Delivered and proven end to end on PostgreSQL (post and replay included); `ready_for_acceptance` since 2026-09-22 after `DEC-W9-ACCEPTANCE-002` reopened acceptance | `W9-CORPACT-011` |
-| Operational Evidence Graph as a shared product surface | Planned; explorer, proof-drawer, and manifest primitives exist | `W5X-OEG-001` |
+| Operational Evidence Graph as a shared product surface | Planned; explorer, proof-drawer, and manifest primitives exist; the first shared proof drawer over posted ledger amounts is in flight under `W10-PROV-001` | `W5X-OEG-001` |
+| Registry-driven Security Master asset classes (`SecurityAssetClassRegistry`, versioned terms and event payloads, typed day-count and settlement conventions, typed corporate-action economics, income and factor-history projections, append-only governance write log) | Supported foundation in source as of 2026-10-16; no roadmap row and no acceptance gate yet. It is the nearest in-source precursor to contract packs (Section 22) | No registry row |
 
 With most of the first-order W9 slate accepted, the open activation work is governance
 (`W9-GOV-008`), institutional intake (`W9-INGEST-009`), and the corporate-action acceptance decision
-(`W9-CORPACT-011`). Section 2.6 describes the depth work that follows activation.
+(`W9-CORPACT-011`). Section 2.6 describes the depth work that follows activation; five of its rows
+are now in progress.
 
 Rules of the doctrine:
 
@@ -285,19 +288,27 @@ surfaces more trustworthy and less laborious, not adding new ones. The W10 depth
 (`DEC-DEPTH-SLATE-001`) encodes this; each row deepens an existing surface and maps to a charter
 invariant:
 
-| Theme | Rows | Charter anchor |
+| Theme | Rows (registry status, snapshot 2026-10-14) | Charter anchor |
 | --- | --- | --- |
-| Stale inputs fail closed | `W10-MARK-001` (stale-mark policy and mark-age surfacing) | Truth discipline (2.3); per-datum provenance (11.4) |
-| Breaks with memory | `W10-RECON-001` (durable break lineage and run-over-run diff), `W10-RECON-002` (clustering and bulk resolution), `W10-RECON-003` (unified tolerances and what-if replay), `W10-RECON-004` (operator-taught match rules behind a promotion gate) | Reconciliation strategy (11.6); a close that compounds (1.2) |
-| Proof on every amount | `W10-PROV-001` (ledger-amount evidence subject and shared proof drawer) | Number Passport (22) |
-| One close-readiness truth | `W10-SEAM-001` (unified close-readiness projection behind one shared contract) | Shared seam (5.4); NAV Readiness Packet (4.4) |
-| Governed routine throughput | `W10-JRNL-001` (durable recurring journal schedules and draft runner) | Policy-approved straight-through lanes (21) |
-| Accounting depth | `W10-TAX-001` (tax character, wash-sale, lot relief), `W10-LOT-002` (security-identified open-lot convergence), `W10-PERF-001` (portfolio and investor returns), `W10-CONSOL-001` (intercompany elimination) | Treasury ledger principles (11.7); whole-balance-sheet modeling (1.4) |
-| Maintainability | `W10-DEBT-001` (god-file burn-down against the file-size ratchet) | Modular monolith boundaries (12) |
+| Stale inputs fail closed | `W10-MARK-001` (stale-mark policy and mark-age surfacing; `in_progress`) | Truth discipline (2.3); per-datum provenance (11.4) |
+| Breaks with memory | `W10-RECON-001` (durable break lineage and run-over-run diff), `W10-RECON-002` (clustering and bulk resolution), `W10-RECON-003` (unified tolerances and what-if replay), `W10-RECON-004` (operator-taught match rules behind a promotion gate); all `planned` | Reconciliation strategy (11.6); a close that compounds (1.2) |
+| Proof on every amount | `W10-PROV-001` (ledger-amount evidence subject and shared proof drawer; `in_progress`) | Number Passport (22) |
+| One close-readiness truth | `W10-SEAM-001` (unified close-readiness projection behind one shared contract; `in_progress`) | Shared seam (5.4); NAV Readiness Packet (4.4) |
+| Governed routine throughput | `W10-JRNL-001` (durable recurring journal schedules and draft runner; `in_progress`) | Policy-approved straight-through lanes (21) |
+| Accounting depth | `W10-LOT-002` (security-identified open-lot convergence; `in_progress`, priority critical), `W10-TAX-001` (tax character, wash-sale, lot relief), `W10-PERF-001` (portfolio and investor returns), `W10-CONSOL-001` (intercompany elimination); the last three `planned` | Treasury ledger principles (11.7); whole-balance-sheet modeling (1.4) |
+| Maintainability | `W10-DEBT-001` (god-file burn-down against the file-size ratchet; `planned`) | Modular monolith boundaries (12) |
 
 Operator-taught rules (`W10-RECON-004`) and recurring journals (`W10-JRNL-001`) are the first
 concrete test of Section 21: learned or scheduled behavior produces drafts or candidate rules that
-require a promotion gate, never self-approved postings.
+require a promotion gate, never self-approved postings. The in-flight recurring-journal runner
+already honors that boundary: it materializes due occurrences as drafts through the existing
+journal-intake path, claims each schedule and effective date once, and never submits, approves, or
+posts.
+
+`W10-CONSOL-001` has a first two-entity, single-currency elimination slice in source (reviewed
+drafts on the existing approval rail, perimeter and freshness guards, gross versus eliminated
+views), but the row stays `planned` until its governed exit criteria are met; it must not be
+described as delivered.
 
 ---
 
@@ -436,31 +447,40 @@ it, not to widen it.
 
 Implementation claims in this section are grounded in:
 
-* `docs/roadmap/data/*.yml` and `docs/roadmap/generated/ROADMAP_SUMMARY.md` (registry snapshot 2026-09-28),
+* `docs/roadmap/data/*.yml` and `docs/roadmap/generated/ROADMAP_SUMMARY.md` (program snapshot 2026-10-14),
 * `docs/source/data/source-modules.yml` and registered `src/**/README.md` files,
 * `docs/architecture/module-map.md` and `docs/architecture/project-structure.md`,
-* repository measurements taken 2026-07-28 (project, route, and test counts below).
+* repository measurements taken 2026-10-16 (project, route, and test counts below).
 
 Roadmap acceptance is bounded to the named capability. It does not by itself certify any deployment
 profile or production release. Production readiness is currently **blocked**; the release gate is
-every P0 row in `docs/product/implementation-todo-list.md` complete on the same release commit.
+every P0 row in `docs/product/implementation-todo-list.md` complete on the same release commit. As
+of the tracker's 2026-10-14 review, Meridian CI and Production Certification passed on reviewed
+`main` commit `e0ecd952`, but no P0 row is production-certified: 14 are historically
+implementation-complete, 6 are evidence-gated on the frozen-release evidence set, and `PRD-002` is
+reopened for implementation. A green run on `main` is a baseline, not a release.
 
 ### 5.2 Scale of the Existing Foundation
 
-Measured from the repository on 2026-07-28:
+Measured from the repository on 2026-10-16 (2026-07-28 figures in parentheses where the same
+counting basis was reproduced):
 
 | Dimension | Measure |
 | --- | --- |
-| Source projects | 41 under `src/` (52 projects in `Meridian.sln` including tests and benchmarks) |
-| Application code | ~242,000 lines of C# (2,902 files); 12,736 lines of F# across four deterministic calculation projects |
-| Browser workstation | ~295,000 lines of TypeScript/TSX (720 files; 165 screen modules; 264 test files) |
-| Desktop workstation | 497 C# files and 147 XAML views (`src/Meridian.Wpf/`) |
-| API surface | 845 distinct `/api/...` routes (855 route constants in `UiApiRoutes.cs`; 1,164 endpoint mappings across 137 endpoint files) |
-| Provider integrations | 22 provider adapter families under `src/Meridian.Infrastructure/Adapters/` |
+| Source projects | 42 under `src/` (41); 59 projects in `Meridian.sln` including tests and benchmarks (52) |
+| Application code | 3,378 C# files (2,906) totalling ~957,000 physical lines (~806,000)¹; 13,466 lines of F# across four deterministic calculation projects (12,736) |
+| Browser workstation | ~343,000 lines of TypeScript/TSX (~296,000) in 951 files (722); 230 screen modules (165); 345 test files (264) |
+| Desktop workstation | 538 C# files (497) and 154 XAML views (147) in `src/Meridian.Wpf/` |
+| API surface | 912 distinct `/api/...` routes (845); 922 route constants in `UiApiRoutes.cs` (855); 1,251 endpoint mappings (1,164) |
+| Provider integrations | 22 provider adapter families under `src/Meridian.Infrastructure/Adapters/` (22) |
 | Statement connectors | 6 formats in source: declarative CSV, OFX, IB Flex XML, Alpaca, BAI2, CAMT.053 |
-| Ledger library | 142 classes in `src/Meridian.Ledger/` (journals, multi-currency, capital accounts, waterfalls, tax lots, close, pricing, report packs) |
-| Tests | ~12,900 xUnit facts/theories across 12 .NET test projects plus 264 browser test files |
-| Durability | Write-ahead log, atomic file writes (110 call sites), checksum and audit-chain services in `src/Meridian.Storage/` |
+| Ledger library | 154 source files in `src/Meridian.Ledger/` (142): journals, multi-currency, capital accounts, waterfalls, tax lots, valuation freshness, close, pricing, report packs |
+| Tests | ~18,200 C# xUnit facts/theories (~12,950) plus ~460 F# tests across 14 .NET test projects (12), and 345 browser test files (264) |
+| Durability | Write-ahead log, atomic file writes (142 source files using `AtomicFileWriter`, up from 110), checksum and audit-chain services in `src/Meridian.Storage/`; append-only governance and write-event logs for Security Master and Asset Operations |
+
+¹ The 2026-07-28 edition reported "~242,000 lines of C#"; that basis could not be reproduced.
+Both figures here count physical lines in `src/**/*.cs`, including comments and blank lines, and are
+comparable with each other only.
 
 The breadth is an asset only insofar as it is activated (Section 2.1): parts of this foundation are
 not yet the wired operator path, and the W9 slate exists precisely to close that gap.
@@ -502,12 +522,18 @@ production deployment profile (Section 5.1).
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting and ledger audit |
 | `W9-INGEST-009` | Institutional statement ingestion and deterministic split matching on the live path |
 | `W9-CORPACT-011` | Corporate-action approval and posting lane, `ready_for_acceptance` since 2026-09-22; acceptance is a fresh operator decision after `DEC-W9-ACCEPTANCE-002` |
-| `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
-| `W10-SEAM-001` | Unified close-readiness projection behind one shared contract |
-| `W10-LOT-002` | Security-identified open-lot convergence |
+| `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing: one shared valuation freshness policy, blocking by default, with mark age and observation date shown in browser and WPF |
+| `W10-PROV-001` | Ledger-amount evidence subject and shared proof drawer: first posted-ledger slice opens provenance for individual debit and credit amounts in the browser Ledger Explorer and WPF Posted Ledger through the subject-addressed evidence API |
+| `W10-JRNL-001` | Durable recurring journal schedules and a draft-only runner that never submits, approves, or posts |
+| `W10-SEAM-001` | Unified close-readiness projection behind one shared contract, bound to an explicitly declared close scope |
+| `W10-LOT-002` | Security-identified open-lot convergence (priority critical): canonical acquisition, legacy backfill, relief, and face-lot amortization share one durable lot and immutable-journal boundary |
 
 **Planned** (registry status `planned`): `W5X-OEG-001` (Operational Evidence Graph product surface)
-and the remaining W10 depth rows (Section 2.6).
+and the remaining W10 depth rows (`W10-RECON-001` through `-004`, `W10-TAX-001`, `W10-PERF-001`,
+`W10-CONSOL-001`, `W10-DEBT-001`; Section 2.6).
+
+No new roadmap decisions were recorded between the 2026-09-28 and 2026-10-14 snapshots; the status
+changes above come from rows moving into implementation, not from acceptance.
 
 The original ranked W9 first-order slate keeps its adopted order below; the status column records
 current registry state rather than presenting the slate as still planned:
@@ -580,7 +606,7 @@ product is not complete. "Planned productization" must never be presented as shi
 | Treasury & Payments | Supported foundation | Cash-flow views, payment-intent design, account/ledger seams; live payment execution remains later productization |
 | Portfolio & Investment Operations | Implemented evidence | Portfolio, fund-structure, brokerage sync, positions, paper sessions, valuation evidence, ledger-backed workflows |
 | Reference Data | Implemented evidence | Security Master contracts, provider-to-security mapping, asset profiles, trust/conflict summaries |
-| Instrument, Contract & Obligation Management | Implemented evidence | Security Master, direct-lending and F# rule kernels, factor/corporate-action evidence, multi-asset blockers |
+| Instrument, Contract & Obligation Management | Implemented evidence | Security Master, direct-lending and F# rule kernels, factor/corporate-action evidence, multi-asset blockers; the registry-driven asset-class model and versioned terms (Section 6.6) are a supported foundation without a roadmap row |
 | Entity & Relationship Management | Supported foundation | Fund-structure setup, ownership graph, legal entities, vehicles, assignments |
 | Alternative Asset Management | Supported foundation | Private-credit models, governed custom asset profiles, structured/private asset coverage |
 | Financing & Capital Structure Analysis | Design-led foundation | Partial support through fund, vehicle, account, and ledger models |
@@ -689,6 +715,20 @@ Supported financial objects span public securities, fixed income, loans and dire
 derivatives, structured products, private fund interests, real assets, deposits, guarantees, and
 commitments — recorded widely, automated narrowly, per contract packs (Section 22).
 
+Current source foundation (supported, not accepted): one `SecurityAssetClassRegistry` composes the
+asset-class descriptor table with the term schema and is locked by coverage tests to the F#
+`SecurityKind` union, the validator registry, and the storage writers. Each descriptor owns lot unit
+and multiplier, cash-flow behavior, and projection kind; nine of the eleven projection writers are
+declarative (Bond and Option remain specialized). Terms and security-event payloads declare their
+family and version, and replay checks them before decoding. Day-count and settlement conventions
+are typed; corporate-action economics are typed per event family; declared dividend and fund
+distribution income and a dated factor history are projected from effective corporate actions.
+Governance writes (override decisions, alias revisions, projection rebuilds) append to an
+append-only log in the same transaction as the change. Browser and WPF passport editors build
+their term forms from the same registry. These are engineering foundations recorded in
+[`docs/architecture/security-master-extensibility-review.md`](../architecture/security-master-extensibility-review.md);
+no registry row yet accepts them as a product capability.
+
 ### 6.7 Entity & Relationship Management
 
 People, organizations, trusts, funds, SPVs, beneficiaries, and their ownership and authority
@@ -731,8 +771,11 @@ checklist id, keyed evidence exactly matching the source run, and an exact same-
 whose parent and strategy identities match. Missing, rejected, foreign, or mismatched evidence or
 lineage remains review-required or rejected; metric eligibility and generic paper-session creation
 cannot satisfy the checklist.
-`BacktestStudioRunOrchestrator` is not host-composed, and the Strategy Designer currently fails
-closed when its production compiler captures no result, so neither is evidence for W6 closure.
+`BacktestStudioRunOrchestrator` is not host-composed, so it is not evidence for W6 closure. The
+Strategy Designer now has a designer-document live strategy source over a closed expression
+grammar in which every unsupported construct fails closed into the operator-visible
+`ActivationDeferred` state (the `PRD-020` closure candidate); that is a safety property of
+activation, not evidence for W6 closure or broader Studio UX.
 
 ### 6.12 Risk Management
 
@@ -1447,7 +1490,10 @@ discovery. The graph and warehouse are **projections, not competing books of rec
 categories. The common spine defines identity, ownership, entity, book, evidence, lifecycle,
 valuation, accounting, reconciliation, permission, and reporting hooks; versioned packs define
 contract schema, lifecycle events, valuation methods, accounting rules, validations, and reporting
-taxonomy. Launch prefers wide capture and narrow automation.
+taxonomy. Launch prefers wide capture and narrow automation. The registry-driven Security Master
+asset-class model (Section 6.6) is the closest in-source precursor: it already centralizes schema,
+lot units, cash-flow behavior, and projections per class, but it does not yet carry versioned
+accounting rules, valuation methods, or reporting taxonomy, and it is not a governed pack lifecycle.
 
 **Number Passport.** The signature evidence object for every balance, performance figure, capital
 account value, report total, dashboard metric, close variance, or liquidity forecast: amount,
@@ -1562,6 +1608,10 @@ stays in [`docs/product/implementation-todo-list.md`](implementation-todo-list.m
 Version 1.1 keeps the same discipline: it refreshes registry facts to snapshot 2026-09-28 and adds
 the W10 depth slate only as already-registered rows mapped to existing invariants.
 
+Version 1.2 is a status and measurement refresh with no new product scope. It moves to the
+2026-10-14 program snapshot, re-measures the foundation, and records unregistered Security Master
+foundation work as a supported foundation rather than a delivered capability.
+
 The superseded Version 0.25 text — including the Executive Marketecture Deck and the v0.15–v0.20
 addenda in their original form — is preserved at
 [`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md).
@@ -1583,4 +1633,5 @@ addenda in their original form — is preserved at
 | 0.24 | WPF product/UI work marked deferred |
 | 0.25 | WPF desktop workstation reactivated as a co-equal lane focused on web-UI parity (`W8-WPF-PARITY-001`), superseding all earlier WPF-deferral statements |
 | 1.0 | Ground-up rewrite: proven-numbers value proposition; activation-over-expansion, proven-slice, and truth-discipline doctrines; W9 slate and current registry posture incorporated; structure consolidated from 27 sections to 25 with all normative invariants preserved |
-| **1.1** | **Registry refresh to snapshot 2026-09-28: W9 acceptance decisions (`DEC-W9-ACCEPTANCE-001`–`005`, `DEC-W9-DONE-001`) reflected; W10 depth slate added as Section 2.6 and mapped to charter invariants; reading guide, normative-word convention, and accepted-vs-done vocabulary added. No new product scope** |
+| 1.1 | Registry refresh to snapshot 2026-09-28: W9 acceptance decisions (`DEC-W9-ACCEPTANCE-001`–`005`, `DEC-W9-DONE-001`) reflected; W10 depth slate added as Section 2.6 and mapped to charter invariants; reading guide, normative-word convention, and accepted-vs-done vocabulary added. No new product scope |
+| **1.2** | **Refresh to program snapshot 2026-10-14: `W10-PROV-001` and `W10-JRNL-001` now in progress alongside MARK, SEAM, and LOT; W10 statuses shown in Section 2.6; `W10-CONSOL-001` first slice noted while the row stays planned; production-readiness baseline updated (CI and Production Certification green on `e0ecd952`, release still blocked); scale table re-measured 2026-10-16 with the counting basis stated; registry-driven Security Master asset-class foundation recorded in Sections 2.1, 5.5, 6.6, and 22 as unregistered; Strategy Designer note updated for the `PRD-020` fail-closed live source. No new product scope** |
