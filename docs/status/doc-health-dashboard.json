@@ -1,11 +1,11 @@
 {
   "total_files": 735,
-  "total_lines": 161749,
+  "total_lines": 162192,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
-  "todo_count": 297,
-  "average_lines": 220.1,
+  "todo_count": 299,
+  "average_lines": 220.7,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -3276,9 +3276,9 @@
     },
     {
       "path": "docs/product/meridian-design-document.md",
-      "line_count": 1586,
+      "line_count": 1835,
       "has_heading": true,
-      "todo_count": 4,
+      "todo_count": 6,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -3748,7 +3748,7 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "line_count": 1319,
+      "line_count": 1507,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3756,7 +3756,7 @@
     },
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "line_count": 66,
+      "line_count": 72,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
