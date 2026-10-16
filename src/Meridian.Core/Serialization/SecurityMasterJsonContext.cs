@@ -153,6 +153,7 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(CreateSecurityRequest))]
 [JsonSerializable(typeof(List<CreateSecurityRequest>))]
 [JsonSerializable(typeof(AmendSecurityTermsRequest))]
+[JsonSerializable(typeof(AmendSecurityTermBlockRequest))]
 [JsonSerializable(typeof(AmendPreferredEquityTermsRequest))]
 [JsonSerializable(typeof(AmendConvertibleEquityTermsRequest))]
 [JsonSerializable(typeof(DeactivateSecurityRequest))]

@@ -309,6 +309,7 @@ export const UI_API_ROUTES = {
   SecurityMasterTradingParameters: "/api/security-master/{securityId:guid}/trading-parameters",
   SecurityMasterPreferredEquityTerms: "/api/security-master/{securityId:guid}/preferred-equity-terms",
   SecurityMasterConvertibleEquityTerms: "/api/security-master/{securityId:guid}/convertible-equity-terms",
+  SecurityMasterTermBlock: "/api/security-master/{securityId:guid}/terms/{blockKey}",
   SecurityMasterCorporateActions: "/api/security-master/{securityId:guid}/corporate-actions",
   SecurityMasterIncomeCashFlows: "/api/security-master/{securityId:guid}/income-cash-flows",
   SecurityMasterCorporateActionsIngest: "/api/security-master/corporate-actions/ingest",

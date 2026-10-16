@@ -427,6 +427,67 @@ public static partial class SecurityMasterEndpoints
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         /// <summary>
+        /// Replaces one nested term block (an object or array term the asset class declares, such as
+        /// preferred terms, a call schedule or swap legs) and carries every other term unchanged.
+        /// </summary>
+        /// <remarks>
+        /// <para>The declared blocks are the Object and Array fields of the asset-class registry
+        /// (<c>/api/security-master/asset-classes/{assetClass}</c>). Returns 400 for an undeclared block
+        /// or a JSON kind that does not match, and 404 for an unknown security.</para>
+        /// </remarks>
+        group.MapPut(UiApiRoutes.SecurityMasterTermBlock, async (
+            Guid securityId,
+            string blockKey,
+            AmendSecurityTermBlockRequest request,
+            HttpContext context,
+            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterService service,
+            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
+            CancellationToken ct) =>
+        {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+
+            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+                return governedRefusal;
+
+            var current = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (current is null)
+            {
+                return Results.NotFound();
+            }
+
+            if (!SecurityTermBlocks.For(current.AssetClass).Any(field => string.Equals(field.Key, blockKey, StringComparison.Ordinal)))
+            {
+                return Results.Problem(
+                    $"Asset class '{current.AssetClass}' declares no term block '{blockKey}'.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var detail = await service
+                    .AmendTermBlockAsync(securityId, blockKey, request with { UpdatedBy = ResolveActor(context) }, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(detail, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("AmendSecurityMasterTermBlock").RequirePermission(UserPermission.ModifySecurityMaster)
+        .Accepts<AmendSecurityTermBlockRequest>("application/json")
+        .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>
         /// Marks a security as inactive (soft delete). The security record remains in the database for audit purposes.
         /// </summary>
         /// <remarks>
