@@ -26,9 +26,32 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
         if (events.Count == 0)
             return;
 
+        // Inside a canonical write scope the append joins the shared transaction, so the event, the
+        // projection and the field attribution commit together. The advisory stream lock and the
+        // expected-version check below keep the append serialized per security either way.
+        if (PostgresSecurityMasterMutation.IsActiveFor(_options, securityId))
+        {
+            await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+            await AppendCoreAsync(lease.Connection, lease.Transaction!, securityId, expectedVersion, events, ct).ConfigureAwait(false);
+            _logger.LogInformation("Appended {EventCount} security events for {SecurityId} in a canonical write scope", events.Count, securityId);
+            return;
+        }
+
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
+        await AppendCoreAsync(connection, transaction, securityId, expectedVersion, events, ct).ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        _logger.LogInformation("Appended {EventCount} security events for {SecurityId}", events.Count, securityId);
+    }
 
+    private async Task AppendCoreAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid securityId,
+        long expectedVersion,
+        IReadOnlyList<SecurityMasterEventEnvelope> events,
+        CancellationToken ct)
+    {
         // Overlay edits acquire the same transaction-scoped lock before checking the stream head.
         // This makes their expected-version guard atomic with canonical appends without placing
         // partial operator annotations in the replayed economic event stream.
@@ -93,9 +116,6 @@ public sealed class PostgresSecurityMasterEventStore : ISecurityMasterEventStore
 
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
-
-        await transaction.CommitAsync(ct).ConfigureAwait(false);
-        _logger.LogInformation("Appended {EventCount} security events for {SecurityId}", events.Count, securityId);
     }
 
     public async Task<IReadOnlyList<SecurityMasterEventEnvelope>> LoadAsync(Guid securityId, CancellationToken ct = default)

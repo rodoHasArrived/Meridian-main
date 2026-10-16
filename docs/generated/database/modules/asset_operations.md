@@ -2,9 +2,9 @@
 
 # `asset_operations` schema
 
-- Relations: 16
-- Functions/procedures: 1
-- Triggers: 2
+- Relations: 18
+- Functions/procedures: 2
+- Triggers: 4
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -88,6 +88,20 @@ erDiagram
         text migration_id PK
         text checksum
         timestamp_with_time_zone applied_at
+    }
+    asset_operations_asset_operations_write_events {
+        bigint global_sequence PK
+        uuid security_id
+        text approval_actor
+        text approval_reference
+        text approval_rationale
+        timestamp_with_time_zone approved_at
+        timestamp_with_time_zone recorded_at
+        text source_domain
+        jsonb summary
+    }
+    asset_operations_asset_operations_write_events_global_sequence_seq {
+        text catalogued_object
     }
     asset_operations_asset_projected_cash_flows {
         uuid id PK
@@ -216,6 +230,8 @@ erDiagram
 | `asset_operation_subjects` | table | 6 | `id` | 0 | 2 | - |
 | `asset_operations_readiness` | table | 6 | `id` | 0 | 2 | - |
 | `asset_operations_schema_migrations` | table | 3 | `migration_id` | 0 | 1 | - |
+| `asset_operations_write_events` | table | 9 | `global_sequence` | 0 | 2 | Append-only log of Asset Operations projection writes (one row per wholesale replacement), recorded in the replacing transaction. |
+| `asset_operations_write_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `asset_projected_cash_flows` | table | 6 | `id` | 0 | 2 | - |
 | `asset_reconciliation_results` | table | 6 | `id` | 0 | 2 | - |
 | `asset_reconciliation_runs` | table | 6 | `id` | 0 | 2 | - |

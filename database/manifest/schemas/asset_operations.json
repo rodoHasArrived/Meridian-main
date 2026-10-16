@@ -14,7 +14,14 @@
     }
   ],
   "comment": null,
-  "comments": [],
+  "comments": [
+    {
+      "comment": "Append-only log of Asset Operations projection writes (one row per wholesale replacement), recorded in the replacing transaction.",
+      "fingerprint": "c963ee63bcc6f627f0720761d7db200d380a06e7550c2f1e76c85b66c53a51e0",
+      "object": "asset_operations.asset_operations_write_events",
+      "object_type": "table"
+    }
+  ],
   "composite_types": [],
   "dependencies": [
     {
@@ -358,7 +365,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "78161959c33a7efd123afc7b1fe50446baa2cd609b3c8bf524bdfee028b2cc2e",
+  "fingerprint": "02ad84afde7b6d421389119b3adb633550efc8082734afb17139e1d1ab0fea74",
   "foreign_tables": [],
   "functions": [
     {
@@ -389,6 +396,37 @@
       "security_definer": false,
       "security_labels": [],
       "signature": "reject_asset_accounting_event_mutation()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "0bd7573e452d6ccc39448764b29b7788137b22870b1d7824c65fd480987cd0ce",
+      "fingerprint": "b0939e5e1b86a72f187604d4a20b8853f6aadfd60af346f51fbc284a194e0c0c",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "reject_asset_operations_write_event_mutation",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "asset_operations",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "reject_asset_operations_write_event_mutation()",
       "strict": false,
       "volatility": "volatile"
     }
@@ -2697,6 +2735,375 @@
       "schema": "asset_operations",
       "security_labels": [],
       "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "nextval('asset_operations.asset_operations_write_events_global_sequence_seq'::regclass)",
+          "fingerprint": "c5845ad36c9834d40b17378a93a8ef4924fc55982a76cfaf4d7a7dc8ecbeb8de",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "global_sequence",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "74625f882a302e846ff9b0b78a67647d89747e2c80b77f2db8f4c9f320eb0b44",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "approval_actor",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "545ea1905e983945cf155324e61f4f2fb879543e1fd2a0f39696c5d95e335133",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "approval_reference",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "4e6258dba31626c4b324825444afb33237a92c8ec92e5925de2658726e95c014",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "approval_rationale",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "ba54c11da39386b684d5535de5e74ba7bfa2e4d25822d406d26ce780f286c999",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "approved_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "2c76b5c6cc5247a461f6a51df2f12430546e959a81d79261665ea40c2d4098d8",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "27eebe3cfe53975461b9c5f2534571b850cfb66e3f6113f4f3cd8a84c8a8cc14",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "source_domain",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "ac977d4c6ac2ec44a5d1214ec349c3a9f6a085452986537a0ea5d353d3038169",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "summary",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Append-only log of Asset Operations projection writes (one row per wholesale replacement), recorded in the replacing transaction.",
+      "constraints": [
+        {
+          "columns": [
+            "global_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (global_sequence)",
+          "delete_action": null,
+          "fingerprint": "726fc4aeccc85ce5e57caf8ee2565aa7c889cf968cdf54a08d3df092fa2dc630",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "asset_operations_write_events_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "ed195dad909c3fb6bb8e99b671fb8298c1a17bb2cedfa249fd163849896aa0c6",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX asset_operations_write_events_pkey ON asset_operations.asset_operations_write_events USING btree (global_sequence)",
+          "expression": null,
+          "fingerprint": "c259b77631a9cb3b91d105be9c9c9c394f6ebd16a3504bd4ee225149f7367a78",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "global_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "asset_operations_write_events_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_asset_operations_write_events_security ON asset_operations.asset_operations_write_events USING btree (security_id, global_sequence)",
+          "expression": null,
+          "fingerprint": "ebff48a1f4426871aef17a29303f7f152de11709bd3946bf94a4d6a4c20033c1",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "global_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_asset_operations_write_events_security",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "asset_operations_write_events",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "asset_operations",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_asset_operations_write_event_no_delete BEFORE DELETE ON asset_operations.asset_operations_write_events FOR EACH ROW EXECUTE FUNCTION asset_operations.reject_asset_operations_write_event_mutation()",
+          "definition_hash": "0085fe788b8604ddce72150eab32a6d4978b0a52ff2934ba01d74c386035ac03",
+          "enabled": "origin",
+          "events": [
+            "delete"
+          ],
+          "fingerprint": "c26befddfddcf282f7c2ed9a18339ddc9fc50185755d6bc5d60b83e4b953057b",
+          "function_schema": "asset_operations",
+          "function_signature": "reject_asset_operations_write_event_mutation()",
+          "level": "row",
+          "name": "trg_asset_operations_write_event_no_delete",
+          "relation": "asset_operations_write_events",
+          "schema": "asset_operations",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_asset_operations_write_event_no_update BEFORE UPDATE ON asset_operations.asset_operations_write_events FOR EACH ROW EXECUTE FUNCTION asset_operations.reject_asset_operations_write_event_mutation()",
+          "definition_hash": "721ba0634c782abd5118556ebfe8ff7d0b7ccded3c6a7cd1b506b9be1eb71bd3",
+          "enabled": "origin",
+          "events": [
+            "update"
+          ],
+          "fingerprint": "fd328499f89e981235961aa5d3e32014cfaaf611177bd61d7222ee71679be004",
+          "function_schema": "asset_operations",
+          "function_signature": "reject_asset_operations_write_event_mutation()",
+          "level": "row",
+          "name": "trg_asset_operations_write_event_no_update",
+          "relation": "asset_operations_write_events",
+          "schema": "asset_operations",
+          "timing": "before"
+        }
+      ]
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "usage"
+        }
+      ],
+      "columns": [],
+      "comment": null,
+      "constraints": [],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "7ab00d7e689eca6a7a746424d4758a982b1d7c0d70869b5d6fa5e9e27399d051",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [],
+      "is_partition": false,
+      "kind": "sequence",
+      "name": "asset_operations_write_events_global_sequence_seq",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "nothing",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "asset_operations",
+      "security_labels": [],
+      "sequence": {
+        "cache": 1,
+        "cycle": false,
+        "data_type": "bigint",
+        "increment": 1,
+        "maximum": 9223372036854775807,
+        "minimum": 1,
+        "start": 1
+      },
       "triggers": []
     },
     {
@@ -5753,6 +6160,14 @@
     },
     {
       "enabled": false,
+      "fingerprint": "a495cfaf0a47996fe095c82595fa5bb8013505907ab89a9376648a9ec1178d04",
+      "forced": false,
+      "policies": [],
+      "relation": "asset_operations_write_events",
+      "schema": "asset_operations"
+    },
+    {
+      "enabled": false,
       "fingerprint": "c6d3f91c51cc9c33fac41510431ea84937da425c11dfd75c3b31eb6a9faffc3c",
       "forced": false,
       "policies": [],
@@ -5817,7 +6232,61 @@
     }
   ],
   "security_labels": [],
-  "sequences": [],
+  "sequences": [
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "usage"
+        }
+      ],
+      "columns": [],
+      "comment": null,
+      "constraints": [],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "7ab00d7e689eca6a7a746424d4758a982b1d7c0d70869b5d6fa5e9e27399d051",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [],
+      "is_partition": false,
+      "kind": "sequence",
+      "name": "asset_operations_write_events_global_sequence_seq",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "nothing",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "asset_operations",
+      "security_labels": [],
+      "sequence": {
+        "cache": 1,
+        "cycle": false,
+        "data_type": "bigint",
+        "increment": 1,
+        "maximum": 9223372036854775807,
+        "minimum": 1,
+        "start": 1
+      },
+      "triggers": []
+    }
+  ],
   "tables": [
     {
       "acl": [
@@ -8114,6 +8583,322 @@
       "security_labels": [],
       "sequence": null,
       "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "bigint",
+          "default": "nextval('asset_operations.asset_operations_write_events_global_sequence_seq'::regclass)",
+          "fingerprint": "c5845ad36c9834d40b17378a93a8ef4924fc55982a76cfaf4d7a7dc8ecbeb8de",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "global_sequence",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "int8",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "security_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "74625f882a302e846ff9b0b78a67647d89747e2c80b77f2db8f4c9f320eb0b44",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "approval_actor",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "545ea1905e983945cf155324e61f4f2fb879543e1fd2a0f39696c5d95e335133",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "approval_reference",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "4e6258dba31626c4b324825444afb33237a92c8ec92e5925de2658726e95c014",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "approval_rationale",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "ba54c11da39386b684d5535de5e74ba7bfa2e4d25822d406d26ce780f286c999",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "approved_at",
+          "nullable": false,
+          "ordinal_position": 6,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "2c76b5c6cc5247a461f6a51df2f12430546e959a81d79261665ea40c2d4098d8",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "recorded_at",
+          "nullable": false,
+          "ordinal_position": 7,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "27eebe3cfe53975461b9c5f2534571b850cfb66e3f6113f4f3cd8a84c8a8cc14",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "source_domain",
+          "nullable": false,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "ac977d4c6ac2ec44a5d1214ec349c3a9f6a085452986537a0ea5d353d3038169",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "summary",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": "Append-only log of Asset Operations projection writes (one row per wholesale replacement), recorded in the replacing transaction.",
+      "constraints": [
+        {
+          "columns": [
+            "global_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (global_sequence)",
+          "delete_action": null,
+          "fingerprint": "726fc4aeccc85ce5e57caf8ee2565aa7c889cf968cdf54a08d3df092fa2dc630",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "asset_operations_write_events_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "ed195dad909c3fb6bb8e99b671fb8298c1a17bb2cedfa249fd163849896aa0c6",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX asset_operations_write_events_pkey ON asset_operations.asset_operations_write_events USING btree (global_sequence)",
+          "expression": null,
+          "fingerprint": "c259b77631a9cb3b91d105be9c9c9c394f6ebd16a3504bd4ee225149f7367a78",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "global_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "asset_operations_write_events_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_asset_operations_write_events_security ON asset_operations.asset_operations_write_events USING btree (security_id, global_sequence)",
+          "expression": null,
+          "fingerprint": "ebff48a1f4426871aef17a29303f7f152de11709bd3946bf94a4d6a4c20033c1",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "security_id",
+            "global_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_asset_operations_write_events_security",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "asset_operations_write_events",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "asset_operations",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": [
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_asset_operations_write_event_no_delete BEFORE DELETE ON asset_operations.asset_operations_write_events FOR EACH ROW EXECUTE FUNCTION asset_operations.reject_asset_operations_write_event_mutation()",
+          "definition_hash": "0085fe788b8604ddce72150eab32a6d4978b0a52ff2934ba01d74c386035ac03",
+          "enabled": "origin",
+          "events": [
+            "delete"
+          ],
+          "fingerprint": "c26befddfddcf282f7c2ed9a18339ddc9fc50185755d6bc5d60b83e4b953057b",
+          "function_schema": "asset_operations",
+          "function_signature": "reject_asset_operations_write_event_mutation()",
+          "level": "row",
+          "name": "trg_asset_operations_write_event_no_delete",
+          "relation": "asset_operations_write_events",
+          "schema": "asset_operations",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER trg_asset_operations_write_event_no_update BEFORE UPDATE ON asset_operations.asset_operations_write_events FOR EACH ROW EXECUTE FUNCTION asset_operations.reject_asset_operations_write_event_mutation()",
+          "definition_hash": "721ba0634c782abd5118556ebfe8ff7d0b7ccded3c6a7cd1b506b9be1eb71bd3",
+          "enabled": "origin",
+          "events": [
+            "update"
+          ],
+          "fingerprint": "fd328499f89e981235961aa5d3e32014cfaaf611177bd61d7222ee71679be004",
+          "function_schema": "asset_operations",
+          "function_signature": "reject_asset_operations_write_event_mutation()",
+          "level": "row",
+          "name": "trg_asset_operations_write_event_no_update",
+          "relation": "asset_operations_write_events",
+          "schema": "asset_operations",
+          "timing": "before"
+        }
+      ]
     },
     {
       "acl": [
@@ -11134,6 +11919,40 @@
       "level": "row",
       "name": "trg_asset_accounting_event_no_update",
       "relation": "asset_accounting_event_projections",
+      "schema": "asset_operations",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_asset_operations_write_event_no_delete BEFORE DELETE ON asset_operations.asset_operations_write_events FOR EACH ROW EXECUTE FUNCTION asset_operations.reject_asset_operations_write_event_mutation()",
+      "definition_hash": "0085fe788b8604ddce72150eab32a6d4978b0a52ff2934ba01d74c386035ac03",
+      "enabled": "origin",
+      "events": [
+        "delete"
+      ],
+      "fingerprint": "c26befddfddcf282f7c2ed9a18339ddc9fc50185755d6bc5d60b83e4b953057b",
+      "function_schema": "asset_operations",
+      "function_signature": "reject_asset_operations_write_event_mutation()",
+      "level": "row",
+      "name": "trg_asset_operations_write_event_no_delete",
+      "relation": "asset_operations_write_events",
+      "schema": "asset_operations",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER trg_asset_operations_write_event_no_update BEFORE UPDATE ON asset_operations.asset_operations_write_events FOR EACH ROW EXECUTE FUNCTION asset_operations.reject_asset_operations_write_event_mutation()",
+      "definition_hash": "721ba0634c782abd5118556ebfe8ff7d0b7ccded3c6a7cd1b506b9be1eb71bd3",
+      "enabled": "origin",
+      "events": [
+        "update"
+      ],
+      "fingerprint": "fd328499f89e981235961aa5d3e32014cfaaf611177bd61d7222ee71679be004",
+      "function_schema": "asset_operations",
+      "function_signature": "reject_asset_operations_write_event_mutation()",
+      "level": "row",
+      "name": "trg_asset_operations_write_event_no_update",
+      "relation": "asset_operations_write_events",
       "schema": "asset_operations",
       "timing": "before"
     }

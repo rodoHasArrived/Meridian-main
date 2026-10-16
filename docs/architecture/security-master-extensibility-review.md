@@ -5738,3 +5738,49 @@ integration suite passes against a local PostgreSQL 16 with migration 039 applie
 
 **Still open from this priority.** Retiring the legacy flat record fields (accounting first) is
 tracked with priority 1's registry work below.
+
+### Priority 1 — one asset-class registry
+
+| Finding | What landed |
+| --- | --- |
+| ~190 asset-class branches across 39 files held in ~6 parallel tables | `SecurityAssetClassRegistry` is the single composition point: each `SecurityAssetClassDefinition` joins the one descriptor table (`SecurityAssetClassCatalog`) and the one term schema (`SecurityAssetTermsSchema`) and derives UI hints from the fields. The descriptor now owns lot behaviour (`LotUnit`, `LotMultiplierTermKey`), cash-flow behaviour (`CashFlowBehavior`), projection kind (`ProjectionKind`) and terms version alongside identifiers, accounting class and capabilities. |
+| Parallel tables drifted apart | `UsesFaceValueLots` and `SupportsCashflowScheduleByDefault` are no longer maintained flags; they are derived from `LotUnit` and `CashFlowBehavior` (the derived sets are pinned by test). Face-value, calculated-schedule, identifier-only-import, ops-capable and projection-kind class lists are all generated from the registry. |
+| No guard that the tables cover the F# asset-kind union | `SecurityAssetClassRegistryCoverageTests` reflects over every case of the F# `SecurityKind` union and requires exactly one registry definition per case, and locks the F# `AssetClassRegistry`, the term schema, the validator registry, the declarative projection registry and the specialized projection writers to the registry. Every scalar UI hint path is checked against the governed field-edit validator. |
+| UI has no schema to build forms from | `GET /api/security-master/asset-classes` and `/asset-classes/{assetClass}` return each definition with its fields, editor kinds, groups, labels, vocabularies and behaviour. |
+
+### Priority 5 — audit gaps
+
+| Finding | What landed |
+| --- | --- |
+| Operator overrides are a mutable row rather than events | Migration `040_security_master_governance_events.sql` adds the append-only `security_governance_events` log (update and delete are rejected by trigger; a TRUNCATE guard needs a schema-policy waiver and is left for human schema review). `PostgresOperatorOverridesStore` appends a `Patched`, `Approved` or `Rejected` event in the same transaction as every overlay change, carrying the previous and new values, the staging actor, the reviewer and the reason. The row remains the current-state read model. |
+| The direct-approval route skips the independent-reviewer check | `OperatorOverrideReviewRules.EnsureIndependentReview` refuses an approval by the actor who staged the values. It is enforced in the PostgreSQL store, which every route reaches, and at the decision endpoint for any composed store; the endpoint returns `403`. Rejecting (withdrawing) one's own values stays allowed. The workbench's restoration of a prior independent decision is flagged `RestoresPriorDecision` and recorded as such. |
+| Alias changes bypass the event log | Every alias revision, explicit or from projection replacement, appends a governance event in the alias write's transaction, beside the existing append-only alias revision history. |
+| Direct writes (direct lending, rebuilds) bypass the event log | A rebuild batch appends a `ProjectionBatchRebuilt` governance event listing the records it wrote, in the batch transaction. Every Asset Operations projection replacement, including Direct Lending's publish, appends to the new append-only `asset_operations_write_events` table (asset-operations migration `005`) in the replacing transaction, with its approval and shape. |
+| Field-level source tracking is written after commit and can be lost | `ISecurityMasterCanonicalWriteScope` gives create, amend and deactivate one transaction in PostgreSQL deployments. The event store and projection store join the session (`PostgresSecurityMasterMutation.ExecuteCanonicalAsync`), and field attribution is written inside it, so the event, the projection and the attribution commit together. A failed attribution rolls the write back instead of leaving a stale incumbent. Hosts without a shared transaction keep the previous best-effort ordering. |
+
+The governance log is a separate stream from `security_events`, so governance activity never
+advances the economic stream version that amendments are fenced on. `ISecurityGovernanceEventReader`
+reads it per security.
+
+### Priority 3 — hand-written projection writers
+
+| Finding | What landed |
+| --- | --- |
+| Most asset classes write their typed tables through hand-written code | `SecurityTermsProjectionColumn.Derived` lets a descriptor column compute its value from the whole record (common terms, fallback chains, derived states) while the registry owns the gate, delete branch, identity spine and generated upsert. Equity, FxSpot, Future, Swap and Commodity moved onto descriptors. Their derived columns call the same readers the writers used. Nine of the eleven original writers are now declarative, and the catalog's `ProjectionKind` says so (locked by `SecurityAssetClassRegistryCoverageTests`). |
+| Each move needs a regression test | `SpecializedProjectionGoldenTests` is a PostgreSQL golden-row matrix covering gate hits and misses, stale rows cleared on a gate miss or class change, verbatim and normalized strings, common-terms columns, derived columns and wrong JSON kinds. It passed against the hand-written writers before they were deleted, and the descriptors are held to the same rows. |
+| Still specialized | Bond and Option. Option's tables are keyed by contract symbol and option chain, not by security; three of Bond's four tables carry no identity spine, and Bond keeps a legacy nested-coupon fallback. Both keep their existing writer tests. |
+
+### Priority 4 — one lot model
+
+| Finding | What landed |
+| --- | --- |
+| The lot model does not record units | `IUnitizedLot` (decimal `Quantity`, `UnitKind`, `Multiplier`) is the shared lot shape, and `LotQuantity` is its value form (`EconomicUnits = Quantity × Multiplier`). `LotQuantity.UnitFor`/`For` read the unit and the multiplier term (an option's or future's `multiplier`, a commodity's `contractSize`) from the asset-class registry. |
+| The face-value lot is bond-only and separate | `FaceValueLot` implements `IUnitizedLot` as the `FaceValue` case. `ToLedgerTaxLot` states the ledger's hundred-of-face unit (`UnitKind = FaceValue`, `Multiplier = 100`), so ledger quantity × multiplier is the face amount. The basis adjuster carries unit and multiplier through adjustments. |
+| Execution and backtesting lots use whole-number quantities | `Execution.Sdk.TaxLot`, `Backtesting.Sdk.OpenLot` and `ClosedLot` now carry decimal quantities and implement `IUnitizedLot` (shares and multiplier 1 by default). `LedgerTaxLot` implements it too. Cost-basis and P&L formulas are unchanged; the backtest fill engine still trades whole units, and its lots can now represent fractional and contract-scaled holdings without a type change. |
+
+### Follow-ons — conventions and loan identifiers
+
+| Finding | What landed |
+| --- | --- |
+| Put/call, settlement type and day count are free text | `SecurityTermConventions` types `SecurityOptionRight`, `SecuritySettlementMethod` and the day-count vocabulary. Term fields declare their convention (`SecurityAssetTermField.Convention`); the five `dayCount` fields and the Option and Future `settlementType` fields are marked. Writes reject non-canonical values (`SecurityMasterMapping` write mode and the field-edit validator), and the registry exposes them as a `Convention` editor with canonical choices. |
+| No LoanX or CLIP identifiers | `SecurityIdentifierKind.LoanX` (`LX` plus six digits) and `Clip` (nine alphanumerics) exist in C#, the F# identifier union, interop, normalization and validation, the WPF labels and the workstation type union. Direct loans prefer LoanX after the internal code; structured credit lists CLIP. |

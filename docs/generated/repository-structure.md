@@ -4655,8 +4655,10 @@ Meridian-main
 │   │   │   ├── ISecurityMasterRuntimeStatus.cs
 │   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── IStructuredCashFlowProvider.cs
+│   │   │   ├── LotQuantity.cs
 │   │   │   ├── OperatorOverrides.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
+│   │   │   ├── SecurityAssetClassRegistry.cs
 │   │   │   ├── SecurityAssetPackRegistry.cs
 │   │   │   ├── SecurityAssetProfiles.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcaster.cs
@@ -4679,6 +4681,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterProvenance.cs
 │   │   │   ├── SecurityMasterSchemaVersions.cs
 │   │   │   ├── SecurityQueries.cs
+│   │   │   ├── SecurityTermConventions.cs
 │   │   │   ├── SecurityTermReader.cs
 │   │   │   ├── SecurityTermsEnvelope.cs
 │   │   │   ├── SecurityValidationDtos.cs
@@ -6190,7 +6193,8 @@ Meridian-main
 │   │   │   │   ├── 001_asset_operations.sql
 │   │   │   │   ├── 002_instrument_position_projections.sql
 │   │   │   │   ├── 003_instrument_position_projection_guards.sql
-│   │   │   │   └── 004_asset_accounting_event_spine.sql
+│   │   │   │   ├── 004_asset_accounting_event_spine.sql
+│   │   │   │   └── 005_asset_operations_write_events.sql
 │   │   │   ├── AssetOperationsMigrationRunner.cs
 │   │   │   ├── FileAccountCashForecastStore.cs
 │   │   │   ├── IAssetAccountingEventProjectionStore.cs
@@ -6520,7 +6524,8 @@ Meridian-main
 │   │   │   │   ├── 036_security_master_workbench_generations.sql
 │   │   │   │   ├── 037_security_master_close_price_snapshots.sql
 │   │   │   │   ├── 038_security_master_alias_revisions.sql
-│   │   │   │   └── 039_security_master_event_payload_version.sql
+│   │   │   │   ├── 039_security_master_event_payload_version.sql
+│   │   │   │   └── 040_security_master_governance_events.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -6579,6 +6584,8 @@ Meridian-main
 │   │   │   ├── PostgresStructuredCreditReferenceProjectionStore.cs
 │   │   │   ├── PostgresSwapReferenceProjectionStore.cs
 │   │   │   ├── SecurityAliasSnapshot.cs
+│   │   │   ├── SecurityGovernanceEventLog.cs
+│   │   │   ├── SecurityMasterCanonicalWriteScope.cs
 │   │   │   ├── SecurityMasterDbMapper.cs
 │   │   │   ├── SecurityMasterMigrationRunner.cs
 │   │   │   ├── SecurityMasterProjectionCache.cs
@@ -10949,8 +10956,10 @@ Meridian-main
 │   │   │   ├── FaceValueLotOddPeriodTests.cs
 │   │   │   ├── FaceValueLotTests.cs
 │   │   │   ├── KeyedGatePoolTests.cs
+│   │   │   ├── LoanIdentifierKindTests.cs
 │   │   │   ├── NullCorporateActionOperationsServiceTests.cs
 │   │   │   ├── NullOperatorOverridesStoreTests.cs
+│   │   │   ├── OperatorOverrideReviewRulesTests.cs
 │   │   │   ├── PostgresOperatorOverridesStoreTests.cs
 │   │   │   ├── PostgresSecurityMasterClosePriceTests.cs
 │   │   │   ├── PostgresSecurityMasterConflictServiceTests.cs
@@ -10961,6 +10970,7 @@ Meridian-main
 │   │   │   ├── SecurityAccountingInstrumentClassTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
+│   │   │   ├── SecurityAssetClassRegistryCoverageTests.cs
 │   │   │   ├── SecurityAssetProfileGovernanceServiceTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChainTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterPipelineTests.cs
@@ -10992,6 +11002,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterDataQualityServiceCoverageTests.cs
 │   │   │   ├── SecurityMasterDataQualityServiceTests.cs
 │   │   │   ├── SecurityMasterDraftProposalServiceTests.cs
+│   │   │   ├── SecurityMasterGovernanceEventsPostgresTests.cs
 │   │   │   ├── SecurityMasterGovernedConcurrencyPostgresTests.cs
 │   │   │   ├── SecurityMasterGovernedConcurrencyPostgresTests.Recovery.cs
 │   │   │   ├── SecurityMasterHistoricalSymbolTimelineResolverTests.cs
@@ -11027,10 +11038,13 @@ Meridian-main
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
 │   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
+│   │   │   ├── SecurityTermConventionTests.cs
 │   │   │   ├── SecurityTermsProjectionRegistryTests.cs
 │   │   │   ├── SecurityTermsVersioningTests.cs
 │   │   │   ├── SecurityValidationServiceTests.cs
-│   │   │   └── SwapLegRoundTripTests.cs
+│   │   │   ├── SpecializedProjectionGoldenTests.cs
+│   │   │   ├── SwapLegRoundTripTests.cs
+│   │   │   └── UnitizedLotTests.cs
 │   │   ├── Serialization
 │   │   │   └── HighPerformanceJsonTests.cs
 │   │   ├── Services

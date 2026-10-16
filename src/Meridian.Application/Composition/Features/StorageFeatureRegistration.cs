@@ -314,6 +314,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IStructuredCreditReferenceProjectionStore, PostgresStructuredCreditReferenceProjectionStore>();
             services.AddSingleton<IOperatorOverridesStore, PostgresOperatorOverridesStore>();
             services.AddSingleton<ISecurityFieldProvenanceStore, PostgresSecurityFieldProvenanceStore>();
+            services.AddSingleton<ISecurityMasterCanonicalWriteScope, PostgresSecurityMasterCanonicalWriteScope>();
+            services.AddSingleton<ISecurityGovernanceEventReader, PostgresSecurityGovernanceEventLog>();
             services.AddSingleton<SecurityMasterMigrationRunner>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
             // One node identity per service graph (not per process): the store stamps it on the

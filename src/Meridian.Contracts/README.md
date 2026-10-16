@@ -1741,6 +1741,17 @@ operating fund account before the execution layer routes a broker order.
 open-order reconciliation posture and explicit live-operation checklist evidence for the bounded
 W7 live-readiness gate.
 
+### Security Master asset-class registry
+
+`SecurityAssetClassRegistry` composes, per asset class, the catalog entry (lot unit, cash-flow
+behaviour, projection kind, preferred identifiers, terms version, multiplier key), the term
+schema, validators and editor hints. `SecurityAssetClassRegistryCoverageTests` fails when an F#
+`SecurityKind` case has no definition. The registry backs `/api/security-master/asset-classes`.
+`SecurityTermConventions` types day count, settlement method and option right as canonical
+vocabularies. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
+one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `SecurityIdentifierKind` adds
+`LoanX` (`LX` plus six digits) and `Clip` (nine alphanumerics).
+
 ## Validation
 
 ```bash

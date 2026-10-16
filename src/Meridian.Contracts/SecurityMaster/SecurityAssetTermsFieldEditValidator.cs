@@ -194,6 +194,12 @@ public static class SecurityAssetTermsFieldEditValidator
             return false;
         }
 
+        if (!field.SatisfiesConvention(newValue))
+        {
+            error = SecurityTermConventions.DescribeUnrecognized(field.Convention, assetClass, field.Key, newValue);
+            return false;
+        }
+
         // A syntactically valid array is not enough for the KNOWN contractual schedules: their
         // rows carry the same domain invariants the canonical F# command enforces (positive
         // instalments, factors within [0, 1], unique non-increasing factor dates), and staging a

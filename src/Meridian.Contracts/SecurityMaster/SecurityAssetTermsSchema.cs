@@ -144,6 +144,26 @@ public sealed record SecurityAssetTermField(
     /// </summary>
     public SecurityAssetTermField WithVerbatimUndeclaredValue()
         => this with { CarriesUndeclaredValueVerbatim = true };
+
+    /// <summary>
+    /// The typed convention this string field carries, or <see cref="SecurityTermConventionKind.None"/>.
+    /// Unlike a closed vocabulary, a convention accepts every spelling its parser recognizes and
+    /// stores the text verbatim; it rejects only values the parser cannot type.
+    /// </summary>
+    public SecurityTermConventionKind Convention { get; init; }
+
+    /// <summary>Declares the typed convention this string field carries.</summary>
+    public SecurityAssetTermField WithConvention(SecurityTermConventionKind convention)
+        => this with { Convention = convention };
+
+    /// <summary>
+    /// True when <paramref name="value"/> satisfies this field's convention (or it declares none).
+    /// Blank values are left to the required/optional rules.
+    /// </summary>
+    public bool SatisfiesConvention(string? value)
+        => Convention == SecurityTermConventionKind.None
+           || string.IsNullOrWhiteSpace(value)
+           || SecurityTermConventions.IsRecognized(Convention, value);
 }
 
 /// <summary>
@@ -216,7 +236,7 @@ public static class SecurityAssetTermsSchema
                 // ExerciseStyle has no "other" case: an unrecognized style decodes to None, so the
                 // value would be silently dropped rather than preserved.
                 OptOneOf("exerciseStyle", "American", "European", "Bermudan"),
-                Opt("settlementType", SecurityAssetTermFieldType.String),
+                Opt("settlementType", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.SettlementMethod),
                 Req("isAdjusted", SecurityAssetTermFieldType.Boolean),
                 Opt("lastTradingDt", SecurityAssetTermFieldType.Date)
             ],
@@ -229,7 +249,7 @@ public static class SecurityAssetTermsSchema
                 Opt("lastTradingDt", SecurityAssetTermFieldType.Date),
                 Opt("firstNoticeDt", SecurityAssetTermFieldType.Date),
                 Opt("deliveryMonthDt", SecurityAssetTermFieldType.Date),
-                Opt("settlementType", SecurityAssetTermFieldType.String),
+                Opt("settlementType", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.SettlementMethod),
                 Opt("deliveryLocationCode", SecurityAssetTermFieldType.String),
                 Req("isRollTarget", SecurityAssetTermFieldType.Boolean),
                 Opt("rollWindowDays", SecurityAssetTermFieldType.Integer)
@@ -257,7 +277,7 @@ public static class SecurityAssetTermsSchema
                 Opt("inflationIndex", SecurityAssetTermFieldType.String),
                 Opt("inflationBaseIndexValue", SecurityAssetTermFieldType.Decimal),
                 Opt("inflationIndexRatio", SecurityAssetTermFieldType.Decimal),
-                Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention"),
+                Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention").WithConvention(SecurityTermConventionKind.DayCount),
                 Req("isCallable", SecurityAssetTermFieldType.Boolean),
                 Opt("callDate", SecurityAssetTermFieldType.Date),
                 Opt("issuerName", SecurityAssetTermFieldType.String),
@@ -283,7 +303,7 @@ public static class SecurityAssetTermsSchema
                 Req("institutionName", SecurityAssetTermFieldType.String),
                 Opt("maturity", SecurityAssetTermFieldType.Date),
                 Opt("interestRate", SecurityAssetTermFieldType.Decimal),
-                Opt("dayCount", SecurityAssetTermFieldType.String),
+                Opt("dayCount", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.DayCount),
                 Req("isCallable", SecurityAssetTermFieldType.Boolean)
             ],
             ["MoneyMarketFund"] =
@@ -299,14 +319,14 @@ public static class SecurityAssetTermsSchema
                 Req("maturity", SecurityAssetTermFieldType.Date),
                 Opt("couponRate", SecurityAssetTermFieldType.Decimal),
                 Opt("callableDate", SecurityAssetTermFieldType.Date),
-                Opt("dayCount", SecurityAssetTermFieldType.String)
+                Opt("dayCount", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.DayCount)
             ],
             ["CommercialPaper"] =
             [
                 Req("issuerName", SecurityAssetTermFieldType.String),
                 Req("maturity", SecurityAssetTermFieldType.Date),
                 Opt("discountRate", SecurityAssetTermFieldType.Decimal),
-                Opt("dayCount", SecurityAssetTermFieldType.String),
+                Opt("dayCount", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.DayCount),
                 Req("isAssetBacked", SecurityAssetTermFieldType.Boolean)
             ],
             ["TreasuryBill"] =
@@ -485,7 +505,7 @@ public static class SecurityAssetTermsSchema
                 Opt("currentIndexRate", SecurityAssetTermFieldType.Decimal, "lastFixing", "currentRate", "indexRate"),
                 Opt("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount", "faceAmount", "principal"),
                 Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency"),
-                Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention", "dayCountBasis"),
+                Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention", "dayCountBasis").WithConvention(SecurityTermConventionKind.DayCount),
                 Req("exchangesPrincipal", SecurityAssetTermFieldType.Boolean, "principalExchange", "notionalExchange")
             ]
         };

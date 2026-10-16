@@ -79,6 +79,28 @@ public static partial class SecurityMasterEndpoints
         /// An optional <c>asOf</c> date scopes selectability to a write EFFECTIVE AT that date, so
         /// backdated amendments can discover the historical version governing their effective date.
         /// </summary>
+        /// <summary>
+        /// Lists every Security Master asset class with its term fields, UI hints, lot unit, cash-flow
+        /// behaviour and projection kind, read from the single asset-class registry. Both
+        /// workstations build create and edit forms from this instead of free-text field paths.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterAssetClasses, () =>
+            Results.Json(SecurityAssetClassRegistry.ToDtos(), jsonOptions))
+        .WithName("ListSecurityMasterAssetClasses").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<IReadOnlyList<SecurityAssetClassDefinitionDto>>(StatusCodes.Status200OK);
+
+        /// <summary>
+        /// Returns one asset class's registry definition. Accepts the canonical name or a catalog
+        /// alias (e.g. <c>MBS</c>); returns <c>404</c> for an unknown class.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterAssetClassDefinition, (string assetClass) =>
+            SecurityAssetClassRegistry.TryGet(assetClass, out var definition)
+                ? Results.Json(SecurityAssetClassRegistry.ToDto(definition), jsonOptions)
+                : Results.NotFound())
+        .WithName("GetSecurityMasterAssetClassDefinition").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<SecurityAssetClassDefinitionDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
         group.MapGet(UiApiRoutes.SecurityMasterAssetProfiles, (
             [FromQuery] DateOnly? asOf,
             [FromServices] ISecurityAssetProfileCatalog profileCatalog) =>
@@ -1022,6 +1044,13 @@ public static partial class SecurityMasterEndpoints
             var decision = new OperatorOverrideDecision(request.Decision, ResolveActor(context), request.Comment);
             try
             {
+                // Independent review on every route, whatever store or workbench seam the host
+                // composes: the actor who staged the pending values cannot approve them.
+                if (await store.GetAsync(securityId, ct).ConfigureAwait(false) is { } overlay)
+                {
+                    OperatorOverrideReviewRules.EnsureIndependentReview(securityId, overlay, decision);
+                }
+
                 // A direct decision bypasses the revision lifecycle's controls (bound workflow,
                 // independent reviewer, staged-value deferral). When the host wires the workbench
                 // service, the decision goes through its governed seam, which refuses while staged
@@ -1035,6 +1064,10 @@ public static partial class SecurityMasterEndpoints
             catch (ArgumentException exception)
             {
                 return Results.BadRequest(new { error = exception.Message });
+            }
+            catch (OperatorOverrideSelfApprovalException exception)
+            {
+                return Results.Json(new { error = exception.Message }, statusCode: StatusCodes.Status403Forbidden);
             }
             catch (SecurityMasterMutationConflictException exception)
             {

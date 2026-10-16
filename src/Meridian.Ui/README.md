@@ -84,6 +84,9 @@ Browser navigation and command-palette root commands canonicalize supplied works
 root names stay compatibility aliases. App-shell evidence timeline labels follow the same rule when
 overview events arrive with retained source names.
 
+The generated dashboard route table includes the Security Master asset-class registry
+endpoints, and the workstation identifier-kind union includes `LoanX` and `Clip`.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.

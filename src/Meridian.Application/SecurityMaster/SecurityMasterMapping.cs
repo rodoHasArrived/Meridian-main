@@ -208,6 +208,8 @@ internal static class SecurityMasterMapping
             SecurityIdentifierKind.PermTicker => IdentifierKind.PermTicker,
             SecurityIdentifierKind.Ric => IdentifierKind.Ric,
             SecurityIdentifierKind.Cik => IdentifierKind.Cik,
+            SecurityIdentifierKind.LoanX => IdentifierKind.LoanX,
+            SecurityIdentifierKind.Clip => IdentifierKind.Clip,
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unsupported security identifier kind.")
         };
 
@@ -493,6 +495,25 @@ internal static class SecurityMasterMapping
             }
 
             throw new InvalidOperationException(UndeclaredDiscriminantValue(assetClass, field.Key, raw));
+        }
+
+        // Typed conventions (day count, settlement method) keep their text verbatim, but a write
+        // must name a value the convention can type: an unparseable day count would otherwise be
+        // persisted and silently read as Unknown by every accrual and cash-flow calculation.
+        foreach (var field in SecurityAssetTermsSchema.Fields(assetClass)
+                     .Where(static field => field.Convention != SecurityTermConventionKind.None))
+        {
+            if (!json.TryGetProperty(field.Key, out var token) || token.ValueKind == JsonValueKind.Null)
+            {
+                continue;
+            }
+
+            var raw = token.ValueKind == JsonValueKind.String ? token.GetString() : token.GetRawText();
+            if (token.ValueKind != JsonValueKind.String || !field.SatisfiesConvention(raw))
+            {
+                throw new InvalidOperationException(
+                    SecurityTermConventions.DescribeUnrecognized(field.Convention, assetClass, field.Key, raw));
+            }
         }
     }
 

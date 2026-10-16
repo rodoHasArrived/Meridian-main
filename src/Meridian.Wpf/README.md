@@ -905,6 +905,9 @@ collections through `WorkspaceDecisionQueueControl`, preserving existing page ta
 `WorkspaceTone` queue-card and badge semantics for summary, approval, exception, and delivery
 decisions, including primary, secondary, and blocked cockpit actions.
 
+The Security Master edit view labels the `LoanX` and `Clip` identifier kinds, and the Strategy
+feature module registers the canonical write scope next to the Security Master service.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
