@@ -128,6 +128,9 @@ public sealed record StatementParseResult(
     IReadOnlyList<BrokerageTaxLotSnapshotDto>? TaxLots = null,
     IReadOnlyList<BrokerageBorrowPositionSnapshotDto>? BorrowPositions = null)
 {
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ExecutedMappingFingerprint { get; init; }
+
     public bool HasErrors => Issues.Any(static issue =>
         string.Equals(issue.Severity, StatementParseIssue.ErrorSeverity, StringComparison.OrdinalIgnoreCase));
 

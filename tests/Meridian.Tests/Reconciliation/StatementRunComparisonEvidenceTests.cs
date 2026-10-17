@@ -15,6 +15,17 @@ public sealed class StatementRunComparisonEvidenceTests
     private static readonly StatementRunMatchArtifact Artifact = new("run", "run", [], [], 1);
 
     [Fact]
+    public void Missing_mapping_proof_is_unknown_and_semantic_change_separates_comparison()
+    {
+        var legacy = StatementRunComparisonEvidence.Retain(Artifact, [Cash], Populations, StatementToleranceProfile.Default);
+        StatementReconciliationIntakeAuthority.CanCompareSourceRun(legacy).Should().BeFalse();
+        var first = StatementRunComparisonEvidence.Retain(Artifact, [Cash], Populations, StatementToleranceProfile.Default, new string('a', 64));
+        var changed = StatementRunComparisonEvidence.Retain(Artifact, [Cash], Populations, StatementToleranceProfile.Default, new string('b', 64));
+        first.SourceComparisonPolicyFingerprint.Should().NotBe(changed.SourceComparisonPolicyFingerprint);
+        StatementReconciliationIntakeAuthority.CanCompareSourceRun(first).Should().BeTrue();
+    }
+
+    [Fact]
     public void Missing_or_failed_internal_population_cannot_establish_clearing_even_when_no_breaks_are_returned()
     {
         var unavailable = StatementRunComparisonEvidence.Retain(Artifact, [Cash],
@@ -22,7 +33,7 @@ public sealed class StatementRunComparisonEvidenceTests
         unavailable.SourceComparisonComplete.Should().BeFalse();
         StatementReconciliationIntakeAuthority.CanCompareSourceRun(unavailable).Should().BeFalse();
         StatementReconciliationIntakeAuthority.CanCompareSourceRun(Artifact).Should().BeFalse("legacy artifacts lack completeness proof");
-        var available = StatementRunComparisonEvidence.Retain(Artifact, [Cash], Populations, StatementToleranceProfile.Default);
+        var available = StatementRunComparisonEvidence.Retain(Artifact, [Cash], Populations, StatementToleranceProfile.Default, new string('a', 64));
         StatementReconciliationIntakeAuthority.CanCompareSourceRun(available).Should().BeTrue();
         var unavailableBreak = new ReconciliationBreakRecord("break", "run", "run", "run:1", "TX_UNMATCHED", "transaction",
             1m, 0m, true, DateTimeOffset.UtcNow, "Open")
@@ -33,7 +44,7 @@ public sealed class StatementRunComparisonEvidenceTests
     [Fact]
     public void Tolerance_version_or_rule_change_creates_different_comparison_scope_from_retained_executed_policy()
     {
-        var first = StatementRunComparisonEvidence.Retain(Artifact, [Cash], Populations, StatementToleranceProfile.Default);
+        var first = StatementRunComparisonEvidence.Retain(Artifact, [Cash], Populations, StatementToleranceProfile.Default, new string('a', 64));
         var wider = StatementToleranceProfile.Default with
         {
             Version = 2,
@@ -52,9 +63,9 @@ public sealed class StatementRunComparisonEvidenceTests
     [Fact]
     public void Narrower_or_empty_source_population_cannot_be_compared_to_a_broader_population()
     {
-        var cashOnly = StatementRunComparisonEvidence.Retain(Artifact, [Cash], Populations, StatementToleranceProfile.Default);
+        var cashOnly = StatementRunComparisonEvidence.Retain(Artifact, [Cash], Populations, StatementToleranceProfile.Default, new string('a', 64));
         var includesTransactions = StatementRunComparisonEvidence.Retain(Artifact,
-            [Cash, Cash with { ActivityType = "trade", ExternalTransactionId = "trade-1" }], Populations, StatementToleranceProfile.Default);
+            [Cash, Cash with { ActivityType = "trade", ExternalTransactionId = "trade-1" }], Populations, StatementToleranceProfile.Default, new string('a', 64));
         includesTransactions.SourceComparisonComplete.Should().BeFalse();
         includesTransactions.SourceComparisonPopulationKinds.Should().NotBeEquivalentTo(cashOnly.SourceComparisonPopulationKinds);
         StatementRunComparisonEvidence.Retain(Artifact, [], Populations,

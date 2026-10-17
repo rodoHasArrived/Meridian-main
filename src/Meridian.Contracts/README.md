@@ -11,6 +11,12 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Contracts
 
+The source-lineage contract separates optional `IdentityScopeId` (business identity) from
+`ComparisonScopeId` (executed comparison policy). Presence preserves an occurrence across policy
+changes; absence clears only its current comparison policy. Verified legacy receipts preserve
+original lineage IDs, reject changed replays, and refuse ambiguous historical forks. Optional fields
+are omitted from legacy JSON. Source clearing never resolves governed casework.
+
 `LoanPortfolioSummaryDto.CurrencyTotals` carries separately denominated lending and collateral
 balances. `TotalCurrency` identifies a single-currency scalar summary; mixed-currency legacy
 scalar totals are `null`. These amounts do not imply an FX conversion. Loan currency and status

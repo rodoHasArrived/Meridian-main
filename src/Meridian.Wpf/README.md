@@ -11,6 +11,8 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Wpf
 
+Fund Ledger defaults and resets to all reconciliation cases, includes explicitly fund-scoped statement cases without strategy runs, and shows retained source observation and occurrence age separately from case status. Exact lineage evidence is available in the source-observation disclosure. Missing strategy comparison detail preserves the selected case and reports unknown counts.
+
 Offline retention recognizes market JSONL/parquet files only from explicit event-type names and supported storage layouts. Unknown files and the workstation Evidence Vault remain retained and appear as skipped in the dry run, even when aged evidence shares the market-data root. Depth files use their own policy cutoff.
 
 The loan summary lists principal amounts by their recorded currency; mixed, unspecified, and

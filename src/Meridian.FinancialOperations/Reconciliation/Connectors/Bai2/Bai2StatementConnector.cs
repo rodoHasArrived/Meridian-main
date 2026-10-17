@@ -355,7 +355,8 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 ColumnMappings: [],
                 [],
                 issues,
-                fingerprint));
+                fingerprint)
+            { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForBuiltIn(ConnectorId) });
         }
 
         // A structurally complete file with a group but no account section cannot be associated with
@@ -374,7 +375,8 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 ColumnMappings: [],
                 [],
                 issues,
-                fingerprint));
+                fingerprint)
+            { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForBuiltIn(ConnectorId) });
         }
 
         // Every 03 account-identifier record must carry its account number. A blank one cannot identify
@@ -392,7 +394,8 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 ColumnMappings: [],
                 [],
                 issues,
-                fingerprint));
+                fingerprint)
+            { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForBuiltIn(ConnectorId) });
         }
 
         // The in-loop guard sits at the candidate charge, which runs before that row's own diagnostic, so
@@ -428,7 +431,8 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 ColumnMappings: [],
                 [],
                 issues,
-                fingerprint));
+                fingerprint)
+            { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForBuiltIn(ConnectorId) });
         }
 
         // A BAI2 statement import must carry exactly one 02 group. Multiple groups usually represent
@@ -449,7 +453,8 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 ColumnMappings: [],
                 [],
                 issues,
-                fingerprint));
+                fingerprint)
+            { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForBuiltIn(ConnectorId) });
         }
 
         // Validate the file's trailer structure so a truncated or corrupt file (valid 03/16 records but
@@ -495,7 +500,8 @@ public sealed class Bai2StatementConnector : IStatementConnector
                 ColumnMappings: [],
                 [],
                 issues,
-                fingerprint));
+                fingerprint)
+            { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForBuiltIn(ConnectorId) });
         }
 
         if (records.Count == 0)
@@ -510,7 +516,8 @@ public sealed class Bai2StatementConnector : IStatementConnector
             ColumnMappings: [],
             records,
             issues,
-            fingerprint));
+            fingerprint)
+        { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForBuiltIn(ConnectorId) });
     }
 
     private static bool TryResolveClosingBalance(string[] fields, out long minorUnits)

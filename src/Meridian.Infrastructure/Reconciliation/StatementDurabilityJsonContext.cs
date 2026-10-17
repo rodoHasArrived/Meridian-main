@@ -11,6 +11,7 @@ namespace Meridian.Infrastructure.Reconciliation;
     JsonSerializerDefaults.Web,
     WriteIndented = true,
     UseStringEnumConverter = true)]
+[JsonSerializable(typeof(BrokerStatementImportResult))]
 [JsonSerializable(typeof(StatementRunMatchArtifact))]
 [JsonSerializable(typeof(StatementRunProjectionAudit))]
 [JsonSerializable(typeof(StatementCaseworkCommitEnvelope))]

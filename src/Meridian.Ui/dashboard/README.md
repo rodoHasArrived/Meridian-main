@@ -11,6 +11,8 @@ last_reviewed: 2026-10-11
 
 # src/Meridian.Ui/dashboard
 
+The reconciliation queue shows source observation and retained occurrence age directly. Clearing is labeled Source cleared and never implies case resolution. Legacy rows explicitly show identity/age unavailable. Queue refresh compares lineage metadata; inspector details include business and comparison scopes.
+
 Historical price charts require a complete successful historical query before showing prices
 or indicators. Failed and partial queries show an explicit incomplete state with failed source
 paths and Retry; incomplete comparison series are withheld and named in an alert. The shared
