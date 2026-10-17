@@ -118,10 +118,29 @@ public sealed partial class OrderManagementSystem
         if (report.ReportType is ExecutionReportType.ModificationPending)
         {
             SettleRiskReservations(amendmentDecision, commit: true, orderId);
-            if (_pendingModificationOrderIds.ContainsKey(orderId))
+            var resolvedOutcome = await ProcessPendingAmendmentReportAsync(orderId, amendment, report).ConfigureAwait(false);
+            if (resolvedOutcome is { } confirmed)
             {
-                await ProcessGatewayReportAsync(report, CancellationToken.None).ConfigureAwait(false);
-                MarkBrokerageRecoveryRequired(orderId);
+                // The live report stream resolved the amendment before this pending answer was
+                // applied. Report that authoritative outcome rather than an uncertain one.
+                var resolvedState = _orders.TryGetValue(orderId, out var resolvedOrder) ? resolvedOrder : state;
+                await RecordOrderLifecycleAuditAsync(
+                    action: confirmed ? "OrderModified" : "OrderModifyRejected",
+                    outcome: resolvedState.Status.ToString(),
+                    orderId: orderId,
+                    state: resolvedState,
+                    report: report,
+                    message: confirmed ? null : "Broker kept the original order terms.",
+                    metadata: BuildOrderModificationAuditMetadata(modification, resolvedState, report, amendmentWarnings),
+                    ct: CancellationToken.None).ConfigureAwait(false);
+                return new OrderResult
+                {
+                    Success = confirmed,
+                    OrderId = orderId,
+                    OrderState = resolvedState,
+                    ErrorMessage = confirmed ? null : "Modify request rejected",
+                    RiskWarnings = amendmentWarnings
+                };
             }
             var pending = _orders.TryGetValue(orderId, out var retained) ? retained : state;
             await RecordOrderLifecycleAuditAsync("OrderModifyPending", "RecoveryRequired", orderId,

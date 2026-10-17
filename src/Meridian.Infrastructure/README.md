@@ -14,7 +14,10 @@ last_reviewed: 2026-10-15
 Broker amendment and cancellation failures retain the broker-observed order status and use
 operation-specific reports. Alpaca amendments resolve explicit client/broker identifier namespaces
 and retain replacement aliases. Successful PATCH responses remain provisional until independent
-replacement evidence confirms the successor. Durable trade-update hashes omit derived metadata
+replacement evidence confirms the successor. While a replacement is unconfirmed, cancellation also
+cancels the candidate successor and stays pending until it is proven inactive. Amendment recovery
+refuses evidence read across a connection change, and `accepted_for_bidding` is a valid provisional
+snapshot state. Durable trade-update hashes omit derived metadata
 while serialized pending reports retain it, preserving replay identities across upgrades.
 Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
 fills against pending exposure, keeps cancellation available, and keys

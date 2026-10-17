@@ -242,6 +242,20 @@ public sealed partial class OrderManagementSystem
                 throw new InvalidOperationException("Order submission is still in progress; broker recovery must wait for its outcome.");
             if (report.ReportType is ExecutionReportType.ModificationPending)
             {
+                // A pending outcome can still book fills, so it must prove the same identity and
+                // fill economics as a resolved one; only its order quantity stays undetermined.
+                var pendingTerms = GetPendingAmendmentForRecovery(orderId);
+                var maximumQuantity = pendingTerms is null
+                    ? _orders.GetValueOrDefault(orderId)?.Quantity ?? 0m
+                    : Math.Max(pendingTerms.Original.Quantity, pendingTerms.Proposed.Quantity);
+                if (!_orders.TryGetValue(orderId, out var pendingState)
+                    || !_dispatchedOrderIds.ContainsKey(orderId)
+                    || !string.Equals(pendingState.Symbol, report.Symbol, StringComparison.OrdinalIgnoreCase)
+                    || pendingState.Side != report.Side
+                    || report.FilledQuantity < pendingState.FilledQuantity
+                    || report.FilledQuantity > maximumQuantity
+                    || (report.FilledQuantity > pendingState.FilledQuantity && report.FillPrice is not > 0m))
+                    throw new InvalidDataException("Broker recovery evidence does not match the retained order.");
                 await ProcessGatewayReportCoreAsync(report, ct).ConfigureAwait(false);
                 MarkBrokerageRecoveryRequired(orderId);
                 return;

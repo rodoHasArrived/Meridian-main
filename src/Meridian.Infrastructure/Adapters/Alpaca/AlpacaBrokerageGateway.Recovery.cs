@@ -13,6 +13,9 @@ public sealed partial class AlpacaBrokerageGateway
         ArgumentNullException.ThrowIfNull(retainedOrder);
         ArgumentNullException.ThrowIfNull(amendment);
         EnsureConnected();
+        // Evidence read under one credential/environment/stream epoch must not be applied to an
+        // order retained from another, exactly as GetOrderForRecoveryAsync guards.
+        var generation = ConnectionGeneration;
         using var client = CreateHttpClient();
         var original = await ResolveOrderForCancellationAsync(client,
             amendment.OriginalBrokerOrderId is { Length: > 0 } originalGatewayOrderId
@@ -26,6 +29,8 @@ public sealed partial class AlpacaBrokerageGateway
         if (amendment.CandidateBrokerOrderId is { Length: > 0 } candidateGatewayOrderId)
             _replacementAttempts[candidateGatewayOrderId] = attempt;
         var observed = await ObserveReplacementAsync(client, attempt, ct).ConfigureAwait(false);
+        if (generation != ConnectionGeneration)
+            throw new InvalidDataException("Alpaca connection changed while recovering the amendment.");
         return (observed ?? CreatePendingModification(attempt,
             "Alpaca amendment recovery has not confirmed replacement or refusal; retain both possible terms."))
             with

@@ -166,6 +166,61 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
         }
     }
 
+    [Theory]
+    [InlineData(5, 300, 5, 300)]   // proposed 5 x 300 = 1,500 exceeds original 10 x 100 = 1,000
+    [InlineData(20, 40, 10, 100)]  // proposed 20 x 40 = 800 is below the original 1,000
+    public async Task PendingAmendment_ReservesOneCorrelatedOutcome_NotIndependentMaxima(
+        int proposedQuantity, int proposedLimit, int expectedQuantity, int expectedLimit)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"amendment-correlated-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            await using var oms = CreateRecoveryOms(new RecoverableAmendmentGateway(), Path.Combine(directory, "orders.json"));
+            (await oms.PlaceOrderAsync(RecoveryRequest())).Success.Should().BeTrue();
+            (await oms.ModifyOrderAsync("local", new OrderModification
+            {
+                NewQuantity = proposedQuantity,
+                NewLimitPrice = proposedLimit
+            })).Success.Should().BeFalse();
+
+            var reservation = oms.GetExposureReservingOrders().Single();
+            reservation.Quantity.Should().Be(expectedQuantity);
+            reservation.LimitPrice.Should().Be(expectedLimit);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task PendingRecoveryReport_WithMismatchedEvidence_IsRefusedBeforeBooking()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"amendment-pending-evidence-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var gateway = new RecoverableAmendmentGateway();
+            await using var oms = CreateRecoveryOms(gateway, Path.Combine(directory, "orders.json"));
+            (await oms.PlaceOrderAsync(RecoveryRequest())).Success.Should().BeTrue();
+            (await oms.ModifyOrderAsync("local", new OrderModification { NewQuantity = 20m })).Success.Should().BeFalse();
+            var pending = RecoverableAmendmentGateway.Report(ExecutionReportType.ModificationPending,
+                OrderStatus.PartiallyFilled, 5m, 20m, 100m);
+
+            var wrongSymbol = () => oms.ReconcileRecoveryOrderAsync(pending with { Symbol = "MSFT" });
+            var excessFill = () => oms.ReconcileRecoveryOrderAsync(pending with { FilledQuantity = 25m });
+
+            await wrongSymbol.Should().ThrowAsync<InvalidDataException>();
+            await excessFill.Should().ThrowAsync<InvalidDataException>();
+            oms.GetOrder("local")!.FilledQuantity.Should().Be(2m, "refused evidence books nothing");
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     [Fact]
     public async Task RecoveryService_DispatchesAmendmentOnlyCapability_AndLeavesUnsupportedOrdinaryRecoveryUnresolved()
     {

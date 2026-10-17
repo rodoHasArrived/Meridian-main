@@ -71,25 +71,27 @@ public sealed class BrokerageExecutionReconciliationService
             // The report pump may have advanced the order while the broker query was in flight.
             // Compare against the current retained state before passing evidence to the OMS.
             var current = orderManager.GetOrder(order.OrderId);
-            if (report.ReportType is ExecutionReportType.ModificationPending)
-            {
-                await orderManager.ReconcileRecoveryOrderAsync(report, ct).ConfigureAwait(false);
-                continue;
-            }
+            // A pending outcome still carries identity and fill evidence the OMS will book, so it
+            // passes the same checks; only its order quantity may be either retained outcome.
+            var outcomePending = report.ReportType is ExecutionReportType.ModificationPending;
             pendingAmendment = orderManager.GetPendingAmendmentForRecovery(order.OrderId);
-            var quantity = pendingAmendment is not null
-                && (report.OrderQuantity == pendingAmendment.Original.Quantity || report.OrderQuantity == pendingAmendment.Proposed.Quantity)
-                    ? report.OrderQuantity : current?.Quantity ?? 0m;
+            var quantity = outcomePending
+                ? pendingAmendment is null
+                    ? current?.Quantity ?? 0m
+                    : Math.Max(pendingAmendment.Original.Quantity, pendingAmendment.Proposed.Quantity)
+                : pendingAmendment is not null
+                    && (report.OrderQuantity == pendingAmendment.Original.Quantity || report.OrderQuantity == pendingAmendment.Proposed.Quantity)
+                        ? report.OrderQuantity : current?.Quantity ?? 0m;
             if (current is null || current.FundAccountId != fundAccountId
                 || !string.Equals(report.ClientOrderId ?? report.OrderId, order.OrderId, StringComparison.Ordinal)
                 || !string.Equals(report.Symbol, current.Symbol, StringComparison.OrdinalIgnoreCase)
                 || report.Side != current.Side
-                || report.OrderQuantity != quantity
+                || (!outcomePending && report.OrderQuantity != quantity)
                 || report.FilledQuantity < current.FilledQuantity
                 || report.FilledQuantity < 0m
                 || report.FilledQuantity > quantity
-                || (report.OrderStatus == OrderStatus.Filled && report.FilledQuantity != quantity)
-                || (report.OrderStatus == OrderStatus.PartiallyFilled
+                || (!outcomePending && report.OrderStatus == OrderStatus.Filled && report.FilledQuantity != quantity)
+                || (!outcomePending && report.OrderStatus == OrderStatus.PartiallyFilled
                     && (report.FilledQuantity <= 0m || report.FilledQuantity >= quantity))
                 || (report.FilledQuantity > current.FilledQuantity && report.FillPrice is not > 0m))
             {

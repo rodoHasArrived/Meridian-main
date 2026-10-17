@@ -63,6 +63,47 @@ public sealed partial class OrderManagementSystem
         }
     }
 
+    /// <summary>
+    /// Applies a gateway's pending amendment report atomically with the check that the amendment
+    /// is still unresolved. An authoritative Modified/ModificationRejected report on the live
+    /// stream may resolve it at any moment; checking and marking recovery outside the report gate
+    /// would tell the caller a confirmed amendment is uncertain and invite a duplicate retry.
+    /// </summary>
+    /// <returns>null while the outcome remains pending; true when it resolved to the proposed
+    /// terms; false when it resolved to the original terms.</returns>
+    private async Task<bool?> ProcessPendingAmendmentReportAsync(
+        string orderId, PendingOrderAmendment amendment, ExecutionReport report)
+    {
+        await _brokerageRecoveryReportGate.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            if (IsSamePendingAmendment(orderId, amendment))
+            {
+                await ProcessGatewayReportCoreAsync(report, CancellationToken.None).ConfigureAwait(false);
+                if (IsSamePendingAmendment(orderId, amendment))
+                {
+                    MarkBrokerageRecoveryRequired(orderId);
+                    return null;
+                }
+            }
+
+            var resolved = _orders[orderId];
+            return resolved.LimitPrice == amendment.Proposed.LimitPrice
+                && resolved.StopPrice == amendment.Proposed.StopPrice
+                && resolved.Quantity == Math.Max(amendment.Proposed.Quantity, resolved.FilledQuantity);
+        }
+        finally
+        {
+            _brokerageRecoveryReportGate.Release();
+            TrimRetainedOrdersIfNeeded();
+        }
+    }
+
+    private bool IsSamePendingAmendment(string orderId, PendingOrderAmendment amendment) =>
+        _pendingModificationOrderIds.TryGetValue(orderId, out var current)
+        && ReferenceEquals(current.Original, amendment.Original)
+        && ReferenceEquals(current.Proposed, amendment.Proposed);
+
     private void SavePendingAmendment(string orderId)
     {
         if (!_dispatchedOrderIds.ContainsKey(orderId))
@@ -196,24 +237,38 @@ public sealed partial class OrderManagementSystem
         foreach (var (id, pending) in _pendingModificationOrderIds)
         {
             var current = _orders.GetValueOrDefault(id) ?? pending.Original;
-            var quantity = Math.Max(pending.Original.Quantity, pending.Proposed.Quantity);
-            if (quantity <= current.FilledQuantity)
+            if (Math.Max(pending.Original.Quantity, pending.Proposed.Quantity) <= current.FilledQuantity)
                 continue;
-            decimal? MaxPrice(decimal? first, decimal? second) => first is null ? second : second is null ? first : Math.Max(first.Value, second.Value);
+            // Reserve one real outcome, never independent maxima: 100 shares at $1 amended to
+            // 1 share at $100 is $100 either way, not a synthetic 100 shares at $100. Exposure
+            // providers multiply quantity by price, so the terms must stay correlated.
+            var outcome = SelectLargerAmendmentOutcome(pending, current);
+            if (outcome.Quantity <= current.FilledQuantity)
+                outcome = outcome == pending.Original ? pending.Proposed : pending.Original;
             reservations.Add(current with
             {
                 Status = OrderStatus.Accepted,
-                Quantity = quantity,
-                LimitPrice = MaxPrice(pending.Original.LimitPrice, pending.Proposed.LimitPrice),
-                StopPrice = MaxPrice(pending.Original.StopPrice, pending.Proposed.StopPrice),
-                RoutedNotional = pending.Original.RoutedNotional is not null || pending.Proposed.RoutedNotional is not null
-                    ? MaxPrice(MeasureOrderValue(pending.Original.Quantity, pending.Original.LimitPrice, pending.Original.StopPrice,
-                        pending.Original.RoutedNotional, current.ContractMultiplier, current.UsesFaceValuePercentageOfPar),
-                        MeasureOrderValue(pending.Proposed.Quantity, pending.Proposed.LimitPrice, pending.Proposed.StopPrice,
-                        pending.Proposed.RoutedNotional, current.ContractMultiplier, current.UsesFaceValuePercentageOfPar))
-                    : null
+                Quantity = outcome.Quantity,
+                LimitPrice = outcome.LimitPrice,
+                StopPrice = outcome.StopPrice,
+                RoutedNotional = outcome.RoutedNotional
             });
         }
         return reservations;
+    }
+
+    private static OrderState SelectLargerAmendmentOutcome(PendingOrderAmendment pending, OrderState current)
+    {
+        var original = MeasureOrderValue(pending.Original.Quantity, pending.Original.LimitPrice, pending.Original.StopPrice,
+            pending.Original.RoutedNotional, current.ContractMultiplier, current.UsesFaceValuePercentageOfPar);
+        var proposed = MeasureOrderValue(pending.Proposed.Quantity, pending.Proposed.LimitPrice, pending.Proposed.StopPrice,
+            pending.Proposed.RoutedNotional, current.ContractMultiplier, current.UsesFaceValuePercentageOfPar);
+        // Unpriced outcomes (market orders) are valued at the mark by the exposure provider, so
+        // the larger quantity is the larger exposure.
+        if (original is null || proposed is null)
+            return pending.Proposed.Quantity > pending.Original.Quantity ? pending.Proposed : pending.Original;
+        if (proposed.Value != original.Value)
+            return proposed.Value > original.Value ? pending.Proposed : pending.Original;
+        return pending.Proposed.Quantity > pending.Original.Quantity ? pending.Proposed : pending.Original;
     }
 }

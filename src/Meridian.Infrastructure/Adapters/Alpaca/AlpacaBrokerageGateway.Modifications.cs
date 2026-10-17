@@ -183,7 +183,8 @@ public sealed partial class AlpacaBrokerageGateway
     {
         if (string.IsNullOrWhiteSpace(order.Id) || string.IsNullOrWhiteSpace(order.ClientOrderId)
             || string.IsNullOrWhiteSpace(order.Symbol) || order.Side is not ("buy" or "sell")
-            || order.Status is not ("new" or "accepted" or "pending_new" or "pending_replace" or "replaced"
+            // accepted_for_bidding is a valid provisional state; ObserveReplacementAsync keeps it pending.
+            || order.Status is not ("new" or "accepted" or "accepted_for_bidding" or "pending_new" or "pending_replace" or "replaced"
                 or "partially_filled" or "filled" or "pending_cancel" or "canceled" or "expired" or "rejected"))
             throw new InvalidDataException("Alpaca replacement snapshot lacks consistent order identity/state.");
         var quantity = ParseRequiredDecimal(order.Qty, "qty", order.Id);

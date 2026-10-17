@@ -55,6 +55,11 @@ public sealed partial class AlpacaBrokerageGateway
             return unresolvedReport;
         }
 
+        // While a replacement is unconfirmed the OMS keeps routing cancellation to the predecessor,
+        // but the candidate successor may already be live. Cancel every possible successor first,
+        // or an operator or kill-switch cancel can leave that candidate working.
+        var successorFailure = await CancelUnconfirmedSuccessorAsync(client, brokerOrderId, ct).ConfigureAwait(false);
+
         using var deleteResponse = await client.DeleteAsync(
             $"{BaseUrl}/v2/orders/{Uri.EscapeDataString(brokerOrderId)}",
             ct).ConfigureAwait(false);
@@ -76,6 +81,13 @@ public sealed partial class AlpacaBrokerageGateway
         // if the order filled in that race, publish the broker's cumulative fill evidence rather
         // than the pre-delete snapshot (which can still say zero filled).
         var authoritativeOrder = verifiedOrder ?? existing;
+        if (successorFailure is not null && verifiedStatus is OrderStatus.Cancelled)
+        {
+            // The predecessor is cancelled but a possible successor is not proven inactive. Stay
+            // nonterminal so the OMS keeps the order in future cancellation sweeps.
+            verifiedStatus = OrderStatus.PendingCancel;
+            verificationFailure = successorFailure;
+        }
 
         var report = new ExecutionReport
         {
@@ -102,6 +114,31 @@ public sealed partial class AlpacaBrokerageGateway
         };
         await _reportChannel.Writer.WriteAsync(report, ct).ConfigureAwait(false);
         return report;
+    }
+
+    /// <summary>
+    /// Cancels the candidate successor of an unresolved replacement attempt. Returns null when no
+    /// candidate exists or it is proven inactive, otherwise the reason it may still be working.
+    /// </summary>
+    private async Task<string?> CancelUnconfirmedSuccessorAsync(
+        HttpClient client, string predecessorId, CancellationToken ct)
+    {
+        if (!_replacementAttempts.TryGetValue(predecessorId, out var attempt)
+            || attempt.Resolution is not null
+            || attempt.CandidateId is not { Length: > 0 } candidateId
+            || string.Equals(candidateId, predecessorId, StringComparison.Ordinal))
+            return null;
+
+        using var candidateDelete = await client.DeleteAsync(
+            $"{BaseUrl}/v2/orders/{Uri.EscapeDataString(candidateId)}", ct).ConfigureAwait(false);
+        if (candidateDelete.StatusCode is HttpStatusCode.NotFound)
+            return null;
+
+        // 422 means Alpaca will not cancel it (often already terminal); the re-read decides.
+        var (_, candidateStatus, _) = await VerifyCancellationAgainstBrokerAsync(client, candidateId, ct).ConfigureAwait(false);
+        return candidateStatus is OrderStatus.Cancelled or OrderStatus.Filled or OrderStatus.Rejected or OrderStatus.Expired
+            ? null
+            : $"Alpaca cancelled the predecessor, but its unconfirmed replacement {candidateId} remains {candidateStatus}.";
     }
 
     private async Task<AlpacaOrderResponse?> ResolveOrderForCancellationAsync(
