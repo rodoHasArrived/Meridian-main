@@ -1,4 +1,6 @@
+using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
+using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.Infrastructure.Providers;
 
@@ -11,8 +13,21 @@ namespace Meridian.Tests.Infrastructure.Providers;
 /// is always verifiable even when the optional IBAPI package is absent.
 /// </para>
 /// </summary>
-public sealed class IBHistoricalProviderContractTests : HistoricalDataProviderContractTests<IBHistoricalDataProvider>
+public sealed class IBHistoricalProviderContractTests : HistoricalDataProviderContractTests<IBHistoricalDataProvider>, IDisposable
 {
+    private readonly EnhancedIBConnectionManager _connectionManager;
+
+    public IBHistoricalProviderContractTests()
+    {
+        var publisher = new TestMarketEventPublisher();
+        var router = new IBCallbackRouter(
+            new MarketDepthCollector(publisher),
+            new TradeDataCollector(publisher, null));
+        _connectionManager = new EnhancedIBConnectionManager(router, enableHeartbeat: false);
+    }
+
     protected override IBHistoricalDataProvider CreateProvider()
-        => new();
+        => new(_connectionManager);
+
+    public void Dispose() => _connectionManager.Dispose();
 }

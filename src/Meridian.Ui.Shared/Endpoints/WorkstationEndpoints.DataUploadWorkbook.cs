@@ -144,7 +144,7 @@ public static partial class WorkstationEndpoints
             var safeFileName = SanitizeDataUploadWorkbookFileName(file.FileName);
             var relativePath = Path.Combine("workstation", "data-uploads", uploadId, safeFileName)
                 .Replace(Path.DirectorySeparatorChar, '/');
-            var retainedRoot = ResolveDataUploadRoot();
+            var retainedRoot = ResolveDataUploadRoot(context.RequestServices);
             var retainedDirectory = Path.Combine(retainedRoot, uploadId);
             Directory.CreateDirectory(retainedDirectory);
             await File

@@ -17,7 +17,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// authorization metadata that records its requirement, so a future route cannot ship ungated.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class ConfigDirectLendingAuthorizationTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly EndpointTestFixture _fixture;

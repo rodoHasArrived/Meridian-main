@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Workflows;
 using Microsoft.Extensions.Logging;
 
@@ -12,6 +13,7 @@ public sealed class EvidenceGraphService
     private readonly IWorkflowActionCatalog? _actionCatalog;
     private readonly EvidencePacketValidationService _validationService;
     private readonly ILogger<EvidenceGraphService> _logger;
+    private readonly PostedLedgerAmountProvenanceService? _postedLedgerAmounts;
 
     public EvidenceGraphService(
         EvidenceSubjectResolver subjectResolver,
@@ -19,7 +21,8 @@ public sealed class EvidenceGraphService
         IEnumerable<IEvidenceContributor> contributors,
         ILogger<EvidenceGraphService> logger,
         IWorkflowActionCatalog? actionCatalog = null,
-        EvidencePacketValidationService? validationService = null)
+        EvidencePacketValidationService? validationService = null,
+        PostedLedgerAmountProvenanceService? postedLedgerAmounts = null)
     {
         _subjectResolver = subjectResolver ?? throw new ArgumentNullException(nameof(subjectResolver));
         _templateRegistry = templateRegistry ?? throw new ArgumentNullException(nameof(templateRegistry));
@@ -27,6 +30,7 @@ public sealed class EvidenceGraphService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _actionCatalog = actionCatalog;
         _validationService = validationService ?? new EvidencePacketValidationService();
+        _postedLedgerAmounts = postedLedgerAmounts;
     }
 
     public Task<IReadOnlyList<EvidenceSubjectDto>> ListSubjectsAsync(CancellationToken ct = default)
@@ -38,8 +42,15 @@ public sealed class EvidenceGraphService
         string subjectKind,
         string subjectId,
         CancellationToken ct = default,
-        Guid? ledgerBookId = null)
+        Guid? ledgerBookId = null,
+        LedgerAmountScopeDto? ledgerAmountScope = null)
     {
+        // Amount proof has one authority. General contributors must never add unrelated cases.
+        if (string.Equals(subjectKind, EvidenceSubjectResolver.LedgerAmountKind, StringComparison.OrdinalIgnoreCase))
+            return _postedLedgerAmounts is null || ledgerAmountScope is null
+                ? null
+                : await _postedLedgerAmounts.GetPacketAsync(subjectId, ledgerAmountScope, ct).ConfigureAwait(false);
+
         var subject = await _subjectResolver.ResolveAsync(subjectKind, subjectId, ct, ledgerBookId).ConfigureAwait(false);
         if (subject is null)
         {
@@ -154,9 +165,10 @@ public sealed class EvidenceGraphService
         string subjectKind,
         string subjectId,
         CancellationToken ct = default,
-        Guid? ledgerBookId = null)
+        Guid? ledgerBookId = null,
+        LedgerAmountScopeDto? ledgerAmountScope = null)
     {
-        var packet = await GetPacketAsync(subjectKind, subjectId, ct, ledgerBookId).ConfigureAwait(false);
+        var packet = await GetPacketAsync(subjectKind, subjectId, ct, ledgerBookId, ledgerAmountScope).ConfigureAwait(false);
         return packet is null
             ? null
             : new EvidenceGraphDto(packet.Subject, packet.GeneratedAt, packet.Nodes, packet.Edges, packet.Warnings)

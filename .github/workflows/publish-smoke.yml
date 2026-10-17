@@ -58,7 +58,7 @@ env:
 jobs:
   publish:
     name: verify-release (publish ${{ inputs.project }} ${{ inputs.runtime }})
-    runs-on: windows-latest
+    runs-on: windows-2025
     timeout-minutes: 60
 
     steps:
@@ -82,7 +82,7 @@ jobs:
       # Only the web-workstation publish path invokes npm to build the browser bundle.
       - name: Set up Node.js
         if: inputs.project == 'web-workstation'
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
           cache: npm
@@ -102,6 +102,12 @@ jobs:
           if ($env:PROJECT -notin @('collector', 'desktop', 'web-workstation')) { throw 'Unsupported project.' }
           if ($env:RUNTIME -notin @('win-x64', 'win-arm64')) { throw 'Unsupported runtime.' }
           if ($env:VERSION -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?$') { throw 'Invalid version.' }
+
+      - name: Resolve approved PostgreSQL before publishing
+        if: inputs.project == 'web-workstation' && inputs.runtime == 'win-x64'
+        shell: pwsh
+        run: |
+          & ./build/scripts/install/resolve-postgresql-payload.ps1
 
       - name: Run publish script
         shell: pwsh
@@ -127,15 +133,10 @@ jobs:
             -c Release -r win-x64 -o $installSmokeHost --self-contained true `
             -p:PublishSingleFile=true -p:PublishReadyToRun=false -p:PublishTrimmed=false
 
-          # Runner PostgreSQL directories are major-only names like '17', which
-          # [version] refuses to parse; sort on the leading integer instead.
-          $postgres = Get-ChildItem 'C:\Program Files\PostgreSQL' -Directory -ErrorAction Stop |
-            Where-Object { $_.Name -match '^\d+' } |
-            Sort-Object { [int]($_.Name -replace '^(\d+).*$', '$1') } -Descending | Select-Object -First 1
-          if ($null -eq $postgres) { throw 'GitHub Windows runner has no PostgreSQL runtime for installed startup smoke.' }
+          . ./build/scripts/install/postgresql-payload.ps1
+          $null = Assert-PostgreSqlPayload -PayloadRoot artifacts/postgresql-payload `
+            -RuntimeIdentifier win-x64 -ApprovalPath build/config/postgresql-payload.json
           $payload = 'artifacts/postgresql-payload/win-x64'
-          New-Item -ItemType Directory -Path $payload -Force | Out-Null
-          Copy-Item -Path (Join-Path $postgres.FullName '*') -Destination $payload -Recurse -Force
           Copy-Item -LiteralPath $payload -Destination (Join-Path $installSmokeHost 'database') -Recurse -Force
 
       - name: Start the published WebWorkstation artifact with required authentication
@@ -160,6 +161,9 @@ jobs:
           $lanes = @('--validation-lane', 'publish-smoke')
           if ('${{ steps.installed_startup.outcome }}' -eq 'success') {
             $lanes += @('--validation-lane', 'web-workstation-installed-startup')
+            Copy-Item -LiteralPath artifacts/postgresql-payload/win-x64-payload.json `
+              -Destination artifacts/publish/publish-smoke/postgresql-payload.json
+            $lanes += @('--postgresql-payload-receipt', 'artifacts/publish/publish-smoke/postgresql-payload.json')
           } else {
             Write-Host "::notice::This dispatch did not run installed startup; it is publish evidence only, not PRD-013 installed-startup evidence."
           }
@@ -176,7 +180,7 @@ jobs:
       # or the failure cannot be diagnosed from the run page.
       - name: Upload publish artifact
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: meridian-${{ inputs.project }}-${{ inputs.runtime }}-${{ github.run_number }}-${{ github.run_attempt }}
           path: artifacts/publish/publish-smoke/

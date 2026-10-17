@@ -38,7 +38,7 @@ Classify AI/doc changes in this rebuild model:
 
 | Task | Start Here | Deep Dive |
 | --- | --- | --- |
-| Engineering/agent work | [`engineering/README.md`](../engineering/README.md) | [`docs`](.) lane map, module map, and source/roadmap registry |
+| Engineering/agent work | [`engineering/README.md`](../engineering/README.md) | [documentation index](../README.md) lane map, module map, and source/roadmap registry |
 | Stakeholder/product planning | [`product/README.md`](../product/README.md) | [`meridian-design-document.md`](../product/meridian-design-document.md) and roadmap-facing status alignment |
 | Any task | [`CLAUDE.md`](../../CLAUDE.md) | Root commands, conventions, and architecture |
 | Any AI system or automation | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) | Shared provider-agnostic workflow, safety rules, and alignment checklist |
@@ -260,7 +260,7 @@ The following high-traffic files are source material or historical entrypoints o
 
 - `docs/AGENTS.md` shim → `docs/README.md`
 - [`archive/docs/developer/setup.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/setup.md) and [`archive/docs/developer/build-test-run.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer/build-test-run.md) → [start/](../start/README.md) and [engineering/](../engineering/README.md)
-- [`archive/docs/developer/`](https://github.com/rodoHasArrived/Meridian-main/tree/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/developer) and `docs/development/` guidance files → [engineering/README.md](../engineering/README.md)
+- Archived developer material → [Engineering](../engineering/README.md) for contributor entrypoints. [Development](../development/README.md) remains the active home for detailed supporting guides.
 - `docs/ops`-style quickstart notes and one-off operator snapshots → [operators/README.md](../operators/README.md)
 - archived `docs/providers/*` setup, matrix, and provider-reference pages → [operators/provider-*.md](../operators/README.md) and [reference/provider-*.md](../reference/README.md)
 

@@ -6,12 +6,120 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-14
 ---
 
 # src/Meridian.FinancialOperations
 
 All six shipped statement connectors capture executed mapping semantics at parse time. Display labels and review notes do not change that fingerprint; fields, activity mappings, culture, date formats and CSV options do. The retained import supplies comparison proof on replay. Legacy artifact upgrade verifies the original shape and adopts retained bytes without inventing mapping evidence.
+
+`AccountCashReconciliationService` adds a bounded two-source cash-balance continuity aggregate.
+Exact tenant/company/account/book, source identities and currency determine a stable case;
+amounts, row IDs and tolerance versions remain observation evidence. Corrected sources change
+or clear the same case after restart, retaining ownership, UTC calendar-day aging and prior
+resolutions. Each run freezes original source rows, normalized balances, complete executed
+tolerances and canonical matching evidence for deterministic replay. Missing/partial populations,
+duplicate balances, unrelated accounts and changed source identities fail closed. Distinct evidence
+references and original row payloads are required for independence. Each scoped source/version
+binds its complete normalized source content across all retained runs; rebinding is rejected under
+the store lease before any case changes. Unchanged revisions can be reused; corrections require
+new versions. Null cash-tolerance entries are rejected before rule evaluation. Explicitly
+provision `FileAccountCashReconciliationStore.InitializeAsync` before use; loss of retained state
+cannot silently restart history. Source clearing confers no governed close approval.
+See [account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
+`AccountCashReconciliationContinuityTests` for the first `W10-RECON-001` acceptance slice.
+Tolerance profile IDs and versions also bind immutable complete rules across the scoped history.
+Owner assignment timestamps cannot precede the latest case observation or assignment.
+
+`AccountingPostingCandidatePostService` passes the retained approved Security Master and position
+versions into new atomic acquisitions/disposals. Storage revalidates and holds that authority in
+the posting transaction. A replay may omit the new reference-version field only when the complete
+historical command fingerprint equals the immutable retained receipt; new receipts cannot
+downgrade their version assertions. This additive internal handoff adds no workstation request
+field or schema migration. Drain older writers when deploying the stricter new-write admission.
+Separate journal/atomic compositions may lack optional receipt reads. In that case the service
+keeps the approved version assertions and delegates replay/collision validation to the atomic
+writer; only a readable exact receipt can authorize the historical omitted-version shape.
+
+The bounded lot acquisition/disposal spine resolves a Long or Asset book position before retaining
+a projection or drafting a candidate. A Short, Liability or unknown side cannot acquire the long
+writer's accounting semantics merely by supplying positive quantity. Explicit short lot
+instructions remain refused pending direction-aware opening, cover and reporting authority.
+
+`Consolidation/ConsolidationService` resolves two directly wholly owned entities from authoritative
+effective-dated ownership, compares reciprocal receivables/payables using posting entity and
+counterparty, and produces evidence-bound drafts through the typed `ConsolidationElimination`
+policy rule. Same-currency Primary books only; unmatched balances remain explicit. Read
+[the first-slice contract](../../docs/domain/intercompany-consolidation.md) for exact chart,
+perimeter, correction and currency limits.
+
+`PostgresConsolidationPostingAuthority` revalidates the complete reviewed evidence at the durable
+append boundary while holding the configured ownership store's read lease and the accounting
+policy service's mutation lock. Both leases survive until the ledger transaction commits. A changed
+perimeter, currency, source-book mapping or policy requires a new draft and renewed review; a caller
+cannot bypass this check by appending directly to the journal store.
+
+`Onboarding/OnboardingWorkspaceService` owns bounded accounting onboarding across required dates.
+Comparisons retain full source payloads, exact mapping versions, criteria and predecessor hashes.
+Balance, position and NAV differences retain new/persistent/resolved lineage, owners and evidence.
+Missing observations cannot resolve a previous difference. Corrective captures append to the same
+date; readiness uses the latest capture for every required date, while earlier results remain
+replayable. Independent reviewer decisions bind the current data revision. Frozen packets include
+blocked states and complete retained history; they confer no accounting authority.
+
+`AccountingSystemIntegrationService.Onboarding` adds a read-only capture seam over an already
+retained import and explicitly selected certified mapping. Existing GL reconciliation runs against
+a private retained ledger snapshot. Mapping content and full decimal payloads are retained without
+using the legacy rounded import hash as the onboarding content identity. See
+[onboarding procedure](../../docs/operators/external-gl-providers.md#bounded-onboarding).
+
+`AccountingClosePreparationService` captures immutable versions of close configuration and previews
+them against authoritative ledger books and periods. Deadline rules specify a period anchor,
+calendar/business-day offset, and subsequent weekend/holiday adjustment using an explicit retained
+calendar. Owners require confirmed mappings; accounting policy differences require review.
+Creation starts fresh workflow controls and evidence requirements while leaving source approvals,
+reviewed evidence, journal references, and locks in their original period. A durable creation claim
+and process-independent lease make retries resume one workflow. Preview fingerprints reject changed
+source or target authority; an already retained configuration recovers its original creation receipt.
+Ambiguous interrupted starts retain their claim and require recovery instead of creating another plan.
+`OperationsContinuityWorkflowService.StartPreparedWorkflowAsync` supplies the atomic fresh workflow
+and exact-identity recovery boundary. Focused proof lives in `AccountingCloseServicesTests.Preparation`
+and `OperationsContinuityWorkflowServiceTests.PreparedStart`.
+
+Statement reconciliation composition supplies the shared `IAtomicFileWriter` to the canonical
+statement store so committed imports use Storage-owned directory durability without an
+Infrastructure-to-Storage reference.
+
+`CanonicalLotAmortizationService` prepares read-only canonical face-lot projections from authoritative lot/reference records. Optional workstation postures may construct the service with absent stores, but preview requires ledger, Security Master, and book-position authority and refuses missing stores before any read. `AccountingPostingCandidatePostService` carries an `Amortize` instruction through the existing event-spine and independent approval rail to atomic journal/basis posting; the service itself cannot approve or post.
+`CanonicalLotAmortizationService.PreviewReversalAsync` derives an inverse from the immutable original lot mutation and refuses intervening lot changes. Drafting verifies the original snapshot and requires rebooks to reference a retained atomic reversal; independent approval remains mandatory. Reversals after reference changes require newly reviewed current Security Master evidence. Original retained journal lines and the prior lot snapshot determine inverse economics, including for a historical calculation-version receipt. New ordinary postings retain the current calculation-version requirement.
+
+A retained amortization correction may project current reference identity after the security becomes
+Inactive or its effective window changes. Drafting permits that reference state only for an exact
+retained reversal, with the corrected amortization bound to the same security and position. The
+current reference version and currency, immutable original batch, unchanged lot and independent
+approval remain required. New amortization and rebooks retain the Active/effective reference gate.
+The authoritative position must retain the correction event and its exact evidence before
+projection. Fresh reference evidence preserves its observation date, including after the original
+accrual date, while event and approval evidence remain bound to that accrual date.
+Reversal journal lineage records the reviewed current reference status and version; an Inactive
+reference is never relabeled Active to satisfy the ordinary journal gate.
+
+New amortization postings require the current calculation version before approval is retained.
+Historical unversioned instructions remain readable for exact receipt replay; unposted legacy
+drafts require a fresh preview.
+
+For an unchanged one-for-one Reg S/144A face exchange, preview resolves the successor's immutable
+birth receipt and the predecessor amortization it retained. That evidence becomes an optional,
+versioned continuation in the reviewed instruction. Existing acquisition dates, original schedule,
+yield and FX drive the calculation; the exchange does not restart amortization. Missing receipts,
+changed terms/references, successor chains and other action types cannot supply this continuation.
+The existing independent approval and atomic posting workflow remains the only posting authority.
+
+The amortization event-spine path retains its existing requirement that the Security Master currency
+equal the event's functional currency. The atomic lot boundary preserves acquisition currency and
+FX, but this delivery does not extend the event spine's cross-currency workflow. Current-basis
+disposal relief is supplied by the separate PR #3050 implementation; these amortization corrections
+preserve that relief path and its retained acquisition facts.
 
 `FundAdministration/RecurringJournalState.cs` and `FileRecurringJournalStore` own versioned
 recurring schedules and templates, exact source evidence, one claim per schedule/effective date,
@@ -127,6 +235,23 @@ Operations Continuity checklist acknowledgments are explicit retained reviewer a
 
 Private-capital close evidence is selected by fund event, period, and ledger entity. Partner statements must reference a selected event in the same month and match the capital account, investor, and currency. Each selected expense or fee event must retain allocation support; management-company evidence signals also come from selected event records. Cumulative capital-account balances, history, and evidence remain available as diagnostics, but prior-period or other-entity statement and allocation evidence cannot satisfy the selected close.
 `PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs` builds real cumulative subledgers for mixed May/June and mixed-entity scenarios, checks refusal with missing selected-scope support, and restores readiness by repairing that support while preserving cumulative balances and history. A separate scenario rejects a foreign-period statement even when it carries the selected event ID. These focused scenarios form part of W10-SEAM-001, whose acceptance remains in progress pending the required hosted integration evidence.
+
+`CanonicalLotCorporateActionService` connects the unified reviewed successor instruction to the
+existing Projected/Drafted rail for exchanges, whole-unit splits, stock mergers, non-taxable
+spin-offs and refundings. Spin-off preparation binds the reviewed carried-basis parent/child
+projection; taxable recognition recipes cannot use that successor instruction.
+Preview binds the source chart path to its mapped predecessor credit and rereads exact predecessor
+and versioned source/successor reference authority; the candidate/storage boundary retains durable
+account identity checks. Drafting
+retains the mapped instruction and requires independent approval before posting.
+
+The same service now prepares reviewed in-place return-of-capital reductions. Preview rereads
+the exact canonical lot and reference/position authority; drafting retains the complete reduction
+instruction through the existing event spine and requires independent posting approval. The
+candidate retains the durable carrying-account identity. Posting dispatches a `CapitalReturn`
+batch to the atomic journal/lot store; ordinary journal append cannot consume that instruction.
+Corrections and distributions beyond remaining carrying basis remain blocked pending separate
+reviewed policy and implementation.
 
 ## Purpose
 
@@ -763,11 +888,55 @@ explicit selected lot ids under exact expected-version/open-quantity CAS. Both p
 mutation fingerprint, evidence, relief policy, before/after snapshots, correction lineage, and
 idempotent replay result. The event spine records Approved and Posted only from the durable journal
 identity and balanced posted amounts returned by that boundary.
+New acquisitions always retain canonical quantity basis, acquisition currencies/FX, both bases,
+holding date and lot-bound approval evidence. A face acquisition must explicitly state its
+amortization method, including `NoAmortization` when that is the reviewed choice. Face terms must
+be complete, positive, consistent with ledger quantity, and carry a factor in `(0, 1]`;
+constant-yield selections require an effective yield greater than `-1`. Invalid terms and missing
+methods fail before a new draft. An older incomplete Drafted or Approved candidate can supply
+an independently reviewed `AcquisitionTermsCompletion` on the existing posting request without
+rewriting the draft, its original approval or economic-event identity. The supplement binds the
+retained draft fingerprint, lot ID, explicit method and yield; it cannot change quantity, price,
+scope or other retained facts. The authenticated approving actor must match its independent
+reviewer, and its review cannot precede the retained Drafted attestation. Completion evidence joins
+the immutable journal command, atomic receipt and Posted attestation. Exact committed legacy
+batches replay their retained shape without inventing facts;
+their enrichment remains the governed backfill workflow.
+Bounded cashless `RegS144AExchange` and `AdvanceRefunding` candidates use the same governed path
+with a retained `OpenLotSuccessorInstructionDto`. Independent approval covers its predecessor,
+create-only successors, reference versions and exact allocation. Before projection or drafting, the
+source Security Master record must cover the event's effective date within its inclusive UTC
+effective-date interval, even when a later accounting timestamp falls within that interval.
+Before `Drafted` is retained, each successor record must also cover the event date.
+Successor source authority uses the economic date even if the source has expired by the later
+accounting timestamp; the strict recorded-as-of lookup remains required. Preparation and drafting
+compare complete source and target projection hashes with the reviewed instruction. Drafting also
+rejects labels reserved by any open or closed lot in the complete carrying account and ledger book.
+Successor journal lines preserve that entire account identity, and incompatible mapped accounts
+fail before drafting. Atomic posting rechecks these guards under its transaction locks.
+Drafting also requires retained wash-sale deferral reads across all sale
+dates and follows at most 32 same-book predecessor lots, using immutable acquisition lineage,
+the legacy successor instruction, or the retained immutable birth receipt. Any separately retained
+deferral on the predecessor or its ancestry is refused until reviewed successor carry lineage is
+supported: unchanged or later holding dates still retain a separate basis claim. Missing, ambiguous or
+cyclic ancestry also fails closed. Deferrals are not copied or fabricated. Posting rechecks that instruction
+against the drafted event, embeds its fingerprint in the journal and sends the complete mutation
+set to the atomic store. The journal reclassifies the predecessor's current basis to its successors;
+the instruction also retains original acquisition basis, currency/FX, holding dates and refunded-only
+Schedule D treatment. This successor path binds Security Master currency to retained acquisition
+currency while the event and book retain functional currency; it does not obtain a new FX rate.
+Other action types and multiple-predecessor mutations remain unsupported by
+this bounded successor path.
 For this spine, a same-source journal is a replay only when its deterministic journal identity,
 complete Drafted candidate/result fingerprints, policy/rule pack, approval evidence, amounts,
-lines, currencies, and dimensions all match. Lots retain Security Master and book-position scope;
-disposal rechecks selected unit cost and aggregate cost basis against the exact asset-relief journal
-line under the same serializable transaction. A mismatch is a collision and blocks posting.
+lines, currencies, and dimensions all match. Reviewed correction candidates use the same Pending
+approval normalization at drafting and post-time reconstruction. Retained correction review permits
+adjustment preparation; the separate
+posting approval still requires an independent reviewer before any journal or lot mutation.
+Lots retain Security Master and book-position scope;
+disposal retains selected acquisition unit cost as a snapshot assertion, certifies current canonical
+relief basis across the scoped pool, and rechecks the exact asset-relief journal line under the same
+serializable transaction and effective policy revision. A mismatch is a collision and blocks posting.
 External accounting-system providers remain read-only import, reconciliation, and export-package
 surfaces; this service appends only Meridian-owned ledger facts.
 The retained approval evidence for generated candidate append must name approval intent, fund,

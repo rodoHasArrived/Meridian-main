@@ -1,3 +1,4 @@
+using Meridian.Storage.Archival;
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
@@ -65,7 +66,7 @@ public sealed class StatementCurrencyCatalogEvidenceTests : IDisposable
         await File.WriteAllTextAsync(path,
             "account,symbol,quantity,price,cashAmount,activityType,tradeDate,settlementDate,currency\n"
             + $"FUND-A,,0,0,-25.5,fee,2026-06-02,,{currency}\n");
-        var store = new JsonCanonicalStatementStore(_root);
+        var store = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         var service = new CsvBrokerStatementService(store);
         var request = new BrokerStatementImportRequest("samplebroker", path, new DateOnly(2026, 6, 30))
         {

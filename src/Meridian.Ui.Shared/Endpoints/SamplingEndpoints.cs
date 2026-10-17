@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Meridian.Identity.Auth;
 using System.IO.Compression;
 using System.Text.Json;
@@ -15,10 +16,9 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class SamplingEndpoints
 {
-    private static readonly Dictionary<string, SampleResult> s_savedSamples = new(StringComparer.OrdinalIgnoreCase);
-
     public static void MapSamplingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        var savedSamples = new ConcurrentDictionary<string, SampleResult>(StringComparer.OrdinalIgnoreCase);
         var group = app.MapGroup("").WithTags("Sampling");
 
         // Create sample - reads actual data files and applies sampling strategy
@@ -46,7 +46,7 @@ public static class SamplingEndpoints
                     Events = Array.Empty<string>(),
                     CreatedAt = DateTimeOffset.UtcNow
                 };
-                s_savedSamples[sampleId] = result;
+                savedSamples[sampleId] = result;
 
                 return Results.Json(new
                 {
@@ -90,7 +90,7 @@ public static class SamplingEndpoints
                 Events = sampledLines.ToArray(),
                 CreatedAt = DateTimeOffset.UtcNow
             };
-            s_savedSamples[sampleId] = sampleResult;
+            savedSamples[sampleId] = sampleResult;
 
             return Results.Json(new
             {
@@ -153,7 +153,7 @@ public static class SamplingEndpoints
         // List saved samples
         group.MapGet(UiApiRoutes.SamplingSaved, () =>
         {
-            var summaries = s_savedSamples.Values.Select(s => new
+            var summaries = savedSamples.Values.Select(s => new
             {
                 s.SampleId,
                 s.Symbol,
@@ -167,7 +167,7 @@ public static class SamplingEndpoints
             return Results.Json(new
             {
                 samples = summaries,
-                total = s_savedSamples.Count,
+                total = savedSamples.Count,
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
@@ -177,7 +177,7 @@ public static class SamplingEndpoints
         // Get sample by ID - returns actual sampled events
         group.MapGet(UiApiRoutes.SamplingById, (string sampleId) =>
         {
-            if (!s_savedSamples.TryGetValue(sampleId, out var sample))
+            if (!savedSamples.TryGetValue(sampleId, out var sample))
                 return Results.NotFound(new { error = $"Sample '{sampleId}' not found" });
 
             return Results.Json(new

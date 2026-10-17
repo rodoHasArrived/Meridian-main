@@ -46,7 +46,10 @@ adapters:
     closed when the requested feed has no usable entitlement; diagnostics preserve the selected feed and entitlement.
     REST and trade-update errors remain observable. Corporate-action HTTP failures and non-cancellation exceptions
     are logged and return empty action collections; empty results must not be treated as verified absence of actions.
-    Cancellation propagates.
+    Cancellation propagates. Streaming readiness waits for authentication and full subscription acknowledgments;
+    rejected or timed-out subscription changes invalidate readiness, while transient control errors remain retryable.
+    Automatic correction/cancel channels are limited to requested trades; permanent request errors stop retries.
+    Final subscription-reference removal sends an explicit upstream unsubscribe.
   registration:
   - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
     symbol: ProviderCapabilityDescriptorCatalog
@@ -55,6 +58,9 @@ adapters:
   - path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaProviderModule.cs
     symbol: AlpacaProviderModule
   evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/AlpacaConnectionReadinessTests.cs
+    symbol: AlpacaConnectionReadinessTests
+    kind: test
   - path: tests/Meridian.Tests/Infrastructure/Providers/AlpacaCredentialAndReconnectTests.cs
     symbol: AlpacaCredentialAndReconnectTests
     kind: test
@@ -167,13 +173,21 @@ adapters:
   - A successful construction or advertised capability is not live connectivity or entitlement evidence.
   degradation: Factory construction failures are logged and isolated per provider. Credential policy is resolved
     centrally; composite history rotates on structured rate-limit signals and retains bounded retry behavior. This
-    folder is shared infrastructure, not an independently routable provider.
+    folder is shared infrastructure, not an independently routable provider. Skipped unavailable candidates preserve
+    failure evidence; confirmed empty coverage is distinct from backoff or throttling. Streaming initial connection
+    and recovery both require successful authentication and replay before readiness.
   registration:
   - path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
     symbol: ProviderServiceExtensions
   - path: src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs
     symbol: ProviderFactory
   evidence:
+  - path: tests/Meridian.Tests/Application/Backfill/CompositeHistoricalDataProviderTests.cs
+    symbol: CompositeHistoricalDataProviderTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Resilience/WebSocketSendSessionTests.cs
+    symbol: WebSocketSendSessionTests
+    kind: test
   - path: tests/Meridian.Tests/Infrastructure/Providers/ProviderFactoryCredentialContextTests.cs
     symbol: ProviderFactoryCredentialContextTests
     kind: test
@@ -416,7 +430,7 @@ adapters:
     credentials: Authenticated TWS or IB Gateway session, configured host/port/client ID, account access and relevant
       market-data subscriptions; Flex reconciliation has separate credentials and identity.
     optional_sdk: Official IBApi DLL/project for real TWS/Gateway connectivity with EnableIbApiVendor=true; EnableIbApiSmoke=true
-      is compile-only verification, not the vendor runtime.
+      provides local-stub compile and reconnect verification, not the vendor runtime.
   risks:
   - Historical pacing is 60 requests/10 minutes with 15-second minimum spacing in the guidance surface.
   - Vendor version, local socket reachability, account permissions and live/frozen/delayed entitlements determine
@@ -713,7 +727,9 @@ adapters:
     before operation.
   degradation: Missing keys prevent credential-gated factory activation and direct history calls fail. Authentication/rate-limit
     errors and reconnect state remain visible; duplicate or decreasing per-ticker session sequences are rejected.
-    Corporate-action ingestion uses a hosted Security Master fetcher, not ICorporateActionProvider.
+    Missing/invalid source times are rejected and accepted events retain separate receipt metadata. Historical
+    pagination failures cannot certify complete coverage. Corporate-action ingestion uses a hosted Security Master
+    fetcher, not ICorporateActionProvider; failures and cancellation retain completion and persistence progress.
   registration:
   - path: src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs
     symbol: ProviderCapabilityDescriptorCatalog
@@ -722,6 +738,12 @@ adapters:
   - path: src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs
     symbol: StorageFeatureRegistration
   evidence:
+  - path: tests/Meridian.Tests/Infrastructure/Providers/PolygonTimestampIntegrityTests.cs
+    symbol: PolygonTimestampIntegrityTests
+    kind: test
+  - path: tests/Meridian.Tests/Infrastructure/Providers/PolygonHistoricalPaginationTests.cs
+    symbol: PolygonHistoricalPaginationTests
+    kind: test
   - path: tests/Meridian.Tests/Infrastructure/Providers/PolygonMarketDataClientTests.cs
     symbol: PolygonMarketDataClientTests
     kind: test

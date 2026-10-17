@@ -1,0 +1,114 @@
+{
+  "atUtc": "2026-10-07T16:56:16.725Z",
+  "head": "12565b938fff633cac2060b844487c4cf9454099",
+  "nodeVersion": "v24.19.0",
+  "npmVersion": "11.9.0",
+  "files": [
+    {
+      "file": "package.json",
+      "sha256": "70c8aebd1cbedffb594b456257f83b351b71e068180837a3dcf67d5c99186679"
+    },
+    {
+      "file": "package-lock.json",
+      "sha256": "b9f91d026f6567cfa0a607bd8c8ca8c380d9c6753b42de7eba1f6acb5fc4a3c2"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/package.json",
+      "sha256": "b0cdfe31ae60b1d83448085757dbc60d58ddbff83eb93c93d6f5bfbb92076bb1"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/package-lock.json",
+      "sha256": "ba2e05edf708bd2470d58f0cc8b17c52d467701203dde708c00398230fb8e364"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/node_modules/.package-lock.json",
+      "sha256": "fee90e7616c7bcc0cef65eec2330cec83deb1de38e4b0405e16871fdfa28a130"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/vite.config.ts",
+      "sha256": "422f54009ba158e8e0c70f473a1dd0f2c283b2f8a4c472c95d7e6eceef36208f"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/postcss.config.cjs",
+      "sha256": "c3275e0c1ab2639ab056915eac2a806b997a7879c31edce8898ec443a4823a06"
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/tailwind.config.ts",
+      "sha256": "3dbe1875c20796e85f924ca116e3d41d569b75d00bae9592edbfc44c66841ad1"
+    }
+  ],
+  "dependencies": [
+    {
+      "name": "react",
+      "version": "18.3.1",
+      "manifestPath": "/workspace/Meridian-main/src/Meridian.Ui/dashboard/node_modules/react/package.json",
+      "manifestSha256": "d4e68a5c96babb20cad1daafea8b78822eae45b341552cf5418d06a5304fa64c"
+    },
+    {
+      "name": "react-dom",
+      "version": "18.3.1",
+      "manifestPath": "/workspace/Meridian-main/src/Meridian.Ui/dashboard/node_modules/react-dom/package.json",
+      "manifestSha256": "d2f29e31bd48b833e48cd7bbf41f192e8ee4ff8da249fdbe10d4ac4114b8b12e"
+    },
+    {
+      "name": "react-router-dom",
+      "version": "7.18.4",
+      "manifestPath": "/workspace/Meridian-main/src/Meridian.Ui/dashboard/node_modules/react-router-dom/package.json",
+      "manifestSha256": "c23e49bc92b009d2492a84c8d575b86f57661bcce801af1813cf4f2140034915"
+    },
+    {
+      "name": "tailwindcss",
+      "version": "3.4.19",
+      "manifestPath": "/workspace/Meridian-main/src/Meridian.Ui/dashboard/node_modules/tailwindcss/package.json",
+      "manifestSha256": "969a9400c6b59a0c5b3dd8ac7d083613fedf78a258cef37938c36cf452ca9349"
+    },
+    {
+      "name": "postcss",
+      "version": "8.5.23",
+      "manifestPath": "/workspace/Meridian-main/src/Meridian.Ui/dashboard/node_modules/postcss/package.json",
+      "manifestSha256": "df43e035f054943454c49556c89cea8a288d91f5d4b1a6f4e56d48b85c7ebd75"
+    },
+    {
+      "name": "autoprefixer",
+      "version": "10.4.20",
+      "manifestPath": "/workspace/Meridian-main/src/Meridian.Ui/dashboard/node_modules/autoprefixer/package.json",
+      "manifestSha256": "c9b69758189b83db1de1f189bf1e168f8069c05ad2ed8d00525de29d61347379"
+    },
+    {
+      "name": "vite",
+      "version": "8.0.16",
+      "manifestPath": "/workspace/Meridian-main/src/Meridian.Ui/dashboard/node_modules/vite/package.json",
+      "manifestSha256": "a2b943431b51bfcc2e9386eecf8b4b3f6e4bf443e56d17b1f4c8495a61b4050c"
+    },
+    {
+      "name": "vitest",
+      "version": "4.1.11",
+      "manifestPath": "/workspace/Meridian-main/src/Meridian.Ui/dashboard/node_modules/vitest/package.json",
+      "manifestSha256": "a28126d97bcaf567da5bed69443b7f3bcd9a7a8c38c8b66e554686b6bb2c10e0"
+    },
+    {
+      "name": "playwright",
+      "version": "1.63.0",
+      "manifestPath": "/workspace/Meridian-main/src/Meridian.Ui/dashboard/node_modules/playwright/package.json",
+      "manifestSha256": "8bc2ddebe8d9b051b9ecb87d62c6c63877e59d08617f32c3215681ca8bb70998"
+    },
+    {
+      "name": "typescript",
+      "version": "5.7.2",
+      "manifestPath": "/workspace/Meridian-main/src/Meridian.Ui/dashboard/node_modules/typescript/package.json",
+      "manifestSha256": "4aaabb8f95662bc932f765b6a00512f4f7f921b524040c501cda03dc3c011e45"
+    },
+    {
+      "name": "lucide-react",
+      "version": "0.468.0",
+      "manifestPath": "/workspace/Meridian-main/src/Meridian.Ui/dashboard/node_modules/lucide-react/package.json",
+      "manifestSha256": "609e78dffe97aab720c105246eca516f0aaac1de60725e53c0f5abb908b08320"
+    }
+  ],
+  "npmLs": {
+    "exitStatus": 0,
+    "stdoutSha256": "2a1082bad11eedef85e3bfb1e9d69fa42d4239c5e59cb5567057f4c5df1d6731",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "captureHarnessSha256": "479e6d85f3340a6fe6575d7279e02ee61e2df680cc58270a16d361588765b38c"
+}

@@ -18,7 +18,7 @@ do_not_edit: true
 
 # Roadmap Summary
 
-Snapshot date: 2026-10-02
+Snapshot date: 2026-10-14
 
 | ID | Title | Status | Health | Priority | Owner lane |
 | --- | --- | --- | --- | --- | --- |
@@ -54,7 +54,7 @@ Snapshot date: 2026-10-02
 | W10-DEBT-001 | God-file burn-down against the file-size ratchet | planned | green | medium | Workstation Shell and UX |
 | W10-MARK-001 | Fail-closed stale-mark policy and mark-age surfacing | in_progress | green | high | Accounting and Ledger |
 | W10-RECON-001 | Durable break lineage identity and run-over-run break diff | in_progress | yellow | high | Accounting and Ledger |
-| W10-PROV-001 | Ledger-amount evidence subject and shared proof drawer | planned | green | high | Workstation Shell and UX |
+| W10-PROV-001 | Ledger-amount evidence subject and shared proof drawer | in_progress | green | high | Workstation Shell and UX |
 | W10-RECON-002 | Break clustering and bulk-resolution activation | planned | green | high | Accounting and Ledger |
 | W10-JRNL-001 | Durable recurring journal schedules and draft runner | in_progress | green | high | Accounting and Ledger |
 | W10-TAX-001 | Tax character, wash-sale, and lot-relief operator surface | planned | green | high | Accounting and Ledger |
@@ -64,3 +64,9 @@ Snapshot date: 2026-10-02
 | W10-PERF-001 | Portfolio and investor return measurement | planned | green | high | Accounting and Ledger |
 | W10-CONSOL-001 | Intercompany elimination on consolidated ledger views | planned | green | medium | Accounting and Ledger |
 | W10-LOT-002 | Security-identified open-lot convergence | in_progress | green | critical | Accounting and Ledger |
+| W11-PASSPORT-001 | Number Passport contract across amount surfaces | planned | green | high | Workstation Shell and UX |
+| W11-COVER-001 | Verified Coverage measurement and operator surface | planned | green | high | Accounting and Ledger |
+| W11-STAKE-001 | Governed stakeholder verification access on delivered packages | planned | green | medium | Platform Security and Governance |
+| W11-SHADOW-001 | Shadow-mode onboarding with opening-balance reconciliation | planned | green | medium | Data Confidence and Validation |
+| W11-PACK-001 | Governed contract-pack lifecycle on the Security Master asset-class registry | planned | green | medium | Accounting and Ledger |
+| W11-EXEC-001 | Trading and Execution bounded-context ownership | planned | green | low | Execution and Fund Accounts |

@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-09-28
+**Reviewed:** 2026-10-05
 
 This is the canonical front door for Meridian documentation. Start from an audience or task below,
 then follow the named source of truth. Folder names alone do not establish current status: roadmap,
@@ -10,22 +10,15 @@ source, and generated content remain registry-owned.
 
 ## Current Project Snapshot
 
-The current program-state snapshot is dated **2026-09-26**:
+For current delivery and acceptance status, use the
+[generated roadmap summary](roadmap/generated/ROADMAP_SUMMARY.md) and
+[roadmap register](roadmap/generated/roadmap-register.md). The
+[program-state registry](roadmap/data/program-state.yml) owns the program snapshot.
 
-- the W1-W5 baseline, shared Financial Record Explorers, Financial Operations control center,
-  statement connector library, Evidence Vault, statement reconciliation onboarding, the bounded W6
-  backtest-evidence loop, and bounded W7 live-readiness governance are complete;
-- WPF workstation parity (`W8-WPF-PARITY-001`), browser screen consolidation (`W8-UX-CONSOL-001`),
-  and the W9 close-out rows `W9-GOV-008` and `W9-INGEST-009` are the active productization
-  targets; the rest of the W9 slate is accepted or done, with `W9-CORPACT-011` awaiting operator
-  acceptance (see [Product](product/README.md#current-project-snapshot) for the per-row breakdown);
-- production readiness remains blocked until every P0 item in the
-  [Implementation and Readiness Tracker](product/implementation-todo-list.md) is complete on the
-  same release commit with required release evidence.
-
-Use the [program-state registry](roadmap/data/program-state.yml) and
-[generated roadmap summary](roadmap/generated/ROADMAP_SUMMARY.md) for exact status. The summary
-above is orientation, not a competing tracker.
+For production-release blockers and required evidence, use the
+[Implementation and Readiness Tracker](product/implementation-todo-list.md).
+Capability acceptance and release certification have separate evidence requirements; this front
+door does not duplicate their changing status.
 
 ## Start By Audience
 
@@ -35,6 +28,7 @@ above is orientation, not a competing tracker.
 | Stakeholders | [Product](product/README.md) | Product narrative, capability status, roadmap interpretation, and evidence-backed investment-operations framing. |
 | Operators | [Operators](operators/README.md) | Provider setup, workstation launch, runbooks, deployment, troubleshooting, and support artifacts. |
 | First-time contributors | [Start](start/README.md) | Fast local orientation, setup, launch, and first safe validation commands. |
+| API and configuration readers | [Reference](reference/README.md) | API contracts, configuration, schemas, provider matrices, and stable lookup tables. |
 | AI assistants | [AI](ai/README.md) | Agent workflow contracts, repo navigation, Codex/Claude/Copilot guidance, prompts, skills, and inventory checks. |
 | Domain modelers | [Domain Dictionary](domain/README.md) | Business nouns, relationships, rules, examples, and expansion notes for AI-assisted development. |
 | Architects and reviewers | [Architecture](architecture/README.md) | MDIF, system boundaries, architectural decisions, runtime design, and rationale. |
@@ -97,8 +91,9 @@ Archive rather than delete when a document has historical value, stale evidence,
   links still consume specific paths. Their indexes identify why each retained file remains.
 - `docs/status/` is a supporting automation-owned lane, not a hand-authored roadmap source. Use
   `docs/product/` for stakeholder interpretation and `docs/roadmap/data/*.yml` for durable status.
-- `archive/docs/summaries/` is the only archive bucket currently in the tree. New archive batches
-  may recreate a bucket, and each bucket they create needs its own index.
+- Current archive buckets are [plans](../archive/docs/plans/README.md) and
+  [summaries](../archive/docs/summaries/README.md). New archive batches may recreate other buckets;
+  each bucket needs its own index.
 - High-traffic archived material should keep a short redirect stub at the old path until all active links move to the replacement.
 
 ## Documentation Acceptance Criteria

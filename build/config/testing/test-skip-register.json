@@ -28,6 +28,15 @@
       "review_by": "2027-02-01"
     },
     {
+      "path": "tests/Meridian.Tests/Integration/AlpacaPaperSandboxTests.cs",
+      "test": "AlpacaPaperSandboxFactAttribute",
+      "reason": "Real paper-broker validation is opt-in: set MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1 and the documented paper credentials.",
+      "owner": "Execution",
+      "category": "environment-gated",
+      "tracking": "docs/testing/alpaca-paper-portfolio-sandbox.md",
+      "review_by": "2026-11-05"
+    },
+    {
       "path": "tests/Meridian.Tests/AssetOperations/AssetOperationsMigrationRunnerTests.cs",
       "test": "AssetOperationsDatabaseFactAttribute",
       "reason": "$\"Asset Operations PostgreSQL tests are skipped because {DisableDockerVariable}=true.\"",

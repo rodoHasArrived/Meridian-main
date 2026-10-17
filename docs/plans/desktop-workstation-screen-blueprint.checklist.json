@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "blueprintPath": "docs/plans/desktop-workstation-screen-blueprint.md",
+  "blueprintPath": "docs/engineering/plans/desktop-workstation-screen-blueprint.md",
   "status": "draft-tracking",
   "generatedBy": "scripts/dev/desktop_screen_blueprint_checklist.py",
   "allowedStatuses": [

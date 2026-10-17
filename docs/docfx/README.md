@@ -1,8 +1,8 @@
 # DocFX API Documentation
 
-**Status:** supporting-generated
+**Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-10-05
 
 DocFX generates browsable API documentation from XML doc comments in the C# source code, combined with the markdown guides in `docs/`.
 
@@ -50,7 +50,10 @@ The root `docfx.json` configuration pulls from:
 
 - **API metadata**: All public `.csproj` files under `src/` — generates API reference from XML doc comments
 - **Conceptual docs**: Markdown files under `docs/` — architecture, guides, operations, etc.
+- **Local archives**: Markdown under `archive/docs/`, preserving historical links from current indexes
 - **Table of contents**: `docs/toc.yml` — top-level navigation structure
+- **Registry downloads**: `docs/roadmap/data/*.yml` and `docs/source/data/*.yml` are copied as resources;
+  they remain raw YAML, while the linked generated Markdown views provide readable summaries
 
 Metadata scratch files such as `docfx-log.json`, `temp-metadata-only.json`,
 `docs/docfx/api/.manifest`, and `docs/docfx/api/*.yml` are local generated
@@ -87,7 +90,42 @@ current repository root before publishing documentation.
 
 1. Create a `.md` file in the appropriate `docs/` subdirectory
 2. Add an entry to the relevant `toc.yml` or parent `README.md`
-3. Rebuild: `docfx docfx.json`
+3. Validate publication mappings with the source check below, then rebuild: `docfx docfx.json`
+
+### Validate published navigation
+
+From the repository root, using Python 3 and the documentation dependencies:
+
+```bash
+python -m pip install --requirement build/scripts/docs/requirements.txt
+python build/scripts/docs/check-docfx-navigation.py --summary
+```
+
+The source check verifies that local TOC `href`, `topicHref`, `tocHref`, and `homepage`
+targets exist and are included by `docfx.json` content/resource mappings. It resolves each
+target relative to its own TOC, honors exclusions and `src`/`dest`, and also checks local
+archive links in published Markdown. For example, a registry file present in Git but absent
+from `build.resource` fails this check. Add intentional downloadable data to resources;
+do not feed arbitrary registry YAML to the API metadata renderer.
+
+Expected result: zero errors. A clean checkout reports the generated API TOC as **deferred**
+until DocFX creates it. This deferral applies only to YAML under configured metadata destinations;
+it does not excuse missing tracked pages or excluded targets. Missing or excluded targets fail
+with their referring file and destination: repair the link, add the intended publication mapping,
+or restore the missing source before rerunning the check.
+
+After a successful DocFX build, verify that the mapped destination files were produced:
+
+```bash
+docfx docfx.json
+python build/scripts/docs/check-docfx-navigation.py --site-dir docs/_site --summary
+```
+
+Expected result: zero errors and no deferred targets. Markdown/API targets resolve to HTML;
+resource targets retain their extensions. Missing built files require a clean rebuild or a
+correction to the publication configuration. These checks do not validate external URLs, API
+UID references, Markdown anchors, every repository link, or rendered navigation behavior;
+preview the site before publishing.
 
 ### New API namespace
 
@@ -111,3 +149,5 @@ The `documentation.yml` workflow validates the tracked documentation automation 
 - Manual runs via `workflow_dispatch` are available when you want a dedicated documentation refresh pass.
 
 DocFX site generation remains a manual/local step (`docfx docfx.json`) rather than a GitHub Pages deployment workflow.
+The documentation automation `quick`, `core`, and `full` profiles run the source navigation
+check without installing DocFX or building the .NET solution.

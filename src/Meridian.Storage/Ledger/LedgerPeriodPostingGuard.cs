@@ -1,4 +1,5 @@
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 
 namespace Meridian.Storage.Ledger;
@@ -6,6 +7,14 @@ namespace Meridian.Storage.Ledger;
 public static class LedgerPeriodPostingGuard
 {
     public static void Validate(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period)
+        => ValidateCore(entry, period, verifiedAmortizationReversal: false);
+
+    // Called only after the atomic store locks current authority and verifies the original
+    // receipt, unchanged lot and exact inverse. A public journal request cannot opt into it.
+    internal static void ValidateRetainedAmortizationReversal(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period)
+        => ValidateCore(entry, period, verifiedAmortizationReversal: true);
+
+    private static void ValidateCore(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period, bool verifiedAmortizationReversal)
     {
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(entry.Entry);
@@ -19,7 +28,7 @@ public static class LedgerPeriodPostingGuard
         }
 
         ValidateAdjustmentApprovalMetadata(entry);
-        ValidateSecurityMasterLineage(entry);
+        ValidateSecurityMasterLineage(entry, verifiedAmortizationReversal);
         ValidateTreasuryLedgerMetadata(entry, period);
 
         if (string.Equals(period.Status, "Open", StringComparison.Ordinal))
@@ -160,7 +169,7 @@ public static class LedgerPeriodPostingGuard
         }
     }
 
-    private static void ValidateSecurityMasterLineage(LedgerJournalEntryWrite entry)
+    private static void ValidateSecurityMasterLineage(LedgerJournalEntryWrite entry, bool verifiedAmortizationReversal)
     {
         var journalEntry = entry.Entry;
         var instrumentLines = journalEntry.Lines
@@ -217,7 +226,11 @@ public static class LedgerPeriodPostingGuard
                 $"Journal entry '{journalEntry.JournalEntryId}' posts an instrument-bearing ledger entry without approved Security Master evidence.");
         }
 
-        if (!HasActiveSecurityMasterStatus(lineage))
+        if (!HasActiveSecurityMasterStatus(lineage)
+            && !(verifiedAmortizationReversal
+                && entry.PostingCommand?.LotAmortization is { Reversal: not null, Security.Status: SecurityStatusDto.Inactive }
+                && provenance.Contains("status:Inactive;", StringComparison.OrdinalIgnoreCase)
+                && lineage.Contains("security-status:Inactive:", StringComparison.OrdinalIgnoreCase)))
         {
             throw new LedgerValidationException(
                 $"Journal entry '{journalEntry.JournalEntryId}' posts an instrument-bearing ledger entry without active Security Master status evidence.");

@@ -10,12 +10,13 @@ fi
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 hooks_dir="${repo_root}/.githooks"
 
-if [[ ! -d "${hooks_dir}" ]]; then
-  mkdir -p "${hooks_dir}"
-  echo "Created hooks directory at '${hooks_dir}'."
+if [[ ! -f "${hooks_dir}/pre-commit" ]]; then
+  echo "Error: tracked pre-commit hook is missing from '${hooks_dir}'." >&2
+  exit 1
 fi
 
-git -C "$repo_root" config core.hooksPath .githooks
+chmod +x "${hooks_dir}/pre-commit"
+git -C "$repo_root" config --local core.hooksPath .githooks
 
 if [[ "$(git -C "$repo_root" config --get core.hooksPath)" != ".githooks" ]]; then
   echo "Failed to configure Git hooks path for '$repo_root'." >&2
@@ -23,4 +24,5 @@ if [[ "$(git -C "$repo_root" config --get core.hooksPath)" != ".githooks" ]]; th
 fi
 
 echo "Configured Git hooks path to '${repo_root}/.githooks'."
-echo "Pre-commit will now run: dotnet format Meridian.sln --verify-no-changes"
+echo "Pre-commit will check staged C#/VB whitespace without changing files or the index."
+echo "Commits without staged C#/VB files skip .NET formatting; CI checks the full solution."

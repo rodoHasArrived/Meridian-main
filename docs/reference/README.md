@@ -17,6 +17,17 @@ Reference docs answer "what exists and what shape does it have?" For procedures,
 
 Reference content here must stay schema/procedure-neutral and claim-stable. Procedures and operational policy live in [Operators](../operators/README.md) or [Start](../start/README.md).
 
+## Find A Specific Contract
+
+| Question | Reference |
+| --- | --- |
+| Which environment variable or JSON field does the host actually read? | [Environment Variables](environment-variables.md) and [Appsettings Schema](appsettings-schema.md); CLI validation and host readiness are separate checks. |
+| What does stored market data contain? | [Data Dictionary](data-dictionary.md#event-container) and [JSON serialization](data-dictionary.md#json-serialization); distinguish runtime events, compatibility DTOs, and endpoint-specific JSON options. |
+| How do I authenticate a script or handle a stale mutation? | [API Authentication](api-reference.md#authentication), [Conflict Contract](api-conflict-contract.md), and [Verified Operation Outcomes](verified-operation-outcomes.md). |
+| Is an adapter implemented, and is it approved for this use? | [Generated Adapter Readiness](../source/generated/adapter-readiness-matrix.md) for implementation; [Provider Validation](provider-validation-matrix.md) for evidence requirements. |
+| What enables the real IB runtime? | [Interactive Brokers API Compatibility](interactive-brokers-api-compatibility.md); default builds and official vendor builds have different connectivity guarantees. |
+| How are startup, persistence, and shutdown controlled? | [Lifecycle Control Plane](lifecycle-control-plane.md), [Ledger Journal Store](ledger-journal-store.md), and [Accounting Report Packs](accounting-report-packs.md). |
+
 ## Canonical Lookup Areas
 
 | Area | Canonical or migration source | Notes |
@@ -24,10 +35,10 @@ Reference content here must stay schema/procedure-neutral and claim-stable. Proc
 | HTTP and local API contracts | [API Reference](api-reference.md), [API Conflict Contract](api-conflict-contract.md), [Verified Operation Outcomes](verified-operation-outcomes.md), [Lifecycle Control Plane](lifecycle-control-plane.md), [OMS/EMS Integration](oms-ems-integration.md), [Accounting Configuration](accounting-configuration.md), [Governed Accounting Reporting](accounting-report-packs.md) | Keep route, request, response, idempotency, and storage-shape details here. |
 | Data fields and normalization | [Data Dictionary](data-dictionary.md), [Data Uniformity](data-uniformity.md), [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md) | Stable field/type definitions and cross-provider terminology. |
 | Environment and config | [Environment Variables](environment-variables.md), [Appsettings Schema Reference](appsettings-schema.md), [EDGAR Reference Data](edgar-reference-data.md) | Lookup details only; setup procedures belong in operators/start docs. |
-| Provider capability and readiness lookup | [Provider Capability Matrix](provider-capability-matrix.md), [Provider Validation Matrix](provider-validation-matrix.md), [Provider Integration Status](provider-integration-status.md) | Canonical lookup in this lane; keep procedure and rollout details in operators. |
+| Provider capability and readiness lookup | [Provider Capability Matrix](provider-capability-matrix.md), [Provider Validation Matrix](provider-validation-matrix.md), [IB API Compatibility](interactive-brokers-api-compatibility.md) | Keep capability/evidence scope separate from runtime registration; provider setup belongs in Operators. |
 | Adapter implementation readiness | [Generated Adapter Readiness Matrix](../source/generated/adapter-readiness-matrix.md), [Adapter Readiness Registry](../source/data/adapter-readiness.yml) | Source-owned implementation inventory and targeted evidence; live-provider validation and operator sign-off remain separate gates. |
 | Contract compatibility and schemas | [Contract Compatibility Matrix](contract-compatibility-matrix.md), [Provider Validation Evidence Schema](provider-validation-evidence-schema.md), [Provider Validation Matrix](provider-validation-matrix.md) | Keep generated or matrix-owned content in place until moved through a focused migration. |
-| UFL and asset profiles | [UFL Supported Assets Index](ufl-supported-assets-index.md), [UFL Capability Model](ufl-capability-model.md), [UFL Conformance Matrix](ufl-conformance-matrix.md) | Target-state lookup material now lives in reference. |
+| UFL and asset profiles | [UFL Supported Assets Index](ufl-supported-assets-index.md), [UFL Capability Model](ufl-capability-model.md), [UFL Conformance Matrix](ufl-conformance-matrix.md) | Capability definitions and historical/target-state profiles; the conformance rows are a dated assessment, not current delivery status. |
 | Ledger, accounting, and reporting contracts | [Ledger Journal Store](ledger-journal-store.md), [Export Preflight Rules](export-preflight-rules.md), [Accounting Configuration](accounting-configuration.md), [Accounting Report Packs](accounting-report-packs.md) | Stable contracts and artifact layouts. |
 | Database schema | [Database Schema](database-schema.md) | Schema-control entrypoint for authoritative SQL migrations, generated `pg_catalog` manifests, DTO/data-object diagrams, policies, and dependency maps. |
 | Strategy contracts | [Backtest Preflight and Stage Telemetry](backtest-preflight-and-stage-telemetry.md), [Strategy Briefing Workflow](strategy-briefing-workflow.md), [Strategy Promotion History](strategy-promotion-history.md) | DTOs, persistence fields, and workflow contract shapes. |
@@ -60,15 +71,16 @@ Stable lookup details for storage and streaming should live in reference, genera
 | [Data Dictionary](data-dictionary.md) | Data field definitions and types. |
 | [Data Uniformity](data-uniformity.md) | Cross-provider consistency guidelines. |
 | [Database Schema](database-schema.md) | Maintained PostgreSQL schema-control map with generated ER diagrams, public contract-object diagrams, migration inventory, policy results, and dependency metadata. |
-| [Design Review Memo](design-review-memo.md) | Key design constraints and decisions retained as reference material. |
 | [EDGAR Reference Data](edgar-reference-data.md) | EDGAR filer, ticker association, XBRL fact, filing-derived security data, CLI, API, and local storage reference. |
 | [Contract Compatibility Matrix](contract-compatibility-matrix.md) | Shared contract/versioning baseline for workstation routes, DTOs, services, and migration behavior. |
 | [Provider Capability Matrix](provider-capability-matrix.md) | Adapter coverage and readiness states by capability surface. |
 | [Interactive Brokers and Alpaca Capability Expansion Review](broker-provider-capability-expansion-review.md) | Evidence-based provider expansion opportunities, priorities, and safety boundaries. |
-| [Provider Integration Status](provider-integration-status.md) | Per-provider phase, DI/factory posture, blockers, and evidence refresh cadence. |
+| [Interactive Brokers API Compatibility](interactive-brokers-api-compatibility.md) | Official SDK inputs, opt-in runtime build, release evidence, and compatibility limits. |
 | [Provider Validation Matrix](provider-validation-matrix.md) | Wave 1 provider gate matrix and promotion evidence criteria. |
 | [Provider Validation Evidence Schema](provider-validation-evidence-schema.md) | Required validation packet artifacts and schema fields for provider trust decisions. |
 | [Environment Variables](environment-variables.md) | Credential and configuration reference. |
+| [Appsettings Schema](appsettings-schema.md) | Configuration fields, explicit environment aliases, and validation scope. |
+| [Lifecycle Control Plane](lifecycle-control-plane.md) | Service supervision, local PostgreSQL lifecycle, readiness, and shutdown contract. |
 | [Appsettings Schema Reference](appsettings-schema.md) | `appsettings.sample.json` and schema quick map for high-impact runtime sections. |
 | [Export Preflight Rules](export-preflight-rules.md) | Export validation rule engine, rule IDs, and reuse pattern. |
 | [Accounting Configuration](accounting-configuration.md) | Browser-first accounting setup DTOs, local API routes, non-posting preview behavior, and action audit seam. |
@@ -80,6 +92,15 @@ Stable lookup details for storage and streaming should live in reference, genera
 | [Strategy Briefing Workflow](strategy-briefing-workflow.md) | Shared Strategy workspace briefing contracts, endpoint, and shell binding flow. |
 | [Strategy Promotion History Persistence](strategy-promotion-history.md) | Durable promotion decision chain fields and JSONL-backed history behavior. |
 | [Verified Operation Outcomes](verified-operation-outcomes.md) | Four-state terminal receipt, postcondition, evidence, artifact, replay, and case-history contract. |
+
+## Historical Snapshots And Compatibility Pages
+
+| Page | How to use it |
+| --- | --- |
+| [Provider Integration Snapshot](provider-integration-status.md) | Retains the 2026-05-20 board and evidence dates. Its registration gaps and sprint queue are historical; use the generated adapter matrix for current implementation. |
+| [UFL Conformance Matrix](ufl-conformance-matrix.md) | Retains the 2026-05-29 maturity assessment; revalidate source/tests before making a current coverage claim. |
+| [Design Review Memo](design-review-memo.md) | Design history; follow its current-source pointers for planning. |
+| [Research Briefing](research-briefing-workflow.md) and [Governance Report Packs](governance-report-packs.md) | Redirects to the current Strategy and Accounting contracts; retained identifiers are compatibility surfaces. |
 
 ## Migration Rules
 

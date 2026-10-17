@@ -383,11 +383,15 @@ type MultiCalendarTerms = {
 }
 
 // ---------------------------------------------------------------------------
-// Clearwater-aligned modules: inflation-linked, sinking fund, accounting elections, PCI
+// Inflation-linked and sinking-fund modules
 // ---------------------------------------------------------------------------
+// Accounting elections (amortization method, yield updates, cash-flow source) and PCI
+// designations are lot- and account-level accounting choices, not security economics. They are
+// carried on the lot (see OpenLotAmortization / the asset-accounting acquisition terms), never in
+// the Security Master term modules.
 
 /// Inflation index terms for TIPS, index-linked GILTs, and similar instruments.
-/// Supports the Clearwater adjusted-principal calculation: Base_units × Inflation_factor.
+/// Supports the adjusted-principal calculation: Base_units × Inflation_factor.
 type InflationLinkedTerms = {
     /// Index series used to adjust principal (e.g. "CPI-U", "RPI", "HICPxT").
     InflationIndex: string option
@@ -419,81 +423,6 @@ type SinkingFundTerms = {
     IsProRata: bool
 }
 
-/// Amortization method applied at the account or lot level.
-[<RequireQualifiedAccess>]
-type AmortizationMethod =
-    /// Effective-interest method: income recognised as a constant proportion of book value (Clearwater default for most debt).
-    | ConstantYield
-    /// Equal daily movement from starting book price to target price; used for short-dated instruments.
-    | StraightLine
-    /// Book price held flat; no daily premium/discount recognised.
-    | NoAmortization
-    /// Recognises all premium/discount immediately to par when amortization begins; used for ARS.
-    | AuctionRate
-    /// Recognises income using expected yield over remaining life; used for PCI-designated lots.
-    | PurchasedCreditImpaired
-
-/// Frequency at which book yield is reset for prepaying securities.
-[<RequireQualifiedAccess>]
-type YieldUpdateFrequency =
-    | Monthly
-    | Quarterly
-    | Annual
-
-/// FAS 91-style adjustment method for prepaying structured securities.
-[<RequireQualifiedAccess>]
-type YieldAdjustmentMethod =
-    /// Recompute yield using actual cash flows since last adjustment and current projections; record a book-value catch-up.
-    | Retrospective
-    /// Recompute yield using current book value and current future cash flows; no immediate book-value adjustment.
-    | Prospective
-    /// Maintain original amortization curve; no periodic yield adjustment.
-    | NoAdjustment
-
-/// Cash-flow source hierarchy for accounting calculations.
-[<RequireQualifiedAccess>]
-type CashFlowSource =
-    /// Third-party vendor cash flows (e.g. MIAC for agency MBS, Moody's Analytics for other prepaying securities).
-    | VendorProvided
-    /// Client-supplied cash flows; take precedence once established.
-    | ClientProvided
-    /// Clearwater-calculated from Security Master terms (non-prepaying fixed-rate instruments).
-    | SystemCalculated
-    /// Use weighted-average life as a single expected principal repayment.
-    | Wal
-    /// Use legal final maturity as a single bullet repayment when no other source is available.
-    | FinalMaturityFallback
-
-/// Account or lot-level accounting elections controlling amortization, yield updates, and cash-flow source.
-type AccountingElectionsTerms = {
-    AmortizationMethod: AmortizationMethod
-    YieldUpdateFrequency: YieldUpdateFrequency option
-    AdjustmentMethod: YieldAdjustmentMethod option
-    CashFlowSource: CashFlowSource option
-    /// When true, call dates are excluded from the amortization schedule.
-    IgnoreCallDates: bool
-    /// When true, put dates are excluded from the amortization schedule.
-    IgnorePutDates: bool
-    /// Lot-level No Amortization override; supersedes the account-level method for this lot.
-    IsLotLevelNoAmortization: bool
-}
-
-/// Purchased Credit Impaired (PCI) lot designation.
-/// A lot-level accounting election rather than a separate economic security type.
-/// Supports EITF 99-20 / ASC 325-40 and SOP 03-3 / ASC 310-30 models.
-type PciTerms = {
-    /// Accounting basis for the PCI model (e.g. "ASC-310-30", "ASC-325-40").
-    DesignationBasis: string option
-    /// Book value at the time of PCI designation or acquisition.
-    InitialBookValue: decimal option
-    /// Expected yield over the remaining life as of the last update.
-    ExpectedYield: decimal option
-    /// Projected cash flows as (date, amount) pairs; client-supplied or model-derived.
-    ExpectedCashFlows: (DateOnly * decimal) list
-    /// Date of the most recent expected-yield update; updates are prospective for PCI.
-    LastYieldUpdateDate: DateOnly option
-}
-
 type SecurityTermModules = {
     // --- Original 15 modules ---
     Maturity: MaturityTerms option
@@ -521,15 +450,11 @@ type SecurityTermModules = {
     MultiCalendar: MultiCalendarTerms option
     // --- Structured / factorable bond module ---
     StructuredProduct: StructuredProductTerms option
-    // --- Clearwater-aligned modules ---
+    // --- Inflation-linked and sinking-fund modules ---
     /// Inflation index and factor data for TIPS, index-linked GILTs, and similar instruments.
     InflationLinked: InflationLinkedTerms option
     /// Contractual sinking fund or scheduled principal instalment schedule.
     SinkingFund: SinkingFundTerms option
-    /// Account or lot-level accounting elections (amortization method, yield update frequency, etc.).
-    AccountingElections: AccountingElectionsTerms option
-    /// Purchased Credit Impaired lot designation with expected-yield accounting.
-    Pci: PciTerms option
 }
 
 [<RequireQualifiedAccess>]
@@ -628,6 +553,4 @@ module SecurityTermModules =
         StructuredProduct = None
         InflationLinked = None
         SinkingFund = None
-        AccountingElections = None
-        Pci = None
     }

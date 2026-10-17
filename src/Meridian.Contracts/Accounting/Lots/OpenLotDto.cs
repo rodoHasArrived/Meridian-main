@@ -10,6 +10,7 @@ public enum LotQuantityBasis { Units, Face }
 [JsonConverter(typeof(JsonStringEnumConverter<OpenLotReliefMethod>))]
 public enum OpenLotReliefMethod { Fifo, Lifo, Hifo, SpecificId, AverageCost }
 
+/// <summary>EffectiveYield is the retained annual yield as a decimal: 0.05 means 5%.</summary>
 public sealed record FaceValueAcquisitionTermsDto(decimal ParBasis, decimal BookedFactor,
     BondAmortizationMethod AmortizationMethod, decimal? EffectiveYield);
 
@@ -23,7 +24,16 @@ public sealed record OpenLotAcquisitionDto(
     decimal FunctionalCostBasis,
     DateOnly HoldingPeriodStartDate,
     FaceValueAcquisitionTermsDto? FaceValueTerms,
-    IReadOnlyList<RetainedEvidenceIdentityDto> Evidence);
+    IReadOnlyList<RetainedEvidenceIdentityDto> Evidence)
+{
+    // Historical acquisition receipts are long and omit this property. Explicit short direction
+    // participates in their immutable acquisition payload and atomic replay fingerprint.
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public OpenLotDirection Direction { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public OpenLotCorporateActionLineageDto? CorporateActionLineage { get; init; }
+}
 
 /// <summary>
 /// A governed restatement of a lot's open basis after acquisition, retained on the lot of record
@@ -36,12 +46,24 @@ public sealed record OpenLotBasisAdjustmentDto(
     string Reason,
     decimal OpenQuantity,
     decimal TransactionCostBasis,
-    decimal FunctionalCostBasis);
+    decimal FunctionalCostBasis,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    OpenLotAmortizationInstructionDto? Amortization = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    OpenLotSuccessorInstructionDto? CorporateAction = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    OpenLotCapitalReturnInstructionDto? CapitalReturn = null);
 
 public static class OpenLotBasisAdjustmentReasons
 {
     /// <summary>Average-cost relief restated the surviving pool at the pooled per-unit basis.</summary>
     public const string AverageCostRedistribution = "AverageCostRedistribution";
+    public const string Amortization = "Amortization";
+    public const string CorporateActionSuccessor = "CorporateActionSuccessor";
+    public const string CapitalReturn = "CapitalReturn";
+
+    /// <summary>Discrete relief retains the exact unrelieved current basis on its surviving lot.</summary>
+    public const string DisposalRelief = "DisposalRelief";
 }
 
 /// <summary>Security-identified decimal lot view over the durable ledger lot, never a second store.</summary>

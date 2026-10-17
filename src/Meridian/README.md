@@ -11,6 +11,13 @@ last_reviewed: 2026-07-27
 
 # src/Meridian
 
+The browser host can compose the Alpaca brokerage execution portfolio. `BrokeragePortfolioState`
+projects broker observations for the existing portfolio and position-tracker consumers; mandatory
+account synchronization and readiness gates reject missing, stale or inconsistent authority.
+The actual host OMS receives a durable broker-order recovery store, bound to verified broker
+account and environment, and the explicit recovery action establishes the selected connection.
+Legacy execution reads and Trading projections require the owning account's scoped permission.
+
 Consumer releases start this host through the persistent per-user lifecycle supervisor; the
 installed launcher is a thin shim. The supervisor owns dynamic loopback-port selection, the
 dedicated database and host process identities, data-root separation, readiness polling, shutdown

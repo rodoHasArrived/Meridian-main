@@ -1,0 +1,380 @@
+using FluentAssertions;
+using Meridian.Contracts.Accounting.Lots;
+using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Ledger;
+using Meridian.Ledger;
+using Meridian.Storage.Ledger;
+using Npgsql;
+
+namespace Meridian.Tests.Storage;
+
+public sealed partial class AtomicTaxLotJournalStoreTests
+{
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CorporateActionSuccessors_DistinctConcurrentCommands_CommitOneAndRejectTheStaleLoser()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var first = await SuccessorCommandAsync(fixture, advanceRefunding: true);
+        var second = await SuccessorCommandAsync(fixture, advanceRefunding: true);
+        first.SourceEventId.Should().NotBe(second.SourceEventId);
+        first.MutationBatchId.Should().NotBe(second.MutationBatchId);
+
+        async Task<bool> PostAsync(AtomicTaxLotJournalCommand command)
+        {
+            try
+            { await fixture.Restart().AppendAssetPostingAsync(command); return true; }
+            catch (LedgerValidationException) { return false; }
+            catch (PostgresException exception) when (exception.SqlState == PostgresErrorCodes.SerializationFailure)
+            { return false; }
+        }
+
+        var outcomes = await Task.WhenAll(PostAsync(first), PostAsync(second));
+
+        outcomes.Count(success => success).Should().Be(1);
+        var winner = outcomes[0] ? first : second;
+        var loser = outcomes[0] ? second : first;
+        var retry = () => fixture.Restart().AppendAssetPostingAsync(loser);
+        await retry.Should().ThrowAsync<LedgerValidationException>();
+        (await fixture.Restart().GetAtomicTaxLotPostingAsync(loser.MutationBatchId)).Should().BeNull();
+        (await fixture.Restart().GetTaxLotsByIdsAsync(fixture.BookId,
+            loser.CorporateAction!.Successors.Select(target => target.Lot.TaxLotRecordId).ToArray())).Should().BeEmpty();
+        var committed = (await fixture.Restart().GetAtomicTaxLotPostingAsync(winner.MutationBatchId))!;
+        committed.Mutations.Should().HaveCount(3);
+        var predecessor = committed.Mutations.Single(mutation => mutation.LotBefore is not null).LotAfter;
+        predecessor.OpenQuantity.Should().Be(0m);
+        predecessor.Version.Should().Be(winner.CorporateAction!.ExpectedLot.Version + 1);
+        (await fixture.Restart().GetByPeriodAsync(fixture.Period.PeriodId)).Should().ContainSingle();
+        (await fixture.Restart().AppendAssetPostingAsync(winner)).IsExactReplay.Should().BeTrue();
+        (await fixture.Restart().GetOpenLotSuccessorHistoryAsync(fixture.BookId,
+            [committed.Journal.Entry.JournalEntryId])).Should().ContainSingle();
+        await fixture.Restart().VerifyLedgerEventAuditAsync();
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CorporateActionSuccessors_RetainedNaturalKeyCollision_RefusesBeforeAnyWrite()
+    {
+        await AssertRetainedSuccessorLabelRefusedAsync(closeExistingLot: false);
+        await AssertRetainedSuccessorLabelRefusedAsync(closeExistingLot: true);
+    }
+
+    private static async Task AssertRetainedSuccessorLabelRefusedAsync(bool closeExistingLot)
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var existing = await AcquireSplitAncestryUnitsAsync(fixture);
+        if (closeExistingLot)
+        {
+            var split = await SplitAncestryCommandAsync(fixture, existing, Guid.NewGuid(), AmortAsOf.AddDays(1),
+                ratio: 2m, legacyProjection: false);
+            existing = (await fixture.Store.AppendAssetPostingAsync(split)).MutatedLots
+                .Single(lot => lot.TaxLotRecordId == existing.TaxLotRecordId);
+            existing.OpenQuantity.Should().Be(0m);
+        }
+        var valid = await SuccessorCommandAsync(fixture, advanceRefunding: true);
+        var instruction = valid.CorporateAction!;
+        var ordered = instruction.Successors.OrderBy(target => target.Lot.TaxLotRecordId).ToArray();
+        // Both target identities and labels are distinct, but one label is already retained by a
+        // separately acquired lot under the same full account key.
+        var collision = ordered[1] with { Lot = ordered[1].Lot with { LotId = existing.LotId } };
+        instruction = instruction with
+        {
+            Successors = instruction.Successors.Select(target =>
+                target.Lot.TaxLotRecordId == collision.Lot.TaxLotRecordId ? collision : target).ToArray()
+        };
+        var command = BindSuccessorGuardInstruction(valid, instruction);
+        var auditBefore = await fixture.Restart().VerifyLedgerEventAuditAsync();
+        var countsBefore = await ReadSplitAncestryCountsAsync(fixture);
+        var post = () => fixture.Store.AppendAssetPostingAsync(command);
+
+        await post.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("Successor lot label is already retained in the ledger account; only new successor lots are supported.");
+        var whitespaceAlias = instruction with
+        {
+            Successors = instruction.Successors.Select(target => target.Lot.TaxLotRecordId == collision.Lot.TaxLotRecordId
+                ? target with { Lot = target.Lot with { LotId = "  " + existing.LotId + "  " } } : target).ToArray()
+        };
+        var postAlias = () => fixture.Store.AppendAssetPostingAsync(BindSuccessorGuardInstruction(valid, whitespaceAlias));
+        await postAlias.Should().ThrowAsync<LedgerValidationException>()
+            .WithMessage("*create-only plan*");
+
+        (await ReadSplitAncestryCountsAsync(fixture)).Should().Be(countsBefore);
+        (await fixture.Restart().GetAtomicTaxLotPostingAsync(command.MutationBatchId)).Should().BeNull();
+        (await fixture.Restart().GetTaxLotsByIdsAsync(fixture.BookId,
+            [fixture.Lot.TaxLotRecordId, existing.TaxLotRecordId])).Should().BeEquivalentTo([fixture.Lot, existing]);
+        (await fixture.Restart().GetTaxLotsByIdsAsync(fixture.BookId,
+            command.CorporateAction!.Successors.Select(target => target.Lot.TaxLotRecordId).ToArray())).Should().BeEmpty();
+        (await fixture.Restart().VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBefore.ChainedEvents);
+        (await fixture.Restart().GetOpenLotSuccessorHistoryAsync(fixture.BookId,
+            [command.Journal.Entry.JournalEntryId])).Should().BeEmpty();
+        var posted = await fixture.Restart().AppendAssetPostingAsync(valid);
+        posted.IsExactReplay.Should().BeFalse();
+        posted.Mutations.Should().HaveCount(3);
+        (await fixture.Restart().AppendAssetPostingAsync(valid)).IsExactReplay.Should().BeTrue();
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CorporateActionSuccessors_TypeAliasesUntypedCommandsAndMissingApproval_LeaveNoWrites()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var command = await SuccessorCommandAsync(fixture, advanceRefunding: false);
+        var posting = command.Journal.PostingCommand!;
+        var aliasEvent = posting.EconomicEvent! with { EventType = "CorporateAction" };
+        foreach (var invalid in new[]
+        {
+            posting with
+            {
+                SourceEventType = "CorporateAction", EconomicEvent = aliasEvent,
+                ProjectionLineage = posting.ProjectionLineage! with { TriggerEvent = aliasEvent }
+            },
+            posting with
+            {
+                SourceEventType = null, EconomicEvent = null, ProjectionLineage = null,
+                BookContext = null, BookPositionId = null, RulePackReference = null, Evidence = []
+            },
+            posting with { ApprovalState = AccountingPostingApprovalStateDto.NotRequired },
+            posting with { ApprovalId = null }
+        })
+        {
+            var rejected = (command with
+            { Journal = command.Journal with { PostingCommand = invalid } }).WithComputedFingerprint();
+            var post = () => fixture.Store.AppendAssetPostingAsync(rejected);
+            await post.Should().ThrowAsync<LedgerValidationException>();
+            await AssertSuccessorUnchangedAsync(fixture, rejected);
+        }
+        (await fixture.Restart().AppendAssetPostingAsync(command)).IsExactReplay.Should().BeFalse();
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CorporateActionSuccessors_CorrectionMetadataCannotAuthorizeAnUnsupportedCorporateActionCorrection()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var command = await SuccessorCommandAsync(fixture, advanceRefunding: false);
+        var journalId = fixture.Lot.SourceJournalEntryId!.Value;
+        var posting = command.Journal.PostingCommand!;
+        var corrections = new[]
+        {
+            command with { CorrectsMutationBatchId = fixture.Lot.LastMutationBatchId },
+            command with { Journal = command.Journal with { SourceJournalEntryId = journalId } },
+            command with { Journal = command.Journal with { PostingCommand = posting with { SourceJournalEntryId = journalId } } },
+            command with { Journal = command.Journal with { PostingCommand = posting with
+                { Intent = AccountingPostingIntentDto.Reversal, SourceJournalEntryId = journalId } } },
+            command with { Journal = command.Journal with { PostingCommand = posting with
+                { Intent = AccountingPostingIntentDto.Rebook, SourceJournalEntryId = journalId } } },
+            command with { Journal = command.Journal with { PostingKind = LedgerPostingKindDto.ClosingEntry,
+                PostingCommand = posting with { Intent = AccountingPostingIntentDto.Originating } } }
+        };
+        foreach (var correction in corrections)
+        {
+            var rejected = correction.WithComputedFingerprint();
+            var post = () => fixture.Store.AppendAssetPostingAsync(rejected);
+            await post.Should().ThrowAsync<LedgerValidationException>().WithMessage("*correction*");
+            await AssertSuccessorUnchangedAsync(fixture, rejected);
+        }
+        (await fixture.Restart().AppendAssetPostingAsync(command)).IsExactReplay.Should().BeFalse();
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CorporateActionSuccessors_JournalDimensionTamperCannotChangeTheLockedPositionScope()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var command = await SuccessorCommandAsync(fixture, advanceRefunding: false);
+        var entry = command.Journal.Entry;
+        var target = command.CorporateAction!.Successors.Single().Lot;
+        var lines = entry.Lines.Select(line => line.Dimensions?.PositionId == target.BookPositionId
+            ? new LedgerEntry(line.EntryId, line.JournalEntryId, line.Timestamp, line.Account, line.Debit, line.Credit,
+                line.Description, line.Dimensions! with { SleeveId = "unreviewed-sleeve" }, line.Currency)
+            : line).ToArray();
+        var tampered = (command with
+        {
+            Journal = command.Journal with
+            { Entry = new(entry.JournalEntryId, entry.Timestamp, entry.Description, lines, entry.Metadata) }
+        }).WithComputedFingerprint();
+        var auditBefore = await fixture.Restart().VerifyLedgerEventAuditAsync();
+        var post = () => fixture.Store.AppendAssetPostingAsync(tampered);
+
+        await post.Should().ThrowAsync<LedgerValidationException>().WithMessage("*dimension*");
+
+        await AssertSuccessorUnchangedAsync(fixture, tampered);
+        (await fixture.Restart().VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBefore.ChainedEvents);
+        (await fixture.Restart().AppendAssetPostingAsync(command)).IsExactReplay.Should().BeFalse();
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CorporateActionSuccessors_BackdatedSourceSecurityDatesAndHash_RefuseWithoutWritesThenReviewedRetrySucceeds()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var command = await SuccessorCommandAsync(fixture, advanceRefunding: true);
+        var entry = command.Journal.Entry;
+        var postedAt = entry.Timestamp.AddDays(14);
+        command = (command with
+        {
+            Journal = command.Journal with
+            {
+                Entry = new(entry.JournalEntryId, postedAt, entry.Description,
+                    entry.Lines.Select(line => new LedgerEntry(line.EntryId, line.JournalEntryId, postedAt,
+                        line.Account, line.Debit, line.Credit, line.Description, line.Dimensions, line.Currency)).ToArray(), entry.Metadata),
+                PostingCommand = command.Journal.PostingCommand! with { PostingDate = postedAt }
+            }
+        }).WithComputedFingerprint();
+        var date = command.CorporateAction!.Projection.EconomicEvent!.EffectiveDate;
+        var at = new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var original = fixture.Security;
+        var countsBefore = await ReadSplitAncestryCountsAsync(fixture);
+        var auditBefore = await fixture.Restart().VerifyLedgerEventAuditAsync();
+        foreach (var (security, reviewHash) in new[]
+        {
+            (original with { EffectiveFrom = at.AddDays(1), EffectiveTo = null }, true),
+            (original with { EffectiveTo = at.AddDays(-1) }, true),
+            (original with { PrimaryIdentifierValue = original.PrimaryIdentifierValue + "-changed" }, false)
+        })
+        {
+            await fixture.Securities.UpsertProjectionAsync(security);
+            var retained = (await fixture.Securities.GetProjectionAsync(original.SecurityId))!;
+            retained.Version.Should().Be(original.Version);
+            var rejected = reviewHash ? BindSuccessorGuardInstruction(command, command.CorporateAction! with
+            { ExpectedSecurityHash = OpenLotAmortization.SecurityHash(retained) }) : command;
+            var post = () => fixture.Restart().AppendAssetPostingAsync(rejected);
+
+            await post.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Security Master version or hash*");
+
+            await AssertSuccessorUnchangedAsync(fixture, rejected);
+            (await ReadSplitAncestryCountsAsync(fixture)).Should().Be(countsBefore);
+            (await fixture.Restart().VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(auditBefore.ChainedEvents);
+            (await fixture.Restart().GetOpenLotSuccessorHistoryAsync(fixture.BookId,
+                [entry.JournalEntryId])).Should().BeEmpty();
+        }
+
+        // Both security bounds include the economic date, although the accounting posting is later.
+        await fixture.Securities.UpsertProjectionAsync(original with
+        { EffectiveFrom = at, EffectiveTo = at.AddHours(23).AddMinutes(59) });
+        var reviewed = (await fixture.Securities.GetProjectionAsync(original.SecurityId))!;
+        var retry = BindSuccessorGuardInstruction(command, command.CorporateAction! with
+        { ExpectedSecurityHash = OpenLotAmortization.SecurityHash(reviewed) });
+        var posted = await fixture.Restart().AppendAssetPostingAsync(retry);
+        posted.IsExactReplay.Should().BeFalse();
+        posted.Mutations.Should().HaveCount(3);
+        posted.Journal.Entry.Timestamp.Should().Be(postedAt);
+        posted.Journal.Entry.Metadata.EffectiveDate.Should().Be(date);
+        var committedCounts = await ReadSplitAncestryCountsAsync(fixture);
+        var committedAudit = await fixture.Restart().VerifyLedgerEventAuditAsync();
+        (await fixture.Restart().AppendAssetPostingAsync(retry)).IsExactReplay.Should().BeTrue();
+        (await ReadSplitAncestryCountsAsync(fixture)).Should().Be(committedCounts);
+        (await fixture.Restart().VerifyLedgerEventAuditAsync()).ChainedEvents.Should().Be(committedAudit.ChainedEvents);
+        (await fixture.Restart().GetOpenLotSuccessorHistoryAsync(fixture.BookId,
+            [entry.JournalEntryId])).Should().ContainSingle();
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task SuccessorLabelLookup_IncludesOpenAndClosedLotsAndScopesEveryAccountComponentAndBook()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var open = await SaveSuccessorGuardRetainedLotAsync(fixture, fixture.BookId, AmortAccount, "retained-open", 10m);
+        var closed = await SaveSuccessorGuardRetainedLotAsync(fixture, fixture.BookId, AmortAccount, "retained-closed", 0m);
+        var otherBook = (await fixture.Store.GetLedgerBookAsync(fixture.BookId))! with
+        { LedgerBookId = Guid.NewGuid(), FundStructureNodeId = Guid.NewGuid(), DisplayName = "Other successor label book" };
+        await fixture.Store.SaveLedgerBookAsync(otherBook);
+        var accounts = SuccessorGuardOtherAccounts();
+        foreach (var account in accounts)
+            await SaveSuccessorGuardRetainedLotAsync(fixture, fixture.BookId, account, open.LotId, 10m);
+        var foreign = await SaveSuccessorGuardRetainedLotAsync(fixture, otherBook.LedgerBookId, AmortAccount, open.LotId, 10m);
+
+        (await fixture.Restart().GetTaxLotsByLotIdsAsync(fixture.BookId, AmortAccount,
+            [open.LotId, closed.LotId, "not-retained"])).Should().BeEquivalentTo([open, closed]);
+        (await fixture.Restart().GetTaxLotsByLotIdsAsync(fixture.BookId,
+            AmortAccount with { Symbol = "", FinancialAccountId = "" }, [open.LotId, closed.LotId]))
+            .Should().BeEquivalentTo([open, closed]);
+        foreach (var account in accounts)
+        {
+            var result = await fixture.Restart().GetTaxLotsByLotIdsAsync(fixture.BookId, account, [open.LotId]);
+            result.Should().ContainSingle().Which.Account.Should().BeEquivalentTo(account);
+            result.Single().TaxLotRecordId.Should().NotBe(open.TaxLotRecordId);
+        }
+        (await fixture.Restart().GetTaxLotsByLotIdsAsync(otherBook.LedgerBookId, AmortAccount,
+            [open.LotId, closed.LotId])).Should().ContainSingle().Which.Should().BeEquivalentTo(foreign);
+        var empty = () => fixture.Restart().GetTaxLotsByLotIdsAsync(fixture.BookId, AmortAccount, []);
+        await empty.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CorporateActionSuccessors_LabelsRetainedInOtherAccountsOrBooks_DoNotBlockPostingOrChangeUnrelatedLots()
+    {
+        await using var fixture = await AmortFixture.CreateAsync(premium: true);
+        var command = await SuccessorCommandAsync(fixture, advanceRefunding: true);
+        var otherBook = (await fixture.Store.GetLedgerBookAsync(fixture.BookId))! with
+        { LedgerBookId = Guid.NewGuid(), FundStructureNodeId = Guid.NewGuid(), DisplayName = "Unrelated retained labels" };
+        await fixture.Store.SaveLedgerBookAsync(otherBook);
+        var unrelated = new List<LedgerTaxLotRecord>();
+        foreach (var successor in command.CorporateAction!.Successors)
+        {
+            foreach (var account in SuccessorGuardOtherAccounts())
+                unrelated.Add(await SaveSuccessorGuardRetainedLotAsync(fixture, fixture.BookId, account,
+                    successor.Lot.LotId, 0m));
+            unrelated.Add(await SaveSuccessorGuardRetainedLotAsync(fixture, otherBook.LedgerBookId, AmortAccount,
+                successor.Lot.LotId, 10m));
+        }
+
+        var posted = await fixture.Restart().AppendAssetPostingAsync(command);
+
+        posted.IsExactReplay.Should().BeFalse();
+        posted.Mutations.Should().HaveCount(3);
+        foreach (var group in unrelated.GroupBy(lot => lot.LedgerBookId))
+            (await fixture.Restart().GetTaxLotsByIdsAsync(group.Key, group.Select(lot => lot.TaxLotRecordId).ToArray()))
+                .Should().BeEquivalentTo(group);
+        var counts = await ReadSplitAncestryCountsAsync(fixture);
+        (await fixture.Restart().AppendAssetPostingAsync(command)).IsExactReplay.Should().BeTrue();
+        (await ReadSplitAncestryCountsAsync(fixture)).Should().Be(counts);
+        (await fixture.Restart().GetOpenLotSuccessorHistoryAsync(fixture.BookId,
+            [command.Journal.Entry.JournalEntryId])).Should().ContainSingle();
+        await fixture.Restart().VerifyLedgerEventAuditAsync();
+    }
+
+    private static LedgerAccount[] SuccessorGuardOtherAccounts()
+        =>
+        [
+            AmortAccount with { Name = "Other investment lots" },
+            AmortAccount with { AccountType = LedgerAccountType.Liability },
+            AmortAccount with { Symbol = "OTHER" },
+            AmortAccount with { FinancialAccountId = "other-financial-account" }
+        ];
+
+    private static Task<LedgerTaxLotRecord> SaveSuccessorGuardRetainedLotAsync(
+        AmortFixture fixture, Guid bookId, LedgerAccount account, string label, decimal openQuantity)
+    {
+        var at = DateTimeOffset.UtcNow;
+        // Governed stores reject standalone lot saves; seed retained rows through a compatibility store
+        // over the same schema.
+        var compatibility = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions
+        {
+            ConnectionString = fixture.Options.ConnectionString,
+            SchemaName = fixture.Options.SchemaName,
+            EnablePeriodLocking = fixture.Options.EnablePeriodLocking,
+            RequireExpectedVersion = fixture.Options.RequireExpectedVersion
+        });
+        return compatibility.SaveTaxLotAsync(new(Guid.NewGuid(), bookId, account, label, AmortAcquired,
+            10m, openQuantity, 1m, "USD", at, at));
+    }
+
+    private static AtomicTaxLotJournalCommand BindSuccessorGuardInstruction(
+        AtomicTaxLotJournalCommand command, OpenLotSuccessorInstructionDto instruction)
+    {
+        var entry = command.Journal.Entry;
+        var tags = new Dictionary<string, string>(entry.Metadata.Tags!)
+        { [OpenLotSuccessors.JournalFingerprintTag] = OpenLotSuccessors.Fingerprint(instruction) };
+        return (command with
+        {
+            CorporateAction = instruction,
+            Journal = command.Journal with
+            {
+                Entry = new(entry.JournalEntryId, entry.Timestamp, entry.Description, entry.Lines, entry.Metadata with { Tags = tags }),
+                PostingCommand = command.Journal.PostingCommand! with { LotCorporateAction = instruction }
+            }
+        }).WithComputedFingerprint();
+    }
+}

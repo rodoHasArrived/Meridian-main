@@ -2,7 +2,7 @@
 
 **Status:** staged implementation; human governance review required  
 **Owner:** core-team  
-**Reviewed:** 2026-09-28
+**Reviewed:** 2026-10-15
 
 ## Coverage ownership
 
@@ -21,6 +21,24 @@ authority. Consolidation removes duplicate execution, never a validation purpose
 | Lifecycle supervisor and installer setup tests | Automatic Windows validation; release preflight remains |
 | Golden Path, schema control, providers and deterministic integrations/recovery | Existing specialist owners; production certification also callable by releases |
 | Workflow syntax, hygiene, manifest, skips and script tests | Meridian CI `verify-workflows` |
+
+The October 15 follow-up keeps the four lanes and both gate identities. Documentation Automation
+now covers PRs, main pushes and merge groups without path filters: any tracked file can affect
+repository-structure output. Its existing rules/example/AI checks and diagram generation remain;
+a docs-only maintained-generation pass converges the full documentation sequence before freshness
+validation. New generated files and deletions are included in the drift check, with
+`artifacts/docs/generated-repair.patch` and `drift.json` retained alongside generation evidence.
+
+Maintenance PR/push runs delegate workflow hygiene, AI contract drift and navigation validation to
+the canonical lanes. Scheduled/manual Maintenance still repeats those checks; tooling metadata
+and its distinct actionlint configuration remain on every Maintenance run. Roadmap Source Docs
+retains phase scope, schema and diagram evidence. Similar names alone do not establish duplicate
+coverage.
+
+CI and Maintenance concurrency separates event types. Scheduled/manual runs are not cancelled by
+ordinary pushes; manual runs have distinct run IDs. This avoids losing scheduled coverage while
+preserving cancellation of superseded PR/push validation. It does not establish additional runner
+capacity or alter release serialization.
 
 Meridian CI retains exactly its four canonical `scripts/ci.sh` lanes and the existing
 `quality-gate` aggregation. Its additional `service-backed-integrations` job calls the same
@@ -44,10 +62,250 @@ or replace the existing `quality-gate` requirement.
 
 ## Measurement and promotion
 
-Export Actions run metadata with embedded `jobs` from the attempt-specific jobs endpoint.
+The [October 5 Actions storage audit](actions-storage-audit-2026-10-05.md) inventories workflow
+uploads, measures recent artifacts, and separates routine retention savings from protected
+certification/recovery evidence. Its snapshot is bounded and does not reconcile account billing.
+The [October 5 rollout measurement](actions-rollout-measurement-2026-10-05.md) retains 24
+comparable completed post-rollout PR observations, unsuccessful-attempt accounting and the
+strict matched-cohort decision. Six baseline matches do not establish either improvement target.
+The [October 15 follow-up](actions-workflow-followup-2026-10-15.md) retains a fresh 59-run,
+attempt-complete diagnostic sample, live integration-gate cancellation evidence, and assigned
+administrator follow-ups. Current protection enforcement and merge-group success remain
+unverified; the sample does not establish savings or justify higher concurrency defaults.
+
+Collect a bounded Actions history with `build/scripts/ci/collect-actions.py`, then pass its
+snapshot to `ci-metrics.py`. Collection is read-only: it does not dispatch, rerun, cancel or
+delete workflows, modify checks or protections, or change concurrency. Keep the raw snapshot
+with the report so workflow/run/attempt/job IDs and collection gaps can be audited. A first-page
+or latest-attempt-only export is insufficient for rollout acceptance.
+
+The report separates PRs, main pushes and other events. It measures time from the first workflow
+creation for a change until all configured required checks finish, quality-gate latency,
+quality-gate execution, job queue delay and total runner minutes. Median and nearest-rank p95
+describe latency distributions; runner minutes sum job execution intervals across workflows and
+attempts, including unsuccessful work. They are elapsed runner usage, not a billable-minutes or
+dollar estimate. Missing timestamps remain unavailable rather than becoming zero-duration jobs.
+
+Quality-gate execution is the union of execution intervals for the configured gate-job roster up
+to completion of `quality-gate`, across all attempts. Without a roster, all jobs in its workflow
+provide a proxy. Overlapping intervals count once; idle queue and manual-retry gaps do not count
+as execution. It is distinct from the brief aggregation job
+itself and from creation-to-completion latency. Required-check completion includes checks owned by
+other workflows. Unfinished, failed and cancelled attempts remain in waste and reliability
+accounting even when a later retry succeeds. Retry time overlaps failure/cancellation time;
+use the report's failure/cancellation/retry union instead of adding overlapping categories.
+
+Before evaluating rollout targets, supply disjoint baseline and rollout windows and the
+required-check policy that actually applied in those windows. A current branch-rule read
+does not prove historical settings. Match changes within each event using complete change
+categories and equivalent check, runner, attempt and optional-workflow evidence; report unmatched
+and excluded samples explicitly. Dropping a specialist workflow must not count as savings. If an
+intentional consolidation changes that workflow set, retain the mismatch until its coverage
+equivalence is established separately. Similar categories are observational cohorts, not identical-commit
+benchmarks or proof that optimization alone caused a difference.
+
+Run from the repository root with GitHub CLI read access to Actions, checks and the relevant
+repository rules:
+
+```bash
+python build/scripts/ci/collect-actions.py \
+  --repo rodoHasArrived/Meridian-main \
+  --since 2026-09-26T00:00:00Z --until 2026-10-04T23:59:59Z \
+  --output artifacts/actions-rollout/runs.json
+python build/scripts/ci/ci-metrics.py \
+  --input artifacts/actions-rollout/runs.json \
+  --comparison artifacts/actions-rollout/comparison-policy.json \
+  --output artifacts/actions-rollout/report.json \
+  --markdown artifacts/actions-rollout/report.md
+```
+
+The collector's `--since` and `--until` bounds are inclusive UTC timestamps. It paginates
+repository runs and attempt-specific jobs, splits windows that reach the Actions 1,000-run
+search cap, and reports incomplete collection with a nonzero exit. The snapshot is still written
+with separate completeness flags and access errors, preserving successfully collected run evidence.
+`--api-cache` replays an endpoint-to-JSON map exported through another read-only API client,
+with no network fallback
+for missing responses. Preserve API failures in that map as `{"error": "reason"}`.
+`--push-base-map` accepts verified push head-to-before SHA mappings: Actions run metadata
+alone does not identify the full diff of a multi-commit push.
+
+Historical Actions PR associations can reflect a later head or a reused branch. PR categories
+therefore require the actual tested merge commit, recovered from a reusable-workflow reference
+or retained checkout evidence, with its parents verified against the run's head SHA. A live PR
+file list or the current base branch is not a substitute for that boundary.
+Use `--checkout-evidence` for a saved-log manifest when reusable references are unavailable;
+the collector verifies the log digest, exact fetch and checked-out commit, source job ownership,
+and merge parents. Log paths resolve relative to the manifest. Failed verification remains
+unavailable evidence and cannot establish a comparison category.
+Each manifest entry supplies `runId`, `jobId`, `headSha`, `pullNumber`, `checkoutMergeSha`,
+`checkoutRef`, `jobLogUrl`, `logSha256` and `logPath`; the same log bytes may instead come from
+the API cache. None of these assertions replaces the collector's ownership and commit checks.
+
+The comparison policy contains `baseline` and `rollout` objects with timezone-qualified
+`start` and `end` (half-open intervals), plus `requiredChecks` entries containing `name`,
+`workflow` and, when required, `appId`. `qualityGate` selects the gate's name and workflow;
+its `executionJobs` can identify the four canonical lanes and `quality-gate`, excluding the
+independent integration companion from quality-gate execution. `requiredChecksEvidence`
+must cite verified historical check equivalence. Omit it when that equivalence is unknown:
+the report still shows observations and match counts but does not evaluate savings targets.
+
+### Queue, execution, retries and cancellations
+
 `python build/scripts/ci/ci-metrics.py --input runs.json --output artifacts/ci-metrics.json`
-separates job queue time, execution time, workflow/event and run attempt. Missing job timestamps
-are unavailable evidence, not zero duration. Aggregate runner time is not wall-clock latency.
+accepts `{"observed_at": "<UTC export timestamp>", "workflow_runs": [...]}`. Embed a `jobs`
+array on **each run attempt**, retaining the original API fields, including job `status`,
+`conclusion`, timestamps, `run_attempt`, `labels`, runner identity and `steps`. Export all job
+pages from `/repos/{owner}/{repo}/actions/runs/{id}/attempts/{attempt}/jobs`; pair them with
+metadata from `/actions/runs/{id}/attempts/{attempt}`. Enumerate attempts 1 through the latest
+`run_attempt` for each selected run. Do not attach latest-attempt jobs to earlier attempts or
+assume the default jobs endpoint contains retry history. Use a bounded creation window and
+record its limits; GitHub's run search can cap matching results at 1,000, so split larger windows.
+
+For example, collect one attempt with an authenticated, read-only GitHub CLI session:
+
+```bash
+gh api repos/rodoHasArrived/Meridian-main/actions/runs/RUN_ID/attempts/ATTEMPT > attempt.json
+gh api --paginate --slurp \
+  'repos/rodoHasArrived/Meridian-main/actions/runs/RUN_ID/attempts/ATTEMPT/jobs?per_page=100' \
+  > job-pages.json
+```
+
+Flatten each page's `jobs` array, verify its length against `total_count`, and attach it to the
+attempt metadata before adding that object to `workflow_runs`. Failed API reads are missing
+evidence, never an empty successful export. Include cancelled, skipped, pending and zero-job
+runs. `jobs: []` records an explicitly empty API result; omitted/null `jobs` means unavailable.
+A fixed, timezone-qualified `observed_at` permits repeatable waiting-time measurements for
+still-queued jobs. No system clock is substituted when it is absent.
+
+The timing report is **schema version 2**; the independent `--paired-benchmark` report stays at
+version 1. Existing workflow/event/attempt groups, `runs`, `successfulSamples` and
+`medianRunnerSeconds` remain, with these semantics:
+
+| Evidence | Interpretation |
+| --- | --- |
+| `queueSeconds` | Job creation to an evidenced start. This observed interval can include scheduling and dependency waits; it is not a pure runner-scheduler delay or proof of runner saturation. |
+| `waitSeconds`, `waitEnd` | Creation to an evidenced start, completion of a never-started job, or fixed observation for a still-queued job. `waitEnd` distinguishes `started`, `completed` and `observed`; these populations must not be treated as interchangeable queue samples. |
+| `executionSeconds` | Valid start-to-completion time for fresh execution in this attempt. In-progress, never-started, invalid and carried-forward execution is null. |
+| `startState`, `timingIssue` | Distinguish `started`, `not_started` and `unknown`, and preserve invalid-start or start-before-creation evidence. GitHub can synthesize `started_at` for jobs with no assigned runner and no executed steps. |
+| `runnerSeconds` | Sum only when every job has measurable execution; otherwise null, including empty jobs. This is aggregate job time, not wall-clock latency or billed runner time. |
+| `knownRunnerSeconds` | Sum of available fresh execution, or null when none is measurable. Partial evidence, never a complete-cost claim. |
+| `summary` | Top-level and per-group sample counts/medians for queue, wait and execution; run-attempt/retry/cancellation counts; job, queued, never-started and unavailable-execution counts. Mixed-outcome descriptive distributions are separate from the successful performance cohort. |
+| `cancelledRunKnownRunnerSeconds`, `retryKnownRunnerSeconds` | Available fresh execution in cancelled run attempts or attempts numbered above 1. These can overlap; neither is a complete waste total or an attribution of cancellation cause. |
+| `retryHistory` | Observed and missing attempt numbers per run. `retryAttempts` counts exported retry attempts, not inferred missing attempts, retried steps or job retries. |
+
+The rollout cost ledger is separate from raw measured execution. `accountedExecutionSeconds`,
+`accountedRunnerSeconds` and `accountedKnownRunnerSeconds` feed `runnerMinutes` and
+`knownRunnerMinutes`. Proven terminal jobs that never started, explicit skips, and verified
+inherited work add zero new runner cost while their raw execution timing remains null.
+An inherited row retains `inheritedFromAttempt` and must match prior execution evidence;
+missing evidence never becomes measured execution or a zero-cost assertion.
+
+Rows retain job IDs, raw timestamps, status, conclusion, runner identity and requested labels.
+Legacy timestamp-only exports remain readable but cannot distinguish synthetic starts; use the
+original runner/step metadata before drawing availability or waste conclusions.
+Partial reruns can copy successful results under **new job IDs and the new attempt number**,
+with their execution timestamps before their new creation timestamp. These rows remain visible
+as `started_before_created` and contribute no timing to the new attempt. Missing, malformed,
+timezone-naive or reversed timestamps remain unavailable; they are never clamped to zero.
+Duplicate run/attempt rows are rejected. Earlier-attempt jobs must be bound to matching prior-attempt evidence before being treated as inherited; other mismatches are rejected. The tool cannot
+prove that an externally prepared job list is fully paginated or that later attempts were not
+omitted: retain export coverage alongside the report. Successful medians require a successful
+run and successful, measurable jobs; cancelled/incomplete/inherited rows cannot improve them.
+
+### Runner and concurrency review — October 5, 2026
+
+Read-only review of workflow declarations at `73030f0634d045faf65fc5ef6ab3dfe2b93f46ee`,
+with separate Actions queries around 20:28–20:29 UTC (13:28–13:29 Arizona time):
+
+- The queued-run endpoint returned all **58 queued runs**; a separate query returned four
+  in-progress runs. These are workflow statuses, not counts of active or available runners,
+  and the requests are not an atomic snapshot.
+- [IB runtime run 37269613950](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37269613950)
+  had an unassigned `self-hosted, Windows` job created at 05:51:16 UTC, about **14h38m waiting**.
+  Its runner service health, labels/group access and protected-environment eligibility require
+  administrator inspection; the queue alone does not identify the cause.
+- Two March 27 queued runs,
+  [23662997318](https://github.com/rodoHasArrived/Meridian-main/actions/runs/23662997318) and
+  [23662972493](https://github.com/rodoHasArrived/Meridian-main/actions/runs/23662972493),
+  returned zero job rows. They remain run-only evidence and merit separate inspection.
+- Runner inventory and account-wide hosted concurrency/usage were unavailable through the
+  authorized interfaces. The connector does not support the runners endpoint, and shell API
+  access was unavailable. No runner outage, purchased capacity or binding quota is established.
+
+A bounded sample selected the first 20 completed runs from the latest-100 listing (API creation
+order), then fetched every latest-attempt job page and verified the returned counts. Those runs
+were created between 19:07:42 and 20:20:19 UTC: nine succeeded, seven failed and four were
+cancelled. This includes only latest attempts, so historical retry coverage is incomplete.
+
+| Completed-sample evidence | Observed value |
+| --- | --- |
+| Job rows | 42: 20 fresh executions, one carried-forward success, 15 cancelled without a runner/steps, six skipped |
+| Queue, fresh executions | n=20; median 618.5s, minimum 45s, maximum 2,370s |
+| Ubuntu fresh executions | n=17; median queue 820s; median execution 98s |
+| Windows fresh executions | n=3; median queue 125s; median execution 812s |
+| Available fresh execution | 6,759s across the mixed-outcome sample |
+
+This small selected cohort shows queue delay and cancellations before assignment. It is neither
+an account-capacity measurement nor the successful benchmark cohort needed to promote tuning.
+API edge cases were verified against
+[cancelled run 37366708311](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37366708311)
+(992s waiting with a synthetic start) and
+[partial retry 37361146289](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37361146289/attempts/2)
+(five copied successful jobs). Its attempt-1 `integration-gate` queued 759s and executed for 4s;
+the required gate remains necessary even when its scheduling delay dominates its execution.
+
+Configured scheduling explains demand, without establishing available capacity:
+
+- Meridian CI can make four Ubuntu validation lanes and one reusable Ubuntu integration job
+  runnable together. Secret Scan and two CodeQL language jobs can bring the ordinary CI/security
+  graph to eight initial Ubuntu jobs, before path-filtered specialists. The two Meridian gates
+  are additional dependent jobs.
+- PR/ref concurrency groups with `cancel-in-progress: true` cancel superseded work within each
+  group. They neither add runners nor cap repository/owner-wide demand. Legacy CI's main push,
+  scheduled and manual invocations shared a group at the October 5 snapshot: a main push could
+  cancel nightly/manual coverage. The October 15 event-specific groups address that configuration
+  risk; the historical sample does not establish it as the cause of any recorded cancellation.
+- IB runtime is the sole self-hosted Windows requirement and retains its protected paper
+  environment. Production release serialization across tags and certification's non-interruption
+  policy must be preserved. Cancellation disabled does not imply durable FIFO queuing of every
+  pending request. Hosted `windows-11-arm` availability also needs administrator confirmation
+  before signed release rehearsals.
+- At the October 5 snapshot, benchmark `max-parallel: 2` applied within one dispatch, so repeated
+  benchmark dispatches could overlap. Targeted Test and Roadmap Tools included `github.run_id`
+  in their concurrency keys, allowing separate dispatches to overlap. The dispatch isolation
+  below now bounds repeated work. In-runner .NET/Vitest parallelism is a different layer and
+  does not resolve scheduler waits.
+
+**Human governance follow-up:** inspect the unassigned IB job and effective owner-wide hosted
+capacity first; review the two stale queued records; gather attempt-complete metrics by workflow,
+event and runner label. Consider event-specific legacy coverage groups and repeated-dispatch
+limits only as separate reviewed scheduling changes. This metrics change does not alter runner
+configuration, workflow fan-out, concurrency, required checks, protections or release policy.
+
+### Dispatch isolation and duplicate work
+
+Legacy `CI` concurrency now separates events as well as PR/ref identity. A main push
+cannot cancel nightly or manually requested coverage. PR, push and merge-group runs
+still cancel superseded work within their own group; scheduled and manual runs finish
+once started. Each manual CI coverage request also includes its run ID in the group,
+so another manual request cannot replace it while pending.
+
+`Targeted Test` and `Roadmap Tools (Manual)` compute a SHA-256 key from the exact ref,
+commit and complete input selection before scheduling their expensive job. Identical
+requests share one running slot and one pending slot; distinct filters, projects,
+runners, modes, refs or commits remain independent. Hashing preserves case distinctions
+despite GitHub's case-insensitive concurrency groups and bounds the group length.
+Inputs enter through environment variables and JSON, never interpolated shell code.
+
+The concurrency benchmark uses one repository-wide group so separate dispatches cannot
+overlap and contaminate paired measurements. These three workflows use
+`cancel-in-progress: false`: running work completes, but GitHub may replace an older
+pending request with a newer request in the same concurrency group. For benchmarks,
+that includes distinct subjects, refs and commits. This is not a durable FIFO queue. Operators
+who need every request executed must wait for completion before submitting the next.
+Production certification and release serialization retain their existing policies.
+
+### Benchmark promotion criteria
 
 Hosted defaults remain two .NET test processes and eight browser files per batch; local .NET
 remains sequential. Compare 2/4 processes and 8/16 files using five distinct paired runs on
@@ -60,6 +318,11 @@ Dispatch **CI Concurrency Benchmark** at a fixed commit with `subject=dotnet`, `
 `both`. Five pairs alternate execution order on the same hosted runner within each pair.
 Decision artifacts include discovered-test digests, counts and test-only wall time. Failed or
 incomplete samples reject promotion. Vitest retains two workers and process recycling.
+
+For local diagnostics, `benchmark-ci.py --local` records the actual checkout, local runner
+identity, worktree state and fresh per-variant evidence. Local measurements cannot authorize
+hosted-default promotion. Keep local failures and missing discovery/timing in the decision
+artifacts; never substitute synthetic Actions IDs or call the local machine `ubuntu-latest`.
 
 The workflow lane requires actionlint 1.7.12 on PATH and Python dependencies from
 `build/scripts/ci/requirements.txt`. Hosted installation verifies the actionlint archive digest.
@@ -75,31 +338,42 @@ information is explicitly unavailable, never reported as a hit or zero.
 
 ## Script-test quarantine
 
-`build/scripts/ci/script-test-quarantine.json` is the tracked defect register. Each remaining
-module names `@rodoHasArrived` as owner and a review deadline of 2026-10-28. Expired, missing,
-or untracked entries fail the lane; each run publishes the register in its summary.
+`build/scripts/ci/script-test-quarantine.json` remains the tracked defect register, with
+no excluded modules after the October 15 restoration. All seven former modules execute
+in the ordinary script lane. Expired, missing or untracked entries still fail the lane.
 
-- `test_validate_source_readmes`: path and valid-fixture expectations differ from the validator.
-- `test_desktop_screen_blueprint_checklist`: screen coverage and summary expectations drifted.
-- `test_live_execution_controls_route_consistency`: manual-override routes differ from contracts.
-- `test_archive_code_tombstones`: the archive tree and tombstone expectations differ.
-- `test_python_package_conda_dependencies`: the workflow no longer uses the expected conda file.
-- `test_check_contract_compatibility_gate`: security-master reference contract fixtures differ.
-- `test_export_project_artifact_workflow`: the expected workflow is absent.
+- Source README validation already passed; its stale exclusion is removed.
+- Desktop checklist validation points to an active twenty-screen reference rather than
+  an archive redirect, with negative fixtures for missing headings and redirect stubs.
+- Manual-override route checks read the canonical provider capability reference.
+- Archive tombstone checks exercise valid and executable-code fixtures even when the
+  historical archive tree is absent; the build-graph exclusion remains checked.
+- Screenshot dependency checks follow the maintained CI lane and pinned Pillow install.
+- Contract compatibility fixtures use isolated temporary repository roots, including
+  invocation outside the checkout, without changing the production gate.
+- Export checks enforce the maintained commit-bound publish outputs and reject revival
+  of the retired generic repository-export workflow.
 
 Pillow is now explicit. Screenshot diff and screenshot capture validation suites run in the
 ordinary script lane. New exclusions require an owner, reason, deadline, tracked defect and
 human governance review; a test failure cannot add an exclusion automatically.
 
-After rollout, compare at least twenty completed runs by event and attempt. Targets are 25%
-lower median quality-gate execution and 30% fewer total runner minutes, not certified savings.
-Retain cancelled runs for waste accounting but exclude them from successful performance cohorts.
+After rollout, require at least twenty comparable completed successful change observations in
+each evaluated event cohort, with an equally sized matched baseline. Count a change once across
+its relevant workflows; retries do not increase the sample count. Targets remain 25% lower
+median quality-gate execution and 30% fewer aggregate runner minutes across those matched
+observations, including their earlier attempts. These targets are separate from the 15%
+five-pair concurrency adoption rule. Insufficient, incomplete or unmatched samples produce an
+unevaluated target, never a savings claim. Failed and cancelled final outcomes remain separately
+visible and cannot enter successful performance cohorts.
 
 ## Review sequence and rollback
 
-Five staged PRs target main: baseline/ownership, duplicate-work removal, scheduling/Windows
-reuse, quality controls, and release orchestration. Later PRs include unmerged earlier stages.
-Review the stage commit; merge in order and refresh later branches after each human merge.
+The initial consolidation was organized into baseline/ownership, duplicate-work removal,
+scheduling/Windows reuse, quality controls, and release orchestration stages. The generated-repair
+follow-up adds isolated repair, reviewed-hash reconciliation, split hosted generation/publication,
+coordinated maintenance and release readiness. Review the final implementation and validation
+evidence together; workflow changes remain designated for human governance review.
 Never bypass a failed check. Revert the responsible optimization if selected test identities,
 reliability or released package hashes regress; keep the previous evidence until equivalence
 has been demonstrated.
@@ -116,7 +390,88 @@ then verify PR and merge-group events report all four contexts. Inspect classic 
 as an administrator as well as rulesets; the planning account received HTTP 403 for classic
 protection, so readable rulesets are not a complete inventory of existing requirements.
 
+### Generated repair and maintenance activation
+
+The local [repair command](generated-merge-recovery.md) works without a GitHub App and never writes
+to a remote. Hosted automatic writes require the reviewed workflows to be on the default branch
+and the following configuration:
+
+| Setting | Purpose |
+| --- | --- |
+| Variable `GENERATED_REPAIR_APP_ID` | ID of the GitHub App installed only on the intended repository. |
+| Environment `generated-repair` | Restrict allowed deployment branches to the default branch (`main`); both trusted publishers use this environment. |
+| Environment secret `GENERATED_REPAIR_APP_PRIVATE_KEY` | App private key stored only in `generated-repair`, so unreviewed branch workflows cannot access it. |
+| App repository permissions | Contents: write and Pull requests: write for repair/maintenance commits and maintenance PRs; Actions: write for bounded repair re-dispatch. |
+
+PR repair itself needs only Pull requests: read; the coordinated maintenance publisher additionally
+creates or updates its maintenance PR. Restrict installation and minted tokens to this repository.
+Do not store the private key as a repository-wide secret. Per-run environment approval is optional
+administrator policy; the default-branch deployment restriction is required.
+Do not use a default `GITHUB_TOKEN` push as a fallback: its commits do not trigger the fresh checks
+required on repaired revisions. No App permission allows a workflow to bypass branch protections.
+
+`generated-repair.yml` produces evidence without write credentials on PR open, synchronize and
+reopen. Candidate dependencies and generators run in a restricted container with only a disposable
+clone and raw output mounts, excluding host Actions/cache credentials and the Docker socket. The
+trusted host exports only bounded regular files without links after the container exits.
+`generated-repair-publish.yml` validates the completed run and artifact using trusted base tooling,
+recreates the pinned merge, independently derives the generated delta and rereads head/base before a
+normal branch push. The App is used only after these checks. A post-push base reread catches a base
+advance in the final write window and requeues within the retry bound; GitHub offers no atomic
+comparison-and-update transaction across both refs. Stale revisions allow at most two automatic
+requeues. Repair commit markers suppress self-triggered loops only for an already-current base;
+later base advances can repair the branch again. Publisher concurrency is scoped to each source
+run so an unrelated PR cannot evict pending repair work from a global group.
+
+On main pushes, daily at 05:23 UTC and on manual dispatch, the publisher also scans open
+same-repository PRs for a stale base. It dispatches at most ten new head/base pairs per run,
+deduplicates already requested pairs and reports the remaining backlog. Daily/manual scans continue
+remaining work. API pagination is bounded to 1,000 items and fails explicitly if that limit is
+reached. This is separate from each repair's two stale-ref retries.
+
+Without App configuration, PR repair provides artifacts only. Forks, source/handwritten conflicts,
+uncertain reviewed module hashes, and changes to generators/dependencies/automation policy retain
+the local contributor path. A valid candidate includes `repair.patch`; a refusal includes its
+reason in `report.json`. Changes to the reviewed source-hash baseline are not blindly recomputed.
+
+The weekly/manual AI Navigation Refresh coordinates navigation, recent changes, repository
+structure, workflow overview and documentation health output. Its trusted publisher maintains
+`automation/ai-navigation-refresh` through ordinary non-force updates and an App-created PR.
+Generation and publishing remain separate. The 14-day navigation freshness requirement still
+applies; missing App configuration leaves downloadable evidence and an explicit publication
+failure rather than a maintenance PR whose required checks never run. Handwritten edits or stale
+branch/base evidence refuse publication. A branch/base race allows one automatic fresh-base
+maintenance re-dispatch (`retry_count` 0 then 1); further races require inspection instead of a loop.
+
+Before enabling writes, exercise an eligible same-repository PR, a fork fallback, changes to the
+head and base during generation, and unauthorized file/prose changes. Check that the first repaired
+revision receives fresh required checks. Keep freshness failing for stale synthetic merge groups;
+refresh constituent branches and rebuild the group. Administrators may evaluate one-PR groups if
+combined output repeatedly conflicts, but no workflow changes queue policy or bypasses its checks.
+
+Report automatic success, manual-review reasons, stale retries and non-convergence separately from
+queue delay and execution cost. The main repair measure is the fraction of first repaired
+revisions passing authoritative CI without manual regeneration, with unchanged validation coverage.
+
 ## Release evidence
+
+`release-readiness.yml` runs Monday at 08:23 UTC and on manual dispatch. It checks signing
+certificate metadata through the existing protected `desktop-release-signing` environment and
+observes the last 14 days of successful, assigned native x64/ARM64 lifecycle and consumer
+packaging jobs through the read-only Actions API. Historical runner assignment is evidence of a
+recent capability, not a reservation or proof of current spare capacity. Missing, stale or
+inaccessible evidence is `unknown`, not a success.
+
+Set `MDC_SIGNING_CERT_WARNING_DAYS` to a value from 1 to 365 to change the default 30-day renewal
+warning. Invalid, expired or missing signing evidence blocks readiness; an approaching-expiry
+warning remains visible without failing otherwise valid prerequisites. No private key or password
+is retained in the report. Existing signing environment restrictions and approvals still apply.
+
+The release coordinator also runs `release-readiness-summary` after its dependencies finish,
+including failures and skips. It identifies each missing gate or receipt and the next action,
+binding the summary to the exact commit, workflow run and attempt. Both workflows retain
+`release-readiness-<run>-<attempt>` JSON/Markdown and an Actions summary for 90 days. A summary is
+diagnostic evidence, not a replacement for the existing promotion and package-digest checks.
 
 The release coordinator must bind CI, security, deterministic production certification and
 web-workstation/win-x64 installed-startup proof to the tag's exact commit. Publication depends
@@ -145,14 +500,45 @@ and retains `validated-release-<run>-<attempt>` without publishing. The old unsi
 lifecycle shortcut is replaced by this full signed rehearsal; the standalone evaluation channel
 still provides self-signed evaluation packages.
 
-Publication verifies every gate, both native architecture receipts, installed-startup evidence,
+Weekly signed rehearsals run Sunday at 04:17 UTC only when repository variable
+`MDC_ENABLE_RELEASE_REHEARSALS` is exactly `true`. Set `MDC_RELEASE_REHEARSAL_VERSION` to an
+eligible SemVer whose MSIX identity is greater than every published production package. The
+scheduled event pins the default branch's event SHA and executes the same signing, install,
+upgrade, repair, rollback and digest-bound validation graph. Scheduling never publishes a release;
+publication remains restricted to eligible `v*` tag pushes. Scheduled runs use the separate
+`desktop-installer-rehearsal` concurrency group, including when opt-in is disabled, so they cannot
+evict a pending production release. Production tags and manual rehearsals retain
+`desktop-installer-release`; production publication remains serialized. Enable the schedule after
+human governance review and a successful manual rehearsal, with the existing signing environment
+available.
+
+Publication verifies every gate, both native MSIX architecture receipts, the consumer EXE receipt, installed-startup evidence,
 source commits, run IDs, run attempts and SHA-256 digests, then copies the certified MSIX files
-and verified consumer package into a fresh flat directory. It performs no builds or signing.
+and certified consumer package into a fresh flat directory. It performs no builds or signing.
 Each package family/runtime has its own SBOM, checksum file and release manifest. The gate
-manifest links validation results and native lifecycle receipts to the exact promoted bytes.
-Consumer setup retains its embedded-payload verification and the separate required
-web-workstation installed-startup proof; native MSIX lifecycle receipts explicitly describe
-only the desktop MSIX packages.
+manifest links validation results and each package's lifecycle receipt to the exact promoted bytes.
+`certify-installed-consumer` downloads `Meridian-Setup.exe` from the current run attempt onto a
+fresh Windows x64 runner. It validates its production Authenticode publisher and payload, installs
+that EXE, exercises authenticated startup and the installed bundled PostgreSQL process, damages
+and repairs the installed payload, restarts, uninstalls, and verifies preserved configuration,
+file data and database state. Existing PostgreSQL installations on the runner cannot supply the
+bundled-database proof.
+
+`consumer-setup-win-x64-lifecycle.json` must pass and match the consumer family, x64 runtime,
+EXE SHA-256, source commit, workflow run and attempt. Promotion rejects a missing, failed,
+incomplete or mismatched consumer receipt even when both MSIX receipts and publish smoke pass.
+MSIX-only lifecycle evidence cannot promote the EXE.
+
+The consumer predecessor lookup includes published production `v*` releases, including signed
+release candidates, and excludes the evaluation channel. It downloads the previous consumer
+EXE and verifies its release checksum before exercising upgrade and rollback. If no published
+consumer predecessor exists (including a history containing only MSIX releases), it records an
+explicit first-consumer-release exception for each N-1 leg and retains the repository lookup
+receipt. Failed queries, downloads or checksum verification remain fatal. A configured prior tag
+must identify an eligible published consumer release; it cannot force a first-release exception.
+
+The consumer certification workflow and promotion dependency changes are designated for human
+governance review. Human approval of the workflow changes precedes signed rehearsal activation.
 
 The administrator should dispatch a signed rehearsal after human review and before enabling
 publication for a new production tag. A successful rehearsal is required operational evidence;

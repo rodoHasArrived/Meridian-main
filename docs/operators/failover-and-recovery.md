@@ -2,9 +2,29 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-10-05
 
 This page is the canonical operator guide for Meridian recovery posture and failover response.
+
+## Prerequisites and execution context
+
+- Run the recovery scripts in PowerShell 7 from the repository root on the Windows recovery host.
+  The commands below use example backup/restore paths; replace them with approved locations and
+  use a new receipt path for each attempt.
+- Have `pg_dump`, `pg_restore`, and `psql` available, or supply their full paths with `-PgDumpPath`,
+  `-PgRestorePath`, and `-PsqlPath`. Use PostgreSQL client tools compatible with the database being
+  backed up and restored.
+- Load the encryption key and source/target connection strings through the deployment's secret
+  process. The script parses **keyword connection strings** containing `Database` and `Username`
+  (or `User ID`), such as `Host=...;Database=...;Username=...;Password=...`. It does not accept the
+  application host's `postgres://...` shorthand. Installed-host environment values are not
+  automatically present in a separately opened PowerShell session.
+- Resolve the actual data root from lifecycle configuration, verify access to both recovery stores,
+  and prepare a clean target database/root. Record the committed-work boundary and retain the
+  existing evidence before changing any writer or restore target.
+- Use the [lifecycle supervisor](../reference/lifecycle-control-plane.md) to stop/drain the owned
+  workload. Verification reads use the [operator session](preflight-checklist.md#authenticated-evidence-collection)
+  with the restored company's permissions and scope.
 
 ## Supported Recovery Unit
 
@@ -20,29 +40,47 @@ apparently healthy host whose evidence and command state disagree.
 `build/scripts/recovery/invoke-production-recovery.ps1` is the canonical automation. It creates a
 custom-format PostgreSQL dump and a data-root ZIP, encrypts each with independently derived
 AES-256 encryption and HMAC-SHA256 authentication keys, verifies plaintext and ciphertext SHA-256
-hashes, publishes the backup atomically, applies retention only after success, and emits a JSON
-receipt. The encryption key must be a 32-byte random value supplied through
+hashes, authenticates the exact manifest bytes with a separately derived HMAC key, publishes the
+backup atomically, applies retention only after success, and emits a JSON receipt. Keep the detached
+`manifest.hmac` alongside `manifest.json`; metadata authentication is checked before any manifest
+evidence is trusted or either store is restored. The encryption key must be a 32-byte random value supplied through
 `MDC_RECOVERY_ENCRYPTION_KEY_BASE64`; store it in the approved secret manager, never in the backup
 location or repository.
+
+Receipts are created exclusively before backup or restore work begins. An existing `-ReceiptPath`
+is rejected without changing it or starting recovery work. Omit that option for a unique per-run
+receipt, or choose a new explicit path for every attempt, including failed attempts.
+Both explicit and default receipt paths must be outside `DataRoot` and `RestoreDataRoot`, and
+cannot be an ancestor of either root. This includes Restore's fallback to `DataRoot` when no
+`RestoreDataRoot` is supplied. Conflicting paths are rejected before creating receipt directories
+or files, taking a backup, quarantining a target, or invoking PostgreSQL tools; directory symlinks
+and normalized path segments do not bypass this check.
+Use ordinary drive or UNC paths on Windows; device namespace paths are rejected by preflight.
 
 ## Backup
 
 Quiesce write-producing workflows or place the lifecycle supervisor in its controlled drain state,
-then run:
+then identify the last committed-work boundary verified recoverable across both stores. Set
+`$lastVerifiedRecoverablePointAtUtc` to its actual UTC timestamp and `$recoverablePointEvidence` to
+the retained verification reference, then run:
 
 ```powershell
-$env:MDC_RECOVERY_ENCRYPTION_KEY_BASE64 = '<secret-manager-value>'
+if (-not $env:MDC_RECOVERY_ENCRYPTION_KEY_BASE64) { throw 'Load the approved recovery key first.' }
 pwsh ./build/scripts/recovery/invoke-production-recovery.ps1 `
   -Mode Backup `
   -ConnectionString $env:MERIDIAN_LEDGER_CONNECTION_STRING `
   -DataRoot $env:MDC_DATA_ROOT `
   -BackupRoot 'E:\MeridianBackups' `
   -RetentionDays 35 `
-  -MaximumRpoSeconds 3600
+  -LastVerifiedRecoverablePointAtUtc $lastVerifiedRecoverablePointAtUtc `
+  -RecoverablePointEvidence $recoverablePointEvidence
 ```
 
 Copy the completed `backup-<UTC timestamp>` directory to the approved off-host backup target. Never
-copy a staging directory whose name starts with `.backup-`.
+copy a staging directory whose name starts with `.backup-`. The optional recoverable-point assertion
+is retained in the manifest; archive hashing does not infer the latest recoverable committed work.
+Omitting the assertion or its evidence still permits an archive backup but leaves recovery objectives
+unproven.
 
 ## Clean Restore
 
@@ -70,9 +108,30 @@ and the operator inbox before approving traffic.
 ## Recovery Drill And Objectives
 
 `Production Certification` runs the same encrypted backup and clean restore path against disposable
-PostgreSQL source/target databases on every scheduled and release-tag run. It validates a retained
-database business row and an encrypted-vault file after restore and uploads the dated backup,
-manifest, and receipt for 90 days.
+PostgreSQL source/target databases. It validates a retained
+database business row and an encrypted-vault file after restore. Before backup, it records a
+committed checkpoint for that isolated fixture, verifies both stores, and retains checkpoint JSON
+inside the data root with a SHA-256-bound evidence reference. The restored checkpoint and state
+probes must agree. It uses RPO 3600s/RTO 7200s and uploads the dated backup, authenticated manifest,
+checkpoint, and receipt for 90 days. This proves archive operations and those fixture probes; it
+does not perform business reconciliation or operator acceptance.
+
+Drill a retained backup to expose its age at simulated loss. The backup's manifest carries its
+recoverable-point assertion and supporting reference; the drill verifies the archive before
+recording `simulatedLossAtUtc` and `lossDeclaredAtUtc` and beginning the clean restore. The drill
+records a simulated boundary without destroying source data. `sourceCommit` identifies the
+authenticated backup-creation commit; `drillSourceCommit` separately identifies the code executing
+the drill. Drilling a backup from commit A on commit B does not relabel that backup as B. An
+unauthenticated schema-2 manifest is rejected; schema-1 backups remain archive-only and cannot
+supply trusted checkpoint metadata.
+
+All producer modes validate the execution `SourceCommit`, including drills of retained backups.
+When `-SourceCommit` is omitted, `GITHUB_SHA` supplies the value or the script falls back to the
+checkout's `HEAD`; an explicitly supplied blank value is rejected. Commit identifiers must be
+exactly 40 or 64 hexadecimal characters, without whitespace or a trailing newline. The authenticated
+manifest and standalone receipt validator use the same rule for backup provenance; the validator
+also checks `drillSourceCommit`. Matching
+completion evidence cannot make a malformed commit identifier valid.
 
 ```powershell
 pwsh ./build/scripts/recovery/invoke-production-recovery.ps1 `
@@ -80,16 +139,91 @@ pwsh ./build/scripts/recovery/invoke-production-recovery.ps1 `
   -ConnectionString $env:MERIDIAN_LEDGER_CONNECTION_STRING `
   -DataRoot $env:MDC_DATA_ROOT `
   -BackupRoot 'E:\MeridianBackups\drills' `
+  -BackupPath $retainedBackupPath `
   -RestoreConnectionString $env:MERIDIAN_RECOVERY_CONNECTION_STRING `
   -RestoreDataRoot 'D:\MeridianRecovery\drill-data' `
   -AllowDatabaseOverwrite `
   -MaximumRpoSeconds 3600 `
-  -MaximumRtoSeconds 7200
+  -MaximumRtoSeconds 7200 `
+  -ReceiptPath 'E:\MeridianBackups\drills\recovery-drill-receipt.json'
 ```
 
-The receipt fails the drill when the measured backup window exceeds the declared RPO or the clean
-restore exceeds the declared RTO. A workflow definition is not drill evidence: retain the successful
-run URL and its `production-recovery-drill-*` artifact with the release packet.
+For a fresh-backup archive regression drill, omit `-BackupPath`. Supply
+`-LastVerifiedRecoverablePointAtUtc` and `-RecoverablePointEvidence` if a verified committed-work
+boundary is available. Neither the new archive nor a short backup duration demonstrates the age
+of a retained recovery point. A retained backup's assertion cannot be replaced using these flags.
+
+Schema-version-2 receipts preserve archive durations as `backupDurationSeconds` and
+`restoreDurationSeconds`. `status: passed` means the archive operation succeeded. Recovery
+`objectiveStatus` remains `unproven` until all required evidence exists, even when the archive
+operation passes. RPO measures simulated loss minus the last verified recoverable point; RTO
+measures operator acceptance minus declared loss. See
+[Recovery Objectives](./service-level-objectives.md#recovery-objectives) for the required fields
+and the one-hour/two-hour policy.
+
+### Complete and validate the recovery evidence
+
+1. Preserve the original drill receipt, manifest, and detached manifest authentication. Confirm
+   `manifestAuthenticated: true`, its `manifestSha256`, `backupId`, `sourceCommit`, and
+   `drillSourceCommit` identify the authenticated backup and drill code. Both commits must match
+   the frozen release commit for same-release certification; a different retained-backup commit
+   remains visible and requires its own explicit provenance review. Confirm the recoverable
+   point, pre-loss verification, and loss milestones. A restore-only receipt lacks loss milestones and proves no
+   drill objective.
+2. Start the restored host, perform replay/reconciliation, verify the business state described
+   under [Clean Restore](#clean-restore), and retain the outcome evidence. Record the actual
+   reconciliation completion timestamp and reference.
+3. The operations owner records actual acceptance after reconciliation, with their name, UTC
+   acceptance timestamp, and retained acceptance reference. Do not substitute the archive return
+   time or the time a reviewer later fills in this file.
+4. Write the completion-evidence JSON using the drill's exact bindings and the recorded operator
+   values. In the example below, populate the five completion variables from the completed
+   reconciliation and acceptance records before writing the file. `Read-RecoveryJson` preserves
+   the exact timestamp strings required by the evidence bindings:
+
+```powershell
+. ./build/scripts/recovery/recovery-evidence.ps1
+$drillReceipt = Read-RecoveryJson 'E:\MeridianBackups\drills\recovery-drill-receipt.json'
+[ordered]@{
+  backupId = $drillReceipt.backupId
+  sourceCommit = $drillReceipt.sourceCommit
+  drillSourceCommit = $drillReceipt.drillSourceCommit
+  manifestSha256 = $drillReceipt.manifestSha256
+  simulatedLossAtUtc = $drillReceipt.simulatedLossAtUtc
+  lossDeclaredAtUtc = $drillReceipt.lossDeclaredAtUtc
+  reconciliationCompletedAtUtc = $reconciliationCompletedAtUtc
+  reconciliationEvidence = $reconciliationEvidence
+  operatorAcceptedAtUtc = $operatorAcceptedAtUtc
+  operatorAcceptedBy = $operatorAcceptedBy
+  operatorAcceptanceEvidence = $operatorAcceptanceEvidence
+} | ConvertTo-Json | Set-Content 'E:\MeridianBackups\drills\recovery-completion-evidence.json' -Encoding utf8NoBOM
+
+pwsh ./build/scripts/recovery/validate-recovery-receipt.ps1 `
+  -ReceiptPath 'E:\MeridianBackups\drills\recovery-drill-receipt.json' `
+  -RecoveryEvidencePath 'E:\MeridianBackups\drills\recovery-completion-evidence.json' `
+  -OutputPath 'E:\MeridianBackups\drills\recovery-drill-evaluated-receipt.json'
+```
+
+The standalone validator binds the completion evidence to the same backup, backup and drill
+commits, authenticated manifest digest, and loss milestones and writes a separate evaluated receipt. It independently enforces RPO 3600s and
+RTO 7200s by default; explicit `-MaximumRpoSeconds`/`-MaximumRtoSeconds` overrides may tighten those
+budgets. It recomputes both measurements and fails for absent, malformed, future, or out-of-order
+milestones, missing evidence references or operator attribution, or a budget breach. Incomplete
+or invalid evidence produces `objectiveStatus: unproven`; complete valid evidence over a budget
+produces `breached`. Only complete valid evidence within both budgets produces `proven` and exit 0.
+Automation does not supply operator acceptance or reconciliation on the operator's behalf. The
+validator consumes the preserved producer receipt; it does not independently re-authenticate
+archives without their key. Protect the original receipt and its retained artifact provenance.
+Earlier schema-2 receipts without authenticated-manifest evidence cannot be upgraded by adding
+those fields in completion JSON; run a new authenticated drill.
+
+A workflow definition or green archive job is not accepted recovery-objective evidence. Retain
+the release-commit run URL, its `production-recovery-drill-*` artifact, original receipt,
+completion-evidence JSON, evaluated receipt with `objectiveStatus: proven`, referenced verification/
+reconciliation/acceptance records, and the operations-owner review with the release packet. Record
+the verdict in the [production-certification evidence ledger](../engineering/production-certification-evidence-chain.md#prd-015-recovery-drill-operator-review).
+Historical receipts that call archive timings RPO/RTO prove archive round trips only; they cannot
+close `PRD-015` or the recovery portion of `PRD-111`.
 
 ## Migration Rollback
 
@@ -276,23 +410,42 @@ one the books should reflect rather than deleting either.
 
 ## Verification Commands
 
-Use the same host mode as affected service surface (desktop or workstation host):
+Start the restored source host in terminal 1 using [preflight](preflight-checklist.md#mandatory-command-set),
+or start the installed host through its supervisor, with the intended restored database and data
+root. In terminal 2, complete [operator sign-in](preflight-checklist.md#authenticated-evidence-collection)
+to define `$meridianBaseUrl` and `$operatorSession`, then inspect:
 
 ```powershell
-dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
-curl http://localhost:8080/api/workstation/operator/inbox
-curl http://localhost:8080/api/workstation/reconciliation/queue
-curl http://localhost:8080/api/config/effective
+Invoke-RestMethod "$meridianBaseUrl/api/workstation/operator/inbox" -WebSession $operatorSession
+Invoke-RestMethod "$meridianBaseUrl/api/workstation/reconciliation/queue-status" -WebSession $operatorSession
+Invoke-RestMethod "$meridianBaseUrl/api/config/effective" -WebSession $operatorSession
 ```
 
-Also validate the latest receipt before declaring recovery complete:
+Before declaring recovery complete, retain the actual reconciliation and operator acceptance
+records and [validate their bound completion evidence](#complete-and-validate-the-recovery-evidence):
 
 ```powershell
-Get-Content 'E:\MeridianBackups\recovery-drill-receipt.json' | ConvertFrom-Json |
-  Format-List status, backupId, measuredRpoSeconds, measuredRtoSeconds, completedAtUtc
+pwsh ./build/scripts/recovery/validate-recovery-receipt.ps1 `
+  -ReceiptPath 'E:\MeridianBackups\drills\recovery-drill-receipt.json' `
+  -RecoveryEvidencePath 'E:\MeridianBackups\drills\recovery-completion-evidence.json'
+if ($LASTEXITCODE -ne 0) { throw 'Recovery objectives remain unproven or breached.' }
 ```
 
-If a service is unstable, switch to service-safe mode, re-run provider validation, and recheck operator inbox for recovery state changes before promoting.
+If the host remains unstable, keep write-producing workflows stopped, retain the failing receipt
+and logs, and repair the named dependency before retrying. A successful HTTP read is not completed
+recovery: compare restored business totals, exact scope, and the accepted recovery boundary.
+
+## Failure and recovery
+
+| Failure | Diagnostic and next action |
+| --- | --- |
+| PostgreSQL tool missing or connection parse failure | Check the tool path and keyword connection-string fields from the prerequisites before retrying. |
+| Receipt already exists or conflicts with a data root | Preserve the existing receipt and choose a unique path outside both roots and their ancestors. |
+| Manifest/HMAC/hash verification fails | Stop the restore. Preserve the original archive and receipt; verify the selected key and complete archive through the backup owner. |
+| Restore target is non-empty | Use the intended clean target or the documented, deliberate quarantine path; do not remove data merely to bypass the guard. |
+| Archive passed but objective status is `unproven` | Complete the actual reconciliation and operator acceptance, then evaluate their bound evidence. Do not substitute archive timings for the missing milestones. |
+| Objective status is `breached` or business state disagrees | Keep recovery unaccepted and escalate with the evaluated receipt, reconciliation result, and remaining gap. |
+
 
 ## Evidence and Handoff
 

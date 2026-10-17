@@ -53,7 +53,7 @@ public sealed partial class PostgresAssetOperationsProjectionStore
         ArgumentNullException.ThrowIfNull(projection);
         ct.ThrowIfCancellationRequested();
         projection = AssetAccountingEventProjectionRules.Clone(projection);
-        await AssetAccountingEventProjectionRules.ValidateDurablePostedImpactAsync(
+        var hasDurableSuccessorAuthority = await AssetAccountingEventProjectionRules.ValidateDurablePostedImpactAsync(
                 projection,
                 _assetAccountingJournalStore,
                 ct)
@@ -112,6 +112,7 @@ public sealed partial class PostgresAssetOperationsProjectionStore
                 transaction,
                 projection,
                 expectedBookPositionVersion,
+                hasDurableSuccessorAuthority,
                 ct)
             .ConfigureAwait(false);
 
@@ -155,6 +156,7 @@ public sealed partial class PostgresAssetOperationsProjectionStore
         NpgsqlTransaction transaction,
         AssetAccountingEventSpineDto projection,
         long expectedBookPositionVersion,
+        bool hasDurableSuccessorAuthority,
         CancellationToken ct)
     {
         await using var command = connection.CreateCommand();
@@ -177,7 +179,7 @@ public sealed partial class PostgresAssetOperationsProjectionStore
         var version = reader.GetInt64(0);
         var securityId = reader.GetGuid(1);
         var ledgerBookId = reader.GetGuid(2);
-        if (version != expectedBookPositionVersion ||
+        if ((!hasDurableSuccessorAuthority && version != expectedBookPositionVersion) ||
             securityId != projection.Scope.SecurityId ||
             ledgerBookId != projection.Scope.LedgerBookId)
         {

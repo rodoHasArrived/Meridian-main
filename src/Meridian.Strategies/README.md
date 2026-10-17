@@ -63,6 +63,28 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 ## Important workflows
 
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
+Live and paper metrics retain the worst currency decline and worst percentage decline independently;
+Calmar and promotion gates use the percentage maximum even when a later, larger currency loss has a
+smaller percentage impact. Backtest metrics use the same convention and include initial capital as
+the first equity peak.
+Unavailable live-summary XIRR is retained as JSON null and restored to its SDK NaN marker, so terminal
+metrics survive durable replay. The exact legacy XIRR string `"NaN"` remains readable, while new writes
+use null. Other metric and input fields retain strict finite-number handling.
+`StrategyRunEntry.FundAccountId` retains the authorized execution account independently of fund
+profile and financial-account labels. Promotion copies it to the target, durable scoped runs bind it
+in the v5 input hash, and replay and lifecycle updates reject account mutation or removal. Production
+callers create scoped runs with `StrategyRunEntry.StartForFundAccount`, passing the authorized account
+explicitly; the factory computes the v5 hash together with optional evidence and execution realism.
+The established `Start` and `StartWithEvidence` overloads retain their unscoped behavior and CLR
+signatures. Advanced direct-constructor callers must supply the account-bound hash or leave the hash
+unset for the durable store to compute.
+Live launch defers when the retained account is absent or empty. Strategy orders carry the retained
+account into the production OMS and its account-scoped W7 readiness gate, including after host restart;
+run parameters cannot replace it. Legacy unscoped histories continue to replay without acquiring an
+execution account.
+Scoped recovery attempts keep the account-bound v5 hash, and live recovery compares the retained
+account with the originally approved run before external restart. Restored paused sessions retain
+that same account and input hash through explicit resume.
 Production `StrategyRunStore` composition replays a versioned, source-generated run snapshot from
 the shared Contracts-owned operational case-history port. Start, pause, and stop commands retain
 intent before invoking the external strategy, then return a validated Succeeded,
@@ -76,6 +98,72 @@ verified legacy hashes only for an explicit one-time upgrade and rejects later s
 parameterless store remains an explicit in-memory compatibility seam for
 isolated tests; browser and WPF production composition and the desktop fallback use the same
 data-root-backed durable history store.
+
+`LiveStrategyBase` applies the shared F# lifecycle policy and serializes complete asynchronous
+operations. Queued commands are evaluated after the prior operation finishes. Warmup must complete
+before running, paused starts resume without replacing the retained execution context, and cleanup
+must complete before stopped state is exposed. Hook failure or cancellation preserves a fault
+reason and requires successful cleanup before restart. `Stopping` is appended to `StrategyStatus`
+so existing persisted enum values stay stable. The manager verifies `Running`, `Paused`, or
+`Stopped` after the corresponding adapter method returns; a mismatch retains a failed lifecycle
+receipt instead of success. Paused resume keeps the same run and attempt through
+`StartRequested` → `Resumed`; changing execution mode requires the promotion workflow.
+Stopped recovery keeps datasets, feeds, engine, parameters, portfolio/ledger/audit/fund scope,
+execution realism, evidence declarations, and the promotion parent, while resetting outcome and
+output fields. It retains the original correlation and immediate recovery parent. Live recovery
+and resume revalidate retained promotion approval and current routing, override, and breaker
+controls. Cleanup after failure or cancellation preserves its original identity and end timestamp.
+See `src/Meridian.FSharp.Trading/README.md` for transition semantics.
+
+The live engine and lifecycle manager enforce one active instance per strategy, including launches
+with different parameters or execution modes. Controls bind to that instance's exact run ID;
+a newer deferred run cannot replace its history. Engine-owned operator stop uses the session's
+shutdown path: close outbound order admission, drain admitted execution reports, wake an idle feed,
+finish callbacks and cleanup, build metrics, and retain a verified completion receipt. The session
+records `StopRequested` as `live-trading-engine` after fills drain; the manager delegates to it.
+Concurrent stop callers share that work; cancellation ends a caller's wait while shutdown continues.
+Paused engine sessions resume the same run. New runs launch through the engine after the prior session ends.
+The engine records `Activated` after promotion, `Suspended` on host shutdown, and `Recovered`
+when an interrupted session restarts. It never appends a second `Started` to the same run.
+Host shutdown leaves clean runs open for resume, but cannot downgrade an explicit operator stop.
+Startup restores the owned paused run without warmup or market callbacks. Explicit resume
+(`POST /api/strategies/{strategyId}/resume?runId=<retained-run-id>`) uses its retained context and
+returns a verified receipt; restored strategies warm up only when resumed. A second paused run
+waits until the current owner stops before it can acquire the strategy's controls.
+Cancellation before activation does not invoke finish or stop hooks on an unstarted strategy.
+An operator stop at that stage closes the run's retained stop intent and saves zero-fill metrics;
+it does not emit F# facts claiming that the strategy entered or completed its stopping state.
+Cleanup failures retain a failed outcome and available metrics. Terminal append failures are checked
+for an already committed event before retaining `EvidencePersistenceFailed`; failed cleanup remains
+failed even when that warning is also needed. If neither record can be retained, shutdown propagates
+the persistence failures rather than claiming completion.
+Metrics retained after failed cleanup remain diagnostic evidence and cannot qualify a run for
+promotion. Promotion evaluation and approval require successful retained completion; a warning
+about missing terminal evidence must be reconciled first. External stopped state alone cannot
+reconcile away a retained session failure or cancellation.
+Retrying failed external cleanup permits a new session once the strategy is stopped, while the
+original session receipt and metrics remain failed diagnostic evidence.
+
+F# `EmittedFacts` are consumed by `StrategyLifecycleFactMapping` as ordered evidence in each retained
+snapshot's `LifecycleFacts`. Start/restart/resume request and warmup-entry facts map to `StartRequested`,
+warmup-completion/running-entry to `Activated`, `Recovered`, `Resumed`, or legacy `Started`,
+pause to `Paused`, stop-request/stopping-entry to
+`StopRequested`, successful cleanup to `Completed`, and fault facts to the corresponding failed or
+cancelled event. Facts describe the policy verdict associated with that intent or verified outcome;
+consumers replay the retained lifecycle events and never execute a fact as a command. The fallback
+persistence warning preserves its original facts. Retry the unchanged snapshot so its event identity,
+fact order, and append idempotency remain stable. Legacy snapshots have an empty fact list; replay
+recognizes unchanged typed retries without rewriting their retained bytes or rolling back the latest
+projection, and terminal retries return the original retained receipt. Retry identity includes the
+exact retained input hash, account, execution realism, and ordered facts. Unknown or mismatched
+facts are rejected. Compatibility tests cover C# enum/F# state names, every bridge
+transition, fact mapping, retained ordering, and append retries.
+
+Durable metric snapshots write unavailable XIRR as JSON null and restore the SDK's `NaN` sentinel
+on read. The exact legacy XIRR string `"NaN"` remains readable; all other named nonfinite values
+and unrelated nonfinite metrics remain invalid. General SDK JSON serialization retains its own
+XIRR marker contract.
+
 `StrategyRunEntry` retains the W6 Backtest Studio evidence loop: operator acceptance criteria,
 retained evidence links, accounting-record references, approval references, paper-validation
 lineage, and governed-report references are stored with the run so downstream review surfaces do
@@ -101,13 +189,21 @@ allowing paper-to-live promotion to evaluate the newly retained out-of-sample ev
 organization, customer, vendor, project, and `externalGl.*` run-parameter filters so workstation
 ledger drill-throughs stay aligned with accounting dimensions instead of a strategy-only scope
 vocabulary.
+Promotion requires an explicitly successful completed lifecycle; an end timestamp and qualifying
+metrics on a failed or cancelled attempt never establish eligibility. `PromotionReadiness.isTerminal`
+continues to classify terminal lifecycle states independently of eligibility.
 Paper-to-live promotion requires the live approval checklist, explicit evidence references for
 each live checklist item, and an active `AllowLivePromotion` manual override. The live checklist
 includes paper-validation, reconciliation, accounting-record, governed-reporting, governance
 sign-off, exception-handling, rollback or kill-switch, audit-retention, and broker execution
 reconciliation evidence before a live readiness claim can create a live run. Live evidence
 references must use `TOKEN:retained-evidence` rather than bare checklist tokens, and the
-`LIVE_OVERRIDE_REVIEWED` reference must name the active manual override id. Approved,
+`LIVE_OVERRIDE_REVIEWED` reference must name the active manual override id. Required trust freshness
+and completeness gates independently block promotion. The trust provider reads the DK1 packet
+referenced by the source run's retained evidence and binds the assessment to its run ID and input
+hash. The packet must be complete, observed in the past, and unexpired; its default maximum age is
+24 hours (`Dk1TrustGateReadinessOptions.PromotionEvidenceMaximumAge`). Missing or mismatched trust
+evidence fails closed; an operator-controls snapshot cannot substitute for it. Approved,
 checklist-blocked, missing-evidence, invalid-evidence, and execution-control-blocked live promotion
 attempts are written to the durable execution audit trail with source run, target mode, required
 override kind, checklist count, evidence reference count, and control rejection evidence so

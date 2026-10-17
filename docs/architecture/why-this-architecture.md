@@ -1,7 +1,11 @@
 # Why This Architecture (Non-Engineer Explainer)
 
 ## What this program does
-Meridian captures **live** and **historical** market microstructure data, validates it for quality, and stores it in audit-friendly formats so it can be replayed, analyzed, or fed into research tools.
+This explainer covers Meridian's market-data ingestion and archival architecture. The broader
+platform also owns operational-finance workflows; start with the [system overview](overview.md) and
+[product charter](../product/meridian-design-document.md) for that scope. The data lane captures live
+and historical events, validates them, and retains them for replay, research, and evidence-backed
+operating workflows.
 
 It collects:
 - **Trades:** tick-by-tick prints with sequence checks and quality validation
@@ -9,7 +13,8 @@ It collects:
 - **Depth:** Level 2 order book updates with integrity checks
 - **Backfill:** historical bars and supplemental data from multiple providers
 
-It also provides **desktop monitoring surfaces**, **Prometheus metrics**, and **export tooling** for downstream analysis.
+Browser and WPF workstations consume shared services and APIs. Prometheus metrics and export
+tooling support monitoring and downstream analysis.
 
 ---
 
@@ -21,10 +26,10 @@ Each data provider speaks its own API and protocol. We isolate them so:
 - failures or quirks in one feed don’t poison the whole system
 - historical backfill can run independently of live capture
 
-Examples of current adapters:
-- **Live providers:** Interactive Brokers, Alpaca, NYSE Direct, StockSharp (Polygon streaming is stub-only; historical data is fully functional)
-- **Historical/backfill providers:** Alpaca, Yahoo Finance, Stooq, Tiingo, Finnhub, Alpha Vantage, Nasdaq Data Link, Polygon, Interactive Brokers
-- **Symbol resolution:** OpenFIGI-based resolution for cross-provider symbol mapping, plus Alpaca, Finnhub, and Polygon search providers
+Examples include Interactive Brokers, Alpaca, and Polygon streaming adapters, historical/backfill
+adapters, and OpenFIGI-based symbol resolution. Use the [Provider Capability Matrix](../reference/provider-capability-matrix.md)
+for supported data surfaces and the [Provider Validation Matrix](../reference/provider-validation-matrix.md)
+for evidence and promotion requirements; an adapter's presence does not establish live-provider readiness.
 
 This approach is formally documented in [ADR-001: Provider Abstraction](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/001-provider-abstraction.md).
 
@@ -55,7 +60,7 @@ All domain events flow through a bounded, backpressured pipeline to prevent runa
 The system exposes status and monitoring through:
 - Desktop-local API host for status, Swagger, and workstation endpoints
 - Prometheus metrics endpoint ([ADR-012](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/012-monitoring-and-alerting-pipeline.md))
-- Native Windows WPF desktop app for monitoring and configuration
+- Active browser workstation and native Windows WPF desktop app over shared operator services
 
 ---
 
@@ -71,8 +76,7 @@ The system exposes status and monitoring through:
 ## Current capabilities (as implemented in this repo)
 
 ### Implemented today
-- Live capture from IB, Alpaca, NYSE Direct, StockSharp (Polygon streaming adapter is stub-only; Polygon historical data is fully functional)
-- Historical backfill from 10 providers with automatic failover chain and rate limiting
+- Streaming adapters and historical backfill with provider-specific capabilities, failover, and rate limiting
 - Deterministic canonicalization: cross-provider symbol, condition code, and venue normalization
 - Integrity event emission for trade sequences and order book consistency
 - Quote-aware analytics (BBO context)
@@ -80,24 +84,32 @@ The system exposes status and monitoring through:
 - Data replay and export tooling for downstream analysis
 - Ingestion orchestration: unified job model, scheduled backfills, checkpoint/resume, deduplication
 - Data quality monitoring with SLA enforcement, anomaly detection, and gap analysis
-- Monitoring via Prometheus metrics, status JSON, and desktop-local API plus WPF surfaces
+- Monitoring via Prometheus metrics, status JSON, and shared API, browser, and WPF surfaces
 - QuantConnect Lean integration for backtesting
 
 ### Notes on provider maturity
-- Polygon streaming is currently **stub-only** (synthetic events). The Polygon historical data provider is fully functional.
+The [Polygon streaming adapter](../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs)
+uses the WebSocket provider runtime and refuses connection without credentials; it does not substitute
+synthetic events. Entitlements, credentials, and provider validation remain separate from implementation.
+
+Maintenance check 2026-10-05: provider readiness wording and workstation scope were corrected from
+current source and the owning matrices. The capability examples above are not a new acceptance run.
 
 ---
 
 ## Why monolithic over microservices?
 
-We evaluated a microservices decomposition ([ADR-003](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/003-microservices-decomposition.md)) and rejected it. Key reasons:
+The current decision is [ADR-017: Modular Operational Monolith](../adr/017-modular-operational-monolith.md).
+The earlier microservices evaluation ([ADR-003](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/adr/003-microservices-decomposition.md)) provides historical context. Key reasons for the modular monolith:
 
 - **Deployment simplicity**: A single process is easier to deploy, configure, and debug for research teams.
 - **Latency**: In-process event routing via bounded channels avoids network serialization overhead.
-- **Operational cost**: Microservices demand service mesh, distributed tracing, and container orchestration — overhead that doesn't justify the scale of a meridian.
+- **Operational cost**: Microservices demand service mesh, distributed tracing, and container orchestration — overhead that is not justified by the current deployment model.
 - **Shared state**: Collectors, pipeline, and storage share event models directly; splitting them would require contract duplication and version management.
 
-The monolith supports multiple operator entry points (WPF desktop, CLI, and localhost API surfaces) that compose the same library assemblies.
+The monolith supports browser, WPF, CLI, and API entrypoints over shared modules. Local workstation
+and remote production API deployments have different binding and authentication policies; see the
+[host source guide](../../src/Meridian/README.md).
 
 ---
 

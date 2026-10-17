@@ -27,6 +27,7 @@ It links source documents, provider records, normalized records, validation resu
 ## Examples
 
 - A report line links to calculation inputs, approved transactions, journal entries, reconciliation cases, source files, package approval, delivery evidence, and restatement history.
+- A retained investment-income comparison links two explicitly selected run manifests to an immutable movement explanation. Each journal, population, methodology, or unexplained contribution retains its supporting records and comparison context. Compatibility and unsupported differences remain visible even when amounts offset; retained methodology calculations do not imply human approval.
 - A capital account balance links to capital calls, contributions, allocations, distributions, journals, statement packages, and audit support.
 - A close blocker links to a reconciliation break, owner, SLA state, materiality, evidence packet, blocked report package, and reviewer decision.
 

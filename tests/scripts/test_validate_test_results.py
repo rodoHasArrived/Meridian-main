@@ -1,4 +1,7 @@
 import importlib.util
+import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -96,6 +99,48 @@ class ValidateTestResultsTests(unittest.TestCase):
             self.assertFalse(evidence["certifiable"])
             self.assertTrue(any("meridian-integrations_net11.trx' contains zero discovered tests" in error
                                 for error in MODULE.validation_errors(evidence)))
+
+    def test_cli_retains_failure_summary_for_missing_or_malformed_trx(self):
+        for scenario in ("missing-directory", "empty-directory", "malformed-trx"):
+            with self.subTest(scenario=scenario), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                results = root / "results"
+                if scenario != "missing-directory":
+                    results.mkdir()
+                if scenario == "malformed-trx":
+                    (results / "ibapi-runtime-reconnect.trx").write_text("<TestRun>", encoding="utf-8")
+                output = root / "evidence" / "test-evidence.json"
+
+                result = subprocess.run(
+                    [sys.executable, str(SCRIPT_PATH), "--results-dir", str(results),
+                     "--require-trx-prefix", "ibapi-runtime-reconnect", "--output", str(output)],
+                    capture_output=True, text=True, check=False,
+                )
+
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                evidence = json.loads(output.read_text(encoding="utf-8"))
+                self.assertFalse(evidence["certifiable"])
+                self.assertEqual(evidence["resultsDirectory"], results.as_posix())
+                self.assertEqual(evidence["requiredTrxPrefixes"], ["ibapi-runtime-reconnect"])
+                self.assertTrue(evidence["errors"])
+                self.assertIn(evidence["errors"][0], result.stderr)
+
+    def test_cli_retains_passing_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.write_trx(root, "ibapi-runtime-reconnect.trx", [("reconnect", "Passed")])
+            output = root / "evidence" / "test-evidence.json"
+
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT_PATH), "--results-dir", str(root),
+                 "--require-trx-prefix", "ibapi-runtime-reconnect", "--output", str(output)],
+                capture_output=True, text=True, check=False,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            evidence = json.loads(output.read_text(encoding="utf-8"))
+            self.assertTrue(evidence["certifiable"])
+            self.assertEqual(evidence["totals"], {"passed": 1, "failed": 0, "skipped": 0, "other": 0})
 
 
 if __name__ == "__main__":

@@ -11,10 +11,17 @@ run so the quarantine cannot rot silently.
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from contextlib import redirect_stderr, redirect_stdout
+import io
 import json
+import multiprocessing
 import os
 from datetime import date
 import sys
+import tempfile
+import time
+import traceback
 import unittest
 from pathlib import Path
 
@@ -25,6 +32,9 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 DEFAULT_START_DIR = REPO_ROOT / "tests" / "scripts"
 DEFAULT_QUARANTINE = Path(__file__).resolve().parent / "script-test-quarantine.json"
+# Both suites exercise many real PowerShell processes. Start them first so their
+# native process startup costs overlap instead of extending the end of the lane.
+LONG_RUNNING_MODULES = ("test_production_recovery", "test_recovery_evidence")
 
 
 def load_quarantine(path: Path) -> dict[str, str]:
@@ -78,19 +88,89 @@ def partition_suite(
     return kept, excluded
 
 
+def run_module(module_name: str, start_dir: str, verbosity: int, expected_ids: list[str]) -> dict:
+    """Run one complete module in a fresh process, including its class fixtures."""
+    print(f"Starting script module: {module_name}", flush=True)
+    started = time.monotonic()
+    output = io.StringIO()
+    with tempfile.TemporaryDirectory(prefix="meridian-script-test-") as temporary:
+        # Scripts exercised by fixtures may write a GitHub summary. Give them a
+        # real, private file instead of appending fixture evidence to the job's report.
+        if os.environ.get("GITHUB_STEP_SUMMARY"):
+            os.environ["GITHUB_STEP_SUMMARY"] = str(Path(temporary) / "summary.md")
+        with redirect_stdout(output), redirect_stderr(output):
+            suite = unittest.TestLoader().discover(start_dir=start_dir, pattern=f"{module_name}.py")
+            discovered_ids = sorted(test.id() for test in iter_tests(suite))
+            if discovered_ids != expected_ids:
+                raise RuntimeError(
+                    f"Test discovery changed for {module_name}: "
+                    f"expected {len(expected_ids)} tests, found {len(discovered_ids)}"
+                )
+            result = unittest.TextTestRunner(stream=output, verbosity=verbosity, buffer=True).run(suite)
+    return {
+        "testsRun": result.testsRun,
+        "failures": len(result.failures),
+        "errors": len(result.errors),
+        "skipped": len(result.skipped),
+        "successful": result.wasSuccessful(),
+        "duration": time.monotonic() - started,
+        "output": output.getvalue(),
+    }
+
+
+def run_modules(modules: dict[str, list[str]], start_dir: str, verbosity: int, workers: int) -> dict:
+    totals = {"testsRun": 0, "failures": 0, "errors": 0, "skipped": 0, "successful": True}
+    # Tests change process globals (mocks, environment, locale and unittest's
+    # output buffering). Spawn each module in its own interpreter; never reuse a
+    # worker for another module or run unittest suites concurrently in threads.
+    with ProcessPoolExecutor(
+        max_workers=min(workers, len(modules)),
+        mp_context=multiprocessing.get_context("spawn"),
+        max_tasks_per_child=1,
+    ) as executor:
+        pending = {
+            executor.submit(run_module, module, start_dir, verbosity, expected_ids): module
+            for module, expected_ids in modules.items()
+        }
+        for future in as_completed(pending):
+            module = pending[future]
+            try:
+                result = future.result()
+            except (Exception, SystemExit):
+                totals["errors"] += 1
+                totals["successful"] = False
+                print(f"Script module crashed: {module}\n{traceback.format_exc()}", flush=True)
+                continue
+            for field in ("testsRun", "failures", "errors", "skipped"):
+                totals[field] += result[field]
+            totals["successful"] = totals["successful"] and result["successful"]
+            status = "passed" if result["successful"] else "failed"
+            print(
+                f"Finished script module: {module}: {status} "
+                f"({result['testsRun']} tests, {result['duration']:.3f}s)",
+                flush=True,
+            )
+            if not result["successful"] or verbosity > 1:
+                print(result["output"], end="", flush=True)
+    return totals
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run tests/scripts suites with quarantine.")
     parser.add_argument("--start-dir", default=str(DEFAULT_START_DIR))
     parser.add_argument("--quarantine", default=str(DEFAULT_QUARANTINE))
     parser.add_argument("--verbosity", type=int, default=1)
+    parser.add_argument("--workers", type=int, default=2, help="Maximum isolated test-module processes (default: 2).")
     args = parser.parse_args()
+    if args.workers < 1:
+        parser.error("--workers must be at least 1")
 
     quarantined = load_quarantine(Path(args.quarantine))
     discovered = unittest.TestLoader().discover(start_dir=args.start_dir, pattern="test_*.py")
     suite, excluded = partition_suite(discovered, quarantined)
 
     for module_name in sorted(excluded):
-        print(f"QUARANTINED (skipped): {module_name} — {quarantined[module_name]}")
+        print(f"QUARANTINED (skipped): {module_name} — {quarantined[module_name]}", flush=True)
     unmatched = set(quarantined) - excluded
     if unmatched or not suite.countTestCases():
         raise ValueError(f"Invalid discovery: unmatched quarantine={sorted(unmatched)}, selected={suite.countTestCases()}")
@@ -98,16 +178,23 @@ def main() -> int:
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
             summary.write("\n### Script quarantine\n\n" + "\n".join(f"- {name}: {quarantined[name]}" for name in sorted(excluded)) + "\n")
 
-    runner = unittest.TextTestRunner(verbosity=args.verbosity, buffer=True)
-    result = runner.run(suite)
+    selected_ids: dict[str, list[str]] = {}
+    for test in iter_tests(suite):
+        selected_ids.setdefault(resolve_module_name(test), []).append(test.id())
+    module_order = sorted(
+        selected_ids,
+        key=lambda name: (name not in LONG_RUNNING_MODULES, name),
+    )
+    modules = {module: sorted(selected_ids[module]) for module in module_order}
+    result = run_modules(modules, args.start_dir, args.verbosity, args.workers)
 
     print(
-        f"Script-test lane: ran {result.testsRun} tests, "
+        f"Script-test lane: ran {result['testsRun']} tests, "
         f"{len(excluded)} module(s) quarantined, "
-        f"failures={len(result.failures)}, errors={len(result.errors)}, "
-        f"skipped={len(result.skipped)}."
+        f"failures={result['failures']}, errors={result['errors']}, "
+        f"skipped={result['skipped']}."
     )
-    return 0 if result.wasSuccessful() else 1
+    return 0 if result["successful"] else 1
 
 
 if __name__ == "__main__":

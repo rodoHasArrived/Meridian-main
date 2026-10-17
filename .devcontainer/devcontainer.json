@@ -11,8 +11,9 @@
   // Lifecycle hooks
   // -------------------------------------------------------------------------
 
-  // Restore NuGet + npm packages when the image is first built (cached layer).
-  "onCreateCommand": "dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal && npm ci --silent",
+  // Restore NuGet and both npm lockfiles when the container is first created.
+  // Vite needs the dashboard's platform-specific optional dependencies.
+  "onCreateCommand": "dotnet restore Meridian.sln /p:EnableWindowsTargeting=true --verbosity minimal && npm ci --silent && npm --prefix src/Meridian.Ui/dashboard ci --include=optional",
 
   // Rebuild and copy sample config when the repo content changes.
   "updateContentCommand": "cp -n config/appsettings.sample.json config/appsettings.json 2>/dev/null || true && mkdir -p data logs && dotnet build Meridian.sln -c Debug --no-restore /p:EnableWindowsTargeting=true --verbosity quiet",
@@ -23,10 +24,14 @@
   // -------------------------------------------------------------------------
   // Ports
   // -------------------------------------------------------------------------
-  "forwardPorts": [8080, 5432],
+  "forwardPorts": [8080, 5432, 5173],
   "portsAttributes": {
     "8080": {
       "label": "Web Dashboard",
+      "onAutoForward": "notify"
+    },
+    "5173": {
+      "label": "Browser Workstation (Vite)",
       "onAutoForward": "notify"
     },
     "5432": {

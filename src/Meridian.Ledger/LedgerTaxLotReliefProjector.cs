@@ -18,17 +18,22 @@ public static class LedgerTaxLotReliefProjector
     /// final-residual allocator even when today's sign-preserving allocator would also succeed.
     /// This compatibility entry point is only for history; new projections use <see cref="Project(LedgerTaxLotReliefInput)"/>.
     /// </summary>
+    /// <param name="retainedProceeds">
+    /// Exact journal proceeds of a versioned disposal without an explicit quote. A governed current
+    /// basis can carry fractional cents, so these are certified as booked rather than re-rounded.
+    /// </param>
     internal static LedgerTaxLotReliefProjection ReconstructRetainedDisposal(
-        LedgerTaxLotReliefInput input, int? proceedsAllocationVersion)
+        LedgerTaxLotReliefInput input, int? proceedsAllocationVersion, decimal? retainedProceeds = null)
         => proceedsAllocationVersion switch
         {
             null => Project(input, retainedLegacyProceeds: true),
-            CurrentProceedsAllocationVersion => Project(input, retainedLegacyProceeds: false),
+            CurrentProceedsAllocationVersion => Project(input, retainedLegacyProceeds: false, retainedProceeds),
             _ => throw new ArgumentOutOfRangeException(nameof(proceedsAllocationVersion),
                 proceedsAllocationVersion, "Unknown retained tax-lot proceeds allocation version."),
         };
 
-    private static LedgerTaxLotReliefProjection Project(LedgerTaxLotReliefInput input, bool retainedLegacyProceeds)
+    private static LedgerTaxLotReliefProjection Project(
+        LedgerTaxLotReliefInput input, bool retainedLegacyProceeds, decimal? retainedProceeds = null)
     {
         ArgumentNullException.ThrowIfNull(input);
 
@@ -42,7 +47,7 @@ public static class LedgerTaxLotReliefProjector
         var orderedLots = OrderLots(input, effectiveLots).ToList();
         var averageUnitCost = ResolveAverageUnitCost(input.ReliefMethod, effectiveLots);
         var parcels = SelectLots(input.QuantitySold, orderedLots, averageUnitCost);
-        var proceeds = RoundCurrency(input.QuantitySold * input.SalePrice);
+        var proceeds = retainedProceeds ?? RoundCurrency(input.QuantitySold * input.SalePrice);
         var selections = BuildSelections(parcels, input.SalePrice, proceeds, input.SaleDate,
             pooled: input.ReliefMethod == LedgerTaxLotReliefMethod.AverageCost, retainedLegacyProceeds);
         var costBasis = selections.Sum(static selection => selection.CostBasis);
@@ -144,15 +149,28 @@ public static class LedgerTaxLotReliefProjector
         var slices = consumption.Slices;
 
         // Lot-discrete methods (FIFO/LIFO/HIFO/SpecificId) relieve each lot at its own recorded
-        // unit cost; each slice's basis rounds independently because lots are not pooled.
+        // unit cost; each slice's basis rounds independently because lots are not pooled. A lot
+        // relieved in full with a known exact basis relieves that basis without re-rounding.
         if (averageUnitCost is not { } pooledUnitCost)
         {
             return slices
+                .Select(static slice => slice.Lot.CostBasis is { } exactBasis && slice.Quantity == slice.Lot.Quantity
+                    ? new ReliefParcel(slice.Lot, slice.Quantity, exactBasis, exactBasis / slice.Quantity)
+                    : new ReliefParcel(
+                        slice.Lot,
+                        slice.Quantity,
+                        RoundCurrency(slice.Quantity * slice.Lot.UnitCost),
+                        slice.Lot.UnitCost))
+                .ToList();
+        }
+
+        // Retained history relieves every pooled lot in full at the exact basis it booked; certify
+        // those amounts rather than re-pooling them through a rounded total.
+        if (slices.All(static slice => slice.Lot.CostBasis is not null && slice.Quantity == slice.Lot.Quantity))
+        {
+            return slices
                 .Select(static slice => new ReliefParcel(
-                    slice.Lot,
-                    slice.Quantity,
-                    RoundCurrency(slice.Quantity * slice.Lot.UnitCost),
-                    slice.Lot.UnitCost))
+                    slice.Lot, slice.Quantity, slice.Lot.CostBasis!.Value, slice.Lot.CostBasis!.Value / slice.Quantity))
                 .ToList();
         }
 

@@ -1,5 +1,9 @@
 /// <reference types="vite/client" />
 
+interface ImportMetaEnv {
+  readonly VITE_MERIDIAN_DEV_MODE?: "fixture-only" | "backend-connected" | "";
+}
+
 /**
  * The application version, injected by `define` in vite.config.ts at build time.
  *

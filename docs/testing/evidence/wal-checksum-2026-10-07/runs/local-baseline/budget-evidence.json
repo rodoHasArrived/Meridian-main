@@ -1,0 +1,111 @@
+{
+  "benchmark_result_rows": 8,
+  "budget_count": 9,
+  "violation_count": 4,
+  "unmeasured_count": 0,
+  "unmeasured_stages": [],
+  "waived_unmeasured_count": 0,
+  "waived_unmeasured_stages": [],
+  "measured_count": 8,
+  "stages": [
+    {
+      "stage_name": "AlpacaParse_Quote_SourceGenerated",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 640,
+      "max_mean_nanos_per_event": 1200,
+      "measured": true,
+      "actual_allocated_bytes": 472.0,
+      "actual_mean_nanos": 1104.177362356488,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.AlpacaParse_Quote_SourceGenerated",
+      "status": "pass"
+    },
+    {
+      "stage_name": "AlpacaParse_Trade_SourceGenerated",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 512,
+      "max_mean_nanos_per_event": 900,
+      "measured": true,
+      "actual_allocated_bytes": 384.0,
+      "actual_mean_nanos": 733.8872266080061,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.AlpacaParse_Trade_SourceGenerated",
+      "status": "pass"
+    },
+    {
+      "stage_name": "DedupKey_CacheHit",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 0,
+      "max_mean_nanos_per_event": 200,
+      "measured": true,
+      "actual_allocated_bytes": 0.0,
+      "actual_mean_nanos": 56.792391067718434,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.DedupKey_CacheHit",
+      "status": "pass"
+    },
+    {
+      "stage_name": "DedupKey_CacheMiss",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 256,
+      "max_mean_nanos_per_event": 800,
+      "measured": true,
+      "actual_allocated_bytes": 128.0,
+      "actual_mean_nanos": 847.9119403954444,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.DedupKey_CacheMiss",
+      "status": "violation"
+    },
+    {
+      "stage_name": "NewlineScan_Avx2",
+      "requires_simd": true,
+      "max_allocated_bytes_per_event": 0,
+      "max_mean_nanos_per_event": 20,
+      "measured": false,
+      "actual_allocated_bytes": null,
+      "actual_mean_nanos": null,
+      "matched_benchmark": null,
+      "status": "simd-excluded"
+    },
+    {
+      "stage_name": "NewlineScan_Portable",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 0,
+      "max_mean_nanos_per_event": 50,
+      "measured": true,
+      "actual_allocated_bytes": 0.0,
+      "actual_mean_nanos": 1.6446197370063582,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.NewlineScan_Portable",
+      "status": "pass"
+    },
+    {
+      "stage_name": "WalChecksum_Large_4KB",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 1024,
+      "max_mean_nanos_per_event": 1200,
+      "measured": true,
+      "actual_allocated_bytes": 0.0,
+      "actual_mean_nanos": 5053.999248242042,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.WalChecksum_Large_4KB",
+      "status": "violation"
+    },
+    {
+      "stage_name": "WalChecksum_Medium_1KB",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 0,
+      "max_mean_nanos_per_event": 600,
+      "measured": true,
+      "actual_allocated_bytes": 0.0,
+      "actual_mean_nanos": 1603.4543673276673,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.WalChecksum_Medium_1KB",
+      "status": "violation"
+    },
+    {
+      "stage_name": "WalChecksum_Small",
+      "requires_simd": false,
+      "max_allocated_bytes_per_event": 0,
+      "max_mean_nanos_per_event": 400,
+      "measured": true,
+      "actual_allocated_bytes": 0.0,
+      "actual_mean_nanos": 854.7618259935554,
+      "matched_benchmark": "Meridian.Benchmarks.PipelineBudgetBenchmarks.WalChecksum_Small",
+      "status": "violation"
+    }
+  ]
+}

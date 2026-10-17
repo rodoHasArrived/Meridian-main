@@ -9,7 +9,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Regression tests for endpoint metadata consistency.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class EndpointMetadataTests : IClassFixture<EndpointTestFixture>
 {
     private readonly EndpointTestFixture _fixture;

@@ -14,6 +14,14 @@ This lane is the canonical operator procedure page for reconciliation exception 
 
 ## Reconciliation Triage Sequence
 
+Complete [preflight](preflight-checklist.md) first. Use the signed-in Windows workstation or, for
+API inspection, PowerShell 7 from the repository root with the preflight session in terminal 2.
+Installed hosts use the supervisor-selected URL. Confirm the operator's company/tenant and the
+fund/account, book, period, and provider connection for the affected case; visibility into another
+workflow is not authority to change this one. Read permissions and mutation/approval permissions
+are checked separately. For exact statement-to-report inputs, use the
+[statement reconciliation procedure](statement-reconciliation-report-operations.md).
+
 1. Identify break class and severity from latest operator inbox.
 2. Confirm whether the break is:
    - ingest-only,
@@ -62,10 +70,12 @@ tax-lot, and borrow evidence alongside canonical rows), `STATEMENT_LINE_TOO_LONG
 a file failing that many rows is malformed at a scale no operator can reconcile row by row, so correct
 the export or the mapping profile rather than reviewing the diagnostics). An IB Flex import reports
 the same retained-row ceiling as
-`ROW_LIMIT_EXCEEDED`. The defaults sit well above any real bank or broker statement, so treat a
-breach first as a malformed or hostile file — check the source with the institution before assuming it
-is merely large. If the statement is genuinely legitimate, split it into shorter periods and import
-each; that needs no configuration change. Raising a bound is a deployment change, not an operator
+`ROW_LIMIT_EXCEEDED`. A refusal can reflect a large legitimate export or malformed input; verify
+the source and row counts with the institution. Split a legitimate export only when each segment
+can be imported under a valid, separately governed accounting scope. The statement-to-report
+workflow requires exact ledger-period dates, so an arbitrary shorter window is not a substitute.
+Otherwise repair the export/mapping or ask the deployment owner to assess the bound. Raising a
+bound is a deployment change, not an operator
 setting: it is a single registration documented in `src/Meridian.FinancialOperations/README.md`, and
 it should be raised only for the bound that actually refused, with the reason recorded.
 
@@ -105,19 +115,34 @@ mapping profile, or uploaded file.
 
 ## Command references
 
-- Readiness and diagnostics entry points:
+Use [authenticated preflight](preflight-checklist.md#authenticated-evidence-collection) to define
+`$meridianBaseUrl` and `$operatorSession` while the host runs in terminal 1. The current queue
+summary route is `/queue-status`:
 
 ```powershell
-dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
-curl http://localhost:8080/api/workstation/operator/inbox
-curl http://localhost:8080/api/workstation/reconciliation/queue
-curl http://localhost:8080/api/workstation/reconciliation/statement-connectors
-curl http://localhost:8080/api/workstation/reconciliation/statement-fetch-schedules
-curl http://localhost:8080/api/workstation/reconciliation/margin-control
+Invoke-RestMethod "$meridianBaseUrl/api/workstation/operator/inbox" -WebSession $operatorSession
+Invoke-RestMethod "$meridianBaseUrl/api/workstation/reconciliation/queue-status" -WebSession $operatorSession
+Invoke-RestMethod "$meridianBaseUrl/api/workstation/reconciliation/statement-connectors" -WebSession $operatorSession
+Invoke-RestMethod "$meridianBaseUrl/api/workstation/reconciliation/statement-fetch-schedules" -WebSession $operatorSession
+Invoke-RestMethod "$meridianBaseUrl/api/workstation/reconciliation/margin-control" -WebSession $operatorSession
 ```
 
 - Support recovery commands follow per-provider policy in
   [provider validation evidence schema](../reference/provider-validation-evidence-schema.md).
+
+## Expected results and failure recovery
+
+Authenticated reads return the intended scope's queue/schedule/margin data; inspect blocking
+findings even when HTTP status is `200`. A completed import retains source/canonical evidence and
+a reconciliation route. A resolved break needs retained evidence and an accepted correction or
+explanation; an empty queue or a successful fetch alone is insufficient.
+
+| Symptom | Next action |
+| --- | --- |
+| `401/403` or missing expected scope | Reauthenticate and verify permissions/company assignment before changing records. |
+| Import limit or mapping refusal | Preserve the source/refusal, correct the export or mapping, and repeat preview before commit. |
+| Fetch failed or margin evidence stale/incomplete | Check the selected vault connection and provider completeness, then fetch again within the schedule policy. Keep certification blocked. |
+| Break remains after a correction | Reopen its retained source and authoritative records; follow [Verified Outcome Recovery](verified-outcome-recovery.md) before retrying a mutation with an uncertain result. |
 
 ## Cross-Runbook Links
 

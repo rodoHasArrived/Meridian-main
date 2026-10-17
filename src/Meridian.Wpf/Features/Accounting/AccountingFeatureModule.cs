@@ -291,7 +291,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<IAccountingPolicyService>(),
                 sp.GetService<IAccountingConfigurationService>(),
                 sp.GetService<IAccountingPostingCandidateAuthorityBuilder>(),
-                sp.GetService<ILedgerJournalStore>())!);
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<Meridian.Storage.SecurityMaster.ISecurityMasterStore>())!);
         services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
             new AccountingPostingCandidatePostService(
                 sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),
@@ -320,10 +321,7 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
             new FileAccountingProductionCertificationProfileStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "production-certification-profiles.json"),
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileAccountingProductionCertificationProfileStore>>()));
-        services.TryAddSingleton<IEvidenceArtifactStore>(sp =>
-            new FileEvidenceArtifactStore(
-                FileEvidenceArtifactStore.ResolveDataRoot(sp),
-                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<FileEvidenceArtifactStore>>()));
+        services.AddEvidenceArtifactStorage();
         services.TryAddSingleton<IAccountingProductionCertificationEvidenceAuthority,
             EvidenceVaultAccountingProductionCertificationEvidenceAuthority>();
         services.TryAddSingleton<AccountingProductionCertificationCommandService>();

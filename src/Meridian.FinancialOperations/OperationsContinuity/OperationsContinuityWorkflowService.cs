@@ -16,6 +16,12 @@ public interface IOperationsContinuityWorkflowService
 {
     Task<OperationsTransitionResultDto> StartWorkflowAsync(OperationsStartWorkflowRequestDto request, CancellationToken ct = default);
 
+    Task<OperationsTransitionResultDto> StartPreparedWorkflowAsync(
+        OperationsStartWorkflowRequestDto request,
+        Guid workflowId,
+        CancellationToken ct = default) =>
+        throw new NotSupportedException("Prepared close workflows are not supported by this service.");
+
     Task<OperationsTransitionResultDto> ImportBrokerDataAsync(
         Guid workflowId,
         OperationsTransitionRequestDto request,
@@ -173,7 +179,11 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
         _statusDerivation = statusDerivation ?? throw new ArgumentNullException(nameof(statusDerivation));
         _workflowStartCommitStore = transactionalCommitStore as IOperationsContinuityWorkflowStartCommitStore ??
             repository as IOperationsContinuityWorkflowStartCommitStore ??
-            auditStore as IOperationsContinuityWorkflowStartCommitStore;
+            auditStore as IOperationsContinuityWorkflowStartCommitStore ??
+            (repository is InMemoryOperationsContinuityRepository startRepository &&
+             auditStore is InMemoryOperationsWorkflowAuditStore startAuditStore
+                ? new InMemoryOperationsContinuityWorkflowStartCommitStore(startRepository, startAuditStore)
+                : null);
         _transitionCommitStore = transactionalCommitStore ??
             repository as IOperationsContinuityTransitionCommitStore ??
             (repository is InMemoryOperationsContinuityRepository inMemoryRepository
@@ -181,82 +191,6 @@ public sealed partial class OperationsContinuityWorkflowService : IOperationsCon
                 : null);
         _ledgerPosting = new OperationsLedgerPostingService(ledgerJournalStore, transactionalCommitStore, securityMasterQueryService);
         _closeReadinessGuard = closeReadinessGuard;
-    }
-
-    public async Task<OperationsTransitionResultDto> StartWorkflowAsync(
-        OperationsStartWorkflowRequestDto request,
-        CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-
-        var validation = ValidateStartRequest(request);
-        if (validation.Count > 0)
-        {
-            return Failure("VALIDATION_FAILED", "Workflow start request is incomplete.", validation);
-        }
-
-        var existingWorkflows = await _repository
-            .ListAsync(request.FundAccountId, request.PeriodId, status: null, ct)
-            .ConfigureAwait(false);
-        var openWorkflow = existingWorkflows.FirstOrDefault(workflow =>
-            !workflow.IsClosed &&
-            WorkflowScopesCollide(workflow.LedgerBookId, request.LedgerBookId));
-        if (openWorkflow is not null)
-        {
-            return Failure(
-                "WORKFLOW_ALREADY_EXISTS",
-                $"An operations continuity workflow already exists for fund account '{request.FundAccountId}', period '{request.PeriodId.Trim()}', and ledger book '{FormatLedgerBookScope(request.LedgerBookId)}'.",
-                [
-                    new OperationsWorkflowBlockerDto(
-                        "OPERATIONS_CONTINUITY_WORKFLOW_ALREADY_EXISTS",
-                        "Refresh the existing workflow instead of starting a duplicate close lane.",
-                        null,
-                        "Error",
-                        [])
-                ]);
-        }
-
-        var now = DateTimeOffset.UtcNow;
-        var workflow = OperationsContinuityWorkflow.Start(
-            Guid.NewGuid(),
-            request.FundAccountId,
-            request.PeriodId,
-            request.SecurityMasterSnapshotId,
-            request.BrokerSource,
-            now,
-            request.LedgerBookId);
-
-        var evidence = OperationsContinuityWorkflowText.NormalizeEvidence(request.EvidenceLinks);
-        var auditDraft = new OperationsWorkflowAuditDraft(
-            workflow.WorkflowId,
-            workflow.FundAccountId,
-            workflow.PeriodId,
-            "workflow-started",
-            OperationsWorkflowStatusDto.NotStarted,
-            _statusDerivation.Derive(workflow),
-            OperationsGateKeyDto.BrokerIngest,
-            OperationsGateStatusDto.NotStarted,
-            OperationsGateStatusDto.InProgress,
-            request.Actor.Trim(),
-            OperationsContinuityWorkflowText.RedactSensitiveText(request.Rationale),
-            OperationsContinuityWorkflowText.RedactSensitiveText(request.CorrelationId),
-            evidence);
-
-        if (_workflowStartCommitStore is not null)
-        {
-            var startCommit = await _workflowStartCommitStore
-                .CommitWorkflowStartAsync(workflow, auditDraft, ct)
-                .ConfigureAwait(false);
-            var committedDto = await ToDtoAsync(startCommit.Workflow, ct).ConfigureAwait(false);
-            return Success(committedDto);
-        }
-
-        var audit = await _auditStore.AppendAsync(auditDraft, ct: ct).ConfigureAwait(false);
-
-        workflow.Touch(audit.OccurredAtUtc);
-        await _repository.SaveAsync(workflow, ct).ConfigureAwait(false);
-        var dto = await ToDtoAsync(workflow, ct).ConfigureAwait(false);
-        return Success(dto);
     }
 
     public async Task<OperationsTransitionResultDto> ImportBrokerDataAsync(

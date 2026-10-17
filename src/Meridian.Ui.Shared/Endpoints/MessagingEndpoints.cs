@@ -16,15 +16,14 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class MessagingEndpoints
 {
-    // Track messaging activity in-process
-    private static readonly List<MessagingActivityEntry> s_activityLog = new();
-    private static readonly List<MessagingErrorEntry> s_errorLog = new();
-    private static readonly object s_lock = new();
-    private static int s_totalSent;
-    private static int s_totalFailed;
-
     public static void MapMessagingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        // Activity belongs to this host, including when multiple TestServers share a process.
+        var activityLog = new List<MessagingActivityEntry>();
+        var errorLog = new List<MessagingErrorEntry>();
+        var activityLock = new object();
+        var totalSent = 0;
+        var totalFailed = 0;
         var group = app.MapGroup("").WithTags("Messaging");
 
         // Messaging config - reads actual webhook configuration
@@ -51,14 +50,14 @@ public static class MessagingEndpoints
         // Messaging status - returns actual webhook delivery stats
         group.MapGet(UiApiRoutes.MessagingStatus, ([FromServices] DailySummaryWebhook? webhook) =>
         {
-            lock (s_lock)
+            lock (activityLock)
             {
                 return Results.Json(new
                 {
                     running = webhook != null,
                     queued = 0,
-                    delivered = s_totalSent,
-                    failed = s_totalFailed,
+                    delivered = totalSent,
+                    failed = totalFailed,
                     timestamp = DateTimeOffset.UtcNow
                 }, jsonOptions);
             }
@@ -69,10 +68,10 @@ public static class MessagingEndpoints
         // Messaging stats
         group.MapGet(UiApiRoutes.MessagingStats, () =>
         {
-            lock (s_lock)
+            lock (activityLock)
             {
                 var byChannel = new Dictionary<string, int>();
-                foreach (var entry in s_activityLog)
+                foreach (var entry in activityLog)
                 {
                     byChannel.TryGetValue(entry.Channel, out var count);
                     byChannel[entry.Channel] = count + 1;
@@ -80,11 +79,11 @@ public static class MessagingEndpoints
 
                 return Results.Json(new
                 {
-                    totalSent = s_totalSent,
-                    totalFailed = s_totalFailed,
+                    totalSent = totalSent,
+                    totalFailed = totalFailed,
                     totalQueued = 0,
-                    averageDeliveryMs = s_activityLog.Count > 0
-                        ? (int)s_activityLog.Average(a => a.DeliveryMs)
+                    averageDeliveryMs = activityLog.Count > 0
+                        ? (int)activityLog.Average(a => a.DeliveryMs)
                         : 0,
                     byChannel,
                     timestamp = DateTimeOffset.UtcNow
@@ -97,9 +96,9 @@ public static class MessagingEndpoints
         // Messaging activity - returns recent activity log
         group.MapGet(UiApiRoutes.MessagingActivity, (int? limit) =>
         {
-            lock (s_lock)
+            lock (activityLock)
             {
-                var items = s_activityLog
+                var items = activityLog
                     .OrderByDescending(a => a.Timestamp)
                     .Take(limit ?? 50)
                     .Select(a => new
@@ -115,7 +114,7 @@ public static class MessagingEndpoints
                 return Results.Json(new
                 {
                     activity = items,
-                    total = s_activityLog.Count,
+                    total = activityLog.Count,
                     timestamp = DateTimeOffset.UtcNow
                 }, jsonOptions);
             }
@@ -193,7 +192,7 @@ public static class MessagingEndpoints
 
                 var allSuccess = results.All(r => r.Success);
 
-                lock (s_lock)
+                lock (activityLock)
                 {
                     var entry = new MessagingActivityEntry
                     {
@@ -204,15 +203,15 @@ public static class MessagingEndpoints
                         DeliveryMs = (int)sw.ElapsedMilliseconds,
                         Timestamp = DateTimeOffset.UtcNow
                     };
-                    s_activityLog.Add(entry);
+                    activityLog.Add(entry);
                     if (allSuccess)
-                        s_totalSent++;
+                        totalSent++;
                     else
-                        s_totalFailed++;
+                        totalFailed++;
 
                     // Keep activity log bounded
-                    while (s_activityLog.Count > 500)
-                        s_activityLog.RemoveAt(0);
+                    while (activityLog.Count > 500)
+                        activityLog.RemoveAt(0);
                 }
 
                 return Results.Json(new
@@ -244,10 +243,10 @@ public static class MessagingEndpoints
             catch (Exception ex)
             {
                 sw.Stop();
-                lock (s_lock)
+                lock (activityLock)
                 {
-                    s_totalFailed++;
-                    s_errorLog.Add(new MessagingErrorEntry
+                    totalFailed++;
+                    errorLog.Add(new MessagingErrorEntry
                     {
                         Id = Guid.NewGuid().ToString("N")[..12],
                         Channel = req?.Channel ?? "webhook",
@@ -273,13 +272,13 @@ public static class MessagingEndpoints
         // Publishing stats
         group.MapGet(UiApiRoutes.MessagingPublishing, ([FromServices] DailySummaryWebhook? webhook) =>
         {
-            lock (s_lock)
+            lock (activityLock)
             {
                 return Results.Json(new
                 {
                     isPublishing = webhook != null,
-                    messagesPublished = s_totalSent,
-                    messagesFailed = s_totalFailed,
+                    messagesPublished = totalSent,
+                    messagesFailed = totalFailed,
                     timestamp = DateTimeOffset.UtcNow
                 }, jsonOptions);
             }
@@ -291,13 +290,13 @@ public static class MessagingEndpoints
         group.MapPost(UiApiRoutes.MessagingQueuePurge, (string queueName) =>
         {
             int removed;
-            lock (s_lock)
+            lock (activityLock)
             {
-                removed = s_activityLog.Count + s_errorLog.Count;
-                s_activityLog.Clear();
-                s_errorLog.Clear();
-                s_totalSent = 0;
-                s_totalFailed = 0;
+                removed = activityLog.Count + errorLog.Count;
+                activityLog.Clear();
+                errorLog.Clear();
+                totalSent = 0;
+                totalFailed = 0;
             }
 
             return Results.Json(new
@@ -316,9 +315,9 @@ public static class MessagingEndpoints
         // Messaging errors - returns actual error log
         group.MapGet(UiApiRoutes.MessagingErrors, (int? limit) =>
         {
-            lock (s_lock)
+            lock (activityLock)
             {
-                var items = s_errorLog
+                var items = errorLog
                     .OrderByDescending(e => e.Timestamp)
                     .Take(limit ?? 50)
                     .Select(e => new { e.Id, e.Channel, e.Error, e.Timestamp });
@@ -326,7 +325,7 @@ public static class MessagingEndpoints
                 return Results.Json(new
                 {
                     errors = items,
-                    total = s_errorLog.Count,
+                    total = errorLog.Count,
                     timestamp = DateTimeOffset.UtcNow
                 }, jsonOptions);
             }
@@ -349,9 +348,9 @@ public static class MessagingEndpoints
             }
 
             MessagingErrorEntry? errorEntry;
-            lock (s_lock)
+            lock (activityLock)
             {
-                errorEntry = s_errorLog.FirstOrDefault(e => e.Id == messageId);
+                errorEntry = errorLog.FirstOrDefault(e => e.Id == messageId);
             }
 
             if (errorEntry == null)
@@ -370,12 +369,12 @@ public static class MessagingEndpoints
                 var results = await webhook.SendMessageAsync($"Retried message (original error: {errorEntry.Error})", "Retry Notification", ct);
                 var success = results.All(r => r.Success);
 
-                lock (s_lock)
+                lock (activityLock)
                 {
                     if (success)
                     {
-                        s_errorLog.Remove(errorEntry);
-                        s_totalSent++;
+                        errorLog.Remove(errorEntry);
+                        totalSent++;
                     }
                 }
 

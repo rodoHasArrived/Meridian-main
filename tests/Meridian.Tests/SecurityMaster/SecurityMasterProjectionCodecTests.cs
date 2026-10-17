@@ -105,11 +105,13 @@ public sealed class SecurityMasterProjectionCodecTests
             }
         });
 
-        PostgresSecurityMasterStore.TryBuildSwapProjection(record, out var projection).Should().BeTrue();
+        var swap = SecurityTermsProjectionRegistry.Descriptors.Single(static descriptor => descriptor.AssetClass == "Swap");
+        PostgresSecurityMasterStore.TryBuildTermsProjection(swap, record, out var plan).Should().BeTrue();
 
-        projection.SwapType.Should().Be("FixedFloat");
-        projection.EffectiveDate.Should().Be(new DateOnly(2024, 1, 1));
-        projection.MaturityDate.Should().Be(new DateOnly(2029, 1, 1));
+        plan.Value("swap_type").Should().Be("FixedFloat");
+        plan.Value("effective_date").Should().Be(new DateTime(2024, 1, 1));
+        plan.Value("maturity_date").Should().Be(new DateTime(2029, 1, 1));
+        plan.Value("lifecycle_stat").Should().Be("Active");
     }
 
     [Fact]

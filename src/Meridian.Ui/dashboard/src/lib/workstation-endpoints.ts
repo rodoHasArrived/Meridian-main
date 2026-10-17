@@ -11,6 +11,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   strategyBriefing: UI_API_ROUTES.WorkstationStrategyBriefing,
   trading: UI_API_ROUTES.WorkstationTrading,
   tradingReadiness: UI_API_ROUTES.WorkstationTradingReadiness,
+  tradingBrokerageRecovery: UI_API_ROUTES.WorkstationTradingBrokerageRecovery,
   operatorInbox: UI_API_ROUTES.WorkstationOperatorInbox,
   portfolio: UI_API_ROUTES.WorkstationPortfolio,
   portfolioSummary: UI_API_ROUTES.WorkstationPortfolioSummary,
@@ -355,6 +356,10 @@ export function securityMasterCorporateActionSourceProposalAcceptEndpoint(propos
  */
 function securityMasterWorkbenchPath(route: string, securityId: string): string {
   return route.replace("{securityId:guid}", encodeURIComponent(securityId));
+}
+
+export function securityMasterAssetClassDefinitionEndpoint(assetClass: string): string {
+  return UI_API_ROUTES.SecurityMasterAssetClassDefinition.replace("{assetClass}", encodeURIComponent(assetClass));
 }
 
 export function securityMasterWorkbenchFieldEndpoint(securityId: string): string {

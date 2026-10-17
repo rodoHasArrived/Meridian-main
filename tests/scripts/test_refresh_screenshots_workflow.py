@@ -4,6 +4,10 @@ import unittest
 from pathlib import Path
 from urllib.parse import urlsplit
 
+import yaml
+
+from tests.scripts.workflow_assertions import assert_pinned_action
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WEB_SCREENSHOT_CAPTURE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "web-screenshot-capture.yml"
@@ -42,15 +46,20 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("--surface web", self.web_workflow)
         self.assertIn("--require-fresh", self.web_workflow)
         self.assertIn("pull-requests: write", self.web_workflow)
-        self.assertIn("uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1", self.web_workflow)
+        pull_request = assert_pinned_action(
+            self, self.web_workflow, "capture-web-screenshots", "peter-evans/create-pull-request"
+        )
+        checkout = assert_pinned_action(self, self.web_workflow, "capture-web-screenshots", "actions/checkout")
+        self.assertEqual(checkout.get("with", {}).get("persist-credentials"), "false")
         capture_step = self.web_workflow.split("- name: Capture web screenshots", 1)[1].split(
             "- name: Validate web screenshot captures", 1
         )[0]
         self.assertNotIn("continue-on-error: true", capture_step)
         self.assertIn("continue-on-error: true", self.web_workflow)
-        self.assertIn("branch: automation/web-screenshot-capture", self.web_workflow)
-        self.assertIn("base: ${{ github.event.repository.default_branch }}", self.web_workflow)
-        self.assertIn("title: \"chore: refresh web workstation screenshot catalog\"", self.web_workflow)
+        self.assertEqual(pull_request.get("if"), "${{ steps.capture_web.outcome == 'success' }}")
+        self.assertEqual(pull_request.get("with", {}).get("branch"), "automation/web-screenshot-capture")
+        self.assertEqual(pull_request.get("with", {}).get("base"), "${{ github.event.repository.default_branch }}")
+        self.assertEqual(pull_request.get("with", {}).get("title"), "chore: refresh web workstation screenshot catalog")
         # The clean, lockfile-pinned install must not regress back to a mutable
         # `npm install`, which can silently drift the dependency tree in CI.
         self.assertNotIn("npm install --prefix", self.web_workflow)
@@ -65,7 +74,26 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("--require-fresh", self.desktop_screenshot_workflow)
         self.assertNotIn("continue-on-error: true", self.desktop_screenshot_workflow)
         self.assertIn("if: ${{ success() && inputs.commit == true }}", self.desktop_screenshot_workflow)
-        self.assertIn("name: desktop-screenshots-${{ github.run_number }}", self.desktop_screenshot_workflow)
+        self.assertIn("name: desktop-screenshots-complete-${{ github.run_number }}", self.desktop_screenshot_workflow)
+
+    def test_desktop_screenshots_keep_one_complete_archive_including_failure_evidence(self) -> None:
+        workflow = yaml.load(self.desktop_screenshot_workflow, Loader=yaml.BaseLoader)
+        steps = workflow["jobs"]["capture-screenshots"]["steps"]
+        uploads = [step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@")]
+        self.assertEqual(len(uploads), 1, "Catalog PNGs must not be uploaded twice")
+        upload = uploads[0]
+        self.assertEqual(upload["if"], "${{ always() }}")
+        self.assertEqual(upload["with"]["path"], "artifacts/desktop-screenshot-capture/all-screenshots/")
+        self.assertEqual(upload["with"]["retention-days"], "14")
+        prepare = next(step for step in steps if step.get("name") == "Prepare complete screenshot artifact")
+        self.assertEqual(prepare["if"], "${{ always() }}")
+        self.assertLess(steps.index(prepare), steps.index(upload))
+        for required in (
+            'Copy-ScreenshotSet -SourceRoot "${{ steps.validate_output_dir.outputs.safe_output_dir }}" -Bucket "catalog"',
+            'Copy-ScreenshotSet -SourceRoot "artifacts/desktop-workflows" -Bucket "workflow-runs"',
+            "screenshot-artifact-manifest.json",
+        ):
+            self.assertIn(required, prepare["run"])
 
     def test_desktop_screenshot_wrapper_uses_fresh_artifact_root_by_default(self) -> None:
         self.assertIn("[string]$OutputRoot", self.capture_desktop_screenshots_script)
@@ -305,6 +333,45 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("Retained posting evidence 1", captures["W03J1"].get("waitForTexts", []))
         self.assertIn("Evidence Workbench", captures["W03I5"].get("waitForTexts", []))
         self.assertIn("Document intake", captures["W03I5"].get("waitForTexts", []))
+
+    def test_operations_continuity_capture_retains_matching_detail_without_fallback(self) -> None:
+        capture = next(c for c in self.web_screenshot_routes["captures"] if c["id"] == "W03G")
+        fixtures = self.web_screenshot_fixtures["routes"]
+        list_path = "/api/workstation/operations/continuity"
+        self.assertIn(list_path, capture["requiredApiRoutes"])
+        summaries = fixtures[list_path]
+        self.assertEqual(1, len(summaries))
+        summary = summaries[0]
+        detail_path = f"{list_path}/{summary['workflowId']}"
+        self.assertIn(detail_path, capture["requiredApiRoutes"])
+        detail = fixtures[detail_path]
+        for field in ("workflowId", "version", "fundAccountId", "periodId", "ledgerBookId"):
+            self.assertEqual(summary.get(field), detail.get(field), field)
+
+        # A loaded-list announcement can appear briefly before a detail failure.
+        # Require retained detail content as well as the existing list readiness.
+        self.assertTrue(any(event["rationale"] in capture["waitForTexts"] for event in detail["timeline"]))
+        self.assertIn("Selected workflow detail failed to load:", capture["waitForAbsentTexts"])
+
+        # The list fixture is also a prefix match. Preserve this sibling's object
+        # contract instead of accidentally answering it with the workflow array.
+        policy_path = f"{list_path}/approval-policy-matrix"
+        self.assertIn(policy_path, capture["requiredApiRoutes"])
+        self.assertIsInstance(fixtures[policy_path]["rows"], list)
+
+        # The cockpit and shared decision are loaded together; a missing shared
+        # endpoint rejects both even when selected workflow detail is available.
+        command_center_path = "/api/workstation/operations/financial-operations-command-center"
+        self.assertIn(command_center_path, capture["requiredApiRoutes"])
+        command_center = fixtures[command_center_path]
+        self.assertEqual(detail, command_center["activeWorkflow"])
+        self.assertFalse(command_center["isReadyToComplete"])
+        self.assertFalse(command_center["closeReadiness"]["isReadyToClose"])
+        self.assertEqual(detail["fundAccountId"], command_center["closeReadiness"]["scope"]["fundAccountId"])
+        self.assertEqual(detail["periodId"], command_center["closeReadiness"]["scope"]["periodId"])
+        self.assertIn("3/7 lanes ready across 1 close workflow.", capture["waitForTexts"])
+        self.assertIn("Private-capital close cockpit unavailable", capture["waitForAbsentTexts"])
+        self.assertIn("Private-capital close evidence is unavailable.", capture["waitForAbsentTexts"])
 
     def test_accounting_capture_contracts_use_current_operator_labels(self) -> None:
         captures = {

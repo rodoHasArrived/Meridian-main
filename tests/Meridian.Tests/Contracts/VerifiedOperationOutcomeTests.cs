@@ -125,6 +125,84 @@ public sealed class VerifiedOperationOutcomeTests
             .Should().Contain(error => error.Contains("unsupported severity", StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData("postconditions", "Postconditions")]
+    [InlineData("evidence", "Evidence")]
+    [InlineData("artifacts", "Artifacts")]
+    [InlineData("issues", "Issues")]
+    [InlineData("recovery", "Recovery")]
+    public void SourceGeneratedJson_NullCollectionEntries_FailClosedWithoutDiscardingValidEntries(
+        string collectionName,
+        string validationName)
+    {
+        var json = JsonSerializer.Serialize(
+            CreateOutcome(OperationTerminalState.CompletedWithWarnings),
+            OperationsContractsJsonContext.Default.VerifiedOperationOutcome);
+        var document = JsonNode.Parse(json)!.AsObject();
+        var entries = document[collectionName]!.AsArray();
+        entries.Insert(0, null);
+        entries.Add((JsonNode?)null);
+
+        var outcome = JsonSerializer.Deserialize(
+            document.ToJsonString(),
+            OperationsContractsJsonContext.Default.VerifiedOperationOutcome);
+
+        outcome.Should().NotBeNull();
+        VerifiedOperationOutcomeValidator.Validate(outcome!).Should().Equal(
+            $"{validationName}[0] cannot be null.",
+            $"{validationName}[2] cannot be null.");
+        Action validateAndThrow = () => VerifiedOperationOutcomeValidator.ValidateAndThrow(outcome!);
+        validateAndThrow.Should().Throw<ArgumentException>();
+    }
+
+    [Theory]
+    [InlineData("postconditions", "Postconditions", "At least one evaluated postcondition is required.")]
+    [InlineData("evidence", "Evidence", "At least one retained evidence reference is required.")]
+    [InlineData("artifacts", "Artifacts", "Postcondition 'output-verified' references missing artifact 'artifact-1'.")]
+    [InlineData("issues", "Issues", "CompletedWithWarnings requires at least one warning issue.")]
+    [InlineData("recovery", "Recovery", "CompletedWithWarnings requires recovery or review guidance.")]
+    public void SourceGeneratedJson_OnlyNullCollectionEntry_PreservesRequiredInvariantChecks(
+        string collectionName,
+        string validationName,
+        string expectedInvariantError)
+    {
+        var json = JsonSerializer.Serialize(
+            CreateOutcome(OperationTerminalState.CompletedWithWarnings),
+            OperationsContractsJsonContext.Default.VerifiedOperationOutcome);
+        var document = JsonNode.Parse(json)!.AsObject();
+        document[collectionName] = new JsonArray((JsonNode?)null);
+
+        var outcome = JsonSerializer.Deserialize(
+            document.ToJsonString(),
+            OperationsContractsJsonContext.Default.VerifiedOperationOutcome);
+
+        outcome.Should().NotBeNull();
+        var errors = VerifiedOperationOutcomeValidator.Validate(outcome!);
+        errors.Should().Contain($"{validationName}[0] cannot be null.");
+        errors.Should().Contain(expectedInvariantError);
+    }
+
+    [Fact]
+    public void SourceGeneratedJson_NullPostconditionEntry_DoesNotHideUnmetRequiredPostcondition()
+    {
+        var json = JsonSerializer.Serialize(
+            CreateOutcome(OperationTerminalState.Succeeded),
+            OperationsContractsJsonContext.Default.VerifiedOperationOutcome);
+        var document = JsonNode.Parse(json)!.AsObject();
+        var postconditions = document["postconditions"]!.AsArray();
+        postconditions[0]!["state"] = "NotSatisfied";
+        postconditions.Insert(0, null);
+
+        var outcome = JsonSerializer.Deserialize(
+            document.ToJsonString(),
+            OperationsContractsJsonContext.Default.VerifiedOperationOutcome);
+
+        outcome.Should().NotBeNull();
+        var errors = VerifiedOperationOutcomeValidator.Validate(outcome!);
+        errors.Should().Contain("Postconditions[0] cannot be null.");
+        errors.Should().Contain("Succeeded requires every required postcondition to be satisfied.");
+    }
+
     [Fact]
     public void Validator_SucceededWithUnmetPostcondition_RejectsFalseSuccess()
     {

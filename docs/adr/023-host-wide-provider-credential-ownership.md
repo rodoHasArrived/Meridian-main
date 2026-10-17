@@ -736,7 +736,7 @@ whole host use?** Facts in the current code shape the answer:
    - **Recover first.** Before changing anything, the transaction resolves every earlier `pending`
      entry against the current state file (see Recovery below). If any entry cannot be resolved, the
      command refuses to change the state. A later change therefore never overtakes an unresolved one.
-   - **Steps.** Holding all three locks, under one correlation ID:
+   - **Steps.** Holding the locks in the order above, under one correlation ID:
      1. read the current state;
      2. for `set`, run the point 6 checks against the retained connection and the credential record as
         they are now. Because the configuration and vault locks are held until step 5, no

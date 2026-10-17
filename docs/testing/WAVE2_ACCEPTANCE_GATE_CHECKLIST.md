@@ -1,9 +1,15 @@
 # Wave 2 Acceptance Gate Checklist
 
+**Status:** archived
+**Owner:** core-team
+**Reviewed:** 2026-05-08
 **Last Updated:** 2026-05-08
 **Target Exit Date:** 2026-05-29
 
-This document defines the exact pass/fail criteria for each Wave 2 acceptance gate.
+This document preserves the Wave 2 gate definition and implementation snapshot from 2026-05-08.
+The partial-implementation labels below describe that review, not current delivery state. Use the
+[maintained test guide](WAVE2_ACCEPTANCE_TESTS.md) for runnable commands and the
+[roadmap registry](../roadmap/README.md) for milestone acceptance.
 
 ---
 

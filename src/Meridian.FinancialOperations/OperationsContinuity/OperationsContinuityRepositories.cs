@@ -148,6 +148,15 @@ public sealed class InMemoryOperationsContinuityRepository : IOperationsContinui
 
     internal void SaveUnsafe(OperationsContinuityWorkflow workflow) =>
         _workflows[workflow.WorkflowId] = workflow;
+
+    internal void EnsureWorkflowStartAvailableUnsafe(OperationsContinuityWorkflow workflow)
+    {
+        if (_workflows.ContainsKey(workflow.WorkflowId) || _workflows.Values.Any(existing =>
+                !existing.IsClosed && existing.FundAccountId == workflow.FundAccountId &&
+                string.Equals(existing.PeriodId, workflow.PeriodId, StringComparison.OrdinalIgnoreCase) &&
+                (existing.LedgerBookId is null || workflow.LedgerBookId is null || existing.LedgerBookId == workflow.LedgerBookId)))
+            throw new InvalidOperationException("An operations continuity workflow already exists for this identity or accounting scope.");
+    }
 }
 
 public sealed class InMemoryOperationsWorkflowAuditStore : IOperationsWorkflowAuditStore
@@ -183,6 +192,8 @@ public sealed class InMemoryOperationsWorkflowAuditStore : IOperationsWorkflowAu
 
     internal Lock SyncRoot => _lock;
 
+    internal bool HasTimelineUnsafe(Guid workflowId) => _events.TryGetValue(workflowId, out var timeline) && timeline.Count > 0;
+
     internal OperationsWorkflowAuditDto AppendUnsafe(OperationsWorkflowAuditDraft draft)
     {
         if (!_events.TryGetValue(draft.WorkflowId, out var timeline))
@@ -195,6 +206,37 @@ public sealed class InMemoryOperationsWorkflowAuditStore : IOperationsWorkflowAu
         var entry = OperationsWorkflowAuditHashing.Create(draft, previousHash, DateTimeOffset.UtcNow);
         timeline.Add(entry);
         return entry;
+    }
+}
+
+internal sealed class InMemoryOperationsContinuityWorkflowStartCommitStore(
+    InMemoryOperationsContinuityRepository repository,
+    InMemoryOperationsWorkflowAuditStore auditStore) : IOperationsContinuityWorkflowStartCommitStore
+{
+    public Task<OperationsContinuityTransactionalCommitResult> CommitWorkflowStartAsync(
+        OperationsContinuityWorkflow workflow,
+        OperationsWorkflowAuditDraft auditDraft,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(workflow);
+        ArgumentNullException.ThrowIfNull(auditDraft);
+        ct.ThrowIfCancellationRequested();
+        if (workflow.WorkflowId != auditDraft.WorkflowId)
+            throw new ArgumentException("Workflow and audit draft identities must match.", nameof(auditDraft));
+
+        lock (repository.SyncRoot)
+        {
+            lock (auditStore.SyncRoot)
+            {
+                repository.EnsureWorkflowStartAvailableUnsafe(workflow);
+                if (auditStore.HasTimelineUnsafe(workflow.WorkflowId))
+                    throw new InvalidOperationException("The workflow identity already has retained audit evidence.");
+                var audit = auditStore.AppendUnsafe(auditDraft);
+                workflow.Touch(audit.OccurredAtUtc);
+                repository.SaveUnsafe(workflow);
+                return Task.FromResult(new OperationsContinuityTransactionalCommitResult(workflow, audit));
+            }
+        }
     }
 }
 

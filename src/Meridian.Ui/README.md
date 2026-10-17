@@ -13,10 +13,24 @@ last_reviewed: 2026-07-27
 
 Browser reconciliation queue source observations and retained occurrence age are projected separately from case status. Shared services own lineage, comparison evidence and SLA calendars.
 
+The generated dashboard route catalog includes the shared account oversight APIs for cash
+case continuity, reviewed price snapshots and cash forecasts. Scope and retained source authority
+remain server-owned in `Meridian.Ui.Shared`; see
+[bounded account oversight](../../docs/operators/account-oversight.md) for supported routes.
+The host-served bundle includes Accounting's account-book workbench for retained cash cases,
+independent close-price review and dated cash forecasts, with source evidence and blocked states.
+
+Accounting's External GL surface includes bounded onboarding backed by shared retained workspace
+services. Rebuild the dashboard to serve source selection, comparison history, review controls and
+canonical frozen packet downloads. The host exposes no onboarding posting or authority transition.
 
 The checked-in workstation bundle includes retained manual-journal amount proof and durable
 reconciliation lineage display. Regenerate it from the dashboard after related source changes;
 close and report authority remains in the shared endpoint and service layer.
+
+Reporting's retained investment-income comparison is included in the host-served bundle. Both
+run status and governed run detail provide explicit published/restated baseline selection and
+retained contribution drill-through; comparison persistence and compatibility remain server-owned.
 
 ## Purpose
 
@@ -71,6 +85,12 @@ Browser navigation and command-palette root commands canonicalize supplied works
 `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` so legacy
 root names stay compatibility aliases. App-shell evidence timeline labels follow the same rule when
 overview events arrive with retained source names.
+
+The generated dashboard route table includes the Security Master asset-class registry
+endpoints, and the workstation identifier-kind union includes `LoanX` and `Clip`.
+
+The generated route table includes the income cash-flow, factor-history and term-block
+Security Master routes.
 
 ## Diagrams
 

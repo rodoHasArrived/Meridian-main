@@ -12,7 +12,11 @@ public sealed record OperationsContinuityWorkflowRowModel(
     string GatesText,
     string UpdatedText,
     WorkstationReadinessTone ReadinessTone,
-    string Tone);
+    string Tone,
+    long Version = 0,
+    Guid FundAccountId = default,
+    string PeriodId = "",
+    Guid? LedgerBookId = null);
 
 public sealed record OperationsContinuityPanelRowModel(
     string Id,
@@ -126,7 +130,11 @@ public static class OperationsContinuityMapper
                     $"{passedGates}/{workflow.Gates.Count} gates passed · {Pluralize(blockerCount, "blocker")}",
                     FormatTimestamp(workflow.UpdatedAtUtc),
                     tone,
-                    ToWorkspaceTone(tone));
+                    ToWorkspaceTone(tone),
+                    workflow.Version,
+                    workflow.FundAccountId,
+                    workflow.PeriodId,
+                    workflow.LedgerBookId);
             })
             .ToArray();
     }

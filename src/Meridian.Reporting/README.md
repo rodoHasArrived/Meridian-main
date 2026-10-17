@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-08-04
+last_reviewed: 2026-10-05
 ---
 
 # src/Meridian.Reporting
@@ -32,6 +32,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   archetypes to enabled template ids, hub layout ids, default periods, and draft schedule seeds.
 - `ReportingContracts.cs` - reporting run, schedule, lineage, template, approval, manifest, and
   audit contracts.
+- `ReportingIncomeComparisonEngine.cs` and `ReportingIncomeComparisonContracts.cs` - explained
+  comparisons of explicitly selected retained report runs using `ReportSnapshotDiffEngine`, exact
+  journal support, population scope changes, retained methodology definitions, and visible residuals.
 - `ReportingGovernanceContracts.cs` - tenant-bound `Draft -> Validated -> InReview -> Approved ->
   Released` aggregates, maker-checker rules, governed restatement, and append-only audit contracts.
 - `ReportingArtifactContracts.cs` and `ReportingArtifactDeclaration.cs` - immutable package,
@@ -57,6 +60,31 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   with optional Security Master classification.
 
 ## Important workflows
+
+Investment-income comparisons use two explicit retained run IDs and a retained grid/metric.
+`ReportingIncomeComparisonEngine` freezes both manifests and reuses `ReportSnapshotDiffEngine`.
+Period, population, accounting basis, source/presentation currency, and book compatibility are
+independent from arithmetic agreement. Missing scope or incompatible parameters cannot produce
+`Reconciled`, including when movement and residual are both zero.
+
+Additive Sum metrics use exact retained journal and line identities. Population contributions
+require a retained row to be excluded by the opposite run's explicit scope; a newly observed
+instrument alone is not evidence of a population change. Each line is explained at most once.
+Changed retained metric/filter definitions can explain their measured effect on byte-identical
+continuing lines, with both definitions, template versions, and before/after impacts retained.
+This is mechanical attribution, not methodology approval. A template-version label alone, altered
+journal bytes, or a joint new-journal/methodology effect remains unexplained. Optional quantified
+`IncomeMethodologyEvidence` is accepted only when its exclusive unchanged lines and amounts verify.
+
+The engine re-renders each supported metric cell from retained input rows. Offsetting unsupported
+journal or rendered-cell changes remain explicit `Unexplained` contributions even at net zero;
+these contributions are excluded from explained movement. Top-N, formula, and cross-tab measures
+without a supported additive mapping remain unexplained. UI Shared persists the complete envelope
+through the existing tenant-scoped content-addressed artifact store and serves retained support.
+Comparison monetary values cross the browser API as canonical decimal strings, preserving every
+retained digit without binary floating-point conversion. Generated JSON metadata covers manifest
+cloning, methodology definitions, retained envelopes, and endpoint responses; earlier numeric
+comparison artifacts remain readable without rewriting their content addresses.
 
 Use this README to understand the module before editing source files. Update the registry when
 validation, roadmap links, diagrams, or ownership changes. Reporting owns the immutable run,

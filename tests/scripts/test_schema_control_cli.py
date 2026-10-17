@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import os
 import subprocess
 import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -20,6 +23,110 @@ from tools.schema_control.cli import (
 
 
 class SchemaControlCliTests(unittest.TestCase):
+    def test_inventory_detects_new_collisions_against_exact_git_base(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            migrations = root / "src/Ledger/Migrations"
+            migrations.mkdir(parents=True)
+            for name in ("closing_entry_posting_kind", "operations_continuity"):
+                (migrations / f"V_ledger_008__{name}.sql").write_text("select 1;\n")
+            config = {
+                "migration_sets": [
+                    {"id": "ledger", "directory": "src/Ledger/Migrations", "schema": "ledger"}
+                ],
+                "migration_reservations": "database/migration-reservations.json",
+            }
+            register = {"version": 1, "migration_sets": [{
+                "id": "ledger", "filename_template": "V_ledger_{ordinal:03d}__{slug}.sql",
+                "ordinal_pattern": "^V_ledger_(?P<ordinal>\\d+)__", "reservations": [],
+            }]}
+            (root / "database/policies").mkdir(parents=True)
+            for path, value in (
+                ("database/schema-control.json", config),
+                ("database/migration-reservations.json", register),
+                ("database/policies/schema-control.json", {}),
+                ("database/policies/migration-waivers.json", {}),
+            ):
+                (root / path).write_text(json.dumps(value))
+            docs = root / "docs/engineering/blueprints/README.md"
+            docs.parent.mkdir(parents=True)
+            docs.write_text("<!-- migration-reservations:start -->\n<!-- migration-reservations:end -->\n")
+            prefix = ["--root", str(root)]
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                self.assertEqual(0, main(prefix + ["generate-migration-docs"]))
+                for args in (
+                    ["init", "-q"], ["add", "."],
+                    ["-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-qm", "base"],
+                ):
+                    subprocess.run(["git", *args], cwd=root, check=True, capture_output=True)
+                baseline = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
+                self.assertEqual(0, main(prefix + ["inventory", "--base-ref", baseline]))
+                for name in ("V_ledger_008__third.sql", "V_ledger_009__first.sql", "V_ledger_009__second.sql"):
+                    (migrations / name).write_text("select 1;\n")
+                self.assertEqual(1, main(prefix + ["inventory", "--base-ref", baseline]))
+            manifest = json.loads((root / "build/schema-control/migrations.json").read_text())
+            collisions = [item for item in manifest["findings"] if item["rule_id"] == "migration-ordinal-duplicate"]
+            self.assertEqual(2, len(collisions))
+            self.assertTrue(any(item["path"].endswith("V_ledger_008__third.sql") for item in collisions))
+            self.assertTrue(any("ordinal 9 collision" in item["message"] for item in collisions))
+
+    def test_new_migration_cli_and_generated_docs_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            migrations = root / "src/Ledger/Migrations"
+            migrations.mkdir(parents=True)
+            (migrations / "V_ledger_041__existing.sql").write_text("select 1;\n")
+            config = {
+                "migration_sets": [
+                    {"id": "ledger", "directory": "src/Ledger/Migrations", "schema": "ledger"}
+                ],
+                "migration_reservations": "database/migration-reservations.json",
+                "detect_unregistered_migration_directories": False,
+            }
+            register = {
+                "version": 1,
+                "migration_sets": [{
+                    "id": "ledger",
+                    "filename_template": "V_ledger_{ordinal:03d}__{slug}.sql",
+                    "ordinal_pattern": "^V_ledger_(?P<ordinal>\\d+)__",
+                    "reservations": [{
+                        "ordinal": 42, "slug": "reserved", "description": "Planned migration",
+                        "blueprint": "docs/engineering/blueprints/plan.md",
+                    }],
+                }],
+            }
+            (root / "database").mkdir()
+            (root / "database/schema-control.json").write_text(json.dumps(config))
+            register_path = root / "database/migration-reservations.json"
+            register_path.write_text(json.dumps(register))
+            readme = root / "docs/engineering/blueprints/README.md"
+            readme.parent.mkdir(parents=True)
+            readme.write_text(
+                "Preserve this introduction.\n<!-- migration-reservations:start -->\n"
+                "<!-- migration-reservations:end -->\nPreserve this footer.\n"
+            )
+            (readme.parent / "plan.md").write_text("Plan\n")
+            prefix = ["--root", str(root)]
+            with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                self.assertEqual(1, main(prefix + ["generate-migration-docs", "--check"]))
+                self.assertEqual(0, main(prefix + ["generate-migration-docs"]))
+                self.assertEqual(0, main(prefix + ["generate-migration-docs", "--check"]))
+                before = {p: p.read_bytes() for p in root.rglob("*") if p.is_file()}
+                for ordinal in (41, 42):
+                    self.assertEqual(2, main(prefix + [
+                        "new-migration", "--migration-set", "ledger", "--name", "new_work",
+                        "--ordinal", str(ordinal),
+                    ]))
+                self.assertEqual(before, {p: p.read_bytes() for p in root.rglob("*") if p.is_file()})
+                self.assertEqual(0, main(prefix + [
+                    "new-migration", "--migration-set", "ledger", "--name", "new_work",
+                ]))
+                self.assertEqual(0, main(prefix + ["generate-migration-docs", "--check"]))
+            self.assertTrue((migrations / "V_ledger_043__new_work.sql").is_file())
+            self.assertEqual(before[register_path], register_path.read_bytes())
+            self.assertTrue(readme.read_text().startswith("Preserve this introduction.\n"))
+            self.assertTrue(readme.read_text().endswith("Preserve this footer.\n"))
+
     def test_configured_output_paths_reject_absolute_and_escaping_paths(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "repository"
@@ -182,6 +289,47 @@ class SchemaControlCliTests(unittest.TestCase):
             if command in {"snapshot", "verify"}:
                 argv.extend(["--database-url", "postgresql://example"])
             self.assertEqual(command, parse_args(argv).command)
+
+    def test_local_defaults_to_owned_verification_without_connection_options(self) -> None:
+        args = parse_args(["local"])
+        self.assertEqual("verify", args.mode)
+        self.assertEqual(60.0, args.readiness_timeout)
+        self.assertFalse(hasattr(args, "database_url"))
+        self.assertFalse(hasattr(args, "candidate_root"))
+
+    def test_local_rejects_promotion_and_invalid_readiness_timeouts(self) -> None:
+        for arguments in (
+            ["--mode", "promote"],
+            ["--readiness-timeout", "0"],
+            ["--readiness-timeout", "-1"],
+            ["--readiness-timeout", "nan"],
+            ["--readiness-timeout", "inf"],
+            ["--database-url", "postgresql://shared"],
+            ["--candidate-root", "shared-candidate"],
+        ):
+            with self.subTest(arguments=arguments), contextlib.redirect_stderr(io.StringIO()):
+                with self.assertRaises(SystemExit) as raised:
+                    parse_args(["local", *arguments])
+                self.assertEqual(2, raised.exception.code)
+
+    def test_local_dispatches_snapshot_options_and_preserves_exit_status(self) -> None:
+        with (
+            patch("tools.schema_control.cli._load_json", return_value={}),
+            patch("tools.schema_control.disposable.run_disposable", return_value=130) as run,
+        ):
+            result = main([
+                "--root", "/tmp/schema-checkout", "--config", "custom.json",
+                "--policies", "policies.json", "--waivers", "waivers.json",
+                "local", "--mode", "snapshot", "--base-ref", "baseline",
+                "--image", "postgres:16.14-alpine", "--readiness-timeout", "25",
+            ])
+
+        self.assertEqual(130, result)
+        run.assert_called_once_with(
+            root=Path("/tmp/schema-checkout").resolve(), config={}, mode="snapshot",
+            base_ref="baseline", config_path="custom.json", policies_path="policies.json",
+            waivers_path="waivers.json", image="postgres:16.14-alpine", readiness_timeout=25.0,
+        )
 
     def test_inventory_returns_one_for_duplicate_tracked_ordinal(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

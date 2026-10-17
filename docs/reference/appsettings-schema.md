@@ -27,14 +27,21 @@ Use this page when you need to map configuration sections to high-impact operati
 | Section | Why it matters | Typical env override path |
 |---|---|---|
 | `DataSource` / `DataSources` | Chooses live/offline provider routing and failover posture. | `MDC_DATASOURCE` |
-| `Backfill` | Controls historical import behavior, retry policy, and scheduling. | `MDC_BACKFILL_*` |
-| `Storage` | Controls retention, partitioning, and storage pressure behavior. | `MDC_STORAGE_*` |
+| `Backfill` | Controls historical import behavior, retry policy, and scheduling. | Explicit aliases such as `MDC_BACKFILL_ENABLED`, `MDC_BACKFILL_PROVIDER`, `MDC_BACKFILL_FROM`, and `MDC_BACKFILL_TO`. |
+| `Storage` | Controls retention, partitioning, and storage pressure behavior. | `MDC_STORAGE_NAMING`, `MDC_STORAGE_PARTITION`, `MDC_STORAGE_RETENTION_DAYS`, `MDC_STORAGE_MAX_MB`. |
+| `Compress` | Top-level JSONL gzip setting; this is not `Storage.CompressOutput`. | `MDC_COMPRESS`. |
 | `TenantScopeEnforcement` | Defaults to `fail-closed`; retained-data readiness must pass before serving scoped work. Explicit `deployment-boundary` is temporary single-company migration compatibility. Requires restart. | `MERIDIAN_TENANT_SCOPE_ENFORCEMENT` |
-| `IB`, `IBClientPortal` | Controls broker connectivity and execution-adjacent account surfaces. | `MDC_IB_*` |
+| `IB`, `IBClientPortal` | Controls broker connectivity and execution-adjacent account surfaces. | Explicit aliases such as `MDC_IB_HOST`, `MDC_IB_PORT`, `MDC_IB_CLIENT_PORTAL_ENABLED`, and `MDC_IB_CLIENT_PORTAL_BASE_URL`. |
 | `Alpaca`, provider blocks under `Backfill:Providers` | Provider-specific data/credential posture. | `MDC_ALPACA_*`, provider-specific keys |
 | `SecurityMasterWorkbench` | Controls governed-write conflict-authority source precedence for Security Master passport edits. | n/a |
 | `Serilog` | Logging signal/noise and sensitive-output posture. | `MDC_DEBUG`, `MDC_LOG_LEVEL` |
 | `Tracing` | Explicit opt-in tracing, exporter destinations, sampling, and shutdown flush. Requires restart. | Runtime `Tracing` section; exporters are not enabled by `OTEL_*` variables. |
+
+The supported aliases and their precedence are listed in [Environment Variables](environment-variables.md)
+and implemented by [`ConfigEnvironmentOverride`](../../src/Meridian.Core/Config/ConfigEnvironmentOverride.cs).
+Do not infer arbitrary environment names from section names: its generic `MDC_` path only applies
+the branches implemented by the override service. Other settings may be read by host configuration
+or dedicated runtime services instead.
 
 ## Tracing
 
@@ -79,11 +86,19 @@ ConfigStore file; the Meridian environment override takes precedence over both.
 ## Operator Verification Steps
 
 ```bash
-# 1) Validate config shape and startup viability
+# Validate effective AppConfig values without starting the host
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
 
-# 2) Verify effective config sources (default/config/env)
-curl http://localhost:8080/api/config/effective
+# Show the configuration summary
+dotnet run --project src/Meridian/Meridian.csproj -- --show-config
 ```
+
+`--validate-config` runs the `AppConfig` validator after configuration normalization and
+environment overrides. It does not start provider sessions, connect to PostgreSQL, validate every
+host service, or prove startup viability. For a running desktop API, `GET /api/config/effective`
+returns selected settings and recognized environment-source annotations; use the actual host URL
+and the authentication described in [API Reference](api-reference.md#authentication). It is not an
+inventory of every host configuration value. Use the [operator preflight](../operators/preflight-checklist.md)
+for runtime and persistence checks.
 
 See also: [Environment Variables](environment-variables.md), [Provider Credential Operations](../operators/provider-credentials.md).

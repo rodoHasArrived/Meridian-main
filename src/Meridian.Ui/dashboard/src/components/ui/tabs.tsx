@@ -67,7 +67,7 @@ export function Tabs({ children, className, defaultValue, onValueChange, tabs, v
               disabled={tab.disabled}
               className={cn(
                 "mb-[-1px] inline-flex items-center gap-2 border-b-2 px-3.5 py-2.5 text-sm transition-colors",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                 selected ? "border-primary font-semibold text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
                 tab.disabled && "cursor-not-allowed opacity-45"
               )}

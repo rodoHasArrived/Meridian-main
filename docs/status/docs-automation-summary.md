@@ -8,6 +8,7 @@
 |--------|--------|--------------|--------|
 | `scan-todos` | `success` | `0.000` | `docs/status/TODO.md` |
 | `validate-docs-structure` | `success` | `0.000` | `-` |
+| `check-docfx-navigation` | `success` | `0.000` | `-` |
 | `validate-agent-definitions` | `success` | `0.000` | `-` |
 | `validate-adapter-readiness` | `success` | `0.000` | `-` |
 | `check-adapter-readiness-matrix` | `success` | `0.000` | `-` |

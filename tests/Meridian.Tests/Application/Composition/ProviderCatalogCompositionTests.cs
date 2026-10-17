@@ -17,6 +17,41 @@ namespace Meridian.Tests.Application.Composition;
 public sealed class ProviderCatalogCompositionTests : IDisposable
 {
     [Fact]
+    public async Task Instance_catalog_retains_its_registry_after_another_host_binds_and_disposes()
+    {
+        await using var firstHost = CreateServices().BuildServiceProvider();
+        var firstCatalog = firstHost.GetRequiredService<IProviderCatalog>();
+        var firstEntry = firstCatalog.Get("ibkr");
+        firstEntry.Should().NotBeNull();
+        firstEntry!.Capabilities.MarketDataCapabilities.Should().NotBeEmpty();
+
+        await using (var secondHost = CreateServices(disabledFamily: "interactive-brokers").BuildServiceProvider())
+        {
+            var secondCatalog = secondHost.GetRequiredService<IProviderCatalog>();
+            secondCatalog.Get("ibkr")!.Capabilities.MarketDataCapabilities.Should().BeEmpty();
+            firstCatalog.Get("ibkr").Should().BeEquivalentTo(firstEntry);
+        }
+
+        firstCatalog.Get("ibkr").Should().BeEquivalentTo(firstEntry,
+            "metadata reads retain the owning host even when legacy callbacks reference a disposed sibling");
+    }
+
+    [Fact]
+    public void Built_in_instance_catalog_does_not_consult_runtime_callbacks()
+    {
+        ProviderCatalog.InitializeFromRegistry(
+            () => throw new InvalidOperationException("Unrelated runtime catalog was read."),
+            _ => throw new InvalidOperationException("Unrelated runtime entry was read."));
+
+        var catalog = new RuntimeProviderCatalog();
+
+        catalog.GetAll().Should().NotBeEmpty();
+        catalog.Get("yahoo").Should().NotBeNull();
+        catalog.Get("missing-provider").Should().BeNull();
+        catalog.Source.Should().Be("static");
+    }
+
+    [Fact]
     public async Task Public_registration_catalog_reports_all_six_factories_from_the_same_descriptors()
     {
         await using var provider = CreateServices().BuildServiceProvider();

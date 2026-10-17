@@ -1,0 +1,359 @@
+{
+  "browser": "Chromium on Linux",
+  "fixture_data": true,
+  "baseline": "9c96c3f72",
+  "comparison": "Seven root workspaces at 1440x900 and 1366x768; same fixture responses, visual inspection and normalized accessibility-target comparison against the prior tracked bundle. Final ledger/provider/settings smoke at 1920x1080.",
+  "accessibility_result": "Existing contrast and Accounting aria-required-children findings remain; migration introduced no additional findings in the compared fixtures. This is not full accessibility certification.",
+  "checks": [
+    {
+      "route": "/trading",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1440,
+      "paletteOpened": true,
+      "paletteClosed": true,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 11
+        }
+      ]
+    },
+    {
+      "route": "/portfolio",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1440,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 13
+        }
+      ]
+    },
+    {
+      "route": "/accounting",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1440,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 6
+        }
+      ]
+    },
+    {
+      "route": "/reporting",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1440,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 12
+        }
+      ]
+    },
+    {
+      "route": "/strategy",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1440,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 6
+        }
+      ]
+    },
+    {
+      "route": "/data",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1440,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 6
+        }
+      ]
+    },
+    {
+      "route": "/settings",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1440,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "route": "/trading",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1366,
+      "paletteOpened": true,
+      "paletteClosed": true,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 11
+        }
+      ]
+    },
+    {
+      "route": "/portfolio",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1366,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 13
+        }
+      ]
+    },
+    {
+      "route": "/accounting",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1366,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "count": 1
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 6
+        }
+      ]
+    },
+    {
+      "route": "/reporting",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1366,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 12
+        }
+      ]
+    },
+    {
+      "route": "/strategy",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1366,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 6
+        }
+      ]
+    },
+    {
+      "route": "/data",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1366,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 6
+        }
+      ]
+    },
+    {
+      "route": "/settings",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1366,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "route": "/accounting/ledger",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1920,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 6
+        }
+      ]
+    },
+    {
+      "route": "/settings/providers",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1920,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "route": "/settings",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "errors": [],
+      "failedAssets": [],
+      "status": "passed",
+      "documentWidth": 1920,
+      "paletteOpened": null,
+      "paletteClosed": null,
+      "accessibility": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "count": 5
+        }
+      ]
+    }
+  ]
+}

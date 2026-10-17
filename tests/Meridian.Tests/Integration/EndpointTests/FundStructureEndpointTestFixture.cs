@@ -1,6 +1,7 @@
 using Meridian.Identity.Auth;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
@@ -29,6 +30,8 @@ public sealed class FundStructureEndpointTestFixture : IAsyncLifetime
     public HttpClient Client => _fixture.Client;
 
     public IServiceProvider Services => _fixture.Services;
+
+    public IConfigurationRoot Configuration => _fixture.Configuration;
 
     public HttpClient CreatePermittedClient(params UserPermission[] permissions)
         => _fixture.CreatePermittedClient(permissions);

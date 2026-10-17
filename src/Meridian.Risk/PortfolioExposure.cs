@@ -72,6 +72,18 @@ public sealed record PortfolioExposureSnapshot(
     IReadOnlyDictionary<string, SymbolExposure> SymbolExposures,
     DateTimeOffset AsOf)
 {
+    public bool IsBrokerageSnapshot { get; init; }
+    public bool IsComplete { get; init; } = true;
+    public Guid? FundAccountId { get; init; }
+    public decimal? Cash { get; init; }
+    public decimal? BuyingPower { get; init; }
+    public string? Currency { get; init; }
+    public IReadOnlyDictionary<string, decimal> BrokerHeldQuantities { get; init; } =
+        new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+    public IReadOnlyDictionary<string, decimal> BrokerAvailableCoveredSaleQuantities { get; init; } =
+        new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+    public IReadOnlyList<string> BlockingReasons { get; init; } = [];
+
     /// <summary>Snapshot representing an empty (or unavailable) portfolio.</summary>
     public static PortfolioExposureSnapshot Empty { get; } = new(
         GrossExposure: 0m,
@@ -185,4 +197,19 @@ public interface IPortfolioExposureProvider
         TryGetLastTradePrice(symbol)
         ?? TryGetBarClosePrice(symbol)
         ?? TryGetTouchPrice(symbol, side);
+}
+
+/// <summary>Implemented by providers that carry distinct live brokerage account books.</summary>
+public interface IAccountScopedPortfolioExposureProvider : IPortfolioExposureProvider
+{
+    PortfolioExposureSnapshot GetSnapshot(Guid? fundAccountId);
+}
+
+public static class PortfolioExposureProviderExtensions
+{
+    /// <summary>Legacy paper providers retain their existing aggregate behavior.</summary>
+    public static PortfolioExposureSnapshot GetSnapshot(this IPortfolioExposureProvider provider, Guid? fundAccountId) =>
+        provider is IAccountScopedPortfolioExposureProvider scoped
+            ? scoped.GetSnapshot(fundAccountId)
+            : provider.GetSnapshot();
 }

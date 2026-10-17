@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getHistoricalBars } from "@/lib/api";
-import type { HistoricalBarPoint } from "@/types";
+import type { HistoricalBarPoint, HistoricalBarsResponse } from "@/types";
 import {
   CANDLESTICK_BOLLINGER_MULTIPLIER,
   CANDLESTICK_BOLLINGER_PERIOD,
@@ -41,7 +41,16 @@ export const HISTORICAL_CHART_TIMEFRAMES: readonly HistoricalChartTimeframe[] = 
   { id: "1Y", label: "1Y", intervalMinutes: 1440, lookbackDays: 365 }
 ];
 
-type FetchStatus = "idle" | "loading" | "ready" | "error";
+type FetchStatus = "idle" | "loading" | "ready" | "error" | "incomplete";
+
+function historicalQueryFailure(response: HistoricalBarsResponse): string | null {
+  if (response.success && !response.isPartial && !response.fileFailures?.length) return null;
+  const failures = response.fileFailures ?? [];
+  const detail = failures.length > 0
+    ? ` Failed sources: ${failures.map((failure) => failure.sourceFile).join(", ")}.`
+    : "";
+  return `${response.message ?? "Historical query incomplete. Repair the stored data and retry."}${detail}`;
+}
 
 interface FetchState {
   status: FetchStatus;
@@ -323,6 +332,7 @@ export interface HistoricalChartViewModel {
   compareClearAriaLabel: string;
   compareChips: CompareChipViewModel[];
   compareErrorMessage: string | null;
+  compareFailureMessages: string[];
   statTiles: HistoricalChartStatTile[];
   retry: () => void;
 }
@@ -395,10 +405,11 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
         return;
       }
 
+      const failure = historicalQueryFailure(response);
       setState({
-        status: "ready",
-        bars: response.bars ?? [],
-        errorMessage: null,
+        status: failure ? "incomplete" : "ready",
+        bars: failure ? [] : response.bars ?? [],
+        errorMessage: failure,
         appliedTimeframeId: tf.id
       });
     } catch (err) {
@@ -457,6 +468,8 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
         }, { signal: controller.signal });
 
         if (!mounted.current || compareRevision.current !== revision) return;
+        const failure = historicalQueryFailure(response);
+        if (failure) throw new Error(failure);
         const bars = response.bars ?? [];
         setCompareStates((prev) => ({
           ...prev,
@@ -741,6 +754,10 @@ export function useHistoricalChartViewModel(symbol: string): HistoricalChartView
     candlestickChart,
     compareChart,
     compareActive,
+    compareFailureMessages: compareSymbols.flatMap((sym) => {
+      const failure = compareStates[sym];
+      return failure?.status === "error" ? [`${sym}: ${failure.errorMessage ?? "Historical bars unavailable."}`] : [];
+    }),
     compareInput,
     setCompareInput,
     submitCompareSymbol,
@@ -1213,12 +1230,12 @@ export function buildHistoricalChartStatePanel({
     };
   }
 
-  if (status === "error") {
+  if (status === "error" || status === "incomplete") {
     return {
       kind: "error",
       role: "alert",
       ariaLive: "assertive",
-      title: "Historical bars unavailable",
+      title: status === "incomplete" ? "Historical query incomplete" : "Historical bars unavailable",
       detail: errorMessage ?? "Failed to load historical bars.",
       retryLabel: "Retry",
       retryAriaLabel: `Retry loading ${activeTimeframe.label} historical bars for ${symbol}`,

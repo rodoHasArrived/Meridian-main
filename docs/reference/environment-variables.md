@@ -2,17 +2,19 @@
 title: Environment Variable Reference
 status: active
 owner: core-team
-reviewed: 2026-07-17
+reviewed: 2026-10-05
 audience: developers-and-operators
 ---
 
 # Environment Variable Reference
 
-All configuration can be set via environment variables, following the [12-factor app](https://12factor.net/config) methodology. Environment variables **take precedence** over `appsettings.json` values.
+The variables below configure supported runtime settings and override the corresponding
+`appsettings.json` values. Complex settings without a listed override still require configuration
+files or their owning setup surface.
 
 ## Naming Convention
 
-- Variables prefixed with `MDC_` are the canonical form
+- Use the exact listed names: both `MDC_` and `MERIDIAN_` prefixes are active runtime contracts.
 - Legacy variables (without prefix) are also supported for backwards compatibility
 - **Canonical does not mean higher precedence.** Where both spellings exist, the bare one wins:
   `ConfigEnvironmentOverride` applies the legacy aliases after the `MDC_` entries. Set one
@@ -82,12 +84,19 @@ strictly non-owning.
 | `MDC_ALPACA_KEY_ID` | `Alpaca:KeyId` | Alpaca API key ID | When using Alpaca | — |
 | `MDC_ALPACA_SECRET_KEY` | `Alpaca:SecretKey` | Alpaca API secret key | When using Alpaca | — |
 | `MDC_ALPACA_FEED` | `Alpaca:Feed` | Data feed: `iex` (free), `sip` (paid) | No | `iex` |
-| `MDC_ALPACA_SANDBOX` | `Alpaca:UseSandbox` | Use paper trading endpoint | No | `false` |
+| `MDC_ALPACA_SANDBOX` | `Alpaca:UseSandbox` | Select the sandbox endpoint for the configured Alpaca market-data client. Trading credentials use the separate environment selector below. | No | `false` |
+| `ALPACA_TRADING_ENVIRONMENT` | Alpaca trading credential resolver / credential-store environment fallback | Select `paper` or `live` for environment-backed Trading API credentials. A stored credential record carries its own environment. This does not set `Alpaca:UseSandbox` for market-data configuration. | No | `paper` |
 | `MDC_ALPACA_QUOTES` | `Alpaca:SubscribeQuotes` | Subscribe to quote data | No | `false` |
 | `ALPACA_KEY_ID` | `Alpaca:KeyId` | Bare alias that **takes precedence over** `MDC_ALPACA_KEY_ID`: `ApplyOverrides` applies it later, and the backfill path reads it directly via `ProviderCredentialResolver` ahead of any configured value. Set this one, or unset it, if both exist. | — | — |
 | `ALPACA_SECRET_KEY` | `Alpaca:SecretKey` | Bare alias that **takes precedence over** `MDC_ALPACA_SECRET_KEY`, for the same reason. | — | — |
 | `ALPACA__KEYID` | `Alpaca:KeyId` | .NET config binding format | — | — |
 | `ALPACA__SECRETKEY` | `Alpaca:SecretKey` | .NET config binding format | — | — |
+
+`ALPACA_PAPER`, `Paper`, and `DataFeed` are not the configuration names for these controls.
+Use `ALPACA_TRADING_ENVIRONMENT`, `Alpaca:UseSandbox`, and `Alpaca:Feed` respectively.
+For an executable setup and verification sequence, see [Alpaca onboarding](../operators/provider-onboarding-alpaca.md).
+Credential-store environment fallback is enabled by default only for Development/Test outside
+packaged/customer builds; a stored or scoped credential record is not overwritten by these variables.
 
 ## Polygon Provider
 
@@ -137,16 +146,30 @@ historical data, and order routing.
 
 ## Database Persistence
 
-**Without any of these variables, every money-path store (ledger, security master, fund
-accounts, fund structure, direct lending, asset operations, banking, money market, reporting,
-scoped access) runs in-memory and loses its data on restart.** Hosts log a loud
-`PERSISTENCE: NONE`/`PARTIAL` warning, report it in the `postgresql` readiness check, and the
-browser workstation shows a persistent red banner until persistence is configured.
+**An ordinary host launch fails at startup when governance persistence is missing.** It requires
+both fund-accounts and fund-structure connection strings, either individually or through
+`MERIDIAN_DATABASE_URL`, unless the explicit local/development profile below is selected.
+The environment resolves from `DOTNET_ENVIRONMENT`, then `ASPNETCORE_ENVIRONMENT`, and defaults
+to `Production`; the local opt-in is rejected in Production.
+
+| Launch configuration | Startup and durability |
+| --- | --- |
+| No governance connections and no local opt-in | Startup stops with a diagnostic naming the missing connection variables. |
+| Non-production environment and `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` | Allows local governance services. Without their domain connections, fund accounts, fund structure, and scoped access assignments use files under the data root's `governance/` directory despite the variable name. This does not make all other stores durable. |
+| `--seed-demo` or `--demo` | Selects the local profile automatically. Seeded casework and desk records use the dedicated demo root; see [demo storage](../start/README.md#see-it-working-one-command-demo). |
+| `MERIDIAN_DATABASE_URL`, or individual domain connections | Configured domains use PostgreSQL. Setting only governance connections satisfies that startup gate but does not configure the remaining domains. |
+
+Local file-backed records survive restart while their data root is retained. Money-path services
+such as posted ledger storage still require PostgreSQL for durable operation; do not infer their
+durability from a working demo or from the governance files. Hosts report the configured database
+posture through `PERSISTENCE: NONE`/`PARTIAL` startup warnings, the `postgresql` readiness check,
+and the workstation banner. Follow [Start](../start/README.md#persistence-and-simulation-defaults)
+for launch procedures and [Failover and Recovery](../operators/failover-and-recovery.md) for backups.
 
 | Variable | Description | Required | Default |
 |----------|-------------|----------|---------|
-| `MERIDIAN_DATABASE_URL` | Unified PostgreSQL connection for **all** store domains. Accepts `postgres://user:pass@host:port/db` URLs or Npgsql keyword form. Propagated at startup into every unset `MERIDIAN_*_CONNECTION_STRING`. | No | — (in-memory stores) |
-| `MERIDIAN_USE_INMEMORY_GOVERNANCE` | Selects file-backed governance stores instead of PostgreSQL. Without it, and without a connection string for the fund-accounts and fund-structure domains, startup fails closed with a diagnostic naming the missing variables (`StorageFeatureRegistration.EnsureGovernancePersistenceProfile`). Rejected when the environment resolves to Production. Local and development scenarios only; `--seed-demo` and `--demo` set it for you. | No | unset (persistence required) |
+| `MERIDIAN_DATABASE_URL` | Unified PostgreSQL connection for **all** store domains. Accepts `postgres://user:pass@host:port/db` URLs or Npgsql keyword form. Propagated at startup into every unset `MERIDIAN_*_CONNECTION_STRING`. | Required unless using individual connections or the explicit local profile | Unset; no automatic database connection |
+| `MERIDIAN_USE_INMEMORY_GOVERNANCE` | Permits file-backed governance fallback when the corresponding PostgreSQL connections are absent. Without it, missing fund-accounts or fund-structure connections fail startup with a diagnostic naming the variables (`StorageFeatureRegistration.EnsureGovernancePersistenceProfile`). Rejected when the environment resolves to Production. Local and development scenarios only; `--seed-demo` and `--demo` set it for you. | No | unset (persistence required) |
 | `MERIDIAN_LEDGER_CONNECTION_STRING` | Ledger journal store (per-domain override; wins over `MERIDIAN_DATABASE_URL`). | No | inherits `MERIDIAN_DATABASE_URL` |
 | `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` | Security Master store (also inherited by Direct Lending unless its dedicated variable is set). | No | inherits `MERIDIAN_DATABASE_URL` |
 | `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` | Fund accounts governance store. | No | inherits `MERIDIAN_DATABASE_URL` |
@@ -211,14 +234,13 @@ Configuration values are resolved in this order (last wins):
 
 ## Viewing Effective Configuration
 
-To see which configuration values are active and where they come from:
+The `/api/config/effective` endpoint returns settings in `entries` with a `source` annotation
+(`default`, `config`, or `env:VAR_NAME`). It requires `ViewConfig` or `ModifyConfig`; use the
+[authenticated preflight procedure](../operators/preflight-checklist.md#authenticated-evidence-collection)
+for session or API-key examples.
 
-```bash
-# Via API endpoint
-curl http://localhost:8080/api/config/effective
+For a source checkout, display the CLI configuration summary from the repository root:
 
-# Via CLI
-dotnet run -- --show-config
+```powershell
+dotnet run --project src/Meridian/Meridian.csproj -- --show-config
 ```
-
-The `/api/config/effective` endpoint returns each setting with a `source` annotation (`default`, `config`, or `env:VAR_NAME`).

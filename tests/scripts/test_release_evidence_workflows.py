@@ -125,6 +125,71 @@ jobs:
         self.assertIn("verify-release-promotion.py", workflow)
         self.assertIn("files: artifacts/publish-release/*", workflow)
 
+    def test_payload_consumers_resolve_approval_before_building_and_record_receipt(self) -> None:
+        consumers = (
+            (DESKTOP_INSTALLER, "build-consumer-setup.ps1"),
+            (DESKTOP_EVALUATION, "build-consumer-setup.ps1"),
+            (PUBLISH_SMOKE, "build/scripts/publish/publish.ps1"),
+        )
+        for path, build_script in consumers:
+            with self.subTest(workflow=path.name):
+                workflow = path.read_text(encoding="utf-8")
+                self.assertIn("build/scripts/install/resolve-postgresql-payload.ps1", workflow)
+                self.assertLess(workflow.index("resolve-postgresql-payload.ps1"), workflow.index(build_script))
+                self.assertIn("--postgresql-payload-receipt", workflow)
+                self.assertNotIn("Get-ChildItem 'C:\\Program Files\\PostgreSQL'", workflow)
+                self.assertNotIn("Sort-Object { [int]($_.Name", workflow)
+
+    def test_installed_startup_and_upgrade_certification_keep_the_payload_evidence_chain(self) -> None:
+        smoke = PUBLISH_SMOKE.read_text(encoding="utf-8")
+        self.assertIn("Assert-PostgreSqlPayload -PayloadRoot artifacts/postgresql-payload", smoke)
+        self.assertIn("smoke-web-workstation-install.ps1", smoke)
+        self.assertIn("artifacts/postgresql-payload/win-x64-payload.json", smoke)
+        installer = DESKTOP_INSTALLER.read_text(encoding="utf-8")
+        self.assertIn("certify-consumer-install-lifecycle.ps1", installer)
+        self.assertIn("consumer-setup-win-x64-postgresql-payload.json", installer)
+
+    def test_consumer_checksums_only_include_published_assets(self) -> None:
+        workflow = DESKTOP_INSTALLER.read_text(encoding="utf-8")
+        checksums = workflow.split("      - name: Generate consumer checksums\n", 1)[1].split("      - name:", 1)[0]
+        upload = workflow.split("      - name: Upload consumer setup artifact\n", 1)[1].split("      - name:", 1)[0]
+        published_assets = (
+            "Meridian-Setup.exe",
+            "consumer-setup-win-x64-sbom.spdx.json",
+            "consumer-setup-win-x64-release-evidence.json",
+        )
+        approved_names = ", ".join(f"'{name}'" for name in published_assets)
+        self.assertIn(f"$_.Name -in @({approved_names})", checksums)
+        self.assertNotIn("-like", checksums)
+        self.assertNotIn("*", checksums)
+        self.assertNotIn("postgresql-payload.json", checksums)
+        for name in published_assets:
+            self.assertIn(f"artifacts/consumer-setup/{name}", upload)
+
+    def test_consumer_certification_is_a_separate_required_promotion_gate(self) -> None:
+        workflow = DESKTOP_INSTALLER.read_text(encoding="utf-8")
+        consumer = self._job_block(workflow, "certify-installed-consumer")
+        release = self._job_block(workflow, "release")
+
+        self.assertIn("needs: [eligibility, build-consumer-setup]", consumer)
+        self.assertIn("runs-on: windows-latest", consumer)
+        self.assertIn("ref: ${{ github.sha }}", consumer)
+        self.assertIn("name: meridian-consumer-setup-${{ github.run_id }}-${{ github.run_attempt }}", consumer)
+        self.assertIn("-CurrentPackage artifacts/current-consumer/Meridian-Setup.exe", consumer)
+        self.assertIn("certify-consumer-install-lifecycle.ps1", consumer)
+        self.assertIn("resolve-consumer-predecessor.py", consumer)
+        self.assertIn("-PredecessorEvidencePath artifacts/consumer-certification/consumer-predecessor.json", consumer)
+        self.assertIn("consumer-setup-win-x64-lifecycle.json", consumer)
+        self.assertIn("if: always()", consumer)
+        self.assertIn("retention-days: 90", consumer)
+        self.assertNotIn("TrustSelfSignedRoot", consumer)
+        for block in self._shell_blocks(consumer):
+            self.assertNotIn("${{", block)
+        needs_line = next(line for line in release.splitlines() if line.strip().startswith("needs:"))
+        self.assertIn("certify-installed-consumer", needs_line)
+        self.assertIn("name: consumer-install-certification-win-x64-${{ github.run_id }}-${{ github.run_attempt }}", release)
+        self.assertIn("path: artifacts/certification", release)
+
     def test_robinhood_smoke_uses_named_powershell_splatting(self) -> None:
         workflow = ROBINHOOD_OPTIONS_SMOKE.read_text(encoding="utf-8")
 

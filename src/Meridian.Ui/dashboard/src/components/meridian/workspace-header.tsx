@@ -93,7 +93,7 @@ export function WorkspaceHeader({
               <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{viewModel.description}</p>
             </div>
 
-            <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
               {actions}
               {viewModel.refreshAction && onRefresh ? (
                 <Button

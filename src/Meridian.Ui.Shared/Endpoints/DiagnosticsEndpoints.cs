@@ -303,7 +303,7 @@ public static class DiagnosticsEndpoints
                 return Results.Json(new { success = false, error = "Provider registry not available" }, jsonOptions);
 
             var provider = registry.GetAllProviders()
-                .FirstOrDefault(p => string.Equals(p.Name, providerName, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(p => ProviderIdentity.EqualsId(p.Name, providerName));
             var diagnostics = provider is null
                 ? null
                 : ProviderConnectionDiagnosticsProjection.Find(

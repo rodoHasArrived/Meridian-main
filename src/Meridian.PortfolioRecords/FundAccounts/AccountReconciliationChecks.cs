@@ -108,6 +108,50 @@ internal static class AccountReconciliationChecks
             .LastOrDefault();
 
     /// <summary>
+    /// Compares run-derived cash to independently synced cash in the same currency.
+    /// Foreign-currency sync evidence cannot verify or break the internal balance.
+    /// Callers supply one account's snapshots for the reconciliation as-of date.
+    /// </summary>
+    internal static AccountReconciliationResultDto? BuildCashContinuityCheck(
+        Guid runId,
+        IReadOnlyList<AccountBalanceSnapshotDto> snapshots)
+    {
+        var runDerived = snapshots
+            .Where(static snapshot => !IsBrokerageSync(snapshot))
+            .OrderByDescending(static snapshot => snapshot.RecordedAt)
+            .FirstOrDefault();
+        var syncedSnapshots = snapshots.Where(IsBrokerageSync).ToArray();
+        if (runDerived is null || syncedSnapshots.Length == 0)
+        {
+            return null;
+        }
+
+        var accountSync = syncedSnapshots
+            .Where(snapshot => string.Equals(snapshot.Currency, runDerived.Currency, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(static snapshot => snapshot.RecordedAt)
+            .FirstOrDefault();
+        var variance = accountSync?.CashBalance - runDerived.CashBalance;
+        return new AccountReconciliationResultDto(
+            Guid.NewGuid(),
+            runId,
+            CheckLabel: "RunVsAccountSyncCashContinuity",
+            IsMatch: variance == 0m,
+            Category: "Continuity",
+            Status: accountSync is null ? StatusUnverified : variance == 0m ? StatusMatched : StatusBreak,
+            ExpectedAmount: runDerived.CashBalance,
+            ActualAmount: accountSync?.CashBalance,
+            Variance: variance,
+            Reason: accountSync is null
+                ? $"No account-sync balance exists in the run-derived snapshot currency ({runDerived.Currency})."
+                : variance == 0m
+                    ? "Run-derived and account-sync-derived balances agree."
+                    : "Run-derived and account-sync-derived balances diverge.");
+    }
+
+    private static bool IsBrokerageSync(AccountBalanceSnapshotDto snapshot) =>
+        snapshot.Source?.StartsWith("brokerage-sync:", StringComparison.OrdinalIgnoreCase) == true;
+
+    /// <summary>
     /// Compares the custodian statement's declared line count (source A, batch header metadata
     /// captured at ingestion) against the count of persisted custodian position records for the
     /// as-of date (source B). When no batch metadata exists to declare an expected count, the

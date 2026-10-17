@@ -16,9 +16,10 @@ public sealed class OpenLotReliefService : IOpenLotReliefService
         var first = lots[0];
         if (lots.Any(l => l.SecurityId != first.SecurityId || l.LedgerBookId != first.LedgerBookId
             || l.BookPositionId != first.BookPositionId || l.Acquisition.QuantityBasis != first.Acquisition.QuantityBasis
+            || l.Acquisition.Direction != first.Acquisition.Direction
             || l.Acquisition.AcquisitionCurrency != first.Acquisition.AcquisitionCurrency
             || l.Acquisition.FunctionalCurrency != first.Acquisition.FunctionalCurrency))
-            throw new ArgumentException("Relief cannot pool different security, position, book, quantity-basis, or currency scopes.");
+            throw new ArgumentException("Relief cannot pool different security, position, book, direction, quantity-basis, or currency scopes.");
         if (lots.Select(l => l.TaxLotRecordId).Distinct().Count() != lots.Count)
             throw new ArgumentException("Duplicate durable lot identity.");
         var open = lots.Where(l => l.OpenQuantity > 0).ToArray();
@@ -37,21 +38,15 @@ public sealed class OpenLotReliefService : IOpenLotReliefService
         var totalQuantity = open.Sum(l => l.OpenQuantity);
         var pooledTransaction = open.Sum(l => l.OpenTransactionCostBasis);
         var pooledFunctional = open.Sum(l => l.OpenFunctionalCostBasis);
-        var selections = consumed.Slices.Select(s => new OpenLotReliefSelectionDto(s.Lot.TaxLotRecordId, s.Lot.LotId,
-            s.Lot.Version, s.Quantity,
-            method == OpenLotReliefMethod.AverageCost ? pooledTransaction * s.Quantity / totalQuantity
-                : s.ClosesLot ? s.Lot.OpenTransactionCostBasis : s.Lot.OpenTransactionCostBasis * s.Quantity / s.Lot.OpenQuantity,
-            method == OpenLotReliefMethod.AverageCost ? pooledFunctional * s.Quantity / totalQuantity
-                : s.ClosesLot ? s.Lot.OpenFunctionalCostBasis : s.Lot.OpenFunctionalCostBasis * s.Quantity / s.Lot.OpenQuantity)).ToArray();
-        // Allocate any decimal division residual to the last slice so pooled totals conserve exactly.
-        if (method == OpenLotReliefMethod.AverageCost)
-        {
-            selections[^1] = selections[^1] with
-            {
-                TransactionCostBasis = selections[^1].TransactionCostBasis + pooledTransaction * quantity / totalQuantity - selections.Sum(s => s.TransactionCostBasis),
-                FunctionalCostBasis = selections[^1].FunctionalCostBasis + pooledFunctional * quantity / totalQuantity - selections.Sum(s => s.FunctionalCostBasis)
-            };
-        }
+        var transaction = LotBasisRelief.Allocate(consumed.Slices, static lot => lot.OpenQuantity,
+            static lot => lot.OpenTransactionCostBasis,
+            method == OpenLotReliefMethod.AverageCost ? new LotBasisPool(totalQuantity, pooledTransaction) : null);
+        var functional = LotBasisRelief.Allocate(consumed.Slices, static lot => lot.OpenQuantity,
+            static lot => lot.OpenFunctionalCostBasis,
+            method == OpenLotReliefMethod.AverageCost ? new LotBasisPool(totalQuantity, pooledFunctional) : null);
+        var selections = transaction.Select((slice, index) => new OpenLotReliefSelectionDto(
+            slice.Lot.TaxLotRecordId, slice.Lot.LotId, slice.Lot.Version, slice.Quantity,
+            slice.CostBasis, functional[index].CostBasis)).ToArray();
         return new(selections, quantity, selections.Sum(s => s.TransactionCostBasis), selections.Sum(s => s.FunctionalCostBasis));
     }
 

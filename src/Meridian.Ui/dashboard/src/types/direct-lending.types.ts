@@ -13,7 +13,9 @@
  */
 
 /** Loan lifecycle state as the server reports it; unknown values are preserved verbatim. */
-export type LoanStatusName = string;
+export type LoanStatusName = string | number;
+/** The shared host currently writes enums as numbers; named-enum hosts remain supported. */
+export type LoanCurrency = string | number;
 
 export interface LoanSummary {
   loanId: string;
@@ -21,7 +23,7 @@ export interface LoanSummary {
   borrowerId: string;
   borrowerName: string;
   status: LoanStatusName;
-  baseCurrency: string;
+  baseCurrency: LoanCurrency;
   commitmentAmount: number;
   principalOutstanding: number;
   interestAccruedUnpaid: number;
@@ -41,11 +43,25 @@ export interface LoanPortfolioSummary {
   defaultedLoans: number;
   nonPerformingLoans: number;
   workoutLoans: number;
-  totalCommitment: number;
-  totalPrincipalOutstanding: number;
-  totalInterestAccruedUnpaid: number;
-  totalPenaltyAccruedUnpaid: number;
-  totalAvailableToDraw: number;
-  totalCollateralValue: number;
+  totalCommitment: number | null;
+  totalPrincipalOutstanding: number | null;
+  totalInterestAccruedUnpaid: number | null;
+  totalPenaltyAccruedUnpaid: number | null;
+  totalAvailableToDraw: number | null;
+  totalCollateralValue: number | null;
   loans: LoanSummary[];
+  /** No FX translation: totals are denominated separately in each retained currency. */
+  currencyTotals?: LoanPortfolioCurrencyTotals[] | null;
+  /** Legacy scalar totals have a currency only when the complete population has one. */
+  totalCurrency?: LoanCurrency | null;
+}
+
+export interface LoanPortfolioCurrencyTotals {
+  currency: LoanCurrency;
+  totalCommitment: number | null;
+  totalPrincipalOutstanding: number | null;
+  totalInterestAccruedUnpaid: number | null;
+  totalPenaltyAccruedUnpaid: number | null;
+  totalAvailableToDraw: number | null;
+  totalCollateralValue: number | null;
 }

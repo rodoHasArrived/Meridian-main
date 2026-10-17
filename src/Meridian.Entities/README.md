@@ -11,6 +11,11 @@ last_reviewed: 2026-06-07
 
 # src/Meridian.Entities
 
+Ownership-percent validation sums `Owns` links by the owned child, allowing a fund to wholly own
+multiple legal entities while rejecting overlapping co-owners above 100%. `AllocatesTo` continues
+to cap allocations across the parent's children. The Financial Operations consolidation perimeter
+consumes this effective-dated ownership authority; it never accepts caller-asserted membership.
+
 ## Purpose
 
 Physical bounded-context module project for organizations, funds, accounts, entities, assignments, and hierarchy ownership conformance.

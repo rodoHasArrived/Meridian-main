@@ -16,8 +16,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  # Coverage runs must not share a cancellation group with main pushes.
+  # Each manual coverage request keeps its own group, including while pending.
+  group: ${{ github.workflow }}-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'latest' }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
 
 env:
   CI: true
@@ -62,7 +64,7 @@ jobs:
 
       - name: Retain commit secret-scan evidence
         if: always() && (github.event_name == 'merge_group' || startsWith(github.ref, 'refs/tags/'))
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: commit-secret-scan-${{ github.run_id }}-${{ github.run_attempt }}
           path: artifacts/security/commit-secrets.sarif
@@ -121,7 +123,7 @@ jobs:
 
       - name: Upload coverage results
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: verify-full-coverage-${{ github.run_number }}-${{ github.run_attempt }}
           path: |

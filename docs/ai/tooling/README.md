@@ -100,8 +100,10 @@ Use these for multi-agent, parallel, or route-aware work:
 - `build/python/cli/buildctl.py test`
   - Contention-aware local .NET validation runner for agents and Make targets.
   - Serializes local validation with `.ai/locks/validation.lock`, detects active repo-owned
-    build/test/compiler processes, builds before testing, and defaults to isolated
+    build/test/compiler processes, builds once before testing by default, and uses isolated
     `artifacts/bin/<run-id>` plus `artifacts/obj/<run-id>` outputs.
+  - Explicit `--no-build` reuses compatible outputs without restore or compilation. The runner
+    owns `VSTestNoBuild`; see [output reuse](../../engineering/README.md) for selection rules.
   - Writes run evidence under `.ai/validation-runs/` and test results under `.ai/test-results/`.
   - Use `--queue` when another validation run is expected to finish soon; use `--allow-concurrent`
     only after confirming overlap is intentional.

@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `00d52fe7409b`
+- Source fingerprint: `b7a137285dac`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `98`
 - Open automated tasks: `6`
@@ -306,7 +306,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as OperationsContinuity (OperationsContinuityPage).
 - [ ] Capture a fixture-mode desktop screenshot for OperationsContinuity or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/OperationsContinuityDtoContractTests.cs, +5 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/OperationsContinuityDtoContractTests.cs, +7 more.
 
 #### Run ledger (`RunLedger`)
 
@@ -330,7 +330,7 @@ gantt
 - Status: `Needs screenshot`.
 - [x] Registered in the WPF shell registry as PostedLedger (PostedLedgerPage).
 - [ ] Capture a fixture-mode desktop screenshot for PostedLedger or record an explicit non-capture decision.
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/PostedLedgerViewModelTests.cs.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/LedgerAmountProofInteractionTests.cs, tests/Meridian.Wpf.Tests/ViewModels/PostedLedgerBasisArrivalTests.cs, +1 more.
 
 #### Fund reconciliation (`FundReconciliation`)
 
@@ -648,7 +648,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Options (OptionsPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-options.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, +3 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +4 more.
 
 #### Add provider wizard (`AddProviderWizard`)
 
@@ -696,7 +696,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as Provider (ProviderPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-provider.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +38 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +39 more.
 
 #### Backfill (`Backfill`)
 
@@ -760,7 +760,7 @@ gantt
 - Status: `Evidence current`.
 - [x] Registered in the WPF shell registry as SecurityMaster (SecurityMasterPage).
 - [x] Screenshot evidence is committed at docs/screenshots/desktop/wpf-security-master.png (2026-06-26).
-- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, +23 more.
+- [x] WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, +24 more.
 
 #### Symbol mapping (`SymbolMapping`)
 

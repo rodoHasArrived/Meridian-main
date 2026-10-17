@@ -49,13 +49,20 @@ public sealed class ProviderIntegrationActivationService
         ct.ThrowIfCancellationRequested();
 
         var scopedStore = ResolveStore(tenantId);
+        if (request.ExpectedManifestReference is null)
+        {
+            throw new InvalidOperationException("Activation requires the manifest reference that was reviewed. Reload the current version before approving.");
+        }
+
         var manifest = await scopedStore.GetManifestAsync(request.ManifestId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration manifest '{request.ManifestId}' was not found.");
         var connection = await scopedStore.GetConnectionAsync(request.ConnectionId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration connection '{request.ConnectionId}' was not found.");
+        ProviderIntegrationManifestPromotion.ValidateExpected(manifest, request.ExpectedManifestReference);
 
         var activationManifest = manifest with
         {
+            ManifestVersion = checked(manifest.ManifestVersion + 1),
             State = ProviderIntegrationActivationStateDto.Active,
             ApprovedBy = request.ApprovedBy,
             ApprovedAt = request.ApprovedAt,
@@ -84,7 +91,9 @@ public sealed class ProviderIntegrationActivationService
                 "Provider integration activation is blocked by readiness issues.");
         }
 
-        await scopedStore.SaveManifestAsync(activationManifest, ct).ConfigureAwait(false);
+        activationManifest = await ProviderIntegrationManifestPromotion.SelectAvailableVersionAsync(scopedStore, activationManifest, ct).ConfigureAwait(false);
+        await ProviderIntegrationManifestPromotion.SaveAsync(
+            scopedStore, activationManifest, ProviderIntegrationManifestIdentity.Create(manifest), ct).ConfigureAwait(false);
         await scopedStore.SaveConnectionAsync(activationConnection, ct).ConfigureAwait(false);
         return new ProviderIntegrationActivationResultDto(
             Activated: true,
@@ -94,7 +103,10 @@ public sealed class ProviderIntegrationActivationService
             activationConnection.State,
             readiness,
             activationConnection.ApprovalEvidenceId,
-            "Provider integration connection activated.");
+            "Provider integration connection activated.")
+        {
+            ManifestReference = ProviderIntegrationManifestIdentity.Create(activationManifest)
+        };
     }
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)

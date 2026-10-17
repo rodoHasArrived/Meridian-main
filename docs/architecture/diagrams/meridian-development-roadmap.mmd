@@ -62,7 +62,7 @@ flowchart LR
   W10_DEBT_001 --> W10_MARK_001
   W10_RECON_001["W10-RECON-001\nW10 - in_progress / yellow"]
   W10_MARK_001 --> W10_RECON_001
-  W10_PROV_001["W10-PROV-001\nW10 - planned / green"]
+  W10_PROV_001["W10-PROV-001\nW10 - in_progress / green"]
   W10_RECON_001 --> W10_PROV_001
   W10_RECON_002["W10-RECON-002\nW10 - planned / green"]
   W10_PROV_001 --> W10_RECON_002
@@ -82,3 +82,15 @@ flowchart LR
   W10_PERF_001 --> W10_CONSOL_001
   W10_LOT_002["W10-LOT-002\nW10 - in_progress / green"]
   W10_CONSOL_001 --> W10_LOT_002
+  W11_PASSPORT_001["W11-PASSPORT-001\nW11 - planned / green"]
+  W10_LOT_002 --> W11_PASSPORT_001
+  W11_COVER_001["W11-COVER-001\nW11 - planned / green"]
+  W11_PASSPORT_001 --> W11_COVER_001
+  W11_STAKE_001["W11-STAKE-001\nW11 - planned / green"]
+  W11_COVER_001 --> W11_STAKE_001
+  W11_SHADOW_001["W11-SHADOW-001\nW11 - planned / green"]
+  W11_STAKE_001 --> W11_SHADOW_001
+  W11_PACK_001["W11-PACK-001\nW11 - planned / green"]
+  W11_SHADOW_001 --> W11_PACK_001
+  W11_EXEC_001["W11-EXEC-001\nW11 - planned / green"]
+  W11_PACK_001 --> W11_EXEC_001

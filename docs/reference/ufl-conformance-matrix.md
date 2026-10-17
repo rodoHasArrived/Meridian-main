@@ -3,17 +3,23 @@
 **Owner:** Core Team
 **Audience:** Product, architecture, domain, storage, application, and workstation contributors
 **Last Updated:** 2026-05-29
-**Status:** active planning matrix
+**Status:** archived
+**Scope:** dated conformance planning snapshot
 
 ## Summary
 
-This matrix is the single planning view for current UFL maturity and next conformance targets. It is intentionally conservative: current levels must be backed by code and test evidence named in the asset profile, while target additions remain target-state only until evidence is recorded.
+This matrix preserves the UFL maturity assessment and proposed next targets recorded on
+2026-05-29. Its rows have not been recertified as current delivery status. Use the
+[roadmap registry](../roadmap/README.md) for current work and the
+[source module registry](../source/README.md) to find the owning implementation and tests.
+Recorded levels require their original evidence; proposed additions remain target-state unless
+current evidence establishes otherwise.
 
 Maturity levels are defined in [UFL Capability Model](ufl-capability-model.md).
 
 ## Matrix
 
-| Asset | Current level | Next level | Missing capability | Evidence needed |
+| Asset | Level recorded 2026-05-29 | Proposed next level | Gap recorded at review | Evidence needed |
 | --- | --- | --- | --- | --- |
 | Direct Loan | L3/L4 partial | L5 | outbox workers, accounting/reconciliation hardening, operational close controls | direct-lending integration tests, journal/reconciliation tests, endpoint evidence |
 | Equity | L1/L2 partial | L3 | lifecycle, alias, preferred/convertible, and corporate-action projections | endpoint tests, projection tests, corporate-action accounting preview tests |
@@ -51,4 +57,3 @@ Maturity levels are defined in [UFL Capability Model](ufl-capability-model.md).
 - [UFL Capability Model](ufl-capability-model.md)
 - [UFL Projection and Evidence Kernel](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/ufl-projection-and-evidence-kernel.md)
 - [UFL Custom Asset Composability](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/plans/ufl-custom-asset-composability.md)
-

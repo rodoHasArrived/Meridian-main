@@ -48,6 +48,8 @@ Use this module for domain behavior that should remain stable across providers, 
   quarantine or dead-letter review. Application supplies the concrete dead-letter implementation;
   Data Integration can depend on the port while keeping canonicalization free of Application
   storage dependencies.
+- Trade and quote collectors preserve the provider timestamp on the payload and exchange-time
+  field while stamping separate wall-clock and monotonic receive times on emitted trade and quote events.
 - `MarketTradeUpdate.SequenceStreamId` can define a provider's continuity domain separately from
   the published trade `StreamId` and venue. The trade collector uses that explicit key for sequence
   and rolling order-flow state, excluding venue so per-ticker provider sequences are compared across
