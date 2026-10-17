@@ -289,6 +289,8 @@ One-shot command dispatch uses the same Portfolio Records registration as runtim
 fund-account PostgreSQL persistence remains authoritative for command reconciliation reads, and
 local command reads pass through the same migration gate. Account query, management, and fund-account
 ports resolve to one shared service instance.
+The local tenant guard forwards batched account reconciliation reads through the same gate, so
+local and desktop hosts do not fall through to the unsupported default.
 Command reconciliation resolves account authority when reading retained populations, keeping help
 and configuration diagnostics available even when account tenant configuration requires repair.
 

@@ -1805,6 +1805,7 @@ Meridian-main
 │   │   ├── actions-workflow-policy-2026-10-15.json
 │   │   ├── actions-workflow-report-2026-10-15.json.gz
 │   │   ├── actions-workflow-source-2026-10-15.json.gz
+│   │   ├── archive-compression-replay-safety.md
 │   │   ├── ci-cd-optimization.md
 │   │   ├── dead-code-inventory.md
 │   │   ├── docs-regeneration-automation-design.md
@@ -6465,6 +6466,7 @@ Meridian-main
 │   │   │   └── DuckDbQueryService.cs
 │   │   ├── Replay
 │   │   │   ├── CompressedJsonlStream.cs
+│   │   │   ├── JsonlArchiveFiles.cs
 │   │   │   ├── JsonlReplayer.cs
 │   │   │   └── MemoryMappedJsonlReader.cs
 │   │   ├── Reporting
@@ -10079,6 +10081,7 @@ Meridian-main
 │   │   │   │   ├── StorageFeatureRegistrationTests.cs
 │   │   │   │   ├── TenantCutoverConfigurationTests.cs
 │   │   │   │   ├── TenantCutoverGuardServiceTests.cs
+│   │   │   │   ├── TenantGuardedLocalFundAccountServiceTests.cs
 │   │   │   │   └── TenantPostureHostedServiceTests.cs
 │   │   │   ├── Config
 │   │   │   │   ├── AppSettingsSampleTests.cs
@@ -11126,6 +11129,7 @@ Meridian-main
 │   │   │   ├── AdaptivePartitionPlacementPlannerTests.cs
 │   │   │   ├── AnalysisExportServiceTests.cs
 │   │   │   ├── AnalysisQualityReportCsvTests.cs
+│   │   │   ├── ArchiveCompressionCrashTests.cs
 │   │   │   ├── ArchiveMaintenanceScheduleManagerDurabilityTests.cs
 │   │   │   ├── AssetAccountingPostingEvidenceValidatorTests.cs
 │   │   │   ├── AtomicFileWriterLogPrivacyTests.cs

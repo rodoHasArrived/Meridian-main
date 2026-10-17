@@ -28,6 +28,13 @@ internal static class FundAccountStatementValidation
             throw new ArgumentException("A bank statement revision must be positive.", nameof(request.StatementRevision));
         }
 
+        // Authority selectors only see retained lines. An empty higher revision would keep its batch
+        // header but leave the lower revision's cash flows and closing balance authoritative.
+        if (request.Lines.Count == 0)
+        {
+            throw new ArgumentException("A bank statement revision must contain at least one line.", nameof(request.Lines));
+        }
+
         var sequences = new HashSet<int>();
         var lineIds = new HashSet<Guid>();
         var index = 0;

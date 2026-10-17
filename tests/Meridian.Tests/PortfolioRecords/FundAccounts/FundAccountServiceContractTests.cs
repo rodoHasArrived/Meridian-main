@@ -1166,6 +1166,9 @@ public abstract class FundAccountServiceContractTests
 
         var missingLines = () => service.IngestBankStatementAsync(request with { Lines = null! });
         await missingLines.Should().ThrowAsync<ArgumentNullException>();
+        // An empty revision would keep its batch header while the lower revision stayed authoritative.
+        var emptyRevision = () => service.IngestBankStatementAsync(request with { Lines = [] });
+        await emptyRevision.Should().ThrowAsync<ArgumentException>();
         (await service.GetBankStatementLinesAsync(account.AccountId)).Should().BeEmpty();
     }
 
