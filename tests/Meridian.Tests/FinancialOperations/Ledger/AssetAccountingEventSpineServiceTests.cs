@@ -12,6 +12,7 @@ using Meridian.Instruments.AssetOperations;
 using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
+using Meridian.Storage.SecurityMaster;
 using Meridian.Tests.AssetOperations;
 using NSubstitute;
 
@@ -68,10 +69,52 @@ public sealed partial class AssetAccountingEventSpineServiceTests
     public async Task CorporateAction_RequiresRetainedHoldingPeriodCarryBeforeDrafting(string scenario, bool canDraft)
         => await AssertSuccessorWorkflowAsync(null, null, true, scenario, canDraft);
 
+    [Theory]
+    [InlineData(-1, false)]
+    [InlineData(0, false)]
+    [InlineData(1, false)]
+    [InlineData(-1, true)]
+    [InlineData(0, true)]
+    [InlineData(1, true)]
+    public async Task CorporateAction_SourceEndDateUsesEconomicDateInclusively(
+        int sourceEffectiveToDayOffset, bool retainProjectionBeforeSourceCheck)
+        => await AssertSuccessorWorkflowAsync(null, null, true,
+            sourceEffectiveToDayOffset: sourceEffectiveToDayOffset,
+            retainProjectionBeforeSourceCheck: retainProjectionBeforeSourceCheck);
+
+    [Theory]
+    [InlineData("source", false)]
+    [InlineData("source", true)]
+    [InlineData("target", false)]
+    [InlineData("target", true)]
+    [InlineData("missing-provider", false)]
+    [InlineData("missing-provider", true)]
+    public async Task CorporateAction_RequiresCurrentFullSecurityHashesAtProjectionAndDraft(
+        string securityScenario, bool changeAfterProjection)
+        => await AssertSuccessorWorkflowAsync(null, null, true,
+            securityScenario: securityScenario, changeAfterProjection: changeAfterProjection);
+
+    [Theory]
+    [InlineData("open", false)]
+    [InlineData("closed", false)]
+    [InlineData("account-name", true)]
+    [InlineData("account-type", true)]
+    [InlineData("symbol", true)]
+    [InlineData("financial-account", true)]
+    [InlineData("book", true)]
+    [InlineData("null-empty", false)]
+    [InlineData("missing-provider", false)]
+    public async Task CorporateAction_RetainedLabelsUseEntireAccountAcrossStatusesBeforeDraftAndRetry(
+        string labelScenario, bool labelAllowsDraft)
+        => await AssertSuccessorWorkflowAsync(null, null, true,
+            labelScenario: labelScenario, labelAllowsDraft: labelAllowsDraft);
+
     private static async Task AssertSuccessorWorkflowAsync(
         int? effectiveFromDayOffset, int? effectiveToDayOffset, bool successorIsEffective,
         string? carryScenario = null, bool carryAllowsDraft = true,
-        int? sourceEffectiveFromDayOffset = null, bool retainProjectionBeforeSourceCheck = false)
+        int? sourceEffectiveFromDayOffset = null, bool retainProjectionBeforeSourceCheck = false,
+        int? sourceEffectiveToDayOffset = null, string? securityScenario = null, bool changeAfterProjection = false,
+        string? labelScenario = null, bool labelAllowsDraft = true)
     {
         var baseline = BuildFixture(AssetAccountingEventKindDto.CorporateAction);
         var original = OpenLotSuccessorTestData.Predecessor();
@@ -111,12 +154,18 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             expectedPositionVersion: baseline.Position.Version, expectedSecurityVersion: sourceSecurity.Version,
             periodId: baseline.Period.PeriodId, expectedSecurityHash: new string('a', 64),
             expectedPeriodVersion: baseline.Period.Version,
-            effectiveDate: sourceEffectiveFromDayOffset.HasValue ? OpenLotSuccessorTestData.EffectiveDate.AddDays(-2) : null);
+            effectiveDate: sourceEffectiveFromDayOffset.HasValue || sourceEffectiveToDayOffset.HasValue
+                ? OpenLotSuccessorTestData.EffectiveDate.AddDays(-2) : null);
         var effectiveDate = instruction.Projection.EconomicEvent!.EffectiveDate;
         if (sourceEffectiveFromDayOffset is { } sourceOffset)
             sourceSecurity = sourceSecurity with
             {
                 EffectiveFrom = new DateTimeOffset(effectiveDate.AddDays(sourceOffset).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
+            };
+        if (sourceEffectiveToDayOffset is { } sourceToOffset)
+            sourceSecurity = sourceSecurity with
+            {
+                EffectiveTo = new DateTimeOffset(effectiveDate.AddDays(sourceToOffset).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
             };
         targetSecurity = targetSecurity with
         {
@@ -127,6 +176,18 @@ public sealed partial class AssetAccountingEventSpineServiceTests
                 ? new DateTimeOffset(effectiveDate.AddDays(toOffset).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc))
                 : targetSecurity.EffectiveTo
         };
+        var sourceProjection = SuccessorSecurityProjection(sourceSecurity);
+        var targetProjection = SuccessorSecurityProjection(targetSecurity);
+        target = target with { ExpectedSecurityHash = OpenLotAmortization.SecurityHash(targetProjection) };
+        instruction = instruction with
+        {
+            ExpectedSecurityHash = OpenLotAmortization.SecurityHash(sourceProjection),
+            Successors = [target]
+        };
+        var securityProjections = Substitute.For<ISecurityMasterStore>();
+        securityProjections.GetProjectionAsync(source.SecurityId, Arg.Any<CancellationToken>()).Returns(sourceProjection);
+        securityProjections.GetProjectionAsync(target.Lot.SecurityId, Arg.Any<CancellationToken>()).Returns(targetProjection);
+
         var mapped = new CorporateActionAssetAccountingEventMapper().Map(
             OpenLotSuccessorTestData.MapRequest(instruction, baseline.Request.Scope.Dimensions));
         mapped.IsMapped.Should().BeTrue("{0}", string.Join("; ", mapped.Blockers.Select(item => item.Message)));
@@ -149,7 +210,7 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             }
         };
         var sourceRecord = new LedgerTaxLotRecord(source.TaxLotRecordId, source.LedgerBookId,
-            new LedgerAccount("Assets:Investment", LedgerAccountType.Asset, FinancialAccountId: "custody-main"), source.LotId, source.AcquiredDate,
+            new LedgerAccount("Assets:Investment", LedgerAccountType.Asset, Symbol: null, FinancialAccountId: "custody-main"), source.LotId, source.AcquiredDate,
             source.OriginalQuantity, source.OpenQuantity, source.Acquisition.TransactionCostBasis / source.OriginalQuantity,
             source.Acquisition.AcquisitionCurrency, fixture.Request.ProjectedAtUtc, fixture.Request.ProjectedAtUtc,
             Version: source.Version, SecurityId: source.SecurityId, BookPositionId: source.BookPositionId,
@@ -227,6 +288,41 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             lots.Add(ancestorRecord);
         ledger.GetTaxLotsByIdsAsync(source.LedgerBookId, Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>())
             .Returns(call => lots.Where(lot => call.ArgAt<IReadOnlyList<Guid>>(1).Contains(lot.TaxLotRecordId)).ToArray());
+        var labelLots = new List<LedgerTaxLotRecord>();
+        if (labelScenario is not null and not "missing-provider")
+        {
+            var occupiedAccount = labelScenario switch
+            {
+                "account-name" => sourceRecord.Account with { Name = "Other investments" },
+                "account-type" => sourceRecord.Account with { AccountType = LedgerAccountType.Liability },
+                "symbol" => sourceRecord.Account with { Symbol = "other-symbol" },
+                "financial-account" => sourceRecord.Account with { FinancialAccountId = "other-custody" },
+                "null-empty" => sourceRecord.Account with { Symbol = "" },
+                _ => sourceRecord.Account
+            };
+            labelLots.Add(sourceRecord with
+            {
+                TaxLotRecordId = Guid.NewGuid(),
+                LotId = target.Lot.LotId,
+                Account = occupiedAccount,
+                LedgerBookId = labelScenario == "book" ? Guid.NewGuid() : source.LedgerBookId,
+                OpenQuantity = labelScenario == "closed" ? 0m : source.OpenQuantity
+            });
+        }
+        var labelProviderMissing = labelScenario == "missing-provider";
+        ledger.GetTaxLotsByLotIdsAsync(Arg.Any<Guid>(), Arg.Any<LedgerAccount>(), Arg.Any<IReadOnlyList<string>>(),
+            Arg.Any<CancellationToken>()).Returns(call =>
+            {
+                if (labelProviderMissing)
+                    throw new NotSupportedException("Authoritative retained lot-label reads are unavailable.");
+                var account = call.ArgAt<LedgerAccount>(1);
+                account.Should().Be(sourceRecord.Account);
+                return labelLots.Where(lot => lot.LedgerBookId == call.ArgAt<Guid>(0)
+                    && lot.Account.Name == account.Name && lot.Account.AccountType == account.AccountType
+                    && (lot.Account.Symbol ?? "") == (account.Symbol ?? "")
+                    && (lot.Account.FinancialAccountId ?? "") == (account.FinancialAccountId ?? "")
+                    && call.ArgAt<IReadOnlyList<string>>(2).Contains(lot.LotId)).ToArray();
+            });
         if (legacyBirth)
         {
             var birth = BuildLegacySuccessorBirthReceipt(sourceRecord, ancestorRecord, instruction);
@@ -283,12 +379,36 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         ledger.GetByAggregateAsync(source.LedgerBookId, Arg.Any<CancellationToken>())
             .Returns(_ => committed is null ? [] : new[] { committed.Journal });
         var spineService = new AssetAccountingEventSpineService(eventStore, positions, securities, books, policies,
-            configuration, authority, ledger);
+            configuration, authority, ledger, securityProjections);
 
+        void ChangeSecurityAuthority()
+        {
+            if (securityScenario == "source")
+                securityProjections.GetProjectionAsync(source.SecurityId, Arg.Any<CancellationToken>())
+                    .Returns(sourceProjection with { DisplayName = "Changed without the reviewed hash" });
+            else if (securityScenario == "target")
+                securityProjections.GetProjectionAsync(target.Lot.SecurityId, Arg.Any<CancellationToken>())
+                    .Returns(targetProjection with { Provenance = JsonSerializer.SerializeToElement(new { changed = true }) });
+            else if (securityScenario == "missing-provider")
+                spineService = new AssetAccountingEventSpineService(eventStore, positions, securities, books, policies,
+                    configuration, authority, ledger);
+        }
+        if (securityScenario is not null && !changeAfterProjection)
+        {
+            ChangeSecurityAuthority();
+            var project = () => spineService.ProjectAsync(fixture.Request);
+            await project.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Security Master*");
+            retained.Should().BeEmpty();
+            await authority.DidNotReceiveWithAnyArgs().BuildAuthoritativeCandidateWriteAsync(default!, default!, default);
+            await atomic.DidNotReceiveWithAnyArgs().AppendAssetPostingAsync(default!, default);
+            return;
+        }
+        var sourceIsEffective = sourceEffectiveFromDayOffset is null or <= 0
+            && sourceEffectiveToDayOffset is null or >= 0;
         if (sourceEffectiveFromDayOffset.HasValue)
             sourceSecurity.EffectiveFrom.Should().BeOnOrBefore(fixture.Request.ProjectionLineage.GeneratedAtUtc,
                 "the source-date regression must pass the accounting-timestamp check");
-        if (sourceEffectiveFromDayOffset > 0 && !retainProjectionBeforeSourceCheck)
+        if (!sourceIsEffective && !retainProjectionBeforeSourceCheck)
         {
             var project = () => spineService.ProjectAsync(fixture.Request);
             await project.Should().ThrowAsync<InvalidOperationException>()
@@ -302,7 +422,7 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         if (retainProjectionBeforeSourceCheck)
             securities.GetRecordedByIdAsOfAsync(source.SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
                 .Returns(sourceSecurity);
-        if (sourceEffectiveFromDayOffset > 0)
+        if (!sourceIsEffective)
         {
             var draft = () => spineService.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with
             {
@@ -314,6 +434,35 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             await authority.DidNotReceiveWithAnyArgs().BuildAuthoritativeCandidateWriteAsync(default!, default!, default);
             await atomic.DidNotReceiveWithAnyArgs().AppendAssetPostingAsync(default!, default);
             return;
+        }
+        if (securityScenario is not null)
+        {
+            ChangeSecurityAuthority();
+            var draft = () => spineService.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with
+            {
+                LotMutation = mapped.Projection.LotMutation
+            });
+            await draft.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Security Master*");
+            retained.Should().HaveCount(2);
+            await authority.DidNotReceiveWithAnyArgs().BuildAuthoritativeCandidateWriteAsync(default!, default!, default);
+            await atomic.DidNotReceiveWithAnyArgs().AppendAssetPostingAsync(default!, default);
+            return;
+        }
+        if (!labelAllowsDraft)
+        {
+            var draft = () => spineService.BuildPostingCandidateAsync(BuildCandidateRequest(fixture) with
+            {
+                LotMutation = mapped.Projection.LotMutation
+            });
+            if (labelProviderMissing)
+                await draft.Should().ThrowAsync<NotSupportedException>();
+            else
+                await draft.Should().ThrowAsync<InvalidOperationException>().WithMessage("*lot label is already retained*");
+            retained.Should().HaveCount(2, "a retained label must be rejected before Drafted or journal posting");
+            await authority.DidNotReceiveWithAnyArgs().BuildAuthoritativeCandidateWriteAsync(default!, default!, default);
+            await atomic.DidNotReceiveWithAnyArgs().AppendAssetPostingAsync(default!, default);
+            labelLots.Clear();
+            labelProviderMissing = false;
         }
         var omitSuccessors = () => spineService.BuildPostingCandidateAsync(BuildCandidateRequest(fixture));
         await omitSuccessors.Should().ThrowAsync<InvalidOperationException>();
@@ -389,6 +538,12 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         retained[5].Projection.TaxLotMutationBatchId.Should().Be(posted.TaxLotMutationBatchId);
         await atomic.Received(2).AppendAssetPostingAsync(Arg.Any<AtomicTaxLotJournalCommand>(), Arg.Any<CancellationToken>());
     }
+
+    private static SecurityProjectionRecord SuccessorSecurityProjection(SecurityDetailDto security)
+        => new(security.SecurityId, security.AssetClass, security.Status, security.DisplayName, security.Currency,
+            "ISIN", security.SecurityId.ToString("N"), security.CommonTerms, security.AssetSpecificTerms,
+            JsonSerializer.SerializeToElement(new { }), security.Version, security.EffectiveFrom, security.EffectiveTo,
+            security.Identifiers, security.Aliases);
 
     private static AtomicTaxLotJournalResult BuildLegacySuccessorBirthReceipt(
         LedgerTaxLotRecord target, LedgerTaxLotRecord predecessor, OpenLotSuccessorInstructionDto instruction)

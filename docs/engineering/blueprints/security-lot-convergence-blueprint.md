@@ -809,3 +809,19 @@ and independent Accounting/Ledger and Storage review remain required before rele
 This is an additional bounded posting path. W10-LOT-002 remains in progress: broader corporate-
 action corrections, later amortization policy after capital returns, short-lot posting and consumer parity,
 production-consumer cutover and live shadow acceptance retain their existing gates.
+
+## Standalone lot-write admission (2026-10-14)
+
+The production `RequireGovernedPostingCommand` setting also closes the standalone
+`SaveTaxLotAsync` write path. Valid legacy and canonical lots are both refused before a database
+connection opens; complete acquisition facts do not authorize a lot change without its journal
+and immutable mutation receipt. New and changed production lots must use the governed atomic
+posting path, while reviewed legacy enrichment retains its separate backfill transaction.
+Compatibility stores retain historical saves for isolated fixtures and migration evidence.
+
+`AtomicTaxLotJournalStoreTests.DirectWrites` exercises insert/update refusal, fresh-store
+reconstruction, unchanged retained rows and empty journal/mutation history, plus compatibility
+insert/update behavior. The existing production composition and atomic posting fixtures remain
+the proof for wiring and supported writes. Validation results belong to the PR's exact head.
+This boundary change requires no migration and does not close the remaining consumer parity,
+compatibility retirement or live shadow-operation acceptance gates for `W10-LOT-002`.

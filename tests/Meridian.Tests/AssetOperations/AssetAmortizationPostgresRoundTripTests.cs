@@ -149,7 +149,16 @@ public sealed class AssetAmortizationPostgresRoundTripTests
         var evidence = new[] { eventEvidence, acquisitionEvidence, securityEvidence };
         var price = premium ? 110m : constantYield ? 40.96m : 90m;
         var account = new LedgerAccount("Investments", LedgerAccountType.Asset);
-        var lot = await journal.SaveTaxLotAsync(new LedgerTaxLotRecord(lotId, bookId, account, "amortization-owned-lot", acquired,
+        // Seed the pre-existing holding explicitly in compatibility mode. Every amortization,
+        // reversal and replay below continues through the production-composed governed store.
+        var historicalSeed = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions
+        {
+            ConnectionString = ledgerOptions.ConnectionString,
+            SchemaName = ledgerOptions.SchemaName,
+            RequireGovernedPostingCommand = false,
+            RequireExpectedVersion = true
+        });
+        var lot = await historicalSeed.SaveTaxLotAsync(new LedgerTaxLotRecord(lotId, bookId, account, "amortization-owned-lot", acquired,
             100m, 100m, price, "USD", now, now, EvidenceRef: acquisitionEvidence.EvidenceId, Version: 1,
             SecurityId: securityId, BookPositionId: positionId, OriginalFace: 10_000m, BookedFactor: 1m, ParBasis: 100m,
             Acquisition: new OpenLotAcquisitionDto(LotQuantityBasis.Face, "USD", "USD", 1m, price * 100m, price * 100m,
