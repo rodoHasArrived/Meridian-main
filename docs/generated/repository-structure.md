@@ -4153,6 +4153,7 @@ Meridian-main
 │   │   │   │   ├── SecurityMasterOptionsValidator.cs
 │   │   │   │   ├── SecurityValidationGateService.cs
 │   │   │   │   └── SecurityValidationService.cs
+│   │   │   ├── AlternativeAssetLotExtensions.cs
 │   │   │   ├── ApprovedFieldEditCanonicalMergeHandler.cs
 │   │   │   ├── CanonicalRegistryCoverageSource.cs
 │   │   │   ├── CanonicalSymbolRegistryMigrationService.cs
@@ -4635,6 +4636,7 @@ Meridian-main
 │   │   │   ├── EventSchema.cs
 │   │   │   └── ISchemaUpcaster.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── CommitmentLot.cs
 │   │   │   ├── CorporateActionCaseAccountingContracts.cs
 │   │   │   ├── CorporateActionEconomicFingerprint.cs
 │   │   │   ├── CorporateActionEffectiveStateProjector.cs
@@ -4651,6 +4653,7 @@ Meridian-main
 │   │   │   ├── DayCountConventions.cs
 │   │   │   ├── EdgarReferenceDtos.cs
 │   │   │   ├── FaceValueLot.cs
+│   │   │   ├── FundUnitLot.cs
 │   │   │   ├── IDataVendorEntitlementService.cs
 │   │   │   ├── IHistoricalSymbolTimelineResolver.cs
 │   │   │   ├── InstrumentTypeDescriptorCatalog.cs
@@ -10455,6 +10458,7 @@ Meridian-main
 │   │   │   ├── PaperGatewayLiveFeedPricingTests.cs
 │   │   │   ├── PaperGatewayTickSizeBoundaryTests.cs
 │   │   │   ├── PaperOrderMatchingPolicyTests.cs
+│   │   │   ├── PaperPositionUnitizedLotTests.cs
 │   │   │   ├── PaperSessionPersistenceServiceTests.cs
 │   │   │   ├── PaperSessionRecoveryConcurrencyTests.cs
 │   │   │   ├── PaperTradingCostModelTests.cs
@@ -10950,6 +10954,7 @@ Meridian-main
 │   │   │   │   ├── ReportPeriodRangeTests.cs
 │   │   │   │   ├── SecurityMasterConflictAuthorityPolicyTests.cs
 │   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.cs
+│   │   │   ├── AlternativeAssetLotTests.cs
 │   │   │   ├── AssetOperationsProjectionRoundTripTests.cs
 │   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
 │   │   │   ├── CorporateActionAccountingMigrationTests.cs
