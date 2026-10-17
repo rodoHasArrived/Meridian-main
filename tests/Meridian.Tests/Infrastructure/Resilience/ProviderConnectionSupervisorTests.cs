@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.WebSockets;
 using System.Security.Authentication;
 using FluentAssertions;
@@ -34,6 +35,120 @@ public sealed class ProviderConnectionSupervisorTests
         completed.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Connected);
         completed.IsConnected.Should().BeTrue();
         completed.LastConnectedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ConnectAsync_FatalInitializationFailureRejectsReadinessAndCleansBeforeNextConnection()
+    {
+        await using var supervisor = CreateSupervisor();
+        var failure = new HttpRequestException("provider control failure", null, HttpStatusCode.InternalServerError);
+        var cleanupEntered = NewSignal();
+        var releaseCleanup = NewSignal();
+        var nextTransactionEntered = false;
+        var connectedPublications = 0;
+        supervisor.StateChanged += snapshot =>
+        {
+            if (snapshot.IsConnected)
+                connectedPublications++;
+        };
+
+        var rejected = supervisor.ConnectAsync(_ =>
+        {
+            supervisor.TryRecordInitializationFailure(failure, supervisor.ConnectionAttemptId).Should().BeTrue();
+            return Task.CompletedTask;
+        }, async () =>
+        {
+            cleanupEntered.TrySetResult(true);
+            await releaseCleanup.Task;
+        }, CancellationToken.None);
+
+        await cleanupEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        supervisor.IsConnected.Should().BeFalse();
+        connectedPublications.Should().Be(0);
+        var next = supervisor.ConnectAsync(_ =>
+        {
+            nextTransactionEntered = true;
+            return Task.CompletedTask;
+        });
+        nextTransactionEntered.Should().BeFalse("rejected initialization cleanup retains the operation gate");
+
+        releaseCleanup.TrySetResult(true);
+        var assertion = await FluentActions.Awaiting(() => rejected).Should().ThrowAsync<HttpRequestException>();
+        assertion.Which.Should().BeSameAs(failure);
+        await next.WaitAsync(TimeSpan.FromSeconds(5));
+        connectedPublications.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ConnectAsync_ExplicitFailureSurvivesAbortInducedCancellation()
+    {
+        await using var supervisor = CreateSupervisor();
+        var failure = new AuthenticationException("provider rejected entitlement");
+
+        var connecting = supervisor.ConnectAsync(_ =>
+        {
+            supervisor.TryRecordInitializationFailure(failure, supervisor.ConnectionAttemptId).Should().BeTrue();
+            throw new OperationCanceledException("transport aborted after fatal control response");
+        });
+
+        var assertion = await FluentActions.Awaiting(() => connecting).Should().ThrowAsync<AuthenticationException>();
+        assertion.Which.Should().BeSameAs(failure);
+        supervisor.GetSnapshot().LastFailureKind.Should().Be(ProviderFailureKind.AuthenticationOrAuthorizationFailure);
+        supervisor.IsConnected.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ReconnectAsync_InitializationFailureIsResetAndOldAttemptCannotPoisonReplacement()
+    {
+        await using var supervisor = CreateSupervisor(maxReconnectAttempts: 3);
+        await EstablishAndLoseConnectionAsync(supervisor);
+        var attempts = 0;
+        var cleanupCount = 0;
+        long failedAttempt = 0;
+        var failure = new HttpRequestException("temporary provider outage", null, HttpStatusCode.InternalServerError);
+
+        var reconnected = await supervisor.ReconnectAsync(_ =>
+        {
+            attempts++;
+            if (attempts == 1)
+            {
+                failedAttempt = supervisor.ConnectionAttemptId;
+                supervisor.TryRecordInitializationFailure(failure, failedAttempt).Should().BeTrue();
+            }
+            else
+            {
+                supervisor.ConnectionAttemptId.Should().NotBe(failedAttempt);
+                supervisor.TryRecordInitializationFailure(new AuthenticationException("stale failure"), failedAttempt)
+                    .Should().BeFalse();
+            }
+            return Task.CompletedTask;
+        }, () =>
+        {
+            cleanupCount++;
+            supervisor.IsConnected.Should().BeFalse();
+            return Task.CompletedTask;
+        }, CancellationToken.None);
+
+        reconnected.Should().BeTrue();
+        attempts.Should().Be(2);
+        cleanupCount.Should().Be(1);
+        supervisor.GetSnapshot().LastFailureKind.Should().BeNull();
+        supervisor.MarkConnectionLost(new AuthenticationException("stale loss"), failedAttempt).Should().BeFalse();
+        supervisor.IsConnected.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ConnectAsync_OrdinaryFailureDiagnosticsDoNotRejectInitialization()
+    {
+        await using var supervisor = CreateSupervisor();
+
+        await supervisor.ConnectAsync(_ =>
+        {
+            supervisor.RecordFailure(new FormatException("nonfatal market-data diagnostic"));
+            return Task.CompletedTask;
+        });
+
+        supervisor.IsConnected.Should().BeTrue();
     }
 
     [Fact]

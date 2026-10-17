@@ -3149,7 +3149,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "f613fcd9c897004081f07613e154ffa33a0bc8d9b8c48a71ba8ddfe61163a3ee",
+  "fingerprint": "89fb584878192157bbcb1246b3bb1c61415dc65c567fa3adf1a1faa7f127dbbf",
   "foreign_tables": [],
   "functions": [
     {
@@ -28904,7 +28904,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "f2e7e2da8ed65ccc4eb024afb13d703d49252a7b53fe35f29c71dd3a707c0351",
+      "fingerprint": "c00d8c88d46d5d58f034cacda35ff7e91641251de18c4b79a37b7b68c3b9ba28",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -29005,6 +29005,23 @@
           "function_signature": "reject_security_governance_event_mutation()",
           "level": "row",
           "name": "security_governance_events_append_only",
+          "relation": "security_governance_events",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_governance_events_no_truncate BEFORE TRUNCATE ON security_master.security_governance_events FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_governance_event_mutation()",
+          "definition_hash": "858dc5fc8d7ea084106bbb26486db1fc663781358c1f674c4e5fb0a0cd40fa6b",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "9a18915b212ddfa2e8ef0a72029a6be0e14afedd798efce34e2d4ab4dd00811a",
+          "function_schema": "security_master",
+          "function_signature": "reject_security_governance_event_mutation()",
+          "level": "statement",
+          "name": "security_governance_events_no_truncate",
           "relation": "security_governance_events",
           "schema": "security_master",
           "timing": "before"
@@ -63131,7 +63148,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "f2e7e2da8ed65ccc4eb024afb13d703d49252a7b53fe35f29c71dd3a707c0351",
+      "fingerprint": "c00d8c88d46d5d58f034cacda35ff7e91641251de18c4b79a37b7b68c3b9ba28",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -63232,6 +63249,23 @@
           "function_signature": "reject_security_governance_event_mutation()",
           "level": "row",
           "name": "security_governance_events_append_only",
+          "relation": "security_governance_events",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_governance_events_no_truncate BEFORE TRUNCATE ON security_master.security_governance_events FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_governance_event_mutation()",
+          "definition_hash": "858dc5fc8d7ea084106bbb26486db1fc663781358c1f674c4e5fb0a0cd40fa6b",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "9a18915b212ddfa2e8ef0a72029a6be0e14afedd798efce34e2d4ab4dd00811a",
+          "function_schema": "security_master",
+          "function_signature": "reject_security_governance_event_mutation()",
+          "level": "statement",
+          "name": "security_governance_events_no_truncate",
           "relation": "security_governance_events",
           "schema": "security_master",
           "timing": "before"
@@ -71097,6 +71131,23 @@
       "function_signature": "reject_security_governance_event_mutation()",
       "level": "row",
       "name": "security_governance_events_append_only",
+      "relation": "security_governance_events",
+      "schema": "security_master",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER security_governance_events_no_truncate BEFORE TRUNCATE ON security_master.security_governance_events FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_governance_event_mutation()",
+      "definition_hash": "858dc5fc8d7ea084106bbb26486db1fc663781358c1f674c4e5fb0a0cd40fa6b",
+      "enabled": "origin",
+      "events": [
+        "truncate"
+      ],
+      "fingerprint": "9a18915b212ddfa2e8ef0a72029a6be0e14afedd798efce34e2d4ab4dd00811a",
+      "function_schema": "security_master",
+      "function_signature": "reject_security_governance_event_mutation()",
+      "level": "statement",
+      "name": "security_governance_events_no_truncate",
       "relation": "security_governance_events",
       "schema": "security_master",
       "timing": "before"

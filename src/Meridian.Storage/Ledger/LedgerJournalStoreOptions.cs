@@ -17,8 +17,9 @@ public sealed class LedgerJournalStoreOptions
     public bool EnablePeriodLocking { get; set; } = true;
 
     /// <summary>
-    /// Rejects every append that does not carry the typed accounting posting command. Supported
-    /// production composition enables this; isolated compatibility tests may leave it disabled.
+    /// Rejects every append that does not carry the typed accounting posting command and every
+    /// standalone tax-lot save. Production lot mutations must use the atomic journal/lot boundary.
+    /// Supported production composition enables this; isolated compatibility tests may leave it disabled.
     /// </summary>
     public bool RequireGovernedPostingCommand { get; set; }
 

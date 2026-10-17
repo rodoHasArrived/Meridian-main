@@ -239,8 +239,15 @@ public abstract class WebSocketProviderBase :
         => _connectionManager.SendAsync(message, ct);
 
     /// <summary>
+    /// Invalidates a connection when a required protocol control operation fails,
+    /// allowing the normal supervised reconnect path to restore provider state.
+    /// </summary>
+    protected Task ReportConnectionFailureAsync(Exception error)
+        => _connectionManager.ReportConnectionFailureAsync(error);
+
+    /// <summary>
     /// Reads a single text message directly from the WebSocket.
-    /// Call only during <see cref="AuthenticateAsync"/> — before the receive loop starts —
+    /// Call only during authentication or initial subscription replay — before the receive loop starts —
     /// to handle initial handshake messages (e.g., connection confirmation, auth response).
     /// </summary>
     protected Task<string?> ReadOneMessageAsync(CancellationToken ct = default)
