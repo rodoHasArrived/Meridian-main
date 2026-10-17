@@ -55,6 +55,11 @@ Batch exports reject duplicate queue entries, skip cancelled attempts, and seria
 
 UI services contains workstation endpoints, UI projections, and operator workflow service support.
 
+Activity-feed startup and legacy migration retain the file generation they opened while allowing
+the ordered persistence worker to publish an atomic replacement. Snapshot reads share deletion
+on Windows and use the shared atomic writer's open-file replacement support.
+The reader still observes its complete original generation; subsequent loads see the replacement.
+
 Fixture network delays retain their 50–149 ms simulation range and use a configurable time provider.
 The shared singleton uses system time. Tests control timer completion directly and verify both
 pre-cancelled and pending requests; caller cancellation is honored without waiting for simulated time.
