@@ -247,9 +247,10 @@ public sealed class TaxLotAccountCasingPostgresTests
         public async Task<Guid> SeedCaseVariantRowsAsync(string table, CancellationToken ct, bool onlyVariant = false)
         {
             var variant = Guid.NewGuid();
+            // The VALUES literals must be typed: an untyped text literal cannot be inserted into the uuid key.
             var rows = onlyVariant
-                ? $"('{variant}', 'broker-a')"
-                : $"('{Guid.NewGuid()}', 'BROKER-A'), ('{variant}', 'broker-a')";
+                ? $"('{variant}'::uuid, 'broker-a')"
+                : $"('{Guid.NewGuid()}'::uuid, 'BROKER-A'), ('{variant}'::uuid, 'broker-a')";
             var bookSetup = onlyVariant
                 ? $"select ledger_book_id into b from {Schema}.ledger_books limit 1;"
                 : $"""
