@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "a4eeb3f3ad1c41a179b1c61316e663853ab13a4bf526855dd2c7ac904fde871e",
+      "fingerprint": "9d770afd9e1c23669810eb3130c8378600b6c6a8d3913cb3e3bd80333a8d3ee2",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1537,6 +1537,7 @@
         "Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms",
         "Meridian.Contracts.SecurityMaster.CashFlowLegDirection",
         "Meridian.Contracts.SecurityMaster.CashFlowLegRateKind",
+        "Meridian.Contracts.SecurityMaster.CommitmentLot",
         "Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto",
         "Meridian.Contracts.SecurityMaster.CorporateActionAccountingApprovalResultDto",
         "Meridian.Contracts.SecurityMaster.CorporateActionAccountingDecisionAuthorityDto",
@@ -1642,6 +1643,7 @@
         "Meridian.Contracts.SecurityMaster.EdgarXbrlFact",
         "Meridian.Contracts.SecurityMaster.ExchangeCorporateActionTerms",
         "Meridian.Contracts.SecurityMaster.FaceValueLot",
+        "Meridian.Contracts.SecurityMaster.FundUnitLot",
         "Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService",
         "Meridian.Contracts.SecurityMaster.ICorporateActionOperationsService",
         "Meridian.Contracts.SecurityMaster.IDataVendorEntitlementService",
@@ -3803,7 +3805,7 @@
       "directories": [
         "src/Meridian.Contracts/SecurityMaster"
       ],
-      "fingerprint": "30efd7e93958203068a46d76a6fbccaab565d738918394a1d98ce3999da4e092",
+      "fingerprint": "8a85d49301bce480f8e32a99007761039d9a55590e151fe556e6135c8978884b",
       "id": "security-master-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.SecurityMaster"
@@ -3833,6 +3835,7 @@
         "Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms",
         "Meridian.Contracts.SecurityMaster.CashFlowLegDirection",
         "Meridian.Contracts.SecurityMaster.CashFlowLegRateKind",
+        "Meridian.Contracts.SecurityMaster.CommitmentLot",
         "Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto",
         "Meridian.Contracts.SecurityMaster.CorporateActionAccountingApprovalResultDto",
         "Meridian.Contracts.SecurityMaster.CorporateActionAccountingDecisionAuthorityDto",
@@ -3938,6 +3941,7 @@
         "Meridian.Contracts.SecurityMaster.EdgarXbrlFact",
         "Meridian.Contracts.SecurityMaster.ExchangeCorporateActionTerms",
         "Meridian.Contracts.SecurityMaster.FaceValueLot",
+        "Meridian.Contracts.SecurityMaster.FundUnitLot",
         "Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService",
         "Meridian.Contracts.SecurityMaster.ICorporateActionOperationsService",
         "Meridian.Contracts.SecurityMaster.IDataVendorEntitlementService",
@@ -4136,7 +4140,7 @@
       ]
     }
   ],
-  "fingerprint": "1629594d7c49a1d20da205f425967d2dcbec46bf3d94d7505bb1ebc6dec27fc1",
+  "fingerprint": "4b92c83127474b565cad76f036c36155782d96a484ca21ecf7b037ad3eddc053",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6135,7 +6139,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "457d30cde4d14c7912f9e7313c0b1949ce25e310f3b13b88e03fad3ae2421753",
+      "fingerprint": "c1662166c0de68e2ead9802d6dd5bddbb1e6e21e201200ed7fcc14151018137e",
       "mapped_schemas": [
         "security_master"
       ],
@@ -6165,6 +6169,7 @@
         "Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms",
         "Meridian.Contracts.SecurityMaster.CashFlowLegDirection",
         "Meridian.Contracts.SecurityMaster.CashFlowLegRateKind",
+        "Meridian.Contracts.SecurityMaster.CommitmentLot",
         "Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto",
         "Meridian.Contracts.SecurityMaster.CorporateActionAccountingApprovalResultDto",
         "Meridian.Contracts.SecurityMaster.CorporateActionAccountingDecisionAuthorityDto",
@@ -6270,6 +6275,7 @@
         "Meridian.Contracts.SecurityMaster.EdgarXbrlFact",
         "Meridian.Contracts.SecurityMaster.ExchangeCorporateActionTerms",
         "Meridian.Contracts.SecurityMaster.FaceValueLot",
+        "Meridian.Contracts.SecurityMaster.FundUnitLot",
         "Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService",
         "Meridian.Contracts.SecurityMaster.ICorporateActionOperationsService",
         "Meridian.Contracts.SecurityMaster.IDataVendorEntitlementService",
@@ -218256,6 +218262,133 @@
       "type_parameters": []
     },
     {
+      "base_types": [
+        "IUnitizedLot"
+      ],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "bba4b95ffd311d738b9283596eb5219117f98b0e154d8fde8f16733fd17968f5",
+      "full_name": "Meridian.Contracts.SecurityMaster.CommitmentLot",
+      "id": "Meridian.Contracts.SecurityMaster.CommitmentLot",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CommittedDate",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "DateOnly",
+          "source_line": 56,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FundedAmount",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "decimal",
+          "source_line": 62,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LotId",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "string",
+          "source_line": 43,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "RecallableDistributions",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "decimal",
+          "source_line": 65,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "Guid",
+          "source_line": 53,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TotalCommitment",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "decimal",
+          "source_line": 59,
+          "type": "decimal"
+        }
+      ],
+      "name": "CommitmentLot",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.CommitmentLot",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.IUnitizedLot"
+      ],
+      "source": {
+        "line": 12,
+        "path": "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+      },
+      "sources": [
+        {
+          "line": 12,
+          "path": "src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
       "base_types": [],
       "classification": "dto",
       "containing_type": null,
@@ -230713,6 +230846,119 @@
         {
           "line": 14,
           "path": "src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "IUnitizedLot"
+      ],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "4d97451df0cdc040db5a8873f9596f61dd54ed65f63284fb7960cabeec63d730",
+      "full_name": "Meridian.Contracts.SecurityMaster.FundUnitLot",
+      "id": "Meridian.Contracts.SecurityMaster.FundUnitLot",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AcquiredDate",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "DateOnly",
+          "source_line": 46,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LotId",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "string",
+          "source_line": 34,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "NavPerUnit",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "decimal",
+          "source_line": 52,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "SecurityId",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "Guid",
+          "source_line": 44,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Units",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "decimal",
+          "source_line": 49,
+          "type": "decimal"
+        }
+      ],
+      "name": "FundUnitLot",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.FundUnitLot",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.IUnitizedLot"
+      ],
+      "source": {
+        "line": 9,
+        "path": "src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs"
+      },
+      "sources": [
+        {
+          "line": 9,
+          "path": "src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs"
         }
       ],
       "type_parameters": []
