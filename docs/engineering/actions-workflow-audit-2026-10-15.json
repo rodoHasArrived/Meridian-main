@@ -1,0 +1,1188 @@
+{
+  "repository": "rodoHasArrived/Meridian-main",
+  "sourceHead": "d20068cf7ea7159c1025c8c3a4840b4f719480dc",
+  "transport": "GitHub connected read-only fetch; collector replay uses raw cache with no network fallback",
+  "files": {
+    "actions-workflow-source-2026-10-15.json.gz": {
+      "uncompressedSha256": "f6aa5e85bc66f64187109e06e2c31bed0c31c0f3ae9bed47fb29acb177969a6a",
+      "compressedSha256": "2b95c5ced95b6d81aaf4426b0030e3e60964a142fd8bd8b5df8af67bdc5c9afe",
+      "uncompressedBytes": 3002317,
+      "compressedBytes": 164167
+    },
+    "actions-workflow-report-2026-10-15.json.gz": {
+      "uncompressedSha256": "f3f10ead965501c9d8e33d38afdccd90a9e446c82be9d458fc45167f1d9d1ff2",
+      "compressedSha256": "7484bd27033b6bf0ae0c227cdf4536bc07f3d3b7f7abf8baec592576935043c8",
+      "uncompressedBytes": 268763,
+      "compressedBytes": 17867
+    }
+  },
+  "finalRunVerification": {
+    "startedAt": "2026-10-15 23:16:29 UTC",
+    "finishedAt": "2026-10-15 23:16:34 UTC",
+    "runDetails": [
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38814991104",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38814991116",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38814991121",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38814991134",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38814991166",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38814991191",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38814991192",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38814991223",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38814991247",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38814991405",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38814991474",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816737816",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816737818",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816737833",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816737958",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816737981",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816737982",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816738025",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816738041",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816793818",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816793866",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816793871",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816793876",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816793897",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816793902",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816793903",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816793923",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816793939",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38816794001",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818098821",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818098850",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818098885",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818098886",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818098907",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818098912",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818098953",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818099016",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818818824",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818818951",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818818977",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818818993",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818819002",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818819065",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38818819160",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819231513",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819231516",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819231520",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819231531",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819231536",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819231543",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819231626",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819536740",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819536761",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819536780",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819536799",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819536805",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819536921",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819536973",
+        "runAttempt": 1,
+        "status": "completed"
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs/38819536981",
+        "runAttempt": 1,
+        "status": "completed"
+      }
+    ],
+    "attemptChanges": []
+  },
+  "operationalSnapshot": {
+    "startedAt": "2026-10-15 23:17:31 UTC",
+    "finishedAt": "2026-10-15 23:17:31 UTC",
+    "results": [
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs?event=merge_group&per_page=1&page=1",
+        "total": 0,
+        "runs": []
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs?status=queued&per_page=100&page=1",
+        "total": 2,
+        "runs": [
+          {
+            "id": 23662997318,
+            "status": "queued",
+            "name": "Update Diagram Artifacts",
+            "created": "2026-03-27T19:06:41Z"
+          },
+          {
+            "id": 23662972493,
+            "status": "queued",
+            "name": "Desktop Builds",
+            "created": "2026-03-27T19:06:02Z"
+          }
+        ]
+      },
+      {
+        "endpoint": "/repos/rodoHasArrived/Meridian-main/actions/runs?status=waiting&per_page=100&page=1",
+        "total": 0,
+        "runs": []
+      }
+    ]
+  },
+  "collectorExitCode": 1,
+  "collectorExitExplanation": "The attempt/job/check inventories are complete. Classic protection and effective rules are unavailable, workflow catalog is unavailable, and push.before boundaries are unverified. Required-check configuration and collection.complete intentionally remain false.",
+  "operationalRawResponses": {
+    "/repos/rodoHasArrived/Meridian-main/branches/main/protection/required_status_checks": {
+      "error": "{\"content\":[{\"type\":\"text\",\"text\":\"GitHub API error 403: {\\\"message\\\":\\\"Resource not accessible by integration\\\",\\\"documentation_url\\\":\\\"https://docs.github.com/rest/branches/branch-protection#get-status-checks-protection\\\",\\\"status\\\":\\\"403\\\"}\"}],\"structuredContent\":{\"error\":\"GitHub API error 403: {\\\"message\\\":\\\"Resource not accessible by integration\\\",\\\"documentation_url\\\":\\\"https://docs.github.com/rest/branches/branch-protection#get-status-checks-protection\\\",\\\"status\\\":\\\"403\\\"}\",\"error_code\":\"FORBIDDEN\",\"error_data\":{\"message\":\"Resource not accessible by integration\",\"documentation_url\":\"https://docs.github.com/rest/branches/branch-protection#get-status-checks-protection\",\"status\":\"403\"}},\"isError\":true}",
+      "status": 403
+    },
+    "/repos/rodoHasArrived/Meridian-main/rules/branches/main?per_page=100&page=1": {
+      "error": "{\"content\":[{\"type\":\"text\",\"text\":\"HTTPError: 400: GitHub Fetch URL is not an allowed public GitHub repository or search endpoint. (Response: None)\"}],\"structuredContent\":{\"error\":\"HTTPError: 400: GitHub Fetch URL is not an allowed public GitHub repository or search endpoint. (Response: None)\",\"error_code\":\"INVALID_ARGUMENT\"},\"isError\":true}"
+    },
+    "/repos/rodoHasArrived/Meridian-main/rulesets?includes_parents=true&per_page=100&page=1": [
+      {
+        "id": 20768244,
+        "name": "pERMISIONS",
+        "target": "branch",
+        "source_type": "Repository",
+        "source": "rodoHasArrived/Meridian-main",
+        "enforcement": "active",
+        "node_id": "RRS_lACqUmVwb3NpdG9yec5G7F7CzgE85fQ",
+        "_links": {
+          "self": {
+            "href": "https://api.github.com/repos/rodoHasArrived/Meridian-main/rulesets/20768244"
+          },
+          "html": {
+            "href": "https://github.com/rodoHasArrived/Meridian-main/rules/20768244"
+          }
+        },
+        "created_at": "2026-08-12T14:34:43.327-07:00",
+        "updated_at": "2026-08-12T14:34:43.409-07:00"
+      }
+    ],
+    "/repos/rodoHasArrived/Meridian-main/actions/runs/37269613950": {
+      "id": 37269613950,
+      "name": "IB API Official Runtime",
+      "node_id": "WFR_kwLORuxews8AAAAIrXEtfg",
+      "head_branch": "main",
+      "head_sha": "3f971a3679bf074bf6a43c05fdd6f3bde86fb312",
+      "path": ".github/workflows/ibapi-runtime.yml",
+      "display_title": "IB API Official Runtime",
+      "run_number": 12,
+      "event": "schedule",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "workflow_id": 318418772,
+      "check_suite_id": 100944965469,
+      "check_suite_node_id": "CS_kwDORuxews8AAAAXgMnvXQ",
+      "url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37269613950",
+      "html_url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37269613950",
+      "pull_requests": [],
+      "created_at": "2026-10-05T05:51:16Z",
+      "updated_at": "2026-10-06T05:51:18Z",
+      "actor": {
+        "login": "rodoHasArrived",
+        "id": 55965792,
+        "node_id": "MDQ6VXNlcjU1OTY1Nzky",
+        "avatar_url": "https://avatars.githubusercontent.com/u/55965792?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/rodoHasArrived",
+        "html_url": "https://github.com/rodoHasArrived",
+        "followers_url": "https://api.github.com/users/rodoHasArrived/followers",
+        "following_url": "https://api.github.com/users/rodoHasArrived/following{/other_user}",
+        "gists_url": "https://api.github.com/users/rodoHasArrived/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/rodoHasArrived/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/rodoHasArrived/subscriptions",
+        "organizations_url": "https://api.github.com/users/rodoHasArrived/orgs",
+        "repos_url": "https://api.github.com/users/rodoHasArrived/repos",
+        "events_url": "https://api.github.com/users/rodoHasArrived/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/rodoHasArrived/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "run_attempt": 1,
+      "referenced_workflows": [],
+      "run_started_at": "2026-10-05T05:51:16Z",
+      "triggering_actor": {
+        "login": "rodoHasArrived",
+        "id": 55965792,
+        "node_id": "MDQ6VXNlcjU1OTY1Nzky",
+        "avatar_url": "https://avatars.githubusercontent.com/u/55965792?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/rodoHasArrived",
+        "html_url": "https://github.com/rodoHasArrived",
+        "followers_url": "https://api.github.com/users/rodoHasArrived/followers",
+        "following_url": "https://api.github.com/users/rodoHasArrived/following{/other_user}",
+        "gists_url": "https://api.github.com/users/rodoHasArrived/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/rodoHasArrived/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/rodoHasArrived/subscriptions",
+        "organizations_url": "https://api.github.com/users/rodoHasArrived/orgs",
+        "repos_url": "https://api.github.com/users/rodoHasArrived/repos",
+        "events_url": "https://api.github.com/users/rodoHasArrived/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/rodoHasArrived/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37269613950/jobs",
+      "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37269613950/logs",
+      "check_suite_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/check-suites/100944965469",
+      "artifacts_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37269613950/artifacts",
+      "cancel_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37269613950/cancel",
+      "rerun_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37269613950/rerun",
+      "previous_attempt_url": null,
+      "workflow_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/workflows/318418772",
+      "head_commit": {
+        "id": "3f971a3679bf074bf6a43c05fdd6f3bde86fb312",
+        "tree_id": "ea6937e9e7de87acbb62b67b1174bb7c47a8ae98",
+        "message": "Merge pull request #3056 from rodoHasArrived/claude/practical-faraday-k3v4jt",
+        "timestamp": "2026-10-04T23:56:59Z",
+        "author": {
+          "name": "rodoHasArrived",
+          "email": "55965792+rodoHasArrived@users.noreply.github.com"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@github.com"
+        }
+      },
+      "repository": {
+        "id": 1189895874,
+        "node_id": "R_kgDORuxewg",
+        "name": "Meridian-main",
+        "full_name": "rodoHasArrived/Meridian-main",
+        "private": false,
+        "owner": {
+          "login": "rodoHasArrived",
+          "id": 55965792,
+          "node_id": "MDQ6VXNlcjU1OTY1Nzky",
+          "avatar_url": "https://avatars.githubusercontent.com/u/55965792?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/rodoHasArrived",
+          "html_url": "https://github.com/rodoHasArrived",
+          "followers_url": "https://api.github.com/users/rodoHasArrived/followers",
+          "following_url": "https://api.github.com/users/rodoHasArrived/following{/other_user}",
+          "gists_url": "https://api.github.com/users/rodoHasArrived/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/rodoHasArrived/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/rodoHasArrived/subscriptions",
+          "organizations_url": "https://api.github.com/users/rodoHasArrived/orgs",
+          "repos_url": "https://api.github.com/users/rodoHasArrived/repos",
+          "events_url": "https://api.github.com/users/rodoHasArrived/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/rodoHasArrived/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "html_url": "https://github.com/rodoHasArrived/Meridian-main",
+        "description": null,
+        "fork": false,
+        "url": "https://api.github.com/repos/rodoHasArrived/Meridian-main",
+        "forks_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/forks",
+        "keys_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/keys{/key_id}",
+        "collaborators_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/collaborators{/collaborator}",
+        "teams_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/teams",
+        "hooks_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/hooks",
+        "issue_events_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues/events{/number}",
+        "events_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/events",
+        "assignees_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/assignees{/user}",
+        "branches_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/branches{/branch}",
+        "tags_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/tags",
+        "blobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/blobs{/sha}",
+        "git_tags_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/tags{/sha}",
+        "git_refs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/refs{/sha}",
+        "trees_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/trees{/sha}",
+        "statuses_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/statuses/{sha}",
+        "languages_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/languages",
+        "stargazers_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/stargazers",
+        "contributors_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/contributors",
+        "subscribers_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/subscribers",
+        "subscription_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/subscription",
+        "commits_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/commits{/sha}",
+        "git_commits_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/commits{/sha}",
+        "comments_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/comments{/number}",
+        "issue_comment_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues/comments{/number}",
+        "contents_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/contents/{+path}",
+        "compare_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/compare/{base}...{head}",
+        "merges_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/merges",
+        "archive_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/{archive_format}{/ref}",
+        "downloads_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/downloads",
+        "issues_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues{/number}",
+        "pulls_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/pulls{/number}",
+        "milestones_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/milestones{/number}",
+        "notifications_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/notifications{?since,all,participating}",
+        "labels_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/labels{/name}",
+        "releases_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/releases{/id}",
+        "deployments_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/deployments"
+      },
+      "head_repository": {
+        "id": 1189895874,
+        "node_id": "R_kgDORuxewg",
+        "name": "Meridian-main",
+        "full_name": "rodoHasArrived/Meridian-main",
+        "private": false,
+        "owner": {
+          "login": "rodoHasArrived",
+          "id": 55965792,
+          "node_id": "MDQ6VXNlcjU1OTY1Nzky",
+          "avatar_url": "https://avatars.githubusercontent.com/u/55965792?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/rodoHasArrived",
+          "html_url": "https://github.com/rodoHasArrived",
+          "followers_url": "https://api.github.com/users/rodoHasArrived/followers",
+          "following_url": "https://api.github.com/users/rodoHasArrived/following{/other_user}",
+          "gists_url": "https://api.github.com/users/rodoHasArrived/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/rodoHasArrived/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/rodoHasArrived/subscriptions",
+          "organizations_url": "https://api.github.com/users/rodoHasArrived/orgs",
+          "repos_url": "https://api.github.com/users/rodoHasArrived/repos",
+          "events_url": "https://api.github.com/users/rodoHasArrived/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/rodoHasArrived/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "html_url": "https://github.com/rodoHasArrived/Meridian-main",
+        "description": null,
+        "fork": false,
+        "url": "https://api.github.com/repos/rodoHasArrived/Meridian-main",
+        "forks_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/forks",
+        "keys_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/keys{/key_id}",
+        "collaborators_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/collaborators{/collaborator}",
+        "teams_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/teams",
+        "hooks_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/hooks",
+        "issue_events_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues/events{/number}",
+        "events_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/events",
+        "assignees_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/assignees{/user}",
+        "branches_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/branches{/branch}",
+        "tags_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/tags",
+        "blobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/blobs{/sha}",
+        "git_tags_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/tags{/sha}",
+        "git_refs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/refs{/sha}",
+        "trees_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/trees{/sha}",
+        "statuses_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/statuses/{sha}",
+        "languages_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/languages",
+        "stargazers_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/stargazers",
+        "contributors_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/contributors",
+        "subscribers_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/subscribers",
+        "subscription_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/subscription",
+        "commits_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/commits{/sha}",
+        "git_commits_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/commits{/sha}",
+        "comments_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/comments{/number}",
+        "issue_comment_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues/comments{/number}",
+        "contents_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/contents/{+path}",
+        "compare_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/compare/{base}...{head}",
+        "merges_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/merges",
+        "archive_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/{archive_format}{/ref}",
+        "downloads_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/downloads",
+        "issues_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues{/number}",
+        "pulls_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/pulls{/number}",
+        "milestones_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/milestones{/number}",
+        "notifications_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/notifications{?since,all,participating}",
+        "labels_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/labels{/name}",
+        "releases_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/releases{/id}",
+        "deployments_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/deployments"
+      }
+    },
+    "/repos/rodoHasArrived/Meridian-main/actions/runs?status=queued&per_page=100&page=1": {
+      "total_count": 2,
+      "workflow_runs": [
+        {
+          "id": 23662997318,
+          "name": "Update Diagram Artifacts",
+          "node_id": "WFR_kwLORuxews8AAAAFgmyvRg",
+          "head_branch": "main",
+          "head_sha": "a9da403e637faabb6f66fd09acc64b0b36348531",
+          "path": ".github/workflows/update-diagrams.yml",
+          "display_title": "Update Diagram Artifacts",
+          "run_number": 30,
+          "event": "workflow_dispatch",
+          "status": "queued",
+          "conclusion": null,
+          "workflow_id": 250373546,
+          "check_suite_id": 62356554329,
+          "check_suite_node_id": "CS_kwDORuxews8AAAAOhL2CWQ",
+          "url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/23662997318",
+          "html_url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/23662997318",
+          "pull_requests": [],
+          "created_at": "2026-03-27T19:06:41Z",
+          "updated_at": "2026-03-27T19:07:44Z",
+          "actor": {
+            "login": "rodoHasArrived",
+            "id": 55965792,
+            "node_id": "MDQ6VXNlcjU1OTY1Nzky",
+            "avatar_url": "https://avatars.githubusercontent.com/u/55965792?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/rodoHasArrived",
+            "html_url": "https://github.com/rodoHasArrived",
+            "followers_url": "https://api.github.com/users/rodoHasArrived/followers",
+            "following_url": "https://api.github.com/users/rodoHasArrived/following{/other_user}",
+            "gists_url": "https://api.github.com/users/rodoHasArrived/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/rodoHasArrived/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/rodoHasArrived/subscriptions",
+            "organizations_url": "https://api.github.com/users/rodoHasArrived/orgs",
+            "repos_url": "https://api.github.com/users/rodoHasArrived/repos",
+            "events_url": "https://api.github.com/users/rodoHasArrived/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/rodoHasArrived/received_events",
+            "type": "User",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "run_attempt": 1,
+          "referenced_workflows": [],
+          "run_started_at": "2026-03-27T19:07:44Z",
+          "triggering_actor": {
+            "login": "rodoHasArrived",
+            "id": 55965792,
+            "node_id": "MDQ6VXNlcjU1OTY1Nzky",
+            "avatar_url": "https://avatars.githubusercontent.com/u/55965792?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/rodoHasArrived",
+            "html_url": "https://github.com/rodoHasArrived",
+            "followers_url": "https://api.github.com/users/rodoHasArrived/followers",
+            "following_url": "https://api.github.com/users/rodoHasArrived/following{/other_user}",
+            "gists_url": "https://api.github.com/users/rodoHasArrived/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/rodoHasArrived/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/rodoHasArrived/subscriptions",
+            "organizations_url": "https://api.github.com/users/rodoHasArrived/orgs",
+            "repos_url": "https://api.github.com/users/rodoHasArrived/repos",
+            "events_url": "https://api.github.com/users/rodoHasArrived/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/rodoHasArrived/received_events",
+            "type": "User",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/23662997318/jobs",
+          "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/23662997318/logs",
+          "check_suite_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/check-suites/62356554329",
+          "artifacts_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/23662997318/artifacts",
+          "cancel_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/23662997318/cancel",
+          "rerun_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/23662997318/rerun",
+          "previous_attempt_url": null,
+          "workflow_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/workflows/250373546",
+          "head_commit": {
+            "id": "a9da403e637faabb6f66fd09acc64b0b36348531",
+            "tree_id": "69c57eef465b50e54aaf1786acd3e10adca93777",
+            "message": "Merge pull request #226 from rodoHasArrived/copilot/competitive-analysis-similar-software\n\n[WIP] Conduct competitive analysis of similar software and business models",
+            "timestamp": "2026-03-27T18:55:58Z",
+            "author": {
+              "name": "rodoHasArrived",
+              "email": "55965792+rodoHasArrived@users.noreply.github.com"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com"
+            }
+          },
+          "repository": {
+            "id": 1189895874,
+            "node_id": "R_kgDORuxewg",
+            "name": "Meridian-main",
+            "full_name": "rodoHasArrived/Meridian-main",
+            "private": false,
+            "owner": {
+              "login": "rodoHasArrived",
+              "id": 55965792,
+              "node_id": "MDQ6VXNlcjU1OTY1Nzky",
+              "avatar_url": "https://avatars.githubusercontent.com/u/55965792?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/rodoHasArrived",
+              "html_url": "https://github.com/rodoHasArrived",
+              "followers_url": "https://api.github.com/users/rodoHasArrived/followers",
+              "following_url": "https://api.github.com/users/rodoHasArrived/following{/other_user}",
+              "gists_url": "https://api.github.com/users/rodoHasArrived/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/rodoHasArrived/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/rodoHasArrived/subscriptions",
+              "organizations_url": "https://api.github.com/users/rodoHasArrived/orgs",
+              "repos_url": "https://api.github.com/users/rodoHasArrived/repos",
+              "events_url": "https://api.github.com/users/rodoHasArrived/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/rodoHasArrived/received_events",
+              "type": "User",
+              "user_view_type": "public",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/rodoHasArrived/Meridian-main",
+            "description": null,
+            "fork": false,
+            "url": "https://api.github.com/repos/rodoHasArrived/Meridian-main",
+            "forks_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/forks",
+            "keys_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/teams",
+            "hooks_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/hooks",
+            "issue_events_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/events",
+            "assignees_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/tags",
+            "blobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/languages",
+            "stargazers_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/stargazers",
+            "contributors_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/contributors",
+            "subscribers_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/subscribers",
+            "subscription_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/subscription",
+            "commits_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/merges",
+            "archive_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/downloads",
+            "issues_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/labels{/name}",
+            "releases_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/deployments"
+          },
+          "head_repository": {
+            "id": 1189895874,
+            "node_id": "R_kgDORuxewg",
+            "name": "Meridian-main",
+            "full_name": "rodoHasArrived/Meridian-main",
+            "private": false,
+            "owner": {
+              "login": "rodoHasArrived",
+              "id": 55965792,
+              "node_id": "MDQ6VXNlcjU1OTY1Nzky",
+              "avatar_url": "https://avatars.githubusercontent.com/u/55965792?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/rodoHasArrived",
+              "html_url": "https://github.com/rodoHasArrived",
+              "followers_url": "https://api.github.com/users/rodoHasArrived/followers",
+              "following_url": "https://api.github.com/users/rodoHasArrived/following{/other_user}",
+              "gists_url": "https://api.github.com/users/rodoHasArrived/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/rodoHasArrived/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/rodoHasArrived/subscriptions",
+              "organizations_url": "https://api.github.com/users/rodoHasArrived/orgs",
+              "repos_url": "https://api.github.com/users/rodoHasArrived/repos",
+              "events_url": "https://api.github.com/users/rodoHasArrived/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/rodoHasArrived/received_events",
+              "type": "User",
+              "user_view_type": "public",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/rodoHasArrived/Meridian-main",
+            "description": null,
+            "fork": false,
+            "url": "https://api.github.com/repos/rodoHasArrived/Meridian-main",
+            "forks_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/forks",
+            "keys_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/teams",
+            "hooks_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/hooks",
+            "issue_events_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/events",
+            "assignees_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/tags",
+            "blobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/languages",
+            "stargazers_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/stargazers",
+            "contributors_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/contributors",
+            "subscribers_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/subscribers",
+            "subscription_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/subscription",
+            "commits_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/merges",
+            "archive_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/downloads",
+            "issues_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/labels{/name}",
+            "releases_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/deployments"
+          }
+        },
+        {
+          "id": 23662972493,
+          "name": "Desktop Builds",
+          "node_id": "WFR_kwLORuxews8AAAAFgmxOTQ",
+          "head_branch": "main",
+          "head_sha": "a9da403e637faabb6f66fd09acc64b0b36348531",
+          "path": ".github/workflows/desktop-builds.yml",
+          "display_title": "Desktop Builds",
+          "run_number": 82,
+          "event": "workflow_dispatch",
+          "status": "queued",
+          "conclusion": null,
+          "workflow_id": 250373517,
+          "check_suite_id": 62356475830,
+          "check_suite_node_id": "CS_kwDORuxews8AAAAOhLxPtg",
+          "url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/23662972493",
+          "html_url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/23662972493",
+          "pull_requests": [],
+          "created_at": "2026-03-27T19:06:02Z",
+          "updated_at": "2026-03-27T19:09:32Z",
+          "actor": {
+            "login": "rodoHasArrived",
+            "id": 55965792,
+            "node_id": "MDQ6VXNlcjU1OTY1Nzky",
+            "avatar_url": "https://avatars.githubusercontent.com/u/55965792?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/rodoHasArrived",
+            "html_url": "https://github.com/rodoHasArrived",
+            "followers_url": "https://api.github.com/users/rodoHasArrived/followers",
+            "following_url": "https://api.github.com/users/rodoHasArrived/following{/other_user}",
+            "gists_url": "https://api.github.com/users/rodoHasArrived/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/rodoHasArrived/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/rodoHasArrived/subscriptions",
+            "organizations_url": "https://api.github.com/users/rodoHasArrived/orgs",
+            "repos_url": "https://api.github.com/users/rodoHasArrived/repos",
+            "events_url": "https://api.github.com/users/rodoHasArrived/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/rodoHasArrived/received_events",
+            "type": "User",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "run_attempt": 1,
+          "referenced_workflows": [],
+          "run_started_at": "2026-03-27T19:09:32Z",
+          "triggering_actor": {
+            "login": "rodoHasArrived",
+            "id": 55965792,
+            "node_id": "MDQ6VXNlcjU1OTY1Nzky",
+            "avatar_url": "https://avatars.githubusercontent.com/u/55965792?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/rodoHasArrived",
+            "html_url": "https://github.com/rodoHasArrived",
+            "followers_url": "https://api.github.com/users/rodoHasArrived/followers",
+            "following_url": "https://api.github.com/users/rodoHasArrived/following{/other_user}",
+            "gists_url": "https://api.github.com/users/rodoHasArrived/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/rodoHasArrived/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/rodoHasArrived/subscriptions",
+            "organizations_url": "https://api.github.com/users/rodoHasArrived/orgs",
+            "repos_url": "https://api.github.com/users/rodoHasArrived/repos",
+            "events_url": "https://api.github.com/users/rodoHasArrived/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/rodoHasArrived/received_events",
+            "type": "User",
+            "user_view_type": "public",
+            "site_admin": false
+          },
+          "jobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/23662972493/jobs",
+          "logs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/23662972493/logs",
+          "check_suite_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/check-suites/62356475830",
+          "artifacts_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/23662972493/artifacts",
+          "cancel_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/23662972493/cancel",
+          "rerun_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/23662972493/rerun",
+          "previous_attempt_url": null,
+          "workflow_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/workflows/250373517",
+          "head_commit": {
+            "id": "a9da403e637faabb6f66fd09acc64b0b36348531",
+            "tree_id": "69c57eef465b50e54aaf1786acd3e10adca93777",
+            "message": "Merge pull request #226 from rodoHasArrived/copilot/competitive-analysis-similar-software\n\n[WIP] Conduct competitive analysis of similar software and business models",
+            "timestamp": "2026-03-27T18:55:58Z",
+            "author": {
+              "name": "rodoHasArrived",
+              "email": "55965792+rodoHasArrived@users.noreply.github.com"
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com"
+            }
+          },
+          "repository": {
+            "id": 1189895874,
+            "node_id": "R_kgDORuxewg",
+            "name": "Meridian-main",
+            "full_name": "rodoHasArrived/Meridian-main",
+            "private": false,
+            "owner": {
+              "login": "rodoHasArrived",
+              "id": 55965792,
+              "node_id": "MDQ6VXNlcjU1OTY1Nzky",
+              "avatar_url": "https://avatars.githubusercontent.com/u/55965792?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/rodoHasArrived",
+              "html_url": "https://github.com/rodoHasArrived",
+              "followers_url": "https://api.github.com/users/rodoHasArrived/followers",
+              "following_url": "https://api.github.com/users/rodoHasArrived/following{/other_user}",
+              "gists_url": "https://api.github.com/users/rodoHasArrived/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/rodoHasArrived/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/rodoHasArrived/subscriptions",
+              "organizations_url": "https://api.github.com/users/rodoHasArrived/orgs",
+              "repos_url": "https://api.github.com/users/rodoHasArrived/repos",
+              "events_url": "https://api.github.com/users/rodoHasArrived/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/rodoHasArrived/received_events",
+              "type": "User",
+              "user_view_type": "public",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/rodoHasArrived/Meridian-main",
+            "description": null,
+            "fork": false,
+            "url": "https://api.github.com/repos/rodoHasArrived/Meridian-main",
+            "forks_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/forks",
+            "keys_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/teams",
+            "hooks_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/hooks",
+            "issue_events_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/events",
+            "assignees_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/tags",
+            "blobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/languages",
+            "stargazers_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/stargazers",
+            "contributors_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/contributors",
+            "subscribers_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/subscribers",
+            "subscription_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/subscription",
+            "commits_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/merges",
+            "archive_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/downloads",
+            "issues_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/labels{/name}",
+            "releases_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/deployments"
+          },
+          "head_repository": {
+            "id": 1189895874,
+            "node_id": "R_kgDORuxewg",
+            "name": "Meridian-main",
+            "full_name": "rodoHasArrived/Meridian-main",
+            "private": false,
+            "owner": {
+              "login": "rodoHasArrived",
+              "id": 55965792,
+              "node_id": "MDQ6VXNlcjU1OTY1Nzky",
+              "avatar_url": "https://avatars.githubusercontent.com/u/55965792?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/rodoHasArrived",
+              "html_url": "https://github.com/rodoHasArrived",
+              "followers_url": "https://api.github.com/users/rodoHasArrived/followers",
+              "following_url": "https://api.github.com/users/rodoHasArrived/following{/other_user}",
+              "gists_url": "https://api.github.com/users/rodoHasArrived/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/rodoHasArrived/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/rodoHasArrived/subscriptions",
+              "organizations_url": "https://api.github.com/users/rodoHasArrived/orgs",
+              "repos_url": "https://api.github.com/users/rodoHasArrived/repos",
+              "events_url": "https://api.github.com/users/rodoHasArrived/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/rodoHasArrived/received_events",
+              "type": "User",
+              "user_view_type": "public",
+              "site_admin": false
+            },
+            "html_url": "https://github.com/rodoHasArrived/Meridian-main",
+            "description": null,
+            "fork": false,
+            "url": "https://api.github.com/repos/rodoHasArrived/Meridian-main",
+            "forks_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/forks",
+            "keys_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/keys{/key_id}",
+            "collaborators_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/collaborators{/collaborator}",
+            "teams_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/teams",
+            "hooks_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/hooks",
+            "issue_events_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues/events{/number}",
+            "events_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/events",
+            "assignees_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/assignees{/user}",
+            "branches_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/branches{/branch}",
+            "tags_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/tags",
+            "blobs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/blobs{/sha}",
+            "git_tags_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/tags{/sha}",
+            "git_refs_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/refs{/sha}",
+            "trees_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/trees{/sha}",
+            "statuses_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/statuses/{sha}",
+            "languages_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/languages",
+            "stargazers_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/stargazers",
+            "contributors_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/contributors",
+            "subscribers_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/subscribers",
+            "subscription_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/subscription",
+            "commits_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/commits{/sha}",
+            "git_commits_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/git/commits{/sha}",
+            "comments_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/comments{/number}",
+            "issue_comment_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues/comments{/number}",
+            "contents_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/contents/{+path}",
+            "compare_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/compare/{base}...{head}",
+            "merges_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/merges",
+            "archive_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/{archive_format}{/ref}",
+            "downloads_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/downloads",
+            "issues_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/issues{/number}",
+            "pulls_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/pulls{/number}",
+            "milestones_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/milestones{/number}",
+            "notifications_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/notifications{?since,all,participating}",
+            "labels_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/labels{/name}",
+            "releases_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/releases{/id}",
+            "deployments_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/deployments"
+          }
+        }
+      ]
+    },
+    "/repos/rodoHasArrived/Meridian-main/actions/runners?per_page=100&page=1": {
+      "error": "HTTPError: 400: GitHub Fetch URL is not an allowed public GitHub repository or search endpoint. (Response: None)"
+    },
+    "/repos/rodoHasArrived/Meridian-main/branches/main/protection": {
+      "error": "GitHub API error 403: {\"message\":\"Resource not accessible by integration\",\"documentation_url\":\"https://docs.github.com/rest/branches/branch-protection#get-branch-protection\",\"status\":\"403\"}",
+      "status": "403"
+    },
+    "/repos/rodoHasArrived/Meridian-main/actions/runs/37269613950/attempts/1/jobs?per_page=100&page=1": {
+      "total_count": 1,
+      "jobs": [
+        {
+          "id": 111633622283,
+          "run_id": 37269613950,
+          "workflow_name": "IB API Official Runtime",
+          "head_branch": "main",
+          "run_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/runs/37269613950",
+          "run_attempt": 1,
+          "node_id": "CR_kwDORuxews8AAAAZ_eHlCw",
+          "head_sha": "3f971a3679bf074bf6a43c05fdd6f3bde86fb312",
+          "url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/actions/jobs/111633622283",
+          "html_url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37269613950/job/111633622283",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "created_at": "2026-10-05T05:51:16Z",
+          "started_at": "2026-10-05T05:51:16Z",
+          "completed_at": "2026-10-06T05:51:17Z",
+          "name": "Official IB API runtime build and paper socket smoke",
+          "steps": [],
+          "check_run_url": "https://api.github.com/repos/rodoHasArrived/Meridian-main/check-runs/111633622283",
+          "labels": [
+            "self-hosted",
+            "Windows"
+          ],
+          "runner_id": 0,
+          "runner_name": "",
+          "runner_group_id": 0,
+          "runner_group_name": ""
+        }
+      ]
+    },
+    "/repos/rodoHasArrived/Meridian-main/rulesets/20768244": {
+      "id": 20768244,
+      "name": "pERMISIONS",
+      "target": "branch",
+      "source_type": "Repository",
+      "source": "rodoHasArrived/Meridian-main",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "exclude": [],
+          "include": [
+            "~ALL"
+          ]
+        }
+      },
+      "rules": [
+        {
+          "type": "deletion"
+        },
+        {
+          "type": "non_fast_forward"
+        }
+      ],
+      "node_id": "RRS_lACqUmVwb3NpdG9yec5G7F7CzgE85fQ",
+      "created_at": "2026-08-12T14:34:43.327-07:00",
+      "updated_at": "2026-08-12T14:34:43.409-07:00",
+      "bypass_actors": [
+        {
+          "actor_id": 29110,
+          "actor_type": "Integration",
+          "bypass_mode": "always"
+        },
+        {
+          "actor_id": 946600,
+          "actor_type": "Integration",
+          "bypass_mode": "always"
+        },
+        {
+          "actor_id": 956858,
+          "actor_type": "Integration",
+          "bypass_mode": "always"
+        },
+        {
+          "actor_id": 1143301,
+          "actor_type": "Integration",
+          "bypass_mode": "always"
+        },
+        {
+          "actor_id": 1144995,
+          "actor_type": "Integration",
+          "bypass_mode": "always"
+        },
+        {
+          "actor_id": 1236702,
+          "actor_type": "Integration",
+          "bypass_mode": "always"
+        }
+      ],
+      "current_user_can_bypass": "never",
+      "_links": {
+        "self": {
+          "href": "https://api.github.com/repos/rodoHasArrived/Meridian-main/rulesets/20768244"
+        },
+        "html": {
+          "href": "https://github.com/rodoHasArrived/Meridian-main/rules/20768244"
+        }
+      }
+    },
+    "/repos/rodoHasArrived/Meridian-main/actions/runs?status=waiting&per_page=100&page=1": {
+      "total_count": 0,
+      "workflow_runs": []
+    },
+    "/repos/rodoHasArrived/Meridian-main/actions/runs/23662997318/attempts/1/jobs?per_page=100&page=1": {
+      "total_count": 0,
+      "jobs": []
+    },
+    "/repos/rodoHasArrived/Meridian-main/actions/runs/23662972493/attempts/1/jobs?per_page=100&page=1": {
+      "total_count": 0,
+      "jobs": []
+    },
+    "/repos/rodoHasArrived/Meridian-main/actions/runs?event=merge_group&per_page=1&page=1": {
+      "total_count": 0,
+      "workflow_runs": []
+    }
+  }
+}

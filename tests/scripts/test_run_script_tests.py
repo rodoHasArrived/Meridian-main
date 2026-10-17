@@ -1,4 +1,5 @@
 import importlib.util
+import json
 import os
 import subprocess
 import sys
@@ -45,7 +46,8 @@ class RunScriptTestsTests(unittest.TestCase):
     def test_quarantine_manifest_parses_and_names_existing_modules(self):
         quarantined = MODULE.load_quarantine(MODULE.DEFAULT_QUARANTINE)
 
-        self.assertGreater(len(quarantined), 0)
+        manifest = json.loads(MODULE.DEFAULT_QUARANTINE.read_text(encoding="utf-8"))
+        self.assertEqual(set(quarantined), set(manifest["quarantined_modules"]))
         scripts_dir = Path(__file__).resolve().parent
         for module_name, reason in quarantined.items():
             self.assertTrue(
@@ -54,6 +56,29 @@ class RunScriptTestsTests(unittest.TestCase):
                 "remove the entry if the suite was deleted",
             )
             self.assertTrue(reason.strip(), f"quarantine entry '{module_name}' needs a reason")
+
+    def test_nonempty_quarantine_validates_metadata_and_module_existence(self):
+        entry = {
+            "reason": "Synthetic tracked defect",
+            "owner": "@fixture-owner",
+            "reviewBy": "2999-01-01",
+            "tracking": "docs/engineering/ci-cd-optimization.md#script-test-quarantine",
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            quarantine = Path(temp_dir) / "quarantine.json"
+            quarantine.write_text(json.dumps({
+                "quarantined_modules": {"test_run_script_tests": entry}
+            }), encoding="utf-8")
+            loaded = MODULE.load_quarantine(quarantine)
+            self.assertEqual(set(loaded), {"test_run_script_tests"})
+            for value in entry.values():
+                self.assertIn(value, loaded["test_run_script_tests"])
+
+            quarantine.write_text(json.dumps({
+                "quarantined_modules": {"test_nonexistent_quarantine_fixture": entry}
+            }), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "missing test module"):
+                MODULE.load_quarantine(quarantine)
 
     def test_partition_excludes_quarantined_modules_and_keeps_the_rest(self):
         class FakeKept(unittest.TestCase):
