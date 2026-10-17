@@ -1,6 +1,6 @@
 {
   "total_files": 818,
-  "total_lines": 188472,
+  "total_lines": 188497,
   "orphaned_count": 252,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -199,7 +199,7 @@
     "benchmarks/results/latest-manual/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
     "benchmarks/results/short-run-short/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
     "benchmarks/results/short-run-short2/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
-    "build/schema-control/manual/candidate/reports/summary.md",
+    "build/schema-control/manual/c/reports/summary.md",
     "build/schema-control/manual/v/reports/schema-diff.md",
     "build/schema-control/manual/v/reports/summary.md",
     "docs/ai/claude/CLAUDE.api.md",
@@ -983,7 +983,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/asset-operations-contracts-page-01.md",
+      "path": "build/schema-control/manual/c/docs/contracts/asset-operations-contracts-page-01.md",
       "line_count": 696,
       "has_heading": true,
       "todo_count": 0,
@@ -991,7 +991,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/asset-operations-contracts-page-02.md",
+      "path": "build/schema-control/manual/c/docs/contracts/asset-operations-contracts-page-02.md",
       "line_count": 343,
       "has_heading": true,
       "todo_count": 0,
@@ -999,7 +999,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/asset-operations-contracts.md",
+      "path": "build/schema-control/manual/c/docs/contracts/asset-operations-contracts.md",
       "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
@@ -1007,7 +1007,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/banking-contracts.md",
+      "path": "build/schema-control/manual/c/docs/contracts/banking-contracts.md",
       "line_count": 91,
       "has_heading": true,
       "todo_count": 0,
@@ -1015,7 +1015,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/direct-lending-contracts-page-01.md",
+      "path": "build/schema-control/manual/c/docs/contracts/direct-lending-contracts-page-01.md",
       "line_count": 674,
       "has_heading": true,
       "todo_count": 0,
@@ -1023,7 +1023,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/direct-lending-contracts-page-02.md",
+      "path": "build/schema-control/manual/c/docs/contracts/direct-lending-contracts-page-02.md",
       "line_count": 190,
       "has_heading": true,
       "todo_count": 0,
@@ -1031,7 +1031,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/direct-lending-contracts.md",
+      "path": "build/schema-control/manual/c/docs/contracts/direct-lending-contracts.md",
       "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
@@ -1039,7 +1039,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/fund-governance-contracts-page-01.md",
+      "path": "build/schema-control/manual/c/docs/contracts/fund-governance-contracts-page-01.md",
       "line_count": 751,
       "has_heading": true,
       "todo_count": 0,
@@ -1047,7 +1047,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/fund-governance-contracts-page-02.md",
+      "path": "build/schema-control/manual/c/docs/contracts/fund-governance-contracts-page-02.md",
       "line_count": 618,
       "has_heading": true,
       "todo_count": 0,
@@ -1055,7 +1055,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/fund-governance-contracts.md",
+      "path": "build/schema-control/manual/c/docs/contracts/fund-governance-contracts.md",
       "line_count": 13,
       "has_heading": true,
       "todo_count": 0,
@@ -1063,7 +1063,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/identity-access-contracts.md",
+      "path": "build/schema-control/manual/c/docs/contracts/identity-access-contracts.md",
       "line_count": 334,
       "has_heading": true,
       "todo_count": 0,
@@ -1071,7 +1071,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/ledger-contracts-page-01.md",
+      "path": "build/schema-control/manual/c/docs/contracts/ledger-contracts-page-01.md",
       "line_count": 731,
       "has_heading": true,
       "todo_count": 0,
@@ -1079,7 +1079,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/ledger-contracts-page-02.md",
+      "path": "build/schema-control/manual/c/docs/contracts/ledger-contracts-page-02.md",
       "line_count": 769,
       "has_heading": true,
       "todo_count": 0,
@@ -1087,7 +1087,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/ledger-contracts-page-03.md",
+      "path": "build/schema-control/manual/c/docs/contracts/ledger-contracts-page-03.md",
       "line_count": 714,
       "has_heading": true,
       "todo_count": 0,
@@ -1095,7 +1095,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/ledger-contracts-page-04.md",
+      "path": "build/schema-control/manual/c/docs/contracts/ledger-contracts-page-04.md",
       "line_count": 880,
       "has_heading": true,
       "todo_count": 0,
@@ -1103,7 +1103,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/ledger-contracts-page-05.md",
+      "path": "build/schema-control/manual/c/docs/contracts/ledger-contracts-page-05.md",
       "line_count": 110,
       "has_heading": true,
       "todo_count": 0,
@@ -1111,7 +1111,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/ledger-contracts.md",
+      "path": "build/schema-control/manual/c/docs/contracts/ledger-contracts.md",
       "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
@@ -1119,7 +1119,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/money-market-contracts.md",
+      "path": "build/schema-control/manual/c/docs/contracts/money-market-contracts.md",
       "line_count": 24,
       "has_heading": true,
       "todo_count": 0,
@@ -1127,7 +1127,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/reporting-contracts.md",
+      "path": "build/schema-control/manual/c/docs/contracts/reporting-contracts.md",
       "line_count": 196,
       "has_heading": true,
       "todo_count": 0,
@@ -1135,47 +1135,47 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/security-master-contracts-page-01.md",
-      "line_count": 571,
+      "path": "build/schema-control/manual/c/docs/contracts/security-master-contracts-page-01.md",
+      "line_count": 553,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/security-master-contracts-page-02.md",
-      "line_count": 511,
+      "path": "build/schema-control/manual/c/docs/contracts/security-master-contracts-page-02.md",
+      "line_count": 522,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/security-master-contracts-page-03.md",
-      "line_count": 585,
+      "path": "build/schema-control/manual/c/docs/contracts/security-master-contracts-page-03.md",
+      "line_count": 586,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/security-master-contracts-page-04.md",
-      "line_count": 543,
+      "path": "build/schema-control/manual/c/docs/contracts/security-master-contracts-page-04.md",
+      "line_count": 526,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/security-master-contracts-page-05.md",
-      "line_count": 22,
+      "path": "build/schema-control/manual/c/docs/contracts/security-master-contracts-page-05.md",
+      "line_count": 50,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/contracts/security-master-contracts.md",
+      "path": "build/schema-control/manual/c/docs/contracts/security-master-contracts.md",
       "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
@@ -1183,7 +1183,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/data-object-catalog.md",
+      "path": "build/schema-control/manual/c/docs/data-object-catalog.md",
       "line_count": 39,
       "has_heading": true,
       "todo_count": 0,
@@ -1191,7 +1191,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/modules/asset_operations.md",
+      "path": "build/schema-control/manual/c/docs/modules/asset_operations.md",
       "line_count": 242,
       "has_heading": true,
       "todo_count": 0,
@@ -1199,7 +1199,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/modules/banking.md",
+      "path": "build/schema-control/manual/c/docs/modules/banking.md",
       "line_count": 60,
       "has_heading": true,
       "todo_count": 0,
@@ -1207,7 +1207,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/modules/fund_accounts.md",
+      "path": "build/schema-control/manual/c/docs/modules/fund_accounts.md",
       "line_count": 227,
       "has_heading": true,
       "todo_count": 0,
@@ -1215,7 +1215,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/modules/fund_structure.md",
+      "path": "build/schema-control/manual/c/docs/modules/fund_structure.md",
       "line_count": 223,
       "has_heading": true,
       "todo_count": 0,
@@ -1223,7 +1223,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/modules/identity_access.md",
+      "path": "build/schema-control/manual/c/docs/modules/identity_access.md",
       "line_count": 50,
       "has_heading": true,
       "todo_count": 0,
@@ -1231,7 +1231,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/modules/ledger.md",
+      "path": "build/schema-control/manual/c/docs/modules/ledger.md",
       "line_count": 552,
       "has_heading": true,
       "todo_count": 0,
@@ -1239,7 +1239,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/modules/money_market.md",
+      "path": "build/schema-control/manual/c/docs/modules/money_market.md",
       "line_count": 50,
       "has_heading": true,
       "todo_count": 0,
@@ -1247,7 +1247,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/modules/public.md",
+      "path": "build/schema-control/manual/c/docs/modules/public.md",
       "line_count": 17,
       "has_heading": true,
       "todo_count": 0,
@@ -1255,7 +1255,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/modules/reporting.md",
+      "path": "build/schema-control/manual/c/docs/modules/reporting.md",
       "line_count": 293,
       "has_heading": true,
       "todo_count": 0,
@@ -1263,7 +1263,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/modules/security_master.md",
+      "path": "build/schema-control/manual/c/docs/modules/security_master.md",
       "line_count": 1412,
       "has_heading": true,
       "todo_count": 0,
@@ -1271,7 +1271,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/README.md",
+      "path": "build/schema-control/manual/c/docs/README.md",
       "line_count": 8,
       "has_heading": true,
       "todo_count": 0,
@@ -1279,7 +1279,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/docs/schema-catalog.md",
+      "path": "build/schema-control/manual/c/docs/schema-catalog.md",
       "line_count": 22,
       "has_heading": true,
       "todo_count": 0,
@@ -1287,7 +1287,7 @@
       "stale": false
     },
     {
-      "path": "build/schema-control/manual/candidate/reports/summary.md",
+      "path": "build/schema-control/manual/c/reports/summary.md",
       "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
@@ -1448,7 +1448,7 @@
     },
     {
       "path": "build/schema-control/manual/v/docs/contracts/security-master-contracts-page-01.md",
-      "line_count": 571,
+      "line_count": 553,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1456,7 +1456,7 @@
     },
     {
       "path": "build/schema-control/manual/v/docs/contracts/security-master-contracts-page-02.md",
-      "line_count": 511,
+      "line_count": 522,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1464,7 +1464,7 @@
     },
     {
       "path": "build/schema-control/manual/v/docs/contracts/security-master-contracts-page-03.md",
-      "line_count": 585,
+      "line_count": 586,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1472,7 +1472,7 @@
     },
     {
       "path": "build/schema-control/manual/v/docs/contracts/security-master-contracts-page-04.md",
-      "line_count": 543,
+      "line_count": 526,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1480,7 +1480,7 @@
     },
     {
       "path": "build/schema-control/manual/v/docs/contracts/security-master-contracts-page-05.md",
-      "line_count": 22,
+      "line_count": 50,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2264,7 +2264,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 5800,
+      "line_count": 5801,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3296,7 +3296,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-01.md",
-      "line_count": 571,
+      "line_count": 553,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3304,7 +3304,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-02.md",
-      "line_count": 511,
+      "line_count": 522,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3312,7 +3312,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-03.md",
-      "line_count": 585,
+      "line_count": 586,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3320,7 +3320,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-04.md",
-      "line_count": 543,
+      "line_count": 526,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3328,7 +3328,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-05.md",
-      "line_count": 22,
+      "line_count": 50,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3488,7 +3488,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12226,
+      "line_count": 12231,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6464,7 +6464,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1819,
+      "line_count": 1822,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6520,7 +6520,7 @@
     },
     {
       "path": "src/Meridian.Execution/README.md",
-      "line_count": 332,
+      "line_count": 333,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

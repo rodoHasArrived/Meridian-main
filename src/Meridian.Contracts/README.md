@@ -1761,7 +1761,10 @@ schema, validators and editor hints. `SecurityAssetClassRegistryCoverageTests` f
 `SecurityKind` case has no definition. The registry backs `/api/security-master/asset-classes`.
 `SecurityTermConventions` types day count, settlement method and option right as canonical
 vocabularies. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
-one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `SecurityIdentifierKind` adds
+one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `CommitmentLot` (commitment,
+funded and unfunded amounts, recallable distributions, `Draw`) and `FundUnitLot` (units at an
+acquisition NAV) are the `Commitment` and `Units` cases the registry assigns to private fund
+interests, guarantees and funds. `SecurityIdentifierKind` adds
 `LoanX` (`LX` plus six digits) and `Clip` (nine alphanumerics).
 
 ### Security Master income, curves, factors and corporate-action terms
