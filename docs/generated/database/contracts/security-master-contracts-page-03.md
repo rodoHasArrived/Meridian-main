@@ -2,11 +2,23 @@
 
 # `security-master-contracts` data objects - page 3 of 5
 
-Objects 161-240 of 321. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 323. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_PricingHierarchyEntryDto["PricingHierarchyEntryDto"] {
+        +int MaxDaysStale
+        +int Priority
+        +string SourceDisplayName
+        +string SourceId
+    }
+    class Meridian_Contracts_SecurityMaster_PrincipalPaydownCorporateActionTerms["PrincipalPaydownCorporateActionTerms"] {
+        +string EventType
+        +decimal? PaydownRatio
+        +decimal? PostPaydownFactor
+        +decimal? PrincipalAmount
+    }
     class Meridian_Contracts_SecurityMaster_RecordCorporateActionConflictRequestDto["RecordCorporateActionConflictRequestDto"] {
         +string Actor
         +IReadOnlyList~CorporateActionConflictCandidateDto~ Candidates
@@ -141,13 +153,13 @@ classDiagram
         +bool AmortizesTowardPar
         +string AssetClass
         +IReadOnlyList~string~? AssetOperationsCapabilities
+        +IReadOnlyList~string~? AssetPackIds
         +SecurityCashFlowBehavior CashFlowBehavior
         +IReadOnlyList~InstrumentType~? InstrumentTypes
         +string? LotMultiplierTermKey
         +SecurityLotUnitKind LotUnit
         +IReadOnlyList~SecurityIdentifierKind~ PreferredIdentifierKinds
         +SecurityTermsProjectionKind ProjectionKind
-        +bool RequiresMaturity
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassRegistry["SecurityAssetClassRegistry"] {
         +IReadOnlyList~SecurityAssetClassDefinition~ All
@@ -522,16 +534,6 @@ classDiagram
         +long? SourceVersion
         +string? UpdatedBy
     }
-    class Meridian_Contracts_SecurityMaster_SecurityForwardCurve["SecurityForwardCurve"] {
-        +DateOnly AsOfDate
-        +string IndexName
-        +IReadOnlyList~SecurityForwardCurvePoint~ Points
-        +string? Source
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityForwardCurvePoint["SecurityForwardCurvePoint"] {
-        +DateOnly Date
-        +decimal Rate
-    }
     Meridian_Contracts_SecurityMaster_SecurityAliasDto --> Meridian_Contracts_SecurityMaster_SecurityAliasScope
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermField
@@ -581,5 +583,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint --> Meridian_Contracts_SecurityMaster_SecurityFactorSource
-    Meridian_Contracts_SecurityMaster_SecurityForwardCurve --> Meridian_Contracts_SecurityMaster_SecurityForwardCurvePoint
 ```

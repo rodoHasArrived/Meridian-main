@@ -51,7 +51,8 @@ This layer implements execution behavior and broker-facing runtime services whil
 
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
 
-Paper session fills retain exact remaining carrying basis on each internal `PositionLot` and use
+Paper session fills retain exact remaining carrying basis on each internal `PositionLot` (an
+`IUnitizedLot` whose unit and multiplier come live from its `PaperPosition`) and use
 Ledger's `LotBasisRelief` for partial long sales and short covers. Average unit cost remains a
 display quote; subsequent fills and unrealized P&L use the retained total. The native corporate-action
 adjuster carries that total through splits and principal paydowns, and lot rescaling assigns the
