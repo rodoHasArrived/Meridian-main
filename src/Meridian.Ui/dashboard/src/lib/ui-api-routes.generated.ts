@@ -729,6 +729,7 @@ export const UI_API_ROUTES = {
   LedgerAccountingConfigurationPostingRuleTestCases: "/api/ledger/accounting-configuration/posting-rules/test-cases",
   LedgerAccountingConfigurationActivate: "/api/ledger/accounting-configuration/activate",
   LedgerAccountingConfigurationAudit: "/api/ledger/accounting-configuration/audit",
+  LedgerAuditIntegrity: "/api/ledger/audit-integrity",
   LedgerCloseManagementPeriodPlan: "/api/ledger/close-management/period-plan/{workflowId:guid}",
   LedgerCloseManagementPeriodPlanConfiguration: "/api/ledger/close-management/period-plan/configuration",
   LedgerCloseManagementTemplates: "/api/ledger/close-management/templates",

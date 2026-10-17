@@ -1,0 +1,162 @@
+using System.Text.Json.Nodes;
+using FluentAssertions;
+using Meridian.Contracts.Ledger;
+using Meridian.Ledger;
+using Meridian.Ui.Shared.Services;
+
+namespace Meridian.Tests.Ui;
+
+/// <summary>
+/// W9-GOV-008 criterion three verification tooling. The report must say exactly what it checked:
+/// verified chains, broken chains with their classification, chains this composition does not keep,
+/// and stores it could not read are four different answers.
+/// </summary>
+public sealed class AccountingAuditIntegrityServiceTests : IDisposable
+{
+    private readonly string _root = Directory.CreateTempSubdirectory("meridian-audit-integrity-").FullName;
+
+    private string SnapshotPath => Path.Combine(_root, "accounting-configuration.json");
+
+    public void Dispose()
+    {
+        try
+        {
+            Directory.Delete(_root, recursive: true);
+        }
+        catch (IOException)
+        {
+            // A leaked temp directory must never fail a test run.
+        }
+    }
+
+    [Fact]
+    public async Task VerifyAsync_ReportsAnIntactFileChainAsVerifiedAndTheAbsentLedgerChainAsNotConfigured()
+    {
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        await store.AppendAsync(AuditEvent("post-journal"));
+        await store.AppendAsync(AuditEvent("close-period"));
+
+        var report = await new AccountingAuditIntegrityService(store, ledgerEventAuditVerifier: null).VerifyAsync();
+
+        report.AllVerified.Should().BeTrue();
+        var accounting = report.Chains.Single(chain => chain.Chain == AuditChainIdentifiers.AccountingActions);
+        accounting.Status.Should().Be(AuditChainIntegrityStatus.Verified);
+        accounting.LinksChecked.Should().Be(2);
+        report.Chains.Single(chain => chain.Chain == AuditChainIdentifiers.LedgerEvents)
+            .Status.Should().Be(AuditChainIntegrityStatus.NotConfigured);
+    }
+
+    [Fact]
+    public async Task VerifyAsync_ReportsATamperedFileChainAsBrokenWithoutAppending()
+    {
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        await store.AppendAsync(AuditEvent("post-journal"));
+        await store.AppendAsync(AuditEvent("close-period"));
+        var snapshot = JsonNode.Parse(File.ReadAllText(SnapshotPath))!.AsObject();
+        snapshot["auditEvents"]!.AsArray()[0]!["actor"] = "someone-else";
+        File.WriteAllText(SnapshotPath, snapshot.ToJsonString());
+        var tampered = File.ReadAllText(SnapshotPath);
+
+        var report = await new AccountingAuditIntegrityService(store, ledgerEventAuditVerifier: null).VerifyAsync();
+
+        report.AllVerified.Should().BeFalse();
+        var accounting = report.Chains.Single(chain => chain.Chain == AuditChainIdentifiers.AccountingActions);
+        accounting.Status.Should().Be(AuditChainIntegrityStatus.Broken);
+        accounting.FailureKind.Should().Be(nameof(AccountingAuditChainStatus.EventMutated));
+        accounting.FailedSequence.Should().NotBeNull();
+        File.ReadAllText(SnapshotPath).Should().Be(tampered, "verification must never repair or extend the chain");
+    }
+
+    [Fact]
+    public async Task VerifyAsync_DoesNotCountAnUnchainedStoreAsVerified()
+    {
+        var report = await new AccountingAuditIntegrityService(
+            new InMemoryAccountingActionAuditStore(),
+            ledgerEventAuditVerifier: null).VerifyAsync();
+
+        report.AllVerified.Should().BeFalse("no configured chain was verified");
+        report.Chains.Should().OnlyContain(chain => chain.Status == AuditChainIntegrityStatus.NotConfigured);
+    }
+
+    [Fact]
+    public async Task VerifyAsync_ReportsLedgerIntegrityFailureAsBrokenAndUnreadableStoresAsUnavailable()
+    {
+        var broken = await new AccountingAuditIntegrityService(
+            new ThrowingAccountingVerifier(new IOException("disk at /secret/path")),
+            new ThrowingLedgerVerifier(new LedgerValidationException("Ledger audit integrity failure: link 7 does not bind."))).VerifyAsync();
+
+        broken.AllVerified.Should().BeFalse();
+        var ledger = broken.Chains.Single(chain => chain.Chain == AuditChainIdentifiers.LedgerEvents);
+        ledger.Status.Should().Be(AuditChainIntegrityStatus.Broken);
+        ledger.Detail.Should().Contain("link 7");
+        var accounting = broken.Chains.Single(chain => chain.Chain == AuditChainIdentifiers.AccountingActions);
+        accounting.Status.Should().Be(AuditChainIntegrityStatus.Unavailable);
+        accounting.FailureKind.Should().Be(nameof(IOException));
+        accounting.Detail.Should().NotContain("/secret/path");
+    }
+
+    [Fact]
+    public async Task VerifyAsync_ReportsAVerifiedLedgerChainWithItsUnprotectedGenesisFacts()
+    {
+        var report = await new AccountingAuditIntegrityService(
+            accountingAuditStore: null,
+            new FixedLedgerVerifier(new LedgerEventAuditVerification(12, 3, DateTimeOffset.UnixEpoch))).VerifyAsync();
+
+        report.AllVerified.Should().BeTrue();
+        var ledger = report.Chains.Single(chain => chain.Chain == AuditChainIdentifiers.LedgerEvents);
+        ledger.Status.Should().Be(AuditChainIntegrityStatus.Verified);
+        ledger.LinksChecked.Should().Be(12);
+        ledger.UnprotectedPreChainCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task VerifyAsync_PropagatesCancellation()
+    {
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        var act = () => new AccountingAuditIntegrityService(
+            new ThrowingAccountingVerifier(new OperationCanceledException(cts.Token)),
+            ledgerEventAuditVerifier: null).VerifyAsync(cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    private static AccountingActionAuditEventDto AuditEvent(string action)
+        => new(
+            Guid.NewGuid(),
+            DateTimeOffset.UtcNow,
+            Actor: "operator@example.test",
+            Action: action,
+            FundProfileId: "fund-alpha",
+            LedgerBookId: null,
+            CorrelationId: null,
+            BeforeHash: new string('0', 64),
+            AfterHash: new string('1', 64),
+            ValidationIssues: [],
+            EvidenceLinks: [],
+            CompanyId: "company-alpha",
+            ReportGroupPrincipalIds: null,
+            TenantId: "tenant-alpha");
+
+    private sealed class ThrowingAccountingVerifier(Exception exception) : IAccountingActionAuditStore, IAccountingAuditChainVerifier
+    {
+        public Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default) => throw exception;
+
+        public Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
+            string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default,
+            string? tenantId = null, string? companyId = null) => throw exception;
+
+        public Task<AccountingAuditChainVerification> VerifyAuditChainAsync(CancellationToken ct = default) => throw exception;
+    }
+
+    private sealed class ThrowingLedgerVerifier(Exception exception) : ILedgerEventAuditVerifier
+    {
+        public Task<LedgerEventAuditVerification> VerifyLedgerEventAuditAsync(CancellationToken ct = default) => throw exception;
+    }
+
+    private sealed class FixedLedgerVerifier(LedgerEventAuditVerification result) : ILedgerEventAuditVerifier
+    {
+        public Task<LedgerEventAuditVerification> VerifyLedgerEventAuditAsync(CancellationToken ct = default) => Task.FromResult(result);
+    }
+}

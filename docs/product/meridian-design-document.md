@@ -209,21 +209,23 @@ status and decision are in Section 5.3):
 
 | Dormant capability (source evidence) | Posture | Activation lane |
 | --- | --- | --- |
-| Sided statement-vs-ledger reconciliation matching (`StatementMatchingEngine`, `src/Meridian.FinancialOperations/`) | Supported foundation; live path still uses a weaker per-row check | `W9-INGEST-009` |
-| Institutional bank formats (`Bai2StatementConnector`, `Camt053StatementConnector`, `src/Meridian.FinancialOperations/Reconciliation/Connectors/`) | Supported foundation in source; not yet the live path | `W9-INGEST-009` |
+| Sided statement-vs-ledger reconciliation matching (`StatementMatchingEngine`, `src/Meridian.FinancialOperations/`) | Activated on the live path: `StatementRunMatcher` routes pair and bounded split stages through `ReconciliationMatchKernel`, against a journal-projected ledger-transaction population (`LedgerJournalInternalTransactionSource`); operator acceptance remains | `W9-INGEST-009` |
+| Institutional bank formats (`Bai2StatementConnector`, `Camt053StatementConnector`, `src/Meridian.FinancialOperations/Reconciliation/Connectors/`) | Activated: both connectors are registered on the statement-import path with bounded streaming parsing and golden-file casework evidence; operator acceptance remains | `W9-INGEST-009` |
 | Client-grade PDF/XLSX rendering (`ClientGradeReportRenderer`, `FinancialReportDocumentRenderer`, `src/Meridian.Documents/`) | Activated; deterministic PDF/XLSX is the certified reporting path, with the bespoke partners-capital layout delivered | `W9-REPORT-005` |
 | Unitized NAV, fee accruals with hurdles, European waterfall, preferred return, clawback, equalization (`NavPerUnitCalculator`, `EuropeanDistributionWaterfall`, `PreferredReturnCalculator`, `CarriedInterestClawbackCalculator`, `EqualizationCalculator`, `src/Meridian.Ledger/`) | Activated; ledger-backed economics with golden-file worked examples | `W9-NAV-006` |
 | Broker fill streaming into order and ledger state (`AlpacaBrokerageGateway`, `src/Meridian.Execution/`) | Activated; the three held fill-path caveats (idle-account submission, reconnect backfill overlap, restart accounting handoff) are closed in source | `W9-ALPACA-004` |
 | Realistic fill and cost models (`MarketImpactFillModel`, `OrderBookFillModel`, commission models, `src/Meridian.Backtesting/`) | Activated; both paper gateways match and cost through the shared documented policy | `W9-PAPER-003` |
 | Kill-switch, cancel-all, and pre-trade fat-finger/notional/collar controls | Activated, with an OCO reservation and the risk journal, risk read surface, and their WPF parity deferred | `W9-SAFETY-007` |
-| Hash-chained audit for the accounting ledger; route-level authorization; fail-closed tenancy (`AuditChainService` exists for storage; the journal ledger chain and blanket route coverage do not) | Partial foundation | `W9-GOV-008` |
+| Hash-chained audit for the accounting ledger; route-level authorization; fail-closed tenancy (accounting-action chain on both the file and PostgreSQL stores, PostgreSQL ledger-event chain, read-only verification at `GET /api/ledger/audit-integrity`, zero-entry route authorization ratchets, and fail-closed tenancy as the default posture) | Implemented in source; operator review and live-installation cutover remain | `W9-GOV-008` |
 | Asset accounting event spine with atomic lot posting (`AssetAccountingEventSpineService`, `src/Meridian.FinancialOperations/Ledger/`) | Activated | `W9-ASSET-010` |
 | Corporate action approval and posting lane (`CorporateActionOperationsService` in `src/Meridian.Application/SecurityMaster/CorporateActions/`, `CorporateActionAccountingProjectionService` in `src/Meridian.Instruments/AssetOperations/`, `PostgresCorporateActionOperationsStore` in `src/Meridian.Storage/SecurityMaster/`) | Delivered and proven end to end on PostgreSQL (post and replay included); awaiting an operator acceptance decision | `W9-CORPACT-011` |
 | Operational Evidence Graph as a shared product surface | Not yet a product surface; explorer, proof-drawer, and manifest primitives exist, and the first shared proof drawer over posted ledger amounts is being built under `W10-PROV-001` | `W5X-OEG-001` |
 | Registry-driven Security Master asset classes (`SecurityAssetClassRegistry`, versioned terms and event payloads, typed day-count and settlement conventions, typed corporate-action economics, income and factor-history projections, append-only governance write log) | Supported foundation in source as of 2026-10-16, with no acceptance gate. It is the nearest in-source precursor to contract packs (Section 22.2) | `W11-PACK-001` (governs the pack lifecycle built on it) |
 
 The open activation work is governance (`W9-GOV-008`), institutional intake (`W9-INGEST-009`), and
-the corporate-action acceptance decision (`W9-CORPACT-011`). Section 2.6 describes the depth work
+the corporate-action acceptance decision (`W9-CORPACT-011`). As of 2026-10-17 all three are
+implemented in source; what remains is operator review and acceptance, plus the live-installation
+tenancy cutover for `W9-GOV-008`, none of which code can discharge. Section 2.6 describes the depth work
 that follows activation.
 
 Rules of the doctrine:

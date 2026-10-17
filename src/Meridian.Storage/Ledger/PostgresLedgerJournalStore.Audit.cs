@@ -9,10 +9,7 @@ using NpgsqlTypes;
 
 namespace Meridian.Storage.Ledger;
 
-/// <summary>The verified suffix is protected; genesis facts were retained before this guarantee.</summary>
-public sealed record LedgerEventAuditVerification(long ChainedEvents, long UnprotectedGenesisFacts, DateTimeOffset GenesisAtUtc);
-
-public sealed partial class PostgresLedgerJournalStore
+public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifier
 {
     private sealed record LedgerAuditHead(long NextSequence, string? LastHash, DateTimeOffset GenesisAtUtc);
 

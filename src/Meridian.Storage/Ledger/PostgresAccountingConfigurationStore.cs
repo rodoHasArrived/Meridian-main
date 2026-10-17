@@ -9,7 +9,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
-public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurationStore, IAccountingActionAuditStore
+public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurationStore, IAccountingActionAuditStore, IAccountingAuditChainVerifier
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
     private readonly LedgerJournalStoreOptions _options;
@@ -277,6 +277,35 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         string? LastHash,
         long GenesisSequence,
         long PreChainEventCount);
+
+    /// <summary>
+    /// Verifies the whole retained chain without appending: the same every-link scan an append
+    /// runs first, under the same head row lock so a concurrent append cannot be observed half
+    /// written, then released without committing. A break is returned, not thrown.
+    /// </summary>
+    public async Task<AccountingAuditChainVerification> VerifyAuditChainAsync(CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted, ct)
+            .ConfigureAwait(false);
+        try
+        {
+            var head = await LockAndReadChainHeadAsync(connection, transaction, ct).ConfigureAwait(false);
+            await VerifyChainHeadAsync(connection, transaction, head, ct).ConfigureAwait(false);
+            return new AccountingAuditChainVerification(
+                AccountingAuditChainStatus.Valid,
+                LinksChecked: (int)Math.Min(int.MaxValue, Math.Max(0, head.NextSequence - head.GenesisSequence)),
+                PreChainEventCount: (int)Math.Min(int.MaxValue, head.PreChainEventCount));
+        }
+        catch (AccountingAuditChainIntegrityException ex)
+        {
+            return ex.Verification;
+        }
+
+        // Nothing is committed: disposing the transaction rolls it back and releases the head lock.
+    }
 
     private async Task<AccountingAuditChainHead> LockAndReadChainHeadAsync(
         NpgsqlConnection connection,
