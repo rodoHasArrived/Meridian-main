@@ -205,8 +205,9 @@ public static class OpenLotAmortization
 
     private static void ValidateBulletReference(SecurityDetailDto detail)
     {
-        var assetClass = SecurityAssetClassCatalog.GetOrDefault(detail.AssetClass).AssetClass;
-        if (assetClass is not ("Bond" or "TreasuryBill" or "CommercialPaper"))
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(detail.AssetClass);
+        var assetClass = descriptor.AssetClass;
+        if (!descriptor.SupportsCanonicalBulletAmortization)
             throw new ArgumentException("Canonical amortization supports only Bond, TreasuryBill and CommercialPaper face lots.");
         if (detail.CommonTerms.ValueKind != JsonValueKind.Object || detail.AssetSpecificTerms.ValueKind != JsonValueKind.Object)
             throw new ArgumentException("Amortization requires complete object-shaped Security Master terms.");

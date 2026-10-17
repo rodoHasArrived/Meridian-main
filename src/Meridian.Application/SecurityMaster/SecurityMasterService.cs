@@ -1825,13 +1825,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
     private static bool IsProfileBackedCustomAsset(string? assetClass, JsonElement assetSpecificTerms)
         => (string.IsNullOrWhiteSpace(assetClass)
-            || string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "StructuredCredit", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "PrivateFundInterest", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "PrivateCompanyEquity", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "RealEstateHolding", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "CommitmentGuarantee", StringComparison.OrdinalIgnoreCase))
+            || SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsProfileBackedTerms)
            && assetSpecificTerms.ValueKind == System.Text.Json.JsonValueKind.Object
            && assetSpecificTerms.TryGetProperty("customProfileId", out var customProfileId)
            && customProfileId.ValueKind == System.Text.Json.JsonValueKind.String
