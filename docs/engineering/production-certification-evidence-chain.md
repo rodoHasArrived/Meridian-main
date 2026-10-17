@@ -277,7 +277,7 @@ Append-only; newest first. Every entry names the commit, the run or decision, an
 - **2026-10-05 — dependency failure rechecked; human decision pending.** Main
   `e3bf60bae577c132d8444a827ca4dc3181cc48a1` / [Production Certification #147, attempt 1](https://github.com/rodoHasArrived/Meridian-main/actions/runs/37351972283)
   failed its dependency job on unaccepted `braces` advisory `GHSA-vfj7-8cjw-p6xm`; NuGet passed.
-  The [security registry investigation and bounded proposal](../security/known-vulnerabilities.md#pending-decision-braces-stack-exhaustion-2026-10-05)
+  The [security registry investigation and bounded proposal](../security/known-vulnerabilities.md#historical-october-5-investigation-and-unaccepted-proposal)
   (KV-2026-003) retains the raw audits, graph, registry recheck, artifact digest and expiry.
   The [parallel retained manifest](../security/evidence/2026-10-05-dependency-certification/manifest.json)
   also preserves source and bounded reachability evidence from this baseline. Hosted artifact
