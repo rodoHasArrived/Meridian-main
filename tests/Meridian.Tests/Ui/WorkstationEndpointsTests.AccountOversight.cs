@@ -372,10 +372,9 @@ public sealed partial class WorkstationEndpointsTests
         initial.StatusCode.Should().Be(HttpStatusCode.OK);
         var cashDirectory = Path.Combine(cash.Root, "reconciliation", "account-cash-continuity");
         var forecastDirectory = Path.Combine(cash.Root, "asset-operations", "account-cash-forecasts");
-        var invalidStatePath = storeKind == "cash" ? Path.Combine(cashDirectory, "state.json")
-            : Path.Combine(forecastDirectory, "snapshots.json");
-        var unaffectedStatePath = storeKind == "cash" ? Path.Combine(forecastDirectory, "snapshots.json")
-            : Path.Combine(cashDirectory, "state.json");
+        // Provisioning registers no scopes yet, so the scope index is the only retained state file.
+        var invalidStatePath = Path.Combine(storeKind == "cash" ? cashDirectory : forecastDirectory, "scope-index.json");
+        var unaffectedStatePath = Path.Combine(storeKind == "cash" ? forecastDirectory : cashDirectory, "scope-index.json");
         var retainedUnaffectedState = await File.ReadAllBytesAsync(unaffectedStatePath);
         var markerPath = Path.Combine(storeKind == "cash" ? cashDirectory : forecastDirectory, "initialized");
         var retainedMarker = await File.ReadAllBytesAsync(markerPath);

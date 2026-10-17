@@ -20,10 +20,16 @@ linked corrections. Database guards refuse replacement, deletion and truncation.
 inventory exception records only the lexical false positive from `BEFORE TRUNCATE` rejection
 triggers and requires independent schema/storage review.
 
-`FileAccountCashForecastStore` retains append-only scoped forecast history with content hashes,
-atomic replacement and a process-independent writer lease. Explicit `InitializeAsync` provisioning
-is required; missing/corrupt initialized history cannot silently restart. Financial Operations
-owns cash-balance case semantics and delegates file replacement to Storage's shared writer.
+`FileAccountCashForecastStore` retains append-only forecast history partitioned per exact
+tenant/company/account/book/base-currency scope: one content-hashed `scopes/<sha256>.json` file and
+`.lock` per scope under `asset-operations/account-cash-forecasts`, a `scope-index.json` registry
+rewritten only when a scope first appears, atomic replacement and a 30-second cross-process lease.
+Explicit `InitializeAsync` provisioning is required; a missing or corrupt scope file, index or marker
+fails closed for that scope without blocking other scopes, and cannot silently restart history. A
+legacy single-file `snapshots.json` is validated, split losslessly and renamed `snapshots.json.migrated`,
+never deleted. The data root remains host-local; multi-host deployments need the PostgreSQL follow-on.
+Financial Operations owns cash-balance case semantics and delegates file replacement to Storage's
+shared writer.
 Forecast corrections resolve a flow's last retained revision across temporarily omitted runs,
 separately for expected and actual cash, while retaining the latest snapshot predecessor.
 Close-price history uses one exact account/book/date query ordered by version and shares the
