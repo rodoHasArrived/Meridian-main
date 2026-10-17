@@ -289,6 +289,35 @@ tax on the same file pair inside one hour**, each by hand or by running the reso
 `merge=` driver exists. The P1 row for `.gitattributes` is the one item on this list whose cost is
 being paid continuously and visibly in commit subjects.
 
+### Third round, 15:32 UTC: the `example-validation.md` gap reproduced on demand
+
+`main` advanced again to **`5bba87d7`** (#3194, *"require the terms-format tag on every Security
+Master write"*), **42 minutes after `30b98549`**, and this document's PR conflicted a second time —
+now on **three** paths. Running the resolver printed the P1 finding above as output rather than as
+a claim:
+
+```text
+Incoming main: 5bba87d73ff8c8e8886114d2443c33ef36afa819
+GENERATED  docs/status/doc-health-dashboard.json
+GENERATED  docs/status/doc-health-dashboard.md
+REVIEW     docs/status/example-validation.md
+2 generated conflict(s); 1 conflict(s) require review.
+```
+
+`docs/status/example-validation.md` is a generated file — `validate-examples.py` rewrites it whole,
+and regenerating it here produced a clean report (464 files, 1,107 blocks, **0 invalid**). But
+because the path is absent from `GENERATED_FILES`, the resolver classifies it `REVIEW` and stops,
+turning a no-decision regeneration into a manual step. **That is the entire cost of the missing
+one-line entry, and it now has a reproduction rather than an argument.**
+
+`#3194` also arrived carrying three regeneration commits of its own —
+`482b5dc0` and `933c6c91` (both *"chore: merge main and regenerate generated artifacts"*) and
+`8c820d42` (*"docs: regenerate doc-health dashboard after merging main"*). **One pull request paid
+this tax three times before it merged.** Across two base advances in 68 minutes, this document's own
+branch paid it twice. The two P1 rows — the `merge=` driver and the one-line `GENERATED_FILES`
+addition — are not hygiene items; they are the difference between these merges being automatic and
+being hand-held.
+
 ## Process finding: the acting is now outpacing the ranking
 
 This is the eighth determination, and for the first time the previous one's findings were **acted

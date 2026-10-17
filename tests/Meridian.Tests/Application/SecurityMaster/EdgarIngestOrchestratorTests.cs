@@ -118,6 +118,10 @@ public sealed class EdgarIngestOrchestratorTests
         result.FactsStored.Should().Be(1);
         var request = service.CreatedRequests.Single();
         request.AssetSpecificTerms.GetProperty("shareClass").GetString().Should().Contain("Common stock");
+        SecurityTermsEnvelope.GetDeclaredFormat(request.AssetSpecificTerms).Should().Be(
+            SecurityTermsFormats.Flat, "every flat writer stamps the payload family so the store never classifies it by shape");
+        SecurityTermsEnvelope.ResolveAssetClassTermsVersion(request.AssetSpecificTerms)
+            .Should().Be(SecurityAssetClassCatalog.GetOrDefault(request.AssetClass).TermsVersion);
         request.Reason.Should().Contain("securityTitle=Common stock");
         request.Reason.Should().Contain("publicFloat=2400000000000");
     }
