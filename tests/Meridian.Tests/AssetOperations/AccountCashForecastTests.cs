@@ -445,9 +445,95 @@ public sealed class AccountCashForecastTests : IDisposable
         await uninitialized.Should().ThrowAsync<InvalidOperationException>();
         await store.InitializeAsync();
         await new AccountCashForecastService(store).CaptureAsync(Request([], 100m));
-        File.Delete(Path.Combine(_dataRoot, "asset-operations", "account-cash-forecasts", "snapshots.json"));
+        File.Delete(ScopeStatePath(Scope));
         var reinitialize = () => new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
         await reinitialize.Should().ThrowAsync<InvalidDataException>();
+        var read = () => new FileAccountCashForecastStore(_dataRoot).GetHistoryAsync(Scope);
+        await read.Should().ThrowAsync<InvalidDataException>();
+    }
+
+    [Fact]
+    public async Task Store_CorruptScopeFileBlocksOnlyItsOwnScope()
+    {
+        var store = new FileAccountCashForecastStore(_dataRoot);
+        await store.InitializeAsync();
+        var otherScope = Scope with { AccountId = "account-b" };
+        var otherRequest = OtherScopeRequest(otherScope, "run-1");
+        await store.AppendAsync(AccountCashForecastEngine.Build(Request([], 100m)));
+        var retainedOther = await store.AppendAsync(AccountCashForecastEngine.Build(otherRequest));
+        await File.WriteAllTextAsync(ScopeStatePath(Scope), "{}");
+
+        var corrupt = () => new FileAccountCashForecastStore(_dataRoot).GetHistoryAsync(Scope);
+        await corrupt.Should().ThrowAsync<InvalidDataException>();
+        var append = () => store.AppendAsync(AccountCashForecastEngine.Build(Request([], 100m) with { RunId = "run-2" }));
+        await append.Should().ThrowAsync<InvalidDataException>();
+        (await new FileAccountCashForecastStore(_dataRoot).GetHistoryAsync(otherScope)).Should().ContainSingle().Which.Should().BeEquivalentTo(retainedOther);
+        var correction = otherRequest with { RunId = "run-2", PreviousSnapshotId = retainedOther.SnapshotId, CorrectionRationale = "Restated closing", RecordedAtUtc = Recorded.AddHours(1) };
+        await store.AppendAsync(AccountCashForecastEngine.Build(correction));
+        (await store.GetHistoryAsync(otherScope)).Should().HaveCount(2);
+        File.Exists(ScopeLockPath(Scope)).Should().BeTrue();
+        File.Exists(ScopeLockPath(otherScope)).Should().BeTrue();
+        Directory.EnumerateFiles(StoreDirectory, "*.json").Should().ContainSingle().Which.Should().EndWith("scope-index.json");
+    }
+
+    [Theory]
+    [InlineData("provisioned")]
+    [InlineData("unmarked")]
+    public async Task Store_LegacySingleFileHistoryIsSplitPerScopeLosslesslyAndRenamedNotDeleted(string state)
+    {
+        var otherScope = Scope with { AccountId = "account-b" };
+        var first = AccountCashForecastEngine.Build(Request([], 100m));
+        var second = AccountCashForecastEngine.Build(Request([], 100m) with
+        {
+            RunId = "run-2", ClosingCash = Request([], 101m).ClosingCash, PreviousSnapshotId = first.SnapshotId,
+            CorrectionRationale = "Restated closing", RecordedAtUtc = Recorded.AddHours(1)
+        });
+        var other = AccountCashForecastEngine.Build(OtherScopeRequest(otherScope, "run-1"));
+        var legacyBytes = LegacyStateBytes(first, other, second);
+        Directory.CreateDirectory(StoreDirectory);
+        var legacyPath = Path.Combine(StoreDirectory, "snapshots.json");
+        await File.WriteAllBytesAsync(legacyPath, legacyBytes);
+        if (state == "provisioned")
+            await File.WriteAllTextAsync(Path.Combine(StoreDirectory, "initialized"), "meridian-account-cash-forecast-v1");
+
+        var store = new FileAccountCashForecastStore(_dataRoot);
+        if (state == "unmarked")
+        {
+            // Scoped use never adopts unprovisioned history; explicit provisioning validates and adopts it.
+            var unprovisioned = () => store.GetHistoryAsync(Scope);
+            await unprovisioned.Should().ThrowAsync<InvalidOperationException>();
+            File.Exists(legacyPath).Should().BeTrue();
+        }
+        await store.InitializeAsync();
+
+        File.Exists(legacyPath).Should().BeFalse();
+        (await File.ReadAllBytesAsync(legacyPath + ".migrated")).Should().Equal(legacyBytes);
+        Directory.EnumerateFiles(Path.Combine(StoreDirectory, "scopes"), "*.json").Should().HaveCount(2);
+        (await store.GetHistoryAsync(Scope)).Should().BeEquivalentTo([first, second], options => options.WithStrictOrdering());
+        (await new AccountCashForecastService(store).GetHistoryAsync(otherScope)).Should().BeEquivalentTo([other], options => options.WithStrictOrdering());
+        await new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
+        (await File.ReadAllBytesAsync(legacyPath + ".migrated")).Should().Equal(legacyBytes);
+    }
+
+    [Fact]
+    public async Task Store_CorruptLegacySingleFileHistoryFailsClosedWithoutSplitting()
+    {
+        Directory.CreateDirectory(StoreDirectory);
+        var legacyPath = Path.Combine(StoreDirectory, "snapshots.json");
+        await File.WriteAllTextAsync(legacyPath, "{}");
+        await File.WriteAllTextAsync(Path.Combine(StoreDirectory, "initialized"), "meridian-account-cash-forecast-v1");
+        var store = new FileAccountCashForecastStore(_dataRoot);
+
+        var read = () => store.GetHistoryAsync(Scope);
+        await read.Should().ThrowAsync<InvalidDataException>();
+        var append = () => store.AppendAsync(AccountCashForecastEngine.Build(Request([], 100m)));
+        await append.Should().ThrowAsync<InvalidDataException>();
+        var reinitialize = () => new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
+        await reinitialize.Should().ThrowAsync<InvalidDataException>();
+        (await File.ReadAllTextAsync(legacyPath)).Should().Be("{}");
+        File.Exists(legacyPath + ".migrated").Should().BeFalse();
+        File.Exists(Path.Combine(StoreDirectory, "scope-index.json")).Should().BeFalse();
+        Directory.Exists(Path.Combine(StoreDirectory, "scopes")).Should().BeFalse();
     }
 
     [Theory]
@@ -475,7 +561,7 @@ public sealed class AccountCashForecastTests : IDisposable
         var store = new FileAccountCashForecastStore(_dataRoot);
         await store.InitializeAsync();
         await store.AppendAsync(legacy);
-        var statePath = Path.Combine(_dataRoot, "asset-operations", "account-cash-forecasts", "snapshots.json");
+        var statePath = ScopeStatePath(Scope);
         var retainedBytes = await File.ReadAllBytesAsync(statePath);
         var restarted = new AccountCashForecastService(new FileAccountCashForecastStore(_dataRoot));
 
@@ -695,6 +781,30 @@ public sealed class AccountCashForecastTests : IDisposable
             "Accepted", "independent-reviewer", Recorded.AddHours(-2), date, 1, Recorded.AddHours(-1), "retaining-operator", "AccountCash", id);
         return new(source, id, hash, role, evidence);
     }
+
+    private static AccountCashForecastRequestDto OtherScopeRequest(AccountCashForecastScopeDto otherScope, string runId)
+    {
+        var request = Request([], 100m) with { Scope = otherScope, RunId = runId };
+        return request with
+        {
+            OpeningCash = request.OpeningCash! with { AccountId = otherScope.AccountId },
+            ClosingCash = request.ClosingCash! with { AccountId = otherScope.AccountId }
+        };
+    }
+
+    /// <summary>Recomposes the pre-partition single-file envelope exactly as the previous layout wrote it.</summary>
+    private static byte[] LegacyStateBytes(params AccountCashForecastSnapshotDto[] snapshots)
+    {
+        var hash = Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(snapshots, AccountCashForecastJsonContext.Default.AccountCashForecastSnapshotDtoArray));
+        return JsonSerializer.SerializeToUtf8Bytes(new AccountCashForecastStoreEnvelope(1, hash, snapshots),
+            AccountCashForecastStoreJsonContext.Default.AccountCashForecastStoreEnvelope);
+    }
+
+    private string StoreDirectory => Path.Combine(_dataRoot, "asset-operations", "account-cash-forecasts");
+    private string ScopeStatePath(AccountCashForecastScopeDto scope)
+        => Path.Combine(StoreDirectory, "scopes", FileAccountCashForecastStore.ScopeFileName(scope) + ".json");
+    private string ScopeLockPath(AccountCashForecastScopeDto scope)
+        => Path.Combine(StoreDirectory, "scopes", FileAccountCashForecastStore.ScopeFileName(scope) + ".lock");
 
     public void Dispose()
     {

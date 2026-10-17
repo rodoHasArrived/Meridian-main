@@ -2,7 +2,7 @@
 title: Bounded account oversight
 status: active
 owner: core-team
-reviewed: 2026-10-14
+reviewed: 2026-10-17
 audience: operators
 ---
 
@@ -26,6 +26,15 @@ history stores before capture. Provisioning initializes empty stores only; missi
 state requires restoring retained history. Back up the complete configured data root, including
 `reconciliation/account-cash-continuity`, `asset-operations/account-cash-forecasts` and Evidence Vault.
 Close-price snapshots require the existing PostgreSQL Security Master and migration 037.
+
+Both file stores partition retained history per exact account scope. Each store directory holds the
+`initialized` provisioning marker, a `scope-index.json` registry of retained scopes, and one
+`scopes/<sha256>.json` history file plus `scopes/<sha256>.lock` per scope, where the hash is the
+canonical scope identity (tenant, company, account and ledger book, plus base currency for forecasts).
+A corrupt or missing scope file blocks only that scope; other accounts continue to read and capture.
+These stores live on the host's local data root and are not shared between hosts: run the account
+oversight API on a single host against one data root. Multi-host deployments are a known constraint
+and the planned follow-on is a PostgreSQL-backed store.
 
 ## Shared routes
 
@@ -206,6 +215,15 @@ account/book/period. Reintroducing an unchanged revision preserves its original 
 Preserve the original run/snapshot ID and response. Conflicting input under an existing run ID
 requires a new correction, rather than replacement. On missing/corrupt durable state, stop capture
 and restore the complete history from backup; provisioning is not a history-reset operation.
+A corrupt scope answers `503` for forecasts and `409` for cash continuity on that account only.
+Restore the affected `scopes/<sha256>.json` file together with `scope-index.json` and `initialized`
+from the same backup; never delete a scope file to clear a failure, because a registered scope
+without its file also fails closed. On first use after upgrading from the single-file layout, each
+store validates its legacy `state.json` or `snapshots.json`, writes the per-scope files, and renames
+the legacy file to `state.json.migrated` or `snapshots.json.migrated`. Keep the `.migrated` file with
+the backup set. A corrupt legacy file is never split or renamed; restore it before retrying. Do not
+leave both a legacy file and its `.migrated` sibling in place; that state also requires restoring one
+retained history.
 Acceptance proof is in `AccountCashReconciliationContinuityTests`,
 `SecurityMasterClosePriceServiceTests`, `PostgresSecurityMasterClosePriceTests`,
 `AccountCashForecastTests` and the account oversight endpoint/source-adapter tests.
