@@ -107,6 +107,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install documentation parser dependencies
+        run: python3 -m pip install --requirement build/scripts/docs/requirements.txt
+
       - name: Validate roadmap registry
         run: python3 build/scripts/docs/validate-roadmap-registry.py --summary
 

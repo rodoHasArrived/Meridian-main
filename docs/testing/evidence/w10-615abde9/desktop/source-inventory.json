@@ -1,0 +1,373 @@
+{
+  "candidate": "615abde90001ab33bd6e58e545edc7fce635e254",
+  "host_os": "Linux",
+  "python": "3.12.14",
+  "dotnet_available_at_inspection": false,
+  "scope": "Static inventory only; no WPF tests or rendered session executed",
+  "files": [
+    {
+      "path": "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj",
+      "sha256": "0dd65ce68408f4958aa32105a67efd3a2ddebc48cec165d2850ebf6489aecaf9",
+      "platform_properties": [
+        {
+          "condition": "unconditional",
+          "properties": {
+            "EnableFullWpfBuild": "false"
+          }
+        },
+        {
+          "condition": "'$(IsWindows)' == 'true'",
+          "properties": {
+            "TargetFramework": "net10.0-windows10.0.19041.0",
+            "UseWPF": "true",
+            "EnableDefaultCompileItems": "false"
+          }
+        },
+        {
+          "condition": "'$(IsWindows)' != 'true'",
+          "properties": {
+            "TargetFramework": "net10.0",
+            "EnableDefaultCompileItems": "false"
+          }
+        }
+      ],
+      "test_attributes": 0,
+      "methods": []
+    },
+    {
+      "path": "src/Meridian.Wpf/Meridian.Wpf.csproj",
+      "sha256": "a225027cb1fbcb0831d0119d4cf619a858eba1f90fd2a7b7219328850da3023e",
+      "platform_properties": [
+        {
+          "condition": "unconditional",
+          "properties": {
+            "EnableFullWpfBuild": "false"
+          }
+        },
+        {
+          "condition": "'$(IsWindows)' != 'true'",
+          "properties": {
+            "TargetFramework": "net10.0",
+            "EnableDefaultCompileItems": "false"
+          }
+        },
+        {
+          "condition": "'$(IsWindows)' == 'true'",
+          "properties": {
+            "TargetFramework": "net10.0-windows10.0.19041.0",
+            "UseWPF": "true"
+          }
+        }
+      ]
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/OperationsContinuityViewModelTests.cs",
+      "sha256": "b3e8d88063a4853a0c6bcba2cde8801dd6aba33edeb33f0300a8f108ae88f48a",
+      "test_attributes": 7,
+      "methods": [
+        {
+          "name": "RefreshAsync_ProjectsWorkflowsQueueCalendarAndPolicy",
+          "line": 12
+        },
+        {
+          "name": "RefreshAsync_QueueKeepsOnlyOpenItemsAndRollsUp",
+          "line": 41
+        },
+        {
+          "name": "RefreshAsync_NextActionPrefersMostBlockedGate",
+          "line": 66
+        },
+        {
+          "name": "RefreshAsync_MissingClient_DegradesPerPanelWithoutThrowing",
+          "line": 86
+        },
+        {
+          "name": "ResolveNextAction_ClosedWorkflowWithoutActions_ExplainsGovernedReopen",
+          "line": 101
+        },
+        {
+          "name": "SharedCloseDecision_BlocksAndRecoversWithoutTrustingClearLocalGates",
+          "line": 133
+        },
+        {
+          "name": "EditingScope_DropsAnInFlightReadyResponse",
+          "line": 188
+        }
+      ]
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/AccountingCloseViewModelTests.cs",
+      "sha256": "cdf264ca83cab728aaa118b64934cba03dad312f8a4fa5bda6c8ee648b712111",
+      "test_attributes": 34,
+      "methods": [
+        {
+          "name": "ConfigureClosePlanCommand_RetainsLoadedPlanThroughSharedCloseManagementService",
+          "line": 16
+        },
+        {
+          "name": "ConfigureClosePlanCommand_WhenDesktopUserLacksLedgerMutationPermission_DoesNotCallService",
+          "line": 73
+        },
+        {
+          "name": "LoadClosePlanCommand_LoadsSharedClosePlanByWorkflowId",
+          "line": 97
+        },
+        {
+          "name": "ApplyClosePlan_ShowsFallbackWhenSharedOperatingCoverageIsMissing",
+          "line": 198
+        },
+        {
+          "name": "ApplyCloseProjection_ProjectsEvidencePackageStatusAndApprovalHistory",
+          "line": 220
+        },
+        {
+          "name": "LoadClosePlanCommand_RequiresValidWorkflowId",
+          "line": 269
+        },
+        {
+          "name": "ConfigureClosePlanCommand_RequiresWorkflowContext",
+          "line": 286
+        },
+        {
+          "name": "ApplyClosePlan_ProjectsMaterialityDependencySignOffLateAdjustmentAndEvidenceReviewRows",
+          "line": 299
+        },
+        {
+          "name": "ConfigureClosePlanCommand_UsesDesktopEditedCloseSetupDraft",
+          "line": 373
+        },
+        {
+          "name": "ConfigureClosePlanCommand_SelectsRetainedTaskBeforeDesktopSetupEdits",
+          "line": 448
+        },
+        {
+          "name": "ConfigureClosePlanCommand_BlocksInvalidDesktopMaterialitySetup",
+          "line": 524
+        },
+        {
+          "name": "ConfigureClosePlanCommand_BlocksInvalidDesktopTaskAndSignOffSetup",
+          "line": 558
+        },
+        {
+          "name": "SignOffCloseTaskCommand_RetainsGovernedTaskSignOffEvidence",
+          "line": 599
+        },
+        {
+          "name": "SignOffCloseTaskCommand_RetainsConfiguredRejectedMatrixDecision",
+          "line": 672
+        },
+        {
+          "name": "SignOffCloseTaskCommand_BlocksInvalidDesktopMatrixDraft",
+          "line": 709
+        },
+        {
+          "name": "RequestLateAdjustmentCommand_RetainsGovernedRequestEvidence",
+          "line": 742
+        },
+        {
+          "name": "RequestLateAdjustmentCommand_BlocksInvalidDesktopDraft",
+          "line": 786
+        },
+        {
+          "name": "ReviewLateAdjustmentCommand_RetainsGovernedReviewEvidence",
+          "line": 818
+        },
+        {
+          "name": "ReviewLateAdjustmentCommand_UsesSelectedDesktopDecisionAndNotes",
+          "line": 877
+        },
+        {
+          "name": "ReviewCloseEvidenceCommand_RetainsActiveBlockerReviewWithoutClearingValidation",
+          "line": 922
+        },
+        {
+          "name": "ReviewCloseEvidenceCommand_UsesSelectedDesktopBlockerAndNotes",
+          "line": 1003
+        },
+        {
+          "name": "LoadThenLock_UsesWorkflowVersionReturnedWithPlan",
+          "line": 1053
+        },
+        {
+          "name": "WorkflowInputChange_RefusesOldLock_AndRecoversOnlyForLoadedCurrentWorkflow",
+          "line": 1086
+        },
+        {
+          "name": "LatePlanResponse_CannotRestorePreviousSelection_AndCurrentLoadRecovers",
+          "line": 1124
+        },
+        {
+          "name": "LateClosingEntryPreparation_CannotReplaceNewWorkflowPlanBeforeLock",
+          "line": 1164
+        },
+        {
+          "name": "ClosingEntryGate_DrivesQueueAndHardLockEligibility",
+          "line": 1209
+        },
+        {
+          "name": "ApplyClosePlan_WhenClosingGateChanges_NotifiesQueueAndHardLockCommands",
+          "line": 1234
+        },
+        {
+          "name": "ClosingEntryGate_WhenDesktopAdminIsNotController_DisablesHardLockWithAuthorityReason",
+          "line": 1266
+        },
+        {
+          "name": "ClosingEntryGate_WhenControllerLacksCompanyScope_DisablesHardLockAndDoesNotCallService",
+          "line": 1291
+        },
+        {
+          "name": "QueueClosingEntriesCommand_SendsPreparationOnlyRequestAndKeepsHardLockDisabled",
+          "line": 1319
+        },
+        {
+          "name": "LockClosePeriodCommand_BuildsGovernedRequestAndRendersSharedBlockers",
+          "line": 1362
+        },
+        {
+          "name": "LockClosePeriodCommand_UpdatesLoadedPlanWhenSharedServiceLocksPeriod",
+          "line": 1430
+        },
+        {
+          "name": "LockClosePeriodCommand_RequiresCompleteMatchingDeclaredScope_ThenForwardsItOnRecovery",
+          "line": 1474
+        },
+        {
+          "name": "AccountingCloseMutationCommands_WhenDesktopUserIsReadOnly_AreDisabledAndDoNotCallService",
+          "line": 1544
+        },
+        {
+          "name": "Dispose",
+          "line": 1894
+        }
+      ]
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingCloseHttpRecoveryTests.cs",
+      "sha256": "85b3f282ba057382a61823ad0173b9ea3792d4e42a781ed74fbdeb1cc67edc8d",
+      "test_attributes": 1,
+      "methods": [
+        {
+          "name": "RealModule_UsesBackendCloseAuthority_AndRepairRestoresTheSelectedWorkflow",
+          "line": 36
+        }
+      ]
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingCloseHttpRecoveryTests.ResponseIsolation.cs",
+      "sha256": "15b41fff22d30a52462fb12c8c7a9fa70eb1d800d425d67c1182a5e862af457a",
+      "test_attributes": 1,
+      "methods": [
+        {
+          "name": "DelayedClosePost_CannotReplaceChangedSelection_AndReloadRecovers",
+          "line": 27
+        }
+      ]
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/MarkFreshnessPresentationTests.cs",
+      "sha256": "20c4fe4f6b959f0dd3798d2406eefeeb1e393f33f40de1ddc3868d157a0d9803",
+      "test_attributes": 3,
+      "methods": [
+        {
+          "name": "AccountAndAggregateInspectors_ShowSharedBlockAndRecover",
+          "line": 13
+        },
+        {
+          "name": "MissingAssessment_CannotPresentAnApprovedValuation",
+          "line": 34
+        },
+        {
+          "name": "SharedDecision_IsNotRecomputedUsingDesktopAgeThreshold",
+          "line": 44
+        }
+      ]
+    },
+    {
+      "path": "src/Meridian.Wpf/Workstation/Models/OperationsContinuityClosePresentation.cs",
+      "sha256": "0d850321dde83065e74d250f4ce14aaffba4b12df6f43cafe79f0d6a45fcb730"
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/OperationsContinuityViewModel.cs",
+      "sha256": "a3b0ab2dd21b32dfffd7121fffd4cac7275e51bcdb15d313a275fd5c6bb05ef0"
+    },
+    {
+      "path": "src/Meridian.Wpf/Views/OperationsContinuityPage.xaml",
+      "sha256": "7f8f2bebd5c4ae5b71825f240b84be531f6f51faa5d2aa2cc0be4889fa179832"
+    },
+    {
+      "path": "src/Meridian.Wpf/Models/MarkFreshnessPresentation.cs",
+      "sha256": "fd7f567a8a75402eb0b7228ee067a8a19230e21e5f3167855a8da7ae60db6308"
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/AccountPortfolioViewModel.cs",
+      "sha256": "dddd20684158cc87859cc75ce502676369a6ccda451d73b664decfc3f66d0279"
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/AggregatePortfolioViewModel.cs",
+      "sha256": "0662b13c3be7af0133a85dbc969ba432fe6d0145cf9ab3ae92836d957d5697f5"
+    },
+    {
+      "path": "src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs",
+      "sha256": "3afc1ab8b8b5d37aed48f257d57ea0e802202d3375df42ee260cb30710d9ea20"
+    },
+    {
+      "path": "tests/Meridian.Tests/Application/Accounting/ValuationFreshnessAcceptanceTests.cs",
+      "sha256": "a4d01eba7002fb5203df120c86e86e65fecde45f58bd7f838a3da5c02cef55d7",
+      "test_attributes": 7,
+      "methods": [
+        {
+          "name": "MissingStaleFutureAndLowConfidenceMarks_BlockWholeBatch_RepairRestoresReadiness",
+          "line": 20
+        },
+        {
+          "name": "PreviewCountsPositionsAndAffectedValuations_WithoutCreatingApprovals",
+          "line": 49
+        },
+        {
+          "name": "CompatibilityModesAndPartialCoverage_CannotBypassAdmission",
+          "line": 71
+        },
+        {
+          "name": "ConsolidationPreservesTheStricterLegacyAgeAndConfidenceGates",
+          "line": 88
+        },
+        {
+          "name": "RetainedMarkTampering_BlocksApprovalAndPosting_OverrideTagsDoNotAuthorizeIt",
+          "line": 106
+        },
+        {
+          "name": "RetainedEvidenceCannotSupportAnotherSubject",
+          "line": 133
+        },
+        {
+          "name": "PolicyTamperingCannotWidenRetainedMarkAcceptance",
+          "line": 144
+        }
+      ]
+    }
+  ],
+  "source_queries": [
+    {
+      "command": [
+        "rg",
+        "-l",
+        "ValuationFreshnessPreviewDto|DailyMarkToMarket.*Preview|daily-mark-to-market-preview",
+        "src/Meridian.Wpf"
+      ],
+      "returncode": 1,
+      "matching_files": []
+    },
+    {
+      "command": [
+        "rg",
+        "-l",
+        "MarkFreshnessOverride|IMarkOverrideStore|PostgresMarkOverrideStore",
+        "src",
+        "tests"
+      ],
+      "returncode": 1,
+      "matching_files": []
+    }
+  ]
+}

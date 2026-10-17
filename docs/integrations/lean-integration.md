@@ -1,10 +1,13 @@
 # Lean Engine Integration Guide
 
-**Status:** ✅ Implemented
+**Status:** active
+**Scope:** optional integration source; excluded from default builds
 **Version:** 1.6.1
 **Last Updated:** 2026-01-30
 
-This guide provides comprehensive instructions for integrating Meridian with QuantConnect's Lean algorithmic trading engine.
+This guide covers the optional JSONL readers and sample algorithm for QuantConnect Lean. The
+normal workstation build excludes these sources and packages. Enable them explicitly as described
+below; their presence does not certify a Lean deployment or Meridian production readiness.
 
 ## Table of Contents
 
@@ -56,9 +59,7 @@ Meridian
     │   └── MeridianDataProvider (IDataProvider)
     │
     └── Sample Algorithms
-        ├── SampleLeanAlgorithm
-        ├── SpreadArbitrageAlgorithm
-        └── OrderFlowAlgorithm
+        └── SampleLeanAlgorithm
 
 Lean Engine
 ├── Algorithm Framework
@@ -79,52 +80,59 @@ Lean Engine
 
 ### Prerequisites
 
-- .NET 8.0 SDK or later
+- .NET 10 SDK selected by [`global.json`](../../global.json)
 - Meridian (this project)
 - QuantConnect Lean (optional for standalone testing)
 
-### Step 1: Add NuGet Packages
+### Step 1: Enable the optional build
 
-The required packages are already included in `Meridian.csproj`:
+[`Meridian.csproj`](../../src/Meridian/Meridian.csproj) defaults `EnableLeanIntegration` to
+`false`. Setting it to `true` includes the Lean sources and these package references:
 
 ```xml
-<PackageReference Include="QuantConnect.Lean" Version="2.5.17315" />
-<PackageReference Include="QuantConnect.Lean.Engine" Version="2.5.17269" />
-<PackageReference Include="QuantConnect.Common" Version="2.5.17315" />
-<PackageReference Include="QuantConnect.Indicators" Version="2.5.17212" />
+<PackageReference Include="QuantConnect.Lean" />
+<PackageReference Include="QuantConnect.Lean.Engine" />
+<PackageReference Include="QuantConnect.Common" />
+<PackageReference Include="QuantConnect.Indicators" />
 ```
+
+Versions come from `QuantConnectLeanVersion` in
+[`Directory.Packages.props`](../../Directory.Packages.props), not versions copied into the project.
 
 ### Step 2: Restore Packages
 
+Run from the repository root:
+
 ```bash
-cd Meridian
-dotnet restore
+dotnet restore src/Meridian/Meridian.csproj -p:EnableLeanIntegration=true
 ```
 
 ### Step 3: Verify Installation
 
 ```bash
-dotnet build
+dotnet build src/Meridian/Meridian.csproj -c Release -p:EnableLeanIntegration=true
 ```
 
 ## Quick Start
 
 ### 1. Collect Market Data
 
-Run Meridian to gather data:
+Complete [local setup](../start/README.md) and the applicable [provider setup](../operators/README.md)
+before collecting data. A configured collector can then run from the repository root:
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj
 ```
 
-Data will be stored in `./data/` as:
+With `DataRoot=data`, `Storage.NamingConvention=BySymbol`, and daily partitions, the default
+writer uses event-type names with their original case:
 ```
 data/
 └── SPY/
-    ├── trade/
+    ├── Trade/
     │   ├── 2024-01-01.jsonl
     │   └── 2024-01-02.jsonl
-    └── bboquote/
+    └── BboQuote/
         ├── 2024-01-01.jsonl
         └── 2024-01-02.jsonl
 ```
@@ -168,23 +176,26 @@ namespace MyAlgorithms
 
 ### 3. Configure Data Path
 
-The custom data types automatically look for data in Lean's data folder. You can:
+The current [`GetSource` implementations](../../src/Meridian/Integrations/Lean/MeridianTradeData.cs)
+use the **Lean process's** `MDC_DATA_ROOT` (default `./data`) and append
+`marketdatacollector/{UPPERCASE_SYMBOL}/trade/{yyyy-MM-dd}.jsonl` or
+`marketdatacollector/{UPPERCASE_SYMBOL}/bboquote/{yyyy-MM-dd}.jsonl`. They do not derive this path
+from Lean's `data-folder` setting or the collector's storage policy.
 
-**Option A: Use custom data provider**
-
-```csharp
-var dataProvider = new MeridianDataProvider("./data");
-```
-
-**Option B: Symlink data directory**
+Stage a separate Lean input tree with those names. On a case-sensitive filesystem, the default
+collector's `Trade` and `BboQuote` folders need lowercase links or copies; linking only the data
+root is insufficient. For example, in the shell used to launch Lean:
 
 ```bash
-# Linux/Mac
-ln -s /path/to/Meridian/data /path/to/Lean/Data/meridian
-
-# Windows (as Administrator)
-mklink /D C:\Lean\Data\meridian C:\Meridian\data
+mkdir -p /tmp/meridian-lean/marketdatacollector/SPY
+ln -s /absolute/path/to/data/SPY/Trade /tmp/meridian-lean/marketdatacollector/SPY/trade
+ln -s /absolute/path/to/data/SPY/BboQuote /tmp/meridian-lean/marketdatacollector/SPY/bboquote
+export MDC_DATA_ROOT=/tmp/meridian-lean
 ```
+
+Keep the collector's own `DataRoot` unchanged. Use a writable staging location appropriate for
+your operating system, and verify a known date/symbol before launching a full backtest.
+These readers return an empty source in live mode; they are backtest readers, not live-feed adapters.
 
 ## Custom Data Types
 
@@ -202,7 +213,7 @@ Represents individual trade executions with full microstructure detail.
 | `TradePrice` | `decimal` | Execution price |
 | `TradeSize` | `decimal` | Number of shares |
 | `Exchange` | `string` | Exchange code (e.g., "NSDQ", "NYSE") |
-| `Conditions` | `List<string>` | Trade condition codes |
+| `Conditions` | `List<string>` | Currently initialized empty by the reader; raw/canonical conditions are not projected |
 | `SequenceNumber` | `long` | Sequential ordering number |
 | `AggressorSide` | `string` | "Buy", "Sell", or "Unknown" |
 
@@ -213,10 +224,6 @@ public override void OnData(Slice data)
 {
     if (data.ContainsKey("SPY") && data["SPY"] is MeridianTradeData trade)
     {
-        // Filter out odd lot trades
-        if (trade.Conditions.Contains("ODD_LOT"))
-            return;
-
         // Detect aggressive buying
         if (trade.AggressorSide == "Buy" && trade.TradeSize > 10000)
         {
@@ -282,34 +289,32 @@ The `MeridianDataProvider` implements Lean's `IDataProvider` interface to read J
 ### Features
 
 - Automatic `.jsonl.gz` decompression
-- Path mapping from Lean's data folder to Meridian's data directory
+- Direct file lookup, then `.gz` fallback and an alternate path under its configured root
 - Efficient stream-based file reading
 
 ### Usage
 
 ```csharp
-// In Lean configuration or algorithm
-var dataProvider = new MeridianDataProvider("./data");
-
-// The data provider automatically handles:
-// - Path construction: data/SPY/trade/2024-01-01.jsonl
-// - Gzip decompression: data/SPY/trade/2024-01-01.jsonl.gz
-// - Error handling and logging
+// Direct provider use; Lean host registration is a separate configuration step.
+using var dataProvider = new MeridianDataProvider("/tmp/meridian-lean");
+using var stream = dataProvider.Fetch(
+    "/tmp/meridian-lean/marketdatacollector/SPY/trade/2024-01-01.jsonl");
+// Fetch checks this file, then the same path with .gz appended.
+// Missing or unreadable data returns Stream.Null and records a failed request.
 ```
 
 ## Algorithm Examples
 
-See the `src/Meridian/Integrations/Lean/` directory for complete examples:
-
-- **SampleLeanAlgorithm**: Basic usage of trade and quote data
-- **SpreadArbitrageAlgorithm**: Mean reversion on spread widening
-- **OrderFlowAlgorithm**: Order flow imbalance strategies
+[`SampleLeanAlgorithm`](../../src/Meridian/Integrations/Lean/SampleLeanAlgorithm.cs) is the
+committed example for trades, quotes, spread monitoring, and order-flow accumulation. Separate
+`SpreadArbitrageAlgorithm` and `OrderFlowAlgorithm` classes are not shipped.
 
 ## Configuration
 
 ### Lean Configuration File
 
-Add Meridian data types to your Lean `config.json`:
+The provider type can be selected by the Lean host once the optional Meridian assembly is built
+and available to its type loader:
 
 ```json
 {
@@ -317,6 +322,10 @@ Add Meridian data types to your Lean `config.json`:
   "data-provider": "Meridian.Integrations.Lean.MeridianDataProvider"
 }
 ```
+
+Constructing `MeridianDataProvider` in an algorithm does not register it with the engine.
+Confirm host/provider activation using the Lean version you deploy. The data-source paths still
+follow `MDC_DATA_ROOT` and the staging layout above.
 
 ### Data File Organization
 
@@ -331,7 +340,8 @@ Ensure Meridian uses a consistent file organization:
 }
 ```
 
-This produces the expected path structure: `{Symbol}/{Type}/{Date}.jsonl`
+This produces `{Symbol}/{Type}/{Date}.jsonl`, with `Trade`/`BboQuote` type folders.
+The Lean staging layout above accounts for the readers' lowercase folder names.
 
 ## Performance Optimization
 
@@ -345,16 +355,17 @@ Tick data is large:
 
 #### 1. Use Compressed Data
 
-```bash
-# Enable compression in appsettings.json
+Use the top-level `Compress` option in the collector configuration:
+
+```json
 {
-  "Storage": {
-    "CompressOutput": true
-  }
+  "Compress": true
 }
 ```
 
-Compression provides 5-10x size reduction with minimal read overhead.
+`MDC_COMPRESS=true` is the corresponding environment override. The custom provider handles gzip;
+verify it is the active Lean provider before relying on `.jsonl.gz` fallback. Compression ratios
+and read cost depend on the captured data.
 
 #### 2. Limit Data Scope
 
@@ -436,6 +447,9 @@ private RollingWindow<MeridianTradeData> _trades = new(1000);
 
 ## Performance Characteristics
 
+The figures below are historical estimates from the 2026-01-30 guide, not retained benchmark
+evidence for the current optional build. Measure your own capture, hardware, and Lean deployment.
+
 ### Data Volume
 
 Typical tick data volume per symbol per day:
@@ -457,25 +471,13 @@ On typical hardware:
 
 ---
 
-## Production Readiness Checklist
+## Integration Verification
 
-✅ **Code Quality**
-- Clean, well-documented code
-- Follows C# naming conventions
-- XML documentation comments
-- Error handling throughout
-
-✅ **Performance**
-- Stream-based file reading
-- Supports compressed files
-- Efficient JSON parsing
-- Bounded memory usage with RollingWindow examples
-
-✅ **Compatibility**
-- Works with existing Meridian file organization
-- Compatible with Lean Engine 2.5.x
-- Supports .NET 8.0
-- Apache 2.0 license compatible
+Before relying on this optional integration, build with `EnableLeanIntegration=true`, confirm the
+provider is registered in the Lean host, and replay a known trade and quote file through `Reader`
+and `OnData`. Check directory case, gzip fallback, parse-failure logs, and the empty `Conditions`
+projection. A normal Meridian build does not compile this lane. Release acceptance remains owned
+by the [implementation and readiness tracker](../product/implementation-todo-list.md).
 
 ---
 

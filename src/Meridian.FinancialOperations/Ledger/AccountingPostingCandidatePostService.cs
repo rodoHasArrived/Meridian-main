@@ -21,7 +21,7 @@ public interface IAccountingPostingCandidatePostService
         CancellationToken ct = default);
 }
 
-public sealed class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService
+public sealed partial class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService
 {
     private static readonly JsonSerializerOptions CanonicalJsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -136,6 +136,13 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         var existing = await FindExistingPostingAsync(journalStore, ledgerBookId, sourceEventId, ct).ConfigureAwait(false);
         var hasAtomicLotMutation = isAssetAccountingEvent &&
                                    assetAuthority?.Drafted.Projection.DraftedLotMutation is { Intent: not AssetLotMutationIntentDto.None };
+        var completedAcquisition = SpineAcquisitionLotCompletion.Resolve(request);
+        if (existing is null && hasAtomicLotMutation && completedAcquisition is { } newAcquisition)
+            SpineAcquisitionLotFacts.RequireCompleteNewAcquisition(newAcquisition);
+        if (existing is null && hasAtomicLotMutation
+            && assetAuthority?.Drafted.Projection.DraftedLotMutation is { Intent: AssetLotMutationIntentDto.Amortize } amortization
+            && amortization.Amortization?.CalculationVersion != OpenLotAmortization.ModelVersion)
+            throw new InvalidOperationException("New amortization postings require a fresh preview using the current calculation version.");
         if (existing is not null && !hasAtomicLotMutation)
         {
             PostingRuleJournalCandidateResultDto candidateForReplay;
@@ -241,7 +248,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         EnsureWriteLedgerBookScope(write, ledgerBookId);
 
         var recordedAtUtc = DateTimeOffset.UtcNow;
-        if (isAssetAccountingEvent && request.ApprovalEvidence.Any(evidence =>
+        if (isAssetAccountingEvent && SpineAcquisitionLotCompletion.PostingApprovalEvidence(request).Any(evidence =>
                 evidence.ReviewedAtUtc > recordedAtUtc || evidence.RetainedAtUtc > recordedAtUtc))
         {
             throw new InvalidOperationException(
@@ -264,7 +271,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             Evidence = MergeEvidence(
                 command.Evidence,
                 request.EvidenceLinks,
-                request.ApprovalEvidence,
+                SpineAcquisitionLotCompletion.PostingApprovalEvidence(request),
                 approvalId,
                 actor,
                 request.ApprovalNotes,
@@ -303,6 +310,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                     ledgerBook,
                     sourceEventId,
                     assetAuthority ?? throw new InvalidOperationException("Asset lot posting authority is required."),
+                    existing is not null,
                     ct)
                 .ConfigureAwait(false);
             var journalImpact = BuildJournalImpact(atomicResult.Journal, ledgerBook.BaseCurrency);
@@ -734,6 +742,9 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         RequireAssetAssertion(
             request.ApprovalEvidence.All(evidence => evidence.RetainedAtUtc >= evidence.ReviewedAtUtc),
             "Approval evidence cannot be retained before review.");
+        if (request.AcquisitionTermsCompletion?.Evidence is { } completionReview)
+            RequireAssetAssertion(completionReview.ReviewedAtUtc >= draftedAtUtc,
+                "Acquisition terms completion review cannot precede the retained Drafted attestation.");
     }
 
     private static void ValidatePostedProjectionOutcome(
@@ -818,6 +829,10 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             nameof(projection.DraftedCandidateResultFingerprint));
         if (!string.IsNullOrWhiteSpace(projection.DraftedLotMutationFingerprint))
             tags["assetAccountingLotMutationFingerprint"] = projection.DraftedLotMutationFingerprint;
+        if (projection.DraftedLotMutation?.CorporateAction is { } successorInstruction)
+            tags[OpenLotSuccessors.JournalFingerprintTag] = OpenLotSuccessors.Fingerprint(successorInstruction);
+        if (projection.DraftedLotMutation?.CapitalReturn is { } capitalReturnInstruction)
+            tags[OpenLotCapitalReturn.JournalFingerprintTag] = OpenLotCapitalReturn.Fingerprint(capitalReturnInstruction);
 
         var generatedLines = projection.DraftedCandidateResult?.GeneratedPostingLines
             ?? throw new InvalidOperationException("The retained Drafted candidate is missing generated posting lines.");
@@ -1077,6 +1092,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         LedgerBookRecord ledgerBook,
         Guid sourceEventId,
         AssetPostingAuthoritySnapshot authority,
+        bool hasExistingJournal,
         CancellationToken ct)
     {
         var atomicStore = _atomicTaxLotStore
@@ -1092,7 +1108,9 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             ? parsedKind
             : throw new InvalidOperationException("Asset lot mutation requires a canonical asset accounting event type.");
         if ((instruction.Intent == AssetLotMutationIntentDto.Acquire && eventKind != AssetAccountingEventKindDto.Acquisition) ||
-            (instruction.Intent == AssetLotMutationIntentDto.Dispose && eventKind != AssetAccountingEventKindDto.Disposal))
+            (instruction.Intent == AssetLotMutationIntentDto.Dispose && eventKind != AssetAccountingEventKindDto.Disposal) ||
+            (instruction.Intent == AssetLotMutationIntentDto.Amortize && eventKind != AssetAccountingEventKindDto.DepreciationAmortization) ||
+            (instruction.Intent is AssetLotMutationIntentDto.CorporateAction or AssetLotMutationIntentDto.CapitalReturn && eventKind != AssetAccountingEventKindDto.CorporateAction))
         {
             throw new InvalidOperationException(
                 "Asset lot mutation intent must match the canonical acquisition or disposal event kind.");
@@ -1100,7 +1118,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
 
         var mutationBatchId = CreateMutationBatchId(ledgerBook.LedgerBookId, sourceEventId, instruction.Intent);
         var retainedEvidence = request.Candidate.RetainedEvidence
-            .Concat(request.ApprovalEvidence)
+            .Concat(SpineAcquisitionLotCompletion.PostingApprovalEvidence(request))
             .ToArray();
         if (retainedEvidence.Length == 0 ||
             retainedEvidence.Any(static item => !RetainedEvidenceIdentityValidator.IsComplete(item)))
@@ -1114,7 +1132,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
         AtomicTaxLotMutationKind mutationKind;
         if (instruction.Intent == AssetLotMutationIntentDto.Acquire)
         {
-            var acquisition = instruction.Acquisition
+            var acquisition = SpineAcquisitionLotCompletion.Resolve(request)
                 ?? throw new InvalidOperationException("Acquisition lot details are required.");
             if (acquisition.Quantity <= 0m || acquisition.UnitCost < 0m)
             {
@@ -1171,22 +1189,24 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                     acquisition.ParBasis!.Value));
             }
 
-            // A face lot gains canonical facts only when its instruction states the amortization
-            // inputs; they are never inferred, so an unstated face lot keeps its par terms alone.
-            var faceTerms = acquisition.HasFaceValueTerms && acquisition.AmortizationMethod is { } method
-                ? new FaceValueAcquisitionTermsDto(
-                    acquisition.ParBasis!.Value, acquisition.BookedFactor!.Value, method, acquisition.EffectiveYield)
-                : null;
-            if ((!acquisition.HasFaceValueTerms || faceTerms is not null) &&
-                !await SpineAcquisitionLotFacts.IsRetainedLegacyBatchAsync(_journalStore, mutationBatchId, ct).ConfigureAwait(false))
+            // Only an exact retained legacy batch may keep its historical fact-free shape.
+            // Every new acquisition states canonical facts without inventing an amortization method.
+            if (!await SpineAcquisitionLotFacts.IsRetainedLegacyBatchAsync(_journalStore, mutationBatchId, ct).ConfigureAwait(false))
             {
+                SpineAcquisitionLotFacts.RequireCompleteNewAcquisition(acquisition);
+                var faceTerms = acquisition.HasFaceValueTerms
+                    ? new FaceValueAcquisitionTermsDto(acquisition.ParBasis!.Value, acquisition.BookedFactor!.Value,
+                        acquisition.AmortizationMethod!.Value, acquisition.EffectiveYield)
+                    : null;
                 acquisitionLot = acquisitionLot with
                 {
                     Acquisition = SpineAcquisitionLotFacts.Build(
                         acquisitionLot,
                         faceTerms,
-                        request.Candidate.RetainedEvidence,
-                        request.ApprovalEvidence)
+                        request.AcquisitionTermsCompletion is { } completion
+                            ? [.. request.Candidate.RetainedEvidence, completion.Evidence]
+                            : request.Candidate.RetainedEvidence,
+                        SpineAcquisitionLotCompletion.PostingApprovalEvidence(request))
                 };
             }
 
@@ -1217,10 +1237,56 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
                 approvedWrite.Entry);
             mutationKind = AtomicTaxLotMutationKind.Disposal;
         }
+        else if (instruction.Intent == AssetLotMutationIntentDto.Amortize)
+        {
+            var inputs = instruction.Amortization
+                ?? throw new InvalidOperationException("Amortization requires retained canonical lot and reference inputs.");
+            var projection = OpenLotAmortization.Project(inputs);
+            RequireAssetAssertion(inputs.ExpectedLot.SecurityId == authority.Context.SecurityId
+                && inputs.ExpectedLot.BookPositionId == authority.Context.BookPositionId
+                && inputs.Security.Version == authority.Context.SecurityVersion
+                && inputs.ExpectedBookPositionVersion == authority.Context.ExpectedBookPositionVersion
+                && inputs.AsOfDate == request.Candidate.EffectiveDate
+                && Math.Abs(projection.FunctionalMovement) == request.Candidate.EventAmount,
+                "Amortization inputs must match the governed event authority and carrying-value movement.");
+            var retained = authority.Drafted.Projection.DraftedCandidateResult!;
+            var indexes = retained.GeneratedPostingLines.Select((line, index) => (line, index))
+                .Where(item => item.line.AccountPath == instruction.AssetAccountId).Select(static item => item.index).ToArray();
+            RequireAssetAssertion(indexes.Length == 1 && indexes[0] < approvedWrite.Entry.Lines.Count,
+                "Amortization requires one exact retained asset account posting.");
+            var asset = approvedWrite.Entry.Lines[indexes[0]];
+            RequireAssetAssertion(asset.Debit == Math.Max(projection.FunctionalMovement, 0m)
+                && asset.Credit == Math.Max(-projection.FunctionalMovement, 0m),
+                "Amortization asset posting must equal the reviewed carrying-value movement.");
+            mutationKind = AtomicTaxLotMutationKind.Amortization;
+        }
+        else if (instruction.Intent == AssetLotMutationIntentDto.CapitalReturn)
+        {
+            ValidateCapitalReturnPosting(instruction, request, approvedWrite, ledgerBook, sourceEventId, authority);
+            mutationKind = AtomicTaxLotMutationKind.CapitalReturn;
+        }
+        else if (instruction.Intent == AssetLotMutationIntentDto.CorporateAction)
+        {
+            var inputs = instruction.CorporateAction
+                ?? throw new InvalidOperationException("Corporate-action posting requires retained successor inputs.");
+            OpenLotSuccessors.Validate(inputs);
+            RequireAssetAssertion(inputs.ExpectedLot.SecurityId == authority.Context.SecurityId
+                && inputs.ExpectedLot.BookPositionId == authority.Context.BookPositionId
+                && inputs.ExpectedLot.LedgerBookId == ledgerBook.LedgerBookId
+                && inputs.ExpectedSecurityVersion == authority.Context.SecurityVersion
+                && inputs.Projection.LotMutations!.ExpectedPositionVersion == authority.Context.ExpectedBookPositionVersion
+                && inputs.Projection.EconomicEvent!.EventId == sourceEventId
+                && inputs.Projection.EconomicEvent.EffectiveDate == request.Candidate.EffectiveDate
+                && inputs.Projection.EventAmount == request.Candidate.EventAmount
+                && inputs.ExpectedLot.Acquisition.FunctionalCurrency == ledgerBook.BaseCurrency
+                && PayloadEquals(inputs, approvedWrite.PostingCommand?.LotCorporateAction),
+                "Successor inputs must match the governed event, posting command and exact predecessor authority.");
+            mutationKind = AtomicTaxLotMutationKind.CorporateAction;
+        }
         else
         {
             throw new InvalidOperationException(
-                "Atomic lot posting supports only acquisition and disposal mutations.");
+                "Atomic lot posting requires a supported acquisition, disposal, amortization or corporate-action instruction.");
         }
 
         var command = AtomicTaxLotJournalCommand.Create(
@@ -1239,7 +1305,11 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             instruction.CorrectsMutationBatchId,
             instruction.ReliefMethod,
             instruction.PolicyRevision,
-            instruction.DisposalSalePrice);
+            instruction.DisposalSalePrice,
+            instruction.Amortization,
+            instruction.CorporateAction,
+            instruction.CapitalReturn);
+        command = await BindRetainedReferenceVersionsAsync(command, authority.Context, hasExistingJournal, ct).ConfigureAwait(false);
         return await atomicStore.AppendAssetPostingAsync(command, ct).ConfigureAwait(false);
     }
 
@@ -1429,7 +1499,7 @@ public sealed class AccountingPostingCandidatePostService : IAccountingPostingCa
             postedAtUtc,
             actor,
             request.Candidate.RetainedEvidence
-                .Concat(request.ApprovalEvidence)
+                .Concat(SpineAcquisitionLotCompletion.PostingApprovalEvidence(request))
                 .ToArray(),
             request.Candidate.SourceEventId?.ToString("D"));
 

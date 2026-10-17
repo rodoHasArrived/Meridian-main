@@ -70,7 +70,7 @@ public sealed class ProviderIntegrationSyncOrchestrationServiceTests : IDisposab
     }
 
     [Fact]
-    public async Task RunDueAsync_ResolvesEndpointDependencyFromRetainedRawPayload()
+    public async Task RunDueAsync_PinsManifestAcrossDependenciesWhenCurrentVersionChanges()
     {
         var store = new FileProviderIntegrationManifestStore(testRoot);
         var manifest = ActiveCustodianManifest();
@@ -110,6 +110,25 @@ public sealed class ProviderIntegrationSyncOrchestrationServiceTests : IDisposab
                   ]
                 }
                 """));
+        var expectedManifest = ProviderIntegrationManifestIdentity.Create(manifest);
+        var updatedManifest = manifest with
+        {
+            ManifestVersion = manifest.ManifestVersion + 1,
+            Endpoints = manifest.Endpoints.Select(endpoint => endpoint with
+            {
+                Path = "/v2/changed-endpoint"
+            }).ToArray()
+        };
+        transport.BeforeSendAsync = async () =>
+        {
+            if (transport.Requests.Count == 1)
+            {
+                await store.SaveManifestVersionAsync(updatedManifest);
+                (await store.CompareExchangeCurrentManifestAsync(
+                    manifest.ManifestId, expectedManifest,
+                    ProviderIntegrationManifestIdentity.Create(updatedManifest))).Should().BeTrue();
+            }
+        };
         var service = CreateService(store, transport);
 
         var result = await service.RunDueAsync(CreateRequest(connection, includePathParameters: false));
@@ -127,6 +146,17 @@ public sealed class ProviderIntegrationSyncOrchestrationServiceTests : IDisposab
         positionItem.DryRunResult!.RecordsAccepted.Should().Be(1);
         (await store.ListStagingRecordsAsync(positionItem.SyncRunId!)).Should().ContainSingle()
             .Which.MappedRecord.GetProperty("providerAccountId").GetString().Should().Be("A-200");
+        (await store.GetManifestAsync(manifest.ManifestId))!.ManifestVersion.Should().Be(updatedManifest.ManifestVersion);
+        var retainedRuns = await store.ListSyncRunsAsync(connection.ConnectionId);
+        retainedRuns.Should().HaveCount(2);
+        foreach (var run in retainedRuns)
+        {
+            run.ManifestReference.Should().Be(expectedManifest);
+            run.OriginalManifestReference.Should().Be(expectedManifest);
+            var payload = await store.GetRawPayloadAsync(run.SyncRunId, run.RawPayloadId!);
+            payload!.ManifestReference.Should().Be(expectedManifest);
+            payload.OriginalManifestReference.Should().Be(expectedManifest);
+        }
     }
 
     [Fact]
@@ -270,7 +300,11 @@ public sealed class ProviderIntegrationSyncOrchestrationServiceTests : IDisposab
             RecordsAccepted: 1,
             RecordsQuarantined: 0,
             RawPayloadId: $"payload-{syncRunId}",
-            Issues: []);
+            Issues: [])
+        {
+            ManifestReference = ProviderIntegrationManifestIdentity.Create(manifest),
+            OriginalManifestReference = ProviderIntegrationManifestIdentity.Create(manifest)
+        };
 
     private sealed class RecordingTransport : IProviderIntegrationHttpTransport
     {
@@ -283,18 +317,24 @@ public sealed class ProviderIntegrationSyncOrchestrationServiceTests : IDisposab
 
         public List<ProviderIntegrationHttpRequest> Requests { get; } = [];
 
-        public Task<ProviderIntegrationHttpResponse> SendAsync(
+        public Func<Task>? BeforeSendAsync { get; set; }
+
+        public async Task<ProviderIntegrationHttpResponse> SendAsync(
             ProviderIntegrationHttpRequest request,
             CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
             Requests.Add(request);
+            if (BeforeSendAsync is not null)
+            {
+                await BeforeSendAsync();
+            }
             if (responses.Count == 0)
             {
                 throw new InvalidOperationException("No recorded provider response is available.");
             }
 
-            return Task.FromResult(responses.Dequeue());
+            return responses.Dequeue();
         }
     }
 }

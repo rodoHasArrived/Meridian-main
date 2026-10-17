@@ -1,4 +1,5 @@
 using Meridian.Identity.Auth;
+using Meridian.Application.Composition;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -96,7 +97,7 @@ public static partial class WorkstationEndpoints
             var safeFileName = SanitizeDataUploadFileName(file.FileName);
             var relativePath = Path.Combine("workstation", "data-uploads", uploadId, safeFileName)
                 .Replace(Path.DirectorySeparatorChar, '/');
-            var retainedRoot = ResolveDataUploadRoot();
+            var retainedRoot = ResolveDataUploadRoot(context.RequestServices);
             var retainedDirectory = Path.Combine(retainedRoot, uploadId);
             Directory.CreateDirectory(retainedDirectory);
             await File
@@ -241,7 +242,7 @@ public static partial class WorkstationEndpoints
             var safeFileName = SanitizeDataUploadFileName(file.FileName);
             var relativePath = Path.Combine("workstation", "data-uploads", uploadId, safeFileName)
                 .Replace(Path.DirectorySeparatorChar, '/');
-            var retainedRoot = ResolveDataUploadRoot();
+            var retainedRoot = ResolveDataUploadRoot(context.RequestServices);
             var retainedDirectory = Path.Combine(retainedRoot, uploadId);
             Directory.CreateDirectory(retainedDirectory);
             await File
@@ -779,9 +780,10 @@ public static partial class WorkstationEndpoints
         return safeName;
     }
 
-    private static string ResolveDataUploadRoot()
+    private static string ResolveDataUploadRoot(IServiceProvider services)
     {
-        var configuredRoot = Environment.GetEnvironmentVariable(DataUploadRootEnvironmentVariable);
+        var configuration = services.GetService<CompositionConfiguration>() ?? new CompositionConfiguration();
+        var configuredRoot = configuration[DataUploadRootEnvironmentVariable];
         if (!string.IsNullOrWhiteSpace(configuredRoot))
         {
             return configuredRoot;

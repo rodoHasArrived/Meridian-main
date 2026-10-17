@@ -1167,7 +1167,13 @@ export function OperationsContinuityScreen() {
     fundAccountId: searchParams.get("fundAccountId"), entityId: searchParams.get("entityId"),
     periodId: searchParams.get("periodId")
   }), [searchParams]);
-  const vm = useOperationsContinuityScreenViewModel(undefined, closeScope);
+  const vm = useOperationsContinuityScreenViewModel(undefined, closeScope, {
+    initialWorkflowId: searchParams.get("workflowId"),
+    filters: {
+      ledgerBookId: searchParams.get("ledgerBookId") ?? undefined,
+      periodId: searchParams.get("periodId") ?? undefined
+    }
+  });
   const [breakCommand, setBreakCommand] = useState<{
     pending: { breakId: string; kind: BreakCommandKind } | null;
     message: string | null;

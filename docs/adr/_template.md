@@ -2,6 +2,8 @@
 
 **Status:** Proposed | Accepted | Deprecated | Superseded
 **Date:** YYYY-MM-DD
+**Owner:** [Responsible team]
+**Reviewed:** YYYY-MM-DD
 **Deciders:** [List of people involved]
 **Supersedes:** [ADR-XXX if applicable]
 **Superseded by:** [ADR-XXX if applicable]
@@ -16,13 +18,18 @@
 
 ## Implementation Links
 
-<!-- These links are verified by the build process to ensure code matches documentation -->
+<!-- Replace placeholders with existing repository-relative paths. Identify planned components
+separately rather than presenting missing paths as implemented evidence. The ADR link verifier
+checks path existence; behavioral compliance needs the focused checks described below. -->
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
 | Interface | `src/Path/To/IInterface.cs` | Contract definition |
 | Implementation | `src/Path/To/Implementation.cs` | Concrete implementation |
 | Tests | `tests/Path/To/Tests.cs` | Verification tests |
+
+[State which parts are implemented, which remain proposed, and where current validation or release
+evidence is recorded. Decision acceptance alone does not certify a release.]
 
 ## Rationale
 
@@ -79,9 +86,17 @@ public interface IExample
 
 ### Runtime Verification
 
-<!-- Specify verification attributes that enforce this decision -->
-- `[ImplementsAdr("ADR-XXX")]` - Applied to implementing classes
-- Build-time verification via `make verify-adrs`
+<!-- Name actual enforcement and focused tests. An annotation provides traceability, not proof
+that the implementation satisfies the decision. -->
+- `[ImplementsAdr("ADR-XXX")]` — traceability on implementing classes where applicable.
+- [Focused tests or runtime guards that enforce this decision, including failure cases.]
+- Verify paths in the Implementation Links table from the repository root:
+
+```bash
+dotnet run --project build/dotnet/DocGenerator/DocGenerator.csproj -- verify-adrs --adr-dir docs/adr --src-dir src
+```
+
+This command verifies referenced files and directories exist; it does not validate behavior.
 
 ## References
 

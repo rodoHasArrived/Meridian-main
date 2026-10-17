@@ -16,7 +16,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// so a fresh install could never create its first account.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class InitialAccountBootstrapEndpointTests : EndpointIntegrationTestBase
 {
     private const string BootstrapToken = "bootstrap-integration-test-token";
@@ -26,10 +25,10 @@ public sealed class InitialAccountBootstrapEndpointTests : EndpointIntegrationTe
     [Fact]
     public async Task BootstrapSurface_WhenAuthRequiredAndNoAccounts_CompletesFirstAccountCreation()
     {
-        var originalAuthMode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE");
-        var originalToken = Environment.GetEnvironmentVariable("MDC_BOOTSTRAP_TOKEN");
-        Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "required");
-        Environment.SetEnvironmentVariable("MDC_BOOTSTRAP_TOKEN", BootstrapToken);
+        var originalAuthMode = Fixture.Configuration["MDC_AUTH_MODE"];
+        var originalToken = Fixture.Configuration["MDC_BOOTSTRAP_TOKEN"];
+        Fixture.Configuration["MDC_AUTH_MODE"] = "required";
+        Fixture.Configuration["MDC_BOOTSTRAP_TOKEN"] = BootstrapToken;
         try
         {
             // Any other route stays fail-closed while unconfigured.
@@ -63,18 +62,18 @@ public sealed class InitialAccountBootstrapEndpointTests : EndpointIntegrationTe
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_AUTH_MODE", originalAuthMode);
-            Environment.SetEnvironmentVariable("MDC_BOOTSTRAP_TOKEN", originalToken);
+            Fixture.Configuration["MDC_AUTH_MODE"] = originalAuthMode;
+            Fixture.Configuration["MDC_BOOTSTRAP_TOKEN"] = originalToken;
         }
     }
 
     [Fact]
     public async Task BootstrapApi_WithInvalidToken_FailsClosedAtTheEndpointNotTheMiddleware()
     {
-        var originalAuthMode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE");
-        var originalToken = Environment.GetEnvironmentVariable("MDC_BOOTSTRAP_TOKEN");
-        Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "required");
-        Environment.SetEnvironmentVariable("MDC_BOOTSTRAP_TOKEN", BootstrapToken);
+        var originalAuthMode = Fixture.Configuration["MDC_AUTH_MODE"];
+        var originalToken = Fixture.Configuration["MDC_BOOTSTRAP_TOKEN"];
+        Fixture.Configuration["MDC_AUTH_MODE"] = "required";
+        Fixture.Configuration["MDC_BOOTSTRAP_TOKEN"] = BootstrapToken;
         try
         {
             var payload = new { token = "wrong-token", username = "intruder", password = "long-enough-password" };
@@ -87,8 +86,8 @@ public sealed class InitialAccountBootstrapEndpointTests : EndpointIntegrationTe
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_AUTH_MODE", originalAuthMode);
-            Environment.SetEnvironmentVariable("MDC_BOOTSTRAP_TOKEN", originalToken);
+            Fixture.Configuration["MDC_AUTH_MODE"] = originalAuthMode;
+            Fixture.Configuration["MDC_BOOTSTRAP_TOKEN"] = originalToken;
         }
     }
 }

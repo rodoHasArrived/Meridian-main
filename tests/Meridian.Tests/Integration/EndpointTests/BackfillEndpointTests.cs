@@ -17,7 +17,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Tests provider listing, status, and backfill execution with validation.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;

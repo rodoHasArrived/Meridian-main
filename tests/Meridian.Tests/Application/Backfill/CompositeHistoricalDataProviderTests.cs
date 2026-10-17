@@ -189,6 +189,192 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
     }
 
     [Fact]
+    public async Task GetDailyBarsAsync_AllProvidersInBackoff_ThrowsInsteadOfReportingNoData()
+    {
+        var provider = CreateMockProvider("p1", priority: 1);
+        provider.Setup(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new DataProviderException("Connection failed", provider: "p1"));
+        using var composite = CreateComposite(provider);
+        await Assert.ThrowsAsync<AggregateException>(() => composite.GetDailyBarsAsync("SPY", null, null));
+
+        var failure = await Assert.ThrowsAsync<AggregateException>(() => composite.GetDailyBarsAsync("SPY", null, null));
+
+        failure.InnerExceptions.Should().ContainSingle()
+            .Which.Should().BeOfType<DataProviderException>()
+            .Which.Provider.Should().Be("p1");
+        failure.Message.Should().Contain("coverage was not checked");
+        provider.Verify(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()), Times.Once);
+        var observations = composite.ProgressTracker.GetSnapshot().RecentProviderAttempts!;
+        observations.Should().Contain(p => p.CurrentStatus == "skipped-backoff" && p.Error != null);
+        observations.Should().NotContain(p => p.Provider == "composite" && p.CurrentStatus == "no-data");
+    }
+
+    [Fact]
+    public async Task GetDailyBarsAsync_EmptyProviderAndUnavailableProvider_DoesNotConfirmEmptyCoverage()
+    {
+        var unavailable = CreateMockProvider("p1", priority: 1);
+        unavailable.Setup(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new DataProviderException("Connection failed", provider: "p1"));
+        var empty = CreateMockProvider("p2", priority: 2);
+        empty.Setup(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<HistoricalBar>());
+        using var composite = CreateComposite(unavailable, empty);
+        await Assert.ThrowsAsync<AggregateException>(() => composite.GetDailyBarsAsync("SPY", null, null));
+
+        var failure = await Assert.ThrowsAsync<AggregateException>(() => composite.GetDailyBarsAsync("SPY", null, null));
+
+        failure.Message.Should().Contain("coverage was not checked");
+        empty.Verify(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()), Times.Exactly(2));
+        composite.ProgressTracker.GetSnapshot().RecentProviderAttempts!
+            .Should().NotContain(p => p.Provider == "composite" && p.CurrentStatus == "no-data");
+    }
+
+    [Fact]
+    public async Task GetDailyBarsAsync_AlreadyRateLimitedAndBudgetExhausted_PreservesRateLimitOutcome()
+    {
+        var provider = CreateMockProvider("p1", priority: 1);
+        provider.Setup(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new RateLimitException("Throttled", provider: "p1", retryAfter: TimeSpan.FromMinutes(1)));
+        using var composite = new CompositeHistoricalDataProvider([provider.Object], maxRateLimitRetryBudget: TimeSpan.Zero);
+        await Assert.ThrowsAsync<AggregateException>(() => composite.GetDailyBarsAsync("SPY", null, null));
+
+        var failure = await Assert.ThrowsAsync<AggregateException>(() => composite.GetDailyBarsAsync("SPY", null, null));
+
+        var rateLimit = failure.InnerExceptions.Should().ContainSingle().Which.Should().BeOfType<RateLimitException>().Subject;
+        rateLimit.Provider.Should().Be("p1");
+        rateLimit.RetryAfter.Should().BeGreaterThan(TimeSpan.Zero);
+        provider.Verify(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()), Times.Once);
+        var observations = composite.ProgressTracker.GetSnapshot().RecentProviderAttempts!;
+        observations.Should().Contain(p => p.CurrentStatus == "skipped-rate-limited");
+        observations.Should().NotContain(p => p.CurrentStatus == "waiting-for-rate-limit" || p.CurrentStatus == "no-data");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetDailyBarsAsync_AlreadyRateLimited_WaitsWithinBudgetAndRetries(bool includeBackedOffProvider)
+    {
+        var provider = CreateMockProvider("p1", priority: 1);
+        provider.Setup(p => p.MaxRequestsPerWindow).Returns(1);
+        provider.Setup(p => p.RateLimitWindow).Returns(TimeSpan.FromSeconds(1));
+        provider.Setup(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(CreateBars("SPY", 1));
+        var backedOff = CreateMockProvider("backoff", priority: 0);
+        backedOff.Setup(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new DataProviderException("Connection failed", provider: "backoff"));
+        IHistoricalDataProvider[] providers = includeBackedOffProvider
+            ? [backedOff.Object, provider.Object]
+            : [provider.Object];
+        using var composite = new CompositeHistoricalDataProvider(providers, maxRateLimitRetryBudget: TimeSpan.FromSeconds(3));
+        await composite.GetDailyBarsAsync("SPY", null, null);
+
+        var result = await composite.GetDailyBarsAsync("SPY", null, null);
+
+        result.Should().ContainSingle();
+        provider.Verify(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()), Times.Exactly(2));
+        if (includeBackedOffProvider)
+            backedOff.Verify(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()), Times.Once);
+        composite.ProgressTracker.GetSnapshot().RecentProviderAttempts!
+            .Should().Contain(p => p.CurrentStatus == "waiting-for-rate-limit");
+    }
+
+    [Fact]
+    public async Task GetDailyBarsAsync_PersistentRateLimit_RetriesAtMostThreeTimes()
+    {
+        var provider = CreateMockProvider("p1", priority: 1);
+        provider.Setup(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new RateLimitException("Throttled", provider: "p1", retryAfter: TimeSpan.FromMilliseconds(100)));
+        using var composite = new CompositeHistoricalDataProvider([provider.Object], maxRateLimitRetryBudget: TimeSpan.FromSeconds(10));
+
+        await Assert.ThrowsAsync<AggregateException>(() => composite.GetDailyBarsAsync("SPY", null, null));
+
+        provider.Verify(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()), Times.AtMost(4));
+        composite.ProgressTracker.GetSnapshot().RecentProviderAttempts!
+            .Count(p => p.CurrentStatus == "waiting-for-rate-limit").Should().Be(3);
+    }
+
+    [Fact]
+    public async Task GetDailyBarsAsync_CancelledWithAllProvidersInBackoff_PropagatesCancellation()
+    {
+        var provider = CreateMockProvider("p1", priority: 1);
+        provider.Setup(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new DataProviderException("Connection failed", provider: "p1"));
+        using var composite = CreateComposite(provider);
+        await Assert.ThrowsAsync<AggregateException>(() => composite.GetDailyBarsAsync("SPY", null, null));
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        var failure = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            composite.GetDailyBarsAsync("SPY", null, null, cancellation.Token));
+
+        failure.CancellationToken.Should().Be(cancellation.Token);
+        provider.Verify(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetDailyBarsAsync_CancelledWhileWaitingForRateLimit_StopsRetrying()
+    {
+        var provider = CreateMockProvider("p1", priority: 1);
+        provider.Setup(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new RateLimitException("Throttled", provider: "p1", retryAfter: TimeSpan.FromSeconds(5)));
+        using var composite = new CompositeHistoricalDataProvider([provider.Object], maxRateLimitRetryBudget: TimeSpan.FromSeconds(10));
+        using var cancellation = new CancellationTokenSource();
+        var waiting = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        composite.OnProgressUpdate += progress =>
+        {
+            if (progress.CurrentStatus == "waiting-for-rate-limit")
+                waiting.TrySetResult();
+        };
+
+        var request = composite.GetDailyBarsAsync("SPY", null, null, cancellation.Token);
+        await waiting.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        cancellation.Cancel();
+        var failure = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => request);
+
+        failure.CancellationToken.Should().Be(cancellation.Token);
+        provider.Verify(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetDailyBarsAsync_ProviderCancelsThenReturnsEmpty_PropagatesCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var provider = CreateMockProvider("p1", priority: 1);
+        provider.Setup(p => p.GetDailyBarsAsync("SPY", null, null, cancellation.Token))
+            .Callback(() => cancellation.Cancel())
+            .ReturnsAsync(Array.Empty<HistoricalBar>());
+        using var composite = CreateComposite(provider);
+
+        var failure = await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            composite.GetDailyBarsAsync("SPY", null, null, cancellation.Token));
+
+        failure.CancellationToken.Should().Be(cancellation.Token);
+        composite.ProgressTracker.GetSnapshot().RecentProviderAttempts!
+            .Should().NotContain(p => p.CurrentStatus == "no-data");
+    }
+
+    [Fact]
+    public async Task GetAggregateBarsAsync_AllSupportingProvidersInBackoff_DoesNotReportNoData()
+    {
+        var provider = CreateMockProvider("p1", priority: 1);
+        var aggregate = provider.As<IHistoricalAggregateBarProvider>();
+        aggregate.SetupGet(p => p.SupportedGranularities).Returns([DataGranularity.Minute1]);
+        aggregate.Setup(p => p.GetAggregateBarsAsync("SPY", DataGranularity.Minute1, null, null, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new DataProviderException("Connection failed", provider: "p1"));
+        using var composite = CreateComposite(provider);
+        await Assert.ThrowsAsync<AggregateException>(() =>
+            composite.GetAggregateBarsAsync("SPY", DataGranularity.Minute1, null, null));
+
+        var failure = await Assert.ThrowsAsync<AggregateException>(() =>
+            composite.GetAggregateBarsAsync("SPY", DataGranularity.Minute1, null, null));
+
+        failure.Message.Should().Contain("coverage was not checked");
+        aggregate.Verify(p => p.GetAggregateBarsAsync("SPY", DataGranularity.Minute1, null, null, It.IsAny<CancellationToken>()), Times.Once);
+        composite.ProgressTracker.GetSnapshot().RecentProviderAttempts!
+            .Should().NotContain(p => p.Provider == "composite" && p.CurrentStatus == "no-data");
+    }
+
+    [Fact]
     public async Task GetDailyBarsAsync_RespectsProviderPriorityOrder()
     {
         var callOrder = new List<string>();

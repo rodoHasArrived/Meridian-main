@@ -147,7 +147,8 @@ public sealed record AccountingPolicyQuery(
     string? FundProfileId = null,
     Guid? FundStructureNodeId = null,
     string? InstrumentId = null,
-    Guid? SourceEventId = null);
+    Guid? SourceEventId = null,
+    string? PolicyVersion = null);
 
 public sealed record CreateLedgerBookRequest(
     string FundProfileId,

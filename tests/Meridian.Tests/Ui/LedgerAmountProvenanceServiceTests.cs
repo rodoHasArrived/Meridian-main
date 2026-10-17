@@ -1,21 +1,7 @@
-using System.Net;
-using System.Net.Http.Json;
-using System.Text.Json;
 using FluentAssertions;
-using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Workstation;
-using Meridian.Identity.Auth;
-using Meridian.PortfolioRecords.FundAccounts;
-using Meridian.Reporting;
 using Meridian.Strategies.Services;
-using Meridian.Strategies.Storage;
-using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Xunit;
 
@@ -23,790 +9,202 @@ namespace Meridian.Tests.Ui;
 
 public sealed class LedgerAmountProvenanceServiceTests
 {
-    private static readonly Guid AaplSecurityId = Guid.Parse("35D27D8E-4460-4B17-92B8-6E5F53773D1D");
-    private static readonly ReconciliationBreakQueueScope TestScope =
-        new("tenant-test", "company-test");
-    private static readonly ReconciliationBreakQueueScope ForeignScope =
-        new("tenant-foreign", "company-foreign");
+    private static readonly Guid AmountId = Guid.Parse("3ae0c5ed-cbe6-4975-93a7-84e59399aeaa");
+    private static readonly Guid BookId = Guid.Parse("ef20c5ed-cbe6-4975-93a7-84e59399aeaa");
+    private static readonly Guid PeriodId = Guid.Parse("aac0c5ed-cbe6-4975-93a7-84e59399aeaa");
+    private static readonly LedgerAmountScopeDto Scope = new("tenant-a", "company-a", "fund-a", BookId, PeriodId);
+    private static readonly ReconciliationBreakQueueScope Access = new(Scope.TenantId, Scope.CompanyId);
+    private static readonly DateTimeOffset Captured = new(2026, 9, 30, 12, 0, 0, TimeSpan.Zero);
+    private static readonly string Hash = new('a', 64);
 
     [Fact]
-    public async Task GetAsync_BuildsLedgerAmountDrilldownFromReportPackLineage()
+    public async Task GetAsync_UsesRetainedIdsOnly_ExcludesReportWideAndUnrelatedSameNameAndSymbol()
     {
-        var reportId = Guid.NewGuid();
-        var snapshot = BuildSnapshot(reportId);
-        var reportRepository = new InMemoryReportPackRepository(snapshot);
-        var root = CreateTempRoot();
-        try
+        var snapshot = Snapshot();
+        var owned = Case("case-retained");
+        var otherFund = Case("case-other-fund") with { FundProfileId = "fund-b" };
+        var sameFundUnrelated = Case("case-unrelated");
+        var service = Service(snapshot, owned, otherFund, sameFundUnrelated);
+        var result = await Read(service, snapshot);
+        result!.ProofStatus.Should().Be(EvidenceStatusDto.ReviewRequired);
+        result.Warnings.Should().Contain(warning => warning.Contains("source content has not been verified"));
+        result.Evidence.Select(item => item.EvidenceId).Should().BeEquivalentTo("entry-retained", "source-retained", "case-retained");
+        result.Reconciliation.RelatedCaseIds.Should().Equal("case-retained");
+        result.StrategyRuns.Should().BeEmpty();
+        result.Evidence.Should().NotContain(item => item.EvidenceId == "report-wide" || item.EvidenceId == "artifact.json");
+    }
+
+    [Theory]
+    [InlineData("tenant")]
+    [InlineData("company")]
+    [InlineData("fund")]
+    [InlineData("book")]
+    [InlineData("period")]
+    public async Task GetAsync_ExplicitCaseIdInForeignScope_BlocksAndSuppressesAllEvidence(string dimension)
+    {
+        var snapshot = Snapshot();
+        var foreign = dimension switch
         {
-            var breakRepository = new FileReconciliationBreakQueueRepository(
-                root,
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-            await breakRepository.CreateIfMissingAsync(
-                TestScope,
-                new ReconciliationBreakQueueItem(
-                BreakId: "case-aapl-001",
-                RunId: "provider-ledger-run",
-                StrategyName: "Provider ledger reconciliation",
-                Category: ReconciliationBreakCategory.AmountMismatch,
-                Status: ReconciliationBreakQueueStatus.Open,
-                Variance: 25m,
-                Reason: "AAPL securities value differs from custodian statement.",
-                AssignedTo: "fund-accounting",
-                DetectedAt: snapshot.GeneratedAt.AddMinutes(-10),
-                LastUpdatedAt: snapshot.GeneratedAt.AddMinutes(-5),
-                Severity: ReconciliationBreakSeverity.High,
-                ExceptionRoute: "accounting/reconciliation/provider-ledger",
-                ToleranceBand: 0.01m,
-                RequiredSignoffRole: "Fund accounting",
-                SignoffStatus: "pending-signoff",
-                FundAccountId: "fund-ops",
-                ExplainabilitySummary: "account=Securities, symbol=AAPL, variance=25",
-                RoutingTarget: "/api/fund-accounts/account-a/brokerage-sync/reconciliation/latest",
-                RoutingDetail: "Securities:AAPL",
-                RecommendedAction: "Review provider-ledger variance and sign off.",
-                ExternalAccountId: "PA-LEDGER",
-                CustodianId: "alpaca",
-                UpstreamSyncCursor: "alpaca|PA-LEDGER|provider-position-aapl",
-                LastUpstreamSyncAt: snapshot.GeneratedAt.AddMinutes(-6),
-                Team: "Accounting")
-                {
-                    TenantId = TestScope.TenantId,
-                    CompanyId = TestScope.CompanyId
-                });
-
-            var service = new LedgerAmountProvenanceService(reportRepository, breakRepository);
-
-            var detail = await service.GetAsync(reportId, "Securities:AAPL", TestScope);
-
-            detail.Should().NotBeNull();
-            detail!.ReportId.Should().Be(reportId);
-            detail.ScopeKey.Should().Be("Securities:AAPL");
-            detail.AccountName.Should().Be("Securities");
-            detail.Symbol.Should().Be("AAPL");
-            detail.Amount.Should().Be(400m);
-            detail.Currency.Should().Be("USD");
-            detail.Evidence.Should().Contain(item =>
-                item.EvidenceType == "ledger-account" &&
-                item.RelatedEvidenceIds!.Single() == "ledger-line-1");
-            detail.Evidence.Should().Contain(item =>
-                item.EvidenceType == "run" &&
-                item.EvidenceId == "run-report-001");
-            detail.Evidence.Should().Contain(item =>
-                item.EvidenceType == "report-pack-artifact" &&
-                item.EvidenceId == "fund-ops/report-id/manifest.json" &&
-                item.RelatedEvidenceIds!.Single() == new string('b', 64));
-            detail.Evidence.Should().Contain(item =>
-                item.EvidenceType == "audit-pack-readiness" &&
-                item.EvidenceId == nameof(FundAuditEvidenceCategoryKeyDto.Exports) &&
-                item.EvidenceCount == 1);
-            detail.StrategyRuns.Should().NotBeNull();
-            var runLink = detail.StrategyRuns!.Should().ContainSingle(item => item.RunId == "run-report-001").Subject;
-            runLink.DisplayLabel.Should().Be("Report Strategy (run-report-001)");
-            runLink.Route.Should().Be("/api/workstation/runs/run-report-001/continuity");
-            runLink.SourceSystem.Should().Be("strategy-run");
-            runLink.IsLineScoped.Should().BeFalse();
-            detail.SecurityMaster.Should().NotBeNull();
-            detail.SecurityMaster!.Symbol.Should().Be("AAPL");
-            detail.SecurityMaster.DisplayName.Should().Be("AAPL");
-            detail.SecurityMaster.SourceSystem.Should().Be("security-master");
-            detail.SecurityMaster.EvidenceId.Should().Be("AAPL");
-            detail.SecurityMaster.RelatedEvidenceIds.Should().Contain("journal-entry-1");
-            detail.Reconciliation.ReconciliationRunCount.Should().Be(2);
-            detail.Reconciliation.OpenBreakCount.Should().Be(1);
-            detail.Reconciliation.RelatedCaseIds.Should().Contain("case-aapl-001");
-            detail.Reconciliation.RelatedCases.Should().NotBeNull();
-            var relatedCase = detail.Reconciliation.RelatedCases!.Should()
-                .ContainSingle(item => item.CaseId == "case-aapl-001")
-                .Subject;
-            relatedCase.Status.Should().Be(nameof(ReconciliationBreakQueueStatus.Open));
-            relatedCase.LifecycleState.Should().Be(nameof(ReconciliationCaseLifecycleState.Open));
-            relatedCase.Owner.Should().Be("fund-accounting");
-            relatedCase.Team.Should().Be("Accounting");
-            relatedCase.RequiredSignoffRole.Should().Be("Fund accounting");
-            relatedCase.SignoffStatus.Should().Be("pending-signoff");
-            relatedCase.ExceptionRoute.Should().Be("accounting/reconciliation/provider-ledger");
-            relatedCase.RecommendedAction.Should().Be("Review provider-ledger variance and sign off.");
-            relatedCase.Severity.Should().Be(nameof(ReconciliationBreakSeverity.High));
-            relatedCase.Variance.Should().Be(25m);
-            relatedCase.ToleranceBand.Should().Be(0.01m);
-            relatedCase.SlaPolicyId.Should().NotBeNullOrWhiteSpace();
-            relatedCase.SlaPolicyId!.StartsWith("default-high", StringComparison.OrdinalIgnoreCase).Should().BeTrue();
-            relatedCase.SlaDueAt.Should().NotBeNull();
-            relatedCase.AgeBand.Should().NotBeNullOrWhiteSpace();
-            relatedCase.BusinessAgeHours.Should().BeGreaterThanOrEqualTo(0);
-            detail.Evidence.Should().Contain(item =>
-                item.EvidenceType == "provider-event" &&
-                item.EvidenceId == "alpaca|PA-LEDGER|provider-position-aapl" &&
-                item.SourceSystem == "alpaca" &&
-                item.RelatedEvidenceIds!.Contains("case-aapl-001"));
-            detail.Approval.ReportStatus.Should().Be(GovernanceReportPackStatusDto.Approved);
-            detail.Approval.LatestApprovalActor.Should().Be("controller");
-            detail.ReportUsage.ReportRoute.Should().Be($"/api/fund-structure/report-packs/{reportId:D}");
-            detail.Warnings.Should().NotContain("No retained provider-event pointer is attached to this ledger amount.");
-            detail.Warnings.Should().NotContain("No durable reconciliation case is linked to this ledger amount.");
-        }
-        finally
-        {
-            DeleteTempRoot(root);
-        }
+            "tenant" => Case("case-retained") with { TenantId = "tenant-b" },
+            "company" => Case("case-retained") with { CompanyId = "company-b" },
+            "fund" => Case("case-retained") with { FundProfileId = "fund-b" },
+            "book" => Case("case-retained") with { LedgerBookId = Guid.NewGuid() },
+            _ => Case("case-retained") with { AccountingPeriodId = Guid.NewGuid().ToString("D") }
+        };
+        var result = await Read(Service(snapshot, foreign), snapshot);
+        result!.ProofStatus.Should().Be(EvidenceStatusDto.Blocked);
+        result.Evidence.Should().BeEmpty();
+        result.Reconciliation.RelatedCaseIds.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task GetAsync_WhenScopeKeyHasNoLedgerLine_ReturnsNull()
+    public async Task GetAsync_MissingExplicitCase_DoesNotSubstituteSameNameOrSymbol()
     {
-        var reportId = Guid.NewGuid();
-        var root = CreateTempRoot();
-        try
-        {
-            var breakRepository = new FileReconciliationBreakQueueRepository(
-                root,
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-            var service = new LedgerAmountProvenanceService(
-                new InMemoryReportPackRepository(BuildSnapshot(reportId)),
-                breakRepository);
-
-            var detail = await service.GetAsync(reportId, "Cash", TestScope);
-
-            detail.Should().BeNull();
-        }
-        finally
-        {
-            DeleteTempRoot(root);
-        }
+        var snapshot = Snapshot();
+        var result = await Read(Service(snapshot, Case("case-retained-suffix")), snapshot);
+        result!.ProofStatus.Should().Be(EvidenceStatusDto.ReviewRequired);
+        result.Reconciliation.RelatedCaseIds.Should().BeEmpty();
+        result.Evidence.Should().NotContain(item => item.EvidenceType == "reconciliation-case");
     }
 
     [Fact]
-    public async Task GetAsync_SurfacesProviderCorporateActionCaseMetadataAsStructuredEvidence()
+    public async Task GetAsync_ChangedCaseSnapshot_IsReviewRequiredWithoutCurrentCaseProof()
     {
-        var reportId = Guid.NewGuid();
-        var snapshot = BuildSnapshot(reportId);
-        var root = CreateTempRoot();
-        try
-        {
-            var breakRepository = new FileReconciliationBreakQueueRepository(
-                root,
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-            await breakRepository.CreateIfMissingAsync(
-                TestScope,
-                new ReconciliationBreakQueueItem(
-                BreakId: "case-provider-factor-aapl",
-                RunId: "provider-ledger-run",
-                StrategyName: "Provider corporate-action evidence",
-                Category: ReconciliationBreakCategory.MissingPortfolioCoverage,
-                Status: ReconciliationBreakQueueStatus.Open,
-                Variance: 0m,
-                Reason: "Provider factor event requires controller review.",
-                AssignedTo: "security-master-steward",
-                DetectedAt: snapshot.GeneratedAt.AddMinutes(-10),
-                LastUpdatedAt: snapshot.GeneratedAt.AddMinutes(-5),
-                Severity: ReconciliationBreakSeverity.Medium,
-                ExceptionRoute: "accounting/reconciliation/provider-ledger/corporate-actions",
-                RequiredSignoffRole: "Security Master steward",
-                SignoffStatus: "pending-signoff",
-                FundAccountId: "fund-ops",
-                ExplainabilitySummary: "provider=alpaca, externalAccount=PA-LEDGER, candidate=FactorScheduleEvent, providerEventId=factor-aapl-20260501, symbol=AAPL, securityId=35d27d8e-4460-4b17-92b8-6e5f53773d1d, requiredFeed=factor-schedule, evidenceSource=provider-corporate-action, amount=0.9825, ledgerEffect=FactorScheduleValuationInput, effectiveDate=2026-05-01, factor=0.9825, principalAmount=0, incomeAmount=0, currency=USD, journalLines=0, status=Break",
-                RoutingTarget: "/api/fund-accounts/account-a/brokerage-sync/reconciliation/latest",
-                RoutingDetail: "provider-corporate-action:alpaca:pa-ledger:factorscheduleevent:factor-aapl-20260501:aapl",
-                ExternalAccountId: "PA-LEDGER",
-                CustodianId: "alpaca",
-                UpstreamSyncCursor: "alpaca|PA-LEDGER|factor-aapl-20260501",
-                LastUpstreamSyncAt: snapshot.GeneratedAt.AddMinutes(-6))
-                {
-                    TenantId = TestScope.TenantId,
-                    CompanyId = TestScope.CompanyId
-                });
-
-            var service = new LedgerAmountProvenanceService(new InMemoryReportPackRepository(snapshot), breakRepository);
-
-            var detail = await service.GetAsync(reportId, "Securities:AAPL", TestScope);
-
-            detail.Should().NotBeNull();
-            var providerEvidence = detail!.Evidence.Should().ContainSingle(item =>
-                item.EvidenceType == "provider-event" &&
-                item.ProviderEventId == "factor-aapl-20260501").Subject;
-            providerEvidence.ProviderEventType.Should().Be("FactorScheduleEvent");
-            providerEvidence.ProviderEvidenceSource.Should().Be("provider-corporate-action");
-            providerEvidence.RequiredFeed.Should().Be("factor-schedule");
-            providerEvidence.SecurityId.Should().Be("35d27d8e-4460-4b17-92b8-6e5f53773d1d");
-            providerEvidence.LedgerEffectKind.Should().Be("FactorScheduleValuationInput");
-            providerEvidence.EffectiveDate.Should().Be(new DateOnly(2026, 5, 1));
-            providerEvidence.Factor.Should().Be(0.9825m);
-            providerEvidence.PrincipalAmount.Should().Be(0m);
-            providerEvidence.IncomeAmount.Should().Be(0m);
-            providerEvidence.Currency.Should().Be("USD");
-            providerEvidence.JournalPreviewLineCount.Should().Be(0);
-            providerEvidence.SourceSystem.Should().Be("alpaca");
-            providerEvidence.Route.Should().Be("/api/fund-accounts/account-a/brokerage-sync/reconciliation/latest");
-            detail.Warnings.Should().NotContain("No retained provider-event pointer is attached to this ledger amount.");
-            detail.Reconciliation.RelatedCaseIds.Should().Contain("case-provider-factor-aapl");
-        }
-        finally
-        {
-            DeleteTempRoot(root);
-        }
+        var snapshot = Snapshot();
+        var result = await Read(Service(snapshot, Case("case-retained") with { LastUpdatedAt = Captured.AddSeconds(1) }), snapshot);
+        result!.ProofStatus.Should().Be(EvidenceStatusDto.ReviewRequired);
+        result.Reconciliation.RelatedCaseIds.Should().BeEmpty();
+        result.Warnings.Should().Contain(warning => warning.Contains("changed"));
     }
 
     [Fact]
-    public async Task GetAsync_SurfacesProviderAmortizationScheduleMetadataAsStructuredEvidence()
+    public async Task GetAsync_DuplicateCaseIdentity_IsBlocked()
     {
-        var reportId = Guid.NewGuid();
-        var snapshot = BuildSnapshot(reportId);
-        var root = CreateTempRoot();
-        try
-        {
-            var breakRepository = new FileReconciliationBreakQueueRepository(
-                root,
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-            await breakRepository.CreateIfMissingAsync(
-                TestScope,
-                new ReconciliationBreakQueueItem(
-                BreakId: "case-provider-amortization-aapl",
-                RunId: "provider-ledger-run",
-                StrategyName: "Provider corporate-action evidence",
-                Category: ReconciliationBreakCategory.MissingPortfolioCoverage,
-                Status: ReconciliationBreakQueueStatus.Open,
-                Variance: 0m,
-                Reason: "Provider amortization event requires controller review.",
-                AssignedTo: "security-master-steward",
-                DetectedAt: snapshot.GeneratedAt.AddMinutes(-10),
-                LastUpdatedAt: snapshot.GeneratedAt.AddMinutes(-5),
-                Severity: ReconciliationBreakSeverity.Medium,
-                ExceptionRoute: "accounting/reconciliation/provider-ledger/corporate-actions",
-                RequiredSignoffRole: "Security Master steward",
-                SignoffStatus: "pending-signoff",
-                FundAccountId: "fund-ops",
-                ExplainabilitySummary: "provider=alpaca, externalAccount=PA-LEDGER, candidate=AmortizationScheduleEvent, providerEventId=amortization-aapl-20260501, symbol=AAPL, securityId=35d27d8e-4460-4b17-92b8-6e5f53773d1d, requiredFeed=amortization-schedule,factor-schedule, evidenceSource=provider-corporate-action, amount=125, ledgerEffect=AmortizationScheduleValuationInput, effectiveDate=2026-05-01, factor=0.975, cashAmount=125, principalAmount=125, currency=USD, journalLines=0, status=Break",
-                RoutingTarget: "/api/fund-accounts/account-a/brokerage-sync/reconciliation/latest",
-                RoutingDetail: "provider-corporate-action:alpaca:pa-ledger:amortizationscheduleevent:amortization-aapl-20260501:aapl",
-                ExternalAccountId: "PA-LEDGER",
-                CustodianId: "alpaca",
-                UpstreamSyncCursor: "alpaca|PA-LEDGER|amortization-aapl-20260501",
-                LastUpstreamSyncAt: snapshot.GeneratedAt.AddMinutes(-6))
-                {
-                    TenantId = TestScope.TenantId,
-                    CompanyId = TestScope.CompanyId
-                });
-
-            var service = new LedgerAmountProvenanceService(new InMemoryReportPackRepository(snapshot), breakRepository);
-
-            var detail = await service.GetAsync(reportId, "Securities:AAPL", TestScope);
-
-            detail.Should().NotBeNull();
-            var providerEvidence = detail!.Evidence.Should().ContainSingle(item =>
-                item.EvidenceType == "provider-event" &&
-                item.ProviderEventId == "amortization-aapl-20260501").Subject;
-            providerEvidence.ProviderEventType.Should().Be("AmortizationScheduleEvent");
-            providerEvidence.RequiredFeed.Should().Be("amortization-schedule,factor-schedule");
-            providerEvidence.LedgerEffectKind.Should().Be("AmortizationScheduleValuationInput");
-            providerEvidence.EffectiveDate.Should().Be(new DateOnly(2026, 5, 1));
-            providerEvidence.Factor.Should().Be(0.975m);
-            providerEvidence.CashAmount.Should().Be(125m);
-            providerEvidence.PrincipalAmount.Should().Be(125m);
-            providerEvidence.IncomeAmount.Should().BeNull();
-            providerEvidence.Currency.Should().Be("USD");
-            providerEvidence.JournalPreviewLineCount.Should().Be(0);
-            detail.Reconciliation.RelatedCaseIds.Should().Contain("case-provider-amortization-aapl");
-        }
-        finally
-        {
-            DeleteTempRoot(root);
-        }
+        var snapshot = Snapshot();
+        var result = await Read(Service(snapshot, Case("case-retained"), Case("case-retained")), snapshot);
+        result!.ProofStatus.Should().Be(EvidenceStatusDto.Blocked);
+        result.Evidence.Should().BeEmpty();
     }
 
-    [Fact]
-    public async Task GetAsync_SurfacesRelatedCaseSignOffApprovalMetadata()
+    [Theory]
+    [InlineData("foreign-pointer")]
+    [InlineData("stale-hash")]
+    [InlineData("duplicate-pointer")]
+    [InlineData("duplicate-amount")]
+    public async Task GetAsync_InvalidRetainedBinding_IsBlocked(string fault)
     {
-        var reportId = Guid.NewGuid();
-        var snapshot = BuildSnapshot(reportId);
-        var signedOffAt = snapshot.GeneratedAt.AddMinutes(-2);
-        var root = CreateTempRoot();
-        try
+        var snapshot = Snapshot();
+        var pointers = snapshot.Provenance.LineagePointers.ToArray();
+        snapshot = fault switch
         {
-            var breakRepository = new FileReconciliationBreakQueueRepository(
-                root,
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-            await breakRepository.CreateIfMissingAsync(
-                TestScope,
-                new ReconciliationBreakQueueItem(
-                BreakId: "case-aapl-signed-off",
-                RunId: "provider-ledger-run",
-                StrategyName: "Provider ledger reconciliation",
-                Category: ReconciliationBreakCategory.AmountMismatch,
-                Status: ReconciliationBreakQueueStatus.SignedOff,
-                Variance: 0m,
-                Reason: "AAPL provider-ledger variance was accepted for close.",
-                AssignedTo: "fund-accounting",
-                DetectedAt: snapshot.GeneratedAt.AddMinutes(-30),
-                LastUpdatedAt: signedOffAt,
-                ReviewedBy: "fund-accounting-reviewer",
-                ReviewedAt: snapshot.GeneratedAt.AddMinutes(-20),
-                ResolvedBy: "fund-accounting-reviewer",
-                ResolvedAt: snapshot.GeneratedAt.AddMinutes(-10),
-                ResolutionNote: "Variance ties to retained custodian evidence.",
-                Severity: ReconciliationBreakSeverity.Medium,
-                ExceptionRoute: "accounting/reconciliation/provider-ledger",
-                ToleranceBand: 0.01m,
-                RequiredSignoffRole: "Controller",
-                SignoffStatus: "signed-off",
-                ExplainabilitySummary: "account=Securities, symbol=AAPL, variance=0",
-                RoutingTarget: "/api/fund-accounts/account-a/brokerage-sync/reconciliation/latest",
-                RoutingDetail: "Securities:AAPL",
-                RecommendedAction: "No further action.",
-                LifecycleState: ReconciliationCaseLifecycleState.SignedOff,
-                SignedOffBy: "controller",
-                SignedOffAt: signedOffAt,
-                SignOffNote: "Approved for close package.",
-                SignoffHistory:
-                [
-                    new ReconciliationCaseSignoffRecord(
-                        "controller",
-                        "Controller",
-                        "SignedOff",
-                        "Approved for close package.",
-                        signedOffAt)
-                ])
-                {
-                    TenantId = TestScope.TenantId,
-                    CompanyId = TestScope.CompanyId
-                });
-
-            var service = new LedgerAmountProvenanceService(new InMemoryReportPackRepository(snapshot), breakRepository);
-
-            var detail = await service.GetAsync(reportId, "Securities:AAPL", TestScope);
-
-            detail.Should().NotBeNull();
-            var relatedCase = detail!.Reconciliation.RelatedCases.Should().NotBeNull().And
-                .ContainSingle(item => item.CaseId == "case-aapl-signed-off")
-                .Subject;
-            relatedCase.Status.Should().Be(nameof(ReconciliationBreakQueueStatus.SignedOff));
-            relatedCase.LifecycleState.Should().Be(nameof(ReconciliationCaseLifecycleState.SignedOff));
-            relatedCase.SignoffStatus.Should().Be("signed-off");
-            relatedCase.SignoffCount.Should().Be(1);
-            relatedCase.SignedOffBy.Should().Be("controller");
-            relatedCase.SignedOffAt.Should().Be(signedOffAt);
-            relatedCase.SignOffNote.Should().Be("Approved for close package.");
-        }
-        finally
-        {
-            DeleteTempRoot(root);
-        }
-    }
-
-    [Fact]
-    public async Task GetAsync_LinksSecurityMasterCaseworkByRetainedSecurityId()
-    {
-        var reportId = Guid.NewGuid();
-        var snapshot = BuildSnapshot(reportId, includeSecurityId: true);
-        var root = CreateTempRoot();
-        try
-        {
-            var breakRepository = new FileReconciliationBreakQueueRepository(
-                root,
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-            await breakRepository.CreateIfMissingAsync(
-                TestScope,
-                new ReconciliationBreakQueueItem(
-                BreakId: $"security-master:override:{AaplSecurityId:N}",
-                RunId: "security-master-overrides",
-                StrategyName: "Security Master exception casework",
-                Category: ReconciliationBreakCategory.ClassificationGap,
-                Status: ReconciliationBreakQueueStatus.Open,
-                Variance: 0m,
-                Reason: "AAPL operator override requires steward approval.",
-                AssignedTo: "security-master-steward",
-                DetectedAt: snapshot.GeneratedAt.AddMinutes(-12),
-                LastUpdatedAt: snapshot.GeneratedAt.AddMinutes(-4),
-                Severity: ReconciliationBreakSeverity.High,
-                ExceptionRoute: "security-master/operator-overrides",
-                RequiredSignoffRole: "Security Master steward",
-                SignoffStatus: "pending-signoff",
-                ExplainabilitySummary: $"securityId={AaplSecurityId:D}, approvalStatus=Pending, overrideCount=1",
-                RoutingTarget: $"/api/security-master/{AaplSecurityId:D}/operator-overrides",
-                RoutingDetail: AaplSecurityId.ToString("D"),
-                RecommendedAction: "Approve, reject, or remove the operator override before report publication.",
-                Team: "Security Master",
-                UpstreamSyncCursor: $"security-master-override:{AaplSecurityId:N}:Pending")
-                {
-                    TenantId = TestScope.TenantId,
-                    CompanyId = TestScope.CompanyId
-                });
-
-            var service = new LedgerAmountProvenanceService(new InMemoryReportPackRepository(snapshot), breakRepository);
-
-            var detail = await service.GetAsync(reportId, "Securities:AAPL", TestScope);
-
-            detail.Should().NotBeNull();
-            detail!.SecurityMaster.Should().NotBeNull();
-            detail.SecurityMaster!.SecurityId.Should().Be(AaplSecurityId);
-            detail.SecurityMaster.RelatedEvidenceIds.Should().Contain(AaplSecurityId.ToString("D"));
-            detail.Reconciliation.RelatedCaseIds.Should().Contain($"security-master:override:{AaplSecurityId:N}");
-            var relatedCase = detail.Reconciliation.RelatedCases.Should().NotBeNull().And
-                .ContainSingle(item => item.CaseId == $"security-master:override:{AaplSecurityId:N}")
-                .Subject;
-            relatedCase.Team.Should().Be("Security Master");
-            relatedCase.RequiredSignoffRole.Should().Be("Security Master steward");
-            relatedCase.SignoffStatus.Should().Be("pending-signoff");
-            relatedCase.ExceptionRoute.Should().Be("security-master/operator-overrides");
-            detail.Warnings.Should().NotContain("No durable reconciliation case is linked to this ledger amount.");
-        }
-        finally
-        {
-            DeleteTempRoot(root);
-        }
-    }
-
-    [Fact]
-    public async Task GetAsync_ScopesRelatedCasesToAuthenticatedTenantAndCompany()
-    {
-        var reportId = Guid.NewGuid();
-        var snapshot = BuildSnapshot(reportId);
-        var root = CreateTempRoot();
-        try
-        {
-            var breakRepository = new FileReconciliationBreakQueueRepository(
-                root,
-                NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-            await breakRepository.CreateIfMissingAsync(
-                TestScope,
-                BuildScopedCase(snapshot, "case-aapl-owned", TestScope));
-            await breakRepository.CreateIfMissingAsync(
-                ForeignScope,
-                BuildScopedCase(snapshot, "case-aapl-foreign", ForeignScope));
-            var service = new LedgerAmountProvenanceService(
-                new InMemoryReportPackRepository(snapshot),
-                breakRepository);
-
-            var owned = await service.GetAsync(reportId, "Securities:AAPL", TestScope);
-            var foreign = await service.GetAsync(reportId, "Securities:AAPL", ForeignScope);
-
-            owned.Should().NotBeNull();
-            owned!.Reconciliation.RelatedCaseIds.Should().ContainSingle()
-                .Which.Should().Be("case-aapl-owned");
-            foreign.Should().NotBeNull();
-            foreign!.Reconciliation.RelatedCaseIds.Should().ContainSingle()
-                .Which.Should().Be("case-aapl-foreign");
-        }
-        finally
-        {
-            DeleteTempRoot(root);
-        }
-    }
-
-    [Fact]
-    public async Task GetAsync_UnscopedCompatibilityAndMissingCaseworkStore_FailClosed()
-    {
-        var reportId = Guid.NewGuid();
-        var snapshot = BuildSnapshot(reportId);
-        var serviceWithoutStore = new LedgerAmountProvenanceService(
-            new InMemoryReportPackRepository(snapshot));
-
-#pragma warning disable CS0618 // Explicitly verifies the retained compatibility surface fails closed.
-        var unscoped = await serviceWithoutStore.GetAsync(reportId, "Securities:AAPL");
-#pragma warning restore CS0618
-        var scopedWithoutStore = await serviceWithoutStore.GetAsync(
-            reportId,
-            "Securities:AAPL",
-            TestScope);
-
-        unscoped.Should().BeNull();
-        scopedWithoutStore.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task Endpoint_GetLedgerProvenance_ReturnsProviderLedgerSecurityReconciliationApprovalAndUsage()
-    {
-        var reportId = Guid.NewGuid();
-        var snapshot = BuildSnapshot(reportId, includeProviderEvent: true);
-        await using var app = await CreateEndpointAppAsync(snapshot);
-        var client = app.GetTestClient();
-
-        var response = await client.GetAsync(
-            $"/api/fund-structure/report-packs/{reportId:D}/ledger-provenance?scopeKey={Uri.EscapeDataString("Securities:AAPL")}");
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var detail = await response.Content.ReadFromJsonAsync<LedgerAmountProvenanceDetailDto>();
-
-        detail.Should().NotBeNull();
-        detail!.Evidence.Should().Contain(item =>
-            item.EvidenceType == "provider-event" &&
-            item.SourceSystem == "provider" &&
-            item.EvidenceId == "alpaca-position-aapl");
-        detail.Evidence.Should().Contain(item => item.EvidenceType == "ledger-account");
-        detail.SecurityMaster.Should().NotBeNull();
-        detail.SecurityMaster!.Symbol.Should().Be("AAPL");
-        detail.Reconciliation.OpenBreakCount.Should().Be(1);
-        detail.Approval.ReportStatus.Should().Be(GovernanceReportPackStatusDto.Approved);
-        detail.ReportUsage.ReportRoute.Should().Be($"/api/fund-structure/report-packs/{reportId:D}");
-        detail.StrategyRuns.Should().ContainSingle(item => item.RunId == "run-report-001");
-        detail.Warnings.Should().NotContain("No retained provider-event pointer is attached to this ledger amount.");
-    }
-
-    [Fact]
-    public async Task Endpoint_GetLedgerProvenance_RequiresTenantAndCompanyScope()
-    {
-        var reportId = Guid.NewGuid();
-        await using var app = await CreateEndpointAppAsync(
-            BuildSnapshot(reportId, includeProviderEvent: true),
-            includeTenantCompanyScope: false);
-
-        var response = await app.GetTestClient().GetAsync(
-            $"/api/fund-structure/report-packs/{reportId:D}/ledger-provenance?scopeKey={Uri.EscapeDataString("Securities:AAPL")}");
-
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-    }
-
-    private static async Task<WebApplication> CreateEndpointAppAsync(
-        FundReportPackSnapshotDto snapshot,
-        bool includeTenantCompanyScope = true)
-    {
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-        {
-            EnvironmentName = Environments.Development
-        });
-        builder.WebHost.UseTestServer();
-        var reportRepository = new InMemoryReportPackRepository(snapshot);
-        var queueRoot = CreateTempRoot();
-        var breakRepository = new FileReconciliationBreakQueueRepository(
-            queueRoot,
-            NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-        var securityMaster = new NullSecurityMasterQueryService();
-        var fundGuard = Substitute.For<IFundProfileTenantGuard>();
-        fundGuard.EvaluateAsync(
-                Arg.Any<WorkstationTenantContext>(),
-                "fund-ops",
-                Arg.Any<CancellationToken>())
-            .Returns(FundProfileTenantDecision.Allow("owned by the test tenant"));
-
-        builder.Services.AddSingleton<IGovernanceReportPackRepository>(reportRepository);
-        builder.Services.AddSingleton<IReconciliationBreakQueueRepository>(breakRepository);
-        builder.Services.AddSingleton(new FundOperationsWorkspaceReadService(
-            new InMemoryFundAccountService(),
-            new StrategyRunStore(),
-            new PortfolioReadService(),
-            new NavAttributionService(securityMaster),
-            new ReportGenerationService(securityMaster),
-            reportPackRepository: reportRepository));
-        builder.Services.AddSingleton<LedgerAmountProvenanceService>();
-        builder.Services.AddSingleton(fundGuard);
-
-        var app = builder.Build();
-        app.Use(async (context, next) =>
-        {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "reporting-test-operator";
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewReporting;
-            if (includeTenantCompanyScope)
+            "foreign-pointer" => snapshot with
             {
-                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = TestScope.TenantId;
-                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = TestScope.CompanyId;
+                Provenance = snapshot.Provenance with
+                { LineagePointers = [pointers[0] with { AmountScope = Scope with { FundProfileId = "fund-b" } }, .. pointers.Skip(1)] }
+            },
+            "stale-hash" => snapshot with { Provenance = snapshot.Provenance with { SourceSnapshotHash = new string('b', 64) } },
+            "duplicate-pointer" => snapshot with { Provenance = snapshot.Provenance with { LineagePointers = [.. pointers, pointers[0]] } },
+            _ => snapshot with { Provenance = snapshot.Provenance with { LedgerAmounts = [.. snapshot.Provenance.LedgerAmounts, snapshot.Provenance.LedgerAmounts[0]] } }
+        };
+        var result = await Read(Service(snapshot, Case("case-retained")), snapshot);
+        result!.ProofStatus.Should().Be(EvidenceStatusDto.Blocked);
+        result.Evidence.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetAsync_MissingReferenceAfterForeignCase_CannotDowngradeBlockedProof()
+    {
+        var snapshot = Snapshot();
+        snapshot = snapshot with
+        {
+            Provenance = snapshot.Provenance with
+            {
+                LineagePointers = [.. snapshot.Provenance.LineagePointers,
+                Pointer("source-document", "missing-timestamp") with { CapturedAt = null },
+                Pointer("reconciliation-case", "missing-case")]
             }
-            await next();
-        });
-        app.MapFundStructureEndpoints(new JsonSerializerOptions(JsonSerializerDefaults.Web));
-        app.Lifetime.ApplicationStopped.Register(() => DeleteTempRoot(queueRoot));
-        await app.StartAsync();
-        return app;
-    }
-
-    private static ReconciliationBreakQueueItem BuildScopedCase(
-        FundReportPackSnapshotDto snapshot,
-        string breakId,
-        ReconciliationBreakQueueScope scope)
-        => new(
-            BreakId: breakId,
-            RunId: "provider-ledger-run",
-            StrategyName: "Provider ledger reconciliation",
-            Category: ReconciliationBreakCategory.AmountMismatch,
-            Status: ReconciliationBreakQueueStatus.Open,
-            Variance: 25m,
-            Reason: "AAPL securities value differs from retained provider evidence.",
-            AssignedTo: "fund-accounting",
-            DetectedAt: snapshot.GeneratedAt.AddMinutes(-10),
-            LastUpdatedAt: snapshot.GeneratedAt.AddMinutes(-5),
-            Severity: ReconciliationBreakSeverity.High,
-            ExceptionRoute: "accounting/reconciliation/provider-ledger",
-            FundAccountId: "fund-ops",
-            ExplainabilitySummary: "account=Securities, symbol=AAPL, variance=25",
-            RoutingDetail: "Securities:AAPL",
-            Team: "Accounting")
-        {
-            TenantId = scope.TenantId,
-            CompanyId = scope.CompanyId
         };
+        var result = await Read(Service(snapshot, Case("case-retained") with { FundProfileId = "fund-b" }), snapshot);
+        result!.ProofStatus.Should().Be(EvidenceStatusDto.Blocked);
+        result.Evidence.Should().BeEmpty();
+        result.Reconciliation.RelatedCaseIds.Should().BeEmpty();
+    }
 
-    private static FundReportPackSnapshotDto BuildSnapshot(
-        Guid reportId,
-        bool includeProviderEvent = false,
-        bool includeSecurityId = false)
+    [Fact]
+    public async Task GetAsync_MissingSupport_IsReviewRequired()
     {
-        var asOf = new DateTimeOffset(2026, 5, 28, 16, 0, 0, TimeSpan.Zero);
-        var generatedAt = asOf.AddMinutes(5);
-        var lineagePointers = new List<FundReportPackLineagePointerDto>
+        var snapshot = Snapshot();
+        snapshot = snapshot with
         {
-            new(
-                "report",
-                "summary",
-                "run",
-                "run-report-001",
-                DisplayLabel: "Report Strategy (run-report-001)",
-                Route: "/api/workstation/runs/run-report-001/continuity",
-                SourceSystem: "strategy-run"),
-            new(
-                "line",
-                "Securities:AAPL",
-                "ledger-account",
-                "Securities",
-                DisplayLabel: "Securities / AAPL ledger line",
-                Route: "/api/workstation/runs/run-report-001/ledger/trial-balance?accountName=Securities&symbol=AAPL",
-                SourceSystem: "ledger",
-                RelatedEvidenceIds: ["ledger-line-1"],
-                EvidenceCount: 1,
-                Amount: 400m,
-                CapturedAt: asOf.AddMinutes(-2)),
-            new(
-                "line",
-                "Securities:AAPL",
-                "security",
-                "AAPL",
-                DisplayLabel: "AAPL",
-                Route: "/api/workstation/security-master/search?query=AAPL",
-                SourceSystem: "security-master",
-                RelatedEvidenceIds: includeSecurityId
-                    ? ["journal-entry-1", AaplSecurityId.ToString("D")]
-                    : ["journal-entry-1"],
-                EvidenceCount: includeSecurityId ? 2 : 1,
-                Amount: 400m,
-                CapturedAt: asOf.AddMinutes(-2)),
-            new(
-                "section",
-                "reconciliation",
-                "reconciliation-summary",
-                "runs:2;open-breaks:1",
-                DisplayLabel: "2 reconciliation run(s), 1 open break(s)",
-                Route: "/api/workstation/reconciliation/runs",
-                SourceSystem: "reconciliation")
+            Provenance = snapshot.Provenance with
+            { LineagePointers = snapshot.Provenance.LineagePointers.Where(item => item.EvidenceType != "source-document").ToArray() }
         };
-
-        if (includeProviderEvent)
-        {
-            lineagePointers.Add(new FundReportPackLineagePointerDto(
-                "line",
-                "Securities:AAPL",
-                "provider-event",
-                "alpaca-position-aapl",
-                DisplayLabel: "Alpaca AAPL position snapshot",
-                Route: "/api/fund-accounts/account-a/brokerage-sync/reconciliation/latest",
-                SourceSystem: "provider",
-                RelatedEvidenceIds: ["provider-position-aapl"],
-                EvidenceCount: 1,
-                Amount: 400m,
-                CapturedAt: asOf.AddMinutes(-3)));
-        }
-
-        return new FundReportPackSnapshotDto(
-            ReportId: reportId,
-            FundProfileId: "fund-ops",
-            DisplayName: "Fund Operations Trial Balance",
-            ReportKind: GovernanceReportKindDto.TrialBalance,
-            Currency: "USD",
-            AsOf: asOf,
-            GeneratedAt: generatedAt,
-            TotalNetAssets: 400m,
-            AuditActor: "ops",
-            CorrelationId: "corr-ledger-provenance",
-            DecisionRationale: "monthly close",
-            Provenance: new FundReportPackProvenanceDto(
-                RelatedRunIds: ["run-report-001"],
-                JournalEntryCount: 1,
-                LedgerEntryCount: 1,
-                TrialBalanceLineCount: 1,
-                ReconciliationRunCount: 2,
-                OpenReconciliationBreakCount: 1,
-                SecurityResolvedCount: 1,
-                SecurityMissingCount: 0,
-                LineagePointers: lineagePointers,
-                SourceSnapshotHash: new string('a', 64)),
-            Artifacts:
-            [
-                new FundReportPackArtifactDto(
-                    "manifest",
-                    GovernanceReportArtifactFormatDto.Json,
-                    "fund-ops/report-id/manifest.json",
-                    512,
-                    new string('b', 64))
-            ],
-            Warnings: [])
-        {
-            Status = GovernanceReportPackStatusDto.Approved,
-            LifecycleEvents =
-            [
-                new FundReportPackLifecycleEventDto(
-                    GovernanceReportPackStatusDto.Generated,
-                    GovernanceReportPackStatusDto.Approved,
-                    generatedAt,
-                    "controller",
-                    "approved for close",
-                    "corr-ledger-provenance")
-            ],
-            AuditPackReadiness = new FundAuditPackReadinessDto(
-                IsComplete: true,
-                GeneratedInSeconds: 1.25,
-                SlaTargetSeconds: 60,
-                SlaMet: true,
-                MissingEvidenceCategories: [],
-                Warnings: [],
-                EvidenceCategorySummaries:
-                [
-                    new FundAuditEvidenceCategorySummaryDto(
-                        FundAuditEvidenceCategoryKeyDto.Exports,
-                        "Exports",
-                        true,
-                        "Export artifact retained.",
-                        1,
-                        ["fund-ops/report-id/manifest.json"],
-                        "/api/fund-structure/report-packs")
-                ])
-        };
+        var result = await Read(Service(snapshot, Case("case-retained")), snapshot);
+        result!.ProofStatus.Should().Be(EvidenceStatusDto.ReviewRequired);
+        result.Warnings.Should().Contain(warning => warning.Contains("supporting source evidence is missing"));
     }
 
-    private static string CreateTempRoot()
+    [Fact]
+    public async Task GetAsync_LegacyTextKeysAndUnscopedRequests_FailClosed()
     {
-        var root = Path.Combine(Path.GetTempPath(), "meridian-ledger-provenance-tests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(root);
-        return root;
+        var snapshot = Snapshot();
+        var service = Service(snapshot, Case("case-retained"));
+        (await service.GetAsync(snapshot.ReportId, "Securities:AAPL", Access)).Should().BeNull();
+#pragma warning disable CS0618
+        (await service.GetAsync(snapshot.ReportId, AmountId.ToString("D"))).Should().BeNull();
+#pragma warning restore CS0618
+        snapshot = snapshot with { Provenance = snapshot.Provenance with { LedgerAmounts = [] } };
+        (await Read(Service(snapshot), snapshot)).Should().BeNull();
     }
 
-    private static void DeleteTempRoot(string root)
+    [Fact]
+    public async Task GetAsync_ForeignTenantAmount_DoesNotDiscloseIdentityOrValue()
     {
-        if (Directory.Exists(root))
-        {
-            Directory.Delete(root, recursive: true);
-        }
+        var snapshot = Snapshot();
+        var result = await Service(snapshot).GetAsync(snapshot.ReportId, AmountId.ToString("D"), new ReconciliationBreakQueueScope("tenant-b", "company-a"));
+        result.Should().BeNull();
     }
 
-    private sealed class InMemoryReportPackRepository(FundReportPackSnapshotDto snapshot) : IGovernanceReportPackRepository
+    [Fact]
+    public async Task GetAsync_DoesNotScrapeProviderMetadataFromCaseProse()
     {
-        public Task<FundReportPackSnapshotDto> SaveAsync(
-            FundReportPackSnapshotDto snapshot,
-            IReadOnlyList<GovernanceReportPackArtifactContent> artifacts,
-            CancellationToken ct = default)
-            => Task.FromResult(snapshot);
-
-        public Task<IReadOnlyList<FundReportPackHistoryItemDto>> GetHistoryAsync(
-            string fundProfileId,
-            int limit,
-            CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<FundReportPackHistoryItemDto>>([]);
-
-        public Task<FundReportPackSnapshotDto?> GetAsync(Guid reportId, CancellationToken ct = default)
-            => Task.FromResult(reportId == snapshot.ReportId ? snapshot : null);
-
-        public Task<FundReportPackSnapshotDto?> FindLatestByRunIdAsync(string runId, CancellationToken ct = default)
-            => Task.FromResult<FundReportPackSnapshotDto?>(null);
-
-        public Task<FundReportPackEvidenceBundleDto> SaveEvidenceBundleAsync(
-            FundReportPackSnapshotDto snapshot,
-            FundReportPackEvidenceBundleDto bundle,
-            CancellationToken ct = default)
-            => Task.FromResult(bundle);
+        var snapshot = Snapshot();
+        var item = Case("case-retained") with { ExplainabilitySummary = "providerEventId=unrelated,securityId=foreign,cashAmount=999", CustodianId = "provider" };
+        var result = await Read(Service(snapshot, item), snapshot);
+        result!.Evidence.Should().NotContain(evidence => evidence.EvidenceType == "provider-event");
+        result.Evidence.Should().OnlyContain(evidence => evidence.ProviderEventId == null && evidence.CashAmount == null);
     }
+
+    private static Task<LedgerAmountProvenanceDetailDto?> Read(LedgerAmountProvenanceService service, FundReportPackSnapshotDto snapshot)
+        => service.GetAsync(snapshot.ReportId, AmountId.ToString("D"), Access);
+
+    private static LedgerAmountProvenanceService Service(FundReportPackSnapshotDto snapshot, params ReconciliationBreakQueueItem[] cases)
+    {
+        var reports = Substitute.For<IGovernanceReportPackRepository>();
+        reports.GetAsync(snapshot.ReportId, Arg.Any<CancellationToken>()).Returns(snapshot);
+        var queue = Substitute.For<IReconciliationBreakQueueRepository>();
+        queue.GetAllAsync(Arg.Any<ReconciliationBreakQueueScope>(), null, Arg.Any<CancellationToken>()).Returns(cases);
+        return new(reports, queue);
+    }
+
+    private static ReconciliationBreakQueueItem Case(string id)
+        => new(id, "run-a", "Provider Securities AAPL", ReconciliationBreakCategory.AmountMismatch,
+            ReconciliationBreakQueueStatus.Open, 25m, "Securities AAPL", null, Captured, Captured,
+            ExplainabilitySummary: "Securities:AAPL, source-retained, entry-retained", RoutingDetail: "Securities:AAPL",
+            LedgerBookId: BookId, AccountingPeriodId: PeriodId.ToString("D"))
+        { TenantId = Scope.TenantId, CompanyId = Scope.CompanyId, FundProfileId = Scope.FundProfileId };
+
+    private static FundReportPackLineagePointerDto Pointer(string type, string id)
+        => new("line", "Securities:AAPL", type, id, DisplayLabel: "Securities AAPL", CapturedAt: Captured)
+        { AmountId = AmountId, AmountScope = Scope, SourceSnapshotHash = Hash };
+
+    private static FundReportPackSnapshotDto Snapshot()
+        => new(Guid.NewGuid(), Scope.FundProfileId, "Retained report", GovernanceReportKindDto.TrialBalance,
+            "USD", Captured, Captured.AddMinutes(1), 400m, "operator", "correlation", "period close",
+            new FundReportPackProvenanceDto(["run-global"], 1, 1, 1, 1, 1, 1, 0,
+                [Pointer("ledger-account", "entry-retained"), Pointer("source-document", "source-retained"),
+                 Pointer("reconciliation-case", "case-retained"), new("report", "summary", "run", "report-wide")], Hash)
+            { LedgerAmounts = [new(AmountId, Scope, "Securities", "AAPL", 400m, Hash)] },
+            [new("manifest", GovernanceReportArtifactFormatDto.Json, "artifact.json", 512, Hash)], [])
+        { Status = GovernanceReportPackStatusDto.Retained };
 }

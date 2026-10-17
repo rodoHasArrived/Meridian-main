@@ -25,6 +25,11 @@ public static class AssetSpecificTermsSchema
     /// total loss of the record's economics with no diagnostic. The next flat evolution must skip
     /// this number; the guard test in <c>SecurityAssetSpecificTermsUpcasterChainTests</c> enforces
     /// that no accepted flat version ever equals <see cref="EconomicTermsSchema.Current"/>.
+    /// <para>Payloads now declare their family in <see cref="SecurityTermsEnvelope.FormatKey"/>, and a
+    /// tagged payload is dispatched on that declaration alone. The reservation still protects the
+    /// untagged payloads stored before the tag existed, which can only be classified by shape. New
+    /// per-class evolution belongs in <see cref="SecurityAssetClassDescriptor.TermsVersion"/>, not
+    /// in this codec number.</para>
     /// </summary>
     public const int ReservedForEconomicTerms = 2;
 

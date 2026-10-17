@@ -20,6 +20,7 @@ public sealed class UserProfileRegistry
     private readonly IRolePermissionProfileStore? _roleProfileStore;
     private readonly IUserAccountStore? _accountStore;
     private readonly TenantScopeEnforcementOptions _tenantScope;
+    private readonly AuthenticationConfiguration _configuration;
 
     public UserProfileRegistry()
         : this(null, null)
@@ -32,8 +33,9 @@ public sealed class UserProfileRegistry
     }
 
     public UserProfileRegistry(IRolePermissionProfileStore? roleProfileStore, IUserAccountStore? accountStore,
-        TenantScopeEnforcementOptions? tenantScope = null)
+        TenantScopeEnforcementOptions? tenantScope = null, AuthenticationConfiguration? configuration = null)
     {
+        _configuration = configuration ?? AuthenticationConfiguration.FromEnvironment();
         _roleProfileStore = roleProfileStore;
         _accountStore = accountStore;
         _tenantScope = tenantScope ?? TenantScopeEnforcementOptions.DeploymentBoundary;
@@ -125,7 +127,7 @@ public sealed class UserProfileRegistry
                 .ToArray();
         }
 
-        var multiUserJson = Environment.GetEnvironmentVariable(MultiUserEnvVar);
+        var multiUserJson = _configuration[MultiUserEnvVar];
         if (!string.IsNullOrWhiteSpace(multiUserJson))
         {
             try
@@ -145,7 +147,7 @@ public sealed class UserProfileRegistry
 
         if (IsDevelopmentLikeEnvironment())
         {
-            var demoUserJson = Environment.GetEnvironmentVariable(DemoUserEnvVar);
+            var demoUserJson = _configuration[DemoUserEnvVar];
             if (!string.IsNullOrWhiteSpace(demoUserJson))
             {
                 try
@@ -164,8 +166,8 @@ public sealed class UserProfileRegistry
             }
         }
 
-        var legacyUsername = Environment.GetEnvironmentVariable(LegacyUsernameEnvVar);
-        var legacyPasswordHash = Environment.GetEnvironmentVariable(LegacyPasswordHashEnvVar);
+        var legacyUsername = _configuration[LegacyUsernameEnvVar];
+        var legacyPasswordHash = _configuration[LegacyPasswordHashEnvVar];
 
         if (!string.IsNullOrWhiteSpace(legacyUsername) && PasswordHashing.IsSupportedHash(legacyPasswordHash))
             return [new UserAccountConfig(legacyUsername, legacyPasswordHash!, UserRole.Admin)];
@@ -229,10 +231,10 @@ public sealed class UserProfileRegistry
         => !string.IsNullOrWhiteSpace(account.Username) &&
            PasswordHashing.IsSupportedHash(account.PasswordHash);
 
-    private static bool IsDevelopmentLikeEnvironment()
+    private bool IsDevelopmentLikeEnvironment()
     {
-        var dotnet = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
-        var aspNetCore = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        var dotnet = _configuration["DOTNET_ENVIRONMENT"];
+        var aspNetCore = _configuration["ASPNETCORE_ENVIRONMENT"];
         return IsDevelopmentLike(dotnet) || IsDevelopmentLike(aspNetCore);
     }
 

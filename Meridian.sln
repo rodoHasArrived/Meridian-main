@@ -111,6 +111,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meridian.ProcessTestHelper"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meridian.Lifecycle.Tests", "tests\Meridian.Lifecycle.Tests\Meridian.Lifecycle.Tests.csproj", "{C1FEC0DE-2026-0717-A019-000000000020}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meridian.Launcher", "src\Meridian.Launcher\Meridian.Launcher.csproj", "{C1FEC0DE-2026-0717-A019-000000000023}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meridian.LifecycleSupervisor", "src\Meridian.LifecycleSupervisor\Meridian.LifecycleSupervisor.csproj", "{C1FEC0DE-2026-0717-A019-000000000021}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meridian.LifecycleSupervisor.Tests", "tests\Meridian.LifecycleSupervisor.Tests\Meridian.LifecycleSupervisor.Tests.csproj", "{C1FEC0DE-2026-0717-A019-000000000022}"
@@ -129,6 +131,18 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C1FEC0DE-2026-0717-A019-000000000023}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000023}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000023}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000023}.Debug|x64.Build.0 = Debug|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000023}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000023}.Debug|x86.Build.0 = Debug|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000023}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000023}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000023}.Release|x64.ActiveCfg = Release|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000023}.Release|x64.Build.0 = Release|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000023}.Release|x86.ActiveCfg = Release|Any CPU
+		{C1FEC0DE-2026-0717-A019-000000000023}.Release|x86.Build.0 = Release|Any CPU
 		{A1111111-B222-C333-D444-E55555555555}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A1111111-B222-C333-D444-E55555555555}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A1111111-B222-C333-D444-E55555555555}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -782,6 +796,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{C1FEC0DE-2026-0717-A019-000000000023} = {E1111111-F222-0333-1444-255555555555}
 		{A1111111-B222-C333-D444-E55555555555} = {E1111111-F222-0333-1444-255555555555}
 		{BA000001-BB11-BC22-BD33-BE4444444444} = {E1111111-F222-0333-1444-255555555555}
 		{E766C057-B114-4591-B47D-B123735B76D1} = {E1111111-F222-0333-1444-255555555555}

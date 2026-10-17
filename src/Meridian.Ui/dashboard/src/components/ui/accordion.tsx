@@ -92,7 +92,7 @@ export function Accordion({ items, multi = false, defaultOpen = [], className }:
               onKeyDown={(event) => handleKeyDown(event, index)}
               className={cn(
                 "flex w-full items-center gap-2.5 px-3.5 py-3 text-left text-sm font-semibold text-foreground transition-colors [outline-offset:-2px]",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
                 item.disabled ? "cursor-not-allowed opacity-55" : "hover:bg-[var(--ws-row-hover)]"
               )}
             >

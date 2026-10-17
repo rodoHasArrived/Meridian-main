@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-28T04:47:55Z",
+  "generatedAt": "2026-10-07T18:21:09Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "Meridian-main",
+  "repositoryRoot": "Meridian-consolidation-publish",
   "subsystems": [
     {
       "id": "host-shell",
@@ -11,13 +11,19 @@
         "Meridian",
         "Meridian.Application",
         "Meridian.Contracts",
-        "Meridian.Core"
+        "Meridian.Core",
+        "Meridian.Launcher",
+        "Meridian.LifecycleSupervisor",
+        "Meridian.Setup"
       ],
       "projectPaths": [
         "src/Meridian",
         "src/Meridian.Application",
         "src/Meridian.Contracts",
-        "src/Meridian.Core"
+        "src/Meridian.Core",
+        "src/Meridian.Launcher",
+        "src/Meridian.LifecycleSupervisor",
+        "src/Meridian.Setup"
       ],
       "commonTasks": [
         "startup debugging",
@@ -32,23 +38,39 @@
         "cli",
         "composition",
         "config",
+        "consumer",
         "contracts",
         "core",
         "dto",
         "exceptions",
         "host",
+        "installed",
+        "installer",
+        "launcher",
+        "lifecycle",
         "logging",
         "orchestration",
+        "payload",
         "pipeline",
+        "postgresql",
+        "readiness",
+        "repair",
         "serialization",
         "services",
         "shared",
-        "startup"
+        "startup",
+        "startup receipt",
+        "supervisor"
       ],
       "keyContracts": [
         "src/Meridian.Application/Pipeline/EventPipeline.cs",
         "src/Meridian.Contracts",
+        "src/Meridian.Contracts/Lifecycle",
+        "src/Meridian.Contracts/Operations",
         "src/Meridian.Core/Serialization/MarketDataJsonContext.cs",
+        "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs",
+        "src/Meridian.Setup/InstallationTransaction.cs",
+        "src/Meridian.Setup/PayloadPackage.cs",
         "src/Meridian/Program.cs"
       ],
       "entrypoints": [
@@ -56,15 +78,25 @@
         "src/Meridian.Application/Pipeline",
         "src/Meridian.Contracts",
         "src/Meridian.Core/Serialization",
+        "src/Meridian.Launcher/LauncherCommandPolicy.cs",
+        "src/Meridian.Launcher/Program.cs",
+        "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs",
+        "src/Meridian.LifecycleSupervisor/LifecycleStartupOutcome.cs",
+        "src/Meridian.LifecycleSupervisor/LifecycleSupervisorRuntime.cs",
+        "src/Meridian.LifecycleSupervisor/Program.cs",
+        "src/Meridian.Setup/InstallationTransaction.cs",
+        "src/Meridian.Setup/PayloadPackage.cs",
+        "src/Meridian.Setup/Program.cs",
         "src/Meridian/Program.cs"
       ],
       "relatedDocs": [
         "docs/ai/README.md",
         "docs/ai/ai-known-errors.md",
-        "docs/ai/navigation/README.md"
+        "docs/ai/navigation/README.md",
+        "docs/reference/verified-operation-outcomes.md"
       ],
       "recommendedStart": "Meridian",
-      "docCoverageHint": "medium"
+      "docCoverageHint": "high"
     },
     {
       "id": "providers-data",
@@ -453,7 +485,9 @@
         "Meridian.Ui.Services",
         "Meridian.Ui.Shared"
       ],
-      "relatedDocs": []
+      "relatedDocs": [
+        "docs/reference/verified-operation-outcomes.md"
+      ]
     },
     {
       "name": "Meridian.Application",
@@ -743,11 +777,46 @@
         "Meridian.Domain",
         "Meridian.Execution.Sdk",
         "Meridian.IbApi.SmokeStub",
-        "Meridian.ProviderSdk",
-        "Meridian.Storage"
+        "Meridian.ProviderSdk"
       ],
       "relatedDocs": [
         "docs/ai/claude/CLAUDE.providers.md"
+      ]
+    },
+    {
+      "name": "Meridian.Launcher",
+      "path": "src/Meridian.Launcher",
+      "kind": "launcher",
+      "subsystem": "host-shell",
+      "summary": "Installed Windows entrypoint that validates consumer commands and verifies request-bound startup outcomes.",
+      "commonTasks": [
+        "consumer launch",
+        "startup receipt verification",
+        "launcher command validation"
+      ],
+      "keywords": [
+        "consumer",
+        "installed",
+        "launcher",
+        "lifecycle",
+        "startup receipt"
+      ],
+      "entrypoints": [
+        "src/Meridian.Launcher/Program.cs",
+        "src/Meridian.Launcher/LauncherCommandPolicy.cs",
+        "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs"
+      ],
+      "keyContracts": [
+        "src/Meridian.Launcher/StartupOutcomeReceiptMonitor.cs",
+        "src/Meridian.Contracts/Lifecycle"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts"
+      ],
+      "relatedDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/operators/browser-workstation-installer.md",
+        "docs/reference/verified-operation-outcomes.md"
       ]
     },
     {
@@ -777,6 +846,42 @@
         "Meridian.FSharp.Ledger"
       ],
       "relatedDocs": []
+    },
+    {
+      "name": "Meridian.LifecycleSupervisor",
+      "path": "src/Meridian.LifecycleSupervisor",
+      "kind": "supervisor",
+      "subsystem": "host-shell",
+      "summary": "Persistent per-user ownership of installed host/database startup, readiness, browser opening, and shutdown.",
+      "commonTasks": [
+        "installed startup debugging",
+        "lifecycle control",
+        "database process ownership"
+      ],
+      "keywords": [
+        "installed",
+        "lifecycle",
+        "postgresql",
+        "readiness",
+        "supervisor"
+      ],
+      "entrypoints": [
+        "src/Meridian.LifecycleSupervisor/Program.cs",
+        "src/Meridian.LifecycleSupervisor/LifecycleSupervisorRuntime.cs",
+        "src/Meridian.LifecycleSupervisor/LifecycleStartupOutcome.cs"
+      ],
+      "keyContracts": [
+        "src/Meridian.Contracts/Lifecycle",
+        "src/Meridian.Contracts/Operations"
+      ],
+      "projectReferences": [
+        "Meridian.Contracts"
+      ],
+      "relatedDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/operators/browser-workstation-installer.md",
+        "docs/reference/verified-operation-outcomes.md"
+      ]
     },
     {
       "name": "Meridian.Mcp",
@@ -910,6 +1015,39 @@
       "relatedDocs": []
     },
     {
+      "name": "Meridian.Setup",
+      "path": "src/Meridian.Setup",
+      "kind": "installer",
+      "subsystem": "host-shell",
+      "summary": "Consumer executable payload installation, repair, and uninstall.",
+      "commonTasks": [
+        "consumer installation",
+        "payload verification",
+        "installed repair"
+      ],
+      "keywords": [
+        "consumer",
+        "installed",
+        "installer",
+        "payload",
+        "repair"
+      ],
+      "entrypoints": [
+        "src/Meridian.Setup/Program.cs",
+        "src/Meridian.Setup/PayloadPackage.cs",
+        "src/Meridian.Setup/InstallationTransaction.cs"
+      ],
+      "keyContracts": [
+        "src/Meridian.Setup/PayloadPackage.cs",
+        "src/Meridian.Setup/InstallationTransaction.cs"
+      ],
+      "projectReferences": [],
+      "relatedDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/operators/browser-workstation-installer.md"
+      ]
+    },
+    {
       "name": "Meridian.Storage",
       "path": "src/Meridian.Storage",
       "kind": "storage",
@@ -982,7 +1120,10 @@
         "Meridian.Infrastructure",
         "Meridian.Instruments"
       ],
-      "relatedDocs": []
+      "relatedDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/reference/verified-operation-outcomes.md"
+      ]
     },
     {
       "name": "Meridian.Ui.Services",
@@ -1259,6 +1400,45 @@
   ],
   "documents": [
     {
+      "path": "docs/reference/lifecycle-control-plane.md",
+      "title": "Installed lifecycle control plane",
+      "area": "runtime",
+      "whenToConsult": "When debugging installed launcher commands, supervisor ownership, database startup, readiness, or receipts.",
+      "keywords": [
+        "launcher",
+        "supervisor",
+        "installed",
+        "lifecycle",
+        "readiness"
+      ]
+    },
+    {
+      "path": "docs/operators/browser-workstation-installer.md",
+      "title": "Consumer workstation installation",
+      "area": "runtime",
+      "whenToConsult": "When packaging, installing, repairing, or validating the consumer workstation.",
+      "keywords": [
+        "installer",
+        "installed",
+        "consumer",
+        "payload",
+        "repair"
+      ]
+    },
+    {
+      "path": "docs/reference/verified-operation-outcomes.md",
+      "title": "Verified operation outcomes",
+      "area": "runtime",
+      "whenToConsult": "When changing request-bound launcher receipts, terminal outcome validation, or recovery evidence.",
+      "keywords": [
+        "launcher",
+        "supervisor",
+        "lifecycle",
+        "startup receipt",
+        "verified outcome"
+      ]
+    },
+    {
       "path": "CLAUDE.md",
       "title": "Root project context",
       "area": "root-context",
@@ -1512,6 +1692,39 @@
     }
   ],
   "taskRoutes": [
+    {
+      "id": "installed-runtime",
+      "title": "Consumer launcher, lifecycle supervisor, and installation",
+      "description": "Use when auditing or debugging the installed entrypoint, request-bound startup receipts, host/database ownership, or consumer installation.",
+      "keywords": [
+        "launcher",
+        "supervisor",
+        "installed",
+        "installer",
+        "consumer",
+        "lifecycle",
+        "startup receipt"
+      ],
+      "subsystems": [
+        "host-shell"
+      ],
+      "subsystemTitles": [
+        "Host and Composition"
+      ],
+      "startProjects": [
+        "Meridian.Launcher",
+        "Meridian.LifecycleSupervisor",
+        "Meridian.Setup"
+      ],
+      "startSymbols": [],
+      "authoritativeDocs": [
+        "docs/reference/lifecycle-control-plane.md",
+        "docs/reference/verified-operation-outcomes.md",
+        "docs/operators/browser-workstation-installer.md"
+      ],
+      "recommendedSkill": "meridian-code-review",
+      "recommendedAgent": "code-review-agent"
+    },
     {
       "id": "provider-work",
       "title": "Provider implementation and provider bugs",
@@ -1929,9 +2142,9 @@
       "reason": "Meridian.Infrastructure references Meridian.ProviderSdk directly via project reference."
     },
     {
-      "from": "Meridian.Infrastructure",
-      "to": "Meridian.Storage",
-      "reason": "Meridian.Infrastructure references Meridian.Storage directly via project reference."
+      "from": "Meridian.Launcher",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Launcher references Meridian.Contracts directly via project reference."
     },
     {
       "from": "Meridian.Ledger",
@@ -1942,6 +2155,11 @@
       "from": "Meridian.Ledger",
       "to": "Meridian.FSharp.Ledger",
       "reason": "Meridian.Ledger references Meridian.FSharp.Ledger directly via project reference."
+    },
+    {
+      "from": "Meridian.LifecycleSupervisor",
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.LifecycleSupervisor references Meridian.Contracts directly via project reference."
     },
     {
       "from": "Meridian.Mcp",
@@ -2226,323 +2444,323 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Strategies/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-09-28T00:40:02+00:00",
-      "lastCommit": "2d1621987",
-      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T17:17:54Z",
+      "lastCommit": "baeea857d",
+      "lastSummary": "Preserve canonical consolidation header and posting lineage",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T17:17:54Z",
+      "lastCommit": "baeea857d",
+      "lastSummary": "Preserve canonical consolidation header and posting lineage",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T17:17:54Z",
+      "lastCommit": "baeea857d",
+      "lastSummary": "Preserve canonical consolidation header and posting lineage",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Ui/dashboard/README.md",
+      "path": "src/Meridian.Contracts/Ledger/ConsolidationDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-28T00:40:02+00:00",
-      "lastCommit": "2d1621987",
-      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Backtesting/README.md",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-09-28T00:40:02+00:00",
-      "lastCommit": "2d1621987",
-      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.QuantScript/README.md",
-      "subsystem": "Backtesting and Strategy Analytics",
-      "lastModified": "2026-09-28T00:40:02+00:00",
-      "lastCommit": "2d1621987",
-      "lastSummary": "docs: repair plain-text archive path mentions left by the 2026-09-11 cleanup",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Execution/Adapters/PaperTradingGateway.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-09-25T19:49:41-07:00",
-      "lastCommit": "aff38fd00",
-      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Execution/Adapters/PaperTradingGatewaySupport.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-09-25T19:49:41-07:00",
-      "lastCommit": "aff38fd00",
-      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Execution/PaperTradingGateway.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-09-25T19:49:41-07:00",
-      "lastCommit": "aff38fd00",
-      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Execution/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-09-25T19:49:41-07:00",
-      "lastCommit": "aff38fd00",
-      "lastSummary": "fix(paper): preserve fill bounds after tick rounding",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-09-25T18:37:15-07:00",
-      "lastCommit": "dcc87676c",
-      "lastSummary": "fix(reconciliation): retain provenance across save and replay",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-09-25T18:37:15-07:00",
-      "lastCommit": "dcc87676c",
-      "lastSummary": "fix(reconciliation): retain provenance across save and replay",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Identity/Application/UserProfileRegistry.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-25T14:28:59-07:00",
-      "lastCommit": "462d4da03",
-      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Consolidation.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Identity/README.md",
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types/consolidation.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Contracts/Ledger/LedgerBookDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs",
       "subsystem": "Unmapped",
-      "lastModified": "2026-09-25T14:28:59-07:00",
-      "lastCommit": "462d4da03",
-      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ConsolidationChartValidation.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:51:14Z",
+      "lastCommit": "405dc1f3f",
+      "lastSummary": "Close consolidation policy, review and correction edge cases",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T16:17:55Z",
+      "lastCommit": "4c039f269",
+      "lastSummary": "Apply canonical formatting to consolidation authority leases",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/FundStructure/PostgresFundStructureStore.Consolidation.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T16:17:55Z",
+      "lastCommit": "4c039f269",
+      "lastSummary": "Apply canonical formatting to consolidation authority leases",
       "touches": 2
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-25T14:28:59-07:00",
-      "lastCommit": "462d4da03",
-      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
-      "touches": 2
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
+      "touches": 30
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/InMemoryFundStructureTenancyGuard.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-25T14:28:59-07:00",
-      "lastCommit": "462d4da03",
-      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-09-25T14:28:59-07:00",
-      "lastCommit": "462d4da03",
-      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Identity/Application/AuthenticationMode.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-25T14:28:59-07:00",
-      "lastCommit": "462d4da03",
-      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Identity/Application/LoginSessionService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-25T14:28:59-07:00",
-      "lastCommit": "462d4da03",
-      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Identity/Infrastructure/LoginSessionStoreLock.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-25T14:28:59-07:00",
-      "lastCommit": "462d4da03",
-      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-25T14:28:59-07:00",
-      "lastCommit": "462d4da03",
-      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian/UiServer.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-25T14:28:59-07:00",
-      "lastCommit": "462d4da03",
-      "lastSummary": "Harden PRD-001 authentication, shared sessions, and tenant posture",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.DataIntegration/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-25T14:10:07-07:00",
-      "lastCommit": "4302179dd",
-      "lastSummary": "Retain rotated OAuth tokens in both recovery generations",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-25T14:10:07-07:00",
-      "lastCommit": "4302179dd",
-      "lastSummary": "Retain rotated OAuth tokens in both recovery generations",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-23T10:07:54-07:00",
-      "lastCommit": "ee60700ff",
-      "lastSummary": "fix: ignore storage-root dates during Parquet conversion",
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Consolidation/ConsolidationPerimeterResolver.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Storage/Services/ParquetConversionService.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-23T10:07:54-07:00",
-      "lastCommit": "ee60700ff",
-      "lastSummary": "fix: ignore storage-root dates during Parquet conversion",
-      "touches": 1
+      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
+      "touches": 3
     },
     {
-      "path": "src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-09-23T09:37:58-07:00",
-      "lastCommit": "db08ddece",
-      "lastSummary": "Fix dated-root historical reads and refresh W10 certification controls",
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Validation.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T16:14:31Z",
+      "lastCommit": "309c05f8e",
+      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
       "touches": 1
     },
     {
       "path": "src/Meridian.Application/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-09-23T06:45:37-07:00",
-      "lastCommit": "1ee1c55fc",
-      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
-      "touches": 3
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 22
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 16
+    },
+    {
+      "path": "src/Meridian.Storage/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 15
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/IConsolidationPostingAuthority.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/LedgerStoreExtensions.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-07T15:53:01Z",
+      "lastCommit": "963a1e2d3",
+      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "touches": 1
     },
     {
       "path": "src/Meridian.Contracts/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-09-23T06:45:37-07:00",
-      "lastCommit": "1ee1c55fc",
-      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 15
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.MutationRecovery.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs",
+      "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-09-23T06:45:37-07:00",
-      "lastCommit": "1ee1c55fc",
-      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-23T06:45:37-07:00",
-      "lastCommit": "1ee1c55fc",
-      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FSharp/Domain/SecurityMaster.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-09-23T06:45:37-07:00",
-      "lastCommit": "1ee1c55fc",
-      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FSharp/Domain/SecurityMasterCommands.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-09-23T06:45:37-07:00",
-      "lastCommit": "1ee1c55fc",
-      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FSharp/Interop.SecurityMaster.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-09-23T06:45:37-07:00",
-      "lastCommit": "1ee1c55fc",
-      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FSharp/README.md",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-09-23T06:45:37-07:00",
-      "lastCommit": "1ee1c55fc",
-      "lastSummary": "fix(security-master): preserve swap-leg economics through canonical writes",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/ILedgerJournalStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-23T00:03:37+00:00",
-      "lastCommit": "f6df84d03",
-      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.TaxLots.cs",
+      "path": "src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-23T00:03:37+00:00",
-      "lastCommit": "f6df84d03",
-      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotDto.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-09-23T00:03:37+00:00",
-      "lastCommit": "f6df84d03",
-      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Lifecycle.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/finance-standard-pages-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/finance-standard-pages-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Entities/FundStructure/FundStructurePolicyService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Storage/AssetOperations/IAssetAccountingEventProjectionStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-23T00:03:37+00:00",
-      "lastCommit": "f6df84d03",
-      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/CanonicalDisposalHistoryProjector.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-23T00:03:37+00:00",
-      "lastCommit": "f6df84d03",
-      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/CanonicalOpenLotDisposalGuard.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-23T00:03:37+00:00",
-      "lastCommit": "f6df84d03",
-      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/LedgerOpenLotProjection.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-09-23T00:03:37+00:00",
-      "lastCommit": "f6df84d03",
-      "lastSummary": "Atomic AverageCost lot relief with governed pool restatement (W10-LOT-002)",
+      "path": "src/Meridian.Entities/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-10-07T08:23:42-07:00",
+      "lastCommit": "9f51f515f",
+      "lastSummary": "Implement W10 two-entity consolidation slice",
       "touches": 1
     }
   ],

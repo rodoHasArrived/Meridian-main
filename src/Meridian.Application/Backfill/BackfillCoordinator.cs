@@ -20,6 +20,7 @@ using Meridian.Storage.Services;
 using Serilog;
 using Meridian.Contracts.Monitoring;
 using Meridian.Contracts.Backfill;
+using Meridian.Contracts.Api;
 using Meridian.Storage.Backfill;
 
 namespace Meridian.Application.Backfill;
@@ -36,6 +37,7 @@ public sealed class BackfillCoordinator : IDisposable
     private readonly ConfigStore _store;
     private readonly ProviderRegistry? _registry;
     private readonly ProviderFactory? _factory;
+    private readonly IProviderCatalog _providerCatalog;
     private readonly IEventMetrics _metrics;
     private readonly ILogger _log = LoggingSetup.ForContext<BackfillCoordinator>();
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -61,17 +63,20 @@ public sealed class BackfillCoordinator : IDisposable
     ///     Optional security-master timeline resolver; when present, daily backfill chunks
     ///     spanning a ticker rename query the provider with the era-correct symbol.
     /// </param>
+    /// <param name="providerCatalog">Provider metadata owned by this application's service provider.</param>
     public BackfillCoordinator(
         ConfigStore store,
         ProviderRegistry? registry = null,
         ProviderFactory? factory = null,
         IEventMetrics? metrics = null,
         ISymbolResolver? symbolResolver = null,
-        Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null)
+        Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null,
+        IProviderCatalog? providerCatalog = null)
     {
         _store = store;
         _registry = registry;
         _factory = factory;
+        _providerCatalog = providerCatalog ?? new RuntimeProviderCatalog();
         _metrics = metrics ?? new DefaultEventMetrics();
         _symbolTimelineResolver = symbolTimelineResolver;
         _lastRun = store.TryLoadBackfillStatus();
@@ -283,7 +288,7 @@ public sealed class BackfillCoordinator : IDisposable
         var cfg = _store.Load();
         var dataRoot = _store.GetDataRoot(cfg);
 
-        return Task.FromResult(BackfillPreviewPlanner.BuildPreview(request, provider, dataRoot));
+        return Task.FromResult(BackfillPreviewPlanner.BuildPreview(request, provider, dataRoot, _providerCatalog));
     }
 
     /// <summary>

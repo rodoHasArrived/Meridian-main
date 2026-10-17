@@ -1,0 +1,41 @@
+{
+  "requiredChecks": [
+    {
+      "name": "quality-gate",
+      "workflow": "Meridian CI",
+      "appId": 15368
+    },
+    {
+      "name": "Secret Scan",
+      "workflow": "CI",
+      "appId": 15368
+    },
+    {
+      "name": "Analyze csharp",
+      "workflow": "CodeQL",
+      "appId": 15368
+    },
+    {
+      "name": "Analyze javascript-typescript",
+      "workflow": "CodeQL",
+      "appId": 15368
+    }
+  ],
+  "qualityGate": {
+    "name": "quality-gate",
+    "workflow": "Meridian CI",
+    "executionJobs": [
+      "verify-dotnet",
+      "verify-browser",
+      "verify-docs",
+      "verify-workflows",
+      "quality-gate"
+    ]
+  },
+  "policyBasis": "Diagnostic roster of the four documented core checks, preserving the October 5 metric identity. This is not a verified inventory of enforced branch requirements. Integration-gate observations are reported separately. Baseline/rollout windows and requiredChecksEvidence are intentionally absent: this single-hour sample cannot evaluate savings.",
+  "observationWindow": {
+    "since": "2026-10-15T22:00:00Z",
+    "until": "2026-10-15T22:59:59Z",
+    "untilInclusive": true
+  }
+}

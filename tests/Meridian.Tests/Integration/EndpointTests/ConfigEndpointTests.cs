@@ -13,7 +13,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Tests GET/POST/DELETE operations on /api/config/*.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class ConfigEndpointTests : IClassFixture<EndpointTestFixture>
 {
     private const string ConfigPasswordHash = "pbkdf2-sha256$210000$MZbfWqYODb9fl/pT/2g2Wg==$hsDcSOJ5uPYBFGsUp2lD6DhaPQAeWDEc5+j0D/gk3RA=";
@@ -199,10 +198,10 @@ public sealed class ConfigEndpointTests : IClassFixture<EndpointTestFixture>
     public async Task UpdateDataSource_WithCookieAuth_RequiresCsrfHeader()
     {
         using var client = _fixture.CreateNoRedirectClient();
-        var originalUsername = Environment.GetEnvironmentVariable("MDC_USERNAME");
-        var originalPasswordHash = Environment.GetEnvironmentVariable("MDC_PASSWORD_HASH");
-        Environment.SetEnvironmentVariable("MDC_USERNAME", "config-admin");
-        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", ConfigPasswordHash);
+        var originalUsername = _fixture.Configuration["MDC_USERNAME"];
+        var originalPasswordHash = _fixture.Configuration["MDC_PASSWORD_HASH"];
+        _fixture.Configuration["MDC_USERNAME"] = "config-admin";
+        _fixture.Configuration["MDC_PASSWORD_HASH"] = ConfigPasswordHash;
 
         try
         {
@@ -243,8 +242,8 @@ public sealed class ConfigEndpointTests : IClassFixture<EndpointTestFixture>
         }
         finally
         {
-            Environment.SetEnvironmentVariable("MDC_USERNAME", originalUsername);
-            Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", originalPasswordHash);
+            _fixture.Configuration["MDC_USERNAME"] = originalUsername;
+            _fixture.Configuration["MDC_PASSWORD_HASH"] = originalPasswordHash;
         }
     }
 

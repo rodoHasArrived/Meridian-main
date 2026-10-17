@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -77,6 +78,14 @@ class CiSummaryTests(unittest.TestCase):
         self.assertIn("Workflow hygiene or lane manifest validation failed.", findings)
         self.assertIn("Targeted Test filter validation failed.", findings)
 
+    def test_actionlint_failure_is_classified_with_its_actual_step_name(self) -> None:
+        findings = MODULE.classify_known_patterns(
+            "actionlint: unexpected key in workflow",
+            steps=[MODULE.StepResult("Validate Actions syntax with actionlint", 1, 1)],
+        )
+
+        self.assertIn("Workflow hygiene or lane manifest validation failed.", findings)
+
     def test_load_dotnet_summary_reports_failed_slices(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "summary.json"
@@ -143,6 +152,87 @@ class CiSummaryTests(unittest.TestCase):
         lines = MODULE.first_interesting_lines("> eslint src\nstrictNullChecks enabled\nTest Files 1 failed")
 
         self.assertEqual(lines, ["Test Files 1 failed"])
+
+    def test_failed_checks_suggest_only_commands_for_failed_steps(self) -> None:
+        summary = MODULE.build_summary(
+            lane="verify-browser",
+            exit_code=1,
+            steps=[
+                MODULE.StepResult("Lint dashboard source", 0, 1),
+                MODULE.StepResult("Enforce strictNullChecks on dashboard source", 1, 1),
+            ],
+            dotnet_totals=[], failed_dotnet=[], known_findings=[], interesting_lines=[],
+        )
+
+        self.assertIn("npm --prefix src/Meridian.Ui/dashboard run typecheck:strict", summary)
+        self.assertNotIn("npm --prefix src/Meridian.Ui/dashboard run lint", summary)
+        self.assertIn("bash scripts/ci.sh --lane verify-browser", summary)
+        self.assertIn("then `bash scripts/ci.sh` before handoff", summary)
+
+    def test_generated_contract_failure_keeps_both_read_only_checks(self) -> None:
+        summary = MODULE.build_summary(
+            lane="verify-browser",
+            exit_code=1,
+            steps=[MODULE.StepResult("Generated UI contract drift gate", 1, 1)],
+            dotnet_totals=[], failed_dotnet=[], known_findings=[], interesting_lines=[],
+        )
+
+        self.assertIn("python build/scripts/generate-ui-api-routes-ts.py --check", summary)
+        self.assertIn("python build/scripts/generate-workspace-catalog-ts.py --check", summary)
+
+    def test_unknown_step_keeps_lane_reproduction_without_guessing_a_command(self) -> None:
+        summary = MODULE.build_summary(
+            lane="verify-dotnet",
+            exit_code=1,
+            steps=[MODULE.StepResult("Unexpected build failure", 1, 1)],
+            dotnet_totals=[], failed_dotnet=[], known_findings=[], interesting_lines=[],
+        )
+
+        self.assertIn("bash scripts/ci.sh --lane verify-dotnet", summary)
+        self.assertNotIn("#### Reproduce the failed checks", summary)
+        self.assertIn("buildctl.py validation-status --summary", summary)
+
+    def test_success_does_not_offer_failure_recovery(self) -> None:
+        summary = MODULE.build_summary(
+            lane="verify-browser",
+            exit_code=0,
+            steps=[MODULE.StepResult("Run dashboard tests", 0, 1)],
+            dotnet_totals=[], failed_dotnet=[], known_findings=[], interesting_lines=[],
+        )
+
+        self.assertNotIn("#### Reproduce the failed checks", summary)
+        self.assertNotIn("buildctl.py doctor", summary)
+
+    def test_unknown_lane_is_not_interpolated_into_reproduction_command(self) -> None:
+        summary = MODULE.build_summary(
+            lane="verify-browser; touch /tmp/should-not-run",
+            exit_code=1,
+            steps=[], dotnet_totals=[], failed_dotnet=[], known_findings=[], interesting_lines=[],
+        )
+
+        self.assertIn("Reproduce from the repository root: `bash scripts/ci.sh`", summary)
+        self.assertNotIn("bash scripts/ci.sh --lane verify-browser;", summary)
+
+    def test_cli_writes_same_failed_check_guidance_to_artifact_and_job_summary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            steps = root / "steps.tsv"
+            output = root / "artifacts" / "summary.md"
+            github_summary = root / "github-summary.md"
+            steps.write_text("Validate workflow hygiene\t1\t2\n", encoding="utf-8")
+            github_summary.write_text("Existing job evidence\n", encoding="utf-8")
+
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT_PATH), "--lane", "verify-workflows", "--exit-code", "1",
+                 "--steps-tsv", str(steps), "--output", str(output),
+                 "--github-step-summary", str(github_summary)],
+                check=False, capture_output=True, text=True,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            artifact = output.read_text(encoding="utf-8")
+            self.assertIn("python build/scripts/ci/check-workflow-hygiene.py", artifact)
+            self.assertEqual(github_summary.read_text(encoding="utf-8"), "Existing job evidence\n\n" + artifact)
 
 
 if __name__ == "__main__":

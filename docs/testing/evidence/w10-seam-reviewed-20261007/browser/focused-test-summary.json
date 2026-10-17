@@ -1,0 +1,27 @@
+{
+  "sourceHead": "12565b938fff633cac2060b844487c4cf9454099",
+  "reports": [
+    "focused-tests.json",
+    "snapshot-tests.json"
+  ],
+  "passed": 74,
+  "failed": 0,
+  "pending": 0,
+  "testFiles": [
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.test.tsx",
+      "tests": 23,
+      "passed": 23
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.test.ts",
+      "tests": 37,
+      "passed": 37
+    },
+    {
+      "file": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.workflow-selection.test.ts",
+      "tests": 14,
+      "passed": 14
+    }
+  ]
+}

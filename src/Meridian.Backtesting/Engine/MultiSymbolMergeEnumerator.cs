@@ -43,7 +43,7 @@ internal static class MultiSymbolMergeEnumerator
         // Initialise enumerators and prime the heap.
         // Heap priority is (timestampMs, streamIndex), so equal timestamps are deterministically
         // ordered by stream index.
-        var enumerators = new IAsyncEnumerator<MarketEvent>[streams.Count];
+        var enumerators = new IAsyncEnumerator<MarketEvent>?[streams.Count];
         var heap = new PriorityQueue<int, (long TimestampMs, int StreamIndex)>(
             streams.Count,
             Comparer<(long TimestampMs, int StreamIndex)>.Default);
@@ -55,12 +55,13 @@ internal static class MultiSymbolMergeEnumerator
             {
                 for (var i = 0; i < streams.Count; i++)
                 {
-                    enumerators[i] = streams[i].GetAsyncEnumerator(ct);
-                    if (await enumerators[i].MoveNextAsync().ConfigureAwait(false))
+                    var enumerator = streams[i].GetAsyncEnumerator(ct);
+                    enumerators[i] = enumerator;
+                    if (await enumerator.MoveNextAsync().ConfigureAwait(false))
                     {
                         heap.Enqueue(
                             i,
-                            (enumerators[i].Current.Timestamp.ToUnixTimeMilliseconds(), i));
+                            (enumerator.Current.Timestamp.ToUnixTimeMilliseconds(), i));
                     }
                 }
             }
@@ -75,13 +76,14 @@ internal static class MultiSymbolMergeEnumerator
                 ct.ThrowIfCancellationRequested();
 
                 var idx = heap.Dequeue();
-                yield return enumerators[idx].Current;
+                var enumerator = enumerators[idx]!;
+                yield return enumerator.Current;
 
-                if (await enumerators[idx].MoveNextAsync().ConfigureAwait(false))
+                if (await enumerator.MoveNextAsync().ConfigureAwait(false))
                 {
                     heap.Enqueue(
                         idx,
-                        (enumerators[idx].Current.Timestamp.ToUnixTimeMilliseconds(), idx));
+                        (enumerator.Current.Timestamp.ToUnixTimeMilliseconds(), idx));
                 }
             }
         }

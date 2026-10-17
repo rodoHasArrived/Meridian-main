@@ -18,6 +18,27 @@ namespace Meridian.Tests.Ui;
 
 public sealed class SecurityMasterOperatorOverrideDecisionEndpointsTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OverrideMutation_ReturnsConflict_WhenDurableGenerationChanged(bool patch)
+    {
+        var id = Guid.NewGuid();
+        var store = Substitute.For<IOperatorOverridesStore>();
+        store.PatchAsync(id, Arg.Any<OperatorOverridesPatchRequest>(), Arg.Any<string>(), Arg.Any<CancellationToken>(), Arg.Any<long?>())
+            .Returns(Task.FromException<OperatorOverridesDto>(new SecurityMasterMutationConflictException(id)));
+        store.RecordApprovalDecisionAsync(id, Arg.Any<OperatorOverrideDecision>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<OperatorOverridesDto>(new SecurityMasterMutationConflictException(id)));
+        await using var app = await CreateAppAsync(store);
+        var client = app.GetTestClient();
+        using var response = patch
+            ? await client.PatchAsJsonAsync(
+                UiApiRoutes.SecurityMasterOperatorOverrides.Replace("{securityId:guid}", id.ToString("D")),
+                new { setValues = new { rating = "AA" } })
+            : await client.PostAsJsonAsync(DecisionRoute(id), new { decision = "Approved" });
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+    }
+
     [Fact]
     public async Task DecisionRoute_RecordsApproval_WhenOverridesExist()
     {
@@ -39,6 +60,22 @@ public sealed class SecurityMasterOperatorOverrideDecisionEndpointsTests
         payload!.ApprovalStatus.Should().Be(SecurityOverrideApprovalStatusDto.Approved);
         payload.ReviewedBy.Should().Be("security-admin");
         payload.ReasonCode.Should().Be("provider-symbol-confirmed");
+    }
+
+    [Fact]
+    public async Task DecisionRoute_ReturnsForbidden_WhenTheReviewerStagedTheValues()
+    {
+        var securityId = Guid.NewGuid();
+        var store = new InMemoryOperatorOverridesStore();
+        store.Seed(securityId, stagedBy: "security-admin");
+
+        await using var app = await CreateAppAsync(store);
+        var client = app.GetTestClient();
+
+        using var response = await client.PostAsJsonAsync(DecisionRoute(securityId), new { decision = "Approved" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await store.GetAsync(securityId))!.ApprovalStatus.Should().Be(SecurityOverrideApprovalStatusDto.Pending);
     }
 
     [Fact]
@@ -112,12 +149,12 @@ public sealed class SecurityMasterOperatorOverrideDecisionEndpointsTests
     {
         private readonly Dictionary<Guid, OperatorOverridesDto> _overrides = [];
 
-        public void Seed(Guid securityId)
+        public void Seed(Guid securityId, string stagedBy = "security-steward")
         {
             _overrides[securityId] = new OperatorOverridesDto(
                 securityId,
                 new Dictionary<string, string> { ["sector"] = "Technology" },
-                "security-steward",
+                stagedBy,
                 DateTimeOffset.UtcNow)
             {
                 ApprovalStatus = SecurityOverrideApprovalStatusDto.Pending,

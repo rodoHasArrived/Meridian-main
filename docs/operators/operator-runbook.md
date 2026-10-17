@@ -18,6 +18,14 @@ Objectives, thresholds, and error budgets are in
 
 ## Before You Start
 
+For an installed Windows workstation, use PowerShell 7 as the installing user and run supervisor
+commands from the installation root. Read the configured data root and current loopback URL from
+the [lifecycle configuration/status](../reference/lifecycle-control-plane.md); the installer chooses
+the port, so do not assume `8080`. For a source host, use the repository root and the URL selected
+at launch. API checks below require the permissions for each diagnostic route; reuse the
+[authenticated preflight session](preflight-checklist.md#authenticated-evidence-collection) in a
+second terminal while a source host remains running.
+
 Confirm these three things before acting on any alert:
 
 1. **Is the market open?** Several alerts are expected outside session hours. Check the trading
@@ -38,11 +46,26 @@ Collect this before escalating, and attach it to the incident record:
 | Provider connection state | `GET /api/providers/status` |
 | Backpressure and queue state | `GET /api/backpressure` |
 | SLA violations by symbol | `GET /api/sla/violations` |
-| Recent host logs | `journalctl -u meridian --since '1 hour ago'` |
-| Lifecycle receipts | the data root's lifecycle receipt directory |
+| Recent host logs | `<data-root>\_logs` on an installed workstation |
+| Supervisor log | `%LOCALAPPDATA%\Meridian\service\logs\lifecycle-supervisor.log` |
+| Dedicated PostgreSQL log | `<data-root>\postgresql\postgresql.log`; external database logs are operator-owned |
+| Host and supervisor lifecycle receipts | `<data-root>\runtime\lifecycle\receipts` |
+| Startup outcome receipts | `%LOCALAPPDATA%\Meridian\service\receipts` |
 
-A bundle that omits the metrics scrape is not sufficient for post-incident review: it removes the
-only record of what the alert actually saw.
+From the installation root, inspect the owner and recent supervisor log without starting another host:
+
+```powershell
+./Meridian.LifecycleSupervisor.exe status
+Get-Content (Join-Path $env:LOCALAPPDATA 'Meridian\service\logs\lifecycle-supervisor.log') -Tail 200
+Get-ChildItem (Join-Path $env:LOCALAPPDATA 'Meridian\service\receipts') -File |
+    Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 5
+```
+
+Retain the metrics scrape or, when the host is unreachable, Prometheus's last successful scrape
+and the failed-scrape timestamps. Record unavailable evidence explicitly; a restart creates new
+process counters and does not reconstruct what the alert observed. Keep credentials and session
+cookies out of the sanitized bundle. `journalctl` applies only to the experimental systemd
+deployment described below.
 
 ## Application Down
 
@@ -185,8 +208,9 @@ zero.
 Alert: `MeridianHighProviderLatency` — severity warning, priority P3, objective
 [SLO-ING-001](./service-level-objectives.md#slo-ing-001).
 
-P99 event processing latency is above the critical threshold. Treat this as a leading indicator:
-if it persists, drops follow.
+The current alert uses `mdc_average_latency_microseconds`, a mean, because the P99 histogram
+has no event-path writer. See [Objectives awaiting instrumentation](service-level-objectives.md#objectives-awaiting-instrumentation).
+Treat sustained latency as a leading indicator for drops; this alert is not measured P99 evidence.
 
 **Probable causes:** provider under load; network congestion; DNS resolution delays; WebSocket
 reconnection overhead.

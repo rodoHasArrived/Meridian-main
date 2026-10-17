@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-10-02
+Snapshot date: 2026-10-14
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -809,7 +809,7 @@ Rank 8 of the 2026-07 first-order improvement slate. Source-verification snapsho
 
 ### Current Summary
 
-Rank 9 of the 2026-07 first-order improvement slate. Source-verification snapshot 2026-08-10 - the core surface already exists: Camt053StatementConnector and Bai2StatementConnector normalize through the W5X-CONNECT-001 connector seam alongside the statement-import command path, and the reconciliation lane carries a dedicated match kernel with sided statement-versus-ledger populations (ReconciliationMatchKernel, StatementRunMatcher, StatementRunMatchingService, ReconciliationMatchingEngine). Corrected 2026-08-11 after source verification retracted the evidence-only premise above - the standalone kernels do exist, but the LIVE path does not use them, so this row is implementation work and not verification alone. The retained internal population provider returns an empty ledger-transaction population by design (its own remarks say it awaits an authorized period-scoped ledger source and an agreed journal-to-transaction projection), and StatementRunMatcher invokes the one-to-one StatementMatchingEngine rather than anything split-capable. camt.053 and BAI2 are transaction statements, so with an empty transaction population every bank TRANSACTION row fails closed to a break - balance records are matched today, since both connectors emit StatementRecordKind.CashBalance, the retained provider loads internal cash balances, and MatchCash pairs them, and one-to-many outcomes can never reach live casework however the standalone kernels behave - tests written against those kernels would pass while the shipping path matched nothing. In scope before acceptance, therefore - source the ledger-transaction population by propagating the authority-verified StatementAccountingScope (FundProfileId, LedgerBookId, AccountingPeriodId, AsOfDate) already carried on the run request into InternalReconciliationPopulationContext, which currently drops it, rather than inventing a parallel unscoped lookup; decide the disposition of the direct POST /api/workstation/reconciliation/statement-runs caller, whose create contract carries no accounting scope at all and so cannot supply one once ledger reads require it; give the live path deterministic split matching by extending StatementMatchingEngine with the ReconciliationMatchKernel split primitives or adapting them behind it, since ReconciliationMatchingEngine handles only positions and cash and has no transaction model to swap to; carry group membership through the result path as well, because StatementMatchResult holds one broker and one internal evidence reference, StatementRunMatcher discards each result after incrementing MatchCount, and StatementRunMatchArtifact persists only that count - so two different split assignments of the same size produce an identical durable artifact and the row's own determinism and idempotency evidence is unobtainable no matter how correct the matching is; and implement bounded schema-aware parsing for both connectors, which currently decode the whole payload before parsing and enforce no record limit. Evidence still outstanding on top of that implementation work - golden-file regression coverage for both formats was not found in the FinancialOperations test tree, and the deterministic one-to-one/one-to-many/unmatched-break semantics with stable tie-breakers and idempotent re-runs need focused evidence against the live path rather than the standalone kernels. docs/product/plans/w9-close-out-delivery-plan-2026-08.md carries the full source audit behind this correction. Change 10 of the delivery plan landed 2026-08-29 and closes criterion two - bounded schema-aware parsing now exists for both formats. Camt053StatementConnector streams the document with a reader and materializes only the Acct, Bal, and Ntry subtrees one at a time instead of decoding the payload and building a whole-document XDocument; Bai2StatementConnector walks the bytes and decodes one line at a time instead of decoding the payload and splitting it on newlines; both enforce the shared StatementIngressLimits byte, record, and nesting or line-length bounds while parsing; and StatementImportService checks the byte cap in CommitAsync ahead of the source-byte copy, which is where a caller-supplied StatementSourceDocument previously escaped the upload and CLI caps entirely. StatementIngressLimitsTests proves each bound as a named refusal and re-asserts both golden fixtures under the default limits. Status moves from planned to in_progress on that landing. Criteria one and four remain as described above pending golden-file packs and casework-feed evidence. The live-path kernel wiring of change 11 landed 2026-09-01 and closes the matcher half of criterion three - StatementMatchingEngine now routes every pair stage through ReconciliationMatchKernel.SelectDeterministicAssignment over a total deterministic ordering with side-qualified member keys, and adds bounded one-to-many and many-to-one transaction split matching (statement-transaction-split-v1) that partitions candidate legs by the pair stages' identity constraints ahead of the bounded kernel and validates aggregate quantity through the accept callback. Group membership now survives the result path - StatementMatchResult carries per-side evidence-reference lists, StatementRunMatcher retains one StatementRunMatchGroupRecord per matched result instead of discarding it after MatchCount, and StatementRunMatchArtifact persists the groups behind a hash-preserving legacy reader (a null group list is omitted from serialization) so pre-upgrade artifacts keep verifying against their retained recovery checkpoints and are adopted as written on replay. StatementMatchingEngineSidedKernelTests, StatementRunMatcherGroupTests, and StatementRunMatchArtifactUpgradeTests carry the permutation-invariance, cross-side id-collision, cross-identity coincidental-sum refusal, correct-cash wrong-quantity refusal, beyond-cap genuine-split, and legacy-artifact replay evidence against the live path rather than the standalone kernels. Evidence update 2026-09-11 - the existing camt.053 and BAI2 golden packs now also run through StatementImportService.CommitAsync, retained raw/canonical documents, durable statement-run and match-artifact stores, and the shared ReconciliationApiService casework feed in StatementImportCaseworkEvidenceTests. Five GitHub-hosted scenarios passed with zero failures or skips in Targeted Test run 34596280479 (job 103252665375) at commit 3548a287db03bbec13687bf29b89096764cec89b. The scenarios prove account mismatch refusal before retention, tenant/company isolation, unchanged raw bytes and canonical hashes, restart reads and duplicate detection without extra imports or cases, and retained split-match membership with only the unmatched statement row remaining open. Their supplied ledger-population snapshot is a controlled boundary; this is shared-service/file-store evidence, not a PostgreSQL or production-certification claim. This closes the specifically missing committed golden-file and split casework-feed evidence; the bounded row remains in progress pending operator review and acceptance. Recovery evidence corrected 2026-09-25 - the split-settlement scenario now removes the case and break projections and their run receipts, confirms that the shared feed is empty, and calls StatementRunWorkflowService.CreateAsync against the retained completed checkpoint and match artifact. A replacement population provider throws if recovery reads the current book. The scenario requires all four files to be restored, exact retained run and checkpoint equivalence, unchanged split membership, and only the unmatched statement row in the reopened casework feed. Duplicate CommitAsync remains a separate duplicate-detection assertion and is not claimed as recovery evidence. The strengthened five-case slice passed locally with zero failures or skips on both 2026-09-23 and the 2026-09-25 refresh onto main b5030b0b; complete repository and hosted validation is reported in PR
+Rank 9 of the 2026-07 first-order improvement slate. Source-verification snapshot 2026-08-10 - the core surface already exists: Camt053StatementConnector and Bai2StatementConnector normalize through the W5X-CONNECT-001 connector seam alongside the statement-import command path, and the reconciliation lane carries a dedicated match kernel with sided statement-versus-ledger populations (ReconciliationMatchKernel, StatementRunMatcher, StatementRunMatchingService, ReconciliationMatchingEngine). Corrected 2026-08-11 after source verification retracted the evidence-only premise above - the standalone kernels do exist, but the LIVE path does not use them, so this row is implementation work and not verification alone. The retained internal population provider returns an empty ledger-transaction population by design (its own remarks say it awaits an authorized period-scoped ledger source and an agreed journal-to-transaction projection), and StatementRunMatcher invokes the one-to-one StatementMatchingEngine rather than anything split-capable. camt.053 and BAI2 are transaction statements, so with an empty transaction population every bank TRANSACTION row fails closed to a break - balance records are matched today, since both connectors emit StatementRecordKind.CashBalance, the retained provider loads internal cash balances, and MatchCash pairs them, and one-to-many outcomes can never reach live casework however the standalone kernels behave - tests written against those kernels would pass while the shipping path matched nothing. In scope before acceptance, therefore - source the ledger-transaction population by propagating the authority-verified StatementAccountingScope (FundProfileId, LedgerBookId, AccountingPeriodId, AsOfDate) already carried on the run request into InternalReconciliationPopulationContext, which currently drops it, rather than inventing a parallel unscoped lookup; decide the disposition of the direct POST /api/workstation/reconciliation/statement-runs caller, whose create contract carries no accounting scope at all and so cannot supply one once ledger reads require it; give the live path deterministic split matching by extending StatementMatchingEngine with the ReconciliationMatchKernel split primitives or adapting them behind it, since ReconciliationMatchingEngine handles only positions and cash and has no transaction model to swap to; carry group membership through the result path as well, because StatementMatchResult holds one broker and one internal evidence reference, StatementRunMatcher discards each result after incrementing MatchCount, and StatementRunMatchArtifact persists only that count - so two different split assignments of the same size produce an identical durable artifact and the row's own determinism and idempotency evidence is unobtainable no matter how correct the matching is; and implement bounded schema-aware parsing for both connectors, which currently decode the whole payload before parsing and enforce no record limit. Evidence still outstanding on top of that implementation work - golden-file regression coverage for both formats was not found in the FinancialOperations test tree, and the deterministic one-to-one/one-to-many/unmatched-break semantics with stable tie-breakers and idempotent re-runs need focused evidence against the live path rather than the standalone kernels. docs/product/plans/w9-close-out-delivery-plan-2026-08.md carries the full source audit behind this correction. Change 10 of the delivery plan landed 2026-08-29 and closes criterion two - bounded schema-aware parsing now exists for both formats. Camt053StatementConnector streams the document with a reader and materializes only the Acct, Bal, and Ntry subtrees one at a time instead of decoding the payload and building a whole-document XDocument; Bai2StatementConnector walks the bytes and decodes one line at a time instead of decoding the payload and splitting it on newlines; both enforce the shared StatementIngressLimits byte, record, and nesting or line-length bounds while parsing; and StatementImportService checks the byte cap in CommitAsync ahead of the source-byte copy, which is where a caller-supplied StatementSourceDocument previously escaped the upload and CLI caps entirely. StatementIngressLimitsTests proves each bound as a named refusal and re-asserts both golden fixtures under the default limits. Status moves from planned to in_progress on that landing. Criteria one and four remain as described above pending golden-file packs and casework-feed evidence. The live-path kernel wiring of change 11 landed 2026-09-01 and closes the matcher half of criterion three - StatementMatchingEngine now routes every pair stage through ReconciliationMatchKernel.SelectDeterministicAssignment over a total deterministic ordering with side-qualified member keys, and adds bounded one-to-many and many-to-one transaction split matching (statement-transaction-split-v1) that partitions candidate legs by the pair stages' identity constraints ahead of the bounded kernel and validates aggregate quantity through the accept callback. Group membership now survives the result path - StatementMatchResult carries per-side evidence-reference lists, StatementRunMatcher retains one StatementRunMatchGroupRecord per matched result instead of discarding it after MatchCount, and StatementRunMatchArtifact persists the groups behind a hash-preserving legacy reader (a null group list is omitted from serialization) so pre-upgrade artifacts keep verifying against their retained recovery checkpoints and are adopted as written on replay. StatementMatchingEngineSidedKernelTests, StatementRunMatcherGroupTests, and StatementRunMatchArtifactUpgradeTests carry the permutation-invariance, cross-side id-collision, cross-identity coincidental-sum refusal, correct-cash wrong-quantity refusal, beyond-cap genuine-split, and legacy-artifact replay evidence against the live path rather than the standalone kernels. Evidence update 2026-09-11 - the existing camt.053 and BAI2 golden packs now also run through StatementImportService.CommitAsync, retained raw/canonical documents, durable statement-run and match-artifact stores, and the shared ReconciliationApiService casework feed in StatementImportCaseworkEvidenceTests. Five GitHub-hosted scenarios passed with zero failures or skips in Targeted Test run 34596280479 (job 103252665375) at commit 3548a287db03bbec13687bf29b89096764cec89b. The scenarios prove account mismatch refusal before retention, tenant/company isolation, unchanged raw bytes and canonical hashes, restart reads and duplicate detection without extra imports or cases, and retained split-match membership with only the unmatched statement row remaining open. Their supplied ledger-population snapshot is a controlled boundary; this is shared-service/file-store evidence, not a PostgreSQL or production-certification claim. This closes the specifically missing committed golden-file and split casework-feed evidence; the bounded row remains in progress pending operator review and acceptance. Recovery evidence corrected 2026-09-25 - the split-settlement scenario now removes the case and break projections and their run receipts, confirms that the shared feed is empty, and calls StatementRunWorkflowService.CreateAsync against the retained completed checkpoint and match artifact. A replacement population provider throws if recovery reads the current book. The scenario requires all four files to be restored, exact retained run and checkpoint equivalence, unchanged split membership, and only the unmatched statement row in the reopened casework feed. Duplicate CommitAsync remains a separate duplicate-detection assertion and is not claimed as recovery evidence. The strengthened five-case slice passed locally with zero failures or skips on both 2026-09-23 and the 2026-09-25 refresh onto main b5030b0b; complete repository and hosted validation is reported in PR #2948. This remains shared-service/file-store evidence with a controlled population boundary and does not close operator acceptance.
 
 ### Exit Criteria
 
@@ -991,16 +991,16 @@ Rank 2 of the 2026-07 W10 depth slate. Reconciliation breaks have no identity th
 | Field | Value |
 | --- | --- |
 | Wave | W10 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | high |
 | Owner lane | Workstation Shell and UX |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-31 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-10-02 |
 
 ### Current Summary
 
-Rank 3 of the 2026-07 W10 depth slate and the platform bet the rest of the slate depends on. Both halves of amount-level provenance are already built and neither is connected, so an operator looking at a number cannot reach the evidence behind it. This row makes provenance reachable from any amount through one shared surface rather than a per-screen variant, and is the first concrete slice of W5X-OEG-001 rather than a duplicate of it. Rows 6, 7, 10, and 11 each depend on the same drawer. Known source constraints, including which service and component exist unwired today, are recorded in docs/product/plans/w10-depth-slate-2026-07.md.
+First posted-ledger slice implemented for individual debit and credit amounts in browser Ledger Explorer and WPF Posted Ledger. Both consume one ledger-amount payload through the subject-addressed evidence API with immutable journal and entry identifiers plus exact authenticated tenant, company, fund, book, and period scope. Retained source identity, digest, bytes, and review are verified again when opening proof; absent, stale, ambiguous, or foreign support is review-required or blocked. Text-based evidence inference is removed. Review fixes normalize vault aliases before authorization, reject dotted path aliases, clear browser selections on navigation, and invalidate WPF proof before journal reprojection; journal and summary responses jointly supply available bases, including open GAAP-only periods. Targeted validation passed 61 backend tests, 144 browser tests, and 70 WPF tests including native control interaction; mocked Edge checks passed. WPF parity was revalidated on 2026-10-02 with 14 additional node/artifact ambiguity, identity, kind, retention, and missing-reference regressions; rejected proof cannot issue a manifest request. Full repository and hosted validation are tracked in PR 3041 and docs/testing/w10-amount-provenance.md. The row remains in progress because report generation does not yet emit typed retained amount bindings, legacy typed pointers remain review-required until content verification, and other amount surfaces are not activated.
 
 ### Exit Criteria
 
@@ -1261,7 +1261,7 @@ Rank 10 of the 2026-07 W10 depth slate and one of its four new-capability rows, 
 
 ### Current Summary
 
-Rank 11 of the 2026-07 W10 depth slate. Consolidation elimination already exists as an accounting treatment kind selected through the accounting policy rule, but no rule produces eliminations and the consolidated trial balance sums its sub-ledgers with no elimination step, so consolidated views double-count intercompany balances. This row defines that treatment on the existing policy seam rather than introducing a parallel discriminator, and adds an unmatched-intercompany report. Scope is deliberately limited to wholly owned fully consolidated entities so the work stops short of the deferred capital-structure modeling boundary; partial consolidation and minority interest are excluded. Known source constraints, including how entity and counterparty dimensions relate and where authoritative ownership lives, are recorded in docs/product/plans/w10-depth-slate-2026-07.md.
+Rank 11 of the 2026-07 W10 depth slate. The first slice implements the existing ConsolidationElimination policy treatment for two directly wholly owned entities in one currency, authoritative effective-dated perimeter checks, reciprocal receivable/payable matching, reviewed drafts, freshness guards, idempotent reruns and linked adjustments. The shared Accounting view distinguishes gross, proposed, posted, consolidated and unmatched balances with source drill-through. Scope and evidence paths are recorded in docs/domain/intercompany-consolidation.md. Full status remains planned because governed FX translation and desktop presentation are outside the first slice; partial consolidation and minority interest remain excluded.
 
 ### Exit Criteria
 
@@ -1290,11 +1290,11 @@ Rank 11 of the 2026-07 W10 depth slate. Consolidation elimination already exists
 | Priority | critical |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-09-23 |
+| Last reviewed | 2026-10-13 |
 
 ### Current Summary
 
-Governed legacy backfill now retains hashed acquisition facts, requires independent review plus authoritative security/book-position validation, and resolves durable exceptions only through atomic versioned receipts. Both open and fully disposed legacy rows can be repaired without invented identity, quantity basis or acquisition FX. Production durable disposal and Reporting consume canonical lot evidence and fail closed on unresolved facts. Acquisition writer convergence landed 2026-09-22 - the Asset Accounting Event Spine post service, the only production writer that creates lots, now retains canonical acquisition facts on every unit lot and on every face lot whose instruction states its amortization method, so production disposal relieves spine-acquired lots instead of routing them to the backfill exception queue. The facts are known rather than defaulted (the spine refuses foreign-currency events, so FX is exactly one and both bases equal the asserted event amount), and the lot-bound OpenLotAcquisition evidence restates the retained source records as reviewed and retained with the independent maker-checker approval. Face lots without a stated method keep their par terms alone, and a retry of a batch committed before facts were written replays its retained shape exactly. Atomic AverageCost relief landed 2026-09-23 - durable disposal books the pooled canonical basis and restates every surviving pool lot to it in the same transaction through a governed, append-only basis adjustment (V_ledger_037), so lots of record keep tying to the asset account, and Reporting re-runs pooled relief over the retained pre-relief pool before certifying a disposal. Amortization, corporate-action successors, advance refunding and shadow-operation acceptance remain open. Hosted CI passed at d49fbc8e7, and six PostgreSQL lot cases passed without skips in Production Certification run 33956884001; that historical broader run failed six other tests and its dependency gate. Current Production Certification run 35885778558 passed all four jobs on 13aa7576575e7816c14ec3b9b5b002a3f4494c97 on 2026-09-23, including 1028 database tests with zero failures and zero skips; both originally reported certification failures are closed on that baseline. This does not discharge the remaining lot exit criteria or certify a later commit.
+Canonical acquisition, retained legacy backfill, AverageCost redistribution, current-basis relief and bounded face-lot amortization share the durable lot and immutable journal boundary. New atomic acquisitions require complete canonical facts after exact historical replay is resolved; face drafts and new posting require an explicitly selected amortization method, including NoAmortization. Incomplete new writes create no journal or lot, while historical fact-free receipts retain their shape and governed backfill path. Retained incomplete face drafts can post through a separately reviewed method/yield supplement bound to the original candidate and lot; original Drafted and Approved attestations remain unchanged. PR #3102 is the single consolidated review surface for successor posting, governed amortization corrections, disposal and consumer evidence through one successor instruction and atomic posting implementation. Migration 042 owns successors with populated upgrade/recovery audit; forward migration 043 narrowly permits approved amortization reversal restoring a retained null prior basis. Supported single-predecessor actions are cashless Reg S/144A exchange, whole-unit forward/reverse split, stock merger, non-taxable unit spin-off and two-successor advance refunding. Spin-offs retain the parent security/position and quantity while opening separately identified children under the approved carried-basis allocation; dividend/purchase recipes, cash-linked cases and new holding periods cannot enter that path. Parent closeout and every child share the atomic journal boundary, with retained reporting evidence. Original/current transaction and functional bases, acquisition FX, holding dates and immutable source-action lineage survive posting and later disposal; only refunded successors carry Schedule D treatment. Full immutable predecessor ancestry resolves stable source actions from retained version/hash-bound evidence, including historical absent lineage or stable-ID fields; intervening actions or disposal cannot hide repeat application. Missing, contradictory, cyclic or foreign-book receipts block new posting while exact committed retries replay. Reviewed lifecycle evidence, source/target account and policy scope, canonical dimensions, optimistic versions, exact replay and retained Reporting JSON plus signed lot evidence remain bound through commit. Atomic successors require the canonical corporate-action source type, complete approved typed context and named actor; type aliases and corrected-batch/source-journal, reversal/rebook or closing-entry metadata cannot bypass the unsupported correction boundary. Amortization reversal restores the retained prior basis and exact inverse journal atomically; same-date rebook requires approved reversal lineage. Null restoration is bound to the latest original mutation and an approved same-scope/date correcting journal, with exact typed snapshot and inverse-line checks unchanged and general removal/version/new-batch guards retained. PostgreSQL proof covers partial and closing FIFO disposal after amortization. AverageCost certification compares acquisition evidence and successor origin by value, and Backtesting/shared Security Master projections use retained lot cost basis and current composite provenance. Tailwind 4/PostCSS and rebuilt browser assets are carried into the same canonical review surface. New test coverage includes full ancestry and legacy shape, restart, competing commands, collision rollback, source/approval/correction/dimension refusals and null-basis reversal/rebook. Merged main 187a6bd87c6a62cbc1748421d69ac5aa2eca52f7 passed Meridian CI run 38433413113 and Production Certification run 38433413156 on 2026-10-13. The ordinary lane passed 20,133 .NET tests with five existing registered skips; both PostgreSQL lanes passed 1,212 tests with zero failures or skips, including fractional spin-off conservation, rollback/retry and period-lock replay after partial disposal. PR 3149 adds bounded unchanged-exchange amortization continuation after this tested baseline; no later-commit result is inferred here. These results do not certify a later release or supply live operator acceptance. This remains partial delivery: broader actions and corporate-action corrections, successor amortization, remaining Execution/Backtesting/Reporting parity and live shadow-operation acceptance are open. W10-LOT-002 remains in_progress pending its full exit criteria and independent Accounting/Ledger and Storage review.
 
 ### Exit Criteria
 
@@ -1315,3 +1315,193 @@ Governed legacy backfill now retains hashed acquisition facts, requires independ
 - `SRC-LEDGER`
 - `SRC-STORAGE`
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-DESIGN-INSTRUMENTS`
+- `SRC-UI-SHARED`
+
+## W11-PASSPORT-001 - Number Passport contract across amount surfaces
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Workstation Shell and UX |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-10-16 |
+
+### Current Summary
+
+Rank 1 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). The design charter names the Number Passport as Meridian's signature evidence object but defines it only as a field list. W10-PROV-001 is building the first slice for posted ledger amounts. This row generalizes that slice into one versioned passport contract with stable subject identity, declared scope, the shared evidence status vocabulary, and freshness, so balances, report totals, capital-account values, and dashboard metrics open the same proof object instead of per-surface variants. It is sequenced after W10-PROV-001 and must reuse its subject-addressed evidence API rather than add a parallel endpoint family.
+
+### Exit Criteria
+
+- One versioned Number Passport contract in Meridian.Contracts carries a stable subject identifier, subject kind, amount, currency, basis, as-of and effective dates, the complete declared scope (tenant, organization, entity, fund, book, period), an evidence status drawn from the shared vocabulary, freshness, and links to journal entries, source records, approvals, and reconciliation state.
+- Report-line totals, capital-account values, and position valuations open their passport through the same subject-addressed evidence API and the same shared component that W10-PROV-001 delivers for ledger amounts, on both the browser and WPF workstations.
+- A passport whose subject, scope, or evidence cannot be resolved exactly renders as review-required, blocked, stale, or missing, never as ready, and names the missing link.
+- Period-over-period change on a passport is computed from retained snapshots rather than recomputed from current state.
+- Roadmap status remains planned until W10-PROV-001 is accepted and this item links the contract, the shared endpoint, both workstation surfaces, and the scope-mismatch and missing-evidence tests.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+- `SRC-LEDGER`
+- `SRC-DESIGN-REPORTING`
+
+## W11-COVER-001 - Verified Coverage measurement and operator surface
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-10-16 |
+
+### Current Summary
+
+Rank 2 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). Verified Coverage is the charter's primary metric, but nothing computes it. This row implements the definition fixed in the design charter Section 1.5 as a deterministic projection over Number Passports and the unified close-readiness projection, and shows it per entity, book, and period with drill-through to the unverified items. It depends on W11-PASSPORT-001 and W10-SEAM-001.
+
+### Exit Criteria
+
+- Verified Coverage is computed exactly as the design charter Section 1.5 defines it, by absolute reported value and by item count, for a declared tenant, entity, book, and period, and both figures are shown together.
+- An item counts as verified only when its passport evidence status is ready, its reconciliation is current for the period, its approval is recorded, and its supporting evidence is retained; every other item is listed with the reason it is excluded.
+- The figure is reproducible - recomputing it from the same retained snapshot yields the same value - and every published value records the snapshot, policy version, and computation time it came from.
+- Simulated, fixture, or demo data is excluded from the numerator and labeled wherever the figure appears.
+- The browser and WPF workstations consume one shared projection rather than computing coverage locally.
+- Roadmap status remains planned until W11-PASSPORT-001 and W10-SEAM-001 are accepted and this item links the projection, both surfaces, and the reproducibility and exclusion tests.
+
+### Source Modules
+
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+
+## W11-STAKE-001 - Governed stakeholder verification access on delivered packages
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Platform Security and Governance |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-10-16 |
+
+### Current Summary
+
+Rank 3 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). The charter's distribution wedge (Section 2.4) is that a recipient of a delivered package - an auditor, LP, trustee, or advisor - can drill from any line to its support without emailing the operator. This row delivers that as a read-only, package-scoped, entitlement-checked view. It is deliberately narrower than the deferred broad client portal - it grants access to one frozen delivered package and nothing else.
+
+### Exit Criteria
+
+- A grant binds one external principal to one delivered package version with an expiry, grantor, rationale, and audit event, through the existing scoped-access assignment model; revocation takes effect immediately.
+- The recipient can drill from a package line to its passport and retained evidence, read-only, and cannot see any record outside that frozen package, including later amendments unless separately granted.
+- Every view and download by a recipient is recorded as an audit event attached to the package's delivery record.
+- No grant can approve, comment on, or change any governed record; the view exposes no write route.
+- Roadmap status remains planned until W11-PASSPORT-001 is accepted and this item links the grant model, the read-only surface, and the cross-package isolation and revocation tests.
+
+### Source Modules
+
+- `SRC-DESIGN-IDENTITY`
+- `SRC-DESIGN-REPORTING`
+- `SRC-DESIGN-AUDIT`
+- `SRC-UI-SHARED`
+- `SRC-CONTRACTS`
+
+## W11-SHADOW-001 - Shadow-mode onboarding with opening-balance reconciliation
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Data Confidence and Validation |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-10-16 |
+
+### Current Summary
+
+Rank 4 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). The charter claims lower-risk adoption through shadow mode (Section 1.4) and makes it the entry posture of the Control Tower wedge (Section 22), but no section specifies it and no row tracks it. This row defines and delivers a shadow workspace - a tenant runs Meridian beside its official books, imports their opening balances and ongoing activity, and reconciles Meridian's records against them - before migrating any official books.
+
+### Exit Criteria
+
+- A tenant, entity, or book can be marked shadow; shadow books are labeled everywhere they appear, cannot be published as official records, and cannot release reports or payments as the book of record.
+- Opening balances import from an external general ledger or administrator with retained source evidence and reconcile against Meridian's records with sided matching, producing a governed opening-balance reconciliation report.
+- Ongoing shadow-period activity reconciles each period against the official books, and the close-readiness projection reports the shadow book's agreement with them.
+- Promoting a shadow book to official requires a recorded operator decision with the final reconciliation attached, and the promotion is itself an audit event.
+- Roadmap status remains planned until this item links the shadow designation, the opening-balance reconciliation path, the promotion gate, and the labeling and non-publication tests.
+
+### Source Modules
+
+- `SRC-DESIGN-DATA-INTEGRATION`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-LEDGER`
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+
+## W11-PACK-001 - Governed contract-pack lifecycle on the Security Master asset-class registry
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-10-16 |
+
+### Current Summary
+
+Rank 5 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). The Security Master asset-class registry already centralizes term schema, lot units, cash-flow behavior, and projections per asset class, but it is a compile-time table, not a governed pack. This row turns it into the contract packs the charter describes (Section 22) - a versioned unit that also carries accounting rules, valuation methods, and reporting taxonomy, and that moves through the configuration lifecycle with approval and rollback.
+
+### Exit Criteria
+
+- A contract pack is a versioned, content-hashed unit that declares its asset class, term schema, lifecycle events, cash-flow behavior, valuation methods, accounting rule bindings, validations, and reporting taxonomy, and the existing asset-class registry is its first source.
+- A pack moves through Draft, Tested, Reviewed, Approved, Active, Superseded, and Retired, and activation requires passing pack tests and a recorded approval.
+- Records keep the pack version they were created under, so activating a new version never silently reinterprets existing terms; migrating records to a new version is an explicit, audited operation.
+- The coverage tests that lock the registry to the F# SecurityKind union, validators, and storage writers extend to every active pack.
+- Roadmap status remains planned until this item links the pack contract, the lifecycle, the version-pinning behavior, and the activation and reinterpretation tests.
+
+### Source Modules
+
+- `SRC-DESIGN-INSTRUMENTS`
+- `SRC-CONTRACTS`
+- `SRC-FSHARP`
+- `SRC-STORAGE`
+- `SRC-LEDGER`
+
+## W11-EXEC-001 - Trading and Execution bounded-context ownership
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | planned |
+| Health | green |
+| Priority | low |
+| Owner lane | Execution and Fund Accounts |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-10-16 |
+
+### Current Summary
+
+Rank 6 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). Orders, fills, broker gateways, paper sessions, kill switch, and pre-trade controls ship and carry accepted W2, W7, and W9 evidence, but until charter Version 1.3 no bounded context owned them. This row records that ownership in the architecture maps and enforces it - which project owns which record, and that other contexts reach execution state only through published contracts, events, or read models. It adds no trading capability.
+
+### Exit Criteria
+
+- docs/architecture/module-map.md and docs/architecture/design-module-conformance.md name Trading and Execution as a bounded context, list its owning projects, and state which execution records it owns.
+- A dependency test fails when a project outside the context writes execution-owned records directly, instead of going through the published contracts or events.
+- The handoff from execution fills to ledger posting is documented as a contract boundary, with the ledger remaining the only source of accounting truth.
+- Roadmap status remains planned until this item links the updated maps and the dependency test.
+
+### Source Modules
+
+- `SRC-EXECUTION`
+- `SRC-EXECUTION-SDK`
+- `SRC-RISK`
+- `SRC-STRATEGIES`
+- `SRC-BACKTESTING`
+- `SRC-CONTRACTS`

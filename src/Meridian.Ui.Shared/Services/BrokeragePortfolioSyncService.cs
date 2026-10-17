@@ -135,13 +135,19 @@ public sealed class BrokeragePortfolioSyncService
 
     public async Task<WorkstationBrokerageSyncStatusDto> GetStatusAsync(Guid fundAccountId, CancellationToken ct = default)
     {
+        var retainedLink = await LoadLinkAsync(fundAccountId, ct).ConfigureAwait(false);
+        var link = retainedLink ?? await ResolveLinkAsync(fundAccountId, request: null, ct).ConfigureAwait(false);
         var projection = await LoadProjectionAsync(fundAccountId, ct).ConfigureAwait(false);
-        if (projection is not null)
+        // Explicit sync requests historically retain their identity in the projection itself.
+        // An explicit account relink takes precedence; inferred account-code defaults do not
+        // erase a previously imported broker identity or its freshness history.
+        if (projection is not null && (retainedLink is null
+            || string.Equals(projection.Status.ProviderId, retainedLink.ProviderId, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(projection.Status.ExternalAccountId, retainedLink.ExternalAccountId, StringComparison.OrdinalIgnoreCase)))
         {
             return RefreshStatus(projection.Status);
         }
 
-        var link = await ResolveLinkAsync(fundAccountId, request: null, ct).ConfigureAwait(false);
         if (link is null)
         {
             return UnlinkedStatus(fundAccountId, "Fund account is not linked to a brokerage account.");
@@ -394,7 +400,10 @@ public sealed class BrokeragePortfolioSyncService
             LinkedBy: request.LinkedBy,
             AccountKind: request.AccountKind);
 
+        var liveSync = _services.GetService<LiveBrokeragePortfolioSyncService>();
+        liveSync?.InvalidateAccountBinding(fundAccountId, providerId, externalAccountId);
         await WriteJsonAsync(BuildLinkPath(fundAccountId), link, ct).ConfigureAwait(false);
+        liveSync?.InvalidateAccountBinding(fundAccountId, providerId, externalAccountId);
         return link;
     }
 

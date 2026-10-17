@@ -1019,6 +1019,7 @@ public sealed class TradingOperatorReadinessServiceTests
     {
         var orderManager = Substitute.For<IOrderManager>();
         orderManager.GetOpenOrders().Returns(openOrders);
+        orderManager.GetExposureReservingOrders().Returns(openOrders);
         return orderManager;
     }
 
@@ -1115,11 +1116,15 @@ public sealed class TradingOperatorReadinessServiceTests
     [Theory]
     [InlineData("alpaca", "/settings#alpaca-provider-setup")]
     [InlineData("ALPACA", "/settings#alpaca-provider-setup")]
+    [InlineData("alpaca-brokerage", "/settings#alpaca-provider-setup")]
     [InlineData("ib", "/settings#ibkr-provider-setup")]
     [InlineData("ibkr", "/settings#ibkr-provider-setup")]
     [InlineData("interactive-brokers", "/settings#ibkr-provider-setup")]
+    [InlineData(" INTERACTIVE_BROKERS ", "/settings#ibkr-provider-setup")]
     [InlineData("stocksharp", "/settings#stocksharp-provider-setup")]
+    [InlineData("ssharp", "/settings#stocksharp-provider-setup")]
     [InlineData("robinhood", "/settings#robinhood-provider-setup")]
+    [InlineData("robinhood-live", "/settings#robinhood-provider-setup")]
     [InlineData("unknown-provider", "/settings#provider-connection-center")]
     [InlineData("", "/settings#provider-connection-center")]
     public void ProviderConnectionRouteMapper_ShouldResolveProviderAwareRoutesWithFallback(string providerId, string expectedRoute)

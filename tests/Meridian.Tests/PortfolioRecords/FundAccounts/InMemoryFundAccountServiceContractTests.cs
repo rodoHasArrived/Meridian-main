@@ -146,4 +146,37 @@ public sealed class InMemoryFundAccountServiceContractTests : FundAccountService
 
     [Fact]
     public Task RecordMarginSnapshotAsync_PreCancelledToken_ThrowsOperationCanceled() => RecordMarginSnapshotAsync_PreCancelledToken_ThrowsOperationCanceled_Core();
+
+    [Fact]
+    public Task RecordBalanceSnapshotAsync_PreservesAccountFundOwnership() => RecordBalanceSnapshotAsync_PreservesAccountFundOwnership_Core();
+
+    [Fact]
+    public Task ClosedAccount_ExplicitBackfillRecordsHistoricalEvidence() => ClosedAccount_ExplicitBackfillRecordsHistoricalEvidence_Core();
+
+    [Fact]
+    public Task IngestCustodianStatementAsync_InvalidLineLineageRejectsEntireBatch() => IngestCustodianStatementAsync_InvalidLineLineageRejectsEntireBatch_Core();
+
+    [Fact]
+    public Task IngestBankStatementAsync_InvalidLineLineageRejectsEntireBatch() => IngestBankStatementAsync_InvalidLineLineageRejectsEntireBatch_Core();
+
+    [Fact]
+    public Task ReconcileAccountAsync_ForeignCurrencySyncCannotVerifyOrBreakCashContinuity() => ReconcileAccountAsync_ForeignCurrencySyncCannotVerifyOrBreakCashContinuity_Core();
+
+    [Fact]
+    public Task ReconcileAccountAsync_UsesLatestSyncInInternalSnapshotCurrency() => ReconcileAccountAsync_UsesLatestSyncInInternalSnapshotCurrency_Core();
+
+    [Fact]
+    public Task GetReadinessAsync_UnavailableAccountCannotBeReady() => GetReadinessAsync_UnavailableAccountCannotBeReady_Core();
+
+    [Fact]
+    public Task GetReadinessAsync_IncompleteSyncCannotBeReady() => GetReadinessAsync_IncompleteSyncCannotBeReady_Core();
+
+    [Fact]
+    public Task GetReadinessAsync_UnavailableProviderSyncCannotBeReady() => GetReadinessAsync_UnavailableProviderSyncCannotBeReady_Core();
+
+    [Fact]
+    public Task RecordMarginSnapshotAsync_SameCorrelationCorrectedEffectiveTime_PreservesIdentity() => RecordMarginSnapshotAsync_SameCorrelationCorrectedEffectiveTime_PreservesIdentity_Core();
+
+    [Fact]
+    public Task RecordMarginSnapshotAsync_CorrectedEffectiveTimeAlreadyOccupied_RejectsWithoutReplacing() => RecordMarginSnapshotAsync_CorrectedEffectiveTimeAlreadyOccupied_RejectsWithoutReplacing_Core();
 }

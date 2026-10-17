@@ -138,7 +138,7 @@ internal sealed record LifecycleSupervisorConfiguration
 
 internal static class AtomicJsonFile
 {
-    public static void Write(string path, ReadOnlySpan<byte> bytes)
+    public static void Write(string path, ReadOnlySpan<byte> bytes, bool overwrite = true)
     {
         var directory = Path.GetDirectoryName(path) ?? throw new InvalidOperationException("A parent directory is required.");
         Directory.CreateDirectory(directory);
@@ -157,7 +157,7 @@ internal static class AtomicJsonFile
                 stream.Flush(flushToDisk: true);
             }
 
-            File.Move(temporary, path, overwrite: true);
+            File.Move(temporary, path, overwrite: overwrite);
         }
         finally
         {

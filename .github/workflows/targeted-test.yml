@@ -57,10 +57,6 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: targeted-test-${{ github.ref }}-${{ inputs.mode }}-${{ inputs.runner }}-${{ github.run_id }}
-  cancel-in-progress: false
-
 env:
   CI: true
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
@@ -70,8 +66,46 @@ env:
   MERIDIAN_DISABLE_DOCKER_TESTS: "true"
 
 jobs:
+  dispatch-key:
+    name: Identify duplicate dispatch
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      group: ${{ steps.key.outputs.group }}
+    steps:
+      - name: Hash the selected commit, ref and inputs
+        id: key
+        env:
+          DISPATCH_REF: ${{ github.ref }}
+          DISPATCH_SHA: ${{ github.sha }}
+          DISPATCH_INPUTS: ${{ toJSON(inputs) }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+
+          # Hash exact values: Actions groups are case-insensitive and length-limited.
+          selection = {
+              "ref": os.environ["DISPATCH_REF"],
+              "sha": os.environ["DISPATCH_SHA"],
+              "inputs": json.loads(os.environ["DISPATCH_INPUTS"]),
+          }
+          payload = json.dumps(selection, sort_keys=True, separators=(",", ":")).encode("utf-8")
+          digest = hashlib.sha256(payload).hexdigest()
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              print(f"group={digest}", file=output)
+          PY
+
   targeted:
     name: targeted-${{ inputs.mode }} on ${{ inputs.runner }}
+    needs: dispatch-key
+    # Finish active validation; duplicate selections retain only the latest pending job.
+    # GitHub concurrency is not a FIFO queue. Different selections run independently.
+    concurrency:
+      group: targeted-test-${{ needs.dispatch-key.outputs.group }}
+      cancel-in-progress: false
     runs-on: ${{ inputs.runner }}
     timeout-minutes: 60
 
@@ -90,7 +124,7 @@ jobs:
 
       - name: Set up Node.js
         if: inputs.mode == 'browser-workstation'
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
@@ -207,6 +241,10 @@ jobs:
           mkdir -p artifacts/targeted-browser
           cp -R src/Meridian.Ui/dashboard/dist artifacts/targeted-browser/dist
 
+      - name: Install documentation parser dependencies
+        if: inputs.mode == 'docs-source'
+        run: python3 -m pip install --requirement build/scripts/docs/requirements.txt
+
       - name: Run docs/source validation
         if: inputs.mode == 'docs-source'
         shell: bash
@@ -292,7 +330,7 @@ jobs:
 
       - name: Upload targeted validation artifacts
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: targeted-${{ inputs.mode }}-${{ github.run_number }}-${{ github.run_attempt }}
           path: |

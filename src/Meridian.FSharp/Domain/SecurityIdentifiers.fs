@@ -30,6 +30,10 @@ type IdentifierKind =
     | Ric
     /// SEC Central Index Key — identifies an EDGAR filer or issuer, not a standalone tradable security.
     | Cik
+    /// IHS Markit LoanX ID — syndicated-loan identifier ("LX" + six digits).
+    | LoanX
+    /// CUSIP-format loan identifier (CLIP) for syndicated loan facilities and tranches.
+    | Clip
 
 type Identifier = {
     Kind: IdentifierKind
@@ -83,6 +87,8 @@ module SecurityIdentifier =
         | IdentifierKind.PermTicker -> "PermTicker"
         | IdentifierKind.Ric -> "Ric"
         | IdentifierKind.Cik -> "Cik"
+        | IdentifierKind.LoanX -> "LoanX"
+        | IdentifierKind.Clip -> "Clip"
 
     let isActiveAt asOf identifier =
         identifier.ValidFrom <= asOf

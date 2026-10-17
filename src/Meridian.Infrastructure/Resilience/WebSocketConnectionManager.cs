@@ -36,6 +36,8 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     private readonly object _disposeSync = new();
 
     private ClientWebSocket? _webSocket;
+    private WebSocketSendSession? _sendSession;
+    private long _transportAttemptId;
     private CancellationTokenSource? _connectionCts;
     private CancellationTokenSource? _receiveLoopCts;
     private Task? _receiveTask;
@@ -225,6 +227,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                 prepareConnection,
                 initializeConnection,
                 token),
+            cleanupRejectedInitialization: () => CleanupConnectionAsync(CancellationToken.None),
             ct).ConfigureAwait(false);
     }
 
@@ -249,6 +252,8 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                 _connectionCts = CancellationTokenSource.CreateLinkedTokenSource(
                     _supervisor.ConnectionLifetimeToken);
                 _webSocket = new ClientWebSocket();
+                _transportAttemptId = _supervisor.ConnectionAttemptId;
+                Volatile.Write(ref _sendSession, new WebSocketSendSession(_webSocket, _connectionCts.Token));
                 configureSocket?.Invoke(_webSocket);
 
                 try
@@ -268,6 +273,10 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
 
             if (initializeConnection != null)
                 await initializeConnection(ct).ConfigureAwait(false);
+
+            // Initialization can complete synchronously after cancellation. Reject it
+            // inside this transaction so cleanup runs before the supervisor declines readiness.
+            ct.ThrowIfCancellationRequested();
 
             if (_webSocket?.State != WebSocketState.Open)
                 throw new WebSocketException("WebSocket closed before provider initialization completed.");
@@ -299,7 +308,8 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         _heartbeat = new WebSocketHeartbeat(
             _webSocket,
             _config.HeartbeatInterval,
-            _config.HeartbeatTimeout);
+            _config.HeartbeatTimeout,
+            _sendSession!.SendAsync);
         _lastHeartbeatReceivedAt = _heartbeat.LastPongReceived;
         _heartbeat.ConnectionLost += OnConnectionLostAsync;
     }
@@ -365,7 +375,9 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     /// <param name="ct">Cancellation token.</param>
     public async Task SendAsync(string message, CancellationToken ct = default)
     {
-        if (_webSocket?.State != WebSocketState.Open)
+        ct.ThrowIfCancellationRequested();
+        var session = Volatile.Read(ref _sendSession);
+        if (session == null)
         {
             _log.Warning("Cannot send message - {Provider} WebSocket not open (state: {State})",
                 _providerName, _webSocket?.State);
@@ -374,7 +386,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         }
 
         var bytes = Encoding.UTF8.GetBytes(message);
-        await _webSocket.SendAsync(bytes, WebSocketMessageType.Text, true, ct).ConfigureAwait(false);
+        await session.SendAsync(bytes, WebSocketMessageType.Text, ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -434,6 +446,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         var receiveLoopCts = _receiveLoopCts;
         var receiveTask = _receiveTask;
         var webSocket = _webSocket;
+        var sendSession = _sendSession;
         Task? heartbeatDisposeTask = null;
 
         _heartbeat = null;
@@ -441,16 +454,12 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         _receiveLoopCts = null;
         _receiveTask = null;
         _webSocket = null;
+        Volatile.Write(ref _sendSession, null);
 
         try
         {
-            if (heartbeat != null)
-            {
-                heartbeat.ConnectionLost -= OnConnectionLostAsync;
-                heartbeatDisposeTask = HeartbeatDisposer(heartbeat);
-                await heartbeatDisposeTask.WaitAsync(ct).ConfigureAwait(false);
-            }
-
+            // Cancel active and queued writes before waiting for heartbeat shutdown.
+            // Every queued write belongs to this transport, even if reconnect follows.
             try
             {
                 connectionCts?.Cancel();
@@ -461,11 +470,22 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                 _log.Debug(ex, "CancellationTokenSource.Cancel failed during {Provider} disconnect", _providerName);
             }
 
+            if (heartbeat != null)
+            {
+                heartbeat.ConnectionLost -= OnConnectionLostAsync;
+                heartbeatDisposeTask = HeartbeatDisposer(heartbeat);
+                await heartbeatDisposeTask.WaitAsync(ct).ConfigureAwait(false);
+            }
+
             if (webSocket != null)
             {
                 try
                 {
-                    if (webSocket.State is WebSocketState.Open or WebSocketState.CloseReceived)
+                    if (sendSession != null)
+                    {
+                        await sendSession.CloseAsync(ct).ConfigureAwait(false);
+                    }
+                    else if (webSocket.State is WebSocketState.Open or WebSocketState.CloseReceived)
                     {
                         await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Disconnecting", ct)
                             .ConfigureAwait(false);
@@ -589,6 +609,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
                     initializeConnection,
                     token).ConfigureAwait(false);
             },
+            cleanupRejectedInitialization: () => CleanupConnectionAsync(CancellationToken.None),
             ct).ConfigureAwait(false);
     }
 
@@ -650,6 +671,7 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         _receiveLoopCts = null;
         _receiveTask = null;
         _webSocket = null;
+        Volatile.Write(ref _sendSession, null);
 
         if (heartbeat is not null)
         {
@@ -797,9 +819,34 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
     private Task OnConnectionLostAsync()
         => RaiseConnectionLostIfActiveAsync();
 
-    private Task RaiseConnectionLostIfActiveAsync(Exception? error = null)
+    internal Task ReportConnectionFailureAsync(Exception error)
     {
-        if (!_supervisor.MarkConnectionLost(error))
+        var socket = _webSocket;
+        if (socket == null)
+            return Task.CompletedTask;
+
+        var attemptId = _transportAttemptId;
+        if (_supervisor.TryRecordInitializationFailure(error, attemptId))
+        {
+            _supervisor.RecordFailure(error);
+            // Interrupt reads/writes without losing the provider's original failure.
+            // The supervisor rejects readiness atomically even if initialization has returned.
+            try
+            {
+                socket.Abort();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+            return Task.CompletedTask;
+        }
+
+        return RaiseConnectionLostIfActiveAsync(error, attemptId);
+    }
+
+    private Task RaiseConnectionLostIfActiveAsync(Exception? error = null, long? expectedAttemptId = null)
+    {
+        if (!_supervisor.MarkConnectionLost(error, expectedAttemptId))
             return Task.CompletedTask;
 
         var handler = ConnectionLost;
@@ -913,25 +960,27 @@ public sealed class WebSocketConnectionManager : IAsyncDisposable
         var receiveTask = _receiveTask;
 
         _webSocket = null;
+        Volatile.Write(ref _sendSession, null);
         _connectionCts = null;
         _receiveLoopCts = null;
         _heartbeat = null;
         _receiveTask = null;
 
-        // 1. Stop heartbeat to prevent new reconnection attempts
-        if (heartbeat != null)
-        {
-            heartbeat.ConnectionLost -= OnConnectionLostAsync;
-            await heartbeat.DisposeAsync();
-        }
-
-        // 2. Cancel tokens to signal the receive loop to stop
+        // Cancel writes and reads before awaiting heartbeat cleanup: a queued
+        // heartbeat shares the same send gate as application messages.
         if (cts != null)
         {
             try
             { cts.Cancel(); }
             catch (OperationCanceledException) { throw; }
             catch (Exception ex) { _log.Debug(ex, "{Provider} CTS cancel failed during cleanup", _providerName); }
+        }
+
+        // Stop heartbeat to prevent new reconnection attempts.
+        if (heartbeat != null)
+        {
+            heartbeat.ConnectionLost -= OnConnectionLostAsync;
+            await heartbeat.DisposeAsync();
         }
 
         // 3. Wait for the receive task to complete before disposing resources it uses.
@@ -994,6 +1043,7 @@ public static class ProviderFailureClassifier
             HttpRequestException => ProviderFailureKind.TransientNetworkFailure,
             WebSocketException => ProviderFailureKind.TransientNetworkFailure,
             TimeoutException => ProviderFailureKind.TransientNetworkFailure,
+            Meridian.Core.Exceptions.ConfigurationException => ProviderFailureKind.LocalConfigurationError,
             InvalidOperationException invalidOperation when LooksLikeCredentialOrConfigFailure(invalidOperation.Message) => ProviderFailureKind.LocalConfigurationError,
             FormatException => ProviderFailureKind.MalformedProviderResponse,
             System.Text.Json.JsonException => ProviderFailureKind.MalformedProviderResponse,

@@ -16,7 +16,8 @@ public sealed record ValuationMarkEvidence(
     int MaximumAgeDays,
     DailyPortfolioPriceConfidence MinimumConfidence,
     string PolicyVersion,
-    string EvidenceReference);
+    string EvidenceReference,
+    string? EntityId = null);
 
 /// <summary>
 /// Reassesses retained inputs at submit, approve and post. Review notes and arbitrary override
@@ -31,7 +32,8 @@ public static class ValuationMarkEvidenceGuard
         => idempotencyKey?.StartsWith("fair-value|", StringComparison.Ordinal) == true;
 
     public static string? Validate(string? json, string fundId, DateOnly valuationDate,
-        Guid? securityId, string? financialAccountId, string? symbol = null, string? expectedDigest = null)
+        Guid? securityId, string? financialAccountId, string? symbol = null, string? expectedDigest = null,
+        string? entityId = null)
     {
         if (string.IsNullOrWhiteSpace(json))
             return "Valuation mark evidence is missing; rerun valuation with dated source evidence.";
@@ -49,8 +51,9 @@ public static class ValuationMarkEvidenceGuard
             if (mark is null || mark.FundId != fundId || mark.ValuationDate != valuationDate ||
                 mark.SecurityId != securityId ||
                 !string.Equals(mark.FinancialAccountId ?? "", financialAccountId ?? "", StringComparison.Ordinal) ||
+                !string.Equals(mark.EntityId?.Trim() ?? "", entityId?.Trim() ?? "", StringComparison.OrdinalIgnoreCase) ||
                 (symbol is not null && !string.Equals(mark.Symbol, symbol, StringComparison.OrdinalIgnoreCase)))
-                return "Valuation mark evidence does not match the fund, position or valuation date.";
+                return "Valuation mark evidence does not match the fund, entity, position or valuation date.";
             if (string.IsNullOrWhiteSpace(mark.PolicyVersion) || string.IsNullOrWhiteSpace(mark.EvidenceReference) ||
                 mark.MaximumAgeDays < 0 || !Enum.IsDefined(mark.MinimumConfidence))
                 return "Valuation mark evidence has no valid policy version or retained source reference.";
@@ -68,10 +71,14 @@ public static class ValuationMarkEvidenceGuard
         if (!IsValuation(draft.Metadata.IdempotencyKey) && draft.Metadata.ActivityType != "fair-value-mark")
             return;
         var json = draft.Metadata.Tags?.GetValueOrDefault(EvidenceTag);
+        var entityId = draft.Metadata.Tags?.GetValueOrDefault("valuation.entityId");
+        if (draft.Lines.Any(line => !string.Equals(line.dimensions?.EntityId?.Trim() ?? "",
+                entityId?.Trim() ?? "", StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException("Valuation journal dimensions do not match the retained entity scope.");
         var reason = Validate(json, draft.Metadata.Tags?.GetValueOrDefault("valuation.fundId") ?? "",
             draft.Metadata.EffectiveDate ?? DateOnly.FromDateTime(draft.Event.Timestamp.UtcDateTime),
             draft.Event.SecurityId, draft.Event.FinancialAccountId, draft.Event.Symbol,
-            draft.Metadata.Tags?.GetValueOrDefault(DigestTag));
+            draft.Metadata.Tags?.GetValueOrDefault(DigestTag), entityId);
         if (reason is not null)
             throw new InvalidOperationException(reason);
     }

@@ -13,7 +13,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// and symbol mapping endpoints (/api/symbol-mappings).
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class StorageEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly EndpointTestFixture _fixture;

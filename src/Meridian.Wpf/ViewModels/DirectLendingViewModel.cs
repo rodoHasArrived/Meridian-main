@@ -403,10 +403,7 @@ public sealed class DirectLendingViewModel : BindableBase
             _hasLoadedPortfolioSnapshot = portfolio is not null;
             ApplyFilter();
 
-            StatusText = portfolio is null
-                ? "Service unavailable — backend not reachable."
-                : $"{portfolio.TotalLoans} loan(s) — {portfolio.ActiveLoans} active, " +
-                  $"${portfolio.TotalPrincipalOutstanding:N0} principal outstanding";
+            StatusText = BuildPortfolioStatusText(portfolio);
         }
         catch (OperationCanceledException)
         {
@@ -425,6 +422,24 @@ public sealed class DirectLendingViewModel : BindableBase
             IsRefreshing = false;
             RaiseLoanCollectionStateChanged();
         }
+    }
+
+    public static string BuildPortfolioStatusText(LoanPortfolioSummaryDto? portfolio)
+    {
+        if (portfolio is null) return "Service unavailable — backend not reachable.";
+        static bool KnownCurrency(CurrencyCode currency) =>
+            currency is CurrencyCode.USD or CurrencyCode.EUR or CurrencyCode.GBP or CurrencyCode.JPY;
+        var amounts = portfolio.CurrencyTotals?.Select(total =>
+            KnownCurrency(total.Currency) && total.TotalPrincipalOutstanding is { } amount
+                ? $"{total.Currency} {amount:N0}"
+                : $"{total.Currency} unavailable").ToArray();
+        var principal = amounts is { Length: > 0 }
+            ? string.Join("; ", amounts)
+            : portfolio.TotalCurrency is { } currency && KnownCurrency(currency)
+              && portfolio.TotalPrincipalOutstanding is { } amount
+                ? $"{currency} {amount:N0}"
+                : "unavailable (currency not reported)";
+        return $"{portfolio.TotalLoans} loan(s) — {portfolio.ActiveLoans} active, principal outstanding: {principal}";
     }
 
     private void ApplyOperationsReadModel(DirectLendingOperationsReadModelDto? operations)

@@ -4,6 +4,8 @@ import unittest
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from tests.scripts.workflow_assertions import assert_pinned_action
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW_ROOT = REPO_ROOT / ".github" / "workflows"
@@ -85,7 +87,7 @@ class ProjectTargetFrameworkAlignmentTests(unittest.TestCase):
         workflow = MAINTENANCE_WORKFLOW.read_text(encoding="utf-8")
 
         self.assertIn("python3 build/scripts/ci/check-workflow-hygiene.py", workflow)
-        self.assertIn("rhysd/actionlint@914e7df21a07ef503a81201c76d2b11c789d3fca", workflow)
+        assert_pinned_action(self, workflow, "workflow-hygiene", "rhysd/actionlint")
         self.assertIn("check-ai-contract-drift.py", workflow)
 
     def test_codeql_csharp_analysis_builds_with_current_sdk(self) -> None:

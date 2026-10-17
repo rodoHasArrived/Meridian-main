@@ -1,40 +1,148 @@
 import { AlertTriangle, ArrowUpRight, FileText, PanelRight, TableProperties } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useInRouterContext, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SeverityBadge } from "@/components/operations";
+import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import {
+  readReportingWorkSelection,
+  reportingWorkScopeKey,
+  withReportingWorkSelection
+} from "@/components/meridian/reporting-hub.selection";
 import { cn } from "@/lib/utils";
 import { badgeVariantToSeverityStatus, semanticToneToTextClass } from "@/lib/shared-tone-mappings";
-import type { ReportingHubModel, ReportingHubTone } from "@/lib/reporting-hub";
+import type { ReportingHubDailyWorkItem, ReportingHubModel, ReportingHubTone } from "@/lib/reporting-hub";
 
 export interface ReportingHubProps {
   model: ReportingHubModel;
   className?: string;
 }
 
+const REPORTING_WORK_DETAIL_ID = "reporting-work-detail";
+const reportingWorkColumns: DenseDataTableColumn<ReportingHubDailyWorkItem>[] = [
+  {
+    id: "work",
+    label: "Work item",
+    render: (item) => (
+      <div className="min-w-0">
+        <div className="text-sm font-semibold text-foreground">{item.title}</div>
+        <div className="mt-1 text-xs text-muted-foreground">{item.kindLabel} · {item.affectedOutputLabel}</div>
+      </div>
+    )
+  },
+  {
+    id: "state",
+    label: "State",
+    render: (item) => <SeverityBadge status={badgeVariantToSeverityStatus(item.badgeVariant)} label={item.statusLabel} />
+  },
+  { id: "owner", label: "Owner", render: (item) => <span className="text-xs text-muted-foreground">{item.owner}</span> },
+  { id: "due", label: "Due", render: (item) => <span className="text-xs text-muted-foreground">{item.dueLabel ?? "Not supplied"}</span> }
+];
+
 /**
  * Reporting launch surface with daily work first and report-family launch cards below.
  */
-export function ReportingHub({ model, className }: ReportingHubProps) {
-  if (model.isEmpty) {
-    return null;
-  }
+export function ReportingHub(props: ReportingHubProps) {
+  return useInRouterContext() ? <RoutedReportingHub {...props} /> : <LocalReportingHub {...props} />;
+}
 
-  const selectedWork = model.dailyWork[0] ?? null;
+function RoutedReportingHub(props: ReportingHubProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const requestedWorkId = readReportingWorkSelection(location.search);
+  const scopeKey = reportingWorkScopeKey(location.pathname, location.search);
+  const previousScope = useRef(scopeKey);
+  const [unselectedScope, setUnselectedScope] = useState<string | null>(null);
+  const [pendingSelection, setPendingSelection] = useState<{
+    workItemId: string;
+    scopeKey: string;
+    search: string;
+  } | null>(null);
+  const scopeChanged = previousScope.current !== scopeKey;
+
+  useEffect(() => {
+    if (pendingSelection && (pendingSelection.scopeKey !== scopeKey || pendingSelection.search !== location.search)) {
+      setPendingSelection(null);
+    }
+  }, [pendingSelection, scopeKey, location.search]);
+
+  useEffect(() => {
+    if (previousScope.current === scopeKey) return;
+    previousScope.current = scopeKey;
+    setUnselectedScope(scopeKey);
+    if (readReportingWorkSelection(location.search) !== null) {
+      navigate({
+        pathname: location.pathname,
+        search: withReportingWorkSelection(location.search, null),
+        hash: location.hash
+      }, { replace: true, preventScrollReset: true });
+    }
+  }, [scopeKey, location.pathname, location.search, location.hash, navigate]);
+
+  const selectionNotice = scopeChanged || unselectedScope === scopeKey
+    ? "Reporting scope changed. Select a work item to review its current evidence and actions."
+    : null;
+  // Router updates may be deferred. Apply the row choice immediately so Enter
+  // and Escape use the chosen record while its shareable URL is being updated.
+  const selectedWorkId = pendingSelection?.scopeKey === scopeKey && pendingSelection.search === location.search
+    ? pendingSelection.workItemId
+    : requestedWorkId;
+
+  return (
+    <ReportingHubContent
+      {...props}
+      requestedWorkId={selectedWorkId}
+      selectionNotice={selectionNotice}
+      onSelect={(item) => {
+        setPendingSelection({ workItemId: item.workItemId, scopeKey, search: location.search });
+        setUnselectedScope(null);
+        navigate({
+          pathname: location.pathname,
+          search: withReportingWorkSelection(location.search, item.workItemId),
+          hash: location.hash
+        }, { replace: true, preventScrollReset: true });
+      }}
+    />
+  );
+}
+
+function LocalReportingHub(props: ReportingHubProps) {
+  const [requestedWorkId, setRequestedWorkId] = useState<string | null>(null);
+  return <ReportingHubContent {...props} requestedWorkId={requestedWorkId} onSelect={(item) => setRequestedWorkId(item.workItemId)} />;
+}
+
+function ReportingHubContent({
+  model,
+  className,
+  requestedWorkId,
+  onSelect,
+  selectionNotice = null
+}: ReportingHubProps & {
+  requestedWorkId: string | null;
+  onSelect: (item: ReportingHubDailyWorkItem) => void;
+  selectionNotice?: string | null;
+}) {
+  const selectedWork = selectionNotice ? null : requestedWorkId === null
+    ? model.dailyWork[0] ?? null
+    : model.dailyWork.find((item) => item.workItemId === requestedWorkId) ?? null;
+  const unavailableSelection = selectionNotice ?? (requestedWorkId !== null && !selectedWork
+    ? "This reporting work item is no longer in the current queue. Select another item."
+    : null);
+
+  if (model.isEmpty && !unavailableSelection) return null;
 
   return (
     <section role="region" aria-label="Daily reporting cockpit" className={cn("workspace-section-band", className)}>
       <div className="workspace-section-subheader">
         <div className="min-w-0">
-          <div className="eyebrow-label">Reporting workbench</div>
           <h2 className="workspace-section-title">Daily reporting cockpit</h2>
           <p className="workspace-section-summary">
-            Triage queued reporting work, inspect the selected blocker, then open the report family or evidence route that owns the next action.
+            Select work to review its evidence and next action.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Badge variant={model.dailyWork.length > 0 || model.attentionCount > 0 ? "warning" : "success"}>
-            {model.dailyWorkSummaryLabel}
-          </Badge>
           {model.cards.length > 0 ? (
             <Badge variant={model.attentionCount > 0 ? "warning" : "success"}>{model.summaryLabel}</Badge>
           ) : null}
@@ -49,45 +157,25 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
                 <AlertTriangle className="h-4 w-4 text-warning" aria-hidden="true" />
                 <h3 className="text-sm font-semibold text-foreground">Triage queue</h3>
               </div>
-              <Badge variant="outline">{model.dailyWorkSummaryLabel}</Badge>
+              <Badge variant={model.dailyWork.length > 0 || model.attentionCount > 0 ? "warning" : "success"}>
+                {model.dailyWorkSummaryLabel}
+              </Badge>
             </div>
             {model.dailyWork.length > 0 ? (
-              <ul className="divide-y divide-border/70" aria-label="Daily reporting work">
-                {model.dailyWork.map((item, index) => (
-                  <li key={item.workItemId} aria-label={item.ariaLabel} className={cn("grid gap-3 px-3 py-3 lg:grid-cols-[minmax(0,1fr)_auto]", index === 0 && "bg-primary/5")}>
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-semibold text-muted-foreground">{item.kindLabel}</span>
-                        {index === 0 ? <Badge variant="outline">Selected</Badge> : null}
-                        {item.dueLabel ? <Badge variant="outline">{item.dueLabel}</Badge> : null}
-                      </div>
-                      <div className="mt-1 break-words text-sm font-semibold text-foreground">{item.title}</div>
-                      <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.detail}</p>
-                      <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2 xl:grid-cols-3" aria-label={`${item.title} decision facts`}>
-                        <ReportingHubFact label="Blocked" value={item.blockedLabel} tone={item.tone} />
-                        <ReportingHubFact label="Owner" value={item.owner} />
-                        <ReportingHubFact label="Output" value={item.affectedOutputLabel} />
-                        <ReportingHubFact label="Next action" value={item.nextActionLabel} />
-                        <ReportingHubFact label="Proof" value={item.proofLabel} tone={item.evidenceGaps.length > 0 ? "warning" : "success"} />
-                      </dl>
-                    </div>
-                    <div className="flex flex-wrap items-start gap-2 lg:justify-end">
-                      <SeverityBadge status={badgeVariantToSeverityStatus(item.badgeVariant)} label={item.statusLabel} />
-                      {item.primaryActionHref ? (
-                        <Button asChild variant="outline" size="sm">
-                          <a href={item.primaryActionHref} aria-label={`${item.primaryActionLabel}: ${item.title}`}>
-                            <FileText className="h-4 w-4" aria-hidden="true" />
-                            {item.primaryActionLabel}
-                            <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
-                          </a>
-                        </Button>
-                      ) : (
-                        <Badge variant="outline">{item.primaryActionLabel}</Badge>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <DenseDataTable
+                columns={reportingWorkColumns}
+                rows={model.dailyWork}
+                getRowId={(item) => item.workItemId}
+                getRowAriaLabel={(item) => item.ariaLabel}
+                getRowSelectAriaLabel={(item) => `Select reporting work: ${item.title}`}
+                getRowAriaControls={() => REPORTING_WORK_DETAIL_ID}
+                getRowAriaExpanded={(item) => item.workItemId === selectedWork?.workItemId}
+                selectedRowId={selectedWork?.workItemId ?? null}
+                onRowSelect={onSelect}
+                emptyText="No reporting work is queued."
+                ariaLabel="Daily reporting work"
+                caption="Select a work item to inspect its blockers, evidence and next action."
+              />
             ) : (
               <div className="px-3 py-4 text-sm text-muted-foreground">
                 {model.attentionCount > 0
@@ -152,7 +240,7 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
           ) : null}
         </div>
 
-        <aside className="rounded-md border border-border/70 bg-background/75 p-3" aria-label="Selected reporting work detail">
+        <DenseRowDetailPanel id={REPORTING_WORK_DETAIL_ID} className="rounded-md border border-border/70 bg-background/75 p-3" ariaLabel="Selected reporting work detail" selectedSourceLabel={selectedWork?.title ?? "No reporting work selected"}>
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <PanelRight className="h-4 w-4 text-primary" aria-hidden="true" />
             Selected work
@@ -167,24 +255,6 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
                 <h3 className="mt-3 text-base font-semibold leading-snug text-foreground">{selectedWork.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{selectedWork.detail}</p>
               </div>
-              <dl className="grid gap-2 text-xs" aria-label={`${selectedWork.title} selected detail`}>
-                <ReportingHubFact label="Owner" value={selectedWork.owner} />
-                <ReportingHubFact label="Affected output" value={selectedWork.affectedOutputLabel} />
-                <ReportingHubFact label="Next action" value={selectedWork.nextActionLabel} />
-                <ReportingHubFact label="Proof posture" value={selectedWork.proofLabel} tone={selectedWork.evidenceGaps.length > 0 ? "warning" : "success"} />
-              </dl>
-              <div className="flex flex-wrap gap-1.5">
-                {selectedWork.context.slice(0, 4).map((context) => (
-                  <Badge key={context} variant="outline">{context}</Badge>
-                ))}
-              </div>
-              {selectedWork.evidenceGaps.length > 0 ? (
-                <ul className="grid gap-1 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning" aria-label={`${selectedWork.title} evidence gaps`}>
-                  {selectedWork.evidenceGaps.slice(0, 3).map((gap) => (
-                    <li key={gap}>{gap}</li>
-                  ))}
-                </ul>
-              ) : null}
               <div className="flex flex-wrap gap-2 pt-1">
                 {selectedWork.primaryActionHref ? (
                   <Button asChild size="sm">
@@ -203,13 +273,33 @@ export function ReportingHub({ model, className }: ReportingHubProps) {
                   </Button>
                 ) : null}
               </div>
+              <dl className="grid gap-2 text-xs" aria-label={`${selectedWork.title} decision facts`}>
+                <ReportingHubFact label="Blocked" value={selectedWork.blockedLabel} tone={selectedWork.tone} />
+                <ReportingHubFact label="Owner" value={selectedWork.owner} />
+                <ReportingHubFact label="Affected output" value={selectedWork.affectedOutputLabel} />
+                <ReportingHubFact label="Next action" value={selectedWork.nextActionLabel} />
+                <ReportingHubFact label="Proof posture" value={selectedWork.proofLabel} tone={selectedWork.evidenceGaps.length > 0 ? "warning" : "success"} />
+              </dl>
+              <div className="flex flex-wrap gap-1.5">
+                {selectedWork.context.map((context) => (
+                  <Badge key={context} variant="outline">{context}</Badge>
+                ))}
+              </div>
+              {selectedWork.evidenceGaps.length > 0 ? (
+                <ul className="grid gap-1 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning" aria-label={`${selectedWork.title} evidence gaps`}>
+                  {selectedWork.evidenceGaps.map((gap) => (
+                    <li key={gap}>{gap}</li>
+                  ))}
+                </ul>
+              ) : null}
+
             </div>
           ) : (
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              No urgent reporting work is queued. Use the report family organizer to run, review, or set up the next output.
+              {unavailableSelection ?? "No urgent reporting work is queued. Use the report family organizer to run, review, or set up the next output."}
             </p>
           )}
-        </aside>
+        </DenseRowDetailPanel>
       </div>
     </section>
   );

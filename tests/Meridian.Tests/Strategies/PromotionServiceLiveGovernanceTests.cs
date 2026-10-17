@@ -14,6 +14,154 @@ namespace Meridian.Tests.Strategies;
 
 public sealed class PromotionServiceLiveGovernanceTests
 {
+    [Theory]
+    [InlineData("expired-trust", "trust evidence is stale")]
+    [InlineData("replaced-override", "not active for live promotion")]
+    public async Task ApproveAsync_RetainedApprovalWithoutTarget_RevalidatesTrustAndApprovalControlsBeforeRepair(
+        string changedGate,
+        string expectedReason)
+    {
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(CreateTempRoot(), "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance);
+        var promotionStore = new JsonlPromotionRecordStore(
+            Path.Combine(CreateTempRoot(), "promotions"), NullLogger<JsonlPromotionRecordStore>.Instance);
+        var service = BuildService(
+            out var store,
+            controls,
+            brokerageConfiguration: new BrokerageConfiguration { Gateway = "alpaca", LiveExecutionEnabled = true },
+            promotionRecordStore: promotionStore,
+            trustEvidenceProvider: new PromotionTrustEvidenceStub(run =>
+                changedGate == "expired-trust"
+                    ? PromotionTrustEvidenceStub.Passing(run) with { ValidUntil = DateTimeOffset.UtcNow.AddSeconds(-1) }
+                    : PromotionTrustEvidenceStub.Passing(run)));
+        var run = StrategyRunEntry.Start("repair-trust", "Repair Trust", RunType.Paper)
+            .Complete(BuildPassingResult()) with
+        { WalkForwardEvidence = PassingWalkForwardEvidence() };
+        await store.RecordRunAsync(run);
+        var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            ExecutionManualOverrideKinds.AllowLivePromotion, "Live controls reviewed", "ops",
+            StrategyId: run.StrategyId, RunId: run.RunId));
+        var targetRunId = Guid.NewGuid().ToString("N");
+        var record = new StrategyPromotionRecord(
+            PromotionId: Guid.NewGuid().ToString("N"),
+            StrategyId: run.StrategyId,
+            StrategyName: run.StrategyName,
+            SourceRunType: RunType.Paper,
+            TargetRunType: RunType.Live,
+            SourceRunId: run.RunId,
+            TargetRunId: targetRunId,
+            QualifyingSharpe: run.Metrics!.Metrics.SharpeRatio,
+            QualifyingMaxDrawdownPercent: run.Metrics.Metrics.MaxDrawdownPercent,
+            QualifyingTotalReturn: run.Metrics.Metrics.TotalReturn,
+            Decision: PromotionDecisionKinds.Approved,
+            PromotedAt: DateTimeOffset.UtcNow.AddMinutes(-1),
+            ApprovalReason: "Approved before interrupted target persistence.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            EvidenceReferences: CreateLiveEvidenceReferences(manualOverride.OverrideId),
+            AuditReference: "retained-approval-audit",
+            ApprovedBy: "ops",
+            ManualOverrideId: manualOverride.OverrideId);
+        await promotionStore.AppendAsync(record);
+
+        if (changedGate == "replaced-override")
+        {
+            await controls.ClearManualOverrideAsync(manualOverride.OverrideId, "ops", "Approval override revoked.");
+            await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+                ExecutionManualOverrideKinds.AllowLivePromotion, "Different approval", "ops",
+                StrategyId: run.StrategyId, RunId: run.RunId));
+            (await service.EvaluateAsync(run.RunId)).IsEligible.Should().BeTrue(
+                "the current policy accepts the replacement, but it cannot replace the retained approval's override identity");
+        }
+
+        var retry = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId, ApprovedBy: "ops", ApprovalReason: "Repair retained approval."));
+
+        retry.Success.Should().BeFalse();
+        retry.PromotionId.Should().Be(record.PromotionId);
+        retry.Reason.Should().Contain(expectedReason);
+        (await store.GetRunByIdAsync(targetRunId)).Should().BeNull();
+        (await service.GetPromotionHistoryAsync()).Should().ContainSingle().Which.PromotionId.Should().Be(record.PromotionId);
+    }
+
+    [Theory]
+    [InlineData("missing", "Provider trust evidence is stale.")]
+    [InlineData("stale", "Provider trust evidence is stale.")]
+    [InlineData("incomplete", "Provider trust evidence is incomplete.")]
+    [InlineData("future", "Provider trust evidence is stale.")]
+    [InlineData("wrong-run", "Provider trust evidence is incomplete.")]
+    [InlineData("wrong-input", "Provider trust evidence is incomplete.")]
+    public async Task Promotion_WithAllOtherGatesPassing_RequiresValidRunBoundTrustEvidence(
+        string evidenceState,
+        string expectedReason)
+    {
+        var controls = new ExecutionOperatorControlService(
+            new ExecutionOperatorControlOptions(Path.Combine(CreateTempRoot(), "controls")),
+            NullLogger<ExecutionOperatorControlService>.Instance);
+        var trustProvider = new PromotionTrustEvidenceStub(run =>
+        {
+            var evidence = PromotionTrustEvidenceStub.Passing(run);
+            return evidenceState switch
+            {
+                "stale" => evidence with { ValidUntil = DateTimeOffset.UtcNow.AddSeconds(-1) },
+                "incomplete" => evidence with { IsComplete = false },
+                "future" => evidence with
+                {
+                    ObservedAt = DateTimeOffset.UtcNow.AddHours(1),
+                    ValidUntil = DateTimeOffset.UtcNow.AddHours(2)
+                },
+                "wrong-run" => evidence with { RunId = "another-run" },
+                "wrong-input" => evidence with { InputHashSha256 = "another-input-hash" },
+                _ => null
+            };
+        });
+        var service = BuildService(
+            out var store,
+            controls,
+            brokerageConfiguration: new BrokerageConfiguration
+            {
+                Gateway = "alpaca",
+                LiveExecutionEnabled = true,
+                MaxPositionSize = 10_000m,
+                MaxOrderNotional = 100_000m,
+                MaxOpenOrders = 10
+            },
+            trustEvidenceProvider: trustProvider,
+            includeTrustEvidence: evidenceState != "missing");
+        var run = StrategyRunEntry.Start("trust-source", "Trust Evidence Strategy", RunType.Paper)
+            .Complete(BuildPassingResult()) with
+        {
+            WalkForwardEvidence = PassingWalkForwardEvidence()
+        };
+        await store.RecordRunAsync(run);
+        var manualOverride = await controls.CreateManualOverrideAsync(new ManualOverrideRequest(
+            Kind: ExecutionManualOverrideKinds.AllowLivePromotion,
+            Reason: "Other controls pass",
+            CreatedBy: "ops",
+            StrategyId: run.StrategyId,
+            RunId: run.RunId));
+
+        var evaluation = await service.EvaluateAsync(run.RunId);
+        var approval = await service.ApproveAsync(new PromotionApprovalRequest(
+            run.RunId,
+            ApprovedBy: "ops",
+            ApprovalReason: "Review valid trust evidence before approval.",
+            ApprovalChecklist: PromotionApprovalChecklist.CreateRequiredFor(RunType.Live),
+            EvidenceReferences: CreateLiveEvidenceReferences(manualOverride.OverrideId),
+            ManualOverrideId: manualOverride.OverrideId));
+
+        evaluation.IsEligible.Should().BeFalse();
+        evaluation.RequiresManualOverride.Should().BeFalse("an override cannot repair missing trust evidence");
+        evaluation.BlockingReasons.Should().Contain(expectedReason);
+        if (evidenceState is "stale" or "incomplete" or "future")
+        {
+            evaluation.BlockingReasons.Should().ContainSingle();
+        }
+        approval.Success.Should().BeFalse();
+        approval.NewRunId.Should().BeNull();
+        (await service.GetPromotionHistoryAsync()).Should().BeEmpty();
+    }
+
     [Fact]
     public async Task EvaluateAsync_WhenPaperRunTargetsLive_RequiresHumanApprovalControls()
     {
@@ -33,6 +181,7 @@ public sealed class PromotionServiceLiveGovernanceTests
 
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = PassingWalkForwardEvidence()
@@ -62,6 +211,7 @@ public sealed class PromotionServiceLiveGovernanceTests
 
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = PassingWalkForwardEvidence()
@@ -109,6 +259,7 @@ public sealed class PromotionServiceLiveGovernanceTests
 
         var run = StrategyRunEntry.Start("s-edge", "Strategy Edge", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = PassingWalkForwardEvidence()
@@ -178,6 +329,7 @@ public sealed class PromotionServiceLiveGovernanceTests
 
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = PassingWalkForwardEvidence()
@@ -267,6 +419,7 @@ public sealed class PromotionServiceLiveGovernanceTests
 
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = PassingWalkForwardEvidence()
@@ -337,6 +490,7 @@ public sealed class PromotionServiceLiveGovernanceTests
 
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = PassingWalkForwardEvidence()
@@ -412,6 +566,7 @@ public sealed class PromotionServiceLiveGovernanceTests
 
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = PassingWalkForwardEvidence()
@@ -486,6 +641,7 @@ public sealed class PromotionServiceLiveGovernanceTests
 
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = PassingWalkForwardEvidence()
@@ -562,6 +718,7 @@ public sealed class PromotionServiceLiveGovernanceTests
 
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = PassingWalkForwardEvidence()
@@ -634,6 +791,7 @@ public sealed class PromotionServiceLiveGovernanceTests
 
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = PassingWalkForwardEvidence()
@@ -694,6 +852,7 @@ public sealed class PromotionServiceLiveGovernanceTests
 
         var run = StrategyRunEntry.Start("s-live", "Strategy Live", RunType.Paper) with
         {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
             EndedAt = DateTimeOffset.UtcNow,
             Metrics = BuildPassingResult(),
             WalkForwardEvidence = PassingWalkForwardEvidence()
@@ -750,7 +909,9 @@ public sealed class PromotionServiceLiveGovernanceTests
         ExecutionOperatorControlService? controls = null,
         ExecutionAuditTrailService? auditTrail = null,
         BrokerageConfiguration? brokerageConfiguration = null,
-        IPromotionRecordStore? promotionRecordStore = null)
+        IPromotionRecordStore? promotionRecordStore = null,
+        IPromotionTrustEvidenceProvider? trustEvidenceProvider = null,
+        bool includeTrustEvidence = true)
     {
         store = new StrategyRunStore();
         var promoter = new BacktestToLivePromoter();
@@ -764,13 +925,16 @@ public sealed class PromotionServiceLiveGovernanceTests
             NullLogger<PromotionService>.Instance,
             controls,
             auditTrail,
-            brokerageConfiguration);
+            brokerageConfiguration,
+            trustEvidenceProvider: includeTrustEvidence
+                ? trustEvidenceProvider ?? new PromotionTrustEvidenceStub()
+                : null);
     }
 
     public static IEnumerable<object[]> LivePolicyScenarios()
     {
         yield return [true, true, false, false, false, false, true, "requires an active AllowLivePromotion"];
-        yield return [false, true, false, false, false, false, true, "trust evidence is stale"];
+        yield return [false, true, false, false, false, false, true, "requires an active AllowLivePromotion"];
         yield return [true, true, true, true, false, false, true, "conflicting manual override"];
         yield return [true, true, true, false, true, false, true, "circuit breaker is open"];
     }

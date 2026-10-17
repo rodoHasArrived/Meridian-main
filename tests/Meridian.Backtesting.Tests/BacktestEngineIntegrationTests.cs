@@ -224,6 +224,42 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         firstRunStrategy.BarSymbolsInArrivalOrder.Should().Equal(["MSFT", "AAPL"]);
     }
 
+    [Fact]
+    public async Task ReadCapturedSnapshotAsync_MalformedLine_FailsClosedWithLineEvidence()
+    {
+        var snapshotPath = Path.Combine(_dataRoot, "captured-snapshot.jsonl");
+        var timestamp = new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero);
+        var bar = new HistoricalBar(
+            Symbol: "SPY",
+            SessionDate: new DateOnly(2024, 1, 2),
+            Open: 100m,
+            High: 101m,
+            Low: 99m,
+            Close: 100m,
+            Volume: 1_000L,
+            Source: "test",
+            SequenceNumber: 1L);
+        var evt = MarketEvent.HistoricalBar(timestamp, "SPY", bar, "test", 1L);
+        var validLine = JsonSerializer.Serialize(
+            evt,
+            MarketDataJsonContext.HighPerformanceOptions);
+        await File.WriteAllTextAsync(
+            snapshotPath,
+            validLine + Environment.NewLine + "{\"truncated\":");
+
+        Func<Task> replay = async () =>
+        {
+            await foreach (var _ in BacktestEngine.ReadCapturedSnapshotAsync(
+                               snapshotPath,
+                               CancellationToken.None))
+            {
+            }
+        };
+
+        await replay.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*invalid JSON at line 2*");
+    }
+
     // ------------------------------------------------------------------ //
     //  UTC date boundary filtering (regression: FilterBySymbolAndDate    //
     //  must use UtcDateTime.Date, not LocalDateTime.Date)                //
@@ -442,6 +478,95 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         bar.Open.Should().Be(100m, "price should be halved by the 2:1 split adjustment (200 / 2)");
         bar.Close.Should().Be(100m, "close should also be halved");
         bar.Volume.Should().Be(2_000_000L, "volume should be doubled by the split adjustment");
+    }
+
+    [Fact]
+    public async Task RunAsync_CorporateActions_PreparesCompleteWindowOnceAtEffectiveBoundary()
+    {
+        WriteBarJsonl(
+            "AAPL",
+            new DateOnly(2024, 1, 2),
+            new DateOnly(2024, 1, 4),
+            basePrice: 200m,
+            dailyGain: 4m);
+        var adjustment = new StubCorporateActionAdjustmentService(factor: 2m);
+        var catalog = new StorageCatalogService(_dataRoot, new StorageOptions());
+        var engine = new BacktestEngine(
+            NullLogger<BacktestEngine>.Instance,
+            catalog,
+            securityMasterQueryService: null,
+            corporateActionAdjustment: adjustment);
+        var strategy = new PriceCapturingStrategy();
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 4),
+            DataRoot: _dataRoot,
+            AdjustForCorporateActions: true);
+
+        await engine.RunAsync(request, strategy);
+
+        adjustment.PrepareCallCount.Should().Be(1);
+        adjustment.CallCount.Should().Be(1);
+        adjustment.PreparedBars.Select(static bar => bar.SessionDate).Should().Equal(
+            new DateOnly(2024, 1, 2),
+            new DateOnly(2024, 1, 3),
+            new DateOnly(2024, 1, 4));
+        adjustment.PreparedTicker.Should().Be("AAPL");
+        adjustment.PreparedEffectiveThroughUtc.Should().Be(
+            new DateTimeOffset(request.To.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero));
+        strategy.ReceivedBars.Should().HaveCount(3);
+        strategy.ReceivedBars.Should().OnlyContain(static bar => bar.Volume == 2_000_000L);
+    }
+
+    [Fact]
+    public async Task RunAsync_CorporateActions_ExecutesFromPreparedMarketDataSnapshot()
+    {
+        WriteBarJsonl(
+            "AAPL",
+            new DateOnly(2024, 1, 2),
+            new DateOnly(2024, 1, 2),
+            basePrice: 200m);
+        var sourcePath = Path.Combine(_dataRoot, "AAPL", "AAPL_bars_2024-01-02.jsonl");
+        var adjustment = new StubCorporateActionAdjustmentService(
+            factor: 2m,
+            onPrepare: () => File.WriteAllText(sourcePath, string.Empty));
+        var catalog = new StorageCatalogService(_dataRoot, new StorageOptions());
+        var engine = new BacktestEngine(
+            NullLogger<BacktestEngine>.Instance,
+            catalog,
+            securityMasterQueryService: null,
+            corporateActionAdjustment: adjustment);
+        var strategy = new PriceCapturingStrategy();
+        var request = new BacktestRequest(
+            From: new DateOnly(2024, 1, 2),
+            To: new DateOnly(2024, 1, 2),
+            DataRoot: _dataRoot,
+            AdjustForCorporateActions: true);
+
+        await engine.RunAsync(request, strategy);
+
+        strategy.ReceivedBars.Should().ContainSingle();
+        strategy.ReceivedBars[0].Open.Should().Be(100m,
+            "execution must replay the same captured bar that was supplied during preparation");
+    }
+
+    [Fact]
+    public void BuildTradeTickets_AssetEventPreservesAccountScope()
+    {
+        var flow = new AssetEventCashFlow(
+            new DateTimeOffset(2024, 2, 1, 0, 0, 0, TimeSpan.Zero),
+            25m,
+            "SPY",
+            AssetEventType.Dividend,
+            25L,
+            1m)
+        {
+            AccountId = "broker-b"
+        };
+
+        var ticket = BacktestEngine.BuildTradeTickets([flow]).Should().ContainSingle().Subject;
+
+        ticket.AccountId.Should().Be("broker-b");
     }
 
     [Fact]
@@ -670,9 +795,33 @@ file sealed class PriceCapturingStrategy : IBacktestStrategy
 /// Stub <see cref="ICorporateActionAdjustmentService"/> that divides all bar prices by a
 /// configurable split <paramref name="factor"/> and multiplies volume by the same factor.
 /// </summary>
-file sealed class StubCorporateActionAdjustmentService(decimal factor) : ICorporateActionAdjustmentService
+file sealed class StubCorporateActionAdjustmentService(decimal factor, Action? onPrepare = null) : ICorporateActionAdjustmentService
 {
     public int CallCount { get; private set; }
+    public int PrepareCallCount { get; private set; }
+    public IReadOnlyList<HistoricalBar> PreparedBars { get; private set; } = [];
+    public string? PreparedTicker { get; private set; }
+    public DateTimeOffset? PreparedEffectiveThroughUtc { get; private set; }
+
+    public async Task<CorporateActionAdjustmentPlan> PrepareAsync(
+        IReadOnlyList<HistoricalBar> bars,
+        string ticker,
+        DateTimeOffset effectiveThroughUtc,
+        CancellationToken ct = default)
+    {
+        PrepareCallCount++;
+        PreparedBars = bars.ToArray();
+        PreparedTicker = ticker;
+        PreparedEffectiveThroughUtc = effectiveThroughUtc;
+        onPrepare?.Invoke();
+
+        var adjusted = await AdjustAsync(bars, ticker, ct);
+        return CorporateActionAdjustmentPlan.FromAdjustedBars(
+            ticker,
+            effectiveThroughUtc,
+            bars,
+            adjusted);
+    }
 
     public Task<IReadOnlyList<HistoricalBar>> AdjustAsync(
         IReadOnlyList<HistoricalBar> bars,

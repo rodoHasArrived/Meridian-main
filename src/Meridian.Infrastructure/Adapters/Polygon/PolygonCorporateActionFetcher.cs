@@ -1,12 +1,12 @@
+using System.Globalization;
+using System.Net;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Polygon;
 
@@ -17,9 +17,10 @@ namespace Meridian.Infrastructure.Adapters.Polygon;
 public interface IPolygonCorporateActionFetcher
 {
     /// <summary>
-    /// Fetch and persist corporate actions for a specific security ticker.
+    /// Fetch and persist all corporate-action pages for a security ticker. Failures throw with
+    /// completion evidence; cancellation propagates with acknowledged persistence counts.
     /// </summary>
-    Task FetchAndPersistAsync(string ticker, Guid securityId, CancellationToken ct);
+    Task<PolygonCorporateActionFetchResult> FetchAndPersistAsync(string ticker, Guid securityId, CancellationToken ct);
 
     /// <summary>
     /// Fetch and persist corporate actions for all active securities.
@@ -122,184 +123,201 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
         _logger.LogInformation("PolygonCorporateActionFetcher stopped");
     }
 
-    public async Task FetchAndPersistAsync(string ticker, Guid securityId, CancellationToken ct)
+    public async Task<PolygonCorporateActionFetchResult> FetchAndPersistAsync(string ticker, Guid securityId, CancellationToken ct)
     {
-        if (string.IsNullOrEmpty(_apiKey))
-        {
-            _logger.LogWarning("Cannot fetch corporate actions: Polygon API key not configured");
-            return;
-        }
-
-        _logger.LogInformation("Fetching corporate actions for {Ticker} (SecurityId={SecurityId})", ticker, securityId);
-
+        var progress = new FetchProgress(ticker, securityId);
         try
         {
-            await FetchAndPersistDividendsAsync(ticker, securityId, ct).ConfigureAwait(false);
-        }
-        catch (HttpRequestException ex)
-        {
-            _logger.LogError(ex, "Failed to fetch dividends for {Ticker} from Polygon", ticker);
-        }
+            ct.ThrowIfCancellationRequested();
+            _apiKey ??= ResolvePolygonApiKey(_configuration);
+            if (string.IsNullOrWhiteSpace(_apiKey))
+                throw new PolygonCorporateActionFetchException(PolygonCorporateActionFailureKind.NotConfigured, progress.Snapshot());
 
-        try
-        {
-            await FetchAndPersistSplitsAsync(ticker, securityId, ct).ConfigureAwait(false);
+            await FetchEndpointAsync("dividends", progress, ct).ConfigureAwait(false);
+            await FetchEndpointAsync("splits", progress, ct).ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
+            return progress.Snapshot();
         }
-        catch (HttpRequestException ex)
+        catch (OperationCanceledException ex) when (ct.IsCancellationRequested)
         {
-            _logger.LogError(ex, "Failed to fetch splits for {Ticker} from Polygon", ticker);
+            throw new PolygonCorporateActionFetchCanceledException(progress.Snapshot(), ex, ct);
         }
     }
 
     public async Task FetchAndPersistAllAsync(CancellationToken ct)
     {
-        _logger.LogInformation("Starting fetch of corporate actions for all active securities");
+        ct.ThrowIfCancellationRequested();
+        const int pageSize = 500;
+        var seenSecurities = new HashSet<Guid>();
+        var fetchedCount = 0;
+        var skippedCount = 0;
+        var skip = 0;
+        while (true)
+        {
+            var request = new SecuritySearchRequest(Query: "", Take: pageSize, Skip: skip, ActiveOnly: true);
+            var results = await _queryService.SearchAsync(request, ct).ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
+            var newSecurities = 0;
+            foreach (var security in results)
+            {
+                ct.ThrowIfCancellationRequested();
+                if (!seenSecurities.Add(security.SecurityId))
+                    continue;
+                newSecurities++;
+                if (string.IsNullOrWhiteSpace(security.PrimaryIdentifier))
+                {
+                    skippedCount++;
+                    continue;
+                }
 
-        var searchRequest = new SecuritySearchRequest(Query: "", Take: 500, ActiveOnly: true);
-        IReadOnlyList<SecuritySummaryDto> results;
+                // Failures propagate: an interrupted universe scan cannot claim complete coverage.
+                await FetchAndPersistAsync(security.PrimaryIdentifier, security.SecurityId, ct).ConfigureAwait(false);
+                fetchedCount++;
+            }
+
+            if (results.Count < pageSize)
+                break;
+            if (newSecurities == 0)
+                throw new InvalidDataException("Active security search repeated a corporate-action scan page.");
+            skip += results.Count;
+        }
+
+        ct.ThrowIfCancellationRequested();
+        _logger.LogInformation(
+            "Completed corporate action scan: {FetchedCount} securities fetched, {SkippedCount} skipped without a primary identifier",
+            fetchedCount, skippedCount);
+    }
+
+    private async Task FetchEndpointAsync(string endpoint, FetchProgress progress, CancellationToken ct)
+    {
+        var nextUrl = $"{BaseUrl}/v3/reference/{endpoint}?ticker={Uri.EscapeDataString(progress.Ticker)}&limit={MaxResultsPerRequest}";
+        var visitedPages = new HashSet<string>(StringComparer.Ordinal);
+        var seenActions = new HashSet<string>(StringComparer.Ordinal);
+        using var client = _httpClientFactory.CreateClient();
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("Meridian/1.0");
+        var failureKind = PolygonCorporateActionFailureKind.InvalidResponse;
+        TimeSpan? retryAfter = null;
+        HttpStatusCode? statusCode = null;
 
         try
         {
-            results = await _queryService.SearchAsync(searchRequest, ct).ConfigureAwait(false);
+            while (!string.IsNullOrWhiteSpace(nextUrl))
+            {
+                ct.ThrowIfCancellationRequested();
+                failureKind = PolygonCorporateActionFailureKind.InvalidResponse;
+                var pageUri = PolygonPagination.GetAuthenticatedPageUri(nextUrl, _apiKey!);
+                if (!visitedPages.Add(PolygonPagination.GetPageIdentity(pageUri)))
+                    throw new InvalidDataException("Polygon repeated a corporate-action pagination cursor.");
+
+                failureKind = PolygonCorporateActionFailureKind.Http;
+                // Pacing applies to each HTTP request, including empty pages and subsequent cursors.
+                await _rateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
+                using var response = await client.GetAsync(pageUri, ct).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                {
+                    statusCode = response.StatusCode;
+                    failureKind = response.StatusCode switch
+                    {
+                        HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => PolygonCorporateActionFailureKind.Authentication,
+                        HttpStatusCode.TooManyRequests => PolygonCorporateActionFailureKind.Throttled,
+                        _ => PolygonCorporateActionFailureKind.Http
+                    };
+                    retryAfter = response.Headers.RetryAfter?.Delta;
+                    if (retryAfter == null && response.Headers.RetryAfter?.Date is { } retryDate)
+                        retryAfter = retryDate > DateTimeOffset.UtcNow ? retryDate - DateTimeOffset.UtcNow : TimeSpan.Zero;
+                    response.EnsureSuccessStatusCode();
+                }
+
+                var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+                failureKind = PolygonCorporateActionFailureKind.InvalidResponse;
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+                if (root.TryGetProperty("status", out var status) &&
+                    status.GetString() is { } statusText &&
+                    !string.Equals(statusText, "OK", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("Polygon returned an unsuccessful corporate-action response.");
+
+                if (!root.TryGetProperty("results", out var results) || results.ValueKind != JsonValueKind.Array)
+                    throw new InvalidDataException("Polygon corporate-action response omitted its results array.");
+
+                foreach (var item in results.EnumerateArray())
+                {
+                    ct.ThrowIfCancellationRequested();
+                    failureKind = PolygonCorporateActionFailureKind.InvalidResponse;
+                    var identity = item.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String
+                        ? id.GetString()! : item.GetRawText();
+                    if (!seenActions.Add(identity))
+                        continue;
+
+                    CorporateActionDto dto;
+                    var parsed = endpoint == "dividends"
+                        ? ParseDividend(item, progress.SecurityId, out dto)
+                        : ParseSplit(item, progress.SecurityId, out dto);
+                    if (!parsed)
+                        throw new InvalidDataException("Polygon returned an invalid corporate action.");
+
+                    failureKind = PolygonCorporateActionFailureKind.Persistence;
+                    await AppendCorporateActionAsync(progress.Ticker, progress.SecurityId, dto, ct).ConfigureAwait(false);
+                    progress.RecordPersisted(endpoint);
+                }
+
+                failureKind = PolygonCorporateActionFailureKind.InvalidResponse;
+                nextUrl = root.TryGetProperty("next_url", out var next) && next.ValueKind != JsonValueKind.Null
+                    ? next.GetString() : null;
+            }
+
+            ct.ThrowIfCancellationRequested();
+            progress.RecordComplete(endpoint);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to search active securities");
-            return;
+            if (failureKind != PolygonCorporateActionFailureKind.Persistence && ex is HttpRequestException httpException)
+            {
+                statusCode ??= httpException.StatusCode;
+                failureKind = statusCode switch
+                {
+                    HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => PolygonCorporateActionFailureKind.Authentication,
+                    HttpStatusCode.TooManyRequests => PolygonCorporateActionFailureKind.Throttled,
+                    _ => PolygonCorporateActionFailureKind.Http
+                };
+            }
+            throw new PolygonCorporateActionFetchException(failureKind, progress.Snapshot(), ex, statusCode, retryAfter);
         }
-
-        if (results.Count == 0)
-        {
-            _logger.LogWarning("No active securities found");
-            return;
-        }
-
-        _logger.LogInformation("Found {Count} active securities to fetch corporate actions for", results.Count);
-
-        foreach (var security in results)
-        {
-            if (ct.IsCancellationRequested)
-            {
-                _logger.LogInformation("Corporate action fetch cancelled");
-                break;
-            }
-
-            var primaryId = security.PrimaryIdentifier;
-            if (string.IsNullOrEmpty(primaryId))
-            {
-                _logger.LogDebug("Skipping {SecurityId}: no primary identifier", security.SecurityId);
-                continue;
-            }
-
-            try
-            {
-                await FetchAndPersistAsync(primaryId, security.SecurityId, ct).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error fetching corporate actions for {Ticker} (SecurityId={SecurityId})", primaryId, security.SecurityId);
-            }
-
-            try
-            {
-                await Task.Delay(TimeSpan.FromMilliseconds(500), ct).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogInformation("Delay cancelled");
-                break;
-            }
-        }
-
-        _logger.LogInformation("Completed fetch of corporate actions for all active securities");
     }
 
-    private async Task FetchAndPersistDividendsAsync(string ticker, Guid securityId, CancellationToken ct)
+    private sealed class FetchProgress(string ticker, Guid securityId)
     {
-        var url = $"{BaseUrl}/v3/reference/dividends?ticker={Uri.EscapeDataString(ticker)}&limit={MaxResultsPerRequest}&apiKey={_apiKey}";
+        public string Ticker { get; } = ticker;
+        public Guid SecurityId { get; } = securityId;
+        private bool _dividendsComplete;
+        private bool _splitsComplete;
+        private int _dividendsPersisted;
+        private int _splitsPersisted;
 
-        var client = _httpClientFactory.CreateClient();
-        client.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0");
-
-        var response = await client.GetAsync(url, ct).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-
-        var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-        using var doc = JsonDocument.Parse(json);
-
-        var root = doc.RootElement;
-        if (!root.TryGetProperty("results", out var results))
+        public void RecordPersisted(string endpoint)
         {
-            _logger.LogDebug("No dividend results for {Ticker}", ticker);
-            return;
+            if (endpoint == "dividends")
+                _dividendsPersisted++;
+            else
+                _splitsPersisted++;
         }
 
-        var dividendCount = 0;
-        foreach (var item in results.EnumerateArray())
+        public void RecordComplete(string endpoint)
         {
-            if (ct.IsCancellationRequested)
-                break;
-
-            try
-            {
-                if (!ParseDividend(item, securityId, out var dto))
-                    continue;
-
-                await _rateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-                await AppendCorporateActionAsync(ticker, securityId, dto, ct).ConfigureAwait(false);
-                dividendCount++;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing dividend for {Ticker}", ticker);
-            }
+            if (endpoint == "dividends")
+                _dividendsComplete = true;
+            else
+                _splitsComplete = true;
         }
 
-        _logger.LogInformation("Persisted {Count} dividends for {Ticker}", dividendCount, ticker);
-    }
-
-    private async Task FetchAndPersistSplitsAsync(string ticker, Guid securityId, CancellationToken ct)
-    {
-        var url = $"{BaseUrl}/v3/reference/splits?ticker={Uri.EscapeDataString(ticker)}&limit={MaxResultsPerRequest}&apiKey={_apiKey}";
-
-        var client = _httpClientFactory.CreateClient();
-        client.DefaultRequestHeaders.Add("User-Agent", "Meridian/1.0");
-
-        var response = await client.GetAsync(url, ct).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-
-        var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-        using var doc = JsonDocument.Parse(json);
-
-        var root = doc.RootElement;
-        if (!root.TryGetProperty("results", out var results))
-        {
-            _logger.LogDebug("No split results for {Ticker}", ticker);
-            return;
-        }
-
-        var splitCount = 0;
-        foreach (var item in results.EnumerateArray())
-        {
-            if (ct.IsCancellationRequested)
-                break;
-
-            try
-            {
-                if (!ParseSplit(item, securityId, out var dto))
-                    continue;
-
-                await _rateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-                await AppendCorporateActionAsync(ticker, securityId, dto, ct).ConfigureAwait(false);
-                splitCount++;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing split for {Ticker}", ticker);
-            }
-        }
-
-        _logger.LogInformation("Persisted {Count} splits for {Ticker}", splitCount, ticker);
+        public PolygonCorporateActionFetchResult Snapshot() => new(
+            Ticker, SecurityId,
+            new(_dividendsComplete, _dividendsPersisted),
+            new(_splitsComplete, _splitsPersisted));
     }
 
     private Task AppendCorporateActionAsync(
@@ -322,8 +340,7 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
         dto = default!;
 
         if (!item.TryGetProperty("cash_amount", out var cashElement) ||
-            cashElement.GetString() == null ||
-            !decimal.TryParse(cashElement.GetString()!, out var cashAmount))
+            !TryGetDecimal(cashElement, out var cashAmount))
         {
             return false;
         }
@@ -375,11 +392,9 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
         dto = default!;
 
         if (!item.TryGetProperty("split_from", out var fromElement) ||
-            fromElement.GetString() == null ||
-            !decimal.TryParse(fromElement.GetString()!, out var splitFrom) ||
+            !TryGetDecimal(fromElement, out var splitFrom) || splitFrom <= 0m ||
             !item.TryGetProperty("split_to", out var toElement) ||
-            toElement.GetString() == null ||
-            !decimal.TryParse(toElement.GetString()!, out var splitTo))
+            !TryGetDecimal(toElement, out var splitTo) || splitTo <= 0m)
         {
             return false;
         }
@@ -410,6 +425,15 @@ public sealed class PolygonCorporateActionFetcher : IPolygonCorporateActionFetch
             RightsPerShare: null);
 
         return true;
+    }
+
+    private static bool TryGetDecimal(JsonElement element, out decimal value)
+    {
+        value = default;
+        return element.ValueKind == JsonValueKind.Number
+            ? element.TryGetDecimal(out value)
+            : element.ValueKind == JsonValueKind.String && decimal.TryParse(
+                element.GetString(), NumberStyles.Number, CultureInfo.InvariantCulture, out value);
     }
 
     private static string? ResolvePolygonApiKey(IConfiguration configuration)

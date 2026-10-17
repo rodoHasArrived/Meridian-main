@@ -43,6 +43,20 @@ For host tracing configuration or disconnected pipeline/backfill spans, start wi
 `src/Meridian.Platform/Tracing/`, shared host composition under
 `src/Meridian.Application/Composition/`, and the pipeline/backfill owners in the source registry.
 
+For Evidence Vault storage quotas, start with
+[`Meridian.Documents`](../../../src/Meridian.Documents/README.md#evidence-storage-quota-configuration):
+`EvidenceStorageQuotaCoordinator` owns admission, durable reservations, and recovery leases.
+[`FileEvidenceArtifactStore`](../../../src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.cs)
+and its `StorageQuota`/`Export` partials adapt retained usage, staging cleanup, and index-last
+publication. Intake/export coverage lives in `FileEvidenceArtifactStoreQuotaTests`; coordinator
+concurrency and recovery coverage lives in `EvidenceStorageQuotaCoordinatorTests`.
+
+For PRD-112 pipeline budgets, start with [the bounded benchmark lane](../../engineering/pipeline-benchmark.md).
+`build/scripts/ci/benchmark-pipeline.py` records the profile and commit, runs the fixed
+`PipelineBudgetBenchmarks` stages, and invokes `build/scripts/validate_budget.py`.
+Failure propagation coverage lives in `tests/scripts/test_benchmark_pipeline.py`;
+sustained-load soak remains separate.
+
 ---
 
 ## MCP Surface

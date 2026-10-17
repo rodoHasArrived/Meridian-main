@@ -51,7 +51,7 @@ export function DesignSystemMasthead({
       <div className="workstation-brand-group mds-masthead__brand-group ws-brand">
         <button
           type="button"
-          className="workstation-nav-toggle mds-masthead__nav-toggle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="workstation-nav-toggle mds-masthead__nav-toggle focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
           aria-label="Open workspace navigation"
           aria-expanded={navOpen}
           aria-haspopup="dialog"
@@ -74,7 +74,7 @@ export function DesignSystemMasthead({
 
       <button
         type="button"
-        className="workstation-search mds-masthead__search ws-search focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        className="workstation-search mds-masthead__search ws-search focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
         onClick={onOpenCommandPalette}
         aria-label={commandTrigger.label}
         aria-controls={commandTrigger.controlsId}

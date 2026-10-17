@@ -36,6 +36,7 @@ public sealed class StrategyRunStore : IStrategyRepository
     private readonly Dictionary<StrategyRunRepositoryScopeKey, List<StrategyRunEntry>>
         _scopedVisibleRunsByLastUpdated = [];
     private readonly HashSet<string> _persistedEventIds = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, VerifiedOperationOutcome> _retainedTerminalOutcomes = new(StringComparer.Ordinal);
     private readonly Dictionary<string, RetainedCaseVersion> _retainedVersionsByRunId = new(StringComparer.Ordinal);
     private readonly IOperationalCaseHistoryStore? _historyStore;
     private readonly SemaphoreSlim _persistenceGate = new(1, 1);
@@ -64,8 +65,13 @@ public sealed class StrategyRunStore : IStrategyRepository
             lock (_lock)
             {
                 var eventType = InferEventType(entry);
+                _runsById.TryGetValue(entry.RunId, out var existing);
                 if (entry.OutputMetadata.Count > 0 &&
-                    eventType != StrategyRunLifecycleEventType.Completed)
+                    eventType != StrategyRunLifecycleEventType.Completed &&
+                    !(existing is { EndedAt: not null } && entry.EndedAt == existing.EndedAt &&
+                      CanonicalDictionaryEquals(existing.OutputMetadata, entry.OutputMetadata) &&
+                      (eventType == StrategyRunLifecycleEventType.RecoveryAttempted ||
+                       IsRetainedTerminalCleanupStep(existing, entry))))
                 {
                     throw new InvalidOperationException(
                         $"Strategy run '{entry.RunId}' lifecycle update is invalid: " +
@@ -112,10 +118,8 @@ public sealed class StrategyRunStore : IStrategyRepository
             var eventId = ComputeEventId(normalized, snapshotJson);
             if (_persistedEventIds.Contains(eventId))
             {
-                lock (_lock)
-                {
-                    ApplyEntry(normalized);
-                }
+                // Refresh already projected the newest retained event. A delayed retry of an
+                // older snapshot must not roll that projection back to its earlier state.
                 return;
             }
 
@@ -142,6 +146,39 @@ public sealed class StrategyRunStore : IStrategyRepository
         StrategyRunLifecycleEventType eventType,
         CancellationToken ct = default) =>
         RecordRunAsync(entry with { LastLifecycleEvent = eventType }, ct);
+
+    /// <inheritdoc/>
+    public async Task<VerifiedOperationOutcome?> RecordLifecycleEventWithOutcomeAsync(
+        StrategyRunEntry entry,
+        StrategyRunLifecycleEventType eventType,
+        CancellationToken ct = default)
+    {
+        if (_historyStore is null)
+        {
+            await RecordLifecycleEventAsync(entry, eventType, ct).ConfigureAwait(false);
+            return CreateLifecycleOutcome(entry, eventType);
+        }
+
+        // Capture converter-normalized inputs once, including case-insensitive metric sets,
+        // so the receipt lookup identifies exactly what RecordRunAsync snapshots and retains.
+        var captured = SnapshotEntry(entry with { LastLifecycleEvent = eventType });
+        await RecordRunAsync(captured, ct).ConfigureAwait(false);
+        if (!RequiresTerminalOutcome(eventType))
+        {
+            return null;
+        }
+
+        var normalized = NormalizeOperationalMetadata(captured);
+        var snapshotJson = JsonSerializer.Serialize(normalized, StrategyRunPersistenceJson.Options);
+        var eventId = ComputeEventId(normalized, snapshotJson);
+        lock (_lock)
+        {
+            return _retainedTerminalOutcomes.TryGetValue(eventId, out var outcome)
+                ? outcome
+                : throw new InvalidOperationException(
+                    $"Strategy run '{entry.RunId}' has no retained terminal receipt for this snapshot.");
+        }
+    }
 
     internal static VerifiedOperationOutcome? CreateLifecycleOutcome(
         StrategyRunEntry entry,
@@ -433,6 +470,12 @@ public sealed class StrategyRunStore : IStrategyRepository
         var v2InputHash = ComputeV2InputHash(entry);
         var legacyInputHash = ComputeLegacyInputHash(entry);
         var realismBoundInputHash = ComputeRealismBoundInputHash(entry);
+        if (entry.FundAccountId == Guid.Empty || (entry.FundAccountId.HasValue &&
+            !string.Equals(entry.InputHashSha256, canonicalInputHash, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidDataException(
+                $"Strategy run history sequence {record.Sequence} retained an input hash that does not bind its fund account.");
+        }
         if (!string.Equals(
                 entry.InputHashSha256,
                 canonicalInputHash,
@@ -499,13 +542,25 @@ public sealed class StrategyRunStore : IStrategyRepository
             }
 
             ValidateRetainedPredecessor(record, previousVersion);
-            ValidateTerminalOutcomeBinding(record, entry);
+            ValidateTerminalOutcomeBinding(record, entry, snapshotJson);
 
+            // Legacy JSON can omit newly introduced empty fields or use the old XIRR marker.
+            // Recognize a retry of that complete typed snapshot without changing retained bytes
+            // or normalizing its input hash: a genuine hash upgrade must still append normally.
+            var typedSnapshotJson = JsonSerializer.Serialize(entry, StrategyRunPersistenceJson.Options);
+            var typedEventId = ComputeEventId(entry, typedSnapshotJson);
             ApplyEntry(entry);
             _retainedVersionsByRunId[entry.RunId] = new RetainedCaseVersion(
                 record.Sequence,
                 record.RecordHashSha256);
             _persistedEventIds.Add(record.HistoryEventId);
+            _persistedEventIds.Add(typedEventId);
+            if (record.TerminalOutcome is { } outcome)
+            {
+                // A legacy retry must return the original receipt, whose operation ID binds
+                // the retained JSON, rather than inventing a receipt for its typed alias.
+                _retainedTerminalOutcomes[typedEventId] = outcome;
+            }
             _lastReplayedSequence = Math.Max(_lastReplayedSequence, record.Sequence);
         }
     }
@@ -622,10 +677,15 @@ public sealed class StrategyRunStore : IStrategyRepository
         }
 
         var succeeded = eventType is StrategyRunLifecycleEventType.Started or
+            StrategyRunLifecycleEventType.Activated or
+            StrategyRunLifecycleEventType.Recovered or
+            StrategyRunLifecycleEventType.Resumed or
             StrategyRunLifecycleEventType.Paused or
             StrategyRunLifecycleEventType.Completed;
-        var warning = eventType == StrategyRunLifecycleEventType.EvidencePersistenceFailed;
-        var cancelled = eventType == StrategyRunLifecycleEventType.Cancelled;
+        var persistenceFailure = eventType == StrategyRunLifecycleEventType.EvidencePersistenceFailed;
+        var cancelled = eventType == StrategyRunLifecycleEventType.Cancelled ||
+            persistenceFailure && entry.TerminalStatus == StrategyRunStatus.Cancelled;
+        var warning = persistenceFailure && !cancelled && entry.TerminalStatus != StrategyRunStatus.Failed;
         var state = succeeded
             ? OperationTerminalState.Succeeded
             : warning
@@ -774,6 +834,16 @@ public sealed class StrategyRunStore : IStrategyRepository
         var v2InputHash = ComputeV2InputHash(entry);
         var legacyInputHash = ComputeLegacyInputHash(entry);
         var realismBoundInputHash = ComputeRealismBoundInputHash(entry);
+        if (entry.FundAccountId == Guid.Empty)
+        {
+            throw new ArgumentException("Strategy run fund account must not be empty.", nameof(entry));
+        }
+        if (entry.FundAccountId.HasValue &&
+            !string.IsNullOrWhiteSpace(entry.InputHashSha256) &&
+            !string.Equals(entry.InputHashSha256, inputHash, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new ArgumentException("Strategy run input hash does not bind its fund account.", nameof(entry));
+        }
         var matchesRealismBound =
             string.Equals(entry.InputHashSha256, realismBoundInputHash, StringComparison.OrdinalIgnoreCase);
         if (!string.IsNullOrWhiteSpace(entry.InputHashSha256) &&
@@ -788,9 +858,8 @@ public sealed class StrategyRunStore : IStrategyRepository
                 nameof(entry));
         }
 
-        // A v4 realism-bound hash is strictly more specific than the canonical v3 digest, so it is
-        // retained verbatim. Overwriting it with the v3 recomputation would silently discard the
-        // execution-realism settings the caller asked to bind into run identity.
+        // Unscoped runs may retain their more specific v4 realism-bound digest. Scoped runs
+        // require v5, which binds both execution realism and the authorized account.
         var retainedInputHash = matchesRealismBound ? realismBoundInputHash : inputHash;
 
         return entry with
@@ -846,7 +915,8 @@ public sealed class StrategyRunStore : IStrategyRepository
 
     private static void ValidateTerminalOutcomeBinding(
         OperationalCaseHistoryRecord record,
-        StrategyRunEntry entry)
+        StrategyRunEntry entry,
+        string snapshotJson)
     {
         var requiresOutcome = RequiresTerminalOutcome(entry.LastLifecycleEvent);
         if (!requiresOutcome)
@@ -872,7 +942,21 @@ public sealed class StrategyRunStore : IStrategyRepository
                 $"Strategy run history sequence {record.Sequence} retained an invalid terminal receipt: " +
                 string.Join(" ", receiptErrors));
         }
-        var expectedState = ExpectedTerminalState(entry.LastLifecycleEvent);
+        var expectedState = ExpectedTerminalState(entry);
+        if (entry.LastLifecycleEvent == StrategyRunLifecycleEventType.EvidencePersistenceFailed &&
+            expectedState is (OperationTerminalState.Failed or OperationTerminalState.Blocked) &&
+            outcome.State == OperationTerminalState.CompletedWithWarnings)
+        {
+            // Before ordered fact evidence was retained, persistence fallback receipts always
+            // used warnings. Preserve those historical receipts without weakening new writes.
+            using var snapshot = JsonDocument.Parse(snapshotJson);
+            if (!snapshot.RootElement.EnumerateObject().Any(property =>
+                    string.Equals(property.Name, nameof(StrategyRunEntry.LifecycleFacts), StringComparison.OrdinalIgnoreCase)))
+            {
+                expectedState = OperationTerminalState.CompletedWithWarnings;
+            }
+        }
+
         if (outcome.State != expectedState ||
             !string.Equals(outcome.OperationId, record.HistoryEventId, StringComparison.Ordinal) ||
             !string.Equals(
@@ -893,6 +977,9 @@ public sealed class StrategyRunStore : IStrategyRepository
 
     private static bool RequiresTerminalOutcome(StrategyRunLifecycleEventType eventType) =>
         eventType is StrategyRunLifecycleEventType.Started or
+            StrategyRunLifecycleEventType.Activated or
+            StrategyRunLifecycleEventType.Recovered or
+            StrategyRunLifecycleEventType.Resumed or
             StrategyRunLifecycleEventType.Paused or
             StrategyRunLifecycleEventType.Completed or
             StrategyRunLifecycleEventType.StartFailed or
@@ -902,12 +989,19 @@ public sealed class StrategyRunStore : IStrategyRepository
             StrategyRunLifecycleEventType.Cancelled or
             StrategyRunLifecycleEventType.EvidencePersistenceFailed;
 
-    private static OperationTerminalState ExpectedTerminalState(StrategyRunLifecycleEventType eventType) =>
-        eventType switch
+    private static OperationTerminalState ExpectedTerminalState(StrategyRunEntry entry) =>
+        entry.LastLifecycleEvent switch
         {
             StrategyRunLifecycleEventType.Started or
+            StrategyRunLifecycleEventType.Activated or
+            StrategyRunLifecycleEventType.Recovered or
+            StrategyRunLifecycleEventType.Resumed or
             StrategyRunLifecycleEventType.Paused or
             StrategyRunLifecycleEventType.Completed => OperationTerminalState.Succeeded,
+            StrategyRunLifecycleEventType.EvidencePersistenceFailed when entry.TerminalStatus == StrategyRunStatus.Failed =>
+                OperationTerminalState.Failed,
+            StrategyRunLifecycleEventType.EvidencePersistenceFailed when entry.TerminalStatus == StrategyRunStatus.Cancelled =>
+                OperationTerminalState.Blocked,
             StrategyRunLifecycleEventType.EvidencePersistenceFailed =>
                 OperationTerminalState.CompletedWithWarnings,
             StrategyRunLifecycleEventType.Cancelled => OperationTerminalState.Blocked,
@@ -915,13 +1009,19 @@ public sealed class StrategyRunStore : IStrategyRepository
             StrategyRunLifecycleEventType.PauseFailed or
             StrategyRunLifecycleEventType.StopFailed or
             StrategyRunLifecycleEventType.Failed => OperationTerminalState.Failed,
-            _ => throw new ArgumentOutOfRangeException(nameof(eventType), eventType, "Event is not terminal.")
+            _ => throw new ArgumentOutOfRangeException(nameof(entry), entry.LastLifecycleEvent, "Event is not terminal.")
         };
 
     private static string? GetLifecycleProgressionError(
         StrategyRunEntry? previous,
         StrategyRunEntry current)
     {
+        var factsError = StrategyLifecycleFactMapping.GetValidationError(current);
+        if (factsError is not null)
+        {
+            return factsError;
+        }
+
         if (current.StartedAt == default)
         {
             return "the run start timestamp is missing";
@@ -949,19 +1049,29 @@ public sealed class StrategyRunStore : IStrategyRepository
         }
 
         if (current.LastLifecycleEvent is (StrategyRunLifecycleEventType.Started or
+                StrategyRunLifecycleEventType.Activated or
+                StrategyRunLifecycleEventType.Recovered or
+                StrategyRunLifecycleEventType.Resumed or
+                StrategyRunLifecycleEventType.Suspended or
                 StrategyRunLifecycleEventType.StartRequested or
                 StrategyRunLifecycleEventType.PauseRequested or
                 StrategyRunLifecycleEventType.Paused or
                 StrategyRunLifecycleEventType.PauseFailed or
                 StrategyRunLifecycleEventType.StopFailed or
                 StrategyRunLifecycleEventType.StopRequested) &&
-            current.EndedAt is not null)
+            current.EndedAt is not null &&
+            !IsRetainedTerminalCleanupStep(previous, current))
         {
             return $"non-terminal lifecycle event '{current.LastLifecycleEvent}' retains a run end timestamp";
         }
 
         if (current.OutputMetadata.Count > 0 &&
-            current.LastLifecycleEvent != StrategyRunLifecycleEventType.Completed)
+            current.LastLifecycleEvent != StrategyRunLifecycleEventType.Completed &&
+            !(previous is { EndedAt: not null } &&
+              current.EndedAt == previous.EndedAt &&
+              CanonicalDictionaryEquals(previous.OutputMetadata, current.OutputMetadata) &&
+              (current.LastLifecycleEvent == StrategyRunLifecycleEventType.RecoveryAttempted ||
+               IsRetainedTerminalCleanupStep(previous, current))))
         {
             return "run output metadata may only be retained with a completed lifecycle event";
         }
@@ -969,6 +1079,15 @@ public sealed class StrategyRunStore : IStrategyRepository
         if (previous is null)
         {
             return null;
+        }
+
+        var continuesTerminalCleanup = previous.EndedAt is not null &&
+            current.LastLifecycleEvent != StrategyRunLifecycleEventType.RecoveryAttempted &&
+            (current.LastLifecycleEvent is StrategyRunLifecycleEventType.StopRequested or StrategyRunLifecycleEventType.StopFailed ||
+             previous.LastLifecycleEvent is StrategyRunLifecycleEventType.StopRequested or StrategyRunLifecycleEventType.StopFailed);
+        if (continuesTerminalCleanup && !HasSameAttemptIdentity(previous, current))
+        {
+            return "cleanup attempt identity changed after the terminal lifecycle event";
         }
 
         var outputMetadataChanged = !CanonicalDictionaryEquals(
@@ -989,6 +1108,7 @@ public sealed class StrategyRunStore : IStrategyRepository
             !string.Equals(previous.LedgerReference, current.LedgerReference, StringComparison.Ordinal) ||
             !string.Equals(previous.AuditReference, current.AuditReference, StringComparison.Ordinal) ||
             !string.Equals(previous.FundProfileId, current.FundProfileId, StringComparison.Ordinal) ||
+            previous.FundAccountId != current.FundAccountId ||
             !EvidenceLoopEquals(previous, current);
         var inputHashChanged = !string.Equals(
             previous.InputHashSha256,
@@ -1053,7 +1173,8 @@ public sealed class StrategyRunStore : IStrategyRepository
 
         var reconcilesExternallyStartedRun =
             previous.LastLifecycleEvent == StrategyRunLifecycleEventType.StartFailed &&
-            current.LastLifecycleEvent == StrategyRunLifecycleEventType.Started &&
+            current.LastLifecycleEvent is (StrategyRunLifecycleEventType.Started or
+                StrategyRunLifecycleEventType.Recovered or StrategyRunLifecycleEventType.Resumed) &&
             current.EndedAt is null;
         if (previous.EndedAt is { } previousEndedAt &&
             current.EndedAt != previousEndedAt &&
@@ -1069,6 +1190,41 @@ public sealed class StrategyRunStore : IStrategyRepository
 
         return null;
     }
+
+    private static bool IsRetainedTerminalCleanupStep(
+        StrategyRunEntry? previous,
+        StrategyRunEntry current)
+    {
+        // Cleanup records follow a failed/cancelled attempt without reopening that run or
+        // changing its retained end timestamp. Recovery starts a separate attempt afterwards.
+        if (previous is null ||
+            previous.EndedAt is null ||
+            current.EndedAt != previous.EndedAt ||
+            current.TerminalStatus != previous.TerminalStatus ||
+            !HasSameAttemptIdentity(previous, current))
+        {
+            return false;
+        }
+
+        return current.LastLifecycleEvent switch
+        {
+            StrategyRunLifecycleEventType.StopRequested => previous.LastLifecycleEvent is
+                StrategyRunLifecycleEventType.StartFailed or
+                StrategyRunLifecycleEventType.Failed or
+                StrategyRunLifecycleEventType.Cancelled or
+                StrategyRunLifecycleEventType.StopFailed ||
+                previous.LastLifecycleEvent == StrategyRunLifecycleEventType.EvidencePersistenceFailed &&
+                previous.TerminalStatus is (StrategyRunStatus.Failed or StrategyRunStatus.Cancelled),
+            StrategyRunLifecycleEventType.StopFailed =>
+                previous.LastLifecycleEvent == StrategyRunLifecycleEventType.StopRequested,
+            _ => false
+        };
+    }
+
+    private static bool HasSameAttemptIdentity(StrategyRunEntry previous, StrategyRunEntry current) =>
+        previous.AttemptNumber == current.AttemptNumber &&
+        string.Equals(previous.AttemptId, current.AttemptId, StringComparison.Ordinal) &&
+        string.Equals(previous.RecoveryParentRunId, current.RecoveryParentRunId, StringComparison.Ordinal);
 
     private static bool IsWalkForwardEvidenceOnlyCompletedRunUpdate(
         StrategyRunEntry previous,
@@ -1090,8 +1246,14 @@ public sealed class StrategyRunStore : IStrategyRepository
         return string.Equals(previousWithoutEvidence, currentWithoutEvidence, StringComparison.Ordinal);
     }
 
-    private static string ComputeCanonicalInputHash(StrategyRunEntry entry) =>
-        StrategyRunEntry.HasNonBlankEvidenceDeclarations(
+    private static string ComputeCanonicalInputHash(StrategyRunEntry entry)
+    {
+        if (entry.FundAccountId.HasValue)
+        {
+            return StrategyRunEntry.ComputeAccountBoundInputHash(entry);
+        }
+
+        return StrategyRunEntry.HasNonBlankEvidenceDeclarations(
             entry.OperatorAcceptanceCriteria,
             entry.RetainedEvidenceReferences,
             entry.AccountingRecordReferences,
@@ -1100,6 +1262,7 @@ public sealed class StrategyRunStore : IStrategyRepository
             entry.GovernedReportReferences)
             ? ComputeEvidenceBoundInputHash(entry)
             : ComputeV2InputHash(entry);
+    }
 
     private static string ComputeEvidenceBoundInputHash(StrategyRunEntry entry) =>
         StrategyRunEntry.ComputeEvidenceBoundInputHash(
@@ -1204,12 +1367,20 @@ public sealed class StrategyRunStore : IStrategyRepository
         return previous switch
         {
             StrategyRunLifecycleEventType.StartRequested => current is
+                StrategyRunLifecycleEventType.Suspended or
+                StrategyRunLifecycleEventType.Activated or
+                StrategyRunLifecycleEventType.Recovered or
+                StrategyRunLifecycleEventType.Resumed or
                 StrategyRunLifecycleEventType.Started or
                 StrategyRunLifecycleEventType.StartFailed or
+                StrategyRunLifecycleEventType.Failed or
+                StrategyRunLifecycleEventType.StopRequested or
                 StrategyRunLifecycleEventType.Cancelled or
                 StrategyRunLifecycleEventType.EvidencePersistenceFailed or
                 StrategyRunLifecycleEventType.ActivationDeferred,
             StrategyRunLifecycleEventType.Started => current is
+                StrategyRunLifecycleEventType.StartRequested or
+                StrategyRunLifecycleEventType.Activated or
                 StrategyRunLifecycleEventType.StartFailed or
                 StrategyRunLifecycleEventType.PauseRequested or
                 StrategyRunLifecycleEventType.Paused or
@@ -1218,15 +1389,19 @@ public sealed class StrategyRunStore : IStrategyRepository
                 StrategyRunLifecycleEventType.Completed or
                 StrategyRunLifecycleEventType.Failed or
                 StrategyRunLifecycleEventType.Cancelled or
+                StrategyRunLifecycleEventType.EvidencePersistenceFailed or
                 StrategyRunLifecycleEventType.RecoveryAttempted or
                 StrategyRunLifecycleEventType.ActivationDeferred,
             StrategyRunLifecycleEventType.Paused => current is
+                StrategyRunLifecycleEventType.StartRequested or
+                StrategyRunLifecycleEventType.ActivationDeferred or
                 StrategyRunLifecycleEventType.PauseRequested or
                 StrategyRunLifecycleEventType.PauseFailed or
                 StrategyRunLifecycleEventType.StopRequested or
                 StrategyRunLifecycleEventType.Completed or
                 StrategyRunLifecycleEventType.Failed or
                 StrategyRunLifecycleEventType.Cancelled or
+                StrategyRunLifecycleEventType.EvidencePersistenceFailed or
                 StrategyRunLifecycleEventType.RecoveryAttempted,
             StrategyRunLifecycleEventType.PauseFailed => current is
                 StrategyRunLifecycleEventType.PauseRequested or
@@ -1254,6 +1429,9 @@ public sealed class StrategyRunStore : IStrategyRepository
                 StrategyRunLifecycleEventType.Cancelled or
                 StrategyRunLifecycleEventType.RecoveryAttempted,
             StrategyRunLifecycleEventType.EvidencePersistenceFailed => current is
+                StrategyRunLifecycleEventType.Activated or
+                StrategyRunLifecycleEventType.Recovered or
+                StrategyRunLifecycleEventType.Resumed or
                 StrategyRunLifecycleEventType.Started or
                 StrategyRunLifecycleEventType.Paused or
                 StrategyRunLifecycleEventType.Completed or
@@ -1261,12 +1439,43 @@ public sealed class StrategyRunStore : IStrategyRepository
                 StrategyRunLifecycleEventType.Cancelled or
                 StrategyRunLifecycleEventType.StopRequested,
             StrategyRunLifecycleEventType.StartFailed => current is
+                StrategyRunLifecycleEventType.Recovered or
+                StrategyRunLifecycleEventType.Resumed or
                 StrategyRunLifecycleEventType.Started or
+                StrategyRunLifecycleEventType.StopRequested or
                 StrategyRunLifecycleEventType.RecoveryAttempted,
-            StrategyRunLifecycleEventType.Completed or
-            StrategyRunLifecycleEventType.Failed or
-            StrategyRunLifecycleEventType.Cancelled =>
+            StrategyRunLifecycleEventType.Cancelled => current is
+                StrategyRunLifecycleEventType.StopRequested or
+                StrategyRunLifecycleEventType.RecoveryAttempted,
+            StrategyRunLifecycleEventType.Failed => current is
+                StrategyRunLifecycleEventType.StopRequested or
+                StrategyRunLifecycleEventType.RecoveryAttempted,
+            StrategyRunLifecycleEventType.Completed =>
                 current == StrategyRunLifecycleEventType.RecoveryAttempted,
+            StrategyRunLifecycleEventType.Activated or
+            StrategyRunLifecycleEventType.Recovered or
+            StrategyRunLifecycleEventType.Resumed => current is
+                StrategyRunLifecycleEventType.StartRequested or
+                StrategyRunLifecycleEventType.Recovered or
+                StrategyRunLifecycleEventType.Suspended or
+                StrategyRunLifecycleEventType.EvidencePersistenceFailed or
+                StrategyRunLifecycleEventType.PauseRequested or
+                StrategyRunLifecycleEventType.Paused or
+                StrategyRunLifecycleEventType.PauseFailed or
+                StrategyRunLifecycleEventType.StopRequested or
+                StrategyRunLifecycleEventType.Completed or
+                StrategyRunLifecycleEventType.Failed or
+                StrategyRunLifecycleEventType.Cancelled or
+                StrategyRunLifecycleEventType.RecoveryAttempted or
+                StrategyRunLifecycleEventType.ActivationDeferred,
+            StrategyRunLifecycleEventType.Suspended => current is
+                StrategyRunLifecycleEventType.StartRequested or
+                StrategyRunLifecycleEventType.EvidencePersistenceFailed or
+                StrategyRunLifecycleEventType.Recovered or
+                StrategyRunLifecycleEventType.ActivationDeferred or
+                StrategyRunLifecycleEventType.StopRequested or
+                StrategyRunLifecycleEventType.Failed or
+                StrategyRunLifecycleEventType.Cancelled,
             StrategyRunLifecycleEventType.RecoveryAttempted => false,
 
             // A deferred run is retained intact and re-attempted -- the engine's startup resume
@@ -1275,6 +1484,9 @@ public sealed class StrategyRunStore : IStrategyRepository
             // self-transition every restart would reject the re-deferral of a run that is still
             // waiting for the same missing source (#2726).
             StrategyRunLifecycleEventType.ActivationDeferred => current is
+                StrategyRunLifecycleEventType.StartRequested or
+                StrategyRunLifecycleEventType.Activated or
+                StrategyRunLifecycleEventType.Recovered or
                 StrategyRunLifecycleEventType.Started or
                 StrategyRunLifecycleEventType.ActivationDeferred or
                 StrategyRunLifecycleEventType.StartFailed or
@@ -1305,6 +1517,10 @@ public sealed class StrategyRunStore : IStrategyRepository
     {
         StrategyRunLifecycleEventType.StartRequested => "Strategy start requested.",
         StrategyRunLifecycleEventType.Started => "Strategy run started.",
+        StrategyRunLifecycleEventType.Activated => "Promoted strategy run activated.",
+        StrategyRunLifecycleEventType.Recovered => "Strategy execution recovered.",
+        StrategyRunLifecycleEventType.Resumed => "Paused strategy resumed.",
+        StrategyRunLifecycleEventType.Suspended => "Host stopped; strategy execution awaits recovery.",
         StrategyRunLifecycleEventType.StartFailed => "Strategy start failed.",
         StrategyRunLifecycleEventType.PauseRequested => "Strategy pause requested.",
         StrategyRunLifecycleEventType.Paused => "Strategy run paused.",

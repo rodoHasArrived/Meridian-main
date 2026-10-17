@@ -1,458 +1,138 @@
 # UI Fixture Mode for Offline Development
 
-## Overview
+**Status:** active
+**Owner:** core-team
+**Reviewed:** 2026-10-05
 
-The UI Fixture Mode enables desktop developers to work on the WPF application without requiring a running backend service. This significantly improves the development experience by:
+Use fixture mode to review supported WPF screens with sample responses. The desktop shell runs on
+Windows; shared fixture-service tests can run on other supported .NET hosts. Fixture coverage is
+service-specific, so a screen without a fixture branch may still need the local backend.
 
-- **Enabling offline development** - No need for network connectivity
-- **Deterministic testing** - Same data every time for reproducible debugging
-- **Faster iteration** - No waiting for backend startup or network requests
-- **Demo capabilities** - Show UI features without live data sources
+## Prerequisites
 
-## Architecture
+Run from the repository root on Windows with PowerShell 7 and the .NET SDK selected by
+`global.json`. Restore dependencies before attempting offline work. Use the
+[desktop testing guide](desktop-testing-guide.md) for build prerequisites and Windows validation.
 
-The fixture mode is built around the `FixtureDataService` singleton that provides mock data matching the actual API contracts defined in `Meridian.Contracts.Api`.
+## Start the desktop with its local backend
 
-```
-┌─────────────────────────────────────────────┐
-│          Desktop Application                │
-│              (WPF)                           │
-└─────────────────┬───────────────────────────┘
-                  │
-                  │ Fixture Mode: ON
-                  ├──────────────┐
-                  │              │
-         ┌────────▼─────┐  ┌────▼────────────┐
-         │ Real Service │  │ FixtureService  │
-         │   (HTTP)     │  │   (In-Memory)   │
-         └──────────────┘  └─────────────────┘
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -LaunchMode Development -Fixture
 ```
 
-## Synthetic Provider vs. UI Fixture Mode
+The launcher starts the backend with the synthetic provider and enables fixture mode for the WPF
+shell. Development mode sets the Development environment and explicitly opts into local in-memory
+governance. The launcher restores its environment overrides afterward and stops its owned backend
+when the desktop closes. This is a local development setup; follow
+[provider setup](../operators/provider-credentials.md) and the
+[environment reference](../reference/environment-variables.md) for real provider and persistence settings.
 
-The desktop fixture mode is still useful when only the UI needs canned responses. For end-to-end offline development, the repository now also supports a **synthetic provider mode** that runs the actual ingestion/backfill pipeline against deterministic historical/reference data.
+Expected result: the desktop opens with sample-data provenance visible, without requiring live
+provider credentials. Launch logs are written to `artifacts/desktop-launcher*.log`. If startup fails,
+inspect those logs and rerun without `-NoBuild` after resolving missing SDK/assets or backend startup
+errors. See [process lifecycle diagnostics](process-lifecycle-diagnostics.md) for stale processes.
 
-Use the synthetic provider when you want:
+## Set fixture mode directly
 
-- realistic historical bars with split and dividend adjustments;
-- historical trades, quotes, and auction prints for provider/backtest testing;
-- real-time synthetic trade, BBO, and level-2 order book events without live credentials;
-- symbol/reference metadata for offline development flows.
+The application reads `MDC_FIXTURE_MODE=1` or the `--fixture` argument. Use these direct launches when
+you are testing the desktop startup path itself; they do not perform the launcher's backend setup.
 
-Enable it by either:
+Windows PowerShell, from the repository root:
 
-- setting `"DataSource": "Synthetic"` plus `"Synthetic": { "Enabled": true }` in `appsettings.json`; or
-- setting `MDC_SYNTHETIC_MODE=1` to force the synthetic provider on in development environments.
-
-## Using Fixture Mode
-
-### Environment Variable (Recommended)
-
-Set the `MDC_FIXTURE_MODE` environment variable before starting the application:
-
-**Windows (PowerShell):**
 ```powershell
 $env:MDC_FIXTURE_MODE = "1"
-dotnet run --project src/Meridian.Wpf
+dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj
+# Clear the setting when finished, or restore its previous value if one was set.
+Remove-Item Env:MDC_FIXTURE_MODE
 ```
 
-**Windows (Command Prompt):**
-```cmd
-set MDC_FIXTURE_MODE=1
-dotnet run --project src/Meridian.Wpf
-```
-
-**Linux/macOS:**
-```bash
-export MDC_FIXTURE_MODE=1
-dotnet run --project src/Meridian.Wpf
-```
-
-### Command-Line Argument
-
-Pass `--fixture` flag when starting the application:
-
-```bash
-dotnet run --project src/Meridian.Wpf -- --fixture
-```
-
-### End-to-End Desktop Launcher
-
-When you want the WPF shell plus the local Meridian backend to start together in an offline-safe
-development mode, use the desktop launcher with `-Fixture`:
+Alternatively, pass the application argument:
 
 ```powershell
-pwsh -File scripts/dev/run-desktop.ps1 -Fixture
+dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -- --fixture
 ```
 
-This forces the backend onto the synthetic provider and enables fixture mode for the desktop shell,
-so local startup does not depend on live Alpaca or other provider credentials in
-`config/appsettings.json`. The launcher also restores any temporary fixture-mode environment overrides
-when it exits, stops a previously running `Meridian.Desktop.exe` from this same workspace before a rebuild,
-and shuts down the launcher-owned local host after the desktop window closes so local debugging sessions do
-not leave orphaned Meridian processes behind.
+WPF cannot run on Linux/macOS. Its non-Windows project target is an empty compatibility library;
+adding Windows targeting flags does not provide a desktop runtime.
 
-### Programmatic (For Testing)
+## Fixture responses and synthetic ingestion
 
-In your test setup or initialization code:
+| Need | Use |
+| --- | --- |
+| Sample responses in supported desktop services | `MDC_FIXTURE_MODE=1`, `--fixture`, or the launcher `-Fixture` switch |
+| Exercise the actual ingestion/backfill pipeline without live provider credentials | The Synthetic provider, configured through `DataSource: Synthetic` with `Synthetic.Enabled: true`, or `MDC_SYNTHETIC_MODE=1` |
+| Reproducible unit tests | Explicit inputs and the test project's fixture/time-provider patterns |
 
-```csharp
-// Enable fixture mode
-FixtureModeManager.Instance.IsEnabled = true;
+Fixture mode does not prove provider connectivity, production persistence, or real backend integration.
+Several fixture methods use current timestamps, symbol hash codes, and randomized simulated delays;
+do not assume responses are byte-for-byte identical across processes or that every screen is mocked.
 
-// Use fixture data
-var status = FixtureDataService.Instance.GetMockStatusResponse();
-```
+## Source and fixture API
 
-## Available Mock Data
+The implementation is owned by
+[FixtureDataService](../../src/Meridian.Ui.Services/Services/FixtureDataService.cs) and
+[FixtureModeDetector](../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs).
 
-### Status Response
+| Method | Response |
+| --- | --- |
+| `GetMockStatusResponse()` | Connected status, pipeline counters, and metrics |
+| `GetMockDisconnectedStatus()` | Disconnected status with no metrics or pipeline data |
+| `GetMockTradeData(symbol)` | Sample trade for one symbol |
+| `GetMockQuoteData(symbol)` | Sample bid/ask quote |
+| `GetMockTradesResponse(symbol, count)` | A collection of sample trades |
+| `GetMockBackfillHealth()` | Sample provider health |
+| `GetMockSymbols()` | Sample symbols |
+| `SetScenario(scenario)` | Selects Connected, Disconnected, Degraded, Error, or Loading |
 
-```csharp
-var status = FixtureDataService.Instance.GetMockStatusResponse();
-// Returns: Connected system with realistic metrics
-// - Uptime: ~2 hours
-// - Events processed: ~45,000
-// - Pipeline status: Active with queue data
-```
-
-### Disconnected Status
-
-```csharp
-var status = FixtureDataService.Instance.GetMockDisconnectedStatus();
-// Returns: Disconnected system state
-// - IsConnected: false
-// - Metrics: null
-// - Pipeline: null
-```
-
-### Trade Data
+For a bounded test setup, use the actual detector API and restore shared state:
 
 ```csharp
-var trade = FixtureDataService.Instance.GetMockTradeData("SPY");
-// Returns: Single trade for symbol
-// - Realistic price based on symbol hash
-// - Current timestamp
-// - Venue: NASDAQ
-```
+using Meridian.Ui.Services.Services;
 
-### Quote Data
-
-```csharp
-var quote = FixtureDataService.Instance.GetMockQuoteData("AAPL");
-// Returns: BBO quote with spread
-// - Bid/Ask prices
-// - Bid/Ask sizes
-// - Calculated mid-price and spread
-```
-
-### Trade History
-
-```csharp
-var trades = FixtureDataService.Instance.GetMockTradesResponse("MSFT", 20);
-// Returns: Collection of sequential trades
-// - Chronological timestamps
-// - Ascending prices
-// - Alternating buy/sell aggressor
-```
-
-### Backfill Health
-
-```csharp
-var health = FixtureDataService.Instance.GetMockBackfillHealth();
-// Returns: Provider health status
-// - Alpaca: Available (45ms latency)
-// - Polygon: Available (68ms latency)
-// - Tiingo: Unavailable (rate limited)
-```
-
-### Symbol List
-
-```csharp
-var symbols = FixtureDataService.Instance.GetMockSymbols();
-// Returns: ["SPY", "AAPL", "MSFT", "TSLA", "GOOGL", ...]
-```
-
-## Integration Patterns
-
-### Service Integration
-
-Services should check for fixture mode and return mock data:
-
-```csharp
-public sealed class StatusService
+var detector = FixtureModeDetector.Instance;
+var wasEnabled = detector.IsFixtureMode;
+var previousScenario = FixtureDataService.Instance.ActiveScenario;
+try
 {
-    private static readonly Lazy<StatusService> _instance = new(() => new());
-    public static StatusService Instance => _instance.Value;
-
-    public bool UseFixtureMode { get; set; }
-
-    public async Task<StatusResponse> GetStatusAsync()
-    {
-        if (UseFixtureMode)
-        {
-            // Simulate network delay for realism
-            await FixtureDataService.Instance.SimulateNetworkDelayAsync();
-            return FixtureDataService.Instance.GetMockStatusResponse();
-        }
-
-        // Real API call
-        return await ApiClientService.Instance.GetAsync<StatusResponse>("/api/status");
-    }
+    detector.SetFixtureMode(true);
+    FixtureDataService.Instance.SetScenario(FixtureScenario.Connected);
+    var status = FixtureDataService.Instance.GetMockStatusResponse();
+    // Assert the fields required by this test.
+}
+finally
+{
+    FixtureDataService.Instance.SetScenario(previousScenario);
+    detector.SetFixtureMode(wasEnabled);
 }
 ```
 
-### App Startup Configuration
+These are shared singletons. Follow the owning test project's isolation conventions and avoid
+parallel tests that mutate the same detector/scenario. Selecting a scenario does not make every
+`GetMock*` method scenario-aware; verify the service consuming the scenario.
 
-**WPF (App.xaml.cs):**
+## Extend and validate
 
-```csharp
-protected override void OnStartup(StartupEventArgs e)
-{
-    base.OnStartup(e);
+Use the existing
+[fixture service tests](../../tests/Meridian.Ui.Tests/Services/FixtureDataServiceTests.cs) and
+[detector tests](../../tests/Meridian.Ui.Tests/Services/FixtureModeDetectorTests.cs) as examples.
+When adding fixture behavior, update the shared API-contract response and its tests, then connect
+it through the existing service and WPF startup wiring. Do not replace the application's startup
+method or introduce another fixture-mode singleton. Preserve visible sample-data provenance.
 
-    // Check for fixture mode
-    var useFixture = e.Args.Contains("--fixture") ||
-                     Environment.GetEnvironmentVariable("MDC_FIXTURE_MODE") == "1";
+Run the focused shared-service tests from the repository root:
 
-    if (useFixture)
-    {
-        EnableFixtureMode();
-    }
-
-    var mainWindow = new MainWindow();
-    mainWindow.Show();
-}
-
-private void EnableFixtureMode()
-{
-    // Enable fixture mode for all services
-    StatusService.Instance.UseFixtureMode = true;
-    BackfillService.Instance.UseFixtureMode = true;
-    LiveDataService.Instance.UseFixtureMode = true;
-
-    // Show notification
-    NotificationService.Instance.ShowInfo(
-        "Fixture Mode",
-        "Running with mock data (offline mode)"
-    );
-}
+```powershell
+python build/python/cli/buildctl.py test --project tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~FixtureDataServiceTests|FullyQualifiedName~FixtureModeDetectorTests" --queue
 ```
 
-## Testing with Fixture Data
+Expected result: the selected tests pass. If a fixture test fails, compare the response with current
+contracts and check for singleton state leaked from another test before changing expected values.
+For WPF integration, run the Windows desktop validation lane and inspect the actual screen; shared
+fixture tests alone do not verify desktop rendering.
 
-### Unit Tests
+## Related guidance
 
-```csharp
-[Fact]
-public async Task Dashboard_WithFixtureData_DisplaysStatus()
-{
-    // Arrange
-    StatusService.Instance.UseFixtureMode = true;
-    var viewModel = new DashboardViewModel();
-
-    // Act
-    await viewModel.LoadStatusAsync();
-
-    // Assert
-    viewModel.Status.Should().NotBeNull();
-    viewModel.Status.IsConnected.Should().BeTrue();
-    viewModel.EventsPerSecond.Should().BeGreaterThan(0);
-}
-```
-
-### Integration Tests
-
-```csharp
-[Fact]
-public async Task LiveDataViewer_WithFixtureMode_ShowsTrades()
-{
-    // Arrange
-    LiveDataService.Instance.UseFixtureMode = true;
-
-    // Act
-    var trades = await LiveDataService.Instance.GetRecentTradesAsync("SPY");
-
-    // Assert
-    trades.Should().NotBeEmpty();
-    trades.First().Symbol.Should().Be("SPY");
-}
-```
-
-## Realistic Network Simulation
-
-The `SimulateNetworkDelayAsync()` method adds random delays (50-150ms) to make fixture data feel more realistic:
-
-```csharp
-public async Task<StatusResponse> GetStatusAsync()
-{
-    if (UseFixtureMode)
-    {
-        await FixtureDataService.Instance.SimulateNetworkDelayAsync();
-        return FixtureDataService.Instance.GetMockStatusResponse();
-    }
-
-    return await RealApiCall();
-}
-```
-
-## Visual Indicator
-
-It's recommended to show a visual indicator when fixture mode is active:
-
-**Status Bar:**
-```xml
-<StatusBar>
-    <StatusBarItem x:Name="FixtureModeIndicator"
-                   Visibility="{Binding IsFixtureMode, Converter={StaticResource BoolToVisibility}}">
-        <TextBlock Text="⚠ FIXTURE MODE - Offline Data"
-                   Foreground="Orange"
-                   FontWeight="Bold"/>
-    </StatusBarItem>
-</StatusBar>
-```
-
-**Notification:**
-```csharp
-if (UseFixtureMode)
-{
-    NotificationService.Instance.ShowWarning(
-        "Fixture Mode Active",
-        "Application is using mock data for offline development"
-    );
-}
-```
-
-## Advantages
-
-### For Developers
-
-✅ **Work offline** - No internet required
-✅ **Faster startup** - No backend initialization wait
-✅ **Deterministic** - Same data every time
-✅ **No rate limits** - Mock data has no API quotas
-✅ **Test edge cases** - Easy to simulate errors/disconnections
-
-### For Demos
-
-✅ **Reliable** - No network issues during presentations
-✅ **Controllable** - Show exact scenarios you want
-✅ **Portable** - Works anywhere, anytime
-
-### For Testing
-
-✅ **Reproducible** - Tests get consistent data
-✅ **Fast** - No network latency
-✅ **Isolated** - No backend dependencies
-
-## Limitations
-
-⚠️ **Not a replacement for integration tests** - Real backend testing still needed
-⚠️ **Mock data may differ** - Contracts can change; keep fixtures updated
-⚠️ **Limited scenarios** - Only common cases are mocked
-
-## Extending Fixture Data
-
-To add new mock data:
-
-1. **Add method to FixtureDataService:**
-
-```csharp
-public MyNewDataType GetMockMyNewData() => new()
-{
-    // Mock data properties
-};
-```
-
-2. **Add tests:**
-
-```csharp
-[Fact]
-public void GetMockMyNewData_ReturnsValidData()
-{
-    var data = FixtureDataService.Instance.GetMockMyNewData();
-    data.Should().NotBeNull();
-}
-```
-
-3. **Integrate with services:**
-
-```csharp
-if (UseFixtureMode)
-{
-    return FixtureDataService.Instance.GetMockMyNewData();
-}
-```
-
-## Best Practices
-
-1. **Keep fixtures updated** - When API contracts change, update mock data
-2. **Test both modes** - Verify application works with fixtures AND real data
-3. **Use realistic values** - Mock data should resemble production
-4. **Simulate delays** - Use `SimulateNetworkDelayAsync()` for realism
-5. **Show indicator** - Always indicate when fixture mode is active
-6. **Document edge cases** - Add methods for error scenarios
-
-## Troubleshooting
-
-### Fixture mode not working
-
-Check:
-- ✓ Environment variable is set correctly
-- ✓ Service has `UseFixtureMode` property
-- ✓ Service checks fixture mode before API calls
-- ✓ App startup enables fixture mode
-
-### Data looks wrong
-
-Verify:
-- ✓ FixtureDataService returns expected types
-- ✓ Mock data matches current API contracts
-- ✓ JSON property names match API
-- ✓ Timestamps are reasonable
-
-### Tests fail in fixture mode
-
-Ensure:
-- ✓ Test setup enables fixture mode
-- ✓ Services support fixture mode flag
-- ✓ Mock data meets test expectations
-- ✓ No accidental real API calls
-
-## Related Files
-
-- **Service**: `src/Meridian.Ui.Services/Services/FixtureDataService.cs`
-- **Tests**: `tests/Meridian.Ui.Tests/Services/FixtureDataServiceTests.cs`
-- **Contracts**: `src/Meridian.Contracts/Api/`
-- **Historical assessment**: [`archive/docs/assessments/desktop-platform-improvements-implementation-guide.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/desktop-platform-improvements-implementation-guide.md); use current engineering and operator docs for active guidance.
-
-## Next Steps
-
-After implementing basic fixture mode:
-
-1. **Week 4**: Add architecture diagram
-2. **Months 2-3**: Service consolidation to reduce duplication
-3. **Future**: Fixture mode for more complex scenarios (streaming, backfill progress)
-
----
-
-**Status**: ✅ Implemented
-**Version**: 1.0
-**Last Updated**: 2026-02-13
-
----
-
-## Related Documentation
-
-- **Desktop Development:**
-  - [Desktop Testing Guide](./desktop-testing-guide.md) - Complete testing procedures and fixture usage
-  - [WPF Implementation Notes](./wpf-implementation-notes.md) - WPF architecture and patterns
-  - [Desktop Platform Improvements archive](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/assessments/desktop-platform-improvements-implementation-guide.md) - Historical improvement program; current guidance lives in engineering and operator docs
-
-- **Testing and Quality:**
-  - [Test Project README](https://github.com/rodoHasArrived/Meridian/blob/main/tests/Meridian.Ui.Tests/README.md) - Test coverage details
-  - [Desktop Support Policy](./policies/desktop-support-policy.md) - Required validation checks
-
-- **Architecture:**
-  - [Desktop Architecture Layers](../architecture/desktop-layers.md) - Layer boundaries and dependencies
-  - [Repository Organization Guide](./repository-organization-guide.md) - Code structure conventions
+- [Desktop testing guide](desktop-testing-guide.md)
+- [WPF implementation notes](wpf-implementation-notes.md)
+- [Desktop support policy](policies/desktop-support-policy.md)
+- [Desktop workflow automation](desktop-workflow-automation.md)

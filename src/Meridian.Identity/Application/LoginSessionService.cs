@@ -30,6 +30,7 @@ public sealed class LoginSessionService
 
     private readonly IHostEnvironment environment;
     private readonly UserProfileRegistry profileRegistry;
+    private readonly AuthenticationConfiguration _configuration;
     private readonly ConcurrentDictionary<string, SessionEntry> _sessions = new();
     private readonly ConcurrentDictionary<string, FailedAttemptWindow> _failedAttempts = new(StringComparer.Ordinal);
     private readonly object _failedAttemptGate = new();
@@ -41,11 +42,13 @@ public sealed class LoginSessionService
         IHostEnvironment environment,
         UserProfileRegistry profileRegistry,
         LoginSessionStoreOptions? options = null,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        AuthenticationConfiguration? configuration = null)
     {
         this.environment = environment ?? throw new ArgumentNullException(nameof(environment));
         this.profileRegistry = profileRegistry ?? throw new ArgumentNullException(nameof(profileRegistry));
-        _ = AuthenticationModeResolver.Resolve(environment);
+        _configuration = configuration ?? AuthenticationConfiguration.FromEnvironment();
+        _ = AuthenticationModeResolver.Resolve(environment, _configuration);
         _timeProvider = timeProvider ?? TimeProvider.System;
         _sessionStorePath = ResolveStorePath(options);
         WithAuthoritativeState(() => true, persist: false);
@@ -56,7 +59,7 @@ public sealed class LoginSessionService
     /// </summary>
     public bool IsConfigured => profileRegistry.IsConfigured;
 
-    private AuthenticationMode Mode => AuthenticationModeResolver.Resolve(environment);
+    private AuthenticationMode Mode => AuthenticationModeResolver.Resolve(environment, _configuration);
 
     public bool AllowAnonymousWhenUnconfigured => Mode == AuthenticationMode.Optional;
 
@@ -275,14 +278,14 @@ public sealed class LoginSessionService
     private static string HashToken(string token)
         => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token.Trim())));
 
-    private static string? ResolveStorePath(LoginSessionStoreOptions? options)
+    private string? ResolveStorePath(LoginSessionStoreOptions? options)
     {
         if (!string.IsNullOrWhiteSpace(options?.Path))
         {
             return Path.GetFullPath(options.Path);
         }
 
-        var configured = Environment.GetEnvironmentVariable(LoginSessionStoreOptions.PathEnvironmentVariable);
+        var configured = _configuration[LoginSessionStoreOptions.PathEnvironmentVariable];
         if (!string.IsNullOrWhiteSpace(configured))
         {
             return Path.GetFullPath(configured);

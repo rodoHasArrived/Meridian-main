@@ -49,12 +49,14 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var openedAt = DateTimeOffset.Parse("2026-05-01T00:00:00Z");
         await database.JournalStore.SaveLedgerBookAsync(new(bookId, "historical-lots", Guid.NewGuid(),
             FundStructureNodeKindDto.Fund, "Historical lots", "USD", openedAt, openedAt));
+        var authority = await database.SeedLotReferenceAuthorityAsync(bookId, TestSecurityId, TestBookPositionId);
         var period = await database.JournalStore.SavePeriodAsync(new(periodId, bookId, 2026, 5, "2026-05",
             new(2026, 5, 1), new(2026, 5, 31), "Open", openedAt, null, 0), 0);
         await database.JournalStore.SaveTaxLotPolicyAsync(new(Guid.NewGuid(), bookId,
             new("Investment lots", LedgerAccountType.Asset), LedgerTaxLotReliefMethod.Fifo,
             "tax-policy-v1", new(2026, 5, 1), openedAt, openedAt));
-        var acquisition = BuildAcquisitionCommand(bookId, periodId, period.Version);
+        var acquisition = (BuildAcquisitionCommand(bookId, periodId, period.Version) with
+        { ReferenceVersions = authority.Versions }).WithComputedFingerprint();
         var lot = acquisition.AcquisitionLot!;
         var acquisitionEvidence = BuildEvidence("historical-acquisition", 'e') with
         {
@@ -89,7 +91,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             "historical-disposal", period.Version, AtomicTaxLotMutationKind.Disposal, [evidence],
             disposalSelections: [new(lot.TaxLotRecordId, lot.LotId, lot.Version, 100m,
                 quantitySold, 0, evidence.EvidenceId, 100m, quantitySold * 100m)],
-            reliefMethod: "Fifo", policyRevision: "tax-policy-v1");
+            reliefMethod: "Fifo", policyRevision: "tax-policy-v1", referenceVersions: authority.Versions);
         await database.JournalStore.AppendAssetPostingAsync(disposal);
         (await database.JournalStore.AppendAssetPostingAsync(disposal)).IsExactReplay.Should().BeTrue();
 

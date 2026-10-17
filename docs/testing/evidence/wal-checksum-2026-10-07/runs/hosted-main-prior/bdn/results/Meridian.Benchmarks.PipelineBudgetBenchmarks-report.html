@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>Meridian.Benchmarks.PipelineBudgetBenchmarks-20261007-153247</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.8, Linux Ubuntu 24.04.5 LTS (Noble Numbat)
+Intel Xeon Platinum 8370C CPU 2.80GHz, 1 CPU, 4 logical and 2 physical cores
+.NET SDK 10.0.100
+  [Host]     : .NET 10.0.0 (10.0.0, 10.0.25.52411), X64 RyuJIT x86-64-v4
+  Job-HDUCDG : .NET 10.0.0 (10.0.0, 10.0.25.52411), X64 RyuJIT x86-64-v4
+</code></pre>
+<pre><code>IterationCount=8  IterationTime=250ms  LaunchCount=1  
+WarmupCount=3  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                     </th><th>Mean  </th><th>Error</th><th>StdDev</th><th>Gen0</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>DedupKey_CacheHit</td><td>58.484 ns</td><td>0.1086 ns</td><td>0.0568 ns</td><td>-</td><td>-</td>
+</tr><tr><td>DedupKey_CacheMiss</td><td>800.227 ns</td><td>9.2692 ns</td><td>4.1156 ns</td><td>0.0032</td><td>128 B</td>
+</tr><tr><td>WalChecksum_Small</td><td>774.554 ns</td><td>1.6104 ns</td><td>0.7150 ns</td><td>-</td><td>-</td>
+</tr><tr><td>WalChecksum_Medium_1KB</td><td>1,460.253 ns</td><td>5.5696 ns</td><td>2.9130 ns</td><td>-</td><td>-</td>
+</tr><tr><td>WalChecksum_Large_4KB</td><td>4,069.947 ns</td><td>16.6312 ns</td><td>7.3844 ns</td><td>-</td><td>-</td>
+</tr><tr><td>NewlineScan_Portable</td><td>1.406 ns</td><td>0.0093 ns</td><td>0.0049 ns</td><td>-</td><td>-</td>
+</tr><tr><td>AlpacaParse_Trade_SourceGenerated</td><td>736.834 ns</td><td>3.6225 ns</td><td>1.8947 ns</td><td>0.0148</td><td>384 B</td>
+</tr><tr><td>AlpacaParse_Quote_SourceGenerated</td><td>971.836 ns</td><td>3.2815 ns</td><td>1.4570 ns</td><td>0.0156</td><td>472 B</td>
+</tr></tbody></table>
+</body>
+</html>

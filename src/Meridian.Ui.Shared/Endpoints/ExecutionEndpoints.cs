@@ -25,6 +25,22 @@ public static class ExecutionEndpoints
     public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("/api/execution").WithTags("Execution");
+        group.AddEndpointFilter(async (invocation, next) =>
+        {
+            var context = invocation.HttpContext;
+            if (HttpMethods.IsGet(context.Request.Method)
+                && context.RequestServices.GetService<IPortfolioState>() is BrokeragePortfolioState brokerage)
+            {
+                // The legacy execution routes have no selected account parameter. Their
+                // singleton broker projection may only be read by that account's operator.
+                // Paper compositions keep their existing authorization and response contracts.
+                if (brokerage.FundAccountId is not { } accountId
+                    || !await FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(accountId, context)
+                        .ConfigureAwait(false))
+                    return Results.StatusCode(StatusCodes.Status403Forbidden);
+            }
+            return await next(invocation).ConfigureAwait(false);
+        });
 
         // --- Portfolio / Account ---
 

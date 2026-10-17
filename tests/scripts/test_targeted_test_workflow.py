@@ -86,10 +86,23 @@ class TargetedTestWorkflowTests(unittest.TestCase):
         for path in (WORKFLOW_README_PATH, START_README_PATH, ENGINEERING_README_PATH):
             with self.subTest(path=path):
                 text = path.read_text(encoding="utf-8")
-                self.assertIn("gh workflow run targeted-test.yml", text)
-                self.assertIn("mode=dotnet-filtered", text)
-                self.assertIn("dotnet_project=", text)
-                self.assertIn("dotnet_filter=", text)
+                # Either maintained CLI is valid; require the project and positive filter
+                # on the same command, including PowerShell/Bash continuation lines.
+                normalized = re.sub(r"(?:`|\\)\n\s*", " ", text)
+                examples = [
+                    line for line in normalized.splitlines()
+                    if line.startswith(("gh workflow run targeted-test.yml ",
+                                        "python build/scripts/ci/dispatch-targeted-test.py "))
+                    and re.search(r"(?:mode=|--mode )dotnet-filtered\b", line)
+                ]
+                self.assertTrue(examples, "Missing focused hosted dispatch example")
+                for command in examples:
+                    self.assertIn("--ref <branch>", command)
+                    self.assertRegex(
+                        command,
+                        r"(?:dotnet_project=|--dotnet-project )tests/Meridian.Tests/Meridian.Tests\.csproj\b",
+                    )
+                    self.assertRegex(command, r'(?:dotnet_filter=|--dotnet-filter )"FullyQualifiedName[~=][^"\n]+"')
 
     def test_workflow_readme_documents_targeted_lane_mapping(self) -> None:
         readme = WORKFLOW_README_PATH.read_text(encoding="utf-8")

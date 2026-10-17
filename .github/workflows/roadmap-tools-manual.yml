@@ -34,16 +34,50 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: roadmap-tools-manual-${{ github.run_id }}
-  cancel-in-progress: false
-
 env:
   PYTHONUNBUFFERED: "1"
 
 jobs:
+  dispatch-key:
+    name: Identify duplicate dispatch
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      group: ${{ steps.key.outputs.group }}
+    steps:
+      - name: Hash the selected commit, ref and inputs
+        id: key
+        env:
+          DISPATCH_REF: ${{ github.ref }}
+          DISPATCH_SHA: ${{ github.sha }}
+          DISPATCH_INPUTS: ${{ toJSON(inputs) }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+
+          # Hash exact values: Actions groups are case-insensitive and length-limited.
+          selection = {
+              "ref": os.environ["DISPATCH_REF"],
+              "sha": os.environ["DISPATCH_SHA"],
+              "inputs": json.loads(os.environ["DISPATCH_INPUTS"]),
+          }
+          payload = json.dumps(selection, sort_keys=True, separators=(",", ":")).encode("utf-8")
+          digest = hashlib.sha256(payload).hexdigest()
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              print(f"group={digest}", file=output)
+          PY
+
   roadmap-tools:
     name: Run roadmap tools
+    needs: dispatch-key
+    # Finish active validation; duplicate selections retain only the latest pending job.
+    # GitHub concurrency is not a FIFO queue. Different selections run independently.
+    concurrency:
+      group: roadmap-tools-manual-${{ needs.dispatch-key.outputs.group }}
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -58,6 +92,9 @@ jobs:
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
+
+      - name: Install documentation parser dependencies
+        run: python3 -m pip install --requirement build/scripts/docs/requirements.txt
 
       - name: Validate fixture enums
         if: ${{ inputs.script == 'validate' || inputs.script == 'all' }}
@@ -82,7 +119,7 @@ jobs:
 
       - name: Upload render output
         if: ${{ inputs.script == 'render' || inputs.script == 'all' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: roadmap-normalized
           path: ${{ inputs.render_output }}

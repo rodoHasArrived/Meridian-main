@@ -142,9 +142,10 @@ public sealed class PostgresSecurityFieldProvenanceStore : ISecurityFieldProvena
 
     public async Task UpsertAsync(SecurityFieldProvenanceRecord record, CancellationToken ct = default)
     {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+        var connection = lease.Connection;
         await PostgresSecurityFieldProvenanceSql
-            .UpsertAsync(connection, transaction: null, _options.Schema, record, ct)
+            .UpsertAsync(connection, transaction: lease.Transaction, _options.Schema, record, ct)
             .ConfigureAwait(false);
     }
 
@@ -152,15 +153,17 @@ public sealed class PostgresSecurityFieldProvenanceStore : ISecurityFieldProvena
         Guid securityId, string fieldPath, string origin, DateTimeOffset clearedAt,
         long? maxSourceVersion = null, CancellationToken ct = default)
     {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+        var connection = lease.Connection;
         await PostgresSecurityFieldProvenanceSql
-            .RemoveAsync(connection, transaction: null, _options.Schema, securityId, fieldPath, origin, clearedAt, ct, maxSourceVersion)
+            .RemoveAsync(connection, transaction: lease.Transaction, _options.Schema, securityId, fieldPath, origin, clearedAt, ct, maxSourceVersion)
             .ConfigureAwait(false);
     }
 
     public async Task<IReadOnlyList<SecurityFieldProvenanceRecord>> GetAsync(Guid securityId, CancellationToken ct = default)
     {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+        var connection = lease.Connection;
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
@@ -181,15 +184,4 @@ public sealed class PostgresSecurityFieldProvenanceStore : ISecurityFieldProvena
         return results;
     }
 
-    private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
-    {
-        if (string.IsNullOrWhiteSpace(_options.ConnectionString))
-        {
-            throw new InvalidOperationException("SecurityMasterOptions.ConnectionString is not configured.");
-        }
-
-        var connection = new NpgsqlConnection(_options.ConnectionString);
-        await connection.OpenAsync(ct).ConfigureAwait(false);
-        return connection;
-    }
 }

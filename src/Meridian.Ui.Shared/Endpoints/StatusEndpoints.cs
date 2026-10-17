@@ -25,6 +25,12 @@ public static class StatusEndpoints
     /// </summary>
     public static void MapStatusEndpoints(this WebApplication app, StatusEndpointHandlers handlers, JsonSerializerOptions jsonOptions)
     {
+        // A launcher can distinguish its seeded host from another listener that acquired its port.
+        // Capture once so configuration reloads cannot change the identity of a running host.
+        var developmentSession = string.Equals(app.Configuration["MERIDIAN_DEMO"], "true", StringComparison.OrdinalIgnoreCase)
+            ? app.Configuration["MERIDIAN_DEV_SESSION"]
+            : null;
+
         // Health check endpoint - comprehensive health status (D7: OpenAPI typed annotations)
         app.MapGet(UiApiRoutes.Health, () =>
         {
@@ -67,8 +73,13 @@ public static class StatusEndpoints
         .Produces(200)
         .Produces(503);
 
-        app.MapGet("/readyz", (CancellationToken ct) =>
-            GetReadinessResultAsync(app, handlers, jsonOptions, ct))
+        app.MapGet("/readyz", (HttpContext context, CancellationToken ct) =>
+        {
+            if (!string.IsNullOrWhiteSpace(developmentSession))
+                context.Response.Headers["x-meridian-dev-session"] = developmentSession;
+
+            return GetReadinessResultAsync(app, handlers, jsonOptions, ct);
+        })
         .WithName("GetReadyz").DeclareOpenRead("Kubernetes readiness probe alias; exempt from session authentication, so a permission would refuse the orchestrator that must call it.")
         .WithTags("Health")
         .Produces(200)

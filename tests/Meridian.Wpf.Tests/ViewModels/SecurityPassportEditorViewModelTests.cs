@@ -32,6 +32,41 @@ public sealed class SecurityPassportEditorViewModelTests
     }
 
     [Fact]
+    public async Task SchemaPicker_FillsFieldPath_OffersChoices_AndBlocksInvalidValues()
+    {
+        var client = new Mock<IWorkstationSecurityMasterApiClient>();
+        client
+            .Setup(c => c.GetAssetClassDefinitionAsync("Equity", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Meridian.Contracts.SecurityMaster.SecurityAssetClassRegistry.ToDto(
+                Meridian.Contracts.SecurityMaster.SecurityAssetClassRegistry.Get("Equity")));
+        var viewModel = new SecurityPassportEditorViewModel(client.Object)
+        {
+            SecurityId = SecurityId,
+            Version = 7,
+            Justification = "Prospectus supplement"
+        };
+
+        await viewModel.LoadSchemaAsync("Equity");
+
+        viewModel.HasSchemaFields.Should().BeTrue();
+        viewModel.SchemaFields.Should().NotContain(field => field.Key == "preferredTerms", "nested blocks use the term-block route");
+        viewModel.SelectedSchemaField = viewModel.SchemaFields.Single(field => field.Key == "classification");
+        viewModel.FieldPath.Should().Be("assetSpecificTerms.classification");
+        viewModel.SchemaValueChoices.Should().Contain("Preferred");
+
+        viewModel.NewValue = "NotAClassification";
+        viewModel.SchemaValueError.Should().NotBeNull();
+        viewModel.SaveDraftCommand.CanExecute(null).Should().BeFalse();
+
+        viewModel.NewValue = "Preferred";
+        viewModel.SchemaValueError.Should().BeNull();
+        viewModel.SaveDraftCommand.CanExecute(null).Should().BeTrue();
+
+        viewModel.FieldPath = "EconomicDefinition.Coupon";
+        viewModel.SelectedSchemaField.Should().BeNull("a typed path detaches the picked term");
+    }
+
+    [Fact]
     public void PublishCommand_IsDisabledUntilApproved()
     {
         var viewModel = new SecurityPassportEditorViewModel(new Mock<IWorkstationSecurityMasterApiClient>().Object)

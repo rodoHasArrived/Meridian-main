@@ -1,3 +1,5 @@
+using System.Reflection;
+using System.Runtime.InteropServices;
 using FluentAssertions;
 using Meridian.Application.Composition.Startup;
 using Meridian.Contracts.Lifecycle;
@@ -87,6 +89,31 @@ public sealed class ApplicationLifecycleCoordinatorTests
         operationWhenStopReleased.Should().NotBeNull();
         operationWhenStopReleased!.Reason.Should().Be(LifecycleShutdownReason.ExternalCancellation);
         lifecycle.StopWorkToken.IsCancellationRequested.Should().BeTrue();
+    }
+
+    [Fact]
+    public void PosixTermination_RequestsCooperativeShutdownWithoutEndingTheProcess()
+    {
+        using var lifecycle = ApplicationLifecycleCoordinator.Create(_log);
+        LifecycleShutdownOperationDto? operationWhenStopReleased = null;
+        using var registration = lifecycle.StopWorkToken.Register(() =>
+            operationWhenStopReleased = lifecycle.ActiveShutdownOperation);
+        var signal = new PosixSignalContext(PosixSignal.SIGTERM);
+
+        // Exercise the signal callback without sending SIGTERM to the shared test runner.
+        var handler = typeof(ApplicationLifecycleCoordinator).GetMethod(
+            "OnPosixTermination", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        handler.Invoke(lifecycle, [signal]);
+
+        signal.Cancel.Should().BeTrue();
+        operationWhenStopReleased.Should().NotBeNull();
+        operationWhenStopReleased!.Reason.Should().Be(LifecycleShutdownReason.ExternalCancellation);
+        operationWhenStopReleased.Detail.Should().Be("SIGTERM requested shutdown");
+        lifecycle.StopWorkToken.IsCancellationRequested.Should().BeTrue();
+        lifecycle.TerminationToken.IsCancellationRequested.Should().BeFalse();
+
+        handler.Invoke(lifecycle, [new PosixSignalContext(PosixSignal.SIGTERM)]);
+        lifecycle.ActiveShutdownOperation!.OperationId.Should().Be(operationWhenStopReleased.OperationId);
     }
 
     [Fact]
