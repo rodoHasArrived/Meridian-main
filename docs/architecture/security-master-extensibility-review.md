@@ -5270,6 +5270,14 @@ in both writers, and let the guard stay the only authority on readability. What 
 present arrangement, where the same column means two things and the migration comment documents
 only one of them.
 
+*Resolution (2026-10-17, ADR-024).* The store now takes the second option for `schema_version` (the
+version of the stored blob, one definition shared with the migration 024 backfill), and migration
+`042_security_master_terms_format_column.sql` adds the family alongside it as `terms_format`,
+backfilled from the declared `termsFormat` tag or, for untagged rows, the same shape rule
+`SecurityTermsEnvelope.ResolveFormat` applies. Every flat writer (CSV import, EDGAR ingest, the F#
+interop snapshot, the desktop template) stamps the envelope, so the shape rule now serves only the
+pre-tag backlog that the column makes countable; its retirement is gated in ADR-024.
+
 ### Smaller notes, not filed as findings
 
 - **`SecurityAssetSpecificTermsUpcasterPipeline.ToSchemaVersion` is wrong for profile payloads.** It
