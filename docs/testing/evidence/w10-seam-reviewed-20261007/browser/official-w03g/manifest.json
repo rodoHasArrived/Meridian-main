@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "status": "passed",
+  "generatedAtUtc": "2026-10-07T16:56:49.041Z",
+  "repoRoot": "/workspace/Meridian-main",
+  "dashboardDir": "/workspace/Meridian-main/src/Meridian.Ui/dashboard",
+  "configPath": "/workspace/Meridian-main/scripts/dev/web-screenshot-routes.json",
+  "baseUrl": "http://127.0.0.1:4173/workstation",
+  "outputDir": "/workspace/scratch/w10-seam-source-s/browser/official-w03g/screenshots",
+  "selectedCaptureCount": 1,
+  "totalCaptureCount": 80,
+  "maxAttemptsPerCapture": 2,
+  "captures": [
+    {
+      "id": "W03G",
+      "name": "web-accounting-operations-continuity",
+      "docLabel": "Accounting — Operations Continuity",
+      "route": "/accounting/operations-continuity",
+      "url": "http://127.0.0.1:4173/workstation/accounting/operations-continuity",
+      "actualUrl": "http://127.0.0.1:4173/workstation/accounting/operations-continuity",
+      "requestedPath": "/workstation/accounting/operations-continuity",
+      "expectedPath": "/workstation/accounting/operations-continuity",
+      "actualPath": "/workstation/accounting/operations-continuity",
+      "file": "web-accounting-operations-continuity.png",
+      "path": "/workspace/scratch/w10-seam-source-s/browser/official-w03g/screenshots/web-accounting-operations-continuity.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 1549322,
+      "textLength": 26652,
+      "durationSeconds": 4.58,
+      "status": "passed",
+      "attempts": 1
+    }
+  ],
+  "logs": [],
+  "capturedCount": 1,
+  "failedCaptureCount": 0,
+  "finishedAtUtc": "2026-10-07T16:56:55.306Z",
+  "durationSeconds": 6.26
+}

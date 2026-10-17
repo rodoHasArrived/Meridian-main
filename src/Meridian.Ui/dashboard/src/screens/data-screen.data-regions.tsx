@@ -234,7 +234,7 @@ export function DataQualityRegion({
                     <div className="min-w-[760px] divide-y" role="list" aria-label="Composite quality by symbol">
                       {panel.model.symbols.map((row) => (
                         <details key={row.symbol} className="group text-sm" role="listitem">
-                          <summary className="grid cursor-pointer list-none grid-cols-[7rem_7rem_1fr_auto] items-center gap-3 px-3 py-2 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+                          <summary className="grid cursor-pointer list-none grid-cols-[7rem_7rem_1fr_auto] items-center gap-3 px-3 py-2 hover:bg-muted/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
                             <span className="font-mono font-semibold">{row.symbol}</span>
                             <span className="flex items-center gap-2">
                               <Badge variant={qualityToneBadgeVariant[row.tone]}>{row.status}</Badge>

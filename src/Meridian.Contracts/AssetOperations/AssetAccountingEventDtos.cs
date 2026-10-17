@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 
@@ -196,7 +197,11 @@ public sealed record AssetAccountingEventSpineDto(
     string? DraftedCandidateFingerprint = null,
     string? DraftedCandidateResultFingerprint = null,
     AssetLotMutationInstructionDto? DraftedLotMutation = null,
-    string? DraftedLotMutationFingerprint = null)
+    string? DraftedLotMutationFingerprint = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null)
 {
     public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = RetainedEvidence ?? [];
 
@@ -221,7 +226,11 @@ public sealed record ProjectAssetAccountingEventRequestDto(
     DateTimeOffset ProjectedAtUtc,
     IReadOnlyList<RetainedEvidenceIdentityDto>? RetainedEvidence = null,
     string? Notes = null,
-    AssetAccountingCorrectionReferenceDto? Correction = null)
+    AssetAccountingCorrectionReferenceDto? Correction = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null)
 {
     public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } =
         RetainedEvidence ?? [];
@@ -259,7 +268,9 @@ public enum AssetLotMutationIntentDto
     None = 0,
     Acquire = 1,
     Dispose = 2,
-    Amortize = 3
+    Amortize = 3,
+    CorporateAction = 4,
+    CapitalReturn = 5
 }
 
 public sealed record AssetAcquisitionLotDto(
@@ -325,8 +336,15 @@ public sealed record AssetLotMutationInstructionDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     decimal? DisposalSalePrice = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? Amortization = null)
+    Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto? Amortization = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public OpenLotDirection Direction { get; init; }
+
     public IReadOnlyList<AssetDisposalLotSelectionDto> DisposalSelections { get; init; } =
         DisposalSelections ?? [];
 }
@@ -489,7 +507,10 @@ public static class AssetAccountingEventSpineValidator
                 if (!AssetAccountingEvidenceSubjects.MatchesEventEvidenceDate(
                     spine.EventKind, spine.EffectiveDate, spine.Scope.SecurityId, spine.Scope.ExpectedSecurityVersion,
                     evidence, spine.DraftedLotMutation?.Amortization,
-                    requireInstruction: spine.Stages.Any(static stage => stage.Stage == AssetAccountingLifecycleStageDto.Drafted)))
+                    requireInstruction: spine.Stages.Any(static stage => stage.Stage == AssetAccountingLifecycleStageDto.Drafted),
+                    corporateAction: spine.CorporateAction ?? spine.DraftedLotMutation?.CorporateAction,
+                    allowRetainedAmortizationCorrection: spine.Correction?.TaxLotMutationBatchId is { } batchId && batchId != Guid.Empty,
+                    capitalReturn: spine.CapitalReturn ?? spine.DraftedLotMutation?.CapitalReturn))
                     issues.Add("Retained evidence effective date must match the asset accounting event.");
             }
 
@@ -646,6 +667,48 @@ public static class AssetAccountingEventSpineValidator
         }
 
         var hasDraftedStage = spine.Stages.Any(static stage => stage.Stage == AssetAccountingLifecycleStageDto.Drafted);
+        if (spine.CorporateAction is { } successorProjection)
+        {
+            issues.AddRange(AssetLotMutationInstructionValidator.Validate(spine.EventKind,
+                new AssetLotMutationInstructionDto(AssetLotMutationIntentDto.CorporateAction, CorporateAction: successorProjection),
+                spine.EventAmount, spine.EffectiveDate, spine.RetainedEvidence));
+            var successorScope = successorProjection.Projection.AccountingScope;
+            if (successorScope is null
+                || !string.Equals(successorScope.TenantId, spine.Scope.TenantId, StringComparison.Ordinal)
+                || !string.Equals(successorScope.CompanyId, spine.Scope.CompanyId, StringComparison.Ordinal)
+                || !string.Equals(successorScope.FundProfileId, spine.Scope.FundProfileId, StringComparison.Ordinal)
+                || successorScope.PeriodId != spine.Scope.PeriodId
+                || successorProjection.Projection.Treatment.AccountingBasis != spine.Scope.AccountingBasis
+                || !PayloadEquals(successorProjection.Projection.EconomicEvent, spine.EconomicEvent)
+                || !PayloadEquals(successorProjection.Projection.ProjectionLineage, spine.ProjectionLineage)
+                || successorProjection.ExpectedSecurityVersion != spine.Scope.ExpectedSecurityVersion
+                || successorProjection.Projection.LotMutations?.ExpectedPositionVersion != spine.Scope.ExpectedBookPositionVersion
+                || successorProjection.ExpectedLot.LedgerBookId != spine.Scope.LedgerBookId)
+                issues.Add("Retained successor projection must bind the spine's exact event, lineage and versioned accounting scope.");
+        }
+        if (hasDraftedStage && !PayloadEquals(spine.CorporateAction, spine.DraftedLotMutation?.CorporateAction))
+            issues.Add("The canonical successor instruction cannot be dropped or replaced between Projected and Drafted.");
+        if (spine.CapitalReturn is { } capitalReturnProjection)
+        {
+            issues.AddRange(AssetLotMutationInstructionValidator.Validate(spine.EventKind,
+                new AssetLotMutationInstructionDto(AssetLotMutationIntentDto.CapitalReturn, CapitalReturn: capitalReturnProjection),
+                spine.EventAmount, spine.EffectiveDate, spine.RetainedEvidence));
+            var capitalReturnScope = capitalReturnProjection.Projection.AccountingScope;
+            if (capitalReturnScope is null
+                || !string.Equals(capitalReturnScope.TenantId, spine.Scope.TenantId, StringComparison.Ordinal)
+                || !string.Equals(capitalReturnScope.CompanyId, spine.Scope.CompanyId, StringComparison.Ordinal)
+                || !string.Equals(capitalReturnScope.FundProfileId, spine.Scope.FundProfileId, StringComparison.Ordinal)
+                || capitalReturnScope.PeriodId != spine.Scope.PeriodId
+                || capitalReturnProjection.Projection.Treatment.AccountingBasis != spine.Scope.AccountingBasis
+                || !PayloadEquals(capitalReturnProjection.Projection.EconomicEvent, spine.EconomicEvent)
+                || !PayloadEquals(capitalReturnProjection.Projection.ProjectionLineage, spine.ProjectionLineage)
+                || capitalReturnProjection.ExpectedSecurityVersion != spine.Scope.ExpectedSecurityVersion
+                || capitalReturnProjection.Projection.LotMutations?.ExpectedPositionVersion != spine.Scope.ExpectedBookPositionVersion
+                || capitalReturnProjection.ExpectedLot.LedgerBookId != spine.Scope.LedgerBookId)
+                issues.Add("Retained capital-return projection must bind the spine's exact event, lineage and versioned accounting scope.");
+        }
+        if (hasDraftedStage && !PayloadEquals(spine.CapitalReturn, spine.DraftedLotMutation?.CapitalReturn))
+            issues.Add("The canonical capital-return instruction cannot be dropped or replaced between Projected and Drafted.");
         if (hasDraftedStage != (spine.DraftedCandidate is not null && spine.DraftedCandidateResult is not null))
             issues.Add("Drafted stage and exact retained posting candidate request/result must be present together.");
         if (hasDraftedStage)
@@ -715,8 +778,16 @@ public static class AssetAccountingEventSpineValidator
             {
                 issues.Add("Posted journal impact must match the spine book, period, accounting basis, and currency.");
             }
-            if (posted.Lines.Any(line => !PostedDimensionsMatchScope(line.Dimensions, spine.Scope)))
+            if (posted.Lines.Any(line => !PostedLineMatchesScope(line, spine)))
                 issues.Add("Posted journal impact lines must retain exact fund, book, Security Master, book-position, and canonical dimension scope.");
+            if (spine.CorporateAction is { } postedSuccessors &&
+                (posted.Lines.Count != postedSuccessors.Successors.Count + 1
+                 || posted.Lines.Count(line => line.Credit > 0m && line.Dimensions?.InstrumentId == spine.Scope.SecurityId
+                     && line.Dimensions?.PositionId == spine.Scope.BookPositionId) != 1
+                 || postedSuccessors.Successors.Any(target => posted.Lines.Count(line => line.Debit > 0m &&
+                     line.Dimensions?.InstrumentId == target.Lot.SecurityId
+                     && line.Dimensions?.PositionId == target.Lot.BookPositionId) != 1)))
+                issues.Add("Posted successor impact requires exactly one predecessor and each reviewed successor line.");
         }
         if (spine.TaxLotMutationBatchId.HasValue && !hasPostedStage)
             issues.Add("Tax-lot mutation batch identity may only be retained with Posted journal impact.");
@@ -781,6 +852,32 @@ public static class AssetAccountingEventSpineValidator
             spine.Scope.CompanyId);
     }
 
+    private static bool PostedLineMatchesScope(PostedJournalImpactLineDto line, AssetAccountingEventSpineDto spine)
+    {
+        if (spine.CorporateAction is not { } instruction)
+            return PostedDimensionsMatchScope(line.Dimensions, spine.Scope);
+        if (line.Credit > 0m && line.Dimensions?.InstrumentId == spine.Scope.SecurityId && line.Dimensions?.PositionId == spine.Scope.BookPositionId)
+            return line.Debit == 0m && line.Credit == instruction.ExpectedLot.OpenFunctionalCostBasis
+                && CorporateActionLotDimensionMatches(line.Dimensions, instruction.ExpectedLot, instruction)
+                && PostedDimensionsMatchScope(line.Dimensions, spine.Scope);
+        var target = instruction.Successors.SingleOrDefault(target => target.Lot.SecurityId == line.Dimensions?.InstrumentId
+            && target.Lot.BookPositionId == line.Dimensions?.PositionId);
+        return target is not null && line.Credit == 0m && line.Debit == target.Lot.OpenFunctionalCostBasis
+            && CorporateActionLotDimensionMatches(line.Dimensions, target.Lot, instruction)
+            && PostedDimensionsMatchScope(line.Dimensions, spine.Scope with
+            {
+                SecurityId = target.Lot.SecurityId,
+                BookPositionId = target.Lot.BookPositionId
+            });
+    }
+
+    private static bool CorporateActionLotDimensionMatches(LedgerDimensionSetDto? dimensions,
+        OpenLotDto lot, OpenLotSuccessorInstructionDto instruction)
+        => instruction.Successors.Any(target => target.Lot.SecurityId == instruction.ExpectedLot.SecurityId
+                && target.Lot.BookPositionId == instruction.ExpectedLot.BookPositionId)
+            ? dimensions?.TaxLotId == lot.LotId
+            : dimensions?.TaxLotId is null || dimensions.TaxLotId == lot.LotId;
+
     private static bool PostedDimensionsMatchScope(
         LedgerDimensionSetDto? dimensions,
         AssetAccountingEventScopeDto scope)
@@ -836,6 +933,10 @@ public static class AssetLotMutationInstructionValidator
         IReadOnlyList<RetainedEvidenceIdentityDto> retainedEvidence)
     {
         var issues = new List<string>();
+        if (instruction is not null && !Enum.IsDefined(instruction.Direction))
+            issues.Add("Lot direction must be Long or Short; quantity cannot establish direction implicitly.");
+        else if (instruction?.Direction == OpenLotDirection.Short)
+            issues.Add("Short-lot posting requires direction-aware opening, cover and reporting authority; the current accounting path supports Long lots only.");
         if (eventKind == AssetAccountingEventKindDto.Acquisition)
         {
             if (instruction is not { Intent: AssetLotMutationIntentDto.Acquire, Acquisition: { } acquisition } ||
@@ -895,8 +996,7 @@ public static class AssetLotMutationInstructionValidator
                     string.IsNullOrWhiteSpace(selection.SelectionEvidenceId) ||
                     !evidenceIds.Contains(selection.SelectionEvidenceId) ||
                     selection.ExpectedUnitCost <= 0m ||
-                    selection.ExpectedCostBasis <= 0m ||
-                    selection.ExpectedCostBasis != selection.Quantity * selection.ExpectedUnitCost)
+                    selection.ExpectedCostBasis <= 0m)
                 {
                     issues.Add("Disposal selections require unique authoritative lot identity/version/order, retained evidence, and exact expected cost basis.");
                     break;
@@ -908,8 +1008,14 @@ public static class AssetLotMutationInstructionValidator
             if (instruction is not { Intent: AssetLotMutationIntentDto.Amortize, Amortization: { } amortization }
                 || instruction.Acquisition is not null || instruction.DisposalSelections.Count != 0
                 || instruction.ReliefMethod is not null || instruction.PolicyRevision is not null
+                || instruction.DisposalSalePrice is not null
                 || string.IsNullOrWhiteSpace(instruction.AssetAccountId))
                 return ["Lot amortization requires one complete Amortize instruction and exact asset account."];
+            if (amortization.Reversal is { } reversal
+                && (instruction.CorrectsMutationBatchId != reversal.MutationBatchId
+                    || instruction.CorrectsJournalEntryId != reversal.JournalEntryId
+                    || instruction.CorrectionApproval is null))
+                issues.Add("Amortization reversal requires the exact original batch, journal and approved correction lineage.");
             try
             {
                 var projection = Meridian.Contracts.Accounting.Lots.OpenLotAmortization.Project(amortization);
@@ -924,6 +1030,64 @@ public static class AssetLotMutationInstructionValidator
                 issues.Add(exception.Message);
             }
         }
+        else if (eventKind == AssetAccountingEventKindDto.CorporateAction && instruction?.CapitalReturn is { } capitalReturn)
+        {
+            if (instruction.Intent != AssetLotMutationIntentDto.CapitalReturn
+                || instruction.Acquisition is not null || instruction.DisposalSelections.Count != 0
+                || instruction.Amortization is not null || instruction.CorporateAction is not null
+                || instruction.DisposalSalePrice is not null || instruction.ReliefMethod is not null
+                || instruction.PolicyRevision is not null || instruction.CorrectsMutationBatchId is not null
+                || instruction.CorrectsJournalEntryId is not null || instruction.CorrectionApproval is not null)
+                return ["Capital return requires one in-place reviewed reduction without acquisition, disposal, successor or correction payloads."];
+            try
+            {
+                Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturn.Project(capitalReturn);
+                if (capitalReturn.Projection.EconomicEvent!.EffectiveDate != effectiveDate
+                    || capitalReturn.Projection.EventAmount != eventAmount)
+                    issues.Add("Capital return must match the accounting event date and amount.");
+                if (capitalReturn.ExpectedLot.Acquisition.Evidence.Any(evidence => !retainedEvidence.Contains(evidence))
+                    || capitalReturn.Projection.EvidenceManifest.Any(dependency => !retainedEvidence.Any(evidence =>
+                        evidence.EvidenceId == dependency.EvidenceId && evidence.EvidenceUri == dependency.EvidenceUri
+                        && evidence.EvidenceVersion == dependency.EvidenceVersion && evidence.SubjectType == dependency.SubjectType
+                        && evidence.SubjectId == dependency.SubjectId
+                        && Sha256Digest.FixedEquals(evidence.ContentHashSha256, dependency.ContentHashSha256))))
+                    issues.Add("Capital return requires the exact acquisition evidence and complete reviewed projection manifest.");
+            }
+            catch (ArgumentException exception)
+            {
+                issues.Add(exception.Message);
+            }
+        }
+        else if (eventKind == AssetAccountingEventKindDto.CorporateAction && instruction is not null)
+        {
+            if (instruction is not { Intent: AssetLotMutationIntentDto.CorporateAction, CorporateAction: { } corporateAction }
+                || instruction.Acquisition is not null || instruction.DisposalSelections.Count != 0
+                || instruction.Amortization is not null || instruction.DisposalSalePrice is not null
+                || instruction.ReliefMethod is not null || instruction.PolicyRevision is not null
+                || instruction.CorrectsMutationBatchId is not null || instruction.CorrectsJournalEntryId is not null
+                || instruction.CorrectionApproval is not null)
+                return ["Corporate-action successors require one complete cashless successor instruction without acquisition, disposal or correction payloads."];
+            try
+            {
+                Meridian.Contracts.Accounting.Lots.OpenLotSuccessors.Validate(corporateAction);
+                if (corporateAction.Projection.EconomicEvent!.EffectiveDate != effectiveDate
+                    || corporateAction.Projection.EventAmount != eventAmount)
+                    issues.Add("Successor instruction date and functional carrying basis must match the accounting event.");
+                if (corporateAction.ExpectedLot.Acquisition.Evidence.Any(evidence => !retainedEvidence.Contains(evidence))
+                    || corporateAction.Successors.Any(target => target.Lot.Acquisition.Evidence.Any(evidence => !retainedEvidence.Contains(evidence))))
+                    issues.Add("Successor instructions must retain all predecessor and successor acquisition evidence identities.");
+                if (corporateAction.Projection.EvidenceManifest.Any(dependency => !retainedEvidence.Any(evidence =>
+                    evidence.EvidenceId == dependency.EvidenceId && evidence.EvidenceUri == dependency.EvidenceUri
+                    && evidence.EvidenceVersion == dependency.EvidenceVersion && evidence.SubjectType == dependency.SubjectType
+                    && evidence.SubjectId == dependency.SubjectId
+                    && Sha256Digest.FixedEquals(evidence.ContentHashSha256, dependency.ContentHashSha256))))
+                    issues.Add("Successor posting requires every exact retained corporate-action projection dependency.");
+            }
+            catch (ArgumentException exception)
+            {
+                issues.Add(exception.Message);
+            }
+        }
         else if (instruction is not null)
         {
             issues.Add($"{eventKind} events cannot carry acquisition or disposal lot mutations.");
@@ -931,6 +1095,10 @@ public static class AssetLotMutationInstructionValidator
 
         if (instruction is { Amortization: not null, Intent: not AssetLotMutationIntentDto.Amortize })
             issues.Add("Only amortization instructions may carry amortization inputs.");
+        if (instruction is { CorporateAction: not null, Intent: not AssetLotMutationIntentDto.CorporateAction })
+            issues.Add("Only corporate-action instructions may carry successor inputs.");
+        if (instruction is { CapitalReturn: not null, Intent: not AssetLotMutationIntentDto.CapitalReturn })
+            issues.Add("Only capital-return instructions may carry capital-return inputs.");
         var correctionFields = new object?[]
         {
             instruction?.CorrectsMutationBatchId,
@@ -940,6 +1108,8 @@ public static class AssetLotMutationInstructionValidator
         var populatedCorrectionFields = correctionFields.Count(static value => value is not null);
         if (populatedCorrectionFields is > 0 and < 3)
             issues.Add("Lot corrections require the exact corrected mutation batch, corrected journal, and approved correction metadata together.");
+        if (instruction?.CorrectsMutationBatchId == Guid.Empty || instruction?.CorrectsJournalEntryId == Guid.Empty)
+            issues.Add("Lot correction identities must be nonempty.");
         if (instruction?.CorrectionApproval is { } approval &&
             (approval.Status != LedgerAdjustmentApprovalStatusDto.Approved ||
              string.IsNullOrWhiteSpace(approval.ApprovalId) ||

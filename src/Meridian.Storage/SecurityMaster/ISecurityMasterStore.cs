@@ -11,14 +11,36 @@ public interface ISecurityMasterStore
         IReadOnlyList<SecurityProjectionRecord> records,
         CancellationToken ct = default);
     /// <summary>
-    /// Inserts or updates an alias, returning the row as persisted. <c>created_at</c>/<c>created_by</c>
-    /// are immutable recording facts: on conflict the stored values are retained, so the returned DTO
-    /// can differ from <paramref name="alias"/> in those two members. Callers must surface the returned
-    /// value rather than the one they passed — as-of rebuilds filter on <c>CreatedAt</c>, so a caller
-    /// that echoes a freshly stamped creation time would report an identifier as newer than it is.
+    /// Inserts or corrects an alias, returning the row as persisted. <c>created_at</c>/<c>created_by</c>
+    /// are immutable recording facts: for an existing alias ID the stored values are retained, so the
+    /// returned DTO can differ from <paramref name="alias"/> in those two members. Callers must surface
+    /// the returned value rather than the one they passed — as-of rebuilds filter on <c>CreatedAt</c>,
+    /// so a caller that echoes a freshly stamped creation time would report an identifier as newer than
+    /// it is. An identical replay records nothing; a material change appends an alias revision recorded
+    /// by <see cref="SecurityAliasDto.CreatedBy"/> and then updates the current row without replacing
+    /// earlier revisions. Timestamp-eligible views can change when an in-flight write commits.
+    /// Re-pointing an alias
+    /// ID at a different security throws <see cref="SecurityAliasHistoryConflictException"/>.
     /// Returns <c>null</c> only when the store cannot read the row back.
     /// </summary>
     Task<SecurityAliasDto?> UpsertAliasAsync(SecurityAliasDto alias, CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns each alias's latest retained revision whose stored recording timestamp is at or
+    /// before <paramref name="recordedAsOfUtc"/>, omitting eligible retirement revisions.
+    /// <c>CreatedBy</c>/<c>CreatedAt</c>
+    /// carry the alias's original creation facts. Valid-time filtering is left to the caller.
+    /// Pre-existing aliases whose revision history began at migration 038 are omitted for earlier
+    /// cutoffs: their prior values are unavailable, and an empty result cannot certify no aliases existed.
+    /// Initial recording timestamps preserve caller creation stamps; subsequent timestamps use
+    /// transaction-start time with monotonic revision ordering. Neither these timestamps nor the
+    /// migration availability marker prove commit visibility. A later commit can change the result
+    /// for the same cutoff; this query observes rows when it executes.
+    /// </summary>
+    Task<IReadOnlyList<SecurityAliasDto>> GetAliasesRecordedAsOfAsync(
+        Guid securityId,
+        DateTimeOffset recordedAsOfUtc,
+        CancellationToken ct = default);
     Task DeactivateProjectionAsync(Guid securityId, DateTimeOffset effectiveTo, long version, CancellationToken ct = default);
     Task<SecurityDetailDto?> GetDetailAsync(Guid securityId, CancellationToken ct = default);
     Task<SecurityProjectionRecord?> GetProjectionAsync(Guid securityId, CancellationToken ct = default);
@@ -32,6 +54,11 @@ public interface ISecurityMasterStore
         IReadOnlyList<SecurityIdentifierDto> identifiers,
         IReadOnlyCollection<Guid> excludedSecurityIds,
         CancellationToken ct = default);
+    /// <summary>
+    /// Returns an offset page in deterministic order, using the unique security ID to break
+    /// equal relevance and display-name ties. Repeated pages over unchanged projections must
+    /// neither omit nor repeat a security. Separate requests do not share a database snapshot.
+    /// </summary>
     Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);
     Task<IReadOnlyList<SecurityProjectionRecord>> LoadAllAsync(CancellationToken ct = default);
     Task<IReadOnlyList<SecurityProjectionRecord>> LoadActiveAsync(CancellationToken ct = default);

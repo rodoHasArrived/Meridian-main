@@ -8,6 +8,7 @@ import base64
 import hashlib
 import hmac
 import json
+import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import shutil
@@ -63,6 +64,9 @@ class ProductionRecoveryReceiptTests(unittest.TestCase):
     def command(self, mode: str, receipt_name: str | None = "receipt.json", *extra: str):
         extra_arguments = list(extra)
         overrides = {
+            "-DataRoot": str(self.source),
+            "-BackupRoot": str(self.backups),
+            "-RestoreDataRoot": str(self.restored),
             "-RestoreConnectionString": "Host=localhost;Database=target;Username=probe",
             "-EncryptionKeyBase64": base64.b64encode(b"a" * 32).decode("ascii"),
             "-SourceCommit": self.commit,
@@ -76,9 +80,9 @@ class ProductionRecoveryReceiptTests(unittest.TestCase):
             self.pwsh, "-NoLogo", "-NoProfile", "-File", str(SCRIPT),
             "-Mode", mode,
             "-ConnectionString", "Host=localhost;Database=source;Username=probe",
-            "-DataRoot", str(self.source), "-BackupRoot", str(self.backups),
+            "-DataRoot", overrides["-DataRoot"], "-BackupRoot", overrides["-BackupRoot"],
             "-RestoreConnectionString", overrides["-RestoreConnectionString"],
-            "-RestoreDataRoot", str(self.restored), "-AllowDatabaseOverwrite",
+            "-RestoreDataRoot", overrides["-RestoreDataRoot"], "-AllowDatabaseOverwrite",
             "-EncryptionKeyBase64", overrides["-EncryptionKeyBase64"],
             "-PgDumpPath", str(self.pg_tool), "-PgRestorePath", str(self.pg_tool),
             "-PsqlPath", str(self.pg_tool), "-SourceCommit", overrides["-SourceCommit"],
@@ -93,6 +97,31 @@ class ProductionRecoveryReceiptTests(unittest.TestCase):
         result = subprocess.run(command, cwd=REPO_ROOT, capture_output=True, text=True, timeout=30)
         self.assertTrue(receipt_path.is_file(), result.stdout + result.stderr)
         return result, json.loads(receipt_path.read_text(encoding="utf-8-sig")), receipt_path
+
+    def filesystem_snapshot(self, *excluded: Path):
+        """Include empty directories, quarantine paths, PostgreSQL calls, and symlinks."""
+        snapshot = {}
+        for path in self.root.rglob("*"):
+            if path in excluded:
+                continue
+            relative = str(path.relative_to(self.root))
+            if path.is_symlink():
+                snapshot[relative] = ("symlink", str(path.readlink()))
+            elif path.is_dir():
+                snapshot[relative] = ("directory", path.stat().st_mtime_ns)
+            else:
+                snapshot[relative] = ("file", path.stat().st_mtime_ns, path.read_bytes())
+        return snapshot
+
+    def assert_receipt_preflight_rejected(self, mode, receipt_name, *extra):
+        before = self.filesystem_snapshot()
+        result = subprocess.run(
+            self.command(mode, receipt_name, *extra),
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=30,
+        )
+        self.assertNotEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertIn("receipt", result.stderr.lower())
+        self.assertEqual(before, self.filesystem_snapshot(), result.stdout + result.stderr)
 
     def write_signed_manifest(self, manifest_path: Path, manifest):
         """Construct malformed but authenticated metadata to test producer validation."""
@@ -260,22 +289,97 @@ class ProductionRecoveryReceiptTests(unittest.TestCase):
         self.assertEqual(0, backup_result.returncode, backup_result.stderr)
         manifest_path = Path(backup["backupPath"]) / "manifest.json"
         original = json.loads(manifest_path.read_bytes())
-        original_calls = self.calls.read_bytes()
-        for index, value in enumerate((None, "", "not-a-commit")):
-            with self.subTest(source_commit=value):
+        malformed_commits = (
+            ("missing", None), ("null", None), ("empty", ""), ("short", "a" * 39),
+            ("long", "a" * 65), ("nonhex", "g" * 40),
+            ("sha1-newline", "a" * 40 + "\n"), ("sha256-newline", "b" * 64 + "\n"),
+            ("number", 123), ("boolean", True), ("array", [self.commit]),
+            ("object", {"commit": self.commit}),
+        )
+        self.restored.mkdir()
+        (self.restored / "untouched.txt").write_text("existing-target", encoding="utf-8")
+        for name, value in malformed_commits:
+            with self.subTest(source_commit=name):
                 manifest = dict(original)
-                if value is None:
+                if name == "missing":
                     manifest.pop("sourceCommit")
                 else:
                     manifest["sourceCommit"] = value
                 self.write_signed_manifest(manifest_path, manifest)
-                result, receipt, _ = self.invoke("Drill", f"missing-source-{index}.json", "-BackupPath", backup["backupPath"])
+                before = self.filesystem_snapshot()
+                result, receipt, receipt_path = self.invoke(
+                    "Drill", f"malformed-source-{name}.json", "-BackupPath", backup["backupPath"], "-AllowDataOverwrite",
+                )
                 self.assertNotEqual(0, result.returncode)
                 self.assertIn("original sourceCommit", receipt["error"])
+                self.assertEqual("failed", receipt["status"])
+                self.assertEqual("unproven", receipt["objectiveStatus"])
                 self.assertIsNone(receipt["sourceCommit"])
                 self.assertIsNone(receipt["simulatedLossAtUtc"])
-                self.assertFalse(self.restored.exists())
-                self.assertEqual(original_calls, self.calls.read_bytes())
+                self.assertIsNone(receipt["restoreStartedAtUtc"])
+                self.assertFalse(receipt["manifestAuthenticated"])
+                self.assertEqual(before, self.filesystem_snapshot(receipt_path))
+
+    def test_all_modes_reject_malformed_execution_commit_before_recovery(self):
+        backup_result, backup, _ = self.invoke("Backup", "backup-receipt.json")
+        self.assertEqual(0, backup_result.returncode, backup_result.stderr)
+        self.restored.mkdir()
+        (self.restored / "untouched.txt").write_text("existing-target", encoding="utf-8")
+        for mode, retained in (("Backup", False), ("Drill", False), ("Restore", True), ("Drill", True)):
+            for name, commit in (
+                ("empty", ""), ("whitespace", " \t "),
+                ("nonhex", "g" * 40), ("short", "a" * 39), ("long", "a" * 65),
+                ("sha1-newline", "a" * 40 + "\n"), ("sha256-newline", "b" * 64 + "\n"),
+            ):
+                with self.subTest(mode=mode, retained=retained, source_commit=name):
+                    before = self.filesystem_snapshot()
+                    extra = ("-BackupPath", backup["backupPath"]) if retained else ()
+                    result, receipt, receipt_path = self.invoke(
+                        mode, f"bad-commit-{mode}-{retained}-{name}.json", *extra,
+                        "-SourceCommit", commit, "-AllowDataOverwrite",
+                    )
+                    self.assertNotEqual(0, result.returncode)
+                    self.assertIn("commit", receipt["error"].lower())
+                    self.assertEqual("failed", receipt["status"])
+                    self.assertEqual("unproven", receipt["objectiveStatus"])
+                    self.assertIsNone(receipt["simulatedLossAtUtc"])
+                    self.assertIsNone(receipt["backupStartedAtUtc"])
+                    self.assertIsNone(receipt["restoreStartedAtUtc"])
+                    self.assertEqual(before, self.filesystem_snapshot(receipt_path))
+
+    def test_omitted_source_commit_can_use_the_current_git_commit(self):
+        command = self.command("Backup")
+        commit_index = command.index("-SourceCommit")
+        del command[commit_index:commit_index + 2]
+        result = subprocess.run(
+            command, cwd=REPO_ROOT, capture_output=True, text=True, timeout=30,
+            env={key: value for key, value in os.environ.items() if key != "GITHUB_SHA"},
+        )
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        expected_commit = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=REPO_ROOT, capture_output=True, text=True, check=True,
+        ).stdout.strip()
+        receipt = json.loads((self.root / "receipt.json").read_bytes())
+        self.assertEqual(expected_commit, receipt["sourceCommit"])
+        self.assertEqual(expected_commit, receipt["drillSourceCommit"])
+        self.assertTrue(receipt["manifestAuthenticated"])
+
+    def test_full_sha1_and_sha256_commits_support_proven_drills_in_either_case(self):
+        for commit in ("abcdef0123" * 4, "ABCDEF0123" * 4, "abcdef01" * 8, "ABCDEF01" * 8):
+            name = f"{len(commit)}-{'upper' if commit.isupper() else 'lower'}"
+            with self.subTest(commit=name):
+                result, receipt, receipt_path = self.invoke(
+                    "Drill", f"valid-{name}.json", "-SourceCommit", commit,
+                    "-BackupRoot", str(self.backups / name), "-RestoreDataRoot", str(self.restored / name),
+                    "-LastVerifiedRecoverablePointAtUtc", utc_timestamp(datetime.now(timezone.utc) - timedelta(minutes=2)),
+                    "-RecoverablePointEvidence", "controlled-checkpoint",
+                )
+                self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+                self.assertEqual(commit, receipt["sourceCommit"])
+                self.assertEqual(commit, receipt["drillSourceCommit"])
+                validation, output = self.validate_completion(receipt_path, self.completion_evidence(receipt), name)
+                self.assertEqual(0, validation.returncode, validation.stdout + validation.stderr)
+                self.assertEqual("proven", json.loads(output.read_bytes())["objectiveStatus"])
 
     def test_retained_backup_preserves_commit_and_completion_cannot_relabel_it(self):
         backup_result, backup, _ = self.invoke(
@@ -364,6 +468,160 @@ class ProductionRecoveryReceiptTests(unittest.TestCase):
         self.assertEqual("failed", receipt["status"])
         self.assertEqual("unproven", receipt["objectiveStatus"])
         self.assertIn("Base64", receipt["error"])
+
+    def test_explicit_receipts_cannot_overlap_source_or_restore_roots(self):
+        result, backup, _ = self.invoke("Backup", "backup-receipt.json")
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.restored.mkdir()
+        (self.restored / "untouched.txt").write_text("existing-target", encoding="utf-8")
+        for mode, retained in (("Backup", False), ("Drill", False), ("Restore", True), ("Drill", True)):
+            extra = ("-BackupPath", backup["backupPath"]) if retained else ()
+            for protected_root in (self.source, self.restored):
+                for receipt in (protected_root, protected_root / "new-receipt-parent" / "receipt.json"):
+                    with self.subTest(mode=mode, retained=retained, receipt=receipt):
+                        self.assert_receipt_preflight_rejected(mode, str(receipt), *extra, "-AllowDataOverwrite")
+
+    def test_receipts_cannot_create_missing_recovery_roots_or_their_ancestors(self):
+        result, backup, _ = self.invoke("Backup", "backup-receipt.json")
+        self.assertEqual(0, result.returncode, result.stderr)
+        for mode, retained in (("Backup", False), ("Drill", False), ("Restore", True), ("Drill", True)):
+            extra = ("-BackupPath", backup["backupPath"]) if retained else ()
+            for root_flag in ("-DataRoot", "-RestoreDataRoot"):
+                for receipt_is_ancestor in (False, True):
+                    receipt = self.root / "missing-parent" / "receipt.json"
+                    protected_root = receipt / "data" if receipt_is_ancestor else receipt
+                    with self.subTest(mode=mode, retained=retained, root=root_flag, ancestor=receipt_is_ancestor):
+                        self.assert_receipt_preflight_rejected(
+                            mode, str(receipt), *extra, root_flag, str(protected_root), "-AllowDataOverwrite",
+                        )
+
+    def test_default_receipts_inside_recovery_roots_have_no_side_effects(self):
+        result, backup, _ = self.invoke("Backup", "backup-receipt.json")
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.restored.mkdir()
+        (self.restored / "untouched.txt").write_text("existing-target", encoding="utf-8")
+        for mode, retained in (("Backup", False), ("Drill", False), ("Restore", True), ("Drill", True)):
+            extra = ("-BackupPath", backup["backupPath"]) if retained else ()
+            for protected_root in (self.source, self.restored):
+                with self.subTest(mode=mode, retained=retained, root=protected_root):
+                    self.assert_receipt_preflight_rejected(
+                        mode, None, *extra, "-BackupRoot", str(protected_root / "new-receipt-parent"),
+                        "-AllowDataOverwrite",
+                    )
+
+    def test_restore_receipt_preflight_uses_data_root_when_restore_root_is_omitted(self):
+        result, backup, _ = self.invoke("Backup", "backup-receipt.json")
+        self.assertEqual(0, result.returncode, result.stderr)
+        for receipt in (str(self.source / "new-receipt-parent" / "receipt.json"), None):
+            with self.subTest(receipt=receipt):
+                extra = ("-BackupRoot", str(self.source / "new-receipt-parent")) if receipt is None else ()
+                self.assert_receipt_preflight_rejected(
+                    "Restore", receipt, "-BackupPath", backup["backupPath"], "-RestoreDataRoot", "",
+                    "-AllowDataOverwrite", *extra,
+                )
+
+    def test_receipt_conflicts_are_checked_after_path_normalization(self):
+        for root_flag, protected_root in (("-DataRoot", self.source), ("-RestoreDataRoot", self.restored)):
+            with self.subTest(root=root_flag):
+                receipt = str(protected_root / ".." / protected_root.name / "new-receipt-parent" / "receipt.json")
+                self.assert_receipt_preflight_rejected(
+                    "Drill", receipt, root_flag, str(protected_root) + "/", "-AllowDataOverwrite",
+                )
+
+    def test_receipt_conflicts_follow_directory_symlinks(self):
+        result, backup, _ = self.invoke("Backup", "backup-receipt.json")
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.restored.mkdir()
+        (self.restored / "untouched.txt").write_text("existing-target", encoding="utf-8")
+        source_alias, restore_alias = self.root / "source-alias", self.root / "restore-alias"
+        source_alias.symlink_to(self.source, target_is_directory=True)
+        restore_alias.symlink_to(self.restored, target_is_directory=True)
+        for mode, retained in (("Backup", False), ("Drill", False), ("Restore", True), ("Drill", True)):
+            extra = ("-BackupPath", backup["backupPath"]) if retained else ()
+            for root_flag, protected_root, alias in (
+                ("-DataRoot", self.source, source_alias), ("-RestoreDataRoot", self.restored, restore_alias),
+            ):
+                for aliased_receipt in (False, True):
+                    with self.subTest(mode=mode, retained=retained, root=root_flag, receipt_alias=aliased_receipt):
+                        receipt_root = alias if aliased_receipt else protected_root
+                        recovery_root = protected_root if aliased_receipt else alias
+                        self.assert_receipt_preflight_rejected(
+                            mode, str(receipt_root / "new-receipt-parent" / "receipt.json"), *extra,
+                            root_flag, str(recovery_root), "-AllowDataOverwrite",
+                        )
+
+    def test_receipts_inside_roots_cannot_escape_through_outward_symlinks(self):
+        result, backup, _ = self.invoke("Backup", "backup-receipt.json")
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.restored.mkdir()
+        outside = self.root / "outside"
+        outside.mkdir()
+        for protected_root in (self.source, self.restored):
+            (protected_root / "alias").symlink_to(outside, target_is_directory=True)
+            (self.root / f"{protected_root.name}-alias").symlink_to(protected_root, target_is_directory=True)
+        for mode, retained in (("Backup", False), ("Drill", False), ("Restore", True), ("Drill", True)):
+            extra = ("-BackupPath", backup["backupPath"]) if retained else ()
+            for protected_root in (self.source, self.restored):
+                with self.subTest(mode=mode, retained=retained, root=protected_root):
+                    self.assert_receipt_preflight_rejected(
+                        mode, str(protected_root / "alias" / "receipt.json"), *extra, "-AllowDataOverwrite",
+                    )
+                    self.assert_receipt_preflight_rejected(
+                        mode, str(self.root / f"{protected_root.name}-alias" / "alias" / "receipt.json"),
+                        *extra, "-AllowDataOverwrite",
+                    )
+
+    def test_receipt_conflicts_follow_symlinks_in_other_link_targets(self):
+        nested_source = self.source / "nested"
+        nested_source.mkdir()
+        source_alias = self.root / "source-alias"
+        source_alias.symlink_to(self.source, target_is_directory=True)
+        chained_alias = self.root / "chained-alias"
+        chained_alias.symlink_to(source_alias / "nested", target_is_directory=True)
+        new_source = self.source / "new"
+        new_source.mkdir()
+        outer = self.root / "outer"
+        outer.mkdir()
+        (outer / "pivot").symlink_to(nested_source, target_is_directory=True)
+        traversal_alias = self.root / "traversal-alias"
+        traversal_alias.symlink_to("outer/pivot/../new", target_is_directory=True)
+        for alias, real_directory in ((chained_alias, nested_source), (traversal_alias, new_source)):
+            for aliased_receipt in (False, True):
+                with self.subTest(alias=alias.name, receipt_alias=aliased_receipt):
+                    receipt_root = alias if aliased_receipt else real_directory
+                    recovery_root = self.source if aliased_receipt else alias
+                    self.assert_receipt_preflight_rejected(
+                        "Drill", str(receipt_root / "new-receipt-parent" / "receipt.json"),
+                        "-DataRoot", str(recovery_root),
+                    )
+
+    def test_safe_relative_directory_symlink_receipt_remains_valid(self):
+        outer = self.root / "outer"
+        outer.mkdir()
+        safe_receipts = self.root / "safe-receipts"
+        safe_receipts.mkdir()
+        alias = outer / "safe-alias"
+        alias.symlink_to("../safe-receipts", target_is_directory=True)
+        result, receipt, _ = self.invoke("Backup", str(alias / "receipt.json"))
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertEqual("passed", receipt["status"])
+        self.assertTrue((safe_receipts / "receipt.json").is_file())
+
+    def test_receipt_paths_with_sibling_prefixes_remain_valid(self):
+        receipt_path = self.root / "source-restored-receipts" / "receipt.json"
+        result, receipt, _ = self.invoke(
+            "Drill", str(receipt_path), "-BackupRoot", str(self.root / "source-backups"),
+            "-RestoreDataRoot", str(self.root / "source-restored"),
+        )
+        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+        self.assertEqual("passed", receipt["status"])
+        self.assertEqual("committed-state", (self.root / "source-restored" / "probe.txt").read_text())
+        default_result = subprocess.run(
+            self.command("Backup", None, "-BackupRoot", str(self.root / "source-default-backups")),
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(0, default_result.returncode, default_result.stdout + default_result.stderr)
+        self.assertEqual(1, len(list((self.root / "source-default-backups").glob("*-receipt.json"))))
 
     def test_explicit_receipt_reuse_fails_before_backup_and_preserves_evidence(self):
         result, _, receipt_path = self.invoke("Backup")

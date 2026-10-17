@@ -51,7 +51,8 @@ internal static class BackfillPreviewPlanner
     public static BackfillPreviewResult BuildPreview(
         BackfillRequest request,
         IHistoricalDataProvider? provider,
-        string dataRoot)
+        string dataRoot,
+        IProviderCatalog providerCatalog)
     {
         var from = request.From ?? DateOnly.FromDateTime(DateTime.Today.AddYears(-1));
         var to = request.To ?? DateOnly.FromDateTime(DateTime.Today);
@@ -83,7 +84,7 @@ internal static class BackfillPreviewPlanner
             EstimatedTradingDays: tradingDays,
             Symbols: symbolPreviews.ToArray(),
             EstimatedDurationSeconds: EstimateBackfillDuration(request.Symbols.Count, tradingDays, request.Granularity, provider),
-            Notes: GetProviderNotes(provider)
+            Notes: GetProviderNotes(provider, providerCatalog)
         );
     }
 
@@ -323,15 +324,14 @@ internal static class BackfillPreviewPlanner
     /// Gets provider notes from the centralized ProviderCatalog.
     /// Eliminates per-provider conditionals in favor of standardized catalog lookup.
     /// </summary>
-    private static string[] GetProviderNotes(IHistoricalDataProvider? provider)
+    private static string[] GetProviderNotes(IHistoricalDataProvider? provider, IProviderCatalog providerCatalog)
     {
         if (provider is null)
         {
             return new[] { "Provider not found. Backfill may fail." };
         }
 
-        // Use centralized ProviderCatalog instead of hardcoded per-provider conditionals
-        var catalogNotes = ProviderCatalog.GetProviderNotes(provider.Name);
+        var catalogNotes = providerCatalog.Get(provider.Name)?.Notes ?? [];
         if (catalogNotes.Length > 0)
         {
             return catalogNotes;

@@ -145,6 +145,7 @@ import type {
   ProviderIntegrationEndpointDefinition,
   ProviderIntegrationFieldMapping,
   ProviderIntegrationManifest,
+  ProviderIntegrationManifestReference,
   ProviderIntegrationOpenApiImportResult,
   ProviderIntegrationProcessingStatus,
   ProviderIntegrationPromotionReadinessPreview,
@@ -368,6 +369,7 @@ interface ProviderIntegrationWorkbenchState {
   templates: ProviderIntegrationTemplateCatalogEntry[] | null;
   selectedManifestId: string;
   manifest: ProviderIntegrationManifest | null;
+  manifestReference: ProviderIntegrationManifestReference | null;
   connection: ProviderIntegrationConnection | null;
   draftManifestJson: string;
   draftConnectionJson: string;
@@ -1356,6 +1358,9 @@ export function SettingsScreen({
         openApiDocumentJson: formState.openApiDocumentJson,
         importedBy: session?.displayName ?? "settings-operator",
         importedAt: importedAt.toISOString(),
+        expectedManifestReference: formState.result?.manifestReference?.manifestId === formState.manifestId.trim()
+          ? formState.result.manifestReference
+          : undefined,
         changeReason: formState.changeReason.trim() || "Imported from the Settings Provider Connection Center."
       });
 
@@ -1544,7 +1549,8 @@ export function SettingsScreen({
         capability: replaySeed.capability,
         quarantineRecordIds,
         requestedBy: session?.displayName ?? "settings-operator",
-        requestedAt: requestedAt.toISOString()
+        requestedAt: requestedAt.toISOString(),
+        mode: "Original"
       });
 
       setProviderRuntimeState((current) => ({
@@ -2726,7 +2732,7 @@ export function SettingsScreen({
                 <div className="flex items-start gap-3">
                   <div
                     aria-hidden="true"
-                    className="grid h-12 w-12 shrink-0 place-items-center rounded-md border border-primary/35 bg-primary/12 font-mono text-sm font-semibold text-primary"
+                    className="grid h-12 w-12 shrink-0 place-items-center rounded-md border border-primary/35 font-mono text-sm font-semibold text-primary"
                   >
                     {vm.profileAuthenticationPanel.avatarInitials}
                   </div>
@@ -3257,7 +3263,7 @@ export function SettingsScreen({
                     href={card.endpointHref}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex max-w-full items-center gap-2 break-all font-mono text-[11px] text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40"
+                    className="inline-flex max-w-full items-center gap-2 break-all font-mono text-[11px] text-primary hover:underline focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                     aria-label={`Open service details for ${card.title}`}
                   >
                     {card.endpointHref}
@@ -4174,7 +4180,7 @@ export function SettingsScreen({
           </section>
           ) : (
             <div className="flex flex-wrap items-center gap-2 rounded-md border border-border/70 bg-background/35 px-3 py-3 text-xs text-muted-foreground">
-              <Link to={WORKSTATION_ROUTE_CATALOG.settingsProviders} className="font-semibold text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/40">
+              <Link to={WORKSTATION_ROUTE_CATALOG.settingsProviders} className="font-semibold text-primary hover:underline focus:outline-hidden focus:ring-2 focus:ring-primary/40">
                 Back to provider overview
               </Link>
               <span aria-hidden="true">·</span>
@@ -4298,7 +4304,7 @@ export function SettingsScreen({
                         onReplayQuarantine={() => setMutationConfirmation({
                           id: `provider-replay-${row.providerId}`,
                           title: `Replay quarantined records for ${row.displayName}?`,
-                          description: "Request replay for the retained eligible quarantine batch. Existing decisions and source evidence remain retained.",
+                          description: "Replay the retained eligible quarantine batch using its original manifest version. Mapping updates are not applied; remediation requires an explicitly selected newer version. Existing decisions and source evidence remain retained.",
                           confirmLabel: "Confirm replay",
                           confirmAriaLabel: `Confirm quarantine replay for ${row.displayName}`,
                           destructive: true,
@@ -4835,7 +4841,7 @@ export function SettingsScreen({
                     rel="noreferrer"
                     aria-label={link.ariaLabel}
                     className={cn(
-                      "group flex h-full flex-col gap-2 rounded-lg border px-4 py-3 transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40",
+                      "group flex h-full flex-col gap-2 rounded-lg border px-4 py-3 transition-colors hover:bg-secondary/45 focus:outline-hidden focus:ring-2 focus:ring-primary/40",
                       diagnosticToneClass[link.tone]
                     )}
                   >
@@ -5010,7 +5016,7 @@ export function SettingsScreen({
                       target="_blank"
                       rel="noreferrer"
                       aria-label={endpoint.ariaLabel}
-                      className="flex min-w-0 items-start gap-2 rounded-md border border-border/60 bg-background/45 px-3 py-2 text-xs transition-colors hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="flex min-w-0 items-start gap-2 rounded-md border border-border/60 bg-background/45 px-3 py-2 text-xs transition-colors hover:bg-secondary/45 focus:outline-hidden focus:ring-2 focus:ring-primary/40"
                     >
                       <EndpointReference endpoint={endpoint} />
                     </a>
@@ -6006,7 +6012,7 @@ function ProviderIntegrationWorkbenchPanel({
   const mappingPreview = providerIntegrationWorkbenchMappings(state, state.capability);
   const latestRawPayload = providerIntegrationLatestRawPayload(state, runtimeState);
   const canCheckDrift = Boolean(manifestId && connectionId && latestRawPayload && state.endpointKey.trim());
-  const activationReady = state.readiness?.isReady ?? false;
+  const activationReady = Boolean(state.readiness?.isReady && state.manifestReference?.manifestId === manifestId);
 
   const updateField = <K extends keyof ProviderIntegrationWorkbenchState>(
     field: K,
@@ -6098,12 +6104,24 @@ function ProviderIntegrationWorkbenchPanel({
         connection: connectionDraft.value,
         savedBy: operatorName,
         savedAt,
+        expectedManifestReference: state.manifestReference?.manifestId === manifestDraft.value.manifestId
+          ? state.manifestReference
+          : undefined,
         changeReason: manifestDraft.value.changeReason ?? "Saved from the Settings Provider Connection Center guided workbench."
       });
+      const savedManifest = {
+        ...manifestDraft.value,
+        manifestVersion: result.manifestReference?.manifestVersion ?? manifestDraft.value.manifestVersion,
+        state: result.manifestState
+      };
+      const savedConnection = { ...connectionDraft.value, state: result.connectionState, updatedAt: savedAt };
       setState((current) => ({
         ...current,
-        manifest: manifestDraft.value,
-        connection: connectionDraft.value,
+        manifest: savedManifest,
+        manifestReference: result.manifestReference ?? null,
+        connection: savedConnection,
+        draftManifestJson: providerIntegrationFormatJson(savedManifest),
+        draftConnectionJson: providerIntegrationFormatJson(savedConnection),
         selectedManifestId: result.manifestId,
         setupResult: result,
         readiness: result.readiness,
@@ -6260,7 +6278,7 @@ function ProviderIntegrationWorkbenchPanel({
 
   const activateSetup = async () => {
     if (!manifestId || !activationReady) {
-      setState((current) => ({ ...current, message: "Activation is blocked until readiness passes.", details: providerIntegrationReadinessDetails(current.readiness), tone: "warning" }));
+      setState((current) => ({ ...current, message: "Save the manifest version and pass readiness before activation.", details: providerIntegrationReadinessDetails(current.readiness), tone: "warning" }));
       return;
     }
 
@@ -6272,18 +6290,39 @@ function ProviderIntegrationWorkbenchPanel({
         connectionId,
         approvedBy: operatorName,
         approvedAt: approvedAt.toISOString(),
+        expectedManifestReference: state.manifestReference?.manifestId === manifestId
+          ? state.manifestReference
+          : undefined,
         approvalEvidenceId: providerIntegrationWorkbenchEvidenceId(row.integrationConnectionId, "activation", approvedAt),
         changeReason: "Activated from the Settings Provider Connection Center guided workbench."
       });
-      setState((current) => ({
-        ...current,
-        activationResult: result,
-        readiness: result.readiness,
-        busyAction: null,
-        message: result.message ?? `Provider integration ${result.activated ? "activated" : "activation reviewed"}.`,
-        details: providerIntegrationReadinessDetails(result.readiness),
-        tone: result.activated ? "success" : "warning"
-      }));
+      setState((current) => {
+        const manifest = result.activated && current.manifest
+          ? {
+            ...current.manifest,
+            manifestVersion: result.manifestReference?.manifestVersion ?? current.manifest.manifestVersion,
+            state: result.manifestState,
+            approvedBy: operatorName,
+            approvedAt: approvedAt.toISOString(),
+            changeReason: "Activated from the Settings Provider Connection Center guided workbench."
+          }
+          : current.manifest;
+        const draft = parseProviderIntegrationWorkbenchJson<ProviderIntegrationManifest>(current.draftManifestJson, "Manifest draft JSON");
+        return {
+          ...current,
+          manifest,
+          manifestReference: result.manifestReference ?? current.manifestReference,
+          draftManifestJson: result.activated && manifest && draft.ok
+            ? providerIntegrationFormatJson({ ...draft.value, manifestVersion: manifest.manifestVersion, state: manifest.state, approvedBy: manifest.approvedBy, approvedAt: manifest.approvedAt })
+            : current.draftManifestJson,
+          activationResult: result,
+          readiness: result.readiness,
+          busyAction: null,
+          message: result.message ?? `Provider integration ${result.activated ? "activated" : "activation reviewed"}.`,
+          details: providerIntegrationReadinessDetails(result.readiness),
+          tone: result.activated ? "success" : "warning"
+        };
+      });
     } catch (error) {
       const display = describeApiError(error, "Provider integration activation failed.");
       setState((current) => ({ ...current, busyAction: null, message: display.summary, details: display.details, tone: "danger" }));
@@ -6319,7 +6358,7 @@ function ProviderIntegrationWorkbenchPanel({
         </label>
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Template catalog
-          <select className="rounded-md border border-border/70 bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-primary" value={state.selectedManifestId} onChange={(event) => updateField("selectedManifestId", event.target.value)} disabled={busy || !state.templates || state.templates.length === 0} aria-label={`${row.displayName} provider integration template`}>
+          <select className="rounded-md border border-border/70 bg-background px-3 py-2 text-xs text-foreground outline-hidden focus:border-primary" value={state.selectedManifestId} onChange={(event) => updateField("selectedManifestId", event.target.value)} disabled={busy || !state.templates || state.templates.length === 0} aria-label={`${row.displayName} provider integration template`}>
             <option value={state.selectedManifestId}>{state.selectedManifestId || "No template selected"}</option>
             {(state.templates ?? []).map((template) => <option key={template.manifestId} value={template.manifestId}>{template.displayName}</option>)}
           </select>
@@ -6328,11 +6367,11 @@ function ProviderIntegrationWorkbenchPanel({
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Manifest draft JSON
-          <textarea className="min-h-36 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-none focus:border-primary" value={state.draftManifestJson} onChange={(event) => updateField("draftManifestJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration manifest draft JSON`} spellCheck={false} />
+          <textarea className="min-h-36 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-hidden focus:border-primary" value={state.draftManifestJson} onChange={(event) => updateField("draftManifestJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration manifest draft JSON`} spellCheck={false} />
         </label>
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Connection draft JSON
-          <textarea className="min-h-36 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-none focus:border-primary" value={state.draftConnectionJson} onChange={(event) => updateField("draftConnectionJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration connection draft JSON`} spellCheck={false} />
+          <textarea className="min-h-36 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-hidden focus:border-primary" value={state.draftConnectionJson} onChange={(event) => updateField("draftConnectionJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration connection draft JSON`} spellCheck={false} />
         </label>
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
@@ -6340,7 +6379,7 @@ function ProviderIntegrationWorkbenchPanel({
           <Save className="h-3.5 w-3.5" aria-hidden="true" />
           Save setup draft
         </Button>
-        <Button type="button" variant="outline" size="sm" onClick={() => setActivationConfirmationOpen(true)} disabled={busy || !activationReady} busy={state.busyAction === "activate"} disabledReason={!activationReady ? "Activation readiness must pass before activation." : undefined} aria-label={`Activate provider integration setup for ${row.displayName}`}>
+        <Button type="button" variant="outline" size="sm" onClick={() => setActivationConfirmationOpen(true)} disabled={busy || !activationReady} busy={state.busyAction === "activate"} disabledReason={!activationReady ? "Save the manifest version and pass readiness before activation." : undefined} aria-label={`Activate provider integration setup for ${row.displayName}`}>
           <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
           Activate when ready
         </Button>
@@ -6383,7 +6422,7 @@ function ProviderIntegrationWorkbenchPanel({
       <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Capability
-          <select className="rounded-md border border-border/70 bg-background px-3 py-2 text-xs text-foreground outline-none focus:border-primary" value={state.capability} onChange={(event) => setState((current) => {
+          <select className="rounded-md border border-border/70 bg-background px-3 py-2 text-xs text-foreground outline-hidden focus:border-primary" value={state.capability} onChange={(event) => setState((current) => {
             const capability = event.target.value as ProviderIntegrationCapabilityKind;
             return { ...current, capability, endpointKey: providerIntegrationPreferredEndpointKey(current.manifest, capability, current.endpointKey), message: null, details: [], tone: "default" };
           })} disabled={busy} aria-label={`${row.displayName} provider integration dry-run capability`}>
@@ -6403,7 +6442,7 @@ function ProviderIntegrationWorkbenchPanel({
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           CSV content
-          <textarea className="min-h-24 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-none focus:border-primary" value={state.csvContent} onChange={(event) => updateField("csvContent", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration CSV dry-run content`} spellCheck={false} />
+          <textarea className="min-h-24 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-hidden focus:border-primary" value={state.csvContent} onChange={(event) => updateField("csvContent", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration CSV dry-run content`} spellCheck={false} />
         </label>
         <div className="grid gap-3">
           <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
@@ -6580,7 +6619,7 @@ function ProviderOpenApiImportForm({
       <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
         OpenAPI JSON
         <textarea
-          className="min-h-24 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-xs text-foreground outline-none focus:border-primary"
+          className="min-h-24 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-xs text-foreground outline-hidden focus:border-primary"
           value={state.openApiDocumentJson}
           onChange={(event) => updateField("openApiDocumentJson", event.target.value)}
           disabled={state.busy}
@@ -6863,6 +6902,7 @@ function createProviderIntegrationWorkbenchState(row: SettingsProviderConnection
     templates: null,
     selectedManifestId: providerIntegrationDefaultManifestId(row),
     manifest: null,
+    manifestReference: null,
     connection: null,
     draftManifestJson: "",
     draftConnectionJson: "",
@@ -6955,6 +6995,7 @@ function providerIntegrationWorkbenchWithDraft(
     ...state,
     selectedManifestId: manifest.manifestId,
     manifest,
+    manifestReference: null,
     connection,
     draftManifestJson: providerIntegrationFormatJson(manifest),
     draftConnectionJson: providerIntegrationFormatJson(connection),

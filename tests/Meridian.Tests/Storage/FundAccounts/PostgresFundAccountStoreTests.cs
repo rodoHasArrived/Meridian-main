@@ -29,6 +29,41 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
         new(_fixture.Options, tenantAccessor);
 
     [FundAccountDatabaseFact]
+    public async Task TryCreateAccountAsync_ConcurrentSameIdentity_CreatesExactlyOneWithoutOverwriting()
+    {
+        var store = CreateStore();
+        var first = MakeAccount();
+        var requests = Enumerable.Range(0, 12)
+            .Select(i => first with { AccountCode = $"CREATE-{Guid.NewGuid():N}", DisplayName = $"Candidate {i}" })
+            .ToArray();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        var created = await Task.WhenAll(requests.Select(account => store.TryCreateAccountAsync(account, cts.Token)));
+
+        created.Count(static success => success).Should().Be(1);
+        var winner = requests[Array.FindIndex(created, static success => success)];
+        var persisted = await store.GetAccountAsync(first.AccountId, cts.Token);
+        persisted!.AccountCode.Should().Be(winner.AccountCode);
+        persisted.DisplayName.Should().Be(winner.DisplayName);
+    }
+
+    [FundAccountDatabaseFact]
+    public async Task TryCreateAccountAsync_ExistingOtherTenant_DoesNotChangeRetainedAccount()
+    {
+        var owner = new PostgresFundAccountStore(_fixture.Options, new FixedTenantAccessor("alpha"), TenantScopeEnforcementOptions.FailClosed);
+        var other = new PostgresFundAccountStore(_fixture.Options, new FixedTenantAccessor("beta"), TenantScopeEnforcementOptions.FailClosed);
+        var account = MakeAccount();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        (await owner.TryCreateAccountAsync(account, cts.Token)).Should().BeTrue();
+
+        var created = await other.TryCreateAccountAsync(account with { DisplayName = "Forged account" }, cts.Token);
+
+        created.Should().BeFalse();
+        (await owner.GetAccountAsync(account.AccountId, cts.Token))!.DisplayName.Should().Be(account.DisplayName);
+        (await other.GetAccountAsync(account.AccountId, cts.Token)).Should().BeNull();
+    }
+
+    [FundAccountDatabaseFact]
     public async Task UpsertAccountAsync_ExistingAccount_UpdatesMutableColumns()
     {
         var store = CreateStore();
@@ -158,6 +193,49 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
         snapshots[0].ExcessLiquidity.Should().Be(12_500m);
         snapshots[0].Requirements.Should().ContainSingle()
             .Which.Symbol.Should().Be("AAPL", "requirements must round-trip the JSONB column");
+    }
+
+    [FundAccountDatabaseFact]
+    public async Task UpsertMarginSnapshotAsync_SameIdentityCorrectedEffectiveTime_ReplacesWithoutPrimaryKeyConflict()
+    {
+        var store = CreateStore();
+        var account = MakeAccount();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await store.UpsertAccountAsync(account, cts.Token);
+        var first = MakeMarginSnapshot(account.AccountId, DateTimeOffset.UtcNow, excessLiquidity: 10_000m);
+        var corrected = first with { EffectiveAt = first.EffectiveAt.AddHours(1), ExcessLiquidity = 12_500m };
+
+        await store.UpsertMarginSnapshotAsync(first, cts.Token);
+        await store.UpsertMarginSnapshotAsync(corrected, cts.Token);
+
+        var snapshots = await store.GetMarginSnapshotsAsync(account.AccountId, cts.Token);
+        snapshots.Should().ContainSingle();
+        snapshots[0].MarginSnapshotId.Should().Be(first.MarginSnapshotId);
+        snapshots[0].EffectiveAt.Should().BeCloseTo(corrected.EffectiveAt, TimeSpan.FromMilliseconds(2));
+        snapshots[0].ExcessLiquidity.Should().Be(corrected.ExcessLiquidity);
+    }
+
+    [FundAccountDatabaseFact]
+    public async Task UpsertMarginSnapshotAsync_CorrectedTimeAlreadyOccupied_RollsBackBothSnapshots()
+    {
+        var store = CreateStore();
+        var account = MakeAccount();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await store.UpsertAccountAsync(account, cts.Token);
+        var first = MakeMarginSnapshot(account.AccountId, DateTimeOffset.UtcNow, excessLiquidity: 10_000m);
+        var second = MakeMarginSnapshot(account.AccountId, first.EffectiveAt.AddHours(1), excessLiquidity: 15_000m);
+        await store.UpsertMarginSnapshotAsync(first, cts.Token);
+        await store.UpsertMarginSnapshotAsync(second, cts.Token);
+
+        var act = () => store.UpsertMarginSnapshotAsync(first with { EffectiveAt = second.EffectiveAt, ExcessLiquidity = 12_500m }, cts.Token);
+
+        (await act.Should().ThrowAsync<PostgresException>()).Which.SqlState.Should().Be(PostgresErrorCodes.UniqueViolation);
+        var snapshots = await store.GetMarginSnapshotsAsync(account.AccountId, cts.Token);
+        snapshots.Should().HaveCount(2);
+        var retained = snapshots.Single(s => s.MarginSnapshotId == first.MarginSnapshotId);
+        retained.EffectiveAt.Should().BeCloseTo(first.EffectiveAt, TimeSpan.FromMilliseconds(2));
+        retained.ExcessLiquidity.Should().Be(first.ExcessLiquidity);
+        snapshots.Single(s => s.MarginSnapshotId == second.MarginSnapshotId).ExcessLiquidity.Should().Be(second.ExcessLiquidity);
     }
 
     [FundAccountDatabaseFact]

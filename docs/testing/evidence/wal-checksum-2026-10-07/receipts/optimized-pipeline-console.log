@@ -1,0 +1,5 @@
+sdk: exit 0; evidence: /workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1
+runtime: exit 0; evidence: /workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1
+dotnetInfo: exit 0; evidence: /workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1
+restore: exit 0; evidence: /workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1
+build: exit 0; evidence: /workspace/Meridian-main/artifacts/pipeline-benchmark/5ce795c47fc7c67734c4baa970c3bc4434c0e3de/local-0abffcf2a2844b5eb1141779ff2ee9a0-1

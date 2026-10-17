@@ -10,7 +10,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Integration tests for Interactive Brokers endpoints (/api/providers/ib/*).
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class IBEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;

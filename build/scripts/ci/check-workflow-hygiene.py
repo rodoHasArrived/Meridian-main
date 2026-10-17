@@ -31,10 +31,12 @@ OLD_WORKFLOW_FILENAMES = {
     "code-quality.yml",
     "desktop-builds.yml",
     "docker.yml",
+    "export-project-artifact.yml",
     "export-standalone-exe.yml",
     "nightly.yml",
     "pr-checks.yml",
     "prompt-generation.yml",
+    "python-package-conda.yml",
     "release.yml",
     "reusable-dotnet-build.yml",
     "scheduled-maintenance.yml",
@@ -124,6 +126,12 @@ def check_active_docs_do_not_reference_removed_workflows(failures: list[str]) ->
                 fail(f"{path.relative_to(REPO_ROOT)} still references removed workflow {old_name}.", failures)
 
 
+def check_removed_workflows_stay_retired(failures: list[str]) -> None:
+    for old_name in sorted(OLD_WORKFLOW_FILENAMES):
+        if (WORKFLOW_DIR / old_name).exists():
+            fail(f"Removed workflow {old_name} is active again; use the maintained build/test/publish lanes.", failures)
+
+
 def check_no_stale_absolute_paths(failures: list[str]) -> None:
     stale_path_patterns = [
         re.compile(r"C:\\Users\\", re.IGNORECASE),
@@ -210,6 +218,7 @@ def main() -> int:
     check_duplicate_workflow_names(failures)
     check_action_refs(failures)
     check_local_uses_exist(failures)
+    check_removed_workflows_stay_retired(failures)
     check_active_docs_do_not_reference_removed_workflows(failures)
     check_no_stale_absolute_paths(failures)
     check_no_committed_generated_artifacts(failures)

@@ -16,12 +16,21 @@ namespace Meridian.Storage.SecurityMaster;
 /// published rebuild cannot be discarded by a concurrent warm; and an upsert older than the record
 /// a rebuild installed does not downgrade it.</para>
 ///
-/// <para>Multi-node deployments: publishes on one node do not invalidate another node's cache.
-/// Coherence is bounded by the periodic re-warm
-/// (<c>SecurityMasterOptions.ProjectionCacheRefreshMinutes</c>, run by
-/// <c>SecurityMasterProjectionWarmupService</c>) plus the per-security rebuild each node performs
-/// on its own writes; reads that must be authoritative (governed workflows) go to the durable
-/// store, not this cache.</para>
+/// <para>Multi-node deployments: each node upserts its own writes directly, and every committed
+/// projection write also emits a PostgreSQL <c>NOTIFY</c> from inside its transaction
+/// (<see cref="PostgresSecurityMasterStore"/>, channel
+/// <see cref="SecurityProjectionChangeNotification.ChannelFor"/>), so it is delivered only on
+/// commit and never for a rolled-back write. Every other node's
+/// <c>SecurityMasterProjectionChangeListener</c> re-reads the announced security from the durable
+/// store and applies it through the version-guarded <see cref="Upsert"/> (or <see cref="Remove"/>
+/// when it is gone), ignoring its own node's notifications. Cross-node staleness is therefore
+/// bounded by notification delivery, not by a timer. PostgreSQL does not replay notifications to a
+/// disconnected listener, so after the listener reconnects it re-synchronises the whole cache; the
+/// periodic re-warm (<c>SecurityMasterOptions.ProjectionCacheRefreshMinutes</c>, run by
+/// <c>SecurityMasterProjectionWarmupService</c>) remains a backstop, and
+/// <c>SecurityMasterOptions.ProjectionCacheNotificationsEnabled = false</c> falls back to it alone.
+/// Reads that must be authoritative (governed workflows) still go to the durable store, not this
+/// cache.</para>
 /// </summary>
 public sealed class SecurityMasterProjectionCache
 {
@@ -32,9 +41,18 @@ public sealed class SecurityMasterProjectionCache
     // captured and replayed before the swap. Reads go through Volatile.Read so a reader cannot
     // observe the new map before the writes that populated it.
     private readonly Lock _writeGate = new();
-    private readonly Lock _replacementGate = new();
+    private readonly SemaphoreSlim _replacementGate = new(1, 1);
 
     private ConcurrentDictionary<Guid, SecurityProjectionRecord> _byId = new();
+
+    /// <summary>
+    /// Orders "reread the durable projection, then upsert it" refreshes against each other. Alias
+    /// writes keep the projection version and <see cref="Upsert"/> accepts an equal version, so two
+    /// refreshes of the same security — a local alias write and a remote notification, or two
+    /// local writes — must not interleave, or an earlier reread can land last. Every such refresh
+    /// path holds this gate across its reread and upsert.
+    /// </summary>
+    public SemaphoreSlim RefreshGate { get; } = new(1, 1);
     private Dictionary<Guid, SecurityProjectionRecord>? _upsertsDuringReplacement;
 
     private ConcurrentDictionary<Guid, SecurityProjectionRecord> Current
@@ -65,15 +83,33 @@ public sealed class SecurityMasterProjectionCache
     /// content.
     /// </para>
     /// </remarks>
-    public void Upsert(SecurityProjectionRecord record)
+    /// <returns>
+    /// <see langword="true"/> when the cache changed: the record was installed, or an older record
+    /// contributed newer-stamped aliases to the installed one; <see langword="false"/> when the
+    /// installed record was kept unchanged.
+    /// </returns>
+    public bool Upsert(SecurityProjectionRecord record)
     {
         lock (_writeGate)
         {
             var current = Current;
-            if (current.TryGetValue(record.SecurityId, out var installed)
-                && record.Version < installed.Version)
+            if (current.TryGetValue(record.SecurityId, out var installed))
             {
-                return;
+                // Aliases do not move the version, so either side can carry the newer alias list:
+                // an older record keeps the installed terms but contributes newer-stamped aliases,
+                // and an equal or newer record keeps the installed aliases when they are newer.
+                if (record.Version < installed.Version)
+                {
+                    record = SecurityAliasSnapshot.KeepNewerAliases(installed, record);
+                    if (ReferenceEquals(record, installed))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    record = SecurityAliasSnapshot.KeepNewerAliases(record, installed);
+                }
             }
 
             current[record.SecurityId] = record;
@@ -81,6 +117,8 @@ public sealed class SecurityMasterProjectionCache
             {
                 _upsertsDuringReplacement[record.SecurityId] = record;
             }
+
+            return true;
         }
     }
 
@@ -132,51 +170,121 @@ public sealed class SecurityMasterProjectionCache
     {
         ArgumentNullException.ThrowIfNull(records);
 
-        lock (_replacementGate)
+        _replacementGate.Wait();
+        try
         {
-            var capturedUpserts = new Dictionary<Guid, SecurityProjectionRecord>();
-            lock (_writeGate)
-            {
-                if (_upsertsDuringReplacement is not null)
-                {
-                    throw new InvalidOperationException("A projection-cache replacement is already active.");
-                }
-
-                _upsertsDuringReplacement = capturedUpserts;
-            }
-
+            var capturedUpserts = BeginCapture();
             try
             {
-                var materialized = records as SecurityProjectionRecord[] ?? records.ToArray();
-                var replacement = new ConcurrentDictionary<Guid, SecurityProjectionRecord>();
-                foreach (var record in materialized)
-                {
-                    replacement[record.SecurityId] = record;
-                }
-
-                lock (_writeGate)
-                {
-                    foreach (var upsert in capturedUpserts.Values)
-                    {
-                        replacement.AddOrUpdate(
-                            upsert.SecurityId,
-                            upsert,
-                            (_, candidate) => upsert.Version >= candidate.Version ? upsert : candidate);
-                    }
-
-                    Volatile.Write(ref _byId, replacement);
-                    _upsertsDuringReplacement = null;
-                }
+                Install(records as SecurityProjectionRecord[] ?? records.ToArray(), capturedUpserts);
             }
             finally
             {
-                lock (_writeGate)
+                EndCapture(capturedUpserts);
+            }
+        }
+        finally
+        {
+            _replacementGate.Release();
+        }
+    }
+
+    /// <summary>
+    /// Builds the replacement with <paramref name="buildReplacement"/> and installs it as
+    /// <see cref="ReplaceAll"/> does, but opens the upsert capture BEFORE the build reads its source.
+    /// A local create or amend whose cache upsert lands while a warm is still reading or rebuilding
+    /// is therefore replayed into the replacement even when the warm's read preceded that write's
+    /// commit, instead of being dropped or downgraded by the swap.
+    /// </summary>
+    public async Task<IReadOnlyList<SecurityProjectionRecord>> ReplaceAllAsync(
+        Func<CancellationToken, Task<IReadOnlyList<SecurityProjectionRecord>>> buildReplacement,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(buildReplacement);
+
+        await _replacementGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var capturedUpserts = BeginCapture();
+            try
+            {
+                var records = await buildReplacement(ct).ConfigureAwait(false);
+                Install(records, capturedUpserts);
+                return records;
+            }
+            finally
+            {
+                EndCapture(capturedUpserts);
+            }
+        }
+        finally
+        {
+            _replacementGate.Release();
+        }
+    }
+
+    private Dictionary<Guid, SecurityProjectionRecord> BeginCapture()
+    {
+        var capturedUpserts = new Dictionary<Guid, SecurityProjectionRecord>();
+        lock (_writeGate)
+        {
+            if (_upsertsDuringReplacement is not null)
+            {
+                throw new InvalidOperationException("A projection-cache replacement is already active.");
+            }
+
+            _upsertsDuringReplacement = capturedUpserts;
+        }
+
+        return capturedUpserts;
+    }
+
+    private void Install(
+        IReadOnlyCollection<SecurityProjectionRecord> records,
+        Dictionary<Guid, SecurityProjectionRecord> capturedUpserts)
+    {
+        var replacement = new ConcurrentDictionary<Guid, SecurityProjectionRecord>();
+        foreach (var record in records)
+        {
+            replacement[record.SecurityId] = record;
+        }
+
+        lock (_writeGate)
+        {
+            foreach (var upsert in capturedUpserts.Values)
+            {
+                replacement.AddOrUpdate(
+                    upsert.SecurityId,
+                    upsert,
+                    (_, candidate) => upsert.Version >= candidate.Version
+                        ? SecurityAliasSnapshot.KeepNewerAliases(upsert, candidate)
+                        : SecurityAliasSnapshot.KeepNewerAliases(candidate, upsert));
+            }
+
+            // The replacement is authoritative about membership and terms as of its snapshot,
+            // but an alias correction refreshed into the outgoing map after that snapshot was
+            // read must not be rolled back by the swap.
+            var outgoing = Current;
+            foreach (var (securityId, candidate) in replacement)
+            {
+                if (outgoing.TryGetValue(securityId, out var installed))
                 {
-                    if (ReferenceEquals(_upsertsDuringReplacement, capturedUpserts))
-                    {
-                        _upsertsDuringReplacement = null;
-                    }
+                    replacement[securityId] = SecurityAliasSnapshot.KeepNewerAliases(candidate, installed);
                 }
+            }
+
+            Volatile.Write(ref _byId, replacement);
+            _upsertsDuringReplacement = null;
+        }
+    }
+
+    private void EndCapture(Dictionary<Guid, SecurityProjectionRecord> capturedUpserts)
+    {
+        lock (_writeGate)
+        {
+            if (ReferenceEquals(_upsertsDuringReplacement, capturedUpserts))
+            {
+                _upsertsDuringReplacement = null;
             }
         }
     }

@@ -10,6 +10,7 @@ import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-re
 import * as workstationApi from "@/lib/api";
 import { formatCurrency } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
+import { useBrokerageRecoveryObservation } from "./trading-screen.brokerage-recovery-state";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import {
@@ -504,10 +505,12 @@ export interface TradingReadinessState {
 
 export interface TradingReadinessViewModel extends TradingReadinessState {
   refresh: () => Promise<void>;
+  recoverBrokerage: () => Promise<void>;
 }
 
 export interface TradingReadinessServices {
   getTradingReadiness: (options?: ApiRequestOptions & { fundAccountId?: string }) => Promise<TradingOperatorReadiness | null>;
+  synchronizeTradingBrokerage?: (fundAccountId: string, options?: ApiRequestOptions) => Promise<TradingOperatorReadiness>;
 }
 
 export interface BuildTradingReadinessStateOptions {
@@ -518,7 +521,8 @@ export interface BuildTradingReadinessStateOptions {
 }
 
 const defaultTradingReadinessServices: TradingReadinessServices = {
-  getTradingReadiness: (options?: ApiRequestOptions) => workstationApi.getTradingReadiness(options)
+  getTradingReadiness: (options) => workstationApi.getTradingReadiness(options),
+  synchronizeTradingBrokerage: (fundAccountId, options) => workstationApi.synchronizeTradingBrokerage(fundAccountId, options)
 };
 
 const idleTradingReadinessStatus: RequestLifecycleStatus = {
@@ -648,6 +652,7 @@ export function useTradingReadinessViewModel({
   const [readiness, setReadiness] = useState<TradingOperatorReadiness | null>(initialReadiness);
   const [refreshing, setRefreshing] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
+  const readinessScopeRef = useRef(fundAccountId);
   const refreshRef = useRef<(options?: { attempt?: number }) => Promise<void>>(async () => {});
   const readinessLifecycle = useRequestLifecycle({
     operation: "trading readiness handoff refresh",
@@ -663,19 +668,28 @@ export function useTradingReadinessViewModel({
 
   useEffect(() => {
     readinessLifecycle.invalidate();
-    setReadiness(initialReadiness);
+    const scopeChanged = readinessScopeRef.current !== fundAccountId;
+    const evidenceAccount = initialReadiness?.brokerageRecovery?.fundAccountId ?? initialReadiness?.brokerageSync?.fundAccountId;
+    const scopeMatches = !fundAccountId || evidenceAccount?.toLowerCase() === fundAccountId.toLowerCase();
+    setReadiness(scopeChanged && !scopeMatches ? null : initialReadiness);
+    readinessScopeRef.current = fundAccountId;
     setErrorText(null);
     setRefreshing(false);
-  }, [initialReadiness, readinessLifecycle.invalidate]);
+  }, [initialReadiness, fundAccountId, readinessLifecycle.invalidate]);
 
-  const refresh = useCallback(async (options: { attempt?: number } = {}) => {
-    const token = readinessLifecycle.start({ attempt: options.attempt });
+  const refresh = useCallback(async (options: { attempt?: number; synchronize?: boolean } = {}) => {
+    const token = readinessLifecycle.start({ attempt: options.attempt, busyMode: "drop" });
     if (!token) return;
     token.safeSetState(setRefreshing, true);
     token.safeSetState(setErrorText, null);
 
     try {
-      const nextReadiness = await services.getTradingReadiness({ signal: token.signal, fundAccountId });
+      if (options.synchronize && (!fundAccountId || !services.synchronizeTradingBrokerage)) {
+        throw new Error("Select a fund account before synchronizing brokerage evidence.");
+      }
+      const nextReadiness = options.synchronize
+        ? await services.synchronizeTradingBrokerage!(fundAccountId!, { signal: token.signal })
+        : await services.getTradingReadiness({ signal: token.signal, fundAccountId, allowDevelopmentFallback: false });
       if (!token.isCurrent()) {
         readinessLifecycle.markStale(token.version);
         return;
@@ -701,6 +715,8 @@ export function useTradingReadinessViewModel({
     refreshRef.current = refresh;
   }, [refresh]);
 
+  useBrokerageRecoveryObservation({ fundAccountId, readiness, setReadiness, refreshRef });
+
   const state = useMemo(
     () => buildTradingReadinessState({ readiness, refreshing, errorText, requestStatus: readinessLifecycle.status }),
     [errorText, readiness, readinessLifecycle.status, refreshing]
@@ -708,7 +724,8 @@ export function useTradingReadinessViewModel({
 
   return {
     ...state,
-    refresh
+    refresh,
+    recoverBrokerage: () => refresh({ synchronize: true })
   };
 }
 

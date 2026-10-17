@@ -26,6 +26,8 @@ public static class LedgerStoreExtensions
             () => sp.GetService<Meridian.Storage.SecurityMaster.ISecurityMasterStore>());
         services.AddSingleton<Func<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore?>>(sp =>
             () => sp.GetService<Meridian.Storage.AssetOperations.IInstrumentPositionProjectionStore>());
+        services.AddSingleton<Func<IConsolidationPostingAuthority?>>(sp =>
+            () => sp.GetService<IConsolidationPostingAuthority>());
         services.AddSingleton<PostgresLedgerJournalStore>();
         services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());

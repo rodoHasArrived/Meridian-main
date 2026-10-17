@@ -35,13 +35,13 @@ export function Breadcrumb({ className, items, separator, ...props }: Breadcrumb
                 {item.label}
               </span>
             ) : item.href ? (
-              <a className="text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40" href={item.href}>
+              <a className="text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40" href={item.href}>
                 {item.label}
               </a>
             ) : (
               <button
                 type="button"
-                className="text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="text-primary hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                 onClick={item.onClick}
                 disabled={!item.onClick}
               >

@@ -6,10 +6,15 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Wpf
+
+Offline retention recognizes market JSONL/parquet files only from explicit event-type names and supported storage layouts. Unknown files and the workstation Evidence Vault remain retained and appear as skipped in the dry run, even when aged evidence shares the market-data root. Depth files use their own policy cutoff.
+
+The loan summary lists principal amounts by their recorded currency; mixed, unspecified, and
+unavailable amounts cannot become a dollar-denominated scalar summary.
 
 Accounting Configure shows recurring occurrences beside retained journal drafts through
 `WorkstationRecurringJournalQueueClient`, using the same server contract as the browser.
@@ -90,6 +95,28 @@ Account, aggregate, strategy-run, and trading position presentations use `MarkFr
 
 Operations Continuity and Accounting Close require explicit fund, book, account, entity, and period selections for close evaluation. Preparation remains available without close scope. The desktop shared publication guard reads the current authenticated session; missing tenancy, sign-out, or unavailable authoritative evidence blocks publication. Changing the selected subject or workflow invalidates prior readiness and pending results.
 
+Operations Continuity displays the shared close blocker's type, count, severity, owner,
+contributor, code and causing record IDs separately from workflow gate blockers. Counts and
+ownership come directly from the shared projection; missing owners and record IDs remain explicit. The
+repair instruction names the owning lane, and Evaluate close reloads the selected workflow
+detail and shared decision after repair. The workflow list, detail and shared decision must
+agree on the workflow version, account, period and nullable ledger book. The detail and shared
+decision must also agree on report-pack identity/readiness and the retained evidence identities
+used for publication, including source, route and full-precision capture time. Publication
+checklist approvals must also match each task, actor and timestamp identity sent by the close
+command, including maker/checker decisions and acknowledged checklist items. Task/actor
+normalization and first-occurrence precedence follow the shared publication guard. Labels and link
+ordering do not identify retained evidence; duplicate IDs use the same first-link precedence as
+the browser publication command. Unlisted workflows, mismatched scope or evidence, and superseded
+selections cannot establish readiness or contribute blocker records. Selection completion,
+refusal and cancellation replace the loading status without clearing other panels' errors.
+`OperationsContinuityViewModelTests` covers structured fields, stale-version recovery,
+wrong-workflow/scope refusal, same-version evidence and approval-identity changes, and delayed-response isolation,
+plus a Windows-only rendering test for
+the shared blocker template and repair refresh. A Linux stub build does not execute these tests
+or certify WPF rendering; the joint live acceptance session still runs SEAM before MARK and
+retains the designated operator's actual verdicts.
+
 Accounting Close resolves `IWorkstationAccountingCloseApiClient` to
 `WorkstationAccountingCloseApiClient` in the Accounting feature module. Its plan reads and
 governed commands use the server HTTP endpoints; the server resolves authenticated authority
@@ -101,6 +128,9 @@ pending the required hosted integration checks.
 The Accounting feature registers the same retained report-package authority as the browser.
 Close publication revalidates scoped report support through the shared guard; a client readiness
 flag cannot stand in for the retained package. Windows execution remains a separate acceptance gate.
+Desktop-local certification evidence uses the shared `AddEvidenceArtifactStorage` registration,
+so `EvidenceVault:StorageQuota` configures the same package, tenant, and disk-headroom limits as
+the browser host. Standalone feature-module consumers without host configuration retain defaults.
 
 ## Purpose
 
@@ -341,6 +371,9 @@ type, and close/report impact labels instead of deriving those operator fields l
 Private-capital presets attach the shared
 treasury ledger context expected by the approval service, including effective date, idempotency,
 fund-event, capital-account, investor, payment, and settlement references.
+Accounting composition supplies the complete Security Master store to the shared event spine
+for reviewed successor hash validation. Economic-date and retained-lot-label checks remain
+shared service rules, including when desktop composition runs independently.
 Registration stays feature-owned in `Features/Accounting/AccountingFeatureModule.cs`; the
 desktop fallback stores configuration/audit state in `workstation/accounting/accounting-configuration.json`
 manual journal drafts in `workstation/accounting/manual-journal-drafts.json`, and retained migration
@@ -875,6 +908,13 @@ collections through `WorkspaceDecisionQueueControl`, preserving existing page ta
 `WorkspaceTone` queue-card and badge semantics for summary, approval, exception, and delivery
 decisions, including primary, secondary, and blocked cockpit actions.
 
+The Security Master edit view labels the `LoanX` and `Clip` identifier kinds, and the Strategy
+feature module registers the canonical write scope next to the Security Master service.
+
+The desktop passport editor loads the asset-class registry definition and offers a term picker,
+a choice list for vocabulary and convention terms, and the shared `SecurityAssetTermFormModel`
+pre-check; the free-text field path remains available.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
@@ -933,3 +973,24 @@ Use `Controls/EmptyStatePanel` for reusable missing-data states; it supports tit
 - `docs/reference/accounting-report-packs.md`
 - `docs/operators/governed-reporting-operations.md`
 - `docs/source/generated/source-module-index.md`
+
+### Posted amount proof (W10-PROV-001)
+
+The Posted Ledger page reads the selected period's posted journal lines alongside its trial balance.
+Debit and credit buttons use immutable journal/line/side IDs and exact fund/book/period scope to
+request `EvidencePacketDto.LedgerAmount`. `LedgerAmountProofDrawerViewModel` renders the same status,
+retained identity, source digest, and warnings as the browser. It opens only the selected retained
+vault manifest through the authenticated client and checks its returned subject and scope.
+Selection, scope, refresh, navigation, and dismissal invalidate pending proof reads. Missing or
+stale source support requires review; ambiguous and foreign evidence is blocked. Trial-balance
+aggregates and simulated strategy-run amounts are not activated by this first slice.
+
+Accounting bases come from the union of posted journal and trial-balance responses, regardless
+of arrival order. An open period's GAAP-only journal remains selectable when its summary is not
+available. Later responses preserve an available basis selection; book and period changes reset
+that selection. Replacing projected journal rows closes their proof drawer before clearing the
+rows and invalidates any pending evidence read. `PostedLedgerBasisArrivalTests` covers delayed
+summary/journal arrivals, missing summaries, basis preservation, scope resets, and loaded or
+pending proof invalidation.
+
+Acceptance and commands: [W10 posted amount provenance](../../docs/testing/w10-amount-provenance.md).

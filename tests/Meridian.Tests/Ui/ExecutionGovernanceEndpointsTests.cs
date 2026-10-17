@@ -290,11 +290,12 @@ public sealed class ExecutionGovernanceEndpointsTests
     [Fact]
     public async Task AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam()
     {
+        const string clientOrderId = "client-order-1";
         var tempRoot = CreateTempRoot();
         var responses = new Queue<HttpResponseMessage>(new[]
         {
             new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() },
-            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse() },
+            new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildOrderResponse(clientOrderId) },
             new HttpResponseMessage(HttpStatusCode.OK) { Content = BuildAccountResponse() }
         });
 
@@ -313,6 +314,7 @@ public sealed class ExecutionGovernanceEndpointsTests
                 new Meridian.Core.Config.AlpacaOptions(KeyId: "test-key", SecretKey: "test-secret"),
                 NullLogger<AlpacaBrokerageGateway>.Instance));
             services.AddBrokerageGateway("alpaca", sp => sp.GetRequiredService<AlpacaBrokerageGateway>());
+            services.AddSingleton(new FileBrokerageOrderRecoveryStore(Path.Combine(tempRoot, "broker-orders.json"), "alpaca"));
             services.AddBrokerageExecution(config => ConfigureReadyBrokerage(config, "alpaca"));
         });
 
@@ -325,6 +327,7 @@ public sealed class ExecutionGovernanceEndpointsTests
             "/api/execution/orders/submit",
             JsonContent(new
             {
+                clientOrderId,
                 symbol = "AAPL",
                 side = 0,
                 type = 0,
@@ -341,6 +344,7 @@ public sealed class ExecutionGovernanceEndpointsTests
         submitResponse.StatusCode.Should().Be(HttpStatusCode.Created);
         using var submitJson = JsonDocument.Parse(await submitResponse.Content.ReadAsStringAsync());
         submitJson.RootElement.GetProperty("success").GetBoolean().Should().BeTrue();
+        submitJson.RootElement.GetProperty("orderId").GetString().Should().Be(clientOrderId);
 
         var healthResponse = await client.GetAsync("/api/execution/health");
         healthResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -390,6 +394,7 @@ public sealed class ExecutionGovernanceEndpointsTests
                 NullLogger<RobinhoodBrokerageGateway>.Instance,
                 accessToken: "test-token"));
             services.AddHostedBrokerageGateways();
+            services.AddSingleton(new FileBrokerageOrderRecoveryStore(Path.Combine(tempRoot, "broker-orders.json"), "robinhood"));
             services.AddBrokerageExecution(config => ConfigureReadyBrokerage(config, "robinhood"));
         });
 
@@ -620,11 +625,11 @@ public sealed class ExecutionGovernanceEndpointsTests
             status = "active"
         });
 
-    private static StringContent BuildOrderResponse() =>
+    private static StringContent BuildOrderResponse(string clientOrderId) =>
         JsonContent(new
         {
             id = "alpaca-order-1",
-            client_order_id = "client-order-1",
+            client_order_id = clientOrderId,
             symbol = "AAPL",
             side = "buy",
             type = "market",

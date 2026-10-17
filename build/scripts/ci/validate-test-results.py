@@ -129,18 +129,24 @@ def main() -> int:
     args = parse_args()
     try:
         evidence = collect_evidence(args.results_dir, args.require_trx_prefix)
+        errors = validation_errors(evidence)
     except (ET.ParseError, OSError, ValueError) as error:
-        print(error, file=sys.stderr)
-        return 1
+        errors = [str(error)]
+        evidence = {
+            "schemaVersion": 1,
+            "resultsDirectory": args.results_dir.as_posix(),
+            "requiredTrxPrefixes": args.require_trx_prefix,
+            "certifiable": False,
+            "errors": errors,
+        }
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
 
-    errors = validation_errors(evidence)
     if errors:
         for error in errors:
             print(error, file=sys.stderr)
-        skipped = evidence["skippedTests"]
+        skipped = evidence.get("skippedTests", [])
         assert isinstance(skipped, list)
         for item in skipped:
             assert isinstance(item, dict)

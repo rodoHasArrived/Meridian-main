@@ -271,6 +271,9 @@ public sealed partial class OrderManagementSystem
             LimitPrice = fillPrice,
             Status = OrderStatus.PendingNew,
             CreatedAt = timestamp,
+            FundAccountId = tracked?.FundAccountId,
+            StrategyId = tracked?.StrategyId,
+            RunId = tracked?.RunId,
             ContractMultiplier = tracked?.ContractMultiplier ?? 1m,
             UsesFaceValuePercentageOfPar = tracked?.UsesFaceValuePercentageOfPar ?? false,
             OptionContract = tracked?.OptionContract,
@@ -626,6 +629,12 @@ public sealed partial class OrderManagementSystem
         await _preTradeReservationGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            var brokerageLimitRefusal = EvaluateBrokerageNotionalLimit(amendmentProbe);
+            if (brokerageLimitRefusal is not null)
+            {
+                return new AmendmentGateResult(null, brokerageLimitRefusal, null, null);
+            }
+
             if (_riskValidator is not null)
             {
                 var amendedRisk = await _riskValidator.ValidateOrderAsync(amendmentProbe, ct).ConfigureAwait(false);

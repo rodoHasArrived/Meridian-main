@@ -18,6 +18,8 @@
       href: product/implementation-todo-list.md
     - name: Current Roadmap Summary
       href: roadmap/generated/ROADMAP_SUMMARY.md
+    - name: Product Review History
+      href: product/review-history.md
 
 - name: Engineering
   items:
@@ -97,11 +99,11 @@
   items:
     - name: Roadmap Registry
       href: roadmap/README.md
-    - name: Roadmap Registry Data
+    - name: Roadmap Registry Data (YAML)
       href: roadmap/data/roadmap-items.yml
     - name: Generated Roadmap Views
       href: roadmap/generated/ROADMAP_SUMMARY.md
-    - name: Source Registry Data
+    - name: Source Registry Data (YAML)
       href: source/data/source-modules.yml
     - name: Generated Documentation Rules
       href: generated/README.md

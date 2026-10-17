@@ -41,6 +41,8 @@ namespace Meridian.Contracts.Integrations;
 [JsonSerializable(typeof(ProviderIntegrationActivationReadinessDto))]
 [JsonSerializable(typeof(ProviderIntegrationTemplateCatalogEntryDto))]
 [JsonSerializable(typeof(IReadOnlyList<ProviderIntegrationTemplateCatalogEntryDto>))]
+[JsonSerializable(typeof(ProviderIntegrationManifestReferenceDto))]
+[JsonSerializable(typeof(ProviderIntegrationReplayModeDto))]
 [JsonSerializable(typeof(ProviderIntegrationManifestDto))]
 [JsonSerializable(typeof(IReadOnlyList<ProviderIntegrationManifestDto>))]
 [JsonSerializable(typeof(ProviderConnectionDto))]

@@ -96,7 +96,8 @@ public sealed record StrategyRunEntry(
     IReadOnlyList<OperationArtifactReference>? RetainedArtifacts = null,
     StrategyRunWalkForwardEvidence? WalkForwardEvidence = null,
     string? DataProvenanceToken = null,
-    ExecutionRealismDescriptor? ExecutionRealism = null)
+    ExecutionRealismDescriptor? ExecutionRealism = null,
+    Guid? FundAccountId = null)
 {
     public IReadOnlyList<string> OperatorAcceptanceCriteria { get; init; } =
         OperatorAcceptanceCriteria ?? [];
@@ -129,6 +130,18 @@ public sealed record StrategyRunEntry(
     /// </summary>
     public IReadOnlyDictionary<string, string> OutputMetadata { get; init; } =
         new Dictionary<string, string>(StringComparer.Ordinal);
+
+    private IReadOnlyList<string> _lifecycleFacts = [];
+
+    /// <summary>
+    /// Ordered F# lifecycle facts established by this retained event. Empty for legacy records
+    /// and events without a policy transition. Replay projects evidence without invoking hooks.
+    /// </summary>
+    public IReadOnlyList<string> LifecycleFacts
+    {
+        get => _lifecycleFacts;
+        init => _lifecycleFacts = value ?? [];
+    }
 
     /// <summary><see cref="OutputMetadata"/> key holding the fill count of a size-bounded run.</summary>
     public const string RetainedFillCountMetadataKey = "fillCount";
@@ -281,6 +294,61 @@ public sealed record StrategyRunEntry(
             AttemptNumber: 1);
     }
 
+    /// <summary>
+    /// Creates an account-scoped run with its authorized execution account bound into the v5
+    /// input hash. The established unscoped factories retain their existing CLR signatures.
+    /// </summary>
+    public static StrategyRunEntry StartForFundAccount(
+        string strategyId,
+        string strategyName,
+        RunType runType,
+        Guid fundAccountId,
+        string? runId = null,
+        string? datasetReference = null,
+        string? feedReference = null,
+        string? engine = null,
+        IReadOnlyDictionary<string, string>? parameterSet = null,
+        IReadOnlyList<string>? operatorAcceptanceCriteria = null,
+        IReadOnlyList<string>? retainedEvidenceReferences = null,
+        IReadOnlyList<string>? accountingRecordReferences = null,
+        IReadOnlyList<string>? approvalReferences = null,
+        IReadOnlyList<string>? paperValidationReferences = null,
+        IReadOnlyList<string>? governedReportReferences = null,
+        ExecutionRealismDescriptor? executionRealism = null)
+    {
+        if (fundAccountId == Guid.Empty)
+        {
+            throw new ArgumentException("An authorized fund account must not be empty.", nameof(fundAccountId));
+        }
+
+        var entry = StartWithEvidence(
+            strategyId,
+            strategyName,
+            runType,
+            runId ?? Guid.NewGuid().ToString("N"),
+            datasetReference,
+            feedReference,
+            engine ?? (runType switch
+            {
+                RunType.Backtest => "MeridianNative",
+                RunType.Paper => "BrokerPaper",
+                RunType.Live => "BrokerLive",
+                _ => "Unknown"
+            }),
+            parameterSet,
+            operatorAcceptanceCriteria,
+            retainedEvidenceReferences,
+            accountingRecordReferences,
+            approvalReferences,
+            paperValidationReferences,
+            governedReportReferences) with
+        {
+            FundAccountId = fundAccountId,
+            ExecutionRealism = executionRealism
+        };
+        return entry with { InputHashSha256 = ComputeAccountBoundInputHash(entry) };
+    }
+
     /// <summary>Returns a copy of this entry marked as ended with the provided metrics.</summary>
     public StrategyRunEntry Complete(BacktestResult? metrics)
     {
@@ -290,6 +358,7 @@ public sealed record StrategyRunEntry(
             EndedAt = now,
             Metrics = metrics,
             LastLifecycleEvent = StrategyRunLifecycleEventType.Completed,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             Reason = "Strategy run completed.",
             ExceptionType = null,
@@ -307,6 +376,7 @@ public sealed record StrategyRunEntry(
             EndedAt = now,
             TerminalStatus = StrategyRunStatus.Failed,
             LastLifecycleEvent = StrategyRunLifecycleEventType.Failed,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             Reason = reason ?? "Strategy run failed.",
             ExceptionType = exception?.GetType().FullName,
@@ -324,6 +394,7 @@ public sealed record StrategyRunEntry(
             EndedAt = now,
             TerminalStatus = StrategyRunStatus.Cancelled,
             LastLifecycleEvent = StrategyRunLifecycleEventType.Cancelled,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             Reason = reason ?? "Strategy run was cancelled.",
             ExceptionType = exception?.GetType().FullName,
@@ -344,6 +415,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.StartRequested,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = reason ?? "Strategy start requested.",
@@ -359,6 +431,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.Started,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = reason ?? "Strategy started externally.",
@@ -368,12 +441,46 @@ public sealed record StrategyRunEntry(
         };
     }
 
+    /// <summary>Marks the first execution session of a retained promoted run.</summary>
+    public StrategyRunEntry Activated(string actorId = "system", string? reason = null) =>
+        Started(actorId, reason ?? "Promoted run activated.") with
+        {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Activated,
+            TerminalStatus = null
+        };
+
+    /// <summary>Marks execution recovered after interruption without replacing the run inputs.</summary>
+    public StrategyRunEntry Recovered(string actorId = "system", string? reason = null) =>
+        Activated(actorId, reason ?? "Strategy execution recovered.") with
+        {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Recovered
+        };
+
+    /// <summary>Clears paused control state after an explicit operator resume.</summary>
+    public StrategyRunEntry Resumed(string actorId = "system", string? reason = null) =>
+        Activated(actorId, reason ?? "Paused strategy resumed.") with
+        {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Resumed
+        };
+
+    /// <summary>Retains an unfinished run across orderly engine shutdown.</summary>
+    public StrategyRunEntry Suspended(string actorId = "system", string? reason = null) =>
+        this with
+        {
+            LastLifecycleEvent = StrategyRunLifecycleEventType.Suspended,
+            LifecycleFacts = [],
+            LifecycleEventAtUtc = DateTimeOffset.UtcNow,
+            ActorId = actorId,
+            Reason = reason ?? "Host stopped; execution awaits recovery."
+        };
+
     public StrategyRunEntry PauseRequested(string actorId = "system", string? reason = null)
     {
         var now = DateTimeOffset.UtcNow;
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.PauseRequested,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = reason ?? "Strategy pause requested.",
@@ -389,6 +496,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.Paused,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = reason ?? "Strategy run paused.",
@@ -404,6 +512,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.PauseFailed,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = "Strategy pause failed.",
@@ -419,6 +528,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.StopRequested,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = reason ?? "Strategy stop requested."
@@ -432,6 +542,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.StopFailed,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = "Strategy stop failed.",
@@ -457,6 +568,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.RecoveryAttempted,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = reason ?? "Strategy recovery attempted.",
@@ -484,6 +596,7 @@ public sealed record StrategyRunEntry(
         return this with
         {
             LastLifecycleEvent = StrategyRunLifecycleEventType.ActivationDeferred,
+            LifecycleFacts = [],
             LifecycleEventAtUtc = now,
             ActorId = actorId,
             Reason = reason
@@ -615,6 +728,21 @@ public sealed record StrategyRunEntry(
             entry.ApprovalReferences,
             entry.PaperValidationReferences,
             entry.GovernedReportReferences);
+    }
+
+    /// <summary>
+    /// Computes the v5 input hash binding the authorized fund account together with every v4
+    /// strategy, scope, evidence, and execution-realism input. Legacy unscoped hashes stay valid
+    /// only for unscoped runs; they cannot authorize an account added later.
+    /// </summary>
+    public static string ComputeAccountBoundInputHash(StrategyRunEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        var builder = new StringBuilder();
+        AppendCanonical(builder, "meridian.strategy-run-input.v5");
+        AppendCanonical(builder, ComputeRealismBoundInputHash(entry));
+        AppendCanonical(builder, entry.FundAccountId?.ToString("D"));
+        return Sha256Digest.ComputeUtf8(builder.ToString());
     }
 
     public static string ComputeRealismBoundInputHash(

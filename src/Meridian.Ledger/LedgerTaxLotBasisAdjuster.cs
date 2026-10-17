@@ -67,7 +67,11 @@ public static class LedgerTaxLotBasisAdjuster
                 quantity,
                 RoundUnitCost(Math.Max(0m, unitCost)),
                 lot.SecurityId,
-                holdingPeriodStart));
+                holdingPeriodStart)
+            {
+                UnitKind = lot.UnitKind,
+                Multiplier = lot.Multiplier
+            });
         }
 
         return effective;

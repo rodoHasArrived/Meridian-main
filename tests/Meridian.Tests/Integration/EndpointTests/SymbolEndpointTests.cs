@@ -11,7 +11,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Integration tests for symbol management endpoints (/api/symbols/*).
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class SymbolEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;

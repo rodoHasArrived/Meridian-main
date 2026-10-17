@@ -62,7 +62,11 @@ public sealed class FileEvidenceArtifactStoreExportTests : IDisposable
         result.SizeBytes.Should().Be(length);
         target.BytesWritten.Should().Be(length);
         source.LargestReadRequest.Should().BeLessThanOrEqualTo(FileEvidenceArtifactStore.ExportCopyBufferBytes);
-        Sha256Digest.IsCanonical(result.ContentHashSha256).Should().BeTrue();
+        target.WriteOperations.Should().BeLessThanOrEqualTo(
+            (length + FileEvidenceArtifactStore.ExportCopyBufferBytes - 1) / FileEvidenceArtifactStore.ExportCopyBufferBytes,
+            "digest read sizes must not multiply staged writes and durable quota checkpoints");
+        using var expectedSource = new GeneratedStream(length);
+        result.ContentHashSha256.Should().Be(await Sha256Digest.ComputeAsync(expectedSource));
     }
 
     [Fact]
@@ -195,6 +199,32 @@ public sealed class FileEvidenceArtifactStoreExportTests : IDisposable
     }
 
     [Fact]
+    public async Task IncompleteCleanup_PreventsAnotherAttemptFromReusingItsManifestPath()
+    {
+        var manifest = Path.Combine(EvidenceRoot, "report-pack", "export-test", "shared-manifest.json");
+        var oldPackage = Path.Combine(EvidenceRoot, "_vault", "ev-old");
+        var oldStage = Path.Combine(EvidenceRoot, "_staging", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(oldStage);
+        var intent = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            PackagePath = oldPackage,
+            ManifestPath = manifest,
+            IndexPath = oldPackage + ".json"
+        });
+        // Final-path cleanup succeeded, but deletion of this attempt's stage previously failed.
+        // A later recovery must never be able to delete a new owner's manifest at the same path.
+        await File.WriteAllTextAsync(Path.Combine(oldStage, "publication.json"), intent);
+        await using (var publication = new FileEvidenceArtifactStore.ExportPublication(Store(), "ev-new", manifest))
+        {
+            var publish = () => publication.PublishAsync("{}", "{}", CancellationToken.None);
+            await publish.Should().ThrowAsync<IOException>().WithMessage("*earlier attempt*");
+        }
+        File.Exists(manifest).Should().BeFalse();
+        Directory.Exists(Path.Combine(EvidenceRoot, "_vault", "ev-new")).Should().BeFalse();
+        (await File.ReadAllTextAsync(Path.Combine(oldStage, "publication.json"))).Should().Be(intent);
+    }
+
+    [Fact]
     public async Task OversizedFileBeforeCopy_BlocksWithoutPublishedOrStagedFiles()
     {
         var source = Source("oversized.dat");
@@ -293,6 +323,7 @@ public sealed class FileEvidenceArtifactStoreExportTests : IDisposable
     private sealed class CountingStream : Stream
     {
         public long BytesWritten { get; private set; }
+        public long WriteOperations { get; private set; }
         public override bool CanRead => false;
         public override bool CanSeek => false;
         public override bool CanWrite => true;
@@ -302,6 +333,7 @@ public sealed class FileEvidenceArtifactStoreExportTests : IDisposable
         {
             ct.ThrowIfCancellationRequested();
             BytesWritten += buffer.Length;
+            WriteOperations++;
             return ValueTask.CompletedTask;
         }
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken ct) =>
@@ -310,7 +342,11 @@ public sealed class FileEvidenceArtifactStoreExportTests : IDisposable
         public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
         public override void SetLength(long value) => throw new NotSupportedException();
-        public override void Write(byte[] buffer, int offset, int count) => BytesWritten += count;
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            BytesWritten += count;
+            WriteOperations++;
+        }
     }
 
     private sealed class ReadHookStream(Stream inner, Action firstRead) : Stream

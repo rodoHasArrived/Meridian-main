@@ -74,6 +74,75 @@ function Resolve-FullPath([string]$Value) {
     return [IO.Path]::GetFullPath($Value)
 }
 
+function Resolve-RecoveryLocation([string]$Value, [int]$LinkDepth = 0, [Collections.Generic.List[string]]$Locations = $null) {
+    if ($IsWindows -and $Value -match '^(\\\\[?.]\\|\\\?\?\\)') {
+        throw "Recovery receipt path checks require ordinary drive or UNC paths, not device namespace paths: $Value"
+    }
+    $resolved = [IO.Path]::GetPathRoot($Value)
+    if ($null -ne $Locations) { $Locations.Add($resolved) }
+    # Resolve existing links one component at a time, retaining any not-yet-created
+    # suffix. Lexical normalization alone misses receipt parents aliased into a root.
+    $parts = $Value.Substring($resolved.Length).Split(
+        [char[]]@([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar),
+        [StringSplitOptions]::RemoveEmptyEntries)
+    foreach ($part in $parts) {
+        if ($part -eq '.') { continue }
+        if ($part -eq '..') {
+            $parent = [IO.Directory]::GetParent($resolved)
+            if ($null -ne $parent) { $resolved = $parent.FullName }
+            if ($null -ne $Locations) { $Locations.Add($resolved) }
+            continue
+        }
+        $parentPath = $resolved
+        $resolved = Join-Path $resolved $part
+        if ($null -ne $Locations) { $Locations.Add($resolved) }
+        $directory = [IO.DirectoryInfo]::new($resolved)
+        if ($null -ne $directory.LinkTarget) {
+            if ($LinkDepth -ge 40) { throw "Recovery path contains too many symbolic links: $Value" }
+            # Walk the raw target: normalizing '..' before following its preceding
+            # link would resolve a different location from the filesystem.
+            $target = $directory.LinkTarget
+            if (-not [IO.Path]::IsPathFullyQualified($target)) {
+                if ([IO.Path]::IsPathRooted($target)) { throw "Recovery path contains an unsupported link target: $target" }
+                $target = Join-Path $parentPath $target
+            }
+            $resolved = Resolve-RecoveryLocation $target ($LinkDepth + 1) $Locations
+        }
+    }
+    return [IO.Path]::TrimEndingDirectorySeparator($resolved)
+}
+
+function Test-RecoveryPathWithin([string]$Path, [string]$Root) {
+    $comparison = if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+    $prefix = $Root
+    if (-not [IO.Path]::EndsInDirectorySeparator($prefix)) { $prefix += [IO.Path]::DirectorySeparatorChar }
+    return $Path.Equals($Root, $comparison) -or $Path.StartsWith($prefix, $comparison)
+}
+
+function Assert-RecoveryReceiptLocation([string]$Path) {
+    $fullPath = [IO.Path]::TrimEndingDirectorySeparator((Resolve-FullPath $Path))
+    $locations = [Collections.Generic.List[string]]::new()
+    $location = Resolve-RecoveryLocation $fullPath 0 $locations
+    foreach ($root in @($DataRoot, $RestoreDataRoot)) {
+        if ([string]::IsNullOrWhiteSpace($root)) { continue }
+        $fullRoot = [IO.Path]::TrimEndingDirectorySeparator((Resolve-FullPath $root))
+        $rootLocation = Resolve-RecoveryLocation $fullRoot
+        foreach ($visited in $locations) {
+            if (Test-RecoveryPathWithin $visited $rootLocation) {
+                throw "ReceiptPath must not traverse DataRoot or RestoreDataRoot: $Path"
+            }
+        }
+        # A receipt cannot be captured/quarantined with a recovery root, nor can
+        # creating it as a file prevent a missing root from becoming a directory.
+        # Check both names and resolved locations: an outward-pointing link inside
+        # a root is still captured by backup or moved away during quarantine.
+        if ((Test-RecoveryPathWithin $fullPath $fullRoot) -or (Test-RecoveryPathWithin $fullRoot $fullPath) -or
+            (Test-RecoveryPathWithin $location $rootLocation) -or (Test-RecoveryPathWithin $rootLocation $location)) {
+            throw "ReceiptPath must not overlap DataRoot or RestoreDataRoot: $Path"
+        }
+    }
+}
+
 function Get-Sha256([string]$Path) {
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant()
 }
@@ -178,8 +247,7 @@ function Read-AuthenticatedManifest([string]$Directory, [byte[]]$RootKey) {
             $hmac.Dispose()
             [Array]::Clear($authenticationKey, 0, $authenticationKey.Length)
         }
-        if (-not $manifest.Contains("sourceCommit") -or $manifest.sourceCommit -isnot [string] -or
-            $manifest.sourceCommit -notmatch '^([0-9a-fA-F]{40}|[0-9a-fA-F]{64})$') {
+        if (-not (Test-RecoveryCommit $manifest['sourceCommit'])) {
             throw "Authenticated backup manifest requires its original sourceCommit."
         }
         $authenticated = $true
@@ -448,9 +516,6 @@ function Invoke-Backup([string]$SourceConnection, [string]$SourceDataRoot, [byte
     $stage = $null
     $verifiedArchive = $null
     try {
-        if ($SourceCommit -notmatch '^([0-9a-fA-F]{40}|[0-9a-fA-F]{64})$') {
-            throw "Backup requires the original full source commit."
-        }
         $sourceRoot = Resolve-FullPath $SourceDataRoot
         $backupRootFull = Resolve-FullPath $BackupRoot
         if (-not (Test-Path -LiteralPath $sourceRoot -PathType Container)) { throw "Data root does not exist: $sourceRoot" }
@@ -566,6 +631,17 @@ function Invoke-Restore([string]$SelectedBackup, [string]$TargetConnection, [str
     }
 }
 
+# Validate explicit and default receipt locations before creating any files or
+# directories. DataRoot also covers Restore's default target when none is supplied.
+if ([string]::IsNullOrWhiteSpace($ReceiptPath)) {
+    $receiptDirectory = Resolve-FullPath $BackupRoot
+    $receiptName = "recovery-$($Mode.ToLowerInvariant())-$([DateTimeOffset]::UtcNow.ToString('yyyyMMddTHHmmssZ'))-$([Guid]::NewGuid().ToString('N'))-receipt.json"
+    $ReceiptPath = Join-Path $receiptDirectory $receiptName
+}
+else { $ReceiptPath = Resolve-FullPath $ReceiptPath }
+Assert-RecoveryReceiptLocation $ReceiptPath
+if (Test-Path -LiteralPath $ReceiptPath) { throw "Recovery receipt already exists; choose a new -ReceiptPath: $ReceiptPath" }
+
 # CryptoStream must not read the trailing HMAC tag as ciphertext.
 Add-Type -TypeDefinition @"
 using System;
@@ -585,13 +661,6 @@ public sealed class MeridianRecoveryBoundedStream : Stream
 
 # Reserve the receipt before any backup or restore work. CreateNew also rejects a
 # concurrent writer and existing symlinks without changing the earlier evidence.
-if ([string]::IsNullOrWhiteSpace($ReceiptPath)) {
-    $receiptDirectory = Resolve-FullPath $BackupRoot
-    $receiptName = "recovery-$($Mode.ToLowerInvariant())-$([DateTimeOffset]::UtcNow.ToString('yyyyMMddTHHmmssZ'))-$([Guid]::NewGuid().ToString('N'))-receipt.json"
-    $ReceiptPath = Join-Path $receiptDirectory $receiptName
-}
-else { $ReceiptPath = Resolve-FullPath $ReceiptPath }
-if (Test-Path -LiteralPath $ReceiptPath) { throw "Recovery receipt already exists; choose a new -ReceiptPath: $ReceiptPath" }
 [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($ReceiptPath)) | Out-Null
 $receiptStream = [IO.File]::Open($ReceiptPath, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
 $operationStarted = [DateTimeOffset]::UtcNow
@@ -633,12 +702,16 @@ $receipt = [ordered]@{
     objectiveErrors = @()
 }
 try {
-    if ([string]::IsNullOrWhiteSpace($SourceCommit) -and (Get-Command git -ErrorAction SilentlyContinue)) {
+    if (-not $PSBoundParameters.ContainsKey('SourceCommit') -and
+        [string]::IsNullOrWhiteSpace($SourceCommit) -and (Get-Command git -ErrorAction SilentlyContinue)) {
         $repositoryRoot = Resolve-FullPath (Join-Path $PSScriptRoot "../../..")
         $gitCommit = & git -C $repositoryRoot rev-parse HEAD 2>$null
         if ($LASTEXITCODE -eq 0) { $SourceCommit = [string]$gitCommit }
     }
     $receipt.drillSourceCommit = $SourceCommit
+    if (-not (Test-RecoveryCommit $SourceCommit)) {
+        throw "SourceCommit must be a full 40- or 64-character hexadecimal commit identifier."
+    }
     # Key validation belongs inside the receipt lifecycle, so rejected keys leave a failure receipt.
     $key = Get-RecoveryKey
     switch ($Mode) {

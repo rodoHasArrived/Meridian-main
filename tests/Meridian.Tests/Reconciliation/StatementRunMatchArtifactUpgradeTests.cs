@@ -143,7 +143,7 @@ public sealed class StatementRunMatchArtifactUpgradeTests : IDisposable
         // The artifact is retained but the Matched checkpoint is not: the crash window the upgrade
         // guidance calls out. Rewrite the retained artifact to the pre-upgrade shape and replay.
         await act.Should().ThrowAsync<InvalidOperationException>();
-        var runId = (await new JsonCanonicalStatementStore(_root).ListImportsAsync(timeout.Token))
+        var runId = (await new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter()).ListImportsAsync(timeout.Token))
             .Should().ContainSingle().Subject.ImportId;
         var legacyArtifact = await RewriteRetainedArtifactAsLegacyAsync(runId, timeout.Token);
 
@@ -191,7 +191,7 @@ public sealed class StatementRunMatchArtifactUpgradeTests : IDisposable
 
     private StatementRunWorkflowService CreateWorkflow(IStatementRunWorkflowFaultInjector? faultInjector = null)
     {
-        var imports = new JsonCanonicalStatementStore(_root);
+        var imports = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         return new StatementRunWorkflowService(
             imports,
             new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),

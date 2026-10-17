@@ -14,28 +14,29 @@ public static class AuthenticationModeResolver
     private const string PackagedBuildEnvVar = "MDC_PACKAGED_BUILD";
     private const string CustomerBuildEnvVar = "MERIDIAN_CUSTOMER_BUILD";
 
-    public static AuthenticationMode Resolve(IHostEnvironment environment)
+    public static AuthenticationMode Resolve(IHostEnvironment environment, AuthenticationConfiguration? configuration = null)
     {
         ArgumentNullException.ThrowIfNull(environment);
-        var configuredMode = Environment.GetEnvironmentVariable(AuthModeEnvVar);
+        configuration ??= AuthenticationConfiguration.FromEnvironment();
+        var configuredMode = configuration[AuthModeEnvVar];
         if (!string.IsNullOrWhiteSpace(configuredMode))
         {
             return configuredMode.Trim().ToLowerInvariant() switch
             {
                 "optional" => AuthenticationMode.Optional,
                 "required" => AuthenticationMode.Required,
-                "auto" => ResolveDefault(environment),
+                "auto" => ResolveDefault(environment, configuration),
                 _ => throw new InvalidOperationException(
                     $"Unrecognized {AuthModeEnvVar} value '{configuredMode}'. Supported values: optional, required, auto.")
             };
         }
 
-        return ResolveDefault(environment);
+        return ResolveDefault(environment, configuration);
     }
 
-    private static AuthenticationMode ResolveDefault(IHostEnvironment environment)
+    private static AuthenticationMode ResolveDefault(IHostEnvironment environment, AuthenticationConfiguration configuration)
     {
-        if (IsPackagedOrCustomerBuild())
+        if (IsPackagedOrCustomerBuild(configuration))
         {
             return AuthenticationMode.Required;
         }
@@ -45,9 +46,12 @@ public static class AuthenticationModeResolver
             : AuthenticationMode.Required;
     }
 
-    internal static bool IsPackagedOrCustomerBuild()
-        => IsTruthy(Environment.GetEnvironmentVariable(PackagedBuildEnvVar)) ||
-           IsTruthy(Environment.GetEnvironmentVariable(CustomerBuildEnvVar));
+    internal static bool IsPackagedOrCustomerBuild(AuthenticationConfiguration? configuration = null)
+    {
+        configuration ??= AuthenticationConfiguration.FromEnvironment();
+        return IsTruthy(configuration[PackagedBuildEnvVar]) ||
+               IsTruthy(configuration[CustomerBuildEnvVar]);
+    }
 
     private static bool IsTruthy(string? value)
         => value is not null &&

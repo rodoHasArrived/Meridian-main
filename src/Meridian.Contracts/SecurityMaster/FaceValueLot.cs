@@ -11,7 +11,7 @@ namespace Meridian.Contracts.SecurityMaster;
 /// factor-restated face, day-count amortized basis) are owned here so every consumer computes them
 /// identically.
 /// </summary>
-public sealed record FaceValueLot
+public sealed record FaceValueLot : IUnitizedLot
 {
     public FaceValueLot(
         string lotId,
@@ -45,6 +45,13 @@ public sealed record FaceValueLot
     }
 
     public string LotId { get; }
+
+    /// <summary>A face-value lot is the face-denominated case of the shared lot shape.</summary>
+    decimal IUnitizedLot.Quantity => OriginalFace;
+
+    SecurityLotUnitKind IUnitizedLot.UnitKind => SecurityLotUnitKind.FaceValue;
+
+    decimal IUnitizedLot.Multiplier => 1m;
 
     /// <summary>Security Master identity the lot's reference data (day count, factor, maturity) resolves from.</summary>
     public Guid SecurityId { get; }
@@ -149,10 +156,135 @@ public sealed record FaceValueLot
     /// (<c>basis × (1 + i)</c> less the period coupon), so a premium amortizes slowly at first and
     /// faster near maturity, and a discount accretes in reverse — the ASC 310-20 profile the
     /// straight-line method only approximates. The partial current period interpolates linearly
-    /// between period boundaries. Periods are level (no odd-first-period day-count adjustment);
-    /// the day-count convention scales elapsed time into period space.
+    /// between calendar coupon boundaries using the current period's day-count fraction.
+    /// Supports one to 1200 monthly, quarterly, semiannual or annual coupon dates after acquisition,
+    /// including end-of-month schedules.
+    /// <para>
+    /// <b>Regular schedules</b> (acquisition on a coupon date of the calendar schedule running from
+    /// acquisition to maturity) roll whole periods exactly as before.
+    /// </para>
+    /// <para>
+    /// <b>Odd (short) first period</b> — acquisition settling inside a coupon period, the usual
+    /// secondary-market case. The schedule is generated backward from <paramref name="maturity"/> at
+    /// the regular frequency: maturity is assumed to be a regular coupon date, a maturity on the last
+    /// day of its month implies an end-of-month schedule, and otherwise the maturity day is kept and
+    /// clipped only in short months. The first period is a stub from acquisition to the next coupon
+    /// date with fraction <c>f = DCF(acquisition, nextCoupon) / DCF(previousCoupon, nextCoupon)</c>
+    /// under <paramref name="convention"/>; the full regular coupon is paid at the next coupon date.
+    /// </para>
+    /// <para>
+    /// Accrued-interest assumption: <see cref="PricePercentOfPar"/> is a <i>clean</i> price, so the
+    /// purchased accrued interest <c>AI = coupon × (1 − f)</c> is not part of the cost basis — it is a
+    /// separate receivable repaid by the first coupon. The yield therefore solves the street-convention
+    /// dirty price <c>clean + AI = Σ CF<sub>k</sub> / (1 + y)<sup>f + k</sup></c> (k = 0 … n − 1, par
+    /// with the last coupon), and the ex-coupon basis at the first coupon date is
+    /// <c>(clean + AI)(1 + y)<sup>f</sup> − coupon</c>, which equals the present value of the remaining
+    /// flows at the solved yield. Inside the stub the basis interpolates linearly by day count between
+    /// the clean cost and that value. A retained yield must reconcile to the clean price through this
+    /// same pricing function.
+    /// </para>
+    /// <para>
+    /// Odd <i>last</i> periods are not modelled: without a contractual first-coupon or issue-date
+    /// anchor, maturity is treated as a regular coupon date, so no short final period can arise.
+    /// </para>
     /// </summary>
     public decimal ConstantYieldAmortizedBasisAsOf(
+        DayCountConvention convention,
+        DateOnly maturity,
+        DateOnly asOf,
+        decimal annualCouponRatePercent,
+        int paymentsPerYear = 2,
+        decimal? retainedAnnualEffectiveYield = null)
+        => ConstantYieldAmortizedBasisCore(convention, maturity, asOf, annualCouponRatePercent, paymentsPerYear,
+            retainedAnnualEffectiveYield, allowOddFirstPeriod: true);
+
+    // Canonical lot amortization model v2 (OpenLotAmortization.ModelVersion) admits regular calendar
+    // schedules only; that admission rule is part of the governed calculation version, so odd first
+    // periods stay refused here while the regular arithmetic is shared bit for bit with the public kernel.
+    internal decimal RegularScheduleConstantYieldAmortizedBasisAsOf(
+        DayCountConvention convention,
+        DateOnly maturity,
+        DateOnly asOf,
+        decimal annualCouponRatePercent,
+        int paymentsPerYear,
+        decimal? retainedAnnualEffectiveYield)
+        => ConstantYieldAmortizedBasisCore(convention, maturity, asOf, annualCouponRatePercent, paymentsPerYear,
+            retainedAnnualEffectiveYield, allowOddFirstPeriod: false);
+
+    private decimal ConstantYieldAmortizedBasisCore(
+        DayCountConvention convention,
+        DateOnly maturity,
+        DateOnly asOf,
+        decimal annualCouponRatePercent,
+        int paymentsPerYear,
+        decimal? retainedAnnualEffectiveYield,
+        bool allowOddFirstPeriod)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(paymentsPerYear);
+        ArgumentOutOfRangeException.ThrowIfNegative(annualCouponRatePercent);
+
+        if (retainedAnnualEffectiveYield is <= -1m
+            || (retainedAnnualEffectiveYield is not null && maturity <= AcquiredDate))
+            throw new ArgumentException("Retained effective yield or maturity is invalid.");
+        if (maturity <= AcquiredDate)
+            return CostBasis;
+
+        var couponDates = RegularCouponDates(maturity, paymentsPerYear, throwWhenIrregular: !allowOddFirstPeriod);
+        if (couponDates is null)
+            return OddFirstPeriodConstantYieldBasis(convention, maturity, asOf, annualCouponRatePercent,
+                paymentsPerYear, retainedAnnualEffectiveYield);
+        var totalPeriods = couponDates.Length - 1;
+
+        // Canonical acquisitions retain annual yield as a decimal (0.05 = 5%). Verify that
+        // it prices these level contractual cash flows before using it, including at maturity.
+        if (retainedAnnualEffectiveYield is { } retainedYield)
+        {
+            if (Math.Abs(PricePerUnitAtYield(annualCouponRatePercent / 100m / paymentsPerYear,
+                    totalPeriods, retainedYield / paymentsPerYear) - PricePercentOfPar / ParBasis) > 0.0000000001m)
+                throw new ArgumentException("Retained effective yield does not reconcile to acquisition price and level contractual periods.");
+        }
+
+        if (PremiumDiscount == 0m)
+            return CostBasis;
+        if (asOf <= AcquiredDate)
+            return CostBasis;
+        if (asOf >= maturity)
+            return OriginalFace;
+
+        var pricePerUnit = PricePercentOfPar / ParBasis;
+        var couponPerPeriod = annualCouponRatePercent / 100m / paymentsPerYear;
+        var yieldPerPeriod = retainedAnnualEffectiveYield is { } annualYield
+            ? annualYield / paymentsPerYear
+            : SolveYieldPerPeriod(pricePerUnit, couponPerPeriod, totalPeriods);
+
+        var wholePeriods = 0;
+        while (couponDates[wholePeriods + 1] <= asOf)
+            wholePeriods++;
+        var periodStart = couponDates[wholePeriods];
+        var periodEnd = couponDates[wholePeriods + 1];
+        var periodFraction = DayCountConventions.Fraction(convention, periodStart, periodEnd);
+        if (periodFraction <= 0m)
+            throw new ArgumentException("Constant-yield amortization requires a positive coupon-period day-count fraction.");
+        var partialPeriod = DayCountConventions.Fraction(convention, periodStart, asOf) / periodFraction;
+
+        var basis = pricePerUnit;
+        for (var period = 0; period < wholePeriods; period++)
+        {
+            basis = (basis * (1m + yieldPerPeriod)) - couponPerPeriod;
+        }
+
+        if (partialPeriod > 0m)
+        {
+            var nextBasis = (basis * (1m + yieldPerPeriod)) - couponPerPeriod;
+            basis += (nextBasis - basis) * partialPeriod;
+        }
+
+        return basis * OriginalFace;
+    }
+
+    // Frozen v1 arithmetic for retained, unversioned canonical instructions only.
+    // New calculations use calendar coupon boundaries in the public kernel above.
+    internal decimal LegacyConstantYieldAmortizedBasisAsOf(
         DayCountConvention convention,
         DateOnly maturity,
         DateOnly asOf,
@@ -219,6 +351,319 @@ public sealed record FaceValueLot
         }
 
         return basis * OriginalFace;
+    }
+
+    // Returns null instead of throwing for a schedule that is not regular from acquisition when
+    // throwWhenIrregular is false; the caller then prices it with the odd-first-period model.
+    private DateOnly[]? RegularCouponDates(DateOnly maturity, int paymentsPerYear, bool throwWhenIrregular)
+    {
+        if (paymentsPerYear is not (1 or 2 or 4 or 12))
+            throw new ArgumentException("Constant-yield amortization requires an annual, semiannual, quarterly or monthly coupon frequency.");
+        var monthsPerPeriod = 12 / paymentsPerYear;
+        var months = (maturity.Year - AcquiredDate.Year) * 12 + maturity.Month - AcquiredDate.Month;
+        if (months < monthsPerPeriod || months % monthsPerPeriod != 0 || months / monthsPerPeriod > 1200)
+        {
+            if (!throwWhenIrregular)
+                return null;
+            throw new ArgumentException("Constant-yield amortization requires one to 1200 level calendar coupon periods.");
+        }
+
+        // Endpoints at month end retain EOM through February and leap years. Otherwise
+        // retain the contractual day, clipping only short months. Anchor each boundary
+        // independently so a clipped February never shifts later coupon dates.
+        var endOfMonth = AcquiredDate.Day == DateTime.DaysInMonth(AcquiredDate.Year, AcquiredDate.Month)
+            && maturity.Day == DateTime.DaysInMonth(maturity.Year, maturity.Month);
+        var dayOfMonth = Math.Max(AcquiredDate.Day, maturity.Day);
+        var dates = new DateOnly[months / monthsPerPeriod + 1];
+        for (var period = 0; period < dates.Length; period++)
+        {
+            var month = AcquiredDate.AddMonths(period * monthsPerPeriod);
+            var lastDay = DateTime.DaysInMonth(month.Year, month.Month);
+            dates[period] = new DateOnly(month.Year, month.Month, endOfMonth ? lastDay : Math.Min(dayOfMonth, lastDay));
+        }
+        if (dates[0] != AcquiredDate || dates[^1] != maturity)
+        {
+            if (!throwWhenIrregular)
+                return null;
+            throw new ArgumentException("Constant-yield amortization requires regular calendar coupon dates; odd periods are unsupported by this calculation version.");
+        }
+        return dates;
+    }
+
+    /// <summary>
+    /// Constant-yield basis for an acquisition inside a coupon period (short first period). See
+    /// <see cref="ConstantYieldAmortizedBasisAsOf"/> for the schedule, stub-fraction and
+    /// accrued-interest conventions.
+    /// </summary>
+    private decimal OddFirstPeriodConstantYieldBasis(
+        DayCountConvention convention,
+        DateOnly maturity,
+        DateOnly asOf,
+        decimal annualCouponRatePercent,
+        int paymentsPerYear,
+        decimal? retainedAnnualEffectiveYield)
+    {
+        // couponDates[0] is the quasi-coupon date on or before acquisition; [1..n] are paid after it.
+        var couponDates = BackwardCouponDates(maturity, paymentsPerYear);
+        var totalCoupons = couponDates.Length - 1;
+        var firstCoupon = couponDates[1];
+        var stubFraction = Math.Min(1m, CouponPeriodShare(convention, AcquiredDate, firstCoupon, couponDates[0], firstCoupon, paymentsPerYear, maturity));
+
+        var pricePerUnit = PricePercentOfPar / ParBasis;
+        var couponPerPeriod = annualCouponRatePercent / 100m / paymentsPerYear;
+        // Purchased accrued interest: the clean acquisition price excludes it and the full first
+        // coupon repays it, so it never enters the carrying basis.
+        var accruedPerUnit = couponPerPeriod * (1m - stubFraction);
+
+        // Canonical acquisitions retain annual yield as a decimal (0.05 = 5%). It must price the
+        // odd-first-period schedule to the clean acquisition price before it is used.
+        if (retainedAnnualEffectiveYield is { } retainedYield
+            && (1m + (retainedYield / paymentsPerYear) <= 0m
+                || Math.Abs(CleanPricePerUnitAtLogGrowth(couponPerPeriod, totalCoupons, stubFraction, DecimalLn(1m + (retainedYield / paymentsPerYear)))
+                    - pricePerUnit) > 0.0000000001m))
+            throw new ArgumentException("Retained effective yield does not reconcile to acquisition price and the odd-first-period contractual schedule.");
+
+        // A par clean price is not a par yield across a stub: the dirty amount grows over the stub
+        // at a fractional exponent, so the implied yield differs from the coupon rate and the basis
+        // moves away from par before returning to it. Only a full first period may skip the solve.
+        if (PremiumDiscount == 0m && stubFraction == 1m)
+            return CostBasis;
+        if (asOf <= AcquiredDate)
+            return CostBasis;
+        if (asOf >= maturity)
+            return OriginalFace;
+
+        // Work in log growth d = ln(1 + y): fractional powers become exp(f·d) without taking the
+        // logarithm of a base near zero, which the series cannot do accurately.
+        var logGrowthPerPeriod = retainedAnnualEffectiveYield is { } annualYield
+            ? DecimalLn(1m + (annualYield / paymentsPerYear))
+            : SolveOddFirstPeriodLogGrowth(pricePerUnit, couponPerPeriod, totalCoupons, stubFraction);
+        var growthPerPeriod = DecimalExp(logGrowthPerPeriod);
+
+        // Ex-coupon carrying value at the first coupon date: the dirty acquisition amount grown at
+        // the constant yield over the stub, less the full coupon received.
+        var afterFirstCoupon = ((pricePerUnit + accruedPerUnit) * DecimalExp(stubFraction * logGrowthPerPeriod))
+            - couponPerPeriod;
+
+        if (asOf < firstCoupon)
+        {
+            var stubWeight = stubFraction > 0m
+                ? CouponPeriodShare(convention, AcquiredDate, asOf, couponDates[0], firstCoupon, paymentsPerYear, maturity) / stubFraction
+                : 0m;
+            return (pricePerUnit + ((afterFirstCoupon - pricePerUnit) * stubWeight)) * OriginalFace;
+        }
+
+        var wholePeriods = 1;
+        while (couponDates[wholePeriods + 1] <= asOf)
+            wholePeriods++;
+        var periodStart = couponDates[wholePeriods];
+        var periodEnd = couponDates[wholePeriods + 1];
+        var partialPeriod = CouponPeriodShare(convention, periodStart, asOf, periodStart, periodEnd, paymentsPerYear, maturity);
+
+        var basis = afterFirstCoupon;
+        for (var period = 1; period < wholePeriods; period++)
+        {
+            basis = (basis * growthPerPeriod) - couponPerPeriod;
+        }
+
+        if (partialPeriod > 0m)
+        {
+            var nextBasis = (basis * growthPerPeriod) - couponPerPeriod;
+            basis += (nextBasis - basis) * partialPeriod;
+        }
+
+        return basis * OriginalFace;
+    }
+
+    // Share of the coupon period [periodStart, periodEnd) covered by [start, end). Actual/Actual
+    // (ICMA) is defined against the coupon period itself (actual days over actual days in the
+    // period), which the period-less fraction cannot express: it degrades ICMA to ISDA and weights
+    // days by calendar year when the period crosses a year end.
+    private static decimal CouponPeriodShare(
+        DayCountConvention convention,
+        DateOnly start,
+        DateOnly end,
+        DateOnly periodStart,
+        DateOnly periodEnd,
+        int paymentsPerYear,
+        DateOnly maturity)
+    {
+        if (convention == DayCountConvention.ActualActualIcma)
+            return DayCountConventions.ActualActualIcmaFraction(start, end, periodStart, periodEnd, paymentsPerYear) * paymentsPerYear;
+
+        if (convention == DayCountConvention.ThirtyE360Isda)
+        {
+            // February's real last day is retained only at contractual maturity. The numerator
+            // and denominator can end at different dates: a partial as-of remains ordinary even
+            // when its coupon period ends at maturity, and intermediate February coupons use 30.
+            var periodDays = DayCountConventions.ThirtyE360IsdaDays(periodStart, periodEnd, endIsMaturityDate: periodEnd == maturity);
+            if (periodDays <= 0)
+                throw new ArgumentException("Constant-yield amortization requires a positive coupon-period day-count fraction.");
+            return (decimal)DayCountConventions.ThirtyE360IsdaDays(start, end, endIsMaturityDate: end == maturity) / periodDays;
+        }
+
+        var periodFraction = DayCountConventions.Fraction(convention, periodStart, periodEnd);
+        if (periodFraction <= 0m)
+            throw new ArgumentException("Constant-yield amortization requires a positive coupon-period day-count fraction.");
+        return DayCountConventions.Fraction(convention, start, end) / periodFraction;
+    }
+
+    // Regular coupon dates generated backward from maturity (market convention), each anchored
+    // independently so a clipped February never shifts other dates. Element 0 is the last coupon
+    // date on or before acquisition: the quasi-coupon start of the stub period.
+    private DateOnly[] BackwardCouponDates(DateOnly maturity, int paymentsPerYear)
+    {
+        var monthsPerPeriod = 12 / paymentsPerYear;
+        var endOfMonth = maturity.Day == DateTime.DaysInMonth(maturity.Year, maturity.Month);
+        var dates = new List<DateOnly> { maturity };
+        while (dates[^1] > AcquiredDate)
+        {
+            if (dates.Count > 1200)
+                throw new ArgumentException("Constant-yield amortization requires one to 1200 calendar coupon periods.");
+            var month = maturity.AddMonths(-dates.Count * monthsPerPeriod);
+            var lastDay = DateTime.DaysInMonth(month.Year, month.Month);
+            dates.Add(new DateOnly(month.Year, month.Month, endOfMonth ? lastDay : Math.Min(maturity.Day, lastDay)));
+        }
+
+        dates.Reverse();
+        return dates.ToArray();
+    }
+
+    /// <summary>
+    /// Clean price per unit of face with a short first period of fraction <paramref name="stubFraction"/>,
+    /// at per-period log growth <c>d = ln(1 + y)</c>: the dirty value
+    /// <c>Σ c / (1 + y)^(f + k) + 1 / (1 + y)^(f + n − 1)</c> — equal to <c>e^((1 − f)·d)</c> times the
+    /// regular n-period price — less accrued interest <c>c × (1 − f)</c>.
+    /// </summary>
+    private static decimal CleanPricePerUnitAtLogGrowth(decimal couponPerPeriod, int totalCoupons, decimal stubFraction, decimal logGrowthPerPeriod)
+        => (DecimalExp((1m - stubFraction) * logGrowthPerPeriod)
+                * PricePerUnitAtGrowth(couponPerPeriod, totalCoupons, DecimalExp(logGrowthPerPeriod)))
+            - (couponPerPeriod * (1m - stubFraction));
+
+    private static decimal PricePerUnitAtGrowth(decimal couponPerPeriod, int totalPeriods, decimal growthPerPeriod)
+    {
+        var discount = 1m;
+        var price = 0m;
+        for (var period = 1; period < totalPeriods + 1; period++)
+        {
+            discount /= growthPerPeriod;
+            price += couponPerPeriod * discount;
+        }
+
+        return price + discount;
+    }
+
+    // The search runs over d = ln(1 + y), so a short stub — whose price barely moves with yield
+    // and so implies yields within a hair of −100% or in the millions of percent — still brackets
+    // its root. The range stops at |d| = 40, where e^±d and its reciprocal still carry ten or more
+    // significant digits in decimal; further out the discount factor underflows and the price is
+    // no longer trustworthy, so a price no yield in range reaches is refused rather than guessed.
+    private const decimal OddPeriodLogGrowthFloor = -40m;
+    private const decimal OddPeriodLogGrowthCeiling = 40m;
+
+    private static decimal SolveOddFirstPeriodLogGrowth(decimal pricePerUnit, decimal couponPerPeriod, int totalCoupons, decimal stubFraction)
+    {
+        var low = OddPeriodLogGrowthFloor;
+        var high = OddPeriodLogGrowthCeiling;
+        if (!CleanPriceExceeds(pricePerUnit, couponPerPeriod, totalCoupons, stubFraction, low)
+            || CleanPriceExceeds(pricePerUnit, couponPerPeriod, totalCoupons, stubFraction, high))
+            throw new ArgumentException("Constant-yield amortization cannot find a representable yield that prices this odd-first-period schedule to the acquisition price.");
+
+        for (var iteration = 0; iteration < 120; iteration++)
+        {
+            var mid = (low + high) / 2m;
+            if (CleanPriceExceeds(pricePerUnit, couponPerPeriod, totalCoupons, stubFraction, mid))
+            {
+                low = mid;
+            }
+            else
+            {
+                high = mid;
+            }
+        }
+
+        return (low + high) / 2m;
+    }
+
+    // Price falls strictly as yield rises, so a probe whose price overflows decimal (a long
+    // schedule discounted at a deeply negative yield) prices above any finite target: the root
+    // lies at a higher yield. Treating the overflow that way keeps the bracket safe for every
+    // schedule within the coupon limit instead of throwing mid-bisection.
+    private static bool CleanPriceExceeds(decimal pricePerUnit, decimal couponPerPeriod, int totalCoupons, decimal stubFraction, decimal logGrowthPerPeriod)
+    {
+        try
+        {
+            return CleanPricePerUnitAtLogGrowth(couponPerPeriod, totalCoupons, stubFraction, logGrowthPerPeriod) > pricePerUnit;
+        }
+        catch (OverflowException)
+        {
+            return true;
+        }
+    }
+
+    // Deterministic decimal logarithm and exponential. Pure decimal series rather than double
+    // Math.Log/Math.Exp, so replayed amortization is platform-independent.
+    private static decimal DecimalLn(decimal value)
+    {
+        if (value <= 0m)
+            throw new ArgumentOutOfRangeException(nameof(value), value, "Logarithm requires a positive value.");
+        // ln(x) = 2 · atanh((x − 1) / (x + 1)), convergent for every positive x.
+        // Range reduction: value = m · 2^k with m in [0.75, 1.5), so the atanh series below runs on
+        // |z| ≤ 0.2 and converges in a few dozen terms for any positive decimal, including bases
+        // near zero (short-stub growth factors) where an unreduced series does not converge.
+        var exponent = 0;
+        var mantissa = value;
+        while (mantissa >= 1.5m)
+        {
+            mantissa /= 2m;
+            exponent++;
+        }
+
+        while (mantissa < 0.75m)
+        {
+            mantissa *= 2m;
+            exponent--;
+        }
+
+        return AtanhLogSeries(mantissa) + (exponent * Ln2);
+    }
+
+    private static readonly decimal Ln2 = AtanhLogSeries(2m);
+
+    // ln(x) = 2 · atanh((x − 1) / (x + 1)); converges for every positive x, quickly when x is near 1.
+    private static decimal AtanhLogSeries(decimal value)
+    {
+        var z = (value - 1m) / (value + 1m);
+        var zSquared = z * z;
+        var power = z;
+        var sum = 0m;
+        for (var k = 0; k < 4000; k++)
+        {
+            var term = power / ((2 * k) + 1);
+            if (term == 0m)
+                break;
+            sum += term;
+            power *= zSquared;
+        }
+
+        return 2m * sum;
+    }
+
+    private static decimal DecimalExp(decimal value)
+    {
+        if (value < 0m)
+            return 1m / DecimalExp(-value);
+        var term = 1m;
+        var sum = 1m;
+        for (var k = 1; k < 1000; k++)
+        {
+            term = term * value / k;
+            if (term == 0m)
+                break;
+            sum += term;
+        }
+
+        return sum;
     }
 
     /// <summary>

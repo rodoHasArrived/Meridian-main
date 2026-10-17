@@ -26,11 +26,13 @@ public static class ReconciliationServiceRegistration
                 sp.GetRequiredService<StorageOptions>().RootPath,
                 sp.GetService<ILogger<BusinessDayAccountingCalendar>>()));
         AddSharedServices(services);
+        services.TryAddSingleton<FileAccountCashReconciliationStore>(sp =>
+            new FileAccountCashReconciliationStore(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<IStatementReconciliationCheckpointStore>(sp =>
             new FileStatementReconciliationCheckpointStore(
                 sp.GetRequiredService<StorageOptions>().RootPath,
                 sp.GetService<ILogger<FileStatementReconciliationCheckpointStore>>()));
-        services.TryAddSingleton<ICanonicalStatementStore>(sp => new JsonCanonicalStatementStore(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<ICanonicalStatementStore>(sp => new JsonCanonicalStatementStore(sp.GetRequiredService<StorageOptions>().RootPath, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IReconciliationCaseStore>(sp => new JsonReconciliationCaseStore(sp.GetRequiredService<StorageOptions>().RootPath, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IReconciliationBreakStore>(sp => new JsonReconciliationBreakStore(sp.GetRequiredService<StorageOptions>().RootPath, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IStatementRunRecoveryRepository>(sp =>
@@ -52,11 +54,12 @@ public static class ReconciliationServiceRegistration
         services.TryAddSingleton<IAccountingCalendar>(sp =>
             FileAccountingCalendar.Load(dataRoot, sp.GetService<ILogger<BusinessDayAccountingCalendar>>()));
         AddSharedServices(services);
+        services.TryAddSingleton<FileAccountCashReconciliationStore>(_ => new FileAccountCashReconciliationStore(dataRoot));
         services.TryAddSingleton<IStatementReconciliationCheckpointStore>(sp =>
             new FileStatementReconciliationCheckpointStore(
                 dataRoot,
                 sp.GetService<ILogger<FileStatementReconciliationCheckpointStore>>()));
-        services.TryAddSingleton<ICanonicalStatementStore>(_ => new JsonCanonicalStatementStore(dataRoot));
+        services.TryAddSingleton<ICanonicalStatementStore>(sp => new JsonCanonicalStatementStore(dataRoot, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IReconciliationCaseStore>(sp => new JsonReconciliationCaseStore(dataRoot, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IReconciliationBreakStore>(sp => new JsonReconciliationBreakStore(dataRoot, sp.GetRequiredService<IAtomicFileWriter>()));
         services.TryAddSingleton<IStatementRunRecoveryRepository>(_ => new FileStatementRunRecoveryRepository(dataRoot));
@@ -94,6 +97,7 @@ public static class ReconciliationServiceRegistration
         // profile's thresholds instead of silently falling back to the defaults.
         services.TryAddSingleton<IStatementToleranceProfileProvider>(new InMemoryStatementToleranceProfileProvider());
         services.TryAddSingleton<StatementReconciliationService>();
+        services.TryAddSingleton<AccountCashReconciliationService>();
         services.TryAddSingleton<StatementReconciliationContextAdapter>();
         services.TryAddSingleton<IStatementReconciliationValidationService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());
         services.TryAddSingleton<IDataIntegrationIngestionService>(sp => sp.GetRequiredService<StatementReconciliationContextAdapter>());

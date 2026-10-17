@@ -1,0 +1,111 @@
+{
+  "dry_run": false,
+  "profile": "core",
+  "selected_scripts": [
+    "check-ai-handoff-strict",
+    "prompt-route-linter",
+    "handoff-packet-generator",
+    "check-handoff-packet-schema",
+    "check-ai-routing-parity"
+  ],
+  "results": [
+    {
+      "name": "check-ai-handoff-strict",
+      "command": [
+        "python3",
+        "build/scripts/docs/check-ai-handoff.py",
+        "--strict",
+        "--output",
+        "docs/status/ai-handoff-checklist-report.md",
+        "--json-output",
+        "docs/status/ai-handoff-checklist-report.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/ai-handoff-checklist-report.md",
+      "error": null
+    },
+    {
+      "name": "prompt-route-linter",
+      "command": [
+        "python3",
+        "build/scripts/docs/prompt-route-linter.py",
+        "--summary",
+        "--prompt",
+        "provider adapter integration",
+        "--json-output",
+        "docs/status/prompt-route-lint-report.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/prompt-route-lint-report.json",
+      "error": null
+    },
+    {
+      "name": "handoff-packet-generator",
+      "command": [
+        "python3",
+        "build/scripts/docs/handoff-packet-generator.py",
+        "--route-json",
+        "docs/status/prompt-route-lint-report.json",
+        "--scope",
+        "Docs automation generated handoff packet",
+        "--next-lane",
+        "implementation-assurance",
+        "--allow-incomplete",
+        "--suppress-changed-files",
+        "--model",
+        "docs-automation-profile",
+        "--input-tokens",
+        "1",
+        "--output-tokens",
+        "1",
+        "--estimated-cost-usd",
+        "0",
+        "--latency-ms",
+        "1",
+        "--validation",
+        "python build/scripts/docs/prompt-route-linter.py --summary::pass",
+        "--output",
+        "docs/status/ai-handoff-packet.md",
+        "--json-output",
+        "docs/status/ai-handoff-packet.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": "docs/status/ai-handoff-packet.json",
+      "error": null
+    },
+    {
+      "name": "check-handoff-packet-schema",
+      "command": [
+        "python3",
+        "build/scripts/docs/check-handoff-packet-schema.py",
+        "--packet-json",
+        "docs/status/ai-handoff-packet.json",
+        "--summary"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "check-ai-routing-parity",
+      "command": [
+        "python3",
+        "build/scripts/docs/check-ai-routing-parity.py",
+        "--summary"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    }
+  ]
+}

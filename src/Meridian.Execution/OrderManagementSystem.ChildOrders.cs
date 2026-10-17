@@ -55,6 +55,7 @@ public sealed partial class OrderManagementSystem
                 Status = child.Status,
                 CreatedAt = child.CreatedAt == default ? DateTimeOffset.UtcNow : child.CreatedAt,
                 StrategyId = parent.StrategyId,
+                RunId = parent.RunId,
                 // The parent's scope, deliberately: a bracket's exit legs settle into the same
                 // fund account and derivative identity the entry was admitted under.
                 FundAccountId = parent.FundAccountId,
@@ -88,6 +89,9 @@ public sealed partial class OrderManagementSystem
             {
                 _orderContractMultipliers[childOrderId] = parentMultiplier;
             }
+
+            if (_dispatchedOrderIds.ContainsKey(parentOrderId))
+                RetainBrokerageDispatch(childState);
 
             // Deliberately the broker-reported leg symbol, not childState.Symbol: the registered
             // state falls back to the parent's admitted request for a blank leg symbol, and this

@@ -200,7 +200,7 @@ export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
           )}
 
           <details className="rounded-md border border-border/70 bg-background/50">
-            <summary className="flex cursor-pointer items-center justify-between gap-3 px-3 py-3 text-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40">
+            <summary className="flex cursor-pointer items-center justify-between gap-3 px-3 py-3 text-sm font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
               Browse standard report catalog
               <Badge variant="outline">{standardReportCatalog.length} reports</Badge>
             </summary>

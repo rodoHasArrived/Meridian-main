@@ -63,6 +63,13 @@ public sealed class SymbolRegistry
     /// </summary>
     [JsonPropertyName("migrationMarkers")]
     public Dictionary<string, string> MigrationMarkers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Exact manifests and evidence references for explicitly selected legacy identifier cleanup.
+    /// A receipt records the requested cleanup; it does not establish independent approval.
+    /// </summary>
+    [JsonPropertyName("legacyIdentifierCleanupReceipts")]
+    public Dictionary<string, SecurityMasterLegacyIdentifierCleanupReceipt> LegacyIdentifierCleanupReceipts { get; set; } = new();
 }
 
 /// <summary>
@@ -81,6 +88,22 @@ public sealed class SymbolRegistryEntry
     /// </summary>
     [JsonPropertyName("canonical")]
     public string Canonical { get; set; } = string.Empty;
+
+    /// <summary>
+    /// True only when the canonical ticker was introduced solely by Security Master
+    /// reconciliation. Missing historical provenance defaults to independent authority.
+    /// </summary>
+    [JsonPropertyName("securityMasterOwnsCanonical")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool SecurityMasterOwnsCanonical { get; set; }
+
+    /// <summary>
+    /// Security Master withdrew this canonical spelling while independently owned mappings
+    /// retain the definition. The internal canonical key is not itself lookup authority.
+    /// </summary>
+    [JsonPropertyName("securityMasterCanonicalWithdrawn")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool SecurityMasterCanonicalWithdrawn { get; set; }
 
     /// <summary>
     /// Display name (e.g., "Apple Inc.").

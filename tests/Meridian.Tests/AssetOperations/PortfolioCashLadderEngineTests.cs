@@ -441,6 +441,93 @@ public sealed class PortfolioCashLadderEngineTests
         ladder.Warnings.Should().ContainMatch("*unit-quantity placeholders*");
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("EUR")]
+    public void GetContributionCurrencies_EarlyCall_ExcludesDiscardedCouponsAndKeepsCallPrincipal(string postCallCurrency)
+    {
+        var position = BuildEarlyCallCurrencyPosition(20, postCallCurrency);
+        var inputs = BuildInputs(positions: [position]);
+
+        PortfolioCashLadderEngine.GetContributionCurrencies(inputs, "EARLY-CALL")
+            .Should().Equal("USD", "USD", "USD");
+        PortfolioCashLadderEngine.GetContributionCurrencies(inputs)
+            .Should().Equal("USD", "USD", postCallCurrency);
+
+        var ladder = PortfolioCashLadderEngine.Build(inputs, "EARLY-CALL");
+
+        ladder.Contributions.Should().HaveCount(3);
+        ladder.Contributions.Where(static row => row.FlowType == "Coupon")
+            .Select(static row => (row.DueDate, row.Amount))
+            .Should().Equal((AsOf.AddDays(10), 20m), (AsOf.AddDays(15), 40m));
+        var principal = ladder.Contributions.Should().ContainSingle(static row => row.FlowType == "CallRedemption").Subject;
+        principal.DueDate.Should().Be(AsOf.AddDays(15));
+        principal.Amount.Should().Be(2000m);
+        ladder.Contributions.Should().OnlyContain(static row => row.Currency == "USD");
+        ladder.Buckets.Last().CumulativeCash.Should().Be(2060m);
+    }
+
+    [Theory]
+    [InlineData(10, "")]
+    [InlineData(10, "EUR")]
+    [InlineData(15, "")]
+    [InlineData(15, "EUR")]
+    [InlineData(400, "")]
+    [InlineData(400, "EUR")]
+    public void GetContributionCurrencies_EarlyCall_PreservesIncludedCurrencyEvidence(int flowDay, string currency)
+    {
+        var position = BuildEarlyCallCurrencyPosition(flowDay, currency);
+
+        var currencies = PortfolioCashLadderEngine.GetContributionCurrencies(
+            BuildInputs(positions: [position]), PortfolioCashLadderEngine.EarlyCallScenarioId).ToArray();
+
+        currencies.Should().HaveCount(3);
+        currencies.Should().ContainSingle(value => value == currency);
+        currencies.Count(static value => value == "USD").Should().Be(2);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(-1)]
+    [InlineData(90)]
+    public void GetContributionCurrencies_EarlyCall_WithoutInWindowCallKeepsCouponCurrency(int? callDay)
+    {
+        var position = BuildPosition(
+            "Bond without an in-window call", "Bond", [("Coupon", AsOf.AddDays(20), 10m)],
+            termsPayload: callDay.HasValue ? new { callDate = AsOf.AddDays(callDay.Value).ToString("yyyy-MM-dd") } : null,
+            currency: "EUR");
+        var inputs = BuildInputs(positions: [position]);
+
+        PortfolioCashLadderEngine.GetContributionCurrencies(inputs, PortfolioCashLadderEngine.EarlyCallScenarioId)
+            .Should().Equal("EUR");
+        PortfolioCashLadderEngine.Build(inputs, PortfolioCashLadderEngine.EarlyCallScenarioId)
+            .Contributions.Should().ContainSingle().Which.Currency.Should().Be("EUR");
+    }
+
+    private static PortfolioCashLadderPositionDto BuildEarlyCallCurrencyPosition(int flowDay, string currency)
+    {
+        var position = BuildPosition(
+            "Callable currency evidence bond", "Bond",
+            [
+                ("Coupon", AsOf.AddDays(10), 10m),
+                ("Coupon", AsOf.AddDays(15), 20m),
+                ("Coupon", AsOf.AddDays(20), 30m),
+                ("Maturity", AsOf.AddDays(400), 1000m)
+            ],
+            termsPayload: new { callDate = AsOf.AddDays(15).ToString("yyyy-MM-dd") },
+            quantity: 2m);
+        return position with
+        {
+            Operations = position.Operations with
+            {
+                ProjectedCashFlows = position.Operations.ProjectedCashFlows
+                    .Select(flow => flow.DueDate == AsOf.AddDays(flowDay) ? flow with { Currency = currency } : flow)
+                    .ToArray()
+            }
+        };
+    }
+
     private static PortfolioCashLadderInputs BuildInputs(
         IReadOnlyList<PortfolioCashLadderPositionDto>? positions = null,
         IReadOnlyList<PortfolioCashBalanceDto>? cashBalances = null,

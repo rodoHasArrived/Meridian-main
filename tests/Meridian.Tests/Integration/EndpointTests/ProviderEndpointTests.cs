@@ -12,7 +12,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// Tests provider catalog, status, metrics, comparison, and data source CRUD.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _dataSourceReadClient;

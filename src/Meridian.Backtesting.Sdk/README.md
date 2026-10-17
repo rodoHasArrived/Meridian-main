@@ -6,14 +6,21 @@ module_id: SRC-BACKTESTING-SDK
 path: src/Meridian.Backtesting.Sdk
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-09-02
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Backtesting.Sdk
 
+`CanonicalOpenLotAdapter` admits only long simulation and canonical lots. It refuses an explicitly
+short canonical acquisition even if its positive quantity and basis match a long simulation lot.
+Existing simulation short-cover calculation remains available; this guard does not certify
+canonical short posting or production consumer cutover.
+
 ## Shared close and lot convergence
 
-`CanonicalOpenLotAdapter` checks backtest/ledger identity and economics against the shared canonical lot contract. It preserves ticker-rename continuity while rejecting quantity, basis, date, or durable-ID differences; simulation does not become ledger authority.
+`CanonicalOpenLotAdapter` checks backtest/ledger identity and economics against the shared canonical lot contract. It compares exact component basis after validating a governed unit successor's immediate predecessor, component quantities, acquisition dates and internally consistent source fills. Components must represent one source pool, with positive quantities and nonnegative basis that reconcile exactly to the retained current open quantity and carrying basis. Ordinary lots cannot use components to override their entry quote. It preserves ticker-rename continuity while rejecting quantity, basis, date, or durable-ID differences. Explicit short lots remain blocked until the canonical direction model is approved, matching the Execution adapter; simulation does not become ledger authority.
+
+The retained canonical contract identifies one immediate predecessor and carries no source-fill or component allocation manifest. Fill checks establish internal consistency only, and canonical parity certifies the homogeneous pool's totals rather than an individual component allocation recipe. This preserves exact decimal residuals after partial relief. Multi-source components and flattened ancestor lineage remain valid simulation representations, but this adapter refuses their canonical binding until separately governed mapping evidence is available. Fractional simulation allocation and `OpenLot.CostBasis()` are unchanged; canonical admission requires the evidence above.
 
 ## Purpose
 
@@ -45,6 +52,11 @@ Use this module when a backtesting contract must be shared across runtime and st
   engines. Native results are marked with full canonical coverage, while QuantConnect Lean imports
   normalize into the same `BacktestResult` storage model with `SummaryOnly` coverage metadata and
   compatibility warnings for missing fill, cash-flow, attribution, and ledger artifacts.
+- `BacktestMetrics.Xirr` retains `double.NaN` when IRR is unavailable. SDK JSON emits the named
+  string `"NaN"`, with named floating-point handling scoped to this property. Durable strategy-run
+  snapshots override that representation with JSON `null` and accept the exact legacy `"NaN"`
+  sentinel on read, preserving unavailable IRR without substituting a measured zero return.
+  Other metrics retain their existing numeric serialization rules.
 - `OpenLot.IsShort` is an optional init-only direction flag that preserves the existing positional
   constructor and deconstruction shapes. Lot quantities stay positive; directed short lots calculate unrealized P&L as
   `(entryPrice - currentPrice) * quantity` and retain that direction when exposed through position
@@ -59,6 +71,12 @@ Use this module when a backtesting contract must be shared across runtime and st
   deconstruction shape.
 - `AssetEventCashFlow.FractionalUnits`, `BasisDisposed`, and `RealizedPnl` retain cash-in-lieu
   disposal evidence even when an all-fraction transformation leaves no successor position.
+
+## Unitized lots
+
+`OpenLot` and `ClosedLot` hold `decimal` quantities and implement `IUnitizedLot`: `UnitKind`
+defaults to `Shares` and `Multiplier` to 1, so existing share lots are unchanged.
+`LotQuantity.EconomicUnits` gives quantity × multiplier.
 
 ## Diagrams
 

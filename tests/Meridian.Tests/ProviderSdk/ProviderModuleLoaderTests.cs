@@ -234,6 +234,25 @@ public sealed class ProviderModuleLoaderTests
         report.Failed[0].Exception.Should().BeOfType<InvalidOperationException>();
     }
 
+    [Fact]
+    public async Task LoadModulesAsync_RegisterThrows_RollsBackPartialServices()
+    {
+        var loader = new ProviderModuleLoader();
+        loader.ConfigureModule("partial", new ProviderModuleContext());
+        var services = new ServiceCollection();
+        var existing = new ModuleLoadRollbackMarker();
+        services.AddSingleton(existing);
+        var original = services.Single();
+
+        var report = await loader.LoadModulesAsync(services, new DataSourceRegistry(),
+            [new PartiallyRegisteringProviderModule()]);
+
+        report.Failed.Should().ContainSingle(failure => failure.ModuleId == "partial");
+        services.Should().ContainSingle().Which.Should().BeSameAs(original);
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<ModuleLoadRollbackMarker>().Should().BeSameAs(existing);
+    }
+
     // -----------------------------------------------------------------------
     // Capability advertisement
     // -----------------------------------------------------------------------
@@ -529,6 +548,21 @@ internal sealed class ThrowingRegisterProviderModule : IProviderModule
 
     public void Register(IServiceCollection services, DataSourceRegistry registry)
         => throw new InvalidOperationException("Simulated registration failure.");
+}
+
+internal sealed class ModuleLoadRollbackMarker { }
+
+internal sealed class PartiallyRegisteringProviderModule : IProviderModule
+{
+    public string ModuleId => "partial";
+    public bool RequiresExternalConfig => true;
+
+    public void Register(IServiceCollection services, DataSourceRegistry registry)
+    {
+        services.Clear();
+        services.AddSingleton<ModuleLoadRollbackMarker>();
+        throw new InvalidOperationException("Registration failed after changing the collection.");
+    }
 }
 
 internal sealed class ThrowingConstructorProviderModule : IProviderModule

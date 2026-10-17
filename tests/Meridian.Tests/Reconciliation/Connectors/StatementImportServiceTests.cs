@@ -47,7 +47,7 @@ public sealed class StatementImportServiceTests : IDisposable
             _fetchingConnector
         ]);
 
-        var statementStore = new JsonCanonicalStatementStore(_root);
+        var statementStore = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         _workflow = StatementRunWorkflowService.CreateEphemeralForTesting(
             statementStore,
             new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
@@ -942,7 +942,7 @@ public sealed class StatementImportServiceTests : IDisposable
             canonicalHash);
         legacyRunId.Should().NotBe(hardenedRunId, "the upgrade scenario must exercise the old canonical-only identity");
 
-        var store = new JsonCanonicalStatementStore(_root);
+        var store = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
         await store.SaveImportAsync(
             new CanonicalStatementImport(
                 legacyRunId,

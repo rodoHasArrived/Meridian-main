@@ -116,11 +116,20 @@ export function resolvePostedEntryEntityId(entry: LedgerPostedJournalEntry): str
   return lines.every((line) => (line.dimensions?.entityId?.trim() || null) === first) ? first : null;
 }
 
-export function toLedgerJournalLine(entry: LedgerPostedJournalEntry): LedgerJournalLine {
+export interface PostedLedgerJournalLine extends LedgerJournalLine {
+  postedLines: LedgerPostedJournalEntry["lines"];
+  ledgerBookId: string | null;
+  periodId: string;
+}
+
+export function toLedgerJournalLine(entry: LedgerPostedJournalEntry): PostedLedgerJournalLine {
   const dimensions = resolvePostedEntryDimensions(entry);
   const entityId = resolvePostedEntryEntityId(entry);
   return {
     journalEntryId: entry.journalEntryId,
+    postedLines: entry.lines,
+    ledgerBookId: entry.ledgerBookId,
+    periodId: entry.periodId,
     timestamp: entry.timestamp,
     description: entry.description,
     totalDebits: entry.totalDebits,
@@ -241,6 +250,7 @@ export interface AccountingPostedLedgerViewState {
 }
 
 export interface AccountingPostedLedgerViewModel {
+  selectedBook: LedgerBook | null;
   view: AccountingPostedLedgerViewState;
   selectBook: (ledgerBookId: string) => void;
   selectPeriod: (periodId: string) => void;
@@ -248,7 +258,7 @@ export interface AccountingPostedLedgerViewModel {
   updateAccountFilter: (value: string) => void;
   selectTrialBalanceRow: (rowId: string | null) => void;
   /** Posted journal entries for the selected period, in the shared evidence-row shape. */
-  journalLines: LedgerJournalLine[];
+  journalLines: PostedLedgerJournalLine[];
   journalLoading: boolean;
   journalErrorText: string | null;
   selectedPeriodId: string | null;
@@ -709,7 +719,7 @@ export function useAccountingPostedLedgerViewModel(
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [selectedBasis, setSelectedBasis] = useState<AccountingBasisKind>(DEFAULT_ACCOUNTING_BASIS);
   const [accountFilter, setAccountFilter] = useState("");
-  const [journalLines, setJournalLines] = useState<LedgerJournalLine[]>([]);
+  const [journalLines, setJournalLines] = useState<PostedLedgerJournalLine[]>([]);
   const [journalLoading, setJournalLoading] = useState(false);
   const [journalErrorText, setJournalErrorText] = useState<string | null>(null);
 
@@ -1178,6 +1188,7 @@ export function useAccountingPostedLedgerViewModel(
     journalErrorText,
     selectedPeriodId,
     selectedPeriodLabel,
+    selectedBook,
     /**
      * True once the selected book's period request has come back successfully. A deep link cannot
      * tell an empty book from a still-loading one without this, and waiting on the loading flags

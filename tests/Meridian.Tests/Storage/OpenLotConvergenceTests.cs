@@ -64,6 +64,18 @@ public sealed class OpenLotConvergenceTests
     }
 
     [Fact]
+    public void AverageCost_DecimalBoundaryRefusesAnUnrepresentablePositivePool()
+    {
+        const decimal basis = 0.0000000000000000000000000004m;
+        var lots = Enumerable.Range(1, 6)
+            .Select(day => Lot(day, 1m, day == 1 ? basis : 0m, 1m).ToOpenLot()).ToArray();
+
+        var select = () => new OpenLotReliefService().Select(lots, 6m, OpenLotReliefMethod.AverageCost);
+
+        select.Should().Throw<InvalidOperationException>().WithMessage("*positive*decimal precision*");
+    }
+
+    [Fact]
     public void LegacyRows_DoNotAcquireInventedIdentityOrFx()
     {
         var legacy = Lot(1) with { Acquisition = null, SecurityId = Guid.Empty, BookPositionId = Guid.Empty };

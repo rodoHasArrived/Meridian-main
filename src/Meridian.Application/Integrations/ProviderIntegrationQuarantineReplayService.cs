@@ -10,7 +10,7 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.Integrations;
 
-public sealed class ProviderIntegrationQuarantineReplayService
+public sealed partial class ProviderIntegrationQuarantineReplayService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IProviderIntegrationManifestStore store;
@@ -55,6 +55,18 @@ public sealed class ProviderIntegrationQuarantineReplayService
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ManifestId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ConnectionId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.RequestedBy);
+        if (StringComparer.Ordinal.Equals(request.ReplaySyncRunId, request.SourceSyncRunId))
+        {
+            throw new ArgumentException("Replay requires a new sync run id to preserve the source evidence.", nameof(request));
+        }
+
+        if (!Enum.IsDefined(request.Mode) ||
+            (request.Mode == ProviderIntegrationReplayModeDto.Original &&
+                (request.TargetManifestVersion is not null || request.TargetManifestDigest is not null)))
+        {
+            throw new ArgumentException("An original replay cannot select a different mapping; select remediation explicitly.", nameof(request));
+        }
+
         if (request.QuarantineRecordIds is null || request.QuarantineRecordIds.Count == 0)
         {
             throw new ArgumentException("At least one quarantine record id is required.", nameof(request));
@@ -68,16 +80,46 @@ public sealed class ProviderIntegrationQuarantineReplayService
         ct.ThrowIfCancellationRequested();
 
         var scopedStore = ResolveStore(tenantId);
-        var manifest = await scopedStore.GetManifestAsync(request.ManifestId, ct).ConfigureAwait(false)
-            ?? throw new KeyNotFoundException($"Provider integration manifest '{request.ManifestId}' was not found.");
+        if (await scopedStore.GetSyncRunAsync(request.ReplaySyncRunId, ct).ConfigureAwait(false) is not null)
+        {
+            throw new InvalidOperationException("Replay requires an unused sync run id to preserve retained evidence.");
+        }
+
         var connection = await scopedStore.GetConnectionAsync(request.ConnectionId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration connection '{request.ConnectionId}' was not found.");
         var sourceSyncRun = await scopedStore.GetSyncRunAsync(request.SourceSyncRunId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration sync run '{request.SourceSyncRunId}' was not found.");
+        var (originalReference, sourcePayload) = await ValidateSourceProvenanceAsync(scopedStore, request, sourceSyncRun, ct)
+            .ConfigureAwait(false);
+        var sourceRecordFormat = await ResolveSourceRecordFormatAsync(
+            scopedStore, request, sourceSyncRun, sourcePayload, originalReference, ct).ConfigureAwait(false);
+        var selectedReference = request.Mode == ProviderIntegrationReplayModeDto.Original
+            ? originalReference
+            : ResolveRemediationReference(request, originalReference);
+        var manifest = await ResolveManifestAsync(scopedStore, selectedReference, ct).ConfigureAwait(false);
+        var appliedReference = ProviderIntegrationManifestIdentity.Create(manifest);
 
         var capability = ValidateRequestScope(request, manifest, connection, sourceSyncRun);
         var sourceRecords = await ResolveRequestedRecordsAsync(scopedStore, request, ct).ConfigureAwait(false);
+        if (sourceRecordFormat == ManualCsvRecordFormat)
+        {
+            foreach (var sourceRecord in sourceRecords)
+            {
+                ct.ThrowIfCancellationRequested();
+                ProviderIntegrationDryRunService.ValidateRetainedManualCsvRecord(sourceRecord.RawRecord);
+            }
+        }
+
         var rawPayloadId = StableId("raw-payload", request.ReplaySyncRunId, request.SourceSyncRunId, "quarantine-replay");
+
+        // Claim the run before publishing any evidence. Different source runs produce different
+        // payload/row IDs, so their individual immutable writes cannot arbitrate a shared run ID.
+        if (!await scopedStore.TryCreateSyncRunAsync(
+            CreateSyncRun(request, manifest, originalReference, sourceSyncRun.EndpointKey, rawPayloadId, result: null), ct)
+            .ConfigureAwait(false))
+        {
+            throw new InvalidOperationException("Replay requires an unused sync run id to preserve retained evidence.");
+        }
 
         await scopedStore.SaveRawPayloadAsync(
             new RawIngestionPayloadDto(
@@ -93,7 +135,8 @@ public sealed class ProviderIntegrationQuarantineReplayService
                     ["sourceSyncRunId"] = request.SourceSyncRunId,
                     ["sourceRawPayloadId"] = sourceSyncRun.RawPayloadId ?? string.Empty,
                     ["requestedBy"] = request.RequestedBy,
-                    ["recordCount"] = sourceRecords.Count.ToString(CultureInfo.InvariantCulture)
+                    ["recordCount"] = sourceRecords.Count.ToString(CultureInfo.InvariantCulture),
+                    [SourceRecordFormatMetadataKey] = sourceRecordFormat
                 },
                 ToJsonElement(new QuarantineReplayRawPayload(
                     request.SourceSyncRunId,
@@ -102,7 +145,13 @@ public sealed class ProviderIntegrationQuarantineReplayService
                         record.QuarantineRecordId,
                         record.RawRecord)).ToArray())),
                 $"{manifest.ManifestId}:v{manifest.ManifestVersion.ToString(CultureInfo.InvariantCulture)}",
-                ProviderIntegrationProcessingStatusDto.Received),
+                ProviderIntegrationProcessingStatusDto.Received)
+            {
+                ManifestReference = appliedReference,
+                OriginalManifestReference = originalReference,
+                SourceSyncRunId = request.SourceSyncRunId,
+                ReplayMode = request.Mode
+            },
             ct).ConfigureAwait(false);
 
         var mappings = manifest.FieldMappings
@@ -125,7 +174,8 @@ public sealed class ProviderIntegrationQuarantineReplayService
                 RecordsRequarantined: 0,
                 ProviderIntegrationProcessingStatusDto.Blocked,
                 [issue]);
-            await SaveSyncRunAsync(scopedStore, request, manifest, sourceSyncRun.EndpointKey, rawPayloadId, blocked, ct)
+            await scopedStore.SaveSyncRunAsync(
+                CreateSyncRun(request, manifest, originalReference, sourceSyncRun.EndpointKey, rawPayloadId, blocked), ct)
                 .ConfigureAwait(false);
             return blocked;
         }
@@ -147,7 +197,9 @@ public sealed class ProviderIntegrationQuarantineReplayService
             ct.ThrowIfCancellationRequested();
             var sourceRecord = sourceRecords[index];
             var rowIssues = new List<ValidationIssueDto>();
-            var mappedRecord = MapRecord(sourceRecord.RawRecord, mappings, rowIssues);
+            var mappedRecord = sourceRecordFormat == ManualCsvRecordFormat
+                ? ProviderIntegrationDryRunService.MapRetainedManualCsvRecord(sourceRecord.RawRecord, mappings, rowIssues)
+                : MapRecord(sourceRecord.RawRecord, mappings, rowIssues);
             foreach (var requiredField in requiredCanonicalFields)
             {
                 if (!HasJsonPath(mappedRecord, requiredField))
@@ -232,9 +284,105 @@ public sealed class ProviderIntegrationQuarantineReplayService
             requarantined,
             status,
             allIssues);
-        await SaveSyncRunAsync(scopedStore, request, manifest, sourceSyncRun.EndpointKey, rawPayloadId, result, ct)
+        await scopedStore.SaveSyncRunAsync(
+            CreateSyncRun(request, manifest, originalReference, sourceSyncRun.EndpointKey, rawPayloadId, result), ct)
             .ConfigureAwait(false);
         return result;
+    }
+
+    private static async Task<(ProviderIntegrationManifestReferenceDto Reference, RawIngestionPayloadDto Payload)> ValidateSourceProvenanceAsync(
+        IProviderIntegrationManifestStore scopedStore,
+        ProviderIntegrationQuarantineReplayRequestDto request,
+        ProviderIntegrationSyncRunDto sourceSyncRun,
+        CancellationToken ct)
+    {
+        if (sourceSyncRun.ManifestReference is not { } applied ||
+            sourceSyncRun.OriginalManifestReference is not { } original ||
+            string.IsNullOrWhiteSpace(sourceSyncRun.RawPayloadId))
+        {
+            throw new InvalidOperationException("The source sync run has no complete retained manifest provenance; its original mapping cannot be inferred.");
+        }
+
+        var payload = await scopedStore.GetRawPayloadAsync(request.SourceSyncRunId, sourceSyncRun.RawPayloadId, ct)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException("The source raw payload required for replay provenance was not retained.");
+        if (!ProviderIntegrationManifestIdentity.Matches(payload.ManifestReference, applied) ||
+            !ProviderIntegrationManifestIdentity.Matches(payload.OriginalManifestReference, original) ||
+            payload.SourceSyncRunId != sourceSyncRun.SourceSyncRunId || payload.ReplayMode != sourceSyncRun.ReplayMode ||
+            !StringComparer.Ordinal.Equals(sourceSyncRun.SyncRunId, request.SourceSyncRunId) ||
+            !StringComparer.Ordinal.Equals(payload.SyncRunId, request.SourceSyncRunId) ||
+            !StringComparer.Ordinal.Equals(payload.PayloadId, sourceSyncRun.RawPayloadId) ||
+            !StringComparer.Ordinal.Equals(payload.ConnectionId, request.ConnectionId) ||
+            !StringComparer.Ordinal.Equals(payload.ProviderId, sourceSyncRun.ProviderId) ||
+            !StringComparer.Ordinal.Equals(payload.EndpointKey, sourceSyncRun.EndpointKey) ||
+            payload.Capability != request.Capability ||
+            !StringComparer.Ordinal.Equals(applied.ManifestId, request.ManifestId) ||
+            !StringComparer.Ordinal.Equals(original.ManifestId, request.ManifestId) ||
+            !StringComparer.Ordinal.Equals(payload.MappingVersion,
+                $"{applied.ManifestId}:v{applied.ManifestVersion.ToString(CultureInfo.InvariantCulture)}"))
+        {
+            throw new InvalidOperationException("The source raw payload and sync run have inconsistent manifest provenance or replay scope.");
+        }
+
+        var appliedOriginal = ProviderIntegrationManifestIdentity.Matches(applied, original);
+        var validLineage = sourceSyncRun.ReplayMode switch
+        {
+            null => sourceSyncRun.SourceSyncRunId is null && appliedOriginal,
+            ProviderIntegrationReplayModeDto.Original => !string.IsNullOrWhiteSpace(sourceSyncRun.SourceSyncRunId) && appliedOriginal,
+            ProviderIntegrationReplayModeDto.Remediation => !string.IsNullOrWhiteSpace(sourceSyncRun.SourceSyncRunId) &&
+                applied.ManifestVersion > original.ManifestVersion,
+            _ => false
+        };
+        if (!validLineage || StringComparer.Ordinal.Equals(sourceSyncRun.SourceSyncRunId, sourceSyncRun.SyncRunId))
+        {
+            throw new InvalidOperationException("The source sync run has invalid original or remediation provenance.");
+        }
+
+        var appliedManifest = await ResolveManifestAsync(scopedStore, applied, ct).ConfigureAwait(false);
+        var originalManifest = appliedOriginal
+            ? appliedManifest
+            : await ResolveManifestAsync(scopedStore, original, ct).ConfigureAwait(false);
+        if (!StringComparer.Ordinal.Equals(appliedManifest.ProviderId, sourceSyncRun.ProviderId) ||
+            !StringComparer.Ordinal.Equals(originalManifest.ProviderId, sourceSyncRun.ProviderId))
+        {
+            throw new InvalidOperationException("The retained manifest provenance is not linked to the source provider.");
+        }
+
+        return (ProviderIntegrationManifestIdentity.Create(originalManifest), payload);
+    }
+
+    private static ProviderIntegrationManifestReferenceDto ResolveRemediationReference(
+        ProviderIntegrationQuarantineReplayRequestDto request,
+        ProviderIntegrationManifestReferenceDto originalReference)
+    {
+        if (request.TargetManifestVersion is not { } version || version <= originalReference.ManifestVersion ||
+            string.IsNullOrWhiteSpace(request.TargetManifestDigest))
+        {
+            throw new ArgumentException("Remediation requires an explicit newer manifest version and its content digest.", nameof(request));
+        }
+
+        return new ProviderIntegrationManifestReferenceDto(request.ManifestId, version, request.TargetManifestDigest);
+    }
+
+    private static async Task<ProviderIntegrationManifestDto> ResolveManifestAsync(
+        IProviderIntegrationManifestStore scopedStore,
+        ProviderIntegrationManifestReferenceDto reference,
+        CancellationToken ct)
+    {
+        if (reference.ManifestVersion < 1 || string.IsNullOrWhiteSpace(reference.ContentDigest))
+        {
+            throw new InvalidOperationException("The retained manifest reference has no valid version and digest.");
+        }
+
+        var manifest = await scopedStore.GetManifestVersionAsync(reference.ManifestId, reference.ManifestVersion, ct)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Retained manifest '{reference.ManifestId}' version {reference.ManifestVersion} is unavailable; its mapping cannot be inferred.");
+        if (!ProviderIntegrationManifestIdentity.Matches(ProviderIntegrationManifestIdentity.Create(manifest), reference))
+        {
+            throw new InvalidOperationException("The retained manifest content does not match its recorded version and digest.");
+        }
+
+        return manifest;
     }
 
     private async Task<IReadOnlyList<QuarantinedRecordDto>> ResolveRequestedRecordsAsync(
@@ -253,7 +401,8 @@ public sealed class ProviderIntegrationQuarantineReplayService
                 throw new KeyNotFoundException($"Provider integration quarantine record '{quarantineRecordId}' was not found.");
             }
 
-            if (!StringComparer.Ordinal.Equals(record.ConnectionId, request.ConnectionId))
+            if (!StringComparer.Ordinal.Equals(record.SyncRunId, request.SourceSyncRunId) ||
+                !StringComparer.Ordinal.Equals(record.ConnectionId, request.ConnectionId))
             {
                 throw new InvalidOperationException("Provider integration quarantine record is not linked to the requested connection.");
             }
@@ -275,12 +424,15 @@ public sealed class ProviderIntegrationQuarantineReplayService
         ProviderConnectionDto connection,
         ProviderIntegrationSyncRunDto sourceSyncRun)
     {
-        if (!StringComparer.Ordinal.Equals(connection.ManifestId, manifest.ManifestId))
+        if (!StringComparer.Ordinal.Equals(connection.ManifestId, manifest.ManifestId) ||
+            !StringComparer.Ordinal.Equals(connection.ConnectionId, request.ConnectionId) ||
+            !StringComparer.Ordinal.Equals(connection.ProviderId, manifest.ProviderId))
         {
             throw new InvalidOperationException("The provider connection is not linked to the requested manifest.");
         }
 
         if (!StringComparer.Ordinal.Equals(sourceSyncRun.ManifestId, request.ManifestId) ||
+            !StringComparer.Ordinal.Equals(sourceSyncRun.ProviderId, manifest.ProviderId) ||
             !StringComparer.Ordinal.Equals(sourceSyncRun.ConnectionId, request.ConnectionId) ||
             sourceSyncRun.Capability != request.Capability)
         {
@@ -303,31 +455,34 @@ public sealed class ProviderIntegrationQuarantineReplayService
         return capability;
     }
 
-    private Task SaveSyncRunAsync(
-        IProviderIntegrationManifestStore scopedStore,
+    private static ProviderIntegrationSyncRunDto CreateSyncRun(
         ProviderIntegrationQuarantineReplayRequestDto request,
         ProviderIntegrationManifestDto manifest,
+        ProviderIntegrationManifestReferenceDto originalReference,
         string endpointKey,
         string rawPayloadId,
-        ProviderIntegrationQuarantineReplayResultDto result,
-        CancellationToken ct)
-        => scopedStore.SaveSyncRunAsync(
-            new ProviderIntegrationSyncRunDto(
-                request.ReplaySyncRunId,
-                manifest.ManifestId,
-                request.ConnectionId,
-                manifest.ProviderId,
-                request.Capability,
-                endpointKey,
-                request.RequestedAt,
-                request.RequestedAt,
-                result.Status,
-                result.RecordsReplayed,
-                result.RecordsAccepted,
-                result.RecordsRequarantined,
-                rawPayloadId,
-                result.Issues),
-            ct);
+        ProviderIntegrationQuarantineReplayResultDto? result)
+        => new(
+            request.ReplaySyncRunId,
+            manifest.ManifestId,
+            request.ConnectionId,
+            manifest.ProviderId,
+            request.Capability,
+            endpointKey,
+            request.RequestedAt,
+            result is null ? null : request.RequestedAt,
+            result?.Status ?? ProviderIntegrationProcessingStatusDto.Received,
+            result?.RecordsReplayed ?? 0,
+            result?.RecordsAccepted ?? 0,
+            result?.RecordsRequarantined ?? 0,
+            rawPayloadId,
+            result?.Issues ?? [])
+        {
+            ManifestReference = ProviderIntegrationManifestIdentity.Create(manifest),
+            OriginalManifestReference = originalReference,
+            SourceSyncRunId = request.SourceSyncRunId,
+            ReplayMode = request.Mode
+        };
 
     private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
         => string.IsNullOrWhiteSpace(tenantId)

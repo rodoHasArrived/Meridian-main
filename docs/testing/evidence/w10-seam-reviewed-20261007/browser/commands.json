@@ -1,0 +1,61 @@
+{
+  "sourceHead": "12565b938fff633cac2060b844487c4cf9454099",
+  "recordType": "Exact commands executed for completed source-S QA; reconstructed from tool-call history without rerunning",
+  "commands": [
+    {
+      "id": "focused-component-and-view-model-tests",
+      "cwd": "/workspace/Meridian-main/src/Meridian.Ui/dashboard",
+      "command": "node node_modules/vitest/vitest.mjs run src/screens/operations-continuity-screen.test.tsx src/screens/operations-continuity-screen.view-model.test.ts --reporter=default --reporter=json --outputFile.json=/workspace/scratch/w10-seam-source-s/browser/focused-tests.json > /workspace/scratch/w10-seam-source-s/browser/focused-tests.log 2>&1",
+      "exitCode": 0,
+      "passedTests": 60
+    },
+    {
+      "id": "vite-source-server",
+      "cwd": "/workspace/Meridian-main/src/Meridian.Ui/dashboard",
+      "command": "npm run dev -- --port 4173 --strictPort > /workspace/scratch/w10-seam-source-s/browser/vite.log 2>&1",
+      "exitCode": 130,
+      "termination": "Stopped with Ctrl-C through exec session24475 after both browser runs completed."
+    },
+    {
+      "id": "dependency-recorder",
+      "cwd": "/workspace",
+      "command": "node /workspace/scratch/w10-seam-source-s/browser/record-dependencies.mjs > /workspace/scratch/w10-seam-source-s/browser/dependencies.log 2>&1",
+      "exitCode": 0,
+      "shellGroup": "dependency-then-capture"
+    },
+    {
+      "id": "rendered-response-simulation",
+      "cwd": "/workspace",
+      "command": "W10_EXPECTED_SOURCE_HEAD=12565b938fff633cac2060b844487c4cf9454099 node /workspace/scratch/w10-seam-source-s/browser/capture.mjs > /workspace/scratch/w10-seam-source-s/browser/capture.log 2>&1",
+      "exitCode": 0,
+      "passedObservations": 24,
+      "shellGroup": "dependency-then-capture"
+    },
+    {
+      "id": "official-w03g-capture",
+      "cwd": "/workspace/Meridian-main",
+      "command": "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node scripts/dev/capture-web-screenshots.mjs --capture W03G --skip-server --port 4173 --output-dir /workspace/scratch/w10-seam-source-s/browser/official-w03g/screenshots --manifest /workspace/scratch/w10-seam-source-s/browser/official-w03g/manifest.json > /workspace/scratch/w10-seam-source-s/browser/official-w03g.log 2>&1",
+      "exitCode": 0,
+      "passedCaptures": 1
+    },
+    {
+      "id": "publication-snapshot-tests",
+      "cwd": "/workspace/Meridian-main/src/Meridian.Ui/dashboard",
+      "command": "node node_modules/vitest/vitest.mjs run src/screens/operations-continuity-screen.workflow-selection.test.ts --reporter=default --reporter=json --outputFile.json=/workspace/scratch/w10-seam-source-s/browser/snapshot-tests.json > /workspace/scratch/w10-seam-source-s/browser/snapshot-tests.log 2>&1",
+      "exitCode": 0,
+      "passedTests": 14
+    }
+  ],
+  "combinedShellInvocations": [
+    {
+      "id": "dependency-then-capture",
+      "cwd": "/workspace",
+      "command": "node /workspace/scratch/w10-seam-source-s/browser/record-dependencies.mjs > /workspace/scratch/w10-seam-source-s/browser/dependencies.log 2>&1 && W10_EXPECTED_SOURCE_HEAD=12565b938fff633cac2060b844487c4cf9454099 node /workspace/scratch/w10-seam-source-s/browser/capture.mjs > /workspace/scratch/w10-seam-source-s/browser/capture.log 2>&1"
+    }
+  ],
+  "notes": [
+    "Focused74 count is the sum of separate60-test and14-test runs across3 distinct files.",
+    "Both browser runs used the Vite source server on127.0.0.1:4173; no execution of the committed production bundle is asserted.",
+    "Original logs and results are unchanged. All human operator verdicts remain pending."
+  ]
+}

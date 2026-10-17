@@ -234,10 +234,9 @@ public sealed class AlpacaCredentialAndReconnectTests
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
             await client.ConnectAsync(cts.Token);
 
-            // If connect completes (e.g., WebSocket opens but auth fails later),
-            // that's still an acceptable test outcome
+            throw new Xunit.Sdk.XunitException("Fake credentials must not produce an authenticated connection.");
         }
-        catch (Exception ex) when (ex is OperationCanceledException or System.Net.WebSockets.WebSocketException or InvalidOperationException)
+        catch (Exception ex) when (ex is OperationCanceledException or System.Net.WebSockets.WebSocketException or InvalidOperationException or System.Security.Authentication.AuthenticationException)
         {
             // Expected - connection to Alpaca WebSocket will fail with fake credentials
             // or timeout, which demonstrates the client handles it gracefully

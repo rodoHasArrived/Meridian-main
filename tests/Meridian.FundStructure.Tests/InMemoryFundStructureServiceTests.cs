@@ -238,7 +238,7 @@ public sealed class InMemoryFundStructureServiceTests
     }
 
     [Fact]
-    public async Task LinkNodesAsync_WhenSiblingOwnershipPercentagesWouldExceedOneHundred_ThrowsInvalidOperation()
+    public async Task LinkNodesAsync_AllowsTwoWhollyOwnedEntitiesAndRetainsBothOwnershipRecords()
     {
         var service = CreateStructureService();
         var now = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
@@ -292,16 +292,25 @@ public sealed class InMemoryFundStructureServiceTests
             OwnershipRelationshipTypeDto.Owns,
             now,
             "test",
-            OwnershipPercent: 60m));
+            OwnershipPercent: 100m));
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => service.LinkNodesAsync(new LinkFundStructureNodesRequest(
+        await service.LinkNodesAsync(new LinkFundStructureNodesRequest(
             Guid.NewGuid(),
             fund.FundId,
             secondEntity.EntityId,
             OwnershipRelationshipTypeDto.Owns,
             now,
             "test",
-            OwnershipPercent: 50m)));
+            OwnershipPercent: 100m));
+
+        var graph = await service.GetOrganizationStructureAsync(new OrganizationStructureQuery(
+            OrganizationId: organization.OrganizationId, AsOf: now));
+        var ownedEntities = graph.OwnershipLinks.Where(link => link.ParentNodeId == fund.FundId
+            && link.RelationshipType == OwnershipRelationshipTypeDto.Owns).ToArray();
+        Assert.Equal(2, ownedEntities.Length);
+        Assert.All(ownedEntities, link => Assert.Equal(100m, link.OwnershipPercent));
+        Assert.Contains(ownedEntities, link => link.ChildNodeId == firstEntity.EntityId);
+        Assert.Contains(ownedEntities, link => link.ChildNodeId == secondEntity.EntityId);
     }
 
     [Fact]
@@ -835,8 +844,9 @@ public sealed class InMemoryFundStructureServiceTests
             "test",
             AccruedInterest: 250m,
             PendingSettlement: 1_500m));
+        var statementBatchId = Guid.NewGuid();
         await fixture.AccountService.IngestBankStatementAsync(new IngestBankStatementRequest(
-            Guid.NewGuid(),
+            statementBatchId,
             fixture.AdvisoryAccountId,
             new DateOnly(2026, 04, 07),
             "Acme Bank",
@@ -844,7 +854,7 @@ public sealed class InMemoryFundStructureServiceTests
             [
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     fixture.AdvisoryAccountId,
                     new DateOnly(2026, 04, 03),
                     new DateOnly(2026, 04, 03),
@@ -856,7 +866,7 @@ public sealed class InMemoryFundStructureServiceTests
                     110_000m),
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     fixture.AdvisoryAccountId,
                     new DateOnly(2026, 04, 05),
                     new DateOnly(2026, 04, 05),
@@ -868,7 +878,7 @@ public sealed class InMemoryFundStructureServiceTests
                     107_000m),
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     fixture.AdvisoryAccountId,
                     new DateOnly(2026, 04, 10),
                     new DateOnly(2026, 04, 10),
@@ -880,7 +890,7 @@ public sealed class InMemoryFundStructureServiceTests
                     null),
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     fixture.AdvisoryAccountId,
                     new DateOnly(2026, 04, 12),
                     new DateOnly(2026, 04, 12),
@@ -997,8 +1007,9 @@ public sealed class InMemoryFundStructureServiceTests
             "test",
             AccruedInterest: 250m,
             PendingSettlement: 1_500m));
+        var statementBatchId = Guid.NewGuid();
         await accountService.IngestBankStatementAsync(new IngestBankStatementRequest(
-            Guid.NewGuid(),
+            statementBatchId,
             account.AccountId,
             new DateOnly(2026, 04, 07),
             "Acme Bank",
@@ -1006,7 +1017,7 @@ public sealed class InMemoryFundStructureServiceTests
             [
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     account.AccountId,
                     new DateOnly(2026, 04, 03),
                     new DateOnly(2026, 04, 03),
@@ -1018,7 +1029,7 @@ public sealed class InMemoryFundStructureServiceTests
                     110_000m),
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     account.AccountId,
                     new DateOnly(2026, 04, 05),
                     new DateOnly(2026, 04, 05),
@@ -1030,7 +1041,7 @@ public sealed class InMemoryFundStructureServiceTests
                     107_000m),
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     account.AccountId,
                     new DateOnly(2026, 04, 10),
                     new DateOnly(2026, 04, 10),
@@ -1042,7 +1053,7 @@ public sealed class InMemoryFundStructureServiceTests
                     null),
                 new BankStatementLineDto(
                     Guid.NewGuid(),
-                    Guid.NewGuid(),
+                    statementBatchId,
                     account.AccountId,
                     new DateOnly(2026, 04, 12),
                     new DateOnly(2026, 04, 12),

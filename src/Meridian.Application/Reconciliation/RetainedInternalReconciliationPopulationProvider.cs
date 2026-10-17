@@ -57,7 +57,8 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
     IAccountQueryService? accounts = null,
     IPositionSnapshotStore? positionSnapshots = null,
     ILogger<RetainedInternalReconciliationPopulationProvider>? logger = null,
-    IInternalLedgerTransactionSource? ledgerTransactionSource = null)
+    IInternalLedgerTransactionSource? ledgerTransactionSource = null,
+    Func<IAccountQueryService?>? accountQueryResolver = null)
     : IInternalReconciliationPopulationProvider
 {
     public async Task<InternalReconciliationPopulations> GetPopulationsAsync(
@@ -65,14 +66,22 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(context);
-        if (accounts is null || !Guid.TryParse(context.FundAccountId, out var accountId))
+        ct.ThrowIfCancellationRequested();
+        if (!Guid.TryParse(context.FundAccountId, out var accountId))
         {
             return InternalReconciliationPopulations.Empty;
         }
 
         try
         {
-            var account = await accounts.GetAccountAsync(accountId, ct).ConfigureAwait(false);
+            // Command discovery also builds this provider for help and configuration diagnostics.
+            // Those commands must remain available when account tenancy configuration is invalid.
+            // Resolve their account authority only when reconciliation actually reads the book.
+            var accountQueries = accounts ?? accountQueryResolver?.Invoke();
+            if (accountQueries is null)
+                return InternalReconciliationPopulations.Empty;
+
+            var account = await accountQueries.GetAccountAsync(accountId, ct).ConfigureAwait(false);
             if (account is null || !account.IsActive)
             {
                 return InternalReconciliationPopulations.Empty;
@@ -99,7 +108,7 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                 ? (DateOnly?)null
                 : context.StatementPeriodEnd;
 
-            var cash = await ReadCashAsync(accounts, accountId, accountLabel, asOfCeiling, ct).ConfigureAwait(false);
+            var cash = await ReadCashAsync(accountQueries, accountId, accountLabel, asOfCeiling, ct).ConfigureAwait(false);
             var positions = await ReadPositionsAsync(positionSnapshots, account, context.FundAccountId, accountLabel, asOfCeiling, ct).ConfigureAwait(false);
             var ledgerTransactions = await ReadLedgerTransactionsAsync(ledgerTransactionSource, account, context, accountLabel, ct).ConfigureAwait(false);
 

@@ -21,7 +21,6 @@ namespace Meridian.Tests.Integration.EndpointTests;
 /// /checkpoints/{jobId}/pending, and POST /checkpoints/{jobId}/resume.
 /// </summary>
 [Trait("Category", "Integration")]
-[Collection("Endpoint")]
 public sealed class CheckpointEndpointTests : IClassFixture<EndpointTestFixture>
 {
     private readonly HttpClient _client;

@@ -5,7 +5,7 @@ using Npgsql;
 
 namespace Meridian.Tests.Storage;
 
-internal sealed class LedgerPostgresTestDatabase : IAsyncDisposable
+internal sealed partial class LedgerPostgresTestDatabase : IAsyncDisposable
 {
     private const string ConnectionStringVariable = "MERIDIAN_LEDGER_CONNECTION_STRING";
     private readonly PostgresTestServer _server;
@@ -17,7 +17,7 @@ internal sealed class LedgerPostgresTestDatabase : IAsyncDisposable
         _server = server;
         Options = options;
         StatusDerivation = new OperationsStatusDerivationService();
-        JournalStore = new PostgresLedgerJournalStore(options);
+        JournalStore = RestartJournalStore();
         AccountingConfigurationStore = new PostgresAccountingConfigurationStore(options);
         OperationsStore = new PostgresOperationsContinuityStore(
             options,
@@ -30,6 +30,8 @@ internal sealed class LedgerPostgresTestDatabase : IAsyncDisposable
     public OperationsStatusDerivationService StatusDerivation { get; }
 
     public PostgresLedgerJournalStore JournalStore { get; }
+
+    public string CreateSchemaName(string prefix) => _server.CreateSchemaName(prefix);
 
     public PostgresAccountingConfigurationStore AccountingConfigurationStore { get; }
 

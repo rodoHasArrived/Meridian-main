@@ -34,7 +34,6 @@ public sealed partial class PostgresLedgerJournalStore
         var proceeds = command.DisposalSalePrice is { } salePrice
             ? ValidateExplicitDisposalPrice(command, account, salePrice)
             : basis + recognizedResult;
-        var pooled = IsAverageCostRelief(command);
         var retained = new LedgerTaxLotDisposalHistory(
             command.MutationBatchId, command.Journal.Entry.JournalEntryId, account,
             command.Journal.Entry.Metadata.EffectiveDate!.Value,
@@ -42,7 +41,9 @@ public sealed partial class PostgresLedgerJournalStore
             mutations.Select(mutation => new LedgerTaxLotDisposalHistoryLot(
                 mutation.LotId, mutation.LotBefore!.AcquiredDate, mutation.LotBefore.AcquiredDate,
                 -mutation.QuantityDelta,
-                pooled ? mutation.CostBasis / -mutation.QuantityDelta : mutation.UnitCost, mutation.CostBasis)).ToArray(),
+                // Every relief method relieves the lot's current basis, which a governed adjustment
+                // can move away from acquisition unit cost; certify that basis exactly.
+                mutation.CostBasis / -mutation.QuantityDelta, mutation.CostBasis)).ToArray(),
             // This checks the economic allocator, not a fabricated deferral outcome. The report
             // later reconciles its actual retained deferrals to the journal's recognized result.
             proceeds - basis, [], 0m,

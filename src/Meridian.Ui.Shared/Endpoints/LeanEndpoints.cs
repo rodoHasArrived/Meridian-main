@@ -1,3 +1,6 @@
+using System.Collections.Concurrent;
+using Meridian.Application.Composition;
+using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using System.Text.Json;
 using Meridian.Backtesting.Sdk;
@@ -22,18 +25,18 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class LeanEndpoints
 {
-    private static readonly Dictionary<string, BacktestInfo> s_backtests = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly Dictionary<string, IngestedResultInfo> s_ingestedResults = new(StringComparer.OrdinalIgnoreCase);
-
     public static void MapLeanEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Lean");
+        var configuration = app.Services.GetService<CompositionConfiguration>() ?? new CompositionConfiguration();
+        var backtests = new ConcurrentDictionary<string, BacktestInfo>(StringComparer.OrdinalIgnoreCase);
+        var ingestedResults = new ConcurrentDictionary<string, IngestedResultInfo>(StringComparer.OrdinalIgnoreCase);
 
         // Lean status - actually checks LEAN_PATH environment variable
         group.MapGet(UiApiRoutes.LeanStatus, () =>
         {
-            var leanPath = Environment.GetEnvironmentVariable("LEAN_PATH");
-            var dataPath = Environment.GetEnvironmentVariable("LEAN_DATA_PATH");
+            var leanPath = configuration["LEAN_PATH"];
+            var dataPath = configuration["LEAN_DATA_PATH"];
             var installed = !string.IsNullOrEmpty(leanPath) && Directory.Exists(leanPath);
             string? version = null;
 
@@ -65,8 +68,8 @@ public static class LeanEndpoints
         // Lean config - returns actual detected configuration
         group.MapGet(UiApiRoutes.LeanConfig, () =>
         {
-            var leanPath = Environment.GetEnvironmentVariable("LEAN_PATH");
-            var dataPath = Environment.GetEnvironmentVariable("LEAN_DATA_PATH");
+            var leanPath = configuration["LEAN_PATH"];
+            var dataPath = configuration["LEAN_DATA_PATH"];
             var pythonEnabled = false;
 
             if (!string.IsNullOrEmpty(leanPath) && Directory.Exists(leanPath))
@@ -92,7 +95,7 @@ public static class LeanEndpoints
         // Verify Lean installation - performs actual filesystem checks
         group.MapPost(UiApiRoutes.LeanVerify, () =>
         {
-            var leanPath = Environment.GetEnvironmentVariable("LEAN_PATH");
+            var leanPath = configuration["LEAN_PATH"];
             var checks = new List<object>();
             var allPassed = true;
 
@@ -127,7 +130,7 @@ public static class LeanEndpoints
                 allPassed = false;
 
             // Check 4: Data directory exists
-            var dataPath = Environment.GetEnvironmentVariable("LEAN_DATA_PATH")
+            var dataPath = configuration["LEAN_DATA_PATH"]
                 ?? (dirExists ? Path.Combine(leanPath!, "Data") : null);
             var dataExists = !string.IsNullOrEmpty(dataPath) && Directory.Exists(dataPath);
             checks.Add(new { check = "data_directory_exists", passed = dataExists, detail = dataExists ? $"Data directory: {dataPath}" : "Data directory not found" });
@@ -155,7 +158,7 @@ public static class LeanEndpoints
         // List algorithms - scans for actual algorithm files
         group.MapGet(UiApiRoutes.LeanAlgorithms, () =>
         {
-            var leanPath = Environment.GetEnvironmentVariable("LEAN_PATH");
+            var leanPath = configuration["LEAN_PATH"];
             var algorithms = new List<object>();
 
             if (!string.IsNullOrEmpty(leanPath) && Directory.Exists(leanPath))
@@ -250,7 +253,7 @@ public static class LeanEndpoints
         group.MapGet(UiApiRoutes.LeanBacktestHistory, async (int? limit, [FromServices] IStrategyRepository? repository) =>
         {
             var requestedLimit = Math.Max(1, limit ?? 20);
-            var history = s_backtests.Values
+            var history = backtests.Values
                 .OrderByDescending(b => b.StartedAt)
                 .Take(requestedLimit)
                 .Select(b => new { backtestId = b.Id, algorithmName = b.AlgorithmName, status = b.Status, startedAt = b.StartedAt })
@@ -290,7 +293,7 @@ public static class LeanEndpoints
         // Delete backtest
         group.MapDelete(UiApiRoutes.LeanBacktestDelete, (string backtestId) =>
         {
-            var removed = s_backtests.Remove(backtestId);
+            var removed = backtests.TryRemove(backtestId, out _);
             return removed
                 ? Results.Json(new { deleted = true, backtestId }, jsonOptions)
                 : Results.NotFound(new { error = $"Backtest '{backtestId}' not found" });
@@ -407,7 +410,7 @@ public static class LeanEndpoints
                         : "unknown");
 
                 var info = new BacktestInfo(backtestId, algorithmName, "completed", DateTimeOffset.UtcNow);
-                s_backtests[backtestId] = info;
+                backtests[backtestId] = info;
 
                 var canonicalResult = CanonicalBacktestResultNormalizer.FromLeanResult(
                     root,
@@ -432,7 +435,7 @@ public static class LeanEndpoints
                     await repository.RecordRunAsync(runEntry).ConfigureAwait(false);
                 }
 
-                s_ingestedResults[backtestId] = new IngestedResultInfo(
+                ingestedResults[backtestId] = new IngestedResultInfo(
                     backtestId, algorithmName, req.ResultsFilePath,
                     totalReturn, sharpe, totalTrades, DateTimeOffset.UtcNow);
 

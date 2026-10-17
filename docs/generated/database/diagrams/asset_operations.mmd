@@ -77,6 +77,20 @@ erDiagram
         text checksum
         timestamp_with_time_zone applied_at
     }
+    asset_operations_asset_operations_write_events {
+        bigint global_sequence PK
+        uuid security_id
+        text approval_actor
+        text approval_reference
+        text approval_rationale
+        timestamp_with_time_zone approved_at
+        timestamp_with_time_zone recorded_at
+        text source_domain
+        jsonb summary
+    }
+    asset_operations_asset_operations_write_events_global_sequence_seq {
+        text catalogued_object
+    }
     asset_operations_asset_projected_cash_flows {
         uuid id PK
         uuid security_id
