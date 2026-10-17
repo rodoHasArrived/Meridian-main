@@ -4,6 +4,15 @@ CI quality controls and administrator rollout are maintained in
 [CI/CD ownership and rollout](../../docs/engineering/ci-cd-optimization.md). The canonical
 workflow lane runs actionlint and enforces full-SHA external action references. The manual
 `ci-concurrency-benchmark.yml` collects five comparable pairs; it never promotes concurrency.
+Its repository-wide concurrency group lets the active benchmark finish before another
+starts. GitHub retains only the latest pending dispatch, not a FIFO queue.
+
+Legacy `CI` separates PR, push, merge-group, scheduled and manual concurrency groups,
+so main pushes cannot cancel scheduled/manual coverage. `Targeted Test` and
+`Roadmap Tools (Manual)` hash the exact ref, commit and full input selection to group
+duplicate expensive jobs while keeping distinct selections independent. Running jobs
+finish; only the latest pending duplicate is retained. See
+[dispatch behavior](../../docs/engineering/ci-cd-optimization.md#dispatch-isolation-and-duplicate-work).
 
 `pipeline-benchmark.yml` runs the bounded PRD-112 pipeline stage budgets on the
 recorded Linux/.NET profile and retains commit-bound full measurements and validator
@@ -157,6 +166,10 @@ installed-startup smoke, and the existing native upgrade/rollback certification.
 [operator payload procedure](../../docs/operators/browser-workstation-installer.md#postgresql-payload-declaration).
 
 ## Local Equivalents
+
+Start with the canonical [local validation loop](../../docs/engineering/README.md#contributor-validation-path):
+check prerequisites, run focused validation, inspect the failed-step reproduction
+commands in the lane summary, then run the full local gate before publishing.
 
 When local CPU, memory, disk, package restore, or MSBuild lock contention makes testing unreliable,
 push the branch and use `Targeted Test` from the GitHub Actions tab or dispatch it with `gh`.

@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -46,6 +49,44 @@ class DesktopScreenBlueprintChecklistTests(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr + result.stdout)
         self.assertIn("Desktop screen blueprint checklist: 20 screens", result.stdout)
         self.assertIn("Workflow-covered screens:", result.stdout)
+
+    def test_empty_redirect_or_prose_only_blueprint_cannot_satisfy_screen_contract(self) -> None:
+        module = _load_module()
+        heading = "### 1. Security Master Workspace"
+        for blueprint_text in ("", "# Archived Legacy Plan\nSee the replacement plan.\n", f"See `{heading}`.\n"):
+            with self.subTest(blueprint=blueprint_text), tempfile.TemporaryDirectory() as temp_dir:
+                root = Path(temp_dir)
+                (root / "blueprint.md").write_text(blueprint_text, encoding="utf-8")
+                (root / "tests").mkdir()
+                (root / "tests/evidence.py").write_text("# Focused evidence fixture\n", encoding="utf-8")
+                checklist_path = root / "checklist.json"
+                checklist_path.write_text(json.dumps({
+                    "blueprintPath": "blueprint.md",
+                    "allowedMaturityLabels": sorted(module.VALID_MATURITY_LABELS),
+                    "screens": [{
+                        "id": "desktop-screen-security-master",
+                        "title": "Security Master Workspace",
+                        "status": "partial",
+                        "maturity": "Needs verification",
+                        "rootWorkspace": "Data",
+                        "blueprintHeading": heading,
+                        "validationCommands": ["python tests/evidence.py"],
+                        "maturityEvidence": [{
+                            "path": "tests/evidence.py",
+                            "kind": "focused-test",
+                            "summary": "Fixture evidence",
+                        }],
+                    }],
+                }), encoding="utf-8")
+                workflows_path = root / "workflows.json"
+                workflows_path.write_text('{"workflows": []}\n', encoding="utf-8")
+
+                with patch.object(module, "REPO_ROOT", root):
+                    errors, _ = module.validate_checklist(checklist_path, workflows_path)
+
+                self.assertEqual([
+                    f"desktop-screen-security-master blueprintHeading was not found in the blueprint: {heading}"
+                ], errors)
 
 
 if __name__ == "__main__":

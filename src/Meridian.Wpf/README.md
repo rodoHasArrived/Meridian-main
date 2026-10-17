@@ -371,6 +371,9 @@ type, and close/report impact labels instead of deriving those operator fields l
 Private-capital presets attach the shared
 treasury ledger context expected by the approval service, including effective date, idempotency,
 fund-event, capital-account, investor, payment, and settlement references.
+Accounting composition supplies the complete Security Master store to the shared event spine
+for reviewed successor hash validation. Economic-date and retained-lot-label checks remain
+shared service rules, including when desktop composition runs independently.
 Registration stays feature-owned in `Features/Accounting/AccountingFeatureModule.cs`; the
 desktop fallback stores configuration/audit state in `workstation/accounting/accounting-configuration.json`
 manual journal drafts in `workstation/accounting/manual-journal-drafts.json`, and retained migration

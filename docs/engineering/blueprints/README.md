@@ -59,6 +59,7 @@ remains in the [roadmap registry](../../roadmap/README.md) and
 | [Adversarial Review 2026-08 Remediation Plan](../../product/plans/adversarial-review-2026-08-remediation-plan.md) | `docs/product/plans/` | Program | Active working plan |
 | [Production-Readiness Backlog (2026-08)](../../product/plans/production-readiness-backlog-2026-08.md) | `docs/product/plans/` | Release readiness | Active working plan; the [Implementation and Readiness Tracker](../../product/implementation-todo-list.md) remains the P0 release gate |
 | [WPF / Web-UI Alignment Plan](../plans/wpf-web-ui-alignment-plan.md) | `docs/engineering/plans/` | Desktop workstation | Active; drives `W8-WPF-PARITY-001` |
+| [Desktop Workstation Screen Checklist Reference](../plans/desktop-workstation-screen-blueprint.md) | `docs/engineering/plans/` | Desktop validation | Active compatibility reference; preserves twenty tracked screen scopes without re-certifying readiness |
 | [God-File Burn-Down Plan](../plans/god-file-burn-down-plan.md) | `docs/engineering/plans/` | Engineering hygiene | Active; the size ceilings it burns down are checked by `build/scripts/ci/check-file-size.py` |
 | [Web-UI Improvements Implementation Plan (2026-07)](../plans/web-ui-improvements-implementation-plan-2026-07.md) | `docs/engineering/plans/` | Browser workstation | Proposed |
 | [Security Remediation Backlog](../../security/security-remediation-backlog.md) | `docs/security/` | Security | Domain-owned backlog; cited from source |

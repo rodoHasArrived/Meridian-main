@@ -1,3 +1,4 @@
+using System.Runtime.ExceptionServices;
 using Meridian.Core.Logging;
 using Meridian.Core.Resilience;
 using Serilog;
@@ -37,6 +38,9 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
     private string? _lastError;
     private ProviderFailureKind? _lastFailureKind;
     private Task? _disposeTask;
+    private long _connectionAttemptId;
+    private bool _initializationActive;
+    private Exception? _initializationFailure;
 
     /// <summary>
     /// Raised whenever lifecycle or failure diagnostics change.
@@ -136,9 +140,15 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
     /// Runs the complete initial connection transaction. Connected is published only
     /// after the transaction returns successfully.
     /// </summary>
-    public async Task ConnectAsync(
+    public Task ConnectAsync(
         Func<CancellationToken, Task> connectTransaction,
         CancellationToken ct = default)
+        => ConnectAsync(connectTransaction, cleanupRejectedInitialization: null, ct);
+
+    internal async Task ConnectAsync(
+        Func<CancellationToken, Task> connectTransaction,
+        Func<Task>? cleanupRejectedInitialization,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(connectTransaction);
 
@@ -163,21 +173,27 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
                 _lastError = null;
                 _lastFailureKind = null;
                 _lifecycleState = ProviderConnectionLifecycleState.Connecting;
+                BeginInitializationLocked();
                 snapshot = CreateSnapshotLocked(DateTimeOffset.UtcNow);
             }
 
             Publish(snapshot);
 
             using var operationCts = CancellationTokenSource.CreateLinkedTokenSource(lifetimeToken, ct);
+            var transactionCompleted = false;
             try
             {
                 await connectTransaction(operationCts.Token).ConfigureAwait(false);
+                transactionCompleted = true;
                 operationCts.Token.ThrowIfCancellationRequested();
 
                 lock (_sync)
                 {
                     if (_stopping)
                         throw new OperationCanceledException(lifetimeToken);
+
+                    ThrowIfInitializationFailedLocked();
+                    _initializationActive = false;
 
                     _lastConnectedAt = DateTimeOffset.UtcNow;
                     _lastError = null;
@@ -189,14 +205,27 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
 
                 Publish(snapshot);
             }
-            catch (OperationCanceledException ex)
-            {
-                RecordConnectCancellation(ex);
-                throw;
-            }
             catch (Exception ex)
             {
-                RecordTerminalFailure(ex);
+                var initializationFailure = EndInitialization();
+                if (initializationFailure != null && transactionCompleted)
+                    await CleanupRejectedInitializationAsync(cleanupRejectedInitialization).ConfigureAwait(false);
+
+                if (operationCts.IsCancellationRequested)
+                {
+                    var cancellation = ex as OperationCanceledException ?? new OperationCanceledException(operationCts.Token);
+                    RecordConnectCancellation(cancellation);
+                    ExceptionDispatchInfo.Capture(cancellation).Throw();
+                }
+                if (initializationFailure != null)
+                {
+                    RecordTerminalFailure(initializationFailure);
+                    ExceptionDispatchInfo.Capture(initializationFailure).Throw();
+                }
+                if (ex is OperationCanceledException cancelled)
+                    RecordConnectCancellation(cancelled);
+                else
+                    RecordTerminalFailure(ex);
                 throw;
             }
         }
@@ -214,6 +243,12 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
     public Task<bool> ReconnectAsync(
         Func<CancellationToken, Task> reconnectTransaction,
         CancellationToken ct = default)
+        => ReconnectAsync(reconnectTransaction, cleanupRejectedInitialization: null, ct);
+
+    internal Task<bool> ReconnectAsync(
+        Func<CancellationToken, Task> reconnectTransaction,
+        Func<Task>? cleanupRejectedInitialization,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(reconnectTransaction);
 
@@ -240,7 +275,7 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
             _lifecycleState = ProviderConnectionLifecycleState.Reconnecting;
             snapshot = CreateSnapshotLocked(DateTimeOffset.UtcNow);
 
-            reconnectTask = RunReconnectAsync(reconnectTransaction, reconnectCts, ct);
+            reconnectTask = RunReconnectAsync(reconnectTransaction, reconnectCts, ct, cleanupRejectedInitialization);
             _reconnectTask = reconnectTask;
         }
 
@@ -351,12 +386,16 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
     /// first active loss notification, allowing callers to suppress duplicate reconnects.
     /// </summary>
     public bool MarkConnectionLost(Exception? error = null)
+        => MarkConnectionLost(error, expectedAttemptId: null);
+
+    internal bool MarkConnectionLost(Exception? error, long? expectedAttemptId)
     {
         ProviderConnectionSupervisorSnapshot snapshot;
 
         lock (_sync)
         {
             if (_disposed || _stopping || !_reconnectEnabled ||
+                (expectedAttemptId.HasValue && expectedAttemptId.Value != _connectionAttemptId) ||
                 _lifecycleState != ProviderConnectionLifecycleState.Connected)
             {
                 return false;
@@ -375,6 +414,30 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
 
         Publish(snapshot);
         return true;
+    }
+
+    internal long ConnectionAttemptId
+    {
+        get
+        {
+            lock (_sync)
+                return _connectionAttemptId;
+        }
+    }
+
+    internal bool TryRecordInitializationFailure(Exception error, long expectedAttemptId)
+    {
+        ArgumentNullException.ThrowIfNull(error);
+        lock (_sync)
+        {
+            if (_disposed || _stopping || !_initializationActive ||
+                expectedAttemptId != _connectionAttemptId ||
+                _lifecycleState is not (ProviderConnectionLifecycleState.Connecting or ProviderConnectionLifecycleState.Reconnecting))
+                return false;
+
+            _initializationFailure ??= error;
+            return true;
+        }
     }
 
     /// <summary>
@@ -481,7 +544,8 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
     private async Task<bool> RunReconnectAsync(
         Func<CancellationToken, Task> reconnectTransaction,
         CancellationTokenSource reconnectCts,
-        CancellationToken callerToken)
+        CancellationToken callerToken,
+        Func<Task>? cleanupRejectedInitialization)
     {
         // Ensure the task is assigned under the supervisor lock before work can complete.
         await Task.Yield();
@@ -516,15 +580,22 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
 
                 await _delayAsync(delay, reconnectCts.Token).ConfigureAwait(false);
 
+                lock (_sync)
+                    BeginInitializationLocked();
+                var transactionCompleted = false;
                 try
                 {
                     await reconnectTransaction(reconnectCts.Token).ConfigureAwait(false);
+                    transactionCompleted = true;
                     reconnectCts.Token.ThrowIfCancellationRequested();
 
                     lock (_sync)
                     {
                         if (_stopping)
                             return false;
+
+                        ThrowIfInitializationFailedLocked();
+                        _initializationActive = false;
 
                         _lastConnectedAt = DateTimeOffset.UtcNow;
                         _lastError = null;
@@ -543,16 +614,24 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
                 }
                 catch (OperationCanceledException) when (reconnectCts.IsCancellationRequested)
                 {
+                    var initializationFailure = EndInitialization();
+                    if (initializationFailure != null && transactionCompleted)
+                        await CleanupRejectedInitializationAsync(cleanupRejectedInitialization).ConfigureAwait(false);
                     throw;
                 }
                 catch (Exception ex)
                 {
-                    var failureKind = ProviderFailureClassifier.Classify(ex);
+                    var initializationFailure = EndInitialization();
+                    if (initializationFailure != null && transactionCompleted)
+                        await CleanupRejectedInitializationAsync(cleanupRejectedInitialization).ConfigureAwait(false);
+                    reconnectCts.Token.ThrowIfCancellationRequested();
+                    var failure = initializationFailure ?? ex;
+                    var failureKind = ProviderFailureClassifier.Classify(failure);
                     var retryable = ProviderFailureClassifier.IsRetryable(failureKind);
 
                     lock (_sync)
                     {
-                        _lastError = ex.Message;
+                        _lastError = failure.Message;
                         _lastFailureKind = failureKind;
                         snapshot = CreateSnapshotLocked(DateTimeOffset.UtcNow);
                     }
@@ -562,7 +641,7 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
                     if (!retryable)
                     {
                         _log.Error(
-                            ex,
+                            failure,
                             "{Provider} reconnection stopped after non-retryable {FailureKind} failure on attempt {Attempt}",
                             _providerName,
                             failureKind,
@@ -572,7 +651,7 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
                     }
 
                     _log.Warning(
-                        ex,
+                        failure,
                         "{Provider} complete reconnection transaction {Attempt}/{Max} failed with {FailureKind}",
                         _providerName,
                         attempt,
@@ -719,6 +798,42 @@ public sealed class ProviderConnectionSupervisor : IAsyncDisposable
         _lifetimeCts?.Dispose();
         _lifetimeCts = new CancellationTokenSource();
         return _lifetimeCts.Token;
+    }
+
+    private void BeginInitializationLocked()
+    {
+        _connectionAttemptId++;
+        _initializationFailure = null;
+        _initializationActive = true;
+    }
+
+    private void ThrowIfInitializationFailedLocked()
+    {
+        if (_initializationFailure != null)
+            ExceptionDispatchInfo.Capture(_initializationFailure).Throw();
+    }
+
+    private Exception? EndInitialization()
+    {
+        lock (_sync)
+        {
+            _initializationActive = false;
+            return _initializationFailure;
+        }
+    }
+
+    private async Task CleanupRejectedInitializationAsync(Func<Task>? cleanup)
+    {
+        if (cleanup == null)
+            return;
+        try
+        {
+            await cleanup().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _log.Warning(ex, "Cleanup after rejected {Provider} initialization failed", _providerName);
+        }
     }
 
     private TimeSpan CalculateReconnectDelay(int attempt)
