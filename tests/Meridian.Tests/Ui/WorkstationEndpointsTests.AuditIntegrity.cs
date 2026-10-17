@@ -40,7 +40,14 @@ public sealed partial class WorkstationEndpointsTests
         }
         finally
         {
-            try { Directory.Delete(root, recursive: true); } catch (IOException) { }
+            try
+            {
+                Directory.Delete(root, recursive: true);
+            }
+            catch (IOException)
+            {
+                // A leaked temp directory must never fail a test run.
+            }
         }
     }
 
