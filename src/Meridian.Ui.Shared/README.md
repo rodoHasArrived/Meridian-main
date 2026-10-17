@@ -783,6 +783,9 @@ The canonical Asset Accounting candidate endpoint is also separate from the gene
 It stamps trusted scope, invokes `IAssetAccountingEventSpineService`, and requires the server to
 re-read the retained projected spine, authoritative position/book/period/policy/rule pack, and typed
 evidence before Drafted state can be appended.
+Shared composition supplies the complete Security Master store for successor hash checks.
+Successor candidates validate economic-date authority and retained account-scoped lot labels
+through the same service used by the other hosts, before retaining a draft.
 Trading operator readiness treats retained Live promotion evidence as a fail-closed shared control:
 the promotion gate requires the full live approval checklist plus evidence-reference keys for each
 W7 live-readiness item, including broker execution reconciliation, before a live promotion trace can

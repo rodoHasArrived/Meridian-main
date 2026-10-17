@@ -8,6 +8,7 @@ This plan has been migrated to [desktop-workstation-screen-blueprint.md](https:/
 **Reviewed:** 2026-05-31
 
 Active planning posture now lives in:
+- [Desktop Workstation Screen Checklist Reference](../engineering/plans/desktop-workstation-screen-blueprint.md) for the active checklist's screen-heading contract
 - [`docs/product/README.md`](../product/README.md)
 - [`docs/engineering/README.md`](../engineering/README.md)
 - [`docs/roadmap/README.md`](../roadmap/README.md)

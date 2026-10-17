@@ -71,14 +71,34 @@ class EvidenceControlsTests(unittest.TestCase):
 
     def test_untracked_or_expired_quarantine_is_rejected(self):
         runner = load('run-script-tests')
-        valid = json.loads(runner.DEFAULT_QUARANTINE.read_text(encoding='utf-8'))
-        name = next(iter(valid['quarantined_modules']))
-        for bad in ('reason only', {'reason': 'no owner'}, dict(valid['quarantined_modules'][name], reviewBy='2000-01-01')):
+        name = 'test_ci_evidence_controls'
+        valid = {
+            'reason': 'Fixture for quarantine policy validation',
+            'owner': '@fixture-owner',
+            'reviewBy': '2999-01-01',
+            'tracking': 'docs/engineering/ci-cd-optimization.md#script-test-quarantine',
+        }
+        for bad in ('reason only', {'reason': 'no owner'}, dict(valid, reviewBy='2000-01-01')):
             with tempfile.TemporaryDirectory() as tmp:
                 file = Path(tmp) / 'quarantine.json'
                 file.write_text(json.dumps({'quarantined_modules': {name: bad}}))
                 with self.assertRaises(ValueError):
                     runner.load_quarantine(file)
+
+    def test_empty_quarantine_keeps_every_discovered_test(self):
+        runner = load('run-script-tests')
+        with tempfile.TemporaryDirectory() as tmp:
+            file = Path(tmp) / 'quarantine.json'
+            file.write_text(json.dumps({'quarantined_modules': {}}))
+            quarantined = runner.load_quarantine(file)
+        discovered = unittest.TestSuite([
+            self.__class__('test_untracked_or_expired_quarantine_is_rejected'),
+            self.__class__('test_empty_quarantine_keeps_every_discovered_test'),
+        ])
+        expected = [test.id() for test in runner.iter_tests(discovered)]
+        selected, excluded = runner.partition_suite(discovered, quarantined)
+        self.assertEqual([test.id() for test in runner.iter_tests(selected)], expected)
+        self.assertEqual(excluded, set())
 
 
 @dataclass(frozen=True)

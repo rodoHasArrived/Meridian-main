@@ -71,6 +71,28 @@ Use the matrix as capability evidence, not as a blanket production-readiness lab
 | `TwelveData` | template-only | complete | partial | template-only | partial | template-only | partial | Data Integrations | Tiered interval history access, quota constraints, symbol coverage and interval normalization risk; symbol-search support is credential-gated and client-filtered over `/symbol_search`, and corporate-action coverage is paid-plan/credential-gated over `/dividends` and `/splits`. |
 | `YahooFinance` | template-only | complete | template-only | template-only | template-only | template-only | partial | Data Integrations | Unofficial endpoint contract risk, anti-bot throttling/format drift, network and parsing nondeterminism; runtime descriptor coverage pins Yahoo to historical/fallback only and fails closed for streaming/search/corporate-action/brokerage claims. |
 
+## Live execution manual override routes
+
+This is the canonical route reference for the retired
+[`docs/operations/live-execution-controls.md`](../operations/live-execution-controls.md) path.
+The routes below are defined by
+[`UiApiRoutes`](../../src/Meridian.Contracts/Api/UiApiRoutes.cs) and implemented by
+[`ExecutionEndpoints`](../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs).
+
+| Method | Route | Result |
+| --- | --- | --- |
+| `POST` | `/api/execution/controls/manual-overrides` | Creates an `ExecutionManualOverride`; returns `201` on success. |
+| `POST` | `/api/execution/controls/manual-overrides/{overrideId}/clear` | Clears the identified override; returns `200` on success or `404` when it cannot be found. |
+
+Creation requires `kind` and `reason`; optional scope fields are `symbol`, `strategyId`, `runId`,
+`expiresAt`, and `correlationId`. Clearing accepts optional `reason` and `correlationId`.
+Both operations require `ManageOrders` permission and a resolved authenticated actor, apply the
+mutation rate limit, and return `503` when operator controls are unavailable. Audit records retain
+the actor and correlation metadata. These routes describe control operations; they do not confer
+provider certification or establish live-trading readiness. Endpoint behavior and audit retention
+are covered by
+[`ExecutionGovernanceEndpointsTests`](../../tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs).
+
 ## Notes
 
 - The matrix is folder-based: capability states are assigned from concrete adapter artifacts present in each subfolder (for example `*MarketDataClient`, `*HistoricalDataProvider`, `*SymbolSearchProvider`, `*OptionsChainProvider`, `*CorporateAction*`, `*BrokerageGateway`/`*BrokerageSync*`).
