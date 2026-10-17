@@ -12,6 +12,12 @@ on:
 permissions:
   contents: read
 
+# Keep the active measurement and evaluation intact across all refs and subjects.
+# Only the latest pending dispatch is retained; GitHub concurrency is not FIFO.
+concurrency:
+  group: ci-concurrency-benchmark
+  cancel-in-progress: false
+
 jobs:
   pairs:
     runs-on: ubuntu-latest

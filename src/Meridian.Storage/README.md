@@ -164,6 +164,12 @@ acquisition without those facts still replays after restart or a later period-ve
 Changed fingerprints remain collisions. Legacy enrichment uses reviewed backfill, never replay;
 this admission change introduces no schema migration or synthetic acquisition defaults.
 
+Production stores also reject standalone `SaveTaxLotAsync` inserts and updates before opening a
+connection, whether the supplied lot has legacy or complete canonical acquisition facts. The
+existing `RequireGovernedPostingCommand` production setting requires journal-backed lot mutations
+through `IAtomicTaxLotJournalStore`. Explicit compatibility stores retain the historical save
+behavior; reviewed legacy backfill and immutable atomic receipt replay use their existing paths.
+
 Partial W10-LOT-002 amortization uses migration `V_ledger_040` and the existing atomic posting transaction. Period, Security Master, book-position and lot locks bind the reviewed state through commit. A CAS open-basis adjustment and zero-quantity append-only mutation preserve acquisition facts, tie exactly to the journal carrying movement, and replay without another journal or mutation. PostgreSQL reference stores must share the ledger database.
 Amortization requires the canonical depreciation/amortization source type, the exact reviewed
 instruction, and matching acquisition/reference evidence in both the atomic request and governed
@@ -197,6 +203,10 @@ book-position authority, checks the predecessor snapshot/version and empty targe
 locks any retained target labels under the full book/account-name/type/symbol/financial-account key.
 Closed lots still reserve their labels, and the check uses the same trimmed labels as acquisition
 persistence. A collision fails through governed validation before any journal write. The transaction
+is preceded by an all-status candidate lookup through `GetTaxLotsByLotIdsAsync`, matching the
+complete account/book key including null/empty symbol and financial-account equivalence.
+Unsupported journal stores reject that lookup rather than certifying labels as available. The
+preview does not reserve labels or replace the locked atomic check. The transaction
 commits the reclassification journal, predecessor CAS, every successor and immutable mutation
 snapshot together. Both currency bases reconcile to the retained allocation while acquisition FX,
 holding dates and original acquisition evidence remain intact. Exact retries return the retained
@@ -569,6 +579,11 @@ lookup paths, and evidence trails those layers rely on.
   validated Failed/Blocked receipt and retain the fallback receipt under `quality/outcomes/`.
 
 ## Important workflows
+
+Security Master PostgreSQL searches break equal display names and full-text ranks with the unique
+security ID, so offset scans such as corporate-action backfills visit every unchanged matching
+projection exactly once. Search closes its ID reader before hydrating those projections on the
+same connection. Separate page requests do not share a database snapshot when projections change.
 
 Portfolio Records creates accounts with `IFundAccountStore.TryCreateAccountAsync`, an atomic
 insert-only operation. A duplicate account ID returns false and retains the existing record;

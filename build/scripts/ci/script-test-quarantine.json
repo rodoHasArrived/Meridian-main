@@ -1,23 +1,4 @@
 {
   "description": "Repo-script test modules excluded from the tests/scripts CI lane. Every entry is a tracked defect or environment gap discovered when the lane was first wired (audit finding P9); fix the underlying drift and remove the entry. run-script-tests.py prints each exclusion on every run so this list cannot rot silently.",
-  "quarantined_modules": {
-    "test_desktop_screen_blueprint_checklist": {
-      "reason": "2 failures: the active checklist still references docs/plans/desktop-workstation-screen-blueprint.md, now an archive stub without its 20 screen headings. Migrate the maintained blueprint/checklist reference together; do not bypass heading validation.",
-      "owner": "@rodoHasArrived",
-      "reviewBy": "2026-10-28",
-      "tracking": "docs/engineering/ci-cd-optimization.md#script-test-quarantine"
-    },
-    "test_live_execution_controls_route_consistency": {
-      "reason": "1 failure: the route-consistency test reads docs/operations/live-execution-controls.md, now an archive stub. Establish the current operator guidance for manual override create/clear routes and migrate the test to that maintained owner.",
-      "owner": "@rodoHasArrived",
-      "reviewBy": "2026-10-28",
-      "tracking": "docs/engineering/ci-cd-optimization.md#script-test-quarantine"
-    },
-    "test_export_project_artifact_workflow": {
-      "reason": "setUpClass error: export-project-artifact.yml was retired and no maintained source-archive exporter replaces its git-object/archive-upload contract. Resolve the feature ownership before migrating this test; do not recreate a retired workflow solely to satisfy it.",
-      "owner": "@rodoHasArrived",
-      "reviewBy": "2026-10-28",
-      "tracking": "docs/engineering/ci-cd-optimization.md#script-test-quarantine"
-    }
-  }
+  "quarantined_modules": {}
 }
