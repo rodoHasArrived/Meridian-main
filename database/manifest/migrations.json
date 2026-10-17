@@ -937,6 +937,15 @@
       "sha256": "3272428a8a2b030ec3a72fd8bffdfe720f26f61d431a4edcbd9d62601503edb6"
     },
     {
+      "filename": "V_ledger_051__tax_lot_account_case_insensitive_keys.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_051__tax_lot_account_case_insensitive_keys.sql",
+      "schema": "ledger",
+      "sha256": "1b14d6af17e68f8fcde80cfdacbf1323e1a60ccc210354811054c22a0a8dc8c9"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1181,7 +1190,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "e44a86f6e962b24cda76d6ed32862069ad3c92301e0fe27360e3e2cf42d89291",
+  "fingerprint": "89e4e9bbc30d56198605cf810ef04941b8861c5f0d268eaa684df4f18d1e8550",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1419,9 +1428,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 131,
+    "files": 132,
     "migration_sets": 10,
-    "waivers": 19,
+    "waivers": 20,
     "warnings": 0
   },
   "waivers": [
@@ -1508,6 +1517,13 @@
       "reason": "Requires independent human schema/storage review. Transactionally replaces four existing named CHECK constraints with supersets admitting a basis-only CapitalReturn and replaces the new instruction constraint on explicit reapply. No table, column, row, acquisition fact or historical instruction is removed. The nullable capital_return_instruction is required only for new CapitalReturn batches. Populated through-043 upgrade, retained history, explicit reapply/restart and injected post-drop DDL failure tests are included; hosted PostgreSQL execution is required before release. This permits failed-upgrade rollback, not a downgrade that discards retained capital-return instructions.",
       "review_after": "2027-04-13",
       "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_051__tax_lot_account_case_insensitive_keys.sql",
+      "reason": "Requires independent human schema/storage review. DROP INDEX IF EXISTS immediately precedes CREATE INDEX for the same three tax_lots/tax_lot_policies index names in one transaction, replacing coalesce(financial_account_id, '') with lower(coalesce(financial_account_id, '')) so storage uniqueness and lookups agree with LedgerAccount's case-insensitive FinancialAccountId equality. No table, column, row or value is removed or rewritten; a leading DO block raises before any DDL when retained rows already collide under the case-insensitive key, naming the conflicting group and row counts for operator resolution. Follows the ledger set's drop/recreate reapply idiom (drift policy: reapply). Hosted PostgreSQL execution of the duplicate-label, cross-case lookup and populated pre-check tests is required before release.",
+      "review_after": "2027-04-17",
+      "rule_id": "migration-drop-object"
     },
     {
       "category": "destructive_changes",
