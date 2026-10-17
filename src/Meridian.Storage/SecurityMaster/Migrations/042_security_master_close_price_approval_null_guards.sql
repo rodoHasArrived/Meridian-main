@@ -6,7 +6,8 @@
 -- did not reject:
 --   * jsonb_array_length(snapshot_json->'Blockers') <> 0 is NULL when the payload has no
 --     "Blockers" key, so a snapshot without blocker evidence was approvable.
---     coalesce(..., -1) treats a missing key as a rejection; a non-array value still raises.
+--     A missing key, a JSON null or any non-array value is now a rejection with the same 23514
+--     error, instead of passing (missing key) or raising 22023 (null or non-array).
 --   * lower(btrim(Reviewer)) = lower(btrim(CreatedBy)) is NULL when the payload has no
 --     "CreatedBy" value, so maker/checker independence was not enforced. A blank or missing
 --     creator is now rejected and the comparison uses IS NOT DISTINCT FROM so NULL never passes.
@@ -24,7 +25,9 @@ begin
     perform pg_advisory_xact_lock(hashtextextended(json_build_array(snapshot.account_id, snapshot.book_id, snapshot.valuation_date)::text, 0));
     snapshot_json := snapshot.payload::jsonb;
     if exists (select 1 from __SCHEMA__.security_close_price_snapshots where corrects_snapshot_id = new.snapshot_id)
-        or coalesce(jsonb_array_length(snapshot_json->'Blockers'), -1) <> 0
+        or case when jsonb_typeof(snapshot_json->'Blockers') = 'array'
+                then jsonb_array_length(snapshot_json->'Blockers')
+                else -1 end <> 0
         or coalesce(btrim(snapshot_json->>'CreatedBy'), '') = ''
         or lower(btrim(approval_json->>'Reviewer')) is not distinct from lower(btrim(snapshot_json->>'CreatedBy'))
         or coalesce(btrim(approval_json->>'Reviewer'), '') = ''
