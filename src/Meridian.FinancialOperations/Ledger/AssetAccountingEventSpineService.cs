@@ -7,6 +7,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
+using Meridian.Storage.SecurityMaster;
 using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.Ledger;
@@ -48,6 +49,7 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
     private readonly IAccountingConfigurationService _configurationService;
     private readonly IAccountingPostingCandidateAuthorityBuilder _authorityBuilder;
     private readonly ILedgerJournalStore _journalStore;
+    private readonly ISecurityMasterStore? _securityMasterStore;
 
     /// <summary>
     /// Creates the governed spine only when every authority and durable-ledger dependency exists.
@@ -62,7 +64,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         IAccountingPolicyService? accountingPolicyService,
         IAccountingConfigurationService? configurationService,
         IAccountingPostingCandidateAuthorityBuilder? authorityBuilder,
-        ILedgerJournalStore? journalStore)
+        ILedgerJournalStore? journalStore,
+        ISecurityMasterStore? securityMasterStore = null)
     {
         if (eventStore is null ||
             positionStore is null ||
@@ -84,7 +87,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             accountingPolicyService,
             configurationService,
             authorityBuilder,
-            journalStore);
+            journalStore,
+            securityMasterStore);
     }
 
     public AssetAccountingEventSpineService(
@@ -95,7 +99,8 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         IAccountingPolicyService accountingPolicyService,
         IAccountingConfigurationService configurationService,
         IAccountingPostingCandidateAuthorityBuilder authorityBuilder,
-        ILedgerJournalStore journalStore)
+        ILedgerJournalStore journalStore,
+        ISecurityMasterStore? securityMasterStore = null)
     {
         _eventStore = eventStore ?? throw new ArgumentNullException(nameof(eventStore));
         _positionStore = positionStore ?? throw new ArgumentNullException(nameof(positionStore));
@@ -105,6 +110,7 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _authorityBuilder = authorityBuilder ?? throw new ArgumentNullException(nameof(authorityBuilder));
         _journalStore = journalStore ?? throw new ArgumentNullException(nameof(journalStore));
+        _securityMasterStore = securityMasterStore;
     }
 
     public async Task<AssetAccountingEventSpineDto?> GetLatestAsync(
@@ -881,14 +887,38 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
                 && (security.EffectiveTo is null
                     || source.EconomicEvent.EffectiveDate <= DateOnly.FromDateTime(security.EffectiveTo.Value.UtcDateTime)),
                 "Source Security Master record is not effective on the corporate-action date.");
+            await ValidateSuccessorSecurityHashesAsync(corporateAction, ct).ConfigureAwait(false);
         }
         RequireAssertion(string.Equals(security.Currency,
                 corporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency
                     ?? source.CapitalReturn?.ExpectedLot.Acquisition.AcquisitionCurrency ?? source.Currency, StringComparison.OrdinalIgnoreCase),
             "Foreign-currency asset accounting is not supported by this bounded spine unless Security Master, event, and ledger functional currency are identical; explicit FX rate/evidence is required before posting.");
-        RequireAssertion(allowRetainedAmortizationCorrection || (security.EffectiveFrom <= accountingAsOfUtc &&
+        RequireAssertion(corporateAction is not null || allowRetainedAmortizationCorrection || (security.EffectiveFrom <= accountingAsOfUtc &&
                          (security.EffectiveTo is null || accountingAsOfUtc <= security.EffectiveTo.Value)),
             "Resolved Security Master record is not effective at the accounting timestamp.");
+    }
+
+    private async Task ValidateSuccessorSecurityHashesAsync(
+        OpenLotSuccessorInstructionDto instruction,
+        CancellationToken ct)
+    {
+        if (_securityMasterStore is null)
+            throw new InvalidOperationException("Successor candidates require the authoritative Security Master projection store.");
+
+        await ValidateAsync(instruction.ExpectedLot.SecurityId, instruction.ExpectedSecurityVersion,
+            instruction.ExpectedSecurityHash).ConfigureAwait(false);
+        foreach (var target in instruction.Successors)
+            await ValidateAsync(target.Lot.SecurityId, target.ExpectedSecurityVersion,
+                target.ExpectedSecurityHash).ConfigureAwait(false);
+
+        async Task ValidateAsync(Guid securityId, long expectedVersion, string expectedHash)
+        {
+            var security = await _securityMasterStore.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("The reviewed successor Security Master projection is missing.");
+            RequireAssertion(security.SecurityId == securityId && security.Version == expectedVersion
+                && string.Equals(OpenLotAmortization.SecurityHash(security), expectedHash, StringComparison.Ordinal),
+                "The reviewed successor Security Master projection or hash is stale; rebuild the projection.");
+        }
     }
 
     private async Task ResolveCorrectionAuthorityAsync(
@@ -1057,6 +1087,10 @@ public sealed class AssetAccountingEventSpineService : IAssetAccountingEventSpin
             RequireAssertion(retained.Account.AccountType == LedgerAccountType.Asset
                 && PayloadEquals(retained.ToOpenLot(), successor.ExpectedLot),
                 "The reviewed predecessor version, quantity or basis changed; rebuild the successor projection.");
+            var retainedLabels = await _journalStore.GetTaxLotsByLotIdsAsync(book.LedgerBookId,
+                retained.Account, successor.Successors.Select(target => target.Lot.LotId).ToArray(), ct).ConfigureAwait(false);
+            RequireAssertion(retainedLabels.Count == 0,
+                "Successor lot label is already retained in the ledger account; rebuild the successor projection.");
             await ValidateSuccessorHoldingPeriodCarryAsync(retained, successor.ExpectedLot, ct).ConfigureAwait(false);
             foreach (var target in successor.Successors)
             {
