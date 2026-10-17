@@ -28,6 +28,42 @@ row ages from it; ran `repair-links.py --summary` and read both reported targets
 > remains authoritative for the P0 release gate. Recheck conflict counts and CI results against the
 > live head before acting.
 
+## Addendum — 2026-10-17: what this document got to, and what went stale
+
+This determination sat unmerged for two days while `main` moved heavily. Re-verified against branch
+head `94e843cb` and `main` `34a02682`, **the P0 ranking below is unchanged** and three of its
+recommendations have been executed. The ranking was not re-done; only the facts behind it were
+re-read.
+
+**Executed.** The P1 "land #3162 then #3164" is **done** — both merged through
+[#3186](https://github.com/rodoHasArrived/Meridian-main/pull/3186) (`integrate-ready-prs-20261016`),
+along with #3131, which this document listed as having lost its clean state.
+
+**Still open and still the recommendation.** **#3168 and #3169 are both unmerged**, so the
+"triage before merging either" ask holds — and matters more now, because `main` has absorbed two
+days of reconciliation, provider and Security Master work underneath both of them. **Re-measure
+both before choosing; the 47-differing-file count below is a 10-15 figure.**
+
+**Re-verified true, two days on.** Every P0 item in the summary still reads exactly as recorded:
+`ADR-019` and `ADR-020` are still `Proposed`, the repository still has exactly one tag
+(`eval-v0.1.0-eval.1`) and no `v*`, and `FileProviderCredentialStore` still writes the non-Windows
+AES-GCM key beside the ciphertext it opens, with its own comment still saying so. **Nothing on the
+release-freeze path moved in two days**, which is itself the finding: the blockers are signatures,
+a secret and a product decision, and elapsed time does not clear any of them.
+
+**Stale, and to be re-read rather than trusted:**
+
+- **The registry is now 48 rows, not 42.** Six `planned` `W11-*` rows (`PASSPORT`, `COVER`, `STAKE`,
+  `SHADOW`, `PACK`, `EXEC`) arrived with the design-charter v1.3 work
+  ([#3185](https://github.com/rodoHasArrived/Meridian-main/pull/3185)). Current split: 17 `done`,
+  **15 `planned`**, 9 `in_progress`, 6 `accepted`, 1 `ready_for_acceptance`. The row-hygiene table
+  below predates them, and a new `W11` direction slate is a scope question this document did not
+  rank.
+- **Every row age below is two days short**, and `W9-CORPACT-011` has now been one signature away
+  for **25 days**.
+- **Every queue and conflict count below is a 10-15 measurement.** #3162, #3164 and #3131 have since
+  landed, so the "24 open PRs" table and the 564-line bundle figure are both historical.
+
 ## The bar is met: the certification lane is green, and it was fixed rather than accepted
 
 Four determinations (10-04, 10-05, 10-07, 10-09, 10-10) ranked one P0 — the `braces` advisory
