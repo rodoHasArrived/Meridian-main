@@ -1,6 +1,6 @@
 {
-  "total_files": 738,
-  "total_lines": 162987,
+  "total_files": 739,
+  "total_lines": 163166,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -1059,6 +1059,14 @@
       "stale": false
     },
     {
+      "path": "docs/adr/024-terms-payload-format-and-version-policy.md",
+      "line_count": 160,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/adr/_template.md",
       "line_count": 109,
       "has_heading": true,
@@ -1068,7 +1076,7 @@
     },
     {
       "path": "docs/adr/README.md",
-      "line_count": 36,
+      "line_count": 37,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1628,7 +1636,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 5801,
+      "line_count": 5809,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2780,7 +2788,7 @@
     },
     {
       "path": "docs/generated/database/modules/security_master.md",
-      "line_count": 1412,
+      "line_count": 1413,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2844,7 +2852,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12215,
+      "line_count": 12217,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6052,7 +6060,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1119,
+      "line_count": 1126,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

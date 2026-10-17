@@ -409,6 +409,8 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
                 new Dictionary<string, object?>
                 {
                     ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                    [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
+                    [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion,
                     ["category"] = "MutualFund",
                     ["subType"] = association.SecurityType,
                     ["issuerName"] = association.Name ?? filer?.Name
@@ -418,6 +420,8 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
                 new Dictionary<string, object?>
                 {
                     ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                    [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
+                    [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion,
                     ["classification"] = "Common",
                     ["shareClass"] = snapshot?.Security12bTitle?.RawValue
                 },

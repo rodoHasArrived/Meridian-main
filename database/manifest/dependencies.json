@@ -47742,6 +47742,12 @@
       "target": "database:security_master.operations_workflow_audit.event_type"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_securities_terms_format on security_master.securities",
+      "target": "database:security_master.securities.terms_format"
+    },
+    {
       "constraint": "corporate_action_canonical_sources_proposal_id_fkey",
       "kind": "foreign-key",
       "label": "proposal_id",
@@ -50626,7 +50632,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "f462fe42d116dabfd67f68cc8b723d3e94b9c060b7df8df0f32a0c2967b5a4a2",
+  "fingerprint": "ebfe9f16b8d9dbb0f6dc7d3f27e4c3c79156d609e8f6bed68b8f1e9a03bd4614",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -72335,6 +72341,11 @@
       "label": "security_master.ck_operations_workflow_audit_event_type on security_master.operations_workflow_audit"
     },
     {
+      "id": "database:security_master.ck_securities_terms_format on security_master.securities",
+      "kind": "database-object",
+      "label": "security_master.ck_securities_terms_format on security_master.securities"
+    },
+    {
       "id": "database:security_master.commodity_projection",
       "kind": "database-table",
       "label": "security_master.commodity_projection",
@@ -73383,6 +73394,11 @@
       "label": "security_master.securities.security_id"
     },
     {
+      "id": "database:security_master.securities.terms_format",
+      "kind": "database-object",
+      "label": "security_master.securities.terms_format"
+    },
+    {
       "id": "database:security_master.securities_pkey",
       "kind": "database-object",
       "label": "security_master.securities_pkey"
@@ -73961,9 +73977,9 @@
   "summary": {
     "contract_references": 3318,
     "contract_set_memberships": 3978,
-    "edges": 8412,
+    "edges": 8413,
     "foreign_keys": 137,
     "logical_references": 6,
-    "nodes": 4041
+    "nodes": 4043
   }
 }
