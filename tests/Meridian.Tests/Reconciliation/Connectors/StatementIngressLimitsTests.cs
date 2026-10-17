@@ -981,9 +981,9 @@ public sealed class StatementIngressLimitsTests : IDisposable
         // Both row kinds must share one budget - a file could otherwise hold MaxRecords balances AND
         // MaxRecords details against two independent counters - but the budget has to count rows the
         // parse retains, not rows it attempts. This document retains exactly one: the closing balance.
-        // Its two malformed 16 details take a warning branch and append nothing, so at a cap of one it
-        // must import. Charging them as candidates refused it, reporting a record overflow against a
-        // file that produced a single record.
+        // Its two malformed 16 details append nothing, so at a cap of one the retained population fits.
+        // The malformed amounts block import independently; charging them as records would incorrectly
+        // report record overflow against a file that produced a single record.
         var connector = new Bai2StatementConnector(
             TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 1, MaxLineBytes = 4096 });
 
@@ -992,14 +992,15 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
         result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
         result.Records.Should().ContainSingle().Which.Kind.Should().Be(StatementRecordKind.CashBalance);
-        result.Issues.Should().Contain(issue => issue.Code == "BAI2_BAD_AMOUNT", "the malformed details are still reported");
+        result.Issues.Should().Contain(issue => issue.Code == "BAI2_BAD_AMOUNT" && issue.Severity == StatementParseIssue.ErrorSeverity,
+            "malformed monetary evidence blocks import without consuming the record budget");
     }
 
     [Fact]
     public async Task Bai2_BalanceAndDetailsInsideTheSharedBudget_StillParse()
     {
         // The shared budget must not refuse what fits. The same document under a cap of ten parses its
-        // closing balance and reports the malformed details as warnings, exactly as before.
+        // closing balance and reports the malformed details as blocking amount errors.
         var connector = new Bai2StatementConnector(
             TightLimits with { MaxDocumentBytes = 1024 * 1024, MaxRecords = 10, MaxLineBytes = 4096 });
 
@@ -1007,6 +1008,7 @@ public sealed class StatementIngressLimitsTests : IDisposable
             new StatementSourceDocument("within-budget.bai", BuildBai2WithUnparseableAmounts(detailCount: 2)));
 
         result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyRecordsCode);
+        result.HasErrors.Should().BeTrue("malformed details must block import even below both ingress budgets");
     }
 
     [Fact]
@@ -1374,11 +1376,11 @@ public sealed class StatementIngressLimitsTests : IDisposable
     [Fact]
     public async Task Bai2_OneDiagnosticPastTheBudget_IsStillRefused()
     {
-        // The in-loop guard sits at the candidate charge, which runs before that row's own warning, so a
+        // The in-loop guard sits at the candidate charge, which runs before that row's own issue, so a
         // file whose last row takes the count to MaxDiagnostics + 1 leaves the loop with no later
         // iteration to catch it. Eleven malformed details against a budget of ten is exactly that case:
-        // without the post-loop check this returns eleven warnings and a valid balance, and the import
-        // service accepts it because it bounds retained rows and does not count issues.
+        // without the post-loop check this returns eleven issues and a valid balance. Amount errors
+        // block import independently; the diagnostic population must still obey its own limit.
         var connector = new Bai2StatementConnector(
             TightLimits with
             {
@@ -1396,11 +1398,11 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
-    public async Task Bai2_ExactlyTheDiagnosticBudget_IsAccepted()
+    public async Task Bai2_ExactlyTheDiagnosticBudget_DoesNotReportOverflow()
     {
         // The other side of that boundary, and the guard against fixing the off-by-one by refusing one
-        // diagnostic too early: ten malformed details against a budget of ten must still import the
-        // valid closing balance.
+        // diagnostic too early: ten malformed details against a budget of ten must preserve the
+        // valid closing balance for diagnostics, while malformed amounts independently block import.
         var connector = new Bai2StatementConnector(
             TightLimits with
             {
@@ -1415,6 +1417,7 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
         result.Issues.Should().NotContain(issue => issue.Code == StatementIngressLimits.TooManyDiagnosticsCode);
         result.Records.Should().ContainSingle().Which.Kind.Should().Be(StatementRecordKind.CashBalance);
+        result.HasErrors.Should().BeTrue("the diagnostic budget does not make malformed amounts acceptable");
     }
 
     [Fact]
@@ -2222,7 +2225,7 @@ public sealed class StatementIngressLimitsTests : IDisposable
 
     private static byte[] BuildBai2WithMalformedTransactions(int count)
     {
-        // Each 16 detail carries an unparseable amount, so it takes the BAI2_BAD_AMOUNT warning branch:
+        // Each 16 detail carries an unparseable amount, so it takes the BAI2_BAD_AMOUNT error branch:
         // one retained diagnostic and no canonical record. The 03 balance is valid, so the file still
         // produces exactly one record however many bad details follow it.
         var builder = new StringBuilder()
@@ -2694,9 +2697,9 @@ public sealed class StatementIngressLimitsTests : IDisposable
     }
 
     [Fact]
-    public async Task Bai2_MalformedDetailRows_AreBoundedRatherThanAccumulatingWarnings()
+    public async Task Bai2_MalformedDetailRows_AreBoundedRatherThanAccumulatingIssues()
     {
-        // Every malformed 16 record takes a warning branch and appends nothing, so a file of them retained
+        // Every malformed 16 record takes an error branch and appends nothing, so a file of them retained
         // one issue object per line without bound. The bound is MaxDiagnostics, not MaxRecords: these rows
         // produce diagnostics, so the diagnostic ceiling is the one that owns them, and it reports a code
         // that describes the file truthfully. Charging them to the record cap refused documents whose

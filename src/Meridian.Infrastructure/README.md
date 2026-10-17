@@ -106,11 +106,18 @@ non-fill currencies stay missing; cash, dividends, fees, corrections, and busts 
 fill-specific binding. Direct canonical CSV intake validates currency against Core's shared
 recognized-code catalog before retaining an import.
 
+Alpaca statement activity synchronization validates source numeric strings before constructing
+typed snapshots. Malformed supplied quantity, price, cash, or commission values fail the fetch;
+fills require quantity and price, and cash activity requires a net amount. Portfolio completeness
+uses the same decimal grammar as conversion, so unsupported notation cannot validate and then
+become zero. Statement intake refuses snapshots carrying completeness diagnostics.
+
 Canonical CSV import requires the currency column in the header and at least one data row.
 Header-only statements cannot validate or persist as empty imports; every admitted row retains
 explicit currency and invariant decimal evidence.
 
-Canonical CSV statement imports require an explicit three-letter currency on every row.
+Canonical CSV statement imports require an explicit currency recognized by `CurrencyCodeCatalog`
+on every row; unknown three-letter codes such as `ZZZ` are refused before persistence.
 Older seven-column files must be regenerated with source-backed currency evidence; the
 importer does not supply USD. Quantity, price, cash and nonblank fees use invariant decimal
 notation without grouping separators. Missing optional fees remain absent, while malformed
