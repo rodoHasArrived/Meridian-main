@@ -142,12 +142,12 @@ classDiagram
         +string AssetClass
         +IReadOnlyList~string~? AssetOperationsCapabilities
         +SecurityCashFlowBehavior CashFlowBehavior
+        +IReadOnlyList~InstrumentType~? InstrumentTypes
         +string? LotMultiplierTermKey
         +SecurityLotUnitKind LotUnit
         +IReadOnlyList~SecurityIdentifierKind~ PreferredIdentifierKinds
         +SecurityTermsProjectionKind ProjectionKind
         +bool RequiresMaturity
-        +bool SupportsBasicCreateWorkflow
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassRegistry["SecurityAssetClassRegistry"] {
         +IReadOnlyList~SecurityAssetClassDefinition~ All
