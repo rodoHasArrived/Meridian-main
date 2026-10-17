@@ -258,7 +258,7 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
         };
     }
 
-    private static List<CorporateActionProjectionBlockerDto> ValidateCommon(
+    private List<CorporateActionProjectionBlockerDto> ValidateCommon(
         CorporateActionAccountingProjectionRequest request,
         IReadOnlyList<CorporateActionProjectionEvidenceDependencyDto> evidence,
         string currency)
