@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "6b7cd7762e015e17b3303389fc0e124b45c46c2eba350302b7622f6a5b02c41d",
+  "database_fingerprint": "3796609140335564b703eebe13aa9410944d5df8aa408506222f740b41414849",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -7019,6 +7019,18 @@
       "target": "security_master.operations_workflow_audit.event_type",
       "target_kind": "table column",
       "target_name": "operations_workflow_audit",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "164ebd39be706eb9056a6881f4e39926436cb287d1097d28de563ac93231ca5e",
+      "kind": "normal",
+      "source": "security_master.ck_securities_terms_format on security_master.securities",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities.terms_format",
+      "target_kind": "table column",
+      "target_name": "securities",
       "target_schema": "security_master"
     },
     {
@@ -16513,6 +16525,10 @@
       "object": "column:security_master.securities.status"
     },
     {
+      "fingerprint": "d4734c8fd9d909deb9f6e335867ccba5cbee1c450f5a467cf86d7e95ffe17b41",
+      "object": "column:security_master.securities.terms_format"
+    },
+    {
       "fingerprint": "c85301b4d1368ddc8010b22eff0789f2020eb224198c5b4cb8cfab8a55a261fe",
       "object": "column:security_master.securities.tick_size"
     },
@@ -20213,6 +20229,10 @@
       "object": "constraint:security_master.schema_migrations.schema_migrations_pkey"
     },
     {
+      "fingerprint": "e0efc1b60c69b24cd4390bd17b34327e0e3cea0c623a6e561361619315b20e6e",
+      "object": "constraint:security_master.securities.ck_securities_terms_format"
+    },
+    {
       "fingerprint": "763780cef0993ea6c1c099956749028f8a75251ca1261123ab0d0d832b42297b",
       "object": "constraint:security_master.securities.securities_pkey"
     },
@@ -22833,6 +22853,10 @@
       "object": "dependency:security_master.ck_operations_workflow_audit_event_type on security_master.operations_workflow_audit->security_master.operations_workflow_audit.event_type:normal"
     },
     {
+      "fingerprint": "164ebd39be706eb9056a6881f4e39926436cb287d1097d28de563ac93231ca5e",
+      "object": "dependency:security_master.ck_securities_terms_format on security_master.securities->security_master.securities.terms_format:normal"
+    },
+    {
       "fingerprint": "5703d0f6bf0844a7de8d044f3798e13415bdd36757efbcf4619f01395b0668bc",
       "object": "dependency:security_master.corporate_action_canonical_sources_corp_act_id_fkey on security_master.corporate_action_canonical_sources->security_master.corporate_actions.corp_act_id:normal"
     },
@@ -25201,6 +25225,10 @@
       "object": "index:security_master.ix_securities_search_vector"
     },
     {
+      "fingerprint": "74e961109ea1a87df2261ab61c1146e7b0aa1623fc68679679de5b62ee74d8bd",
+      "object": "index:security_master.ix_securities_terms_format"
+    },
+    {
       "fingerprint": "2a1c47fb52e9f6de91bb0450d73855d27832110d790dbcbb10d8a44c26862596",
       "object": "index:security_master.ix_security_alias_revisions_security_recorded"
     },
@@ -26505,7 +26533,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "89fb584878192157bbcb1246b3bb1c61415dc65c567fa3adf1a1faa7f127dbbf",
+      "fingerprint": "caa7916334d929d5dc0a988d66f11d906178a63ac7b8a554c8e506ee01a3b6d5",
       "object": "schema:security_master"
     },
     {
@@ -27189,7 +27217,7 @@
       "object": "table:security_master.schema_migrations"
     },
     {
-      "fingerprint": "c8c685d796e1412b6640541be83dc1c9300519b0919de804fe0cc38b8cf81857",
+      "fingerprint": "e3196b37f9c119f7ed23e64218058c9a8cabee3561d18f6c90cf658ef4c17ae7",
       "object": "table:security_master.securities"
     },
     {
@@ -122918,6 +122946,18 @@
           "target_schema": "security_master"
         },
         {
+          "fingerprint": "164ebd39be706eb9056a6881f4e39926436cb287d1097d28de563ac93231ca5e",
+          "kind": "normal",
+          "source": "security_master.ck_securities_terms_format on security_master.securities",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.securities.terms_format",
+          "target_kind": "table column",
+          "target_name": "securities",
+          "target_schema": "security_master"
+        },
+        {
           "fingerprint": "5703d0f6bf0844a7de8d044f3798e13415bdd36757efbcf4619f01395b0668bc",
           "kind": "normal",
           "source": "security_master.corporate_action_canonical_sources_corp_act_id_fkey on security_master.corporate_action_canonical_sources",
@@ -124890,7 +124930,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "89fb584878192157bbcb1246b3bb1c61415dc65c567fa3adf1a1faa7f127dbbf",
+      "fingerprint": "caa7916334d929d5dc0a988d66f11d906178a63ac7b8a554c8e506ee01a3b6d5",
       "foreign_tables": [],
       "functions": [
         {
@@ -147489,10 +147529,46 @@
               "security_labels": [],
               "type_name": "int4",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": "'flat'::text",
+              "fingerprint": "d4734c8fd9d909deb9f6e335867ccba5cbee1c450f5a467cf86d7e95ffe17b41",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "terms_format",
+              "nullable": false,
+              "ordinal_position": 22,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "terms_format"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (terms_format = ANY (ARRAY['flat'::text, 'economic'::text, 'customProfile'::text]))",
+              "delete_action": null,
+              "fingerprint": "e0efc1b60c69b24cd4390bd17b34327e0e3cea0c623a6e561361619315b20e6e",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_securities_terms_format",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "security_id"
@@ -147516,7 +147592,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c8c685d796e1412b6640541be83dc1c9300519b0919de804fe0cc38b8cf81857",
+          "fingerprint": "e3196b37f9c119f7ed23e64218058c9a8cabee3561d18f6c90cf658ef4c17ae7",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -147555,6 +147631,28 @@
               "live": true,
               "method": "gin",
               "name": "ix_securities_search_vector",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_securities_terms_format ON security_master.securities USING btree (terms_format)",
+              "expression": null,
+              "fingerprint": "74e961109ea1a87df2261ab61c1146e7b0aa1623fc68679679de5b62ee74d8bd",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "terms_format"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_securities_terms_format",
               "options": [],
               "owner": "meridian",
               "predicate": null,
@@ -181786,10 +181884,46 @@
               "security_labels": [],
               "type_name": "int4",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": "'flat'::text",
+              "fingerprint": "d4734c8fd9d909deb9f6e335867ccba5cbee1c450f5a467cf86d7e95ffe17b41",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "terms_format",
+              "nullable": false,
+              "ordinal_position": 22,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
           "constraints": [
+            {
+              "columns": [
+                "terms_format"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (terms_format = ANY (ARRAY['flat'::text, 'economic'::text, 'customProfile'::text]))",
+              "delete_action": null,
+              "fingerprint": "e0efc1b60c69b24cd4390bd17b34327e0e3cea0c623a6e561361619315b20e6e",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_securities_terms_format",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "security_id"
@@ -181813,7 +181947,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c8c685d796e1412b6640541be83dc1c9300519b0919de804fe0cc38b8cf81857",
+          "fingerprint": "e3196b37f9c119f7ed23e64218058c9a8cabee3561d18f6c90cf658ef4c17ae7",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -181852,6 +181986,28 @@
               "live": true,
               "method": "gin",
               "name": "ix_securities_search_vector",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_securities_terms_format ON security_master.securities USING btree (terms_format)",
+              "expression": null,
+              "fingerprint": "74e961109ea1a87df2261ab61c1146e7b0aa1623fc68679679de5b62ee74d8bd",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "terms_format"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_securities_terms_format",
               "options": [],
               "owner": "meridian",
               "predicate": null,

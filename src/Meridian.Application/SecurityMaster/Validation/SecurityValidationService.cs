@@ -226,7 +226,54 @@ public sealed class SecurityValidationService : ISecurityValidationService
                 $"Migrate the payload to schema version {supportedVersions} or extend the compatibility adapter before this record is used downstream."));
         }
 
+        issues.AddRange(ValidateTermsFormat(record));
         return issues;
+    }
+
+    /// <summary>
+    /// Every terms payload must declare its family (<see cref="SecurityTermsEnvelope.FormatKey"/>) so
+    /// readers never classify it by shape (ADR-024). A missing tag is a warning while the stored
+    /// backlog is being backfilled; a declared tag this node does not know is an error, because the
+    /// projection store refuses to persist it.
+    /// </summary>
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidateTermsFormat(SecurityProjectionRecord record)
+    {
+        if (record.AssetSpecificTerms.ValueKind != JsonValueKind.Object)
+        {
+            return [];
+        }
+
+        var declared = SecurityTermsEnvelope.GetDeclaredFormat(record.AssetSpecificTerms);
+        if (declared is null)
+        {
+            var inferred = SecurityTermsEnvelope.ResolveFormat(record.AssetSpecificTerms);
+            return
+            [
+                SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Warning,
+                    "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING",
+                    "Asset-specific terms format is missing",
+                    $"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey} is absent, so the payload family is inferred by shape as '{inferred}'; every stored payload should declare its family explicitly.",
+                    [$"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}"],
+                    $"Re-persist the payload through a writer that stamps {SecurityTermsEnvelope.FormatKey} = '{inferred}' (SecurityTermsEnvelope.StampFlat for flat terms).")
+            ];
+        }
+
+        if (!SecurityTermsFormats.IsKnown(declared))
+        {
+            return
+            [
+                SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_ASSET_SPECIFIC_TERMS_FORMAT_UNKNOWN",
+                    "Asset-specific terms format is unknown",
+                    $"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey} '{declared}' is not a terms format this node understands; the projection store refuses to persist it.",
+                    [$"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}"],
+                    $"Declare one of {string.Join(", ", SecurityTermsFormats.All)} or upgrade this node before the record is used downstream.")
+            ];
+        }
+
+        return [];
     }
 
     private static bool IsProfileBackedRecord(SecurityProjectionRecord record)

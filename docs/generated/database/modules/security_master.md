@@ -830,6 +830,7 @@ erDiagram
         tsvector search_vector
         text normalized_primary_identifier_value
         integer schema_version
+        text terms_format
     }
     security_master_security_alias_revisions {
         uuid alias_id PK
@@ -1374,7 +1375,7 @@ erDiagram
 | `reconciliation_result` | table | 16 | `reconciliation_result_id` | 4 | 2 | - |
 | `reconciliation_run` | table | 6 | `reconciliation_run_id` | 2 | 1 | - |
 | `schema_migrations` | table | 4 | `filename` | 0 | 1 | - |
-| `securities` | table | 21 | `security_id` | 0 | 4 | - |
+| `securities` | table | 22 | `security_id` | 0 | 5 | - |
 | `security_alias_revisions` | table | 17 | `alias_id`, `revision` | 1 | 2 | Append-only Security Master alias revisions. Recorded-as-of reads select the latest available revision at or before the cutoff. Pre-migration current-row baselines retain their creation metadata but are available only from history_available_from; earlier alias history is unknown. |
 | `security_aliases` | table | 14 | `alias_id` | 1 | 3 | - |
 | `security_cashflow_source_assignments` | table | 6 | `security_id` | 1 | 2 | - |

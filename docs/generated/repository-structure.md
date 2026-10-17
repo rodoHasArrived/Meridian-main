@@ -1366,6 +1366,7 @@ Meridian-main
 │   │   ├── 021-verified-operation-outcomes-and-case-history.md
 │   │   ├── 022-canonical-asset-class-homes.md
 │   │   ├── 023-host-wide-provider-credential-ownership.md
+│   │   ├── 024-terms-payload-format-and-version-policy.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
@@ -6547,7 +6548,8 @@ Meridian-main
 │   │   │   │   ├── 038_security_master_alias_revisions.sql
 │   │   │   │   ├── 039_security_master_event_payload_version.sql
 │   │   │   │   ├── 040_security_master_governance_events.sql
-│   │   │   │   └── 041_security_master_governance_events_truncate_guard.sql
+│   │   │   │   ├── 041_security_master_governance_events_truncate_guard.sql
+│   │   │   │   └── 042_security_master_terms_format_column.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
