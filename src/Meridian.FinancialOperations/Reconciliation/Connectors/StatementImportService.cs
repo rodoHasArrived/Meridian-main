@@ -512,7 +512,8 @@ public sealed class StatementImportService(
         var currencies = parse.Records.Select(static record => record.Currency)
             .Concat((parse.AccountSnapshots ?? []).Select(static account => account.Currency))
             .Concat((parse.TaxLots ?? []).Select(static lot => lot.Currency))
-            .Concat((parse.BorrowPositions ?? []).Select(static borrow => borrow.Currency));
+            .Concat((parse.BorrowPositions ?? []).Select(static borrow => borrow.Currency))
+            .Concat(UnprovenActivityCurrencies(parse));
         foreach (var currency in currencies)
         {
             if (!CurrencyCodeCatalog.TryNormalizeRecognized(currency, out _))
@@ -520,12 +521,34 @@ public sealed class StatementImportService(
                 return parse with
                 {
                     Issues = [.. parse.Issues, StatementParseIssue.Error(
-                        "ROW_INVALID_CURRENCY", "Rows and supplemental account, lot, and borrow evidence require explicit recognized currency before import.", field: "Currency")]
+                        "ROW_INVALID_CURRENCY", "Rows and supplemental account, lot, borrow, and activity evidence require explicit recognized currency before import.", field: "Currency")]
                 };
             }
         }
 
         return parse;
+    }
+
+    /// <summary>
+    /// Activity events retained beside the canonical rows. An event mirrored by a canonical row
+    /// (same transaction id) may leave its currency blank, because the row carries the currency the
+    /// connector proved and that row is gated above. An event retained only as activity evidence,
+    /// such as an IB Flex commission detail, has nothing else proving its denomination. An explicit
+    /// currency is always gated.
+    /// </summary>
+    private static IEnumerable<string?> UnprovenActivityCurrencies(StatementParseResult parse)
+    {
+        if (parse.ActivityEvents is not { Count: > 0 } activities)
+            yield break;
+        var mirrored = new HashSet<string>(
+            parse.Records.Select(static record => record.ExternalTransactionId).OfType<string>(),
+            StringComparer.Ordinal);
+        foreach (var activity in activities)
+        {
+            if (string.IsNullOrWhiteSpace(activity.Currency) && mirrored.Contains(activity.EventId))
+                continue;
+            yield return activity.Currency;
+        }
     }
 
     private static void EnsureParsedAccountAuthority(

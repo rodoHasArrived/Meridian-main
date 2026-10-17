@@ -150,7 +150,9 @@ Case-equivalent account identifiers remain valid within a single containing stat
 
 Statement preview, validation and commit require currency from the shared recognized-code catalog
 before retaining connector artifacts, including supplemental account, tax-lot, and borrow-position
-evidence. Canonical CSV and bank connectors apply the same catalog;
+evidence. Activity events retained only as activity evidence, such as IB Flex commission details,
+need their own recognized currency; an event mirrored by a canonical row may rely on that row's
+proven currency. Canonical CSV and bank connectors apply the same catalog;
 BAI2 validates before converting minor units, including zero-decimal UYI and four-decimal CLF/UYW.
 Recognized units with no defined ISO minor-unit scale are refused for BAI2 integer amounts.
 Historical currencies remain available for statement evidence. Service-level diagnostics omit a
@@ -160,6 +162,10 @@ Alpaca trade fills may inherit explicit USD from the same account's verified por
 through both legacy fills and rich Trade/TradeFill activities. Explicit activity currencies remain
 authoritative. Missing or non-USD account evidence cannot supply a fill currency; cash, dividends,
 fees, corrections, and busts still require their own currency evidence before import retention.
+Legacy fills with a zero quantity or nonpositive price are refused, because an omitted JSON amount
+deserializes as zero. A portfolio snapshot counts as complete evidence only when it is explicitly
+marked complete and lists no completeness issues. In IB Flex, an explicitly blank amount that
+would otherwise default to zero (cash and activity net amounts) is refused as malformed.
 
 Statement runs pass the accounting scope retained on their import to the internal population
 provider, preserving the fund, ledger book, and exact period selected by governed intake during

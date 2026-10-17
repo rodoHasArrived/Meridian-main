@@ -215,7 +215,10 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             return Task.FromResult(EmptyResult(document.MappingProfileId, issues));
         }
 
-        if (snapshot.Portfolio?.CompletenessIssues is { Count: > 0 })
+        // IsComplete is independent of the issue list and defaults to false, so an incomplete or older
+        // snapshot that lists no issues is still not complete portfolio evidence.
+        if (snapshot.Portfolio is { } portfolio
+            && (!portfolio.IsComplete || portfolio.CompletenessIssues is { Count: > 0 }))
         {
             issues.Add(StatementParseIssue.Error(
                 "INCOMPLETE_PORTFOLIO", "The Alpaca portfolio reports incomplete financial evidence; refresh it before importing."));
@@ -341,6 +344,14 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             foreach (var fill in snapshot.Activity?.Fills ?? [])
             {
                 rowNumber++;
+                // Quantity and Price are non-nullable, so an omitted JSON property arrives as zero.
+                // A fill always has a nonzero quantity and a positive price.
+                if (fill.Quantity == 0m || fill.Price <= 0m)
+                {
+                    issues.Add(StatementParseIssue.Error("ALPACA_INVALID_AMOUNT",
+                        "Trade fills require explicit quantity and price evidence."));
+                    return EmptyResult(profileId, issues);
+                }
                 var signedQuantity = fill.Side == OrderSide.Sell ? -Math.Abs(fill.Quantity) : Math.Abs(fill.Quantity);
                 if (!TryRetain(new StatementCanonicalRecord(
                     StatementRecordKind.Transaction,

@@ -105,6 +105,8 @@ public sealed class StructuredStatementAmountTests : IDisposable
     [InlineData("<InterestDetails><InterestDetail amount=\"not-an-amount\" currency=\"USD\" dateTime=\"20260602\" /></InterestDetails>")]
     [InlineData("<BorrowFeeDetails><BorrowFeeDetail feeAmount=\"1,25\" currency=\"USD\" dateTime=\"20260602\" /></BorrowFeeDetails>")]
     [InlineData("<CommissionDetails><CommissionDetail totalCommission=\"not-an-amount\" currency=\"USD\" dateTime=\"20260602\" /></CommissionDetails>")]
+    [InlineData("<CommissionDetails><CommissionDetail totalCommission=\" \" currency=\"USD\" dateTime=\"20260602\" /></CommissionDetails>")]
+    [InlineData("<InterestDetails><InterestDetail amount=\" \" currency=\"USD\" dateTime=\"20260602\" /></InterestDetails>")]
     [InlineData("<CorporateActions><CorporateAction symbol=\"SPY\" type=\"Split\" quantity=\"1,25\" currency=\"USD\" dateTime=\"20260602\" /></CorporateActions>")]
     [InlineData("<Transfers><Transfer amount=\"not-an-amount\" currency=\"USD\" dateTime=\"20260602\" /></Transfers>")]
     [InlineData("<OptionEAE><OptionEAE symbol=\"SPY\" quantity=\"1\" strike=\"not-an-amount\" currency=\"USD\" dateTime=\"20260602\" /></OptionEAE>")]
@@ -113,6 +115,23 @@ public sealed class StructuredStatementAmountTests : IDisposable
     public async Task FlexSupplementalEvidence_MalformedAmountsFailBeforeRetention(string section)
     {
         await AssertRejectedBeforeRetention(FlexDocument(ValidFlexCash + section), _flex);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" currency=\"ZZZ\"")]
+    public async Task FlexActivityEvidence_MissingOrUnrecognizedCurrencyFailsBeforeRetention(string currency)
+    {
+        // The commission is retained only as an activity event; the valid cash row must not carry it through.
+        var document = FlexDocument(ValidFlexCash
+            + $"<CommissionDetails><CommissionDetail totalCommission=\"-1.25\"{currency} dateTime=\"20260602\" /></CommissionDetails>");
+
+        var validation = await _service.ValidateAsync(document, "ib-flex");
+
+        validation.IsValid.Should().BeFalse();
+        validation.Errors.Should().Contain(error => error.Contains("recognized currency", StringComparison.Ordinal));
+        await Assert.ThrowsAsync<InvalidDataException>(() => _service.CommitAsync(Request(document, "ib-flex")));
+        (await _workflow.ListImportsAsync()).Should().BeEmpty();
     }
 
     [Theory]

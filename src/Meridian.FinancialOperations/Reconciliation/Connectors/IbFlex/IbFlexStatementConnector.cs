@@ -674,7 +674,7 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
     {
         var providerCode = Attribute(cash, "type") ?? "CashTransaction";
         activityCodeMap.TryGetValue(providerCode, out var canonicalActivity);
-        var amount = DecimalAttribute(cash, profile, "amount") ?? 0m;
+        var amount = AmountAttribute(cash, profile, "amount") ?? 0m;
         var (category, subtype) = canonicalActivity?.ToLowerInvariant() switch
         {
             "fee" => (BrokerageActivityCategory.Fee, BrokerageActivitySubtype.Fee),
@@ -1007,8 +1007,9 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         BrokerageOptionLifecycleSnapshotDto? option = null)
     {
         var effectiveAt = EffectiveAt(element, null, profile);
+        var netAmount = AmountAttribute(element, profile, [.. amountNames]);
         var eventId = AttributeAny(element, [.. idNames])
-            ?? $"ib-flex:{providerCode}:{effectiveAt:O}:{Attribute(element, "symbol")}:{quantity}:{price}:{DecimalAttribute(element, profile, [.. amountNames])}";
+            ?? $"ib-flex:{providerCode}:{effectiveAt:O}:{Attribute(element, "symbol")}:{quantity}:{price}:{netAmount}";
         var accountId = Attribute(element, "accountId") ?? statementAccountId ?? string.Empty;
         return new BrokerageActivityEventDto(
             EventId: eventId,
@@ -1017,7 +1018,7 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
             Subtype: subtype,
             EffectiveAt: effectiveAt,
             Currency: Attribute(element, "currency") ?? string.Empty,
-            NetAmount: DecimalAttribute(element, profile, [.. amountNames]) ?? 0m,
+            NetAmount: netAmount ?? 0m,
             Symbol: Attribute(element, "symbol"),
             Quantity: quantity,
             Price: price,
@@ -1103,6 +1104,26 @@ public sealed class IbFlexStatementConnector : IFetchingStatementConnector
         // Rich evidence bypasses the row mapper. A malformed amount must not become null,
         // zero, or a fallback amount before canonical-evidence.json is retained.
         throw new InvalidFinancialValueException(element.Name.LocalName, string.Join("/", names));
+    }
+
+    /// <summary>
+    /// Reads an amount whose absence the caller treats as zero. Attribute() folds whitespace-only
+    /// values into absence, so an explicitly blank amount is rejected here instead of becoming a
+    /// fabricated zero.
+    /// </summary>
+    private static decimal? AmountAttribute(
+        XElement element,
+        StatementMappingProfileDocument profile,
+        params string[] names)
+    {
+        var value = DecimalAttribute(element, profile, names);
+        if (value is null && element.Attributes().Any(attribute =>
+                names.Contains(attribute.Name.LocalName, StringComparer.OrdinalIgnoreCase)))
+        {
+            throw new InvalidFinancialValueException(element.Name.LocalName, string.Join("/", names));
+        }
+
+        return value;
     }
 
     private sealed class InvalidFinancialValueException(string element, string field)
