@@ -26,6 +26,7 @@ public sealed partial class WorkstationEndpointsTests
 
             await using var app = await CreateAppAsync(
                 services => services.AddSingleton<IAccountingActionAuditStore>(store),
+                mapLedgerApi: true,
                 currentUserPermissions: UserPermission.AdminMaintenance);
 
             using var response = await app.GetTestClient().GetAsync(UiApiRoutes.LedgerAuditIntegrity);
@@ -46,7 +47,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task LedgerAuditIntegrityEndpoint_RequiresAdminMaintenance()
     {
-        await using var app = await CreateAppAsync(currentUserPermissions: UserPermission.ViewLedgerReports);
+        await using var app = await CreateAppAsync(mapLedgerApi: true, currentUserPermissions: UserPermission.ViewLedgerReports);
 
         using var response = await app.GetTestClient().GetAsync(UiApiRoutes.LedgerAuditIntegrity);
 
