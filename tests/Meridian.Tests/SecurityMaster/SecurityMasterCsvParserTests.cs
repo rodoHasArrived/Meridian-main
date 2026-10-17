@@ -39,6 +39,17 @@ public sealed class SecurityMasterCsvParserTests
     }
 
     [Fact]
+    public void ParsedRow_DeclaresTheFlatTermsFormatAndAssetClassTermsVersion()
+    {
+        var parsed = Parse($"{Header}\nAAPL,Apple Inc.,Equity,USD,,,,");
+
+        var assetSpecificTerms = parsed.Should().ContainSingle().Subject.AssetSpecificTerms;
+        SecurityTermsEnvelope.GetDeclaredFormat(assetSpecificTerms).Should().Be(SecurityTermsFormats.Flat);
+        SecurityTermsEnvelope.ResolveAssetClassTermsVersion(assetSpecificTerms)
+            .Should().Be(SecurityAssetClassCatalog.GetOrDefault("Equity").TermsVersion);
+    }
+
+    [Fact]
     public void ParsedRow_DefaultsCurrencyAndOmitsAbsentExchange()
     {
         var parsed = Parse($"{Header}\nAAPL,Apple Inc.,Equity,,,,,");

@@ -159,14 +159,19 @@ decisions:
     decided_on: 2026-10-17
     owner_lane: Core Team
     summary: >-
-      The repository owner requested additional FundStudio-aligned functionality in the Meridian
-      design charter. Version 1.4 integrates governed accounting books and FX, investor participation
+      The repository owner requested deeper fund-operations functionality in the Meridian
+      design charter. Versions 1.4-1.5 integrate governed accounting books and FX, investor participation
       and allocation lifecycles, fiscal close and opening roll-forward, tied financial statements,
       and DirectLoan operations/evidence reconciliation. Five W12 rows register that planning scope
-      in proposed implementation order: W12-BOOK-001, W12-CAPITAL-001, W12-YEND-001, W12-FINRPT-001,
+      in proposed rank: W12-BOOK-001, W12-CAPITAL-001, W12-YEND-001, W12-FINRPT-001,
       and W12-CREDIT-001. The charter's Sections 6.2, 6.4, 6.7-6.8, 10-11, 18.1, and 22.5 own the
-      intent; Section 22.6 records the official vendor sources and separates product descriptions
-      from explanatory articles and Meridian's own design requirements. This decision accepts
+      intent. Section 22.6 starts with a bounded BOOK/basic-FINRPT monthly-close proof, then expands
+      the supported financial combinations using explicit dependency boundaries. A slice does not
+      accept its parent row before every registered exit criterion is met. Readiness includes
+      reconciled opening economic history, exact source and policy versions, and approved cutover
+      authority. Acceptance retains independent expected calculations, financial agreement,
+      approval and recovery evidence, shared operator results, and a measured rehearsal. All
+      functionality is expressed directly as Meridian requirements. This decision accepts
       user-directed scope registration only, not implementation, operator acceptance, or release
       readiness. All five rows use planned status and planned evidence. Existing W9 economics and
       rendering remain bounded foundations, and existing W10/W11 owners retain NAV, valuation,

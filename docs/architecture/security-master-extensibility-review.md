@@ -5270,6 +5270,14 @@ in both writers, and let the guard stay the only authority on readability. What 
 present arrangement, where the same column means two things and the migration comment documents
 only one of them.
 
+*Resolution (2026-10-17, ADR-024).* The store now takes the second option for `schema_version` (the
+version of the stored blob, one definition shared with the migration 024 backfill), and migration
+`042_security_master_terms_format_column.sql` adds the family alongside it as `terms_format`,
+backfilled from the declared `termsFormat` tag or, for untagged rows, the same shape rule
+`SecurityTermsEnvelope.ResolveFormat` applies. Every flat writer (CSV import, EDGAR ingest, the F#
+interop snapshot, the desktop template) stamps the envelope, so the shape rule now serves only the
+pre-tag backlog that the column makes countable; its retirement is gated in ADR-024.
+
 ### Smaller notes, not filed as findings
 
 - **`SecurityAssetSpecificTermsUpcasterPipeline.ToSchemaVersion` is wrong for profile payloads.** It
@@ -5777,6 +5785,7 @@ reads it per security.
 | The lot model does not record units | `IUnitizedLot` (decimal `Quantity`, `UnitKind`, `Multiplier`) is the shared lot shape, and `LotQuantity` is its value form (`EconomicUnits = Quantity × Multiplier`). `LotQuantity.UnitFor`/`For` read the unit and the multiplier term (an option's or future's `multiplier`, a commodity's `contractSize`) from the asset-class registry. |
 | The face-value lot is bond-only and separate | `FaceValueLot` implements `IUnitizedLot` as the `FaceValue` case. `ToLedgerTaxLot` states the ledger's hundred-of-face unit (`UnitKind = FaceValue`, `Multiplier = 100`), so ledger quantity × multiplier is the face amount. The basis adjuster carries unit and multiplier through adjustments. |
 | Execution and backtesting lots use whole-number quantities | `Execution.Sdk.TaxLot`, `Backtesting.Sdk.OpenLot` and `ClosedLot` now carry decimal quantities and implement `IUnitizedLot` (shares and multiplier 1 by default). `LedgerTaxLot` implements it too. Cost-basis and P&L formulas are unchanged; the backtest fill engine still trades whole units, and its lots can now represent fractional and contract-scaled holdings without a type change. |
+| The `Commitment` and `Units` lot units had no lot type, and the paper-trading lot sat outside the shared shape | `CommitmentLot` (commitment, funded and unfunded amounts, recallable distributions, `Draw`, `RecordRecallableDistribution`) and `FundUnitLot` (units at an acquisition NAV, `WithReducedUnits`) implement `IUnitizedLot` as the `Commitment` and `Units` cases; `AlternativeAssetLotExtensions.ToLedgerTaxLot` carries contributed capital as a `CurrencyAmount` ledger lot and fund units as a `Units` ledger lot. The paper-trading `PositionLot` implements `IUnitizedLot`, reading its unit and multiplier live from the owning `PaperPosition`, and `PaperPosition.UnitizedLots` exposes the book in the shared shape. |
 
 ### Follow-ons — conventions and loan identifiers
 
