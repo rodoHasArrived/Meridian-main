@@ -16,8 +16,8 @@
       "id": "SRC-BACKTESTING",
       "path": "src/Meridian.Backtesting",
       "readme": "src/Meridian.Backtesting/README.md",
-      "readme_hash": "26ba95089346c6d92daecabc09568462e17d473e6ad848605435bdcbe796757e",
-      "source_hash": "a1b28bb213c010f80bfb7303702d766eec24b48c2a3de1145d049a28de81f16e"
+      "readme_hash": "274f1cd1303a59c52b67663d3bc937b0c17fc1772deb45680ac9dd55672ec1af",
+      "source_hash": "0566608a82252851e7a46bd4637560b7f18d9b43dee74b0c07008d2aa9d5d53e"
     },
     {
       "id": "SRC-BACKTESTING-SDK",
@@ -233,8 +233,8 @@
       "id": "SRC-QUANTSCRIPT",
       "path": "src/Meridian.QuantScript",
       "readme": "src/Meridian.QuantScript/README.md",
-      "readme_hash": "1e72a663e1166d7b25fcb12c3ef8687fc1d69569f3d18d2a2a03f43171b7378a",
-      "source_hash": "f60068a80b07e9b0bd5f6a1263abbf1f8a420e9dfb65c0c4e74e1bf361a9961f"
+      "readme_hash": "d86e3448bd0d65ceeafbdad3fcde2925499be52aa59c6cd533466394208472bd",
+      "source_hash": "129c41b221b8bbe82a9ed390be23cd0a3c1caf4610885fb6bd552778b4e1d80b"
     },
     {
       "id": "SRC-RISK",
@@ -282,8 +282,8 @@
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "45e991fc745d36c1d6af7cce2d7874d6676c5bcfa839da2880b37619c92c4134",
-      "source_hash": "5b56b93348b8fdbdc51be7b69c2dbee7b8af4f3cf753203b8af1e6f4901377e4"
+      "readme_hash": "892fcc0c0c4f57e6050c4c800ad382fd575a98d80cf5619cf63866b4b5fac531",
+      "source_hash": "22967ce44638be966c44c482c28ab9a967248fc4293c593c3e401ad4efedc541"
     },
     {
       "id": "SRC-WPF",

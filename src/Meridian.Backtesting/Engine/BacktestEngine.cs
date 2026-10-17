@@ -134,9 +134,11 @@ public sealed class BacktestEngine(
         strategy.Initialize(ctx);
         ApplyScheduledAssetEvents(request.From, assetEventsByDate, portfolio, ctx);
 
-        // 4. Build per-symbol replay streams (with corporate action adjustments if enabled)
+        // 4. Build one replay stream per storage root (with corporate action adjustments if enabled)
         stageTimer.Transition(BacktestStage.LoadingData);
         var replaySymbols = ResolveReplaySymbolOrder(universe, request.Symbols);
+        var symbolOrder = replaySymbols.Select((symbol, rank) => (symbol, rank))
+            .ToDictionary(static pair => pair.symbol, static pair => pair.rank, StringComparer.OrdinalIgnoreCase);
         var streams = await BuildSymbolStreamsAsync(replaySymbols, request, ct).ConfigureAwait(false);
 
         // 5. Replay loop — multi-symbol chronological merge
@@ -147,7 +149,7 @@ public sealed class BacktestEngine(
         var rollingState = new RollingMetricsState(portfolio.ComputeCurrentEquity());
         var lastEventTimestamps = new Dictionary<string, DateTimeOffset>(StringComparer.OrdinalIgnoreCase);
 
-        await foreach (var evt in MultiSymbolMergeEnumerator.MergeAsync(streams, ct))
+        await foreach (var evt in MultiSymbolMergeEnumerator.MergeAsync(streams, ct, symbolOrder))
         {
             ct.ThrowIfCancellationRequested();
 
@@ -247,32 +249,41 @@ public sealed class BacktestEngine(
             .ToArray();
     }
 
-    private Task<IReadOnlyList<IAsyncEnumerable<MarketEvent>>> BuildSymbolStreamsAsync(
+    internal Task<IReadOnlyList<IAsyncEnumerable<MarketEvent>>> BuildSymbolStreamsAsync(
         IReadOnlyList<string> replaySymbols,
         BacktestRequest request,
-        CancellationToken ct)
+        CancellationToken ct,
+        Func<string, IReadOnlyDictionary<string, int>, CancellationToken, IAsyncEnumerable<MarketEvent>>? sourceFactory = null)
     {
-        var streams = new List<IAsyncEnumerable<MarketEvent>>();
-        foreach (var symbol in replaySymbols)
+        sourceFactory ??= static (root, symbols, token) => new JsonlReplayer(root, symbols).ReadEventsAsync(token);
+        var sourceSymbols = new Dictionary<string, Dictionary<string, int>>(
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        for (var rank = 0; rank < replaySymbols.Count; rank++)
         {
-            var symbolRoot = Path.Combine(request.DataRoot, symbol.ToUpperInvariant());
+            ct.ThrowIfCancellationRequested();
+            var symbol = replaySymbols[rank];
+            var symbolRoot = Path.GetFullPath(Path.Combine(request.DataRoot, symbol.ToUpperInvariant()));
             if (!Directory.Exists(symbolRoot))
-                symbolRoot = request.DataRoot;  // flat layout fallback
+                symbolRoot = Path.GetFullPath(request.DataRoot); // flat or provider/date layout fallback
 
+            if (!sourceSymbols.TryGetValue(symbolRoot, out var symbols))
+                sourceSymbols.Add(symbolRoot, symbols = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase));
+            symbols.TryAdd(symbol, rank);
+        }
+
+        var streams = new List<IAsyncEnumerable<MarketEvent>>();
+        foreach (var (sourceRoot, symbols) in sourceSymbols)
+        {
+            // JsonlReplayer filters selected symbols before sorting and uses the same ranks as the
+            // outer merge. Shared roots are therefore captured once, rather than once per symbol.
+            var source = FilterBySymbolsAndDate(sourceFactory(sourceRoot, symbols, ct), symbols, request.From, request.To, ct);
             if (request.AdjustForCorporateActions && corporateActionAdjustment != null)
             {
-                streams.Add(CapturePrepareAndReplayAsync(symbolRoot, symbol, request, ct));
+                streams.Add(CapturePrepareAndReplayAsync(source, symbols, request, ct));
                 continue;
             }
 
-            var reader = new JsonlReplayer(symbolRoot);
-            var symbolStream = FilterBySymbolAndDate(
-                reader.ReadEventsAsync(ct),
-                symbol,
-                request.From,
-                request.To,
-                ct);
-            streams.Add(symbolStream);
+            streams.Add(source);
         }
         return Task.FromResult<IReadOnlyList<IAsyncEnumerable<MarketEvent>>>(streams);
     }
@@ -283,8 +294,8 @@ public sealed class BacktestEngine(
     /// market data when a source partition is concurrently appended or replaced.
     /// </summary>
     private async IAsyncEnumerable<MarketEvent> CapturePrepareAndReplayAsync(
-        string symbolRoot,
-        string symbol,
+        IAsyncEnumerable<MarketEvent> source,
+        IReadOnlyDictionary<string, int> symbols,
         BacktestRequest request,
         [EnumeratorCancellation] CancellationToken ct)
     {
@@ -294,25 +305,23 @@ public sealed class BacktestEngine(
 
         try
         {
-            var historicalBars = new List<HistoricalBar>();
-            await using (var writer = new StreamWriter(new FileStream(
-                             snapshotPath,
-                             FileMode.CreateNew,
-                             FileAccess.Write,
-                             FileShare.None,
-                             4096,
-                             FileOptions.Asynchronous | FileOptions.SequentialScan)))
+            var historicalBars = symbols.Keys.ToDictionary(
+                static symbol => symbol, static _ => new List<HistoricalBar>(), StringComparer.OrdinalIgnoreCase);
+            var snapshotOptions = new FileStreamOptions
             {
-                var captureReader = new JsonlReplayer(symbolRoot);
-                await foreach (var evt in FilterBySymbolAndDate(
-                                   captureReader.ReadEventsAsync(ct),
-                                   symbol,
-                                   request.From,
-                                   request.To,
-                                   ct).ConfigureAwait(false))
+                Mode = FileMode.CreateNew,
+                Access = FileAccess.Write,
+                Share = FileShare.None,
+                Options = FileOptions.Asynchronous | FileOptions.SequentialScan
+            };
+            if (!OperatingSystem.IsWindows())
+                snapshotOptions.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+            await using (var writer = new StreamWriter(new FileStream(snapshotPath, snapshotOptions)))
+            {
+                await foreach (var evt in source.WithCancellation(ct).ConfigureAwait(false))
                 {
                     if (evt.Payload is HistoricalBar bar)
-                        historicalBars.Add(bar);
+                        historicalBars[evt.EffectiveSymbol].Add(bar);
 
                     var json = JsonSerializer.Serialize(
                         evt,
@@ -326,23 +335,32 @@ public sealed class BacktestEngine(
             var effectiveThroughUtc = new DateTimeOffset(
                 request.To.ToDateTime(TimeOnly.MaxValue),
                 TimeSpan.Zero);
-            var adjustmentPlan = await corporateActionAdjustment!
-                .PrepareAsync(historicalBars, symbol, effectiveThroughUtc, ct)
-                .ConfigureAwait(false);
-            logger.LogInformation(
-                "Prepared corporate-action plan {ContentVersion} for {Symbol}: {BarCount} bars through {EffectiveThroughUtc}",
-                adjustmentPlan.ContentVersion,
-                symbol,
-                adjustmentPlan.BarCount,
-                adjustmentPlan.EffectiveThroughUtc);
-
-            await foreach (var evt in ApplyCorporateActionPlanAsync(
-                               ReadCapturedSnapshotAsync(snapshotPath, ct),
-                               symbol,
-                               adjustmentPlan,
-                               ct).ConfigureAwait(false))
+            var plans = new Dictionary<string, CorporateActionAdjustmentPlan>(StringComparer.OrdinalIgnoreCase);
+            foreach (var symbol in symbols.OrderBy(static pair => pair.Value).Select(static pair => pair.Key))
             {
-                yield return evt;
+                var adjustmentPlan = await corporateActionAdjustment!
+                    .PrepareAsync(historicalBars[symbol], symbol, effectiveThroughUtc, ct)
+                    .ConfigureAwait(false);
+                plans.Add(symbol, adjustmentPlan);
+                logger.LogInformation(
+                    "Prepared corporate-action plan {ContentVersion} for {Symbol}: {BarCount} bars through {EffectiveThroughUtc}",
+                    adjustmentPlan.ContentVersion,
+                    symbol,
+                    adjustmentPlan.BarCount,
+                    adjustmentPlan.EffectiveThroughUtc);
+            }
+
+            await foreach (var evt in ReadCapturedSnapshotAsync(snapshotPath, ct).ConfigureAwait(false))
+            {
+                if (evt.Payload is HistoricalBar bar)
+                {
+                    var plan = plans[evt.EffectiveSymbol];
+                    yield return evt with { Symbol = plan.Ticker, Payload = plan.Apply(bar) };
+                }
+                else
+                {
+                    yield return evt;
+                }
             }
         }
         finally
@@ -353,8 +371,7 @@ public sealed class BacktestEngine(
     }
 
     /// <summary>
-    /// Replays an engine-owned capture without the best-effort malformed-line behavior used for
-    /// external storage partitions. Any blank, malformed, or null event makes the adjusted run
+    /// Replays an engine-owned capture. Any blank, malformed, or null event makes the adjusted run
     /// fail closed because preparation and execution must observe the same complete snapshot.
     /// </summary>
     internal static async IAsyncEnumerable<MarketEvent> ReadCapturedSnapshotAsync(
@@ -555,16 +572,16 @@ public sealed class BacktestEngine(
     private static BacktestStageTelemetryDto BuildStageTelemetry(StageTimer stageTimer, string? stageMessage = null)
         => new(stageTimer.CurrentStage, stageTimer.StageElapsed, stageTimer.TotalElapsed, stageMessage);
 
-    private static async IAsyncEnumerable<MarketEvent> FilterBySymbolAndDate(
+    private static async IAsyncEnumerable<MarketEvent> FilterBySymbolsAndDate(
         IAsyncEnumerable<MarketEvent> source,
-        string symbol,
+        IReadOnlyDictionary<string, int> symbols,
         DateOnly from,
         DateOnly to,
         [EnumeratorCancellation] CancellationToken ct = default)
     {
         await foreach (var evt in source.WithCancellation(ct))
         {
-            if (!evt.EffectiveSymbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
+            if (!symbols.ContainsKey(evt.EffectiveSymbol))
                 continue;
             var date = DateOnly.FromDateTime(evt.Timestamp.UtcDateTime);
             if (date < from || date > to)

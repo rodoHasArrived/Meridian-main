@@ -1,5 +1,7 @@
 using System.IO.Compression;
+using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Enums;
@@ -44,6 +46,231 @@ public sealed class JsonlReplayerTests : IDisposable
         var result = await ReadAllAsync(new JsonlReplayer(_tempRoot));
 
         result.Select(static evt => evt.Symbol).Should().Equal("AAPL", "MSFT");
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_WhenFilesInterleave_MergesByFullUtcTimestampThenFileAndLineOrder()
+    {
+        var first = Path.Combine(_tempRoot, "a.jsonl");
+        var second = Path.Combine(_tempRoot, "b.jsonl.gz");
+        var timestamp = new DateTimeOffset(2026, 1, 2, 14, 30, 0, TimeSpan.Zero);
+
+        await File.WriteAllTextAsync(
+            first,
+            SerializeLine(BuildTradeAt("A-LATE", timestamp.AddTicks(9))) +
+            SerializeLine(BuildTradeAt("A-TIE-1", timestamp.AddTicks(20))) +
+            SerializeLine(BuildTradeAt("A-TIE-2", timestamp.AddTicks(20))));
+        await WriteGzipAsync(
+            second,
+            BuildTradeAt("B-EARLY", timestamp.AddTicks(1)),
+            BuildTradeAt("B-TIE", timestamp.AddTicks(20)));
+
+        var result = await ReadAllAsync(new JsonlReplayer(_tempRoot));
+
+        result.Select(static evt => evt.Symbol).Should().Equal(
+            "B-EARLY",
+            "A-LATE",
+            "A-TIE-1",
+            "A-TIE-2",
+            "B-TIE");
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_WhenRecordIsMalformed_FailsClosedWithFileAndLineEvidence()
+    {
+        var file = Path.Combine(_tempRoot, "malformed.jsonl");
+        await File.WriteAllTextAsync(
+            file,
+            SerializeLine(BuildTrade("SPY", 1)) + "{not-json}" + Environment.NewLine);
+
+        var act = async () => await ReadAllAsync(new JsonlReplayer(_tempRoot));
+
+        await act.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*malformed.jsonl*line 2*");
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_WhenRecordIsJsonNull_FailsClosedWithFileAndLineEvidence()
+    {
+        var file = Path.Combine(_tempRoot, "null-record.jsonl");
+        await File.WriteAllTextAsync(file, "null" + Environment.NewLine);
+
+        var act = async () => await ReadAllAsync(new JsonlReplayer(_tempRoot));
+
+        await act.Should().ThrowAsync<InvalidDataException>()
+            .WithMessage("*null-record.jsonl*line 1*");
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_WhenOneFileContainsLateArrival_ReordersByTimestamp()
+    {
+        var file = Path.Combine(_tempRoot, "regression.jsonl");
+        var timestamp = new DateTimeOffset(2026, 1, 2, 14, 30, 0, TimeSpan.Zero);
+        await File.WriteAllTextAsync(
+            file,
+            SerializeLine(BuildTradeAt("SPY", timestamp.AddTicks(2))) +
+            SerializeLine(BuildTradeAt("SPY", timestamp.AddTicks(1))));
+
+        var result = await ReadAllAsync(new JsonlReplayer(_tempRoot));
+
+        result.Select(static evt => evt.Timestamp).Should().BeInAscendingOrder();
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_WhenConsumerStops_DisposesSourceAndSpoolReaders()
+    {
+        var first = Path.Combine(_tempRoot, "a.jsonl");
+        var second = Path.Combine(_tempRoot, "b.jsonl");
+        await File.WriteAllTextAsync(first, SerializeLine(BuildTrade("AAPL", 1)));
+        await File.WriteAllTextAsync(second, SerializeLine(BuildTrade("MSFT", 2)));
+
+        await using (var enumerator = new JsonlReplayer(_tempRoot).ReadEventsAsync().GetAsyncEnumerator())
+        {
+            (await enumerator.MoveNextAsync()).Should().BeTrue();
+        }
+
+        using var firstExclusive = new FileStream(first, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        using var secondExclusive = new FileStream(second, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_WhenCancelledDuringReplay_ThrowsAndDisposesEveryReader()
+    {
+        var first = Path.Combine(_tempRoot, "a.jsonl");
+        var second = Path.Combine(_tempRoot, "b.jsonl");
+        await File.WriteAllTextAsync(first, SerializeLine(BuildTrade("AAPL", 1)));
+        await File.WriteAllTextAsync(second, SerializeLine(BuildTrade("MSFT", 2)));
+        using var cts = new CancellationTokenSource();
+
+        await using (var enumerator = new JsonlReplayer(_tempRoot)
+                         .ReadEventsAsync(cts.Token)
+                         .GetAsyncEnumerator(cts.Token))
+        {
+            (await enumerator.MoveNextAsync()).Should().BeTrue();
+            cts.Cancel();
+
+            var act = async () => await enumerator.MoveNextAsync();
+            await act.Should().ThrowAsync<OperationCanceledException>();
+        }
+
+        using var firstExclusive = new FileStream(first, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        using var secondExclusive = new FileStream(second, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_WhenReplayCountExceedsAdmissionLimit_AllMergeBatchesComplete()
+    {
+        var replayers = new List<JsonlReplayer>();
+        for (var replayIndex = 0; replayIndex < JsonlReplayer.MaxConcurrentReplaySorts + 1; replayIndex++)
+        {
+            var replayRoot = Path.Combine(_tempRoot, $"replay-{replayIndex:D2}");
+            Directory.CreateDirectory(replayRoot);
+            var file = Path.Combine(replayRoot, "events.jsonl");
+            var start = new DateTimeOffset(2026, 1, 2, 14, 30, 0, TimeSpan.Zero);
+            var content = new StringBuilder();
+            for (var eventIndex = JsonlReplayer.MaxMergeReaders; eventIndex >= 0; eventIndex--)
+            {
+                content.Append(SerializeLine(BuildTradeAt(
+                    $"R{replayIndex}-E{eventIndex}",
+                    start.AddTicks(eventIndex),
+                    eventIndex + 1L)));
+            }
+
+            await File.WriteAllTextAsync(file, content.ToString());
+            replayers.Add(new JsonlReplayer(
+                file,
+                sortRunRecordLimit: 1,
+                maxMergeReaders: JsonlReplayer.MaxMergeReaders));
+        }
+
+        var startGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var replayTasks = replayers.Select(async replayer =>
+        {
+            await startGate.Task;
+            return await ReadAllAsync(replayer);
+        }).ToArray();
+        startGate.SetResult();
+
+        var results = await Task.WhenAll(replayTasks).WaitAsync(TimeSpan.FromSeconds(20));
+
+        results.Should().AllSatisfy(events =>
+        {
+            events.Should().HaveCount(JsonlReplayer.MaxMergeReaders + 1);
+            events.Select(static evt => evt.Timestamp).Should().BeInAscendingOrder();
+        });
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_WhenOuterMergePrimesMoreThanAdmissionLimit_DoesNotRetainAdmissionAcrossYield()
+    {
+        var enumerators = new List<IAsyncEnumerator<MarketEvent>>();
+        try
+        {
+            for (var index = 0; index < JsonlReplayer.MaxConcurrentReplaySorts + 1; index++)
+            {
+                var replayRoot = Path.Combine(_tempRoot, $"prime-{index:D2}");
+                Directory.CreateDirectory(replayRoot);
+                var file = Path.Combine(replayRoot, "events.jsonl");
+                await File.WriteAllTextAsync(file, SerializeLine(BuildTrade($"S{index}", index + 1L)));
+                enumerators.Add(new JsonlReplayer(file).ReadEventsAsync().GetAsyncEnumerator());
+            }
+
+            foreach (var enumerator in enumerators)
+                (await enumerator.MoveNextAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(10))).Should().BeTrue();
+        }
+        finally
+        {
+            foreach (var enumerator in enumerators)
+                await enumerator.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_WhenLateArrivalsExceedSortRun_ReplaysInBoundedTimestampOrder()
+    {
+        var file = Path.Combine(_tempRoot, "late-arrivals.jsonl");
+        var start = new DateTimeOffset(2026, 1, 2, 14, 30, 0, TimeSpan.Zero);
+        var count = JsonlReplayer.SortRunRecordLimit + 7;
+        var content = new StringBuilder();
+        for (var index = count - 1; index >= 0; index--)
+            content.Append(SerializeLine(BuildTradeAt("SPY", start.AddTicks(index), index + 1L)));
+        await File.WriteAllTextAsync(file, content.ToString());
+
+        var replayed = await ReadAllAsync(new JsonlReplayer(file));
+
+        replayed.Should().HaveCount(count);
+        replayed.Select(static evt => evt.Timestamp).Should().BeInAscendingOrder();
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_WhenEqualTimestampsCrossMultipleMergePasses_PreservesPhysicalLineOrder()
+    {
+        var file = Path.Combine(_tempRoot, "multi-pass-ties.jsonl");
+        var start = new DateTimeOffset(2026, 1, 2, 14, 30, 0, TimeSpan.Zero);
+        var input = new[]
+        {
+            BuildTradeAt("TIE-1", start.AddTicks(5), 1),
+            BuildTradeAt("LATE", start.AddTicks(9), 2),
+            BuildTradeAt("TIE-2", start.AddTicks(5), 3),
+            BuildTradeAt("EARLY-1", start.AddTicks(1), 4),
+            BuildTradeAt("TIE-3", start.AddTicks(5), 5),
+            BuildTradeAt("MIDDLE", start.AddTicks(3), 6),
+            BuildTradeAt("TIE-4", start.AddTicks(5), 7),
+            BuildTradeAt("EARLY-2", start.AddTicks(2), 8),
+            BuildTradeAt("TIE-5", start.AddTicks(5), 9)
+        };
+        await File.WriteAllTextAsync(file, string.Concat(input.Select(SerializeLine)));
+
+        var expected = new[]
+        {
+            "EARLY-1", "EARLY-2", "MIDDLE", "TIE-1", "TIE-2", "TIE-3", "TIE-4", "TIE-5", "LATE"
+        };
+
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            var replayed = await ReadAllAsync(new JsonlReplayer(file, sortRunRecordLimit: 2, maxMergeReaders: 2));
+            replayed.Select(static evt => evt.Symbol).Should().Equal(expected);
+        }
     }
 
     [Fact]
@@ -106,23 +333,189 @@ public sealed class JsonlReplayerTests : IDisposable
         result[0].Symbol.Should().Be("EEM");
     }
 
+    [Theory]
+    [InlineData("timestamp")]
+    [InlineData("symbol")]
+    [InlineData("type")]
+    [InlineData("schemaVersion")]
+    [InlineData("payload")]
+    public async Task ReadEventsAsync_MissingRequiredField_FailsBeforeAnyEvent(string field)
+    {
+        var json = JsonNode.Parse(SerializeLine(BuildTrade("SPY", 1)))!.AsObject();
+        json.Remove(field);
+        await AssertInvalidRecordAsync(json.ToJsonString());
+    }
+
+    [Theory]
+    [InlineData("timestamp", "\"0001-01-01T00:00:00+00:00\"")]
+    [InlineData("symbol", "\" \"")]
+    [InlineData("canonicalSymbol", "\" \"")]
+    [InlineData("type", "0")]
+    [InlineData("type", "255")]
+    [InlineData("schemaVersion", "0")]
+    [InlineData("schemaVersion", "2")]
+    [InlineData("payload", "null")]
+    [InlineData("payload", "{\"kind\":\"trade\"}")]
+    [InlineData("payload", "{\"kind\":\"heartbeat\"}")]
+    [InlineData("type", "5")]
+    public async Task ReadEventsAsync_InvalidEnvelopeOrPayload_RetainsSourcePosition(string field, string value)
+    {
+        var json = JsonNode.Parse(SerializeLine(BuildTrade("SPY", 1)))!.AsObject();
+        json[field] = JsonNode.Parse(value);
+        await AssertInvalidRecordAsync(json.ToJsonString());
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_EmptyObject_FailsWithSourcePosition()
+        => await AssertInvalidRecordAsync("{}");
+
+    [Fact]
+    public async Task ReadEventsAsync_HeartbeatWithMatchingPayload_Replays()
+    {
+        var file = Path.Combine(_tempRoot, "heartbeat.jsonl");
+        var heartbeat = MarketEvent.Heartbeat(DateTimeOffset.Parse("2026-01-02T14:30:00Z"), "TEST");
+        await File.WriteAllTextAsync(file, SerializeLine(heartbeat));
+
+        var events = await ReadAllAsync(new JsonlReplayer(file));
+
+        events.Should().ContainSingle().Which.Should().Be(heartbeat);
+    }
+
+    private async Task AssertInvalidRecordAsync(string line)
+    {
+        var file = Path.Combine(_tempRoot, "incomplete.jsonl");
+        await File.WriteAllTextAsync(file, SerializeLine(BuildTrade("SPY", 1)) + line + "\n");
+        await using var reader = new JsonlReplayer(file).ReadEventsAsync().GetAsyncEnumerator();
+        var act = async () => await reader.MoveNextAsync();
+        await act.Should().ThrowAsync<InvalidDataException>().WithMessage("*incomplete.jsonl*line 2*");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReadEventsAsync_OpenCaptureWriter_RefusesUntilWriterCloses(bool partialTail)
+    {
+        var file = Path.Combine(_tempRoot, "active.jsonl");
+        var tail = SerializeLine(BuildTrade("SPY", 2));
+        await File.WriteAllTextAsync(file, SerializeLine(BuildTrade("SPY", 1)));
+        await using (var writer = new FileStream(file, FileMode.Append, FileAccess.Write, FileShare.Read | FileShare.Delete))
+        {
+            if (partialTail)
+            {
+                await writer.WriteAsync(Encoding.UTF8.GetBytes(tail[..(tail.Length / 2)]));
+                await writer.FlushAsync();
+            }
+            var act = async () => await ReadAllAsync(new JsonlReplayer(file));
+            await act.Should().ThrowAsync<IOException>();
+            if (partialTail)
+                await writer.WriteAsync(Encoding.UTF8.GetBytes(tail[(tail.Length / 2)..]));
+        }
+        (await ReadAllAsync(new JsonlReplayer(file))).Should().HaveCount(partialTail ? 2 : 1);
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_ParallelReadersShareSource_ObserveTheSameCapture()
+    {
+        var file = Path.Combine(_tempRoot, "shared.jsonl");
+        var count = JsonlReplayer.SortRunRecordLimit + 3;
+        await File.WriteAllTextAsync(file, string.Concat(Enumerable.Range(1, count).Reverse()
+            .Select(index => SerializeLine(BuildTrade("SPY", index)))));
+        var reads = Enumerable.Range(0, JsonlReplayer.MaxConcurrentReplaySorts + 1)
+            .Select(_ => ReadAllAsync(new JsonlReplayer(file))).ToArray();
+        var results = await Task.WhenAll(reads).WaitAsync(TimeSpan.FromSeconds(30));
+        results.Should().AllSatisfy(events => events.Select(evt => evt.Sequence).Should()
+            .Equal(Enumerable.Range(1, count).Select(i => (long)i)));
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_AfterPreparation_IsUnaffectedBySourceReplacement()
+    {
+        var file = Path.Combine(_tempRoot, "fixed-cut.jsonl");
+        var count = JsonlReplayer.ReplayPageRecordLimit + 3;
+        await File.WriteAllTextAsync(file, string.Concat(Enumerable.Range(1, count)
+            .Select(index => SerializeLine(BuildTrade("SPY", index)))));
+        await using var reader = new JsonlReplayer(file).ReadEventsAsync().GetAsyncEnumerator();
+        (await reader.MoveNextAsync()).Should().BeTrue();
+        File.Delete(file);
+        await File.WriteAllTextAsync(file, SerializeLine(BuildTrade("OTHER", 99)));
+        var events = new List<MarketEvent> { reader.Current };
+        while (await reader.MoveNextAsync())
+            events.Add(reader.Current);
+        events.Should().HaveCount(count).And.OnlyContain(evt => evt.Symbol == "SPY");
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_PagesOnePrivateRunWithoutDuplication_AndCleansOnEarlyDisposal()
+    {
+        var file = Path.Combine(_tempRoot, "unicode.jsonl");
+        var spoolRoot = Path.Combine(_tempRoot, "spools");
+        Directory.CreateDirectory(spoolRoot);
+        var count = JsonlReplayer.ReplayPageRecordLimit * 2 + 7;
+        await File.WriteAllTextAsync(file, string.Concat(Enumerable.Range(1, count)
+            .Select(index => SerializeLine(BuildTrade("CAFÉ-日本", index)))));
+        await using (var reader = new JsonlReplayer(file, 31, 2, spoolRoot).ReadEventsAsync().GetAsyncEnumerator())
+        {
+            (await reader.MoveNextAsync()).Should().BeTrue();
+            var spool = Directory.GetDirectories(spoolRoot).Should().ContainSingle().Which;
+            var run = Directory.GetFiles(spool).Should().ContainSingle().Which;
+            Path.GetFileName(run).Should().NotStartWith("page-");
+            if (!OperatingSystem.IsWindows())
+            {
+                File.GetUnixFileMode(spool).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+                File.GetUnixFileMode(run).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            }
+            for (var index = 2; index < count; index++)
+            {
+                (await reader.MoveNextAsync()).Should().BeTrue();
+                reader.Current.Sequence.Should().Be(index);
+                reader.Current.Symbol.Should().Be("CAFÉ-日本");
+            }
+        }
+        Directory.GetFileSystemEntries(spoolRoot).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ReadEventsAsync_SymbolRanks_FilterAndPreserveRequestedTieOrder()
+    {
+        var file = Path.Combine(_tempRoot, "symbols.jsonl");
+        var timestamp = DateTimeOffset.Parse("2026-01-02T14:30:00Z");
+        await File.WriteAllTextAsync(file, string.Concat(new[]
+        {
+            BuildTradeAt("AAPL", timestamp, 1), BuildTradeAt("MSFT", timestamp, 2),
+            BuildTradeAt("EXCLUDED", timestamp, 3), BuildTradeAt("AAPL", timestamp.AddTicks(-1), 4),
+            BuildTradeAt("RAW", timestamp, 5) with { CanonicalSymbol = "MSFT" }
+        }.Select(SerializeLine)));
+        var events = await ReadAllAsync(new JsonlReplayer(file, new Dictionary<string, int>
+        {
+            ["MSFT"] = 0,
+            ["AAPL"] = 1
+        }));
+        events.Select(evt => evt.Sequence).Should().Equal(4, 2, 5, 1);
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_tempRoot))
             Directory.Delete(_tempRoot, recursive: true);
     }
 
-    private async Task WriteGzipAsync(string file, MarketEvent evt)
+    private async Task WriteGzipAsync(string file, params MarketEvent[] events)
     {
         await using var fs = File.Create(file);
         await using var gzip = new GZipStream(fs, CompressionMode.Compress);
         await using var writer = new StreamWriter(gzip);
-        await writer.WriteAsync(SerializeLine(evt));
+        foreach (var evt in events)
+            await writer.WriteAsync(SerializeLine(evt));
     }
 
     private static MarketEvent BuildTrade(string symbol, long sequence)
     {
         var timestamp = new DateTimeOffset(2026, 1, 2, 14, 30, 0, TimeSpan.Zero).AddSeconds(sequence);
+        return BuildTradeAt(symbol, timestamp, sequence);
+    }
+
+    private static MarketEvent BuildTradeAt(string symbol, DateTimeOffset timestamp, long sequence = 1)
+    {
         var trade = new Trade(timestamp, symbol, 100m + sequence, 10, AggressorSide.Buy, sequence, "TEST", "XNYS");
         return MarketEvent.Trade(timestamp, symbol, trade, "TEST", sequence);
     }

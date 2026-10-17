@@ -11,6 +11,11 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Ui.Shared
 
+Replay file previews return an explicit empty JSON error response for malformed persisted events,
+including source file/line evidence, and distinguish active/unavailable captures from corruption.
+Quant Lab parameter discovery returns HTTP 400 when any globals `Param` metadata is incomplete;
+partial extraction cannot authorize the browser run command.
+
 Late-adjustment review requires the authenticated operator's built-in role or named role profile
 to match the review role retained on the adjustment's materiality policy, alongside ledger mutation
 permission and an independent requester/reviewer. Administrative mutation permission does not
