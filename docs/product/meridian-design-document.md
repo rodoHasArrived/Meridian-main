@@ -1,9 +1,9 @@
-# Meridian Design Document — Version 1.3
+# Meridian Design Document — Version 1.5
 
 **Status:** canonical
 **Owner:** core-team
-**Reviewed:** 2026-10-16
-**Supersedes:** Version 1.2 (status refresh in the same review cycle), Version 1.1 (registry snapshot 2026-09-28), Version 1.0 (registry snapshot
+**Reviewed:** 2026-10-17
+**Supersedes:** Version 1.4 (fund-operations direction 2026-10-17), Version 1.3 (direction registration 2026-10-16), Version 1.2 (status refresh in the same review cycle), Version 1.1 (registry snapshot 2026-09-28), Version 1.0 (registry snapshot
 2026-08-03), and Version 0.25 (full text preserved at
 [`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md))
 **Source:** Ground-up rewrite of the 0.15–0.25 charter lineage. Grounded in the roadmap registry
@@ -12,8 +12,11 @@
 review (`docs/product/adversarial-program-review-2026-07.md`), the accepted W9 priority slate
 (`docs/product/plans/product-roadmap-priorities-2026-07.md`, decision `DEC-PRIORITY-SLATE-001`), the
 W9 acceptance decisions (`DEC-W9-ACCEPTANCE-001` through `-005`, `DEC-W9-DONE-001`), and the W10
-depth slate (`docs/product/plans/w10-depth-slate-2026-07.md`, decision `DEC-DEPTH-SLATE-001`). The
-version-by-version history is summarized in Section 25.
+depth slate (`docs/product/plans/w10-depth-slate-2026-07.md`, decision `DEC-DEPTH-SLATE-001`).
+Versions 1.4–1.5 add user-directed fund-operations functionality under
+`DEC-FUND-OPERATIONS-DIRECTION-001` and define its incremental delivery, opening-state controls,
+acceptance evidence, and rollout in Sections 22.5–22.6. The requirements are expressed in Meridian's
+own financial and operating contracts. The version-by-version history is summarized in Section 25.
 
 > **Status facts in this charter are snapshots.** Where a registry row and this document disagree,
 > the registry (`docs/roadmap/data/roadmap-items.yml`) wins; fix this document rather than citing
@@ -34,6 +37,7 @@ version-by-version history is summarized in Section 25.
 | Operational targets (recovery, retention, deployment, secrets) | Section 12.3 |
 | Integration, reporting, and evidence strategy | Sections 17–19 |
 | Target architecture, Number Passport contract, contract packs, and planned direction | Section 22 |
+| Fund operations, delivery dependencies, acceptance, and rollout | Sections 22.5–22.6 |
 | Foundational slice | Section 23 |
 | What may be claimed and what is out of scope | Section 24 |
 
@@ -53,18 +57,21 @@ status refresh edits one table.
 
 Investment organizations run on numbers nobody can cheaply verify. Positions live with custodians,
 cash lives with banks, terms live in documents, economics live in spreadsheets, entries live in a
-general ledger, and deliverables are re-typed into Excel and PDF at the end of every period. Trust
+general ledger, and deliverables are re-typed into spreadsheets and PDF at the end of every period. Trust
 is assembled by hand: operators reconcile after the fact, controllers sign what they cannot fully
 trace, and auditors reconstruct lineage months later at billable rates.
 
-The market has tools for every fragment and no product for the whole proof:
+The workflow gaps Meridian must resolve in a customer's operating stack are specific:
 
-* Portfolio systems **show** numbers but cannot prove them.
-* Accounting systems **record** numbers but do not carry the operational evidence behind them.
-* Close-management tools **track tasks** around numbers but do not own the data or the ledger.
-* Fund administrators **certify** numbers as a service, at service-provider speed and cost.
+* A position or valuation can be separated from the source and assumptions used at close.
+* A ledger entry can require a separate search for the operational evidence behind it.
+* A completed close task can conceal stale inputs or an unresolved financial exception.
+* An administrator's result can leave the customer's reviewer reconstructing the differences,
+  approvals, and source records needed to verify it.
 
-The unserved product is the number itself, delivered with its proof attached.
+Meridian's opportunity is the number itself, delivered with its proof attached. Customer validation
+must establish which of these gaps affect the declared workflow and whether Meridian reduces the
+effort required to resolve them while preserving its controls.
 
 ### 1.2 The Product Promise
 
@@ -130,21 +137,20 @@ Meridian is **not**:
 
 ### 1.4 Differentiation
 
-Seven themes separate Meridian from adjacent products (close managers such as BlackLine and
-Trintech, fund-administration suites such as Carta and FundStudio, asset-servicing platforms such
-as eFront and SS&C Advent Geneva, and ledger APIs such as Modern Treasury):
+Meridian's value must be demonstrated through seven product requirements. Each is evaluated through
+the complete operator workflow, its retained proof, and the customer's observed operating result:
 
 1. **Verifiable financial data.** Provenance, evidence retention, reconciliation state, approvals,
    and report-line lineage are first-class, user-visible product objects — culminating in the
    Number Passport (Section 22).
 2. **Truthful-by-construction operations.** The product never lies about its own state. Simulated,
    sample, or synthetic data is loudly labeled; unsupported persistence fails closed; missing or
-   stale evidence renders as `review-required` or `blocked`, never as implicit success. Honesty is
-   a feature competitors cannot retrofit cheaply (Section 2.3).
+   stale evidence renders as `review-required` or `blocked`, never as implicit success. Each
+   supported workflow must demonstrate this behavior (Section 2.3).
 3. **Decision-to-delivery continuity on one spine.** The same governed evidence model spans
    strategy research, backtesting, paper validation, live-promotion governance, execution records,
-   reconciliation, the ledger, the close, and stakeholder delivery. Close tools have no trading
-   lane; trading platforms have no close. Meridian's codebase already carries both (Section 5).
+   reconciliation, the ledger, the close, and stakeholder delivery. Meridian's codebase carries
+   foundations across that chain; each claimed slice still needs its own evidence (Section 5).
 4. **Whole-balance-sheet modeling.** Assets, liabilities, commitments, guarantees, collateral, tax
    obligations, intercompany balances, and contingent exposures are modeled as equal citizens
    through contract packs (Section 22).
@@ -200,8 +206,8 @@ The adversarial review's headline finding: the codebase is dramatically more cap
 running product. High-value capabilities exist as well-tested libraries that were never wired into
 the live path. The highest-return engineering available is therefore **activation** — connecting,
 labeling, and proving what is already built — not net-new surface. The prior charter lineage grew
-scope across nine versions; Versions 1.0–1.2 grew none, and Version 1.3 adds direction only as
-registered `planned` rows (Section 22.4).
+scope across nine versions; Versions 1.0–1.2 grew none, and Versions 1.3–1.4 add direction only
+through registered rows (Sections 22.4–22.5).
 
 The activation register records capability posture, not registry status ("supported foundation"
 means the capability exists in source with tests but is not the wired operator path; the row's
@@ -510,7 +516,7 @@ not yet the wired operator path, and the W9 slate exists precisely to close that
 ### 5.3 Registry Status
 
 This is the only place in the charter that states registry status (program snapshot 2026-10-14,
-plus the W11 rows registered 2026-10-16). When it disagrees with `docs/roadmap/data/roadmap-items.yml`,
+plus the W11 rows registered 2026-10-16 and W12 rows registered 2026-10-17). When it disagrees with `docs/roadmap/data/roadmap-items.yml`,
 the registry wins; fix this section and nothing else.
 
 **Closed baselines** (registry status `done`, evidence complete). W1-W5 form the accepted
@@ -536,7 +542,9 @@ Status vocabulary: `accepted` means an operator decision accepted the implementa
 `done` additionally requires the lane-owned release or status documentation. Neither certifies a
 production deployment profile (Section 5.1).
 
-**Every open row**, in wave order and adopted rank within the wave:
+**Every open row**, in wave order and recorded sequence within the wave. W12 records a proposed
+rank; the bounded delivery slices in Section 22.6 do not change that rank, accept an entire row,
+or reprioritize the adopted W9–W11 work:
 
 | Rank | ID | Status | Decision | Capability |
 | --- | --- | --- | --- | --- |
@@ -571,11 +579,18 @@ production deployment profile (Section 5.1).
 | W11 · 4 | `W11-SHADOW-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Shadow-mode onboarding with opening-balance reconciliation (Section 22.3) |
 | W11 · 5 | `W11-PACK-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Governed contract-pack lifecycle on the Security Master asset-class registry (Section 22.2) |
 | W11 · 6 | `W11-EXEC-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Trading & Execution bounded-context ownership (Section 7.1) |
+| W12 · 1 | `W12-BOOK-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Accounting book, basis, and FX control workbench (Sections 6.2.1, 11.7) |
+| W12 · 2 | `W12-CAPITAL-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Governed investor capital and allocation lifecycle (Sections 6.2.2, 6.7) |
+| W12 · 3 | `W12-YEND-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Fiscal year-end close and opening-balance roll-forward (Sections 6.2.1, 11.7) |
+| W12 · 4 | `W12-FINRPT-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Ledger-backed financial statement control pack (Section 18.1) |
+| W12 · 5 | `W12-CREDIT-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | DirectLoan operations and evidence reconciliation (Section 6.8) |
 
 `W9-DEMO-002` (rank 2) and `W9-ASSET-010` are `done` and listed with the closed baselines above.
 No roadmap decision was recorded between the 2026-09-28 and 2026-10-14 snapshots; the changes in
 that interval are rows moving into implementation, not acceptances. `DEC-CHARTER-DIRECTION-001`
-(2026-10-16) registers the W11 rows only; registration is not implementation or acceptance.
+(2026-10-16) registers the W11 rows only. `DEC-FUND-OPERATIONS-DIRECTION-001` (2026-10-17)
+registers the five W12 rows. Both decisions accept planning scope, not implementation or
+operator acceptance; W9 acceptance records and release gates remain unchanged.
 
 The W9 ordering is strategy, not backlog trivia: truth before demonstration, honest gates before
 surface, deliverables before breadth, safety and governance never overpromised, trusted intake
@@ -700,6 +715,98 @@ Event Command Center (create, review, reconcile, approve, report, and lock fund 
 remains a **planned** roadmap candidate and must not be described as implemented until registry
 acceptance exists.
 
+#### 6.2.1 Accounting Books and Fiscal Close
+
+Direction under `W12-BOOK-001`: operators configure and compare books with an explicit owning
+entity, accounting basis, functional currency, fiscal calendar, chart-of-accounts mapping, and
+effective policy versions. One economic event may produce linked postings in multiple books;
+each book retains its own approved treatment, balances, period state, and correction history.
+Partial completion across books stays visible and blocks any output requiring the missing postings.
+Supported bases and lot methods are declared, with unsupported combinations blocked rather than
+inferred from a book label. Book-to-book and trade-date-to-settlement-date bridges explain timing,
+valuation, amortization, tax-treatment, and FX differences down to the source event or lot.
+
+Every monetary view distinguishes original transaction currency, functional currency, and any
+presentation currency. Translation and revaluation retain rate direction, date, source revision,
+method, and rounding policy. Operators can inspect market and currency effects separately and
+review proposed adjustments before the authoritative posting control acts. A revised rate or
+account mapping cannot silently recalculate posted history. Existing multi-currency ledger and
+lot services supply the calculations; `W10-MARK-001`, `W10-LOT-002`, and `W10-TAX-001` retain their
+respective pricing, lot, and tax boundaries.
+
+Direction under `W12-YEND-001`: a fiscal close plan identifies the required constituent periods,
+retained trial balance, approved closing rules, closing journals, and next-year opening balances.
+The existing year-end projector supplies the calculation foundation. Operators review a
+dimension-preserving roll-forward of retained earnings or investor capital, open lots, outstanding
+accruals, and declared carryforward exceptions. Closing journals require an authorized year-end
+posting period or adjustment route; they cannot implicitly reopen a closed constituent period.
+Missing period authority blocks the close; retries
+recover the same close receipt without duplicating closing or opening entries. A late adjustment
+preserves the original close and identifies every affected subsequent balance and issued package.
+Close-plan template rollover remains distinct from accounting balance roll-forward.
+
+The close receipt distinguishes the pre-closing trial balance, closing-transfer journals,
+post-closing trial balance, and next-year opening representation. Closing transfers remain in
+ledger proof but cannot erase or create the period's reported income or performance. Opening
+balances represent the prior post-close balances exactly once; an opening representation and its
+originating history cannot both enter the same balance calculation. Investor-capital closing rules
+must distinguish income already allocated during the year from amounts still awaiting allocation.
+
+#### 6.2.2 Investor Capital and Allocation Operations
+
+Direction under `W12-CAPITAL-001`: the fund specialization connects effective-dated fund, feeder,
+SPV, share-class, series, and investor participation to the existing capital-account and unit
+registers. Commitment, subscription request, approved dealing, unit issuance, and observed cash
+receipt are linked but distinct events. Contribution, distribution, redemption, transfer, and
+series-conversion workflows retain their economic dates, source terms, approval, and ancestry.
+
+Allocation runs bind to the participant set, capital movements, source balances, and policy
+versions applicable to the calculation period. Income, gains/losses, expenses, and fees allocate
+under explicit eligibility and weighting rules. Each run conserves the allocable value, retaining
+deterministic rounding residuals. Fee terms declare the selected equalization or series method,
+hurdle, high-water-mark basis, crystallization dates, and any approved investor exception. Transfers
+and conversions preserve economic value and fee history; resubscription cannot silently reset it.
+
+Each dealing or allocation run retains the policy-defined order of valuation, expense and fee
+accrual, crystallization, subscriptions/redemptions, and conversion. Inputs distinguish gross from
+net NAV and per-unit from total amounts. One authoritative fee-state record owns the applicable
+high-water mark and carryforwards; contributed capital cannot become fee-eligible performance.
+The selected method must define full-redemption, zero-unit, and successor-participation behavior
+before it can be offered. Missing opening fee history blocks the affected calculation rather than
+defaulting to zero; opening-state readiness is defined in Section 22.6.
+
+The NAV, equalization, fee, waterfall, and capital-call kernels under `W9-NAV-006`, and the
+partners-capital output under `W9-REPORT-005`, remain the foundations. The additional contract is
+the durable lifecycle and reconciliation from fund through class/series and investor to the ledger
+and issued statement. The [equalization and series blueprint](../engineering/blueprints/accounting/equalization-and-series-accounting.md)
+defines fee-state ownership and unit conventions; a subscription-time exposure helper alone does
+not establish crystallization or the complete series lifecycle. Each supported master–feeder/SPV
+graph shape and fee convention needs its own worked proof. Side-pocket participation, hedged-class economics, and unrestricted structure
+modeling require separate bounded scope before they can be offered.
+
+#### 6.2.3 NAV, Valuation, and Income Review
+
+The NAV review packet assembles existing economics (`W9-NAV-006`), valuation authority
+(`W10-MARK-001`), recurring drafts (`W10-JRNL-001`), reconciliation continuity and tolerances
+(`W10-RECON-001`, `W10-RECON-003`), and close readiness (`W10-SEAM-001`). Class/series lifecycle
+and tied package presentation are supplied by `W12-CAPITAL-001` and `W12-FINRPT-001`; external-book
+comparison and promotion remain owned by `W11-SHADOW-001`.
+
+The packet bridges opening NAV to closing NAV through capital activity, income, expenses, fees,
+realized/unrealized valuation movement, FX, and declared adjustments, with ending units and NAV
+per unit. Valuation and income review binds marks, accruals, amortization, and expected receipts
+to approved instrument terms, source dates, calculation methods, and policy versions. Reviewers
+see prior-period movement, stale inputs, overrides, receivable roll-forwards, and expected versus
+received income. Revised terms, fixings, or principal factors identify affected calculations and
+propose linked corrections through the existing approval rail.
+
+An independent shadow-NAV comparison uses separately retained source activity and the
+administrator's package at the same scope, basis, currency, and cutoff. It attributes quantity,
+price, FX, accrual, fee, capital, and allocation differences individually. Equal totals cannot
+hide offsetting component breaks; copied administrator results cannot establish independent
+verification. Changed inputs invalidate affected pending review, close, and release decisions.
+Agreement is evidence for those decisions, not permission to close or publish.
+
 ### 6.3 Treasury & Payments
 
 Record and prove money-movement intent: payment requests, liquidity, expected cash movement, bank
@@ -714,6 +821,20 @@ has released money until a roadmap row implements live execution.
 Holdings, positions, transactions, exposures, valuations, and investment activity: brokerage and
 custodian sync, fund accounts, position blotters, lot-level cost basis, corporate-action effects,
 valuation evidence, paper-session records, and ledger-backed portfolio workflows.
+
+Return calculations remain owned by `W10-PERF-001`; reconciled presentation and contribution
+schedules belong to `W12-FINRPT-001`. Outputs declare perimeter, valuation/cash-flow cutoffs,
+method, currency, fee treatment, and source completeness. Time-weighted returns and money-weighted
+returns/IRR are distinct results. Private-capital views can show IRR and MOIC by the declared
+investment vintage, with distributions, contributed capital, and residual valuation visible.
+Missing inputs, failed convergence, and ambiguous money-weighted results remain explicit.
+
+P&L schedules separate realized and unrealized movement, income, fees, and currency effects.
+Security, strategy, sector, fund, class, and vintage groupings use retained classification versions;
+their components and any residual reconcile to the declared total. They drill to the supporting
+positions, cash flows, valuations, and journals. Cross-fund or master–feeder views declare the
+economic perimeter to prevent double counting. Contribution reporting does not imply causal
+attribution, formal performance-standard certification, or acceptance of a separate risk engine.
 
 ### 6.5 Reference Data
 
@@ -759,6 +880,13 @@ People, organizations, trusts, funds, SPVs, beneficiaries, and their ownership a
 relationships: relationship graph, ownership percentages, authorized signers, KYC/AML posture
 references, and effective-dated assignment history.
 
+Under `W12-CAPITAL-001`, effective-dated economic participation is separate from legal ownership,
+signing authority, and the accounting consolidation perimeter. A feeder's interest in a master
+retains both entity identities and the allocation path; a look-through view must identify the
+level included. Cycles, duplicate inclusion, out-of-scope investors, or an unsupported relationship
+shape block the affected allocation. Consolidation and eliminations retain their own controls under
+`W10-CONSOL-001`.
+
 ### 6.8 Alternative Asset Management
 
 Assets beyond public securities: real estate, private credit, private equity, structured products,
@@ -766,6 +894,29 @@ and fund interests, with look-through, capital commitments, and waterfall modeli
 baseline keeps `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`,
 `RealEstateHolding`, `CommitmentGuarantee`, and `DirectLoan` classes first-class in the Security
 Master; live vertical-system adapters remain deferred.
+
+Direction under `W12-CREDIT-001`: for already-modeled `DirectLoan` records, bring approved
+Security Master terms, commitments, drawdown lots, fixed/floating accruals, cash/PIK elections,
+fees, amortization, prepayments, and retained borrower/servicer observations into one governed
+operator workflow. Existing direct-lending services and projections remain the calculation and
+persistence foundation; this adds workflow convergence and evidence required for operator
+acceptance, not a second instrument master.
+
+Views distinguish commitment, funded principal, contractual principal outstanding, cash-interest
+receivable, PIK, fees, and carrying value. A mixed remittance conserves the received amount across
+principal, interest, fees, penalties, and unapplied cash. PIK never appears as cash received;
+discount/premium amortization never masquerades as principal repayment. Contractual currency,
+effective date, accrual interval, settlement date, and source-observation date remain explicit.
+Expected-versus-actual comparisons retain independent borrower or servicer evidence, exact terms
+and fixing revisions, mapping versions, and the original reconciliation result on replay.
+
+Covenant observations retain the applicable executed term, test rule, units, threshold, test date,
+source evidence, and review disposition. Missing or unsupported terms require review. A breach
+observation does not itself authorize default, nonaccrual, restructuring, write-off, or payment.
+Ledger-affecting events use the existing atomic loan/journal/audit boundary and approval/period
+authority, including any applicable approved policy in Section 21. The initial scope uses one
+contractual currency per loan, with translation dependent on `W12-BOOK-001`; it adds no live
+servicer/trustee adapter, loan origination, borrower portal, syndication platform, or CLO waterfall.
 
 ### 6.9 Financing & Capital Structure Analysis
 
@@ -815,6 +966,10 @@ Deliver information to clients, beneficiaries, LPs, trustees, boards, and commit
 packages with explicit states, delivery blockers, amendment and restatement lifecycles that never
 overwrite the original, and entitlement-limited stakeholder views (Section 18).
 
+Fund, class/series, and investor packs must reconcile to one approved snapshot, connecting
+financial statements, capital movements, fees, NAV, and applicable performance schedules. The
+statement definitions and cross-report agreement checks are specified in Section 18.1.
+
 ### 6.14 Collaboration & Communication
 
 Coordination between operators, reviewers, managers, and external parties: comments, assignments,
@@ -828,6 +983,11 @@ Platform configuration, security, roles, rules, and governance: organization, en
 account, book, period, report, and delivery admin scopes; journal/report/period-lock/export
 permissions; onboarding and cloning templates; immutable admin logs for every posting, lock,
 export, and delivery event.
+
+Book and fund setup templates may copy approved configuration into a new draft, with target-scope
+mapping and policy checks before activation. They never copy transactions, balances, credentials,
+completed tasks, approvals, retained reviewer evidence, or period locks. Opening balances enter
+through the governed onboarding/reconciliation workflow, not configuration cloning.
 
 ### 6.16 Audit, Compliance & Regulatory
 
@@ -996,21 +1156,18 @@ screens behind these roots; retired routes remain redirects.
 
 ### 10.1 Core Object Hierarchy
 
-```text
-Tenant / Organization
-        ↓
-Entity
-        ↓
-Account / Capital Account / Ledger Account
-        ↓
-Position / Contract / Obligation
-        ↓
-Expected Cash Flow
-        ↓
-Actual Transaction / Actual Cash Flow / Journal Entry
-        ↓
-Reconciliation / Reporting / Audit
-```
+Accounting and investment records bind to explicit scopes. A financial account identifies where
+activity or assets are held; a book identifies how an entity accounts for that activity. Fund
+participation adds economic dimensions where the fund specialization applies.
+
+| Scope | Records and responsibility |
+| --- | --- |
+| Tenant / Organization → Entity | Isolation boundary and legal/economic party |
+| Entity → Financial Account | Bank, custody, investment, and other operational accounts; positions and observed activity |
+| Entity → Book → Accounting Period | Accounting basis, currency, policies, ledger accounts, journals, and period authority |
+| Instrument / Contract → Obligation | Versioned terms, rights, duties, and expected cash flows |
+| Operational Event / Transaction → Accounting Impact | Retained evidence links actual activity to any governed journal, reconciliation, report, and audit record |
+| Fund → Class / Series → Investor Participation | Optional allocation, unit-register, and capital-account dimensions tied to the accounting records |
 
 ### 10.2 Core Objects
 
@@ -1019,7 +1176,9 @@ Reconciliation / Reporting / Audit
 | Tenant | Customer environment | Fund administrator, RIA, family office |
 | Entity | Legal or economic party | Fund, trust, LLC, individual, SPV |
 | Relationship | Link between entities | Owner, beneficiary, advisor, custodian, lender, borrower |
-| Account | Container where assets, cash, or activity live | Bank account, custody account, investment account, GL account |
+| Account | Financial container where assets, cash, or activity live | Bank account, custody account, investment account |
+| Book | Entity-scoped accounting record with an explicit basis, functional currency, calendar, and policy versions | Management book, shadow book, separately supported statutory or tax basis |
+| Accounting Period | Book-scoped interval with authoritative review, close, lock, and reopen state | Monthly close period, fiscal year |
 | Capital Account | Economic record for investor or owner activity | Commitment, contribution, distribution, allocation, NAV share |
 | Ledger Account | Accounting account used for balanced postings | Cash, receivable, payable, income, expense, capital account |
 | Instrument | Defines what something is | Bond, stock, loan, lease, swap, real estate asset |
@@ -1027,7 +1186,7 @@ Reconciliation / Reporting / Audit
 | Obligation | Future duty or right to pay or receive | Coupon, principal, rent, capital call, distribution |
 | Expected Cash Flow | Forecasted cash movement from terms | Scheduled interest, maturity payment, rent payment |
 | Fund Event | Operational event requiring accounting evidence | Closing, investment, capital call, distribution, expense |
-| Transaction | Actual observed activity | Trade, wire, coupon receipt, journal entry |
+| Transaction | Actual observed activity, linked to its accounting representation when posted | Trade, wire, coupon receipt |
 | Journal Entry | Balanced accounting record owned by Meridian | Accrual, valuation adjustment, cash receipt, capital activity |
 | Position | Ownership or exposure at a point in time | Shares, par value, LP interest, loan balance |
 | Valuation | Value assigned to an object | Market value, NAV, appraisal, fair value |
@@ -1039,6 +1198,13 @@ Reconciliation / Reporting / Audit
 | Delivery Record | Evidence of stakeholder publication | Recipient list, timestamp, channel, package version |
 | Audit Event | Immutable history of meaningful actions | Approved recon, changed terms, imported file |
 
+Fund-specific direction under `W12-CAPITAL-001` adds **Share Class / Series** (a declared group of
+economic and fee terms) and **Investor Participation** (effective-dated ownership of units or
+economic interests, with source and successor identities). Capital accounts and these participation
+records reconcile to the Meridian ledger; they do not establish a competing financial source of
+truth. The existing single-NAV equalization method is a foundation, not proof of every series or
+master–feeder convention.
+
 Fund events are fund/private-capital specializations of the broader operational-event spine that
 connects evidence, workflow, treasury, ledger, capital accounts, reconciliation, reporting,
 delivery, tax, and audit impact. New durable business nouns require a `docs/domain/` dictionary
@@ -1046,23 +1212,15 @@ page before broad code generation.
 
 ### 10.3 Object Relationship Model
 
-```text
-Tenant
- └── Entity
-      ├── Account
-      │    ├── Position
-      │    │    └── Instrument
-      │    ├── Transaction
-      │    └── Cash Balance
-      │
-      ├── Contract
-      │    ├── Instrument
-      │    ├── Obligation
-      │    └── Expected Cash Flow
-      │
-      ├── Document
-      └── Relationship
-```
+| Relationship | Required meaning |
+| --- | --- |
+| Tenant → Entity → Account | An account, its transactions, positions, and cash balances retain their entity and isolation scope |
+| Entity → Book → Period / Ledger Account | Journals use the book's policies and period authority; ledger-account identity is distinct from financial-account identity |
+| Account → Position → Instrument | A holding resolves an authoritative instrument and the terms applicable to the valuation date |
+| Entity → Contract → Obligation / Expected Cash Flow | Rights, duties, and schedules retain the source contract and effective version |
+| Transaction / Operational Event → Journal Entry | A posting links evidence and approvals to balanced accounting lines in the applicable book |
+| Fund / Class / Series → Investor Participation → Capital Account | Effective participation determines allocation; balances reconcile to the applicable ledger and issued NAV/statement |
+| Entity / Financial Record → Document / Relationship | Evidence and economic or authority relationships remain scoped, versioned, and inspectable |
 
 ---
 
@@ -1177,9 +1335,19 @@ workflows, or close packages:
 | Concurrency control | Writes that depend on balance, close status, settlement status, or approval state use optimistic version checks and fail closed on stale state. |
 | Payment linkage | Payment requests, bank orders, confirmations, returns, and reversals link to ledger transactions, but payment processors do not become the source of ledger truth. |
 | Audit reconstruction | Every ledger balance in a report package can drill back to entries, source records, approvals, documents, and any reversal chain. |
+| Book isolation | Every posting declares entity, book, basis, and currency; related postings in other books retain their own policy, approval, and period authority. Cross-book differences are explained, never erased by an aggregate view. |
+| Exact approval binding | The write boundary rechecks the approved record, scope, terms, source/rate revisions, rule versions, and period authority. Any change to an approval-bound input invalidates the pending approval; nonbinding descriptive metadata is identified separately. |
+| Financial measure identity | Contractual principal, carrying value, cash, accrued income, PIK, units, and capital are distinct measures. Translation, allocation, and rounding retain enough evidence to reconcile each measure. |
+| Close continuity | Fiscal closing and opening balances retain a reproducible close receipt and all financial dimensions. Retries do not duplicate entries; later corrections preserve the prior close and identify downstream effects. |
 
 Hardening direction (`W9-GOV-008`): the authoritative accounting audit trail becomes hash-chained
 so tampering is detectable, complementing the existing storage-layer audit chain.
+
+`W12-BOOK-001` and `W12-YEND-001` apply these controls to book comparison, FX revaluation, and
+annual close. Changing a basis, rate source, or closing rule creates a new reviewed version.
+Historical reports retain the original version; corrections use the existing reversal/adjustment
+and governed reopen paths. Book-level revaluation does not expand the independently bounded
+cross-entity consolidation capability under `W10-CONSOL-001`.
 
 ### 11.8 Canonical State Vocabulary
 
@@ -1462,6 +1630,53 @@ Delivery direction (Section 2.4): every delivered package exposes governed, enti
 drill-through from report line to evidence for its recipients. The broad self-service portal
 remains deferred.
 
+### 18.1 Financial Statement Control Packs
+
+Direction under `W12-FINRPT-001` connects the existing financial-statement calculations and
+`W9-REPORT-005` rendering to governed definitions, account mappings, comparative snapshots, and
+cross-statement agreement checks. Each output binds the entity or declared perimeter, book,
+accounting basis, currency, period, as-of cutoff, source snapshot, and definition/mapping versions.
+Draft previews are visibly separate from outputs derived from approved posted records.
+
+| Output | Required reconciliation and explanation |
+| --- | --- |
+| Trial balance | Opening balance plus posted activity equals closing balance; debit/credit controls retain book and currency scope |
+| Balance sheet and income statement | The accounting equation and income-to-capital movement reconcile to the same retained journals and mapping version |
+| Cash-flow statement | For a fixed declared cash perimeter, opening cash plus classified cash flows and separately disclosed exchange-rate effects equals closing cash; FX effects retain rate evidence, and noncash legs of compound journals cannot invent a cash-flow counterpart |
+| Partners' capital and investor statements | Contributions, distributions, allocated results, fees, and closing capital tie through fund/class/series to the posted ledger; unexplained residuals block release |
+| NAV and supporting schedules | Fund/class NAV, units, investor holdings, fee calculations, and the component bridge in Section 6.2.3 agree at the same cutoff |
+| P&L, contribution, and return schedules | Components reconcile to the declared total; return methodology and eligible aggregation follow `W10-PERF-001` and Section 6.4 |
+| Comparative periods and books | Figures retain their own snapshot, basis, currency, and restatement status; gross and consolidated views identify their different perimeters |
+
+Account-mapping controls reconcile the complete eligible ledger population to each statement's
+declared line rules. Every in-scope balance is included once in the applicable accounting total or
+has an explicit supported exclusion; missing mappings and overlapping classifications cannot
+silently omit or double count balances. Drill-through and repeated disclosure views may reuse a
+balance without adding it again to that accounting total. Annual income uses the retained
+pre-closing activity and identified adjustment journals; year-end transfer entries cannot zero
+reported earnings or manufacture performance. Post-closing and next-year opening comparisons use
+the corresponding close receipt from Section 6.2.1.
+
+The initial cash-flow statement permits exchange-rate effects as a separately evidenced non-flow
+bridge. Unchanged foreign-currency cash must show the translation effect without inventing a
+receipt or payment. Other non-flow categories or changes to the cash perimeter require a separately
+supported definition and retained evidence; unexplained residuals block certification and release.
+
+Operators can assemble bounded fund, class, investor, and oversight templates using governed
+groupings, formulas, supporting schedules, and branding. Missing account mappings, unsupported
+formula inputs, incompatible scopes, incomplete sources, or failed agreement checks prevent
+certification. Every amount-bearing line and total drills through the shared proof contract (`W10-PROV-001`, then
+`W11-PASSPORT-001`) to retained journals or source calculations; exports include machine-readable
+reconciliation totals and the evidence manifest.
+
+Scheduled runs produce reviewable package candidates. Release rechecks the exact approved data
+and definition versions, close blockers, recipient entitlements, and delivery authority. A changed
+mapping, allocation, valuation, or source snapshot requires renewed review of affected outputs;
+previously issued packages remain reproducible. Recipient access follows `W11-STAKE-001`.
+Tax or regulatory exports are supporting datasets unless a separate filing workflow is explicitly
+scoped and accepted. This direction uses the existing reporting platform and preserves the deferred
+boundary on unrestricted self-service reporting and analytics.
+
 ---
 
 ## 19. Document and Evidence Strategy
@@ -1500,7 +1715,8 @@ Engineering boundaries live in
 [`docs/architecture/core-extensibility-model.md`](../architecture/core-extensibility-model.md); the
 shared contract seam is `src/Meridian.Contracts/Extensibility/`.
 
-**Stable core objects** (consistent across tenants): Tenant, Entity, Relationship, Account,
+**Stable core objects** (consistent across tenants): Tenant, Entity, Relationship, Account, Book,
+Accounting Period,
 Instrument, Contract, Obligation, Expected Cash Flow, Transaction, Position, Valuation,
 Reconciliation, Exception, Capital Account, Ledger Account, Journal Entry, Fund Event, Document,
 Task, Report Package, Audit Event.
@@ -1512,6 +1728,11 @@ schedules, permissions and scopes, classifications, custom fields, source priori
 **Not configurable** (governed and consistent everywhere): audit trail, security model foundation,
 core object identity, financial calculation integrity, data lineage model, approval evidence model,
 immutable record preservation.
+
+Fund participation, series, fee exceptions, and allocation methods specialize the core through
+governed terms and policy versions. Selecting a fund profile cannot weaken value conservation,
+book isolation, independent review, or immutable history. New durable contracts require the
+domain dictionary and shared-service specification before implementation.
 
 Configuration lifecycle: `Draft → Tested → Reviewed → Approved → Active → Superseded → Retired`.
 Every configuration record carries standard metadata (ID, type, owning context, version, effective
@@ -1582,7 +1803,7 @@ data connections, evidence graph, governed permissions) with vertical packages:
 
 | Common platform | Fund Administration package | Family Office package |
 | --- | --- | --- |
-| Ledger, positions, valuations, vault, documents, workflows, reconciliations, reporting, connectors, evidence graph, permissions | Commitments, closings, allocations, equalization, waterfalls, carry, fees, partner capital accounts, NAV workflows, investor onboarding, statements, notices | Entity accounting, consolidations, eliminations, trusts, household views, intercompany activity, liquidity planning, liabilities, guarantees, advisor coordination |
+| Ledger, book/basis and FX controls, fiscal close, positions, valuations, vault, documents, workflows, reconciliations, tied financial statements, connectors, evidence graph, permissions | Commitments, closings, effective-dated investor/class/series participation, master–feeder allocations, equalization, waterfalls, carry, fees, partner capital accounts, NAV review, investor onboarding, statements, notices | Entity accounting, consolidations, eliminations, trusts, household views, intercompany activity, liquidity planning, liabilities, guarantees, advisor coordination |
 
 The authoritative ledger remains the financial source of truth. Object storage preserves raw
 payloads; an event bus distributes normalized business events; a columnar warehouse serves
@@ -1591,7 +1812,7 @@ discovery. The graph and warehouse are **projections, not competing books of rec
 
 **Market-entry wedge.** The first packaged product is the **Close, Data and Evidence Control
 Tower**: entity and ownership graphs, asset/liability registry, document and source-data vault,
-CSV/Excel/email/SFTP ingestion, priority bank and custodian connectors, opening-balance and
+CSV/spreadsheet/email/SFTP ingestion, priority bank and custodian connectors, opening-balance and
 position reconciliations, close checklists, reviewer workflows, exception management, consolidated
 reporting, Number Passports, audit-ready close binders, and governed read-only stakeholder views.
 Stage two becomes the native accounting system (multi-book ledger, private-capital accounting).
@@ -1698,6 +1919,148 @@ client portal (Section 24).
 lane or precede production certification, and it leaves every W9 and W10 sequence and the
 operator-session plan unchanged.
 
+### 22.5 Fund Operations Depth
+
+`DEC-FUND-OPERATIONS-DIRECTION-001` (2026-10-17) registers five complementary W12 rows for the
+user-directed fund-operations revision. The table maps functional intent to existing foundations
+and additional proof; status remains in Section 5.3. Registry sequence records the proposed W12
+rank. The delivery slices in Section 22.6 can combine bounded parts of several rows without changing
+that rank or accepting an entire row. The current LOT → MARK → SEAM execution queue, historical
+operator-session sequence, and production-certification requirements remain governed by the
+[implementation and readiness tracker](implementation-todo-list.md); W12 does not alter them.
+
+| Direction | Existing foundation to reuse | Additional operator outcome and proof |
+| --- | --- | --- |
+| `W12-BOOK-001` — book, basis, and FX controls | Multi-currency journal/translation services, accounting-book context, lot spine, `W9-GOV-008`, `W10-MARK-001`, `W10-LOT-002`, `W10-TAX-001`, `W10-SEAM-001` | Two explicitly supported books preserve their different treatments; a foreign-currency partially settled sale reproduces the basis, timing, and FX bridge with linked approvals and no historical rewrite |
+| `W12-CAPITAL-001` — investor capital and allocation lifecycle | Share-class unit register, equalization, partnership allocation and fund-economics kernels (`W9-NAV-006`), partners-capital output (`W9-REPORT-005`) | Different subscription dates, partial redemption, loss/recovery, and a transfer or series conversion reconcile fund → class/series → investor → ledger → statement; fee history, effective participation, and rounding remain reproducible |
+| `W12-YEND-001` — fiscal close and opening roll-forward | Year-end close projector, recurring draft infrastructure (`W10-JRNL-001`), close readiness (`W10-SEAM-001`), book controls (`W12-BOOK-001`) | A complete fiscal year ties closing journals to next-year opening balances; omitted periods block, retries recover one receipt, and a late correction retains the original close and its successor chain |
+| `W12-FINRPT-001` — financial statement control pack | Financial-statement builders, client-grade rendering (`W9-REPORT-005`), returns (`W10-PERF-001`), shared proof and package access (`W10-PROV-001`, `W11-PASSPORT-001`, `W11-STAKE-001`) | One retained journal set generates mutually reconciled statements, NAV/capital support, and dimensional P&L schedules; a compound cash/noncash journal is classified correctly and an issued package reproduces after later mapping changes |
+| `W12-CREDIT-001` — DirectLoan operations and evidence reconciliation | Security Master identity/terms, direct-lending aggregates and services, atomic loan/ledger persistence, servicer-evidence contracts, book/FX controls (`W12-BOOK-001`) | A draw, rate reset, cash/PIK accrual, partial remittance, covenant observation, and governed correction reconcile source → loan → ledger → report; restart/retry cannot apply the same receipt twice |
+
+NAV oversight, valuation/income review, and scheduled report assembly are joined workflows over
+the rows named in Sections 6.2.3 and 18.1. They do not create duplicate NAV, return, reporting, or
+provenance engines. An end-to-end workflow can be claimed only when its participating capabilities
+and specific acceptance evidence support that claim.
+
+All five rows belong to **Accounting and Ledger**, with Financial Operations coordinating review,
+Instrument/Contract and Entity/Relationship retaining their respective record authority, and
+Reporting owning definitions and delivery. Both workstation surfaces consume shared contracts,
+services, identities, calculations, and blockers under the existing seven roots. The initial
+operator view exposes the declared scope, source freshness, draft/posted distinction, review state,
+and reconciliation result; drill-through reaches terms, calculations, journal, and issued output.
+Bulk preview and review preserve per-record approval and failure reasons. Locked, stale, partial,
+unsupported, and permission-denied states remain actionable and truthful. The supported deployment
+envelope in Section 12.3 continues to govern these workflows.
+
+### 22.6 Delivery, Acceptance, and Rollout
+
+The delivery plan begins with one usable monthly-close workflow and adds supported financial
+combinations after that workflow is proved. A bounded slice has its own evidence and limitations;
+it does not discharge the remaining exit criteria of its parent roadmap rows. Implementation and
+operator evidence belong in the existing tracker and registry, not in a second status table here.
+
+#### 22.6.1 First Deliverable and Dependency Boundaries
+
+The first slice combines a supported book under `W12-BOOK-001` with basic monthly statements under
+`W12-FINRPT-001`: one company/entity, one book and functional currency, one declared period, and
+retained source activity on durable storage. An operator inspects the opening state, resolves a
+controlled exception, reviews and approves the proposed accounting result, and produces a tied
+trial balance, balance sheet, income statement, and cash bridge with report-line evidence. Changing
+a source or mapping invalidates affected pending review; reopening the retained package reproduces
+its original figures. An existing supported renderer supplies the output.
+
+| Delivery slice | Required operator result | Dependency boundary |
+| --- | --- | --- |
+| Monthly-close proof — BOOK and basic FINRPT | One scoped close package with source-to-journal-to-line evidence, a resolved exception, and a reproducible receipt | Authoritative scope, supported book rules, durable approved journals, period controls, and the existing report/provenance contracts used by the slice |
+| Book and FX depth — BOOK | A second supported book and a foreign-currency partially settled sale explain basis, timing, lot, market, and FX differences | Common close proof plus the specific lot, valuation, tax, and FX conventions exercised; no inference that every basis is supported |
+| Investor capital — CAPITAL | One supported fund/class and investor lifecycle proceeds from dealing through allocation, units, capital, and statement reconciliation before adding graph or series variants | Applicable book controls and `W9-NAV-006`; acceptance uses `W9-REPORT-005`, so the later combined FINRPT pack is not a prerequisite |
+| Fiscal close — YEND | Complete constituent periods produce governed closing transfers, post-close balances, and one next-year opening representation | Book/period authority, supported closing policy, and an authorized posting route; investor-capital treatment additionally needs the applicable allocation evidence |
+| DirectLoan operations — CREDIT | Declared loan terms, expected obligations, accrual/PIK, remittance, ledger, and retained output agree through correction and recovery | Canonical instrument authority, supported book/FX rules, exact approvals, and the durable loan/ledger boundary; richer statement schedules use applicable FINRPT evidence |
+| Combined statements and delivery — FINRPT | Supported class/series, annual, comparative, contribution, return, and recipient views join the basic pack | CAPITAL gates investor economics; YEND gates annual roll-forward; `W10-PERF-001` gates returns; the relevant proof, shadow-promotion, and recipient-access capabilities gate only the outputs or authority changes that use them |
+
+Source foundations establish where implementation starts. Before a slice relies on them, its owner
+must link the required contract and behavior evidence for the exact supported configuration.
+Missing evidence blocks that dependent operation. Basic monthly statements need neither an annual
+close nor external recipient access, but still require their own approval and report-release
+controls. A partial pack explicitly identifies unavailable schedules; it cannot be labeled as the
+complete registered fund/investor pack.
+
+#### 22.6.2 Readiness and Opening State
+
+Before calculations or posting begin, the owning lane retains a readiness record for the selected
+tenant, company/entity, accounts, books, period/calendar, currencies, supported conventions, and
+approval roles. It records source cutoffs and revisions, mapping and rule versions, expected row
+counts and control totals, unresolved exceptions, and the opening-state reconciliation.
+
+An opening trial balance alone is insufficient. The initial state must include the economic
+history required by the next supported operation:
+
+| Area | Required opening-state evidence |
+| --- | --- |
+| Book and positions | Book/currency balances, open lots and their basis, outstanding accruals and unsettled activity, with retained source identifiers and cutoff |
+| Investor capital | Units, capital balances, effective participation, equalization/series history, high-water marks, crystallization state, and applicable fee carryforwards |
+| DirectLoan | Commitment and drawn/outstanding principal, interest receivable, PIK, fees, carrying-value components, unapplied receipts, and exact terms/servicing revisions |
+| Period and reports | Prior close authority, comparative snapshots, issued-package references, and the rule for carrying balances into the next period |
+
+Imports stage and validate this state before approval. Source row identities, source revisions,
+duplicate handling, exclusions, and cutoff boundaries must be reproducible; a revised batch cannot
+silently replace an approved opening state. Missing economic history stays an explicit blocker,
+even when the trial balance agrees. Detail and control totals must reconcile without unexplained
+residuals. Promotion from shadow to official books remains the recorded decision under
+`W11-SHADOW-001`; a successful import or rehearsal cannot change that authority.
+
+Both workstations follow the same interaction contract: declare scope, inspect inputs and expected
+movements, resolve exceptions, review the proposed result, apply the existing approval policy,
+retain the result and receipt, then reproduce or correct it. The current step exposes its blocker,
+affected output, and permitted next action. Bulk review retains each record's disposition;
+successful rows cannot conceal unresolved rows in the same required posting or reporting set.
+
+#### 22.6.3 Acceptance Evidence and Financial Gates
+
+Each slice retains one acceptance packet identifying its supported scenario and exclusions, source
+snapshots, financial scope, policies, independently reviewed expected calculations, control totals,
+operator walkthrough, approvals, journals, durable receipts, and report/evidence references.
+Implementation checks identify their commit and supported storage configuration. Browser and WPF
+walkthroughs must agree on financial results, permissions, and blockers for the declared workflow.
+
+| Acceptance case | Required result |
+| --- | --- |
+| Changed source, rule, mapping, or participation after review | The authoritative operation refuses stale approval; renewed preview/review identifies the changed operands |
+| Missing authority, foreign scope, unsupported convention, or locked period | No unauthorized journal, balance change, or release; the reason and permitted recovery action remain visible |
+| Concurrent operators or instances | For the same governed transition, one current approved version commits; a stale competing operation cannot overwrite it or record a second financial effect |
+| Duplicate delivery, timeout, or restart after commit | The same command and inputs recover the retained outcome; changed payload under the same command identity is rejected; an uncertain result is reconciled before retry |
+| Partial multi-book or dependent completion | The declared required posting set identifies completed and missing effects; dependent release remains blocked and recovery cannot replay completed legs |
+| Late correction and subsequent-period impact | The original close and issued package remain reproducible; linked successors identify affected openings, allocations, journals, and reports |
+| Financial agreement and complete evidence | Zero unexplained residuals, omissions, or duplicate inclusions; permitted rounding is separately evidenced, and every amount-bearing line and total resolves its retained support |
+
+Row-specific cases remain mandatory. CAPITAL includes full redemption at crystallization and a
+later subscription to prove the selected zero-unit and fee-state rules. YEND includes a fixture
+with opening equity of 1,000, profit of 100, and no owner flows: reported income remains 100 after
+closing transfers and next-year opening equity is 1,100. An approved prior-year correction of +5
+creates successor figures of 105 and 1,105 while retaining the original result. An investor-capital
+variant verifies that income allocated during the year is not allocated again at fiscal close.
+BOOK, cash-flow, and CREDIT examples retain the financial edge cases in Sections 6.2.1, 6.8, and
+18.1 and the registered row criteria.
+
+#### 22.6.4 Operator Rehearsal and Controlled Rollout
+
+Start with deterministic worked cases on supported durable storage, then rehearse the same bounded
+workflow with retained representative operator data and reconcile it against the current process.
+The owner records elapsed completion time, active review time, manual rekeying, exception count and
+age, and reproduction results for the same declared workload before and during the rehearsal.
+Timing improvements must not come from omitted records, reduced evidence, or bypassed review.
+Workload size, latency, and recovery targets are recorded with an agreed acceptance threshold
+before the rehearsal; this charter makes no unmeasured percentage or scale promise. These records
+support the existing metrics in Section 1.5 without creating a competing metric framework.
+
+Expansion to another basis, currency, participation method, or loan convention requires its own
+supported-contract and worked evidence. Missing source completeness or authority, unexplained
+financial differences, duplicate effects, and approval or scope breaches stop the affected
+operation and any dependent release. Pausing a workflow preserves posted history and receipts;
+financial corrections follow the governed adjustment/reopen route. Production use still requires
+the current release-certification and operator-readiness gates in Section 24. A passed rehearsal
+does not change a roadmap row's status by itself.
+
 ---
 
 ## 23. Foundational Product Slice
@@ -1779,7 +2142,14 @@ not reopen a deferred lane: `W11-STAKE-001` grants read-only access to one deliv
 not the broad client portal; `W11-SHADOW-001` reconciles against the customer's books and moves no
 money; `W11-PACK-001` governs packs for already-modeled classes and adds no asset-operations lane.
 
-**Prohibited as scope creep** from external inspiration: full cap-table system, outsourced services
+The W12 direction (Section 22.5) similarly deepens existing accounting and fund operations:
+`W12-CREDIT-001` is bounded to the already-modeled DirectLoan path and retained evidence;
+`W12-CAPITAL-001` requires individually supported participation graphs and fee methods;
+`W12-FINRPT-001` governs financial definitions and agreement checks on the existing renderer.
+These rows do not authorize live payments, new vertical-system adapters, full alternative-asset
+operations, unrestricted capital-structure modeling, a broad portal, or a new reporting platform.
+
+**Prohibited as scope creep:** full cap-table system, outsourced services
 operation, live payment processor, broad investor portal, autonomous-agent workflows bypassing
 operator evidence.
 
@@ -1809,6 +2179,19 @@ on its own. It also restructures the charter so status lives in one table (Secti
 have exact definitions (Section 1.5), and the shared state vocabulary (Section 11.8) and
 operational requirements (Section 12.3) are written down.
 
+Version 1.4 integrates user-directed fund-operations functionality into the owning functional,
+object, ledger, reporting, and package sections. Five W12 rows and one scope-registration decision
+enter with the charter; existing NAV, valuation, reconciliation, and performance owners remain in
+place. Current calculation and persistence foundations are distinguished from additional workflow
+acceptance through testable Meridian requirements.
+
+Version 1.5 turns the registered direction into incremental delivery and acceptance contracts. A
+basic monthly-close proof precedes additional financial combinations; opening economic history,
+fee-state ownership and event order, annual closing representations, report-mapping completeness,
+concurrent/retry behavior, and operator rehearsal evidence become explicit. The same five W12 rows
+retain their registration order and planned posture. No runtime implementation, operator acceptance,
+or release certification is asserted by these documentation revisions.
+
 The superseded Version 0.25 text — including the Executive Marketecture Deck and the v0.15–v0.20
 addenda in their original form — is preserved at
 [`archive/docs/design/meridian-design-document-v0.25.md`](https://github.com/rodoHasArrived/Meridian-main/blob/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/docs/design/meridian-design-document-v0.25.md).
@@ -1819,7 +2202,7 @@ addenda in their original form — is preserved at
 | --- | --- |
 | Draft v1.0 (imported) | Original design draft imported from an external attachment |
 | 0.15 | Accounting records and operational evidence release package; W1-W5 anchored as the operational record baseline |
-| 0.16 | Private-capital operations and treasury-ledger research addendum (Carta, FundStudio, Modern Treasury patterns) |
+| 0.16 | Private-capital operations and treasury-ledger research addendum |
 | 0.17 | Shared Financial Record Explorer productization target |
 | 0.18 | Operational proof layer market-gap update; Operational Evidence Graph surface |
 | 0.19 | No-code provider integration manifest design |
@@ -1832,4 +2215,6 @@ addenda in their original form — is preserved at
 | 1.0 | Ground-up rewrite: proven-numbers value proposition; activation-over-expansion, proven-slice, and truth-discipline doctrines; W9 slate and current registry posture incorporated; structure consolidated from 27 sections to 25 with all normative invariants preserved |
 | 1.1 | Registry refresh to snapshot 2026-09-28: W9 acceptance decisions (`DEC-W9-ACCEPTANCE-001`–`005`, `DEC-W9-DONE-001`) reflected; W10 depth slate added as Section 2.6 and mapped to charter invariants; reading guide, normative-word convention, and accepted-vs-done vocabulary added. No new product scope |
 | 1.2 | Refresh to program snapshot 2026-10-14: `W10-PROV-001` and `W10-JRNL-001` now in progress alongside MARK, SEAM, and LOT; W10 statuses shown in Section 2.6; `W10-CONSOL-001` first slice noted while the row stays planned; production-readiness baseline updated (CI and Production Certification green on `e0ecd952`, release still blocked); scale table re-measured 2026-10-16 with the counting basis stated; registry-driven Security Master asset-class foundation recorded in Sections 2.1, 5.5, 6.6, and 22 as unregistered; Strategy Designer note updated for the `PRD-020` fail-closed live source. No new product scope |
-| **1.3** | **Structure and direction: registry status consolidated into one table (Section 5.3) and removed from Sections 2.1, 2.6, and 5.5; exact formulas, scope, owners, and implementing rows for all five north-star metrics (1.5); Trading & Execution added as a bounded context, with projects outside the module target named (7.1, 7.3, 8, 9, 12.1); MVP "Later" clarified against shipped evidence, and Home Dashboard marked cross-cutting (9); canonical state vocabulary (11.8); operational and non-functional requirements (12.3); Number Passport minimal contract (22.1), contract-pack path (22.2), and planned Verified Coverage view, shadow-mode onboarding, and stakeholder verification access (22.3), registered as W11 rows under `DEC-CHARTER-DIRECTION-001` (22.4)** |
+| 1.3 | Structure and direction: registry status consolidated into one table (Section 5.3) and removed from Sections 2.1, 2.6, and 5.5; exact formulas, scope, owners, and implementing rows for all five north-star metrics (1.5); Trading & Execution added as a bounded context, with projects outside the module target named (7.1, 7.3, 8, 9, 12.1); MVP "Later" clarified against shipped evidence, and Home Dashboard marked cross-cutting (9); canonical state vocabulary (11.8); operational and non-functional requirements (12.3); Number Passport minimal contract (22.1), contract-pack path (22.2), and planned Verified Coverage view, shadow-mode onboarding, and stakeholder verification access (22.3), registered as W11 rows under `DEC-CHARTER-DIRECTION-001` (22.4) |
+| 1.4 | Fund-operations depth: book/basis/FX controls, investor participation and allocations, fiscal close/roll-forward, tied financial statements, and DirectLoan evidence workflows; five W12 rows under `DEC-FUND-OPERATIONS-DIRECTION-001` (22.5); NAV/income review and performance integrated through existing owners; Book/Accounting Period and fund-specialization semantics clarified. Existing accepted scope, W9–W11 ordering, and production gates preserved |
+| **1.5** | **Incremental delivery and acceptance: first monthly-close proof, conditional dependency boundaries, approved opening economic state, fee-event sequencing, pre-/post-close and opening representations, complete statement mapping, concurrency/recovery evidence, and measured operator rehearsal (22.6). All functionality is stated as Meridian requirements; the five W12 rows retain their registration order and planning posture** |
