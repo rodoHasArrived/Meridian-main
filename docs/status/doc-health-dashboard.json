@@ -1,6 +1,6 @@
 {
   "total_files": 739,
-  "total_lines": 163124,
+  "total_lines": 163132,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2516,7 +2516,7 @@
     },
     {
       "path": "docs/generated/database/contracts/asset-operations-contracts-page-02.md",
-      "line_count": 343,
+      "line_count": 345,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2852,7 +2852,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12212,
+      "line_count": 12215,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6028,7 +6028,7 @@
     },
     {
       "path": "src/Meridian.ReferenceData/README.md",
-      "line_count": 88,
+      "line_count": 91,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
