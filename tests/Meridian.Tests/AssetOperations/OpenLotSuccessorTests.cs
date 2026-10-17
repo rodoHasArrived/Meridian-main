@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.ReferenceData.CorporateActions;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
@@ -499,7 +500,7 @@ internal static class OpenLotSuccessorTestData
                 ?? (actionType is CorporateActionAccountingTypeDto.StockSplit or CorporateActionAccountingTypeDto.ReverseStockSplit
                     or CorporateActionAccountingTypeDto.SpinOff)
         };
-        var service = new CorporateActionAccountingProjectionService();
+        var service = new CorporateActionAccountingProjectionService(ClearwaterCorporateActionRuleProfileV1.Instance);
         var intent = service.Project(request);
         intent.Status.Should().Be(CorporateActionProjectionStatusDto.Projected, "the reusable fixture must use a supported registered projection");
         var mutations = intent.LotMutations!.Mutations.Select((mutation, index) => mutation with

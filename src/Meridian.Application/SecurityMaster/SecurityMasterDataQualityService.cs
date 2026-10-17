@@ -9,7 +9,7 @@ using Meridian.Contracts.Integrity;
 namespace Meridian.Application.SecurityMaster;
 
 /// <summary>
-/// Implements the Clearwater 8-layer data quality control model for the Security Master.
+/// Implements the eight-layer data quality control model for the Security Master.
 /// Covers: MinimumAttribute, TaxonomyCheck, ValueConsistency, StalenessMonitor, and
 /// ExternalComparison categories. FileMappingSufficiency, DataTypeRestriction, and
 /// RefreshControl violations are surfaced at the ingest/import boundary.
