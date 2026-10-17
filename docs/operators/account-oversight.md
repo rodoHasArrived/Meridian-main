@@ -23,7 +23,9 @@ account-owned book.
 The route prefix is `/api/ledger/books/{ledgerBookId}/accounts/{accountId}` using canonical GUIDs.
 An administrator sends `POST oversight/provision` under that prefix to provision the two local
 history stores before capture. Provisioning initializes empty stores only; missing/corrupt initialized
-state requires restoring retained history. Back up the complete configured data root, including
+state requires restoring retained history. Retrying provisioning after an interrupted first attempt
+completes it only when the store holds no retained history. Corrupt or missing history and a store
+lock held for more than 30 seconds return 503. Back up the complete configured data root, including
 `reconciliation/account-cash-continuity`, `asset-operations/account-cash-forecasts` and Evidence Vault.
 Close-price snapshots require the existing PostgreSQL Security Master and migration 037.
 
@@ -215,7 +217,8 @@ account/book/period. Reintroducing an unchanged revision preserves its original 
 Preserve the original run/snapshot ID and response. Conflicting input under an existing run ID
 requires a new correction, rather than replacement. On missing/corrupt durable state, stop capture
 and restore the complete history from backup; provisioning is not a history-reset operation.
-A corrupt scope answers `503` for forecasts and `409` for cash continuity on that account only.
+A corrupt or missing scope file, or a corrupt scope index, answers `503` for both forecasts and cash
+continuity on the affected account only; unprovisioned retained history answers `409`.
 Restore the affected `scopes/<sha256>.json` file together with `scope-index.json` and `initialized`
 from the same backup; never delete a scope file to clear a failure, because a registered scope
 without its file also fails closed. On first use after upgrading from the single-file layout, each

@@ -23,12 +23,15 @@ binds its complete normalized source content across all retained runs; rebinding
 the store lease before any case changes. Unchanged revisions can be reused; corrections require
 new versions. Null cash-tolerance entries are rejected before rule evaluation. Explicitly
 provision `FileAccountCashReconciliationStore.InitializeAsync` before use; loss of retained state
-cannot silently restart history. The store partitions retained runs and cases per exact
-tenant/company/account/ledger-book scope into content-hashed `scopes/<sha256>.json` files with
-per-scope locks and a `scope-index.json` registry under `reconciliation/account-cash-continuity`,
-so one scope's corruption or size never blocks another; a legacy single-file `state.json` is split
-losslessly and renamed `state.json.migrated`. The data root remains host-local (PostgreSQL is the
-multi-host follow-on). Source clearing confers no governed close approval.
+cannot silently restart history. A retry adopts only a valid empty state left by interrupted
+provisioning; unmarked retained history still requires recovery. The store partitions retained runs
+and cases per exact tenant/company/account/ledger-book scope into content-hashed
+`scopes/<sha256>.json` files with per-scope locks and a `scope-index.json` registry under
+`reconciliation/account-cash-continuity`, so one scope's corruption or size never blocks another; a
+legacy single-file `state.json` is split losslessly and renamed `state.json.migrated`. Corrupt or
+missing initialized state raises `InvalidDataException`, and each writer lease times out after 30
+seconds with `TimeoutException`. The data root remains host-local (PostgreSQL is the multi-host
+follow-on). Source clearing confers no governed close approval.
 See [account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
 `AccountCashReconciliationContinuityTests` for the first `W10-RECON-001` acceptance slice.
 Tolerance profile IDs and versions also bind immutable complete rules across the scoped history.

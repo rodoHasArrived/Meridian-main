@@ -54,10 +54,31 @@ public sealed class FileAccountCashReconciliationStore
             await ValidateAllScopesAsync(ct).ConfigureAwait(false);
             return;
         }
-        if (File.Exists(LegacyStatePath) || File.Exists(IndexPath) || HasScopeFiles())
+        // An interrupted provisioning leaves a valid empty layout (empty legacy document or empty scope
+        // index) without its marker. Adopt only that; retained history without a marker still requires
+        // explicit recovery, and corrupt unmarked state is refused as corrupt rather than adopted.
+        if (File.Exists(LegacyStatePath))
+        {
+            var unmarked = await ReadLegacyAsync(ct).ConfigureAwait(false);
+            if (unmarked.Runs.Count != 0 || unmarked.Cases.Count != 0 || File.Exists(IndexPath) || HasScopeFiles())
+                throw new InvalidOperationException("Unprovisioned continuity state requires explicit recovery.");
+            await SplitLegacyAsync(ct).ConfigureAwait(false);
+        }
+        else if (File.Exists(IndexPath))
+        {
+            var unmarked = await ReadIndexAsync(ct).ConfigureAwait(false);
+            if (unmarked.Length != 0 || HasScopeFiles())
+                throw new InvalidOperationException("Unprovisioned continuity state requires explicit recovery.");
+        }
+        else if (HasScopeFiles())
+        {
             throw new InvalidOperationException("Unprovisioned continuity state requires explicit recovery.");
-        Directory.CreateDirectory(ScopeDirectory);
-        await WriteIndexAsync([], ct).ConfigureAwait(false);
+        }
+        else
+        {
+            Directory.CreateDirectory(ScopeDirectory);
+            await WriteIndexAsync([], ct).ConfigureAwait(false);
+        }
         await AtomicFileWriter.WriteAsync(MarkerPath, Marker, ct).ConfigureAwait(false);
     }
 
@@ -106,7 +127,7 @@ public sealed class FileAccountCashReconciliationStore
         if (!File.Exists(LegacyStatePath))
             return;
         if (File.Exists(MigratedLegacyStatePath))
-            throw new InvalidOperationException("Both the legacy account cash continuity state and its migrated copy exist; restore one retained state before retrying.");
+            throw new InvalidDataException("Both the legacy account cash continuity state and its migrated copy exist; restore one retained state before retrying.");
         var legacy = await ReadLegacyAsync(ct).ConfigureAwait(false);
         var index = File.Exists(IndexPath) ? (await ReadIndexAsync(ct).ConfigureAwait(false)).ToList() : [];
         Directory.CreateDirectory(ScopeDirectory);
@@ -121,7 +142,7 @@ public sealed class FileAccountCashReconciliationStore
             {
                 var retained = await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false);
                 if (!Sha256Digest.FixedEquals(Hash(retained), Hash(document)))
-                    throw new InvalidOperationException("A partially split legacy account cash continuity state conflicts with a retained scope file; restore retained state before retrying.");
+                    throw new InvalidDataException("A partially split legacy account cash continuity state conflicts with a retained scope file; restore retained state before retrying.");
             }
             else
             {
@@ -144,7 +165,7 @@ public sealed class FileAccountCashReconciliationStore
             foreach (var file in Directory.EnumerateFiles(ScopeDirectory, "*.json"))
             {
                 if (!registered.Contains(Path.GetFileNameWithoutExtension(file)))
-                    throw new InvalidOperationException("An unregistered account cash continuity scope file exists; restore retained state before retrying.");
+                    throw new InvalidDataException("An unregistered account cash continuity scope file exists; restore retained state before retrying.");
             }
         }
         foreach (var scope in index)
@@ -160,11 +181,11 @@ public sealed class FileAccountCashReconciliationStore
         if (!index.Contains(scope))
         {
             if (File.Exists(path))
-                throw new InvalidOperationException("Retained account cash continuity state is unavailable or corrupt; restore it before retrying.");
+                throw new InvalidDataException("Retained account cash continuity state is unavailable or corrupt; restore it before retrying.");
             return (false, new AccountCashReconciliationDocument(1, [], []));
         }
         if (!File.Exists(path))
-            throw new InvalidOperationException("Retained account cash continuity state is unavailable or corrupt; restore it before retrying.");
+            throw new InvalidDataException("Retained account cash continuity state is unavailable or corrupt; restore it before retrying.");
         return (true, await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false));
     }
 
@@ -174,17 +195,17 @@ public sealed class FileAccountCashReconciliationStore
         {
             var bytes = await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false);
             var envelope = JsonSerializer.Deserialize(bytes, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationScopeEnvelope)
-                ?? throw new InvalidOperationException("Account cash continuity scope state is empty.");
+                ?? throw new InvalidDataException("Account cash continuity scope state is empty.");
             var document = envelope.Document;
             if (envelope.Scope != scope || !IsValid(document) || !Sha256Digest.IsCanonical(envelope.ContentHash)
                 || !Sha256Digest.FixedEquals(envelope.ContentHash, Hash(document))
                 || document.Runs.Any(item => item.Input.Scope != scope) || document.Cases.Any(item => item.Scope != scope))
-                throw new InvalidOperationException("Account cash continuity scope state failed integrity validation.");
+                throw new InvalidDataException("Account cash continuity scope state failed integrity validation.");
             return document;
         }
         catch (Exception ex) when (ex is IOException or JsonException)
         {
-            throw new InvalidOperationException("Retained account cash continuity state is unavailable or corrupt; restore it before retrying.", ex);
+            throw new InvalidDataException("Retained account cash continuity state is unavailable or corrupt; restore it before retrying.", ex);
         }
     }
 
@@ -194,15 +215,15 @@ public sealed class FileAccountCashReconciliationStore
         {
             var bytes = await File.ReadAllBytesAsync(LegacyStatePath, ct).ConfigureAwait(false);
             var envelope = JsonSerializer.Deserialize(bytes, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationEnvelope)
-                ?? throw new InvalidOperationException("Account cash continuity state is empty.");
+                ?? throw new InvalidDataException("Account cash continuity state is empty.");
             var document = envelope.Document;
             if (!IsValid(document) || !Sha256Digest.IsCanonical(envelope.ContentHash) || !Sha256Digest.FixedEquals(envelope.ContentHash, Hash(document)))
-                throw new InvalidOperationException("Account cash continuity state failed integrity validation.");
+                throw new InvalidDataException("Account cash continuity state failed integrity validation.");
             return document;
         }
         catch (Exception ex) when (ex is IOException or JsonException)
         {
-            throw new InvalidOperationException("Retained account cash continuity state is unavailable or corrupt; restore it before retrying.", ex);
+            throw new InvalidDataException("Retained account cash continuity state is unavailable or corrupt; restore it before retrying.", ex);
         }
     }
 
@@ -216,16 +237,16 @@ public sealed class FileAccountCashReconciliationStore
         {
             var bytes = await File.ReadAllBytesAsync(IndexPath, ct).ConfigureAwait(false);
             var index = JsonSerializer.Deserialize(bytes, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationScopeIndex)
-                ?? throw new InvalidOperationException("Account cash continuity scope index is empty.");
+                ?? throw new InvalidDataException("Account cash continuity scope index is empty.");
             if (index.SchemaVersion != 1 || index.Scopes is null || index.Scopes.Any(static scope => scope is null)
                 || !Sha256Digest.IsCanonical(index.ContentHash) || !Sha256Digest.FixedEquals(index.ContentHash, Hash(index.Scopes))
                 || index.Scopes.Distinct().Count() != index.Scopes.Length)
-                throw new InvalidOperationException("Account cash continuity scope index failed integrity validation.");
+                throw new InvalidDataException("Account cash continuity scope index failed integrity validation.");
             return index.Scopes;
         }
         catch (Exception ex) when (ex is IOException or JsonException)
         {
-            throw new InvalidOperationException("Retained account cash continuity scope index is unavailable or corrupt; restore it before retrying.", ex);
+            throw new InvalidDataException("Retained account cash continuity scope index is unavailable or corrupt; restore it before retrying.", ex);
         }
     }
 

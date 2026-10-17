@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Margin;
 using Meridian.Execution.Models;
@@ -1124,6 +1125,17 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     /// </summary>
     public bool UsesFaceValuePricing { get; set; }
 
+    /// <summary>
+    /// What one unit of this position's lots measures, from how its fills were quoted: face for
+    /// par-priced debt, contracts when a multiplier was recorded, otherwise shares.
+    /// </summary>
+    public SecurityLotUnitKind LotUnit => UsesFaceValuePricing
+        ? SecurityLotUnitKind.FaceValue
+        : ContractMultiplier != 1m ? SecurityLotUnitKind.Contracts : SecurityLotUnitKind.Shares;
+
+    /// <summary>The open lot book in the shared lot shape.</summary>
+    public IReadOnlyList<IUnitizedLot> UnitizedLots => _lots;
+
     /// <summary>Unsigned exposure magnitude (|qty| × price); use <see cref="SignedMarketValue"/> for equity math.</summary>
     public decimal MarketValue => Math.Abs(Quantity) * MarketPrice;
 
@@ -1151,7 +1163,7 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             return;
         }
 
-        _lots.Add(new PositionLot($"lot-{Guid.NewGuid():N}", signedQuantity, entryPrice, openedAt));
+        _lots.Add(new PositionLot(this, $"lot-{Guid.NewGuid():N}", signedQuantity, entryPrice, openedAt));
         OpenCostBasis = _lots.Sum(static lot => lot.OpenCostBasis);
         LotVersion++;
     }
@@ -1198,6 +1210,7 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         var bases = RescaledLotBases(adjustedTotalCostBasis);
         var rescaled = _lots
             .Select(lot => new PositionLot(
+                this,
                 lot.LotId,
                 lot.OpenQuantity * quantityFactor,
                 lot.EntryPrice * priceFactor,
@@ -1379,12 +1392,25 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     };
 }
 
-internal sealed class PositionLot(string lotId, decimal openQuantity, decimal entryPrice, DateTimeOffset openedAt,
-    decimal? openCostBasis = null)
+/// <summary>
+/// One open paper lot. Implements the shared lot shape (<see cref="IUnitizedLot"/>) so the paper
+/// book is read the same way as execution, backtesting and ledger lots: the unit and multiplier
+/// are read live from the owning <see cref="PaperPosition"/>, which is what fills opened it in, so a
+/// contract multiplier recorded after the lot opened is never stale on the lot.
+/// </summary>
+internal sealed class PositionLot(PaperPosition position, string lotId, decimal openQuantity, decimal entryPrice,
+    DateTimeOffset openedAt, decimal? openCostBasis = null) : IUnitizedLot
 {
     public string LotId { get; } = lotId;
     public decimal OpenQuantity { get; set; } = openQuantity;
     public decimal EntryPrice { get; } = entryPrice;
     public decimal OpenCostBasis { get; set; } = openCostBasis ?? Math.Abs(openQuantity) * entryPrice;
     public DateTimeOffset OpenedAt { get; } = openedAt;
+
+    /// <summary>Unsigned open size; <see cref="OpenQuantity"/> keeps the sign (negative for shorts).</summary>
+    public decimal Quantity => Math.Abs(OpenQuantity);
+
+    public SecurityLotUnitKind UnitKind => position.LotUnit;
+
+    public decimal Multiplier => position.ContractMultiplier;
 }
