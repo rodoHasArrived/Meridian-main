@@ -148,7 +148,16 @@ public sealed class CorporateActionAccountingPostgresRoundTripTests
         { RetainedEvidence = [retainedEvidence] }, null, 0,
             new AssetOperationsWriteApprovalDto(Approver, "document://position-approval/dividend",
                 "Retain the explicitly identified holding for this test.", DateTimeOffset.UtcNow), ct);
-        var lot = await journal.SaveTaxLotAsync(new LedgerTaxLotRecord(
+        // Seed the pre-existing holding explicitly in compatibility mode. Dividend approval,
+        // posting and replay continue through the governed journal store.
+        var historicalSeed = new PostgresLedgerJournalStore(new LedgerJournalStoreOptions
+        {
+            ConnectionString = ledgerOptions.ConnectionString,
+            SchemaName = ledgerOptions.SchemaName,
+            RequireGovernedPostingCommand = false,
+            RequireExpectedVersion = true
+        });
+        var lot = await historicalSeed.SaveTaxLotAsync(new LedgerTaxLotRecord(
             Guid.NewGuid(), bookId, new LedgerAccount("Investments", LedgerAccountType.Asset, "DIVIDEND"),
             "dividend-lot", new DateOnly(2026, 1, 1), 500m, 500m, 10m, "USD", now, now,
             EvidenceRef: retainedEvidence.EvidenceUri, Version: 1, SecurityId: securityId, BookPositionId: positionId), ct);

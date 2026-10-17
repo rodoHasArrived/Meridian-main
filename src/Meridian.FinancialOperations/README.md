@@ -906,6 +906,12 @@ create-only successors, reference versions and exact allocation. Before projecti
 source Security Master record must cover the event's effective date within its inclusive UTC
 effective-date interval, even when a later accounting timestamp falls within that interval.
 Before `Drafted` is retained, each successor record must also cover the event date.
+Successor source authority uses the economic date even if the source has expired by the later
+accounting timestamp; the strict recorded-as-of lookup remains required. Preparation and drafting
+compare complete source and target projection hashes with the reviewed instruction. Drafting also
+rejects labels reserved by any open or closed lot in the complete carrying account and ledger book.
+Successor journal lines preserve that entire account identity, and incompatible mapped accounts
+fail before drafting. Atomic posting rechecks these guards under its transaction locks.
 Drafting also requires retained wash-sale deferral reads across all sale
 dates and follows at most 32 same-book predecessor lots, using immutable acquisition lineage,
 the legacy successor instruction, or the retained immutable birth receipt. Any separately retained

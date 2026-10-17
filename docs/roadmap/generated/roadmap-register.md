@@ -1317,3 +1317,191 @@ Canonical acquisition, retained legacy backfill, AverageCost redistribution, cur
 - `SRC-DESIGN-FINANCIAL-OPERATIONS`
 - `SRC-DESIGN-INSTRUMENTS`
 - `SRC-UI-SHARED`
+
+## W11-PASSPORT-001 - Number Passport contract across amount surfaces
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Workstation Shell and UX |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-10-16 |
+
+### Current Summary
+
+Rank 1 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). The design charter names the Number Passport as Meridian's signature evidence object but defines it only as a field list. W10-PROV-001 is building the first slice for posted ledger amounts. This row generalizes that slice into one versioned passport contract with stable subject identity, declared scope, the shared evidence status vocabulary, and freshness, so balances, report totals, capital-account values, and dashboard metrics open the same proof object instead of per-surface variants. It is sequenced after W10-PROV-001 and must reuse its subject-addressed evidence API rather than add a parallel endpoint family.
+
+### Exit Criteria
+
+- One versioned Number Passport contract in Meridian.Contracts carries a stable subject identifier, subject kind, amount, currency, basis, as-of and effective dates, the complete declared scope (tenant, organization, entity, fund, book, period), an evidence status drawn from the shared vocabulary, freshness, and links to journal entries, source records, approvals, and reconciliation state.
+- Report-line totals, capital-account values, and position valuations open their passport through the same subject-addressed evidence API and the same shared component that W10-PROV-001 delivers for ledger amounts, on both the browser and WPF workstations.
+- A passport whose subject, scope, or evidence cannot be resolved exactly renders as review-required, blocked, stale, or missing, never as ready, and names the missing link.
+- Period-over-period change on a passport is computed from retained snapshots rather than recomputed from current state.
+- Roadmap status remains planned until W10-PROV-001 is accepted and this item links the contract, the shared endpoint, both workstation surfaces, and the scope-mismatch and missing-evidence tests.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+- `SRC-LEDGER`
+- `SRC-DESIGN-REPORTING`
+
+## W11-COVER-001 - Verified Coverage measurement and operator surface
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-10-16 |
+
+### Current Summary
+
+Rank 2 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). Verified Coverage is the charter's primary metric, but nothing computes it. This row implements the definition fixed in the design charter Section 1.5 as a deterministic projection over Number Passports and the unified close-readiness projection, and shows it per entity, book, and period with drill-through to the unverified items. It depends on W11-PASSPORT-001 and W10-SEAM-001.
+
+### Exit Criteria
+
+- Verified Coverage is computed exactly as the design charter Section 1.5 defines it, by absolute reported value and by item count, for a declared tenant, entity, book, and period, and both figures are shown together.
+- An item counts as verified only when its passport evidence status is ready, its reconciliation is current for the period, its approval is recorded, and its supporting evidence is retained; every other item is listed with the reason it is excluded.
+- The figure is reproducible - recomputing it from the same retained snapshot yields the same value - and every published value records the snapshot, policy version, and computation time it came from.
+- Simulated, fixture, or demo data is excluded from the numerator and labeled wherever the figure appears.
+- The browser and WPF workstations consume one shared projection rather than computing coverage locally.
+- Roadmap status remains planned until W11-PASSPORT-001 and W10-SEAM-001 are accepted and this item links the projection, both surfaces, and the reproducibility and exclusion tests.
+
+### Source Modules
+
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+
+## W11-STAKE-001 - Governed stakeholder verification access on delivered packages
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Platform Security and Governance |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-10-16 |
+
+### Current Summary
+
+Rank 3 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). The charter's distribution wedge (Section 2.4) is that a recipient of a delivered package - an auditor, LP, trustee, or advisor - can drill from any line to its support without emailing the operator. This row delivers that as a read-only, package-scoped, entitlement-checked view. It is deliberately narrower than the deferred broad client portal - it grants access to one frozen delivered package and nothing else.
+
+### Exit Criteria
+
+- A grant binds one external principal to one delivered package version with an expiry, grantor, rationale, and audit event, through the existing scoped-access assignment model; revocation takes effect immediately.
+- The recipient can drill from a package line to its passport and retained evidence, read-only, and cannot see any record outside that frozen package, including later amendments unless separately granted.
+- Every view and download by a recipient is recorded as an audit event attached to the package's delivery record.
+- No grant can approve, comment on, or change any governed record; the view exposes no write route.
+- Roadmap status remains planned until W11-PASSPORT-001 is accepted and this item links the grant model, the read-only surface, and the cross-package isolation and revocation tests.
+
+### Source Modules
+
+- `SRC-DESIGN-IDENTITY`
+- `SRC-DESIGN-REPORTING`
+- `SRC-DESIGN-AUDIT`
+- `SRC-UI-SHARED`
+- `SRC-CONTRACTS`
+
+## W11-SHADOW-001 - Shadow-mode onboarding with opening-balance reconciliation
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Data Confidence and Validation |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-10-16 |
+
+### Current Summary
+
+Rank 4 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). The charter claims lower-risk adoption through shadow mode (Section 1.4) and makes it the entry posture of the Control Tower wedge (Section 22), but no section specifies it and no row tracks it. This row defines and delivers a shadow workspace - a tenant runs Meridian beside its official books, imports their opening balances and ongoing activity, and reconciles Meridian's records against them - before migrating any official books.
+
+### Exit Criteria
+
+- A tenant, entity, or book can be marked shadow; shadow books are labeled everywhere they appear, cannot be published as official records, and cannot release reports or payments as the book of record.
+- Opening balances import from an external general ledger or administrator with retained source evidence and reconcile against Meridian's records with sided matching, producing a governed opening-balance reconciliation report.
+- Ongoing shadow-period activity reconciles each period against the official books, and the close-readiness projection reports the shadow book's agreement with them.
+- Promoting a shadow book to official requires a recorded operator decision with the final reconciliation attached, and the promotion is itself an audit event.
+- Roadmap status remains planned until this item links the shadow designation, the opening-balance reconciliation path, the promotion gate, and the labeling and non-publication tests.
+
+### Source Modules
+
+- `SRC-DESIGN-DATA-INTEGRATION`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-LEDGER`
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+
+## W11-PACK-001 - Governed contract-pack lifecycle on the Security Master asset-class registry
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-10-16 |
+
+### Current Summary
+
+Rank 5 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). The Security Master asset-class registry already centralizes term schema, lot units, cash-flow behavior, and projections per asset class, but it is a compile-time table, not a governed pack. This row turns it into the contract packs the charter describes (Section 22) - a versioned unit that also carries accounting rules, valuation methods, and reporting taxonomy, and that moves through the configuration lifecycle with approval and rollback.
+
+### Exit Criteria
+
+- A contract pack is a versioned, content-hashed unit that declares its asset class, term schema, lifecycle events, cash-flow behavior, valuation methods, accounting rule bindings, validations, and reporting taxonomy, and the existing asset-class registry is its first source.
+- A pack moves through Draft, Tested, Reviewed, Approved, Active, Superseded, and Retired, and activation requires passing pack tests and a recorded approval.
+- Records keep the pack version they were created under, so activating a new version never silently reinterprets existing terms; migrating records to a new version is an explicit, audited operation.
+- The coverage tests that lock the registry to the F# SecurityKind union, validators, and storage writers extend to every active pack.
+- Roadmap status remains planned until this item links the pack contract, the lifecycle, the version-pinning behavior, and the activation and reinterpretation tests.
+
+### Source Modules
+
+- `SRC-DESIGN-INSTRUMENTS`
+- `SRC-CONTRACTS`
+- `SRC-FSHARP`
+- `SRC-STORAGE`
+- `SRC-LEDGER`
+
+## W11-EXEC-001 - Trading and Execution bounded-context ownership
+| Field | Value |
+| --- | --- |
+| Wave | W11 |
+| Status | planned |
+| Health | green |
+| Priority | low |
+| Owner lane | Execution and Fund Accounts |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-10-16 |
+
+### Current Summary
+
+Rank 6 of the 2026-10 charter direction slate (DEC-CHARTER-DIRECTION-001). Orders, fills, broker gateways, paper sessions, kill switch, and pre-trade controls ship and carry accepted W2, W7, and W9 evidence, but until charter Version 1.3 no bounded context owned them. This row records that ownership in the architecture maps and enforces it - which project owns which record, and that other contexts reach execution state only through published contracts, events, or read models. It adds no trading capability.
+
+### Exit Criteria
+
+- docs/architecture/module-map.md and docs/architecture/design-module-conformance.md name Trading and Execution as a bounded context, list its owning projects, and state which execution records it owns.
+- A dependency test fails when a project outside the context writes execution-owned records directly, instead of going through the published contracts or events.
+- The handoff from execution fills to ledger posting is documented as a contract boundary, with the ledger remaining the only source of accounting truth.
+- Roadmap status remains planned until this item links the updated maps and the dependency test.
+
+### Source Modules
+
+- `SRC-EXECUTION`
+- `SRC-EXECUTION-SDK`
+- `SRC-RISK`
+- `SRC-STRATEGIES`
+- `SRC-BACKTESTING`
+- `SRC-CONTRACTS`

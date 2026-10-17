@@ -68,6 +68,10 @@ certification/recovery evidence. Its snapshot is bounded and does not reconcile 
 The [October 5 rollout measurement](actions-rollout-measurement-2026-10-05.md) retains 24
 comparable completed post-rollout PR observations, unsuccessful-attempt accounting and the
 strict matched-cohort decision. Six baseline matches do not establish either improvement target.
+The [October 15 follow-up](actions-workflow-followup-2026-10-15.md) retains a fresh 59-run,
+attempt-complete diagnostic sample, live integration-gate cancellation evidence, and assigned
+administrator follow-ups. Current protection enforcement and merge-group success remain
+unverified; the sample does not establish savings or justify higher concurrency defaults.
 
 Collect a bounded Actions history with `build/scripts/ci/collect-actions.py`, then pass its
 snapshot to `ci-metrics.py`. Collection is read-only: it does not dispatch, rerun, cancel or
@@ -266,10 +270,11 @@ Configured scheduling explains demand, without establishing available capacity:
   policy must be preserved. Cancellation disabled does not imply durable FIFO queuing of every
   pending request. Hosted `windows-11-arm` availability also needs administrator confirmation
   before signed release rehearsals.
-- Benchmark `max-parallel: 2` applies within one dispatch; repeated benchmark dispatches can
-  overlap. Targeted Test and Roadmap Tools include `github.run_id` in their concurrency keys, so
-  separate dispatches are not serialized. In-runner .NET/Vitest parallelism is a different layer
-  and does not resolve scheduler waits.
+- At the October 5 snapshot, benchmark `max-parallel: 2` applied within one dispatch, so repeated
+  benchmark dispatches could overlap. Targeted Test and Roadmap Tools included `github.run_id`
+  in their concurrency keys, allowing separate dispatches to overlap. The dispatch isolation
+  below now bounds repeated work. In-runner .NET/Vitest parallelism is a different layer and
+  does not resolve scheduler waits.
 
 **Human governance follow-up:** inspect the unassigned IB job and effective owner-wide hosted
 capacity first; review the two stale queued records; gather attempt-complete metrics by workflow,
@@ -277,7 +282,30 @@ event and runner label. Consider event-specific legacy coverage groups and repea
 limits only as separate reviewed scheduling changes. This metrics change does not alter runner
 configuration, workflow fan-out, concurrency, required checks, protections or release policy.
 
-### Benchmark promotion
+### Dispatch isolation and duplicate work
+
+Legacy `CI` concurrency now separates events as well as PR/ref identity. A main push
+cannot cancel nightly or manually requested coverage. PR, push and merge-group runs
+still cancel superseded work within their own group; scheduled and manual runs finish
+once started. Each manual CI coverage request also includes its run ID in the group,
+so another manual request cannot replace it while pending.
+
+`Targeted Test` and `Roadmap Tools (Manual)` compute a SHA-256 key from the exact ref,
+commit and complete input selection before scheduling their expensive job. Identical
+requests share one running slot and one pending slot; distinct filters, projects,
+runners, modes, refs or commits remain independent. Hashing preserves case distinctions
+despite GitHub's case-insensitive concurrency groups and bounds the group length.
+Inputs enter through environment variables and JSON, never interpolated shell code.
+
+The concurrency benchmark uses one repository-wide group so separate dispatches cannot
+overlap and contaminate paired measurements. These three workflows use
+`cancel-in-progress: false`: running work completes, but GitHub may replace an older
+pending request with a newer request in the same concurrency group. For benchmarks,
+that includes distinct subjects, refs and commits. This is not a durable FIFO queue. Operators
+who need every request executed must wait for completion before submitting the next.
+Production certification and release serialization retain their existing policies.
+
+### Benchmark promotion criteria
 
 Hosted defaults remain two .NET test processes and eight browser files per batch; local .NET
 remains sequential. Compare 2/4 processes and 8/16 files using five distinct paired runs on
@@ -310,19 +338,21 @@ information is explicitly unavailable, never reported as a hit or zero.
 
 ## Script-test quarantine
 
-`build/scripts/ci/script-test-quarantine.json` is the tracked defect register. Each remaining
-module names `@rodoHasArrived` as owner and a review deadline of 2026-10-28. Expired, missing,
-or untracked entries fail the lane; each run publishes the register in its summary.
+`build/scripts/ci/script-test-quarantine.json` remains the tracked defect register, with
+no excluded modules after the October 15 restoration. All seven former modules execute
+in the ordinary script lane. Expired, missing or untracked entries still fail the lane.
 
-- `test_desktop_screen_blueprint_checklist`: screen coverage and summary expectations drifted.
-- `test_live_execution_controls_route_consistency`: manual-override routes differ from contracts.
-- `test_export_project_artifact_workflow`: the expected workflow is absent.
-
-The October 15 follow-up restored source-README validation, archive tombstone, Python dependency
-workflow and contract-compatibility suites to the ordinary lane after correcting their current
-fixtures/expectations. The two screen/route suites still refer to intentional archive stubs; the
-export workflow is retired without an equivalent owner. These three remain explicit tracked
-defects with the existing review deadline; they are not silently treated as passing coverage.
+- Source README validation already passed; its stale exclusion is removed.
+- Desktop checklist validation points to an active twenty-screen reference rather than
+  an archive redirect, with negative fixtures for missing headings and redirect stubs.
+- Manual-override route checks read the canonical provider capability reference.
+- Archive tombstone checks exercise valid and executable-code fixtures even when the
+  historical archive tree is absent; the build-graph exclusion remains checked.
+- Screenshot dependency checks follow the maintained CI lane and pinned Pillow install.
+- Contract compatibility fixtures use isolated temporary repository roots, including
+  invocation outside the checkout, without changing the production gate.
+- Export checks enforce the maintained commit-bound publish outputs and reject revival
+  of the retired generic repository-export workflow.
 
 Pillow is now explicit. Screenshot diff and screenshot capture validation suites run in the
 ordinary script lane. New exclusions require an owner, reason, deadline, tracked defect and
