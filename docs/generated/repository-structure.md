@@ -10225,7 +10225,8 @@ Meridian-main
 │   │   │   ├── LayerBoundaryTests.cs
 │   │   │   ├── LedgerNetBalanceCentralizationTests.cs
 │   │   │   ├── ProjectReferenceGraph.cs
-│   │   │   └── ProjectReferenceGraphTests.cs
+│   │   │   ├── ProjectReferenceGraphTests.cs
+│   │   │   └── SecurityAssetClassLiteralRatchetTests.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AccountCashForecastTests.cs
 │   │   │   ├── AcquisitionTermsCompletionTests.cs
@@ -10995,6 +10996,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
 │   │   │   ├── SecurityAssetClassRegistryCoverageTests.cs
+│   │   │   ├── SecurityAssetClassSurfaceParityTests.cs
 │   │   │   ├── SecurityAssetProfileGovernanceServiceTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChainTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterPipelineTests.cs
