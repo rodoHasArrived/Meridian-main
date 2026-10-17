@@ -25,7 +25,7 @@ An administrator sends `POST oversight/provision` under that prefix to provision
 history stores before capture. Provisioning initializes empty stores only; missing/corrupt initialized
 state requires restoring retained history. Back up the complete configured data root, including
 `reconciliation/account-cash-continuity`, `asset-operations/account-cash-forecasts` and Evidence Vault.
-Close-price snapshots require the existing PostgreSQL Security Master and migration 037; migration 042 hardens its approval guard against payloads missing `Blockers` or `CreatedBy`.
+Close-price snapshots require the existing PostgreSQL Security Master and migration 037; migration 043 hardens its approval guard against payloads missing `Blockers` or `CreatedBy`.
 
 ## Shared routes
 

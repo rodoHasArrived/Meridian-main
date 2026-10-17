@@ -10,7 +10,7 @@
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
       "readme_hash": "f8e273d9550df8b44536c29f785826b8f4d5df0ec0362847aab37417dfd5a0dd",
-      "source_hash": "e50d0047b059a7e899788efa83a4ce6a6db44165c0e396f0428f1f76557dc811"
+      "source_hash": "f112bd345e668554cc293bc03524c276ea627f5eb83af8929782cd33cfa287dc"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "486901373052e661e91b06bc609bd9baa71a4ab06a7f1d1f9933feef26efed0a",
-      "source_hash": "4c7005175317b85a0bc1df5b3bf2af76c612bc94543b1526179db2faf20b22d9"
+      "readme_hash": "f9fc0a7d84f852954c7c66616a8fa9bd814b25eb85e77526a706169bc6b69503",
+      "source_hash": "e57dbdcb5b8bf30ae8bd83f35a39279a4289b2f342992bce386311e61a2afaaf"
     },
     {
       "id": "SRC-CORE",
@@ -135,8 +135,8 @@
       "id": "SRC-EXECUTION",
       "path": "src/Meridian.Execution",
       "readme": "src/Meridian.Execution/README.md",
-      "readme_hash": "ce151e7538a49f9225f0c51ef7f43b5badeb131c94e4b0265b42ff56b10e5c7d",
-      "source_hash": "6b7fac8d2a875129a07cfde31dbd9085bca94a5bf78efe84f35d7d41d493c88c"
+      "readme_hash": "943e979eb9c6c237ce9e24fd644b4e383a589cc48153c317c1cd5f7f78b0e3da",
+      "source_hash": "42753a34c162fd1d8f34dd3bddae9bc167f23016948792b99397eb49d77971dd"
     },
     {
       "id": "SRC-EXECUTION-SDK",
@@ -247,8 +247,8 @@
       "id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
-      "readme_hash": "96a5fabd10f247194a6229ab65c2f6b578c498c1bfc063dcf689b690e792e7c2",
-      "source_hash": "7ef4639c08fec0e0ea9f4b3641457b6ddb17085dbb048fc21fbfaf0e51442eb7"
+      "readme_hash": "b7ae4d290f9840b0175bde79f85701fb85f6f4f75edf8897910de6486bff54f8",
+      "source_hash": "717542b3622c496e549e96d4c6d94665197b9528c934b8c722e2ea646e5cc410"
     },
     {
       "id": "SRC-STRATEGIES",
@@ -290,7 +290,7 @@
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
       "readme_hash": "c56173ce1ceba2a26b090b037806e8abe002ade63c645e0b0172bd838888a1c3",
-      "source_hash": "2d615a47f921b996e8025ddea23826b3f3bfbe8c057f4815c01d534dc188def8"
+      "source_hash": "a6b7e02cc7b97a3cae0e2fb5ed8546bac3b97a3bfc7a08fe2c883feec47a38fa"
     }
   ],
   "schema": {

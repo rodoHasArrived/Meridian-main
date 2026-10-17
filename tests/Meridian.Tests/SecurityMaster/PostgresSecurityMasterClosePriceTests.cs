@@ -304,7 +304,7 @@ public sealed class PostgresSecurityMasterClosePriceTests(SecurityMasterDatabase
     [SecurityMasterDatabaseFact]
     public async Task ApprovalGuardRejectsRawSnapshotsMissingBlockersOrCreatedByAndAcceptsWellFormedReview()
     {
-        // Migration 042: the database guard must fail closed even when a payload bypasses the C# store
+        // Migration 043: the database guard must fail closed even when a payload bypasses the C# store
         // and omits the evidence the SQL conditions inspect. A missing "Blockers" array or a missing
         // "CreatedBy" value used to make the OR chain evaluate NULL, so the approval was accepted.
         var id = await SeedSecurityAsync();
