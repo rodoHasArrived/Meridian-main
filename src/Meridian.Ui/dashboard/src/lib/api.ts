@@ -3970,6 +3970,9 @@ export async function fetchQuantData(request: DataFetchRequest, options: ApiRequ
     from: request.from,
     to: request.to
   }, options);
+  if (!response.success || response.isPartial || response.fileFailures?.length) {
+    throw new Error(response.message ?? "Historical query incomplete. Repair the stored data and retry.");
+  }
   const bars = response.bars.map((bar) => ({
     timestamp: bar.start,
     open: bar.open,

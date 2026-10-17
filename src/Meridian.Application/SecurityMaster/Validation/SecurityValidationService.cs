@@ -707,7 +707,9 @@ public sealed class SecurityValidationService : ISecurityValidationService
             or SecurityIdentifierKind.Lei
             or SecurityIdentifierKind.Wkn
             or SecurityIdentifierKind.Valoren
-            or SecurityIdentifierKind.Cik;
+            or SecurityIdentifierKind.Cik
+            or SecurityIdentifierKind.LoanX
+            or SecurityIdentifierKind.Clip;
 
     private static SecurityValidationReportDto BuildReport(
         Guid? securityId,

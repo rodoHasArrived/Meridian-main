@@ -175,6 +175,7 @@
     "src/Meridian.Storage",
     "src/Meridian.Identity"
   ],
+  "migration_reservations": "database/migration-reservations.json",
   "migration_sets": [
     {
       "connection_variables": [

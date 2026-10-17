@@ -11,6 +11,10 @@ last_reviewed: 2026-07-05
 
 # src/Meridian.Execution.Sdk
 
+`CanonicalTaxLotAdapter` admits only long execution and canonical lots. Positive quantity alone
+cannot make an explicitly short canonical acquisition compatible with the long consumer. Short
+production cutover still requires governed posting and consumer parity evidence.
+
 `BrokeragePortfolioSnapshotDto.IsComplete` defaults to false until a provider establishes complete
 account and holding evidence. `IBrokerageConnectionState` supplies a credential-free connection
 epoch and verified account/environment scope, so cached execution evidence cannot survive a
@@ -77,6 +81,9 @@ override routed face value.
 `IPosition.ExactQuantity` carries the unrounded signed size beside the whole-share `Quantity`;
 fund-ownership attribution is decimal, so deriving an unattributed remainder from the rounded value
 invents a contribution the book never held.
+
+`TaxLot` quantity is `decimal` and carries `UnitKind` (default `Shares`) and `Multiplier`
+(default 1) through `IUnitizedLot`, matching backtesting and ledger lots.
 
 ## Diagrams
 

@@ -14,6 +14,8 @@ public static class CanonicalDisposalHistoryProjector
             throw new LedgerValidationException("Retained disposal belongs to a different journal.");
         if (canonical is null || canonical.Count != disposal.Lots.Count || canonical.Count == 0)
             throw new LedgerValidationException("Disposal history lacks canonical acquisition evidence. Resolve the open-lot backfill exception for this durable lot with reviewed acquisition evidence.");
+        if (canonical.Any(lot => lot.Acquisition is not { Direction: OpenLotDirection.Long }))
+            throw new LedgerValidationException("Short-cover reporting requires retained cover economics and tax-character evidence; opening-lot age cannot establish short-sale tax character.");
         if (!Enum.IsDefined(disposal.ReliefMethod))
             throw new LedgerValidationException("Retained disposal has an unsupported relief method.");
         var recipients = CertifyDeferralRecipients(disposal, canonical);
@@ -296,8 +298,8 @@ public static class CanonicalDisposalHistoryProjector
             throw new LedgerValidationException("Retained average-cost slices differ from the pooled relief over the retained pool.");
     }
 
-    // The two snapshots can be deserialized independently. Compare authoritative primitives,
-    // without treating the evidence-list object's identity as an acquisition fact.
+    // The two snapshots can be deserialized independently. Compare authoritative values,
+    // including evidence records in sequence, rather than the evidence-list object's identity.
     private static bool SameReliefSnapshot(OpenLotDto lot, OpenLotDto member)
         => lot.TaxLotRecordId == member.TaxLotRecordId &&
            lot.SecurityId == member.SecurityId && lot.BookPositionId == member.BookPositionId &&
@@ -314,5 +316,17 @@ public static class CanonicalDisposalHistoryProjector
            acquisition.TransactionCostBasis == poolAcquisition.TransactionCostBasis &&
            acquisition.FunctionalCostBasis == poolAcquisition.FunctionalCostBasis &&
            acquisition.HoldingPeriodStartDate == poolAcquisition.HoldingPeriodStartDate &&
-           acquisition.FaceValueTerms == poolAcquisition.FaceValueTerms;
+           acquisition.FaceValueTerms == poolAcquisition.FaceValueTerms &&
+           SameCorporateActionLineage(acquisition.CorporateActionLineage, poolAcquisition.CorporateActionLineage) &&
+           acquisition.Evidence is { } evidence && poolAcquisition.Evidence is { } poolEvidence &&
+           evidence.SequenceEqual(poolEvidence);
+
+    private static bool SameCorporateActionLineage(OpenLotCorporateActionLineageDto? left, OpenLotCorporateActionLineageDto? right)
+        => left is null ? right is null : right is not null &&
+           left.CorporateActionId == right.CorporateActionId && left.ActionType == right.ActionType &&
+           left.SourceCorporateActionId == right.SourceCorporateActionId &&
+           left.EffectiveDate == right.EffectiveDate && left.PredecessorTaxLotRecordId == right.PredecessorTaxLotRecordId &&
+           left.PredecessorVersion == right.PredecessorVersion && left.BasisAllocationPercent == right.BasisAllocationPercent &&
+           left.Role == right.Role && left.ReportingTags is { } tags && right.ReportingTags is { } poolTags &&
+           tags.SequenceEqual(poolTags, StringComparer.Ordinal);
 }

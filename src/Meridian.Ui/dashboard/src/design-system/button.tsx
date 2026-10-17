@@ -84,7 +84,7 @@ export const DesignSystemButton = forwardRef<HTMLButtonElement, DesignSystemButt
   }, ref) => {
     const vm = buildButtonCommandViewModel({ disabled, busy, busyLabel, disabledReason, title });
     const classes = cn(
-      "mds-btn inline-flex items-center justify-center gap-2 rounded-[2px] border font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50",
+      "mds-btn inline-flex items-center justify-center gap-2 rounded-[2px] border font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50",
       buttonVariantClasses[variant],
       buttonSizeClasses[size],
       vm.disabled && asChild && "pointer-events-none opacity-50",

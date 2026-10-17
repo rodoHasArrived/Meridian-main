@@ -16,7 +16,7 @@ namespace Meridian.Tests.Ui;
 public sealed class SecurityMasterAliasEndpointsTests
 {
     [Fact]
-    public async Task AliasUpsert_ReturnsConflict_WhenRequestWouldRewriteRecordedHistory()
+    public async Task AliasUpsert_ReturnsConflict_WhenAliasHistoryConflicts()
     {
         var aliasId = Guid.NewGuid();
         var queryService = Substitute.For<ISecurityMasterQueryService>();
@@ -43,7 +43,7 @@ public sealed class SecurityMasterAliasEndpointsTests
             new JsonSerializerOptions(JsonSerializerDefaults.Web));
 
         response.StatusCode.Should().Be(HttpStatusCode.Conflict);
-        (await response.Content.ReadAsStringAsync()).Should().Contain("append-only alias revisions");
+        (await response.Content.ReadAsStringAsync()).Should().Contain("conflicts with its recorded history");
     }
 
     private static async Task<WebApplication> CreateAppAsync(

@@ -84,7 +84,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var target = AtomicTaxLotJournalCommand.Create(Guid.NewGuid(), source.LedgerBookId, write, sourceEvent,
                 "carry-target", source.ExpectedPeriodVersion, AtomicTaxLotMutationKind.Disposal, [proof],
                 disposalSelections: [new(recipientId, recipient.LotId, recipient.Version, 1m, 1m, 0,
-                    proof.EvidenceId, 100m, 100m)], reliefMethod: "Fifo", policyRevision: "tax-policy-v1");
+                    proof.EvidenceId, 100m, 100m)], reliefMethod: "Fifo", policyRevision: "tax-policy-v1",
+                referenceVersions: source.ReferenceVersions);
             var posted = await database.JournalStore.AppendAssetPostingAsync(target);
             var restarted = new PostgresLedgerJournalStore(database.Options);
             var read = () => restarted.GetTaxLotDisposalHistoryAsync(source.LedgerBookId, [targetId]);

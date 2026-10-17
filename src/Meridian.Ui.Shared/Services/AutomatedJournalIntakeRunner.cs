@@ -299,7 +299,7 @@ public sealed class AutomatedJournalIntakeRunner
             freshnessPolicy: freshness);
         return new DailyMarkToMarketRequest(policy, request.PeriodId.ToString("D"), request.AsOf,
             request.Currency, positionResolution.Positions, request.Actor, request.Reason,
-            LedgerBookId: request.LedgerBookId);
+            LedgerBookId: request.LedgerBookId, EntityId: request.EntityId);
     }
 
     public async Task<ValuationFreshnessPreviewDto> PreviewDailyMarkToMarketAsync(

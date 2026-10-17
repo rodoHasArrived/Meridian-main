@@ -19,6 +19,16 @@ internal static class AssetAccountingCandidateCanonicalizer
             return result;
         }
 
+        // Correction review permits preparing an adjustment, but every governed asset draft
+        // still awaits independent posting approval. Apply the same form when rebuilding it.
+        if (write.PostingCommand is { } command && command.ApprovalState != AccountingPostingApprovalStateDto.Pending)
+        {
+            write = write with
+            {
+                PostingCommand = command with { ApprovalState = AccountingPostingApprovalStateDto.Pending, ApprovalId = null }
+            };
+        }
+
         var journalId = CreateId(
             "asset-accounting-journal",
             ledgerBookId.ToString("D"),

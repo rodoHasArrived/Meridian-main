@@ -101,7 +101,7 @@ export const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(
         disabled={disabled}
         className={cn(
           "inline-flex items-center gap-2.5 text-sm text-foreground transition-opacity",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
           disabled ? "cursor-not-allowed opacity-55" : "cursor-pointer",
           className
         )}

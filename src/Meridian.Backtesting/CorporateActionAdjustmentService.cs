@@ -269,12 +269,31 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
     }
 
     /// <inheritdoc />
-    public async Task<PositionCorporateActionAdjustment> AdjustPositionAsync(
+    public Task<PositionCorporateActionAdjustment> AdjustPositionAsync(
         string ticker,
         decimal quantity,
         decimal costBasis,
         DateTimeOffset positionOpenedAt,
         CancellationToken ct = default)
+        => AdjustPositionCoreAsync(ticker, quantity, costBasis, null, positionOpenedAt, ct);
+
+    /// <inheritdoc />
+    public Task<PositionCorporateActionAdjustment> AdjustPositionAsync(
+        string ticker,
+        decimal quantity,
+        decimal costBasis,
+        decimal totalCostBasis,
+        DateTimeOffset positionOpenedAt,
+        CancellationToken ct = default)
+        => AdjustPositionCoreAsync(ticker, quantity, costBasis, totalCostBasis, positionOpenedAt, ct);
+
+    private async Task<PositionCorporateActionAdjustment> AdjustPositionCoreAsync(
+        string ticker,
+        decimal quantity,
+        decimal costBasis,
+        decimal? retainedTotalCostBasis,
+        DateTimeOffset positionOpenedAt,
+        CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(ticker) || quantity == 0m)
         {
@@ -314,6 +333,7 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
 
         var adjustedQuantity = quantity;
         var adjustedCostBasis = costBasis;
+        var adjustedTotalCostBasis = retainedTotalCostBasis;
         var appliedActions = 0;
 
         foreach (var action in relevantActions)
@@ -332,6 +352,9 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
                      action.ExchangeRatio is > 0m)
             {
                 adjustedQuantity *= action.ExchangeRatio.Value;
+                // Preserve this compatibility adjuster's existing merger economics: its
+                // unit basis remains unchanged while quantity follows the exchange ratio.
+                adjustedTotalCostBasis *= action.ExchangeRatio.Value;
                 appliedActions++;
             }
             else if (eventType == CorporateActionEventTypes.PrincipalPaydown &&
@@ -356,8 +379,10 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
                     EvidenceLinks: [$"security-master://corporate-actions/{action.CorpActId:D}"]));
                 if (projection.ProducesPostingCandidate && heldFace > 0m)
                 {
-                    var totalBasis = heldFace * adjustedCostBasis;
+                    var totalBasis = adjustedTotalCostBasis ?? heldFace * adjustedCostBasis;
                     var adjustedTotalBasis = Math.Max(0m, totalBasis - projection.PrincipalPaydown!.Value);
+                    if (adjustedTotalCostBasis.HasValue)
+                        adjustedTotalCostBasis = adjustedTotalBasis;
                     adjustedCostBasis = adjustedTotalBasis / heldFace;
                     appliedActions++;
                 }
@@ -372,13 +397,19 @@ public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmen
             }
         }
 
+        if (adjustedTotalCostBasis.HasValue && adjustedQuantity != 0m)
+            adjustedCostBasis = adjustedTotalCostBasis.Value / Math.Abs(adjustedQuantity);
+
         _logger.LogInformation(
             "AdjustPositionAsync: applied {ActionCount} corporate action(s) to {Ticker} position; " +
             "quantity {OrigQty} → {AdjQty}, cost basis {OrigCb:F4} → {AdjCb:F4}",
             appliedActions, ticker, quantity, adjustedQuantity, costBasis, adjustedCostBasis);
 
         return new PositionCorporateActionAdjustment(
-            ticker, quantity, adjustedQuantity, costBasis, adjustedCostBasis, appliedActions);
+            ticker, quantity, adjustedQuantity, costBasis, adjustedCostBasis, appliedActions)
+        {
+            AdjustedTotalCostBasis = adjustedTotalCostBasis
+        };
     }
 
     private static Guid DeriveCompatibilityPositionId(Guid securityId, string ticker)

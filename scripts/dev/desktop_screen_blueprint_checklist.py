@@ -138,7 +138,7 @@ def validate_checklist(checklist_path: Path, workflows_path: Path) -> tuple[list
 
         if not heading:
             errors.append(f"{screen_id or prefix} is missing blueprintHeading.")
-        elif blueprint_text and heading not in blueprint_text:
+        elif heading not in {line.strip() for line in blueprint_text.splitlines()}:
             errors.append(f"{screen_id or prefix} blueprintHeading was not found in the blueprint: {heading}")
 
         validation_commands = screen.get("validationCommands", [])

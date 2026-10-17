@@ -2,6 +2,7 @@ using Meridian.Storage.Archival;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Commands;
+using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup;
 using Meridian.Application.Composition.Startup.ModeRunners;
 using Meridian.Application.Composition.Startup.StartupModels;
@@ -10,8 +11,10 @@ using Meridian.Application.Reconciliation;
 using Meridian.Core.Config;
 using Meridian.Application.Services;
 using Meridian.FinancialOperations.Reconciliation;
+using Meridian.Contracts.Tenancy;
 using Meridian.Infrastructure.Reconciliation;
 using Meridian.Platform.Runtime;
+using Meridian.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog.Core;
 using Xunit;
@@ -21,6 +24,55 @@ namespace Meridian.Tests.Application.Composition.Startup.ModeRunners;
 [Collection("Sequential")]
 public sealed class CommandModeRunnerTests
 {
+    [Theory]
+    [InlineData("--help", true)]
+    [InlineData("--help", false)]
+    [InlineData("--validate-config", true)]
+    [InlineData("--validate-config", false)]
+    public async Task Planner_AccountConfigurationErrors_DoNotBlockHelpOrConfigurationDiagnostics(
+        string command, bool malformedJson)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-command-diagnostics-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(root);
+        var configPath = Path.Combine(root, "appsettings.json");
+        var config = new AppConfig(DataRoot: Path.Combine(root, "data"), TenantScopeEnforcement: "fail_closed");
+        var invalidContent = malformedJson ? "{ invalid json" : JsonSerializer.Serialize(config);
+        await File.WriteAllTextAsync(configPath, invalidContent);
+        using var environment = new Meridian.Tests.Identity.EnvironmentVariableScope()
+            .Set(TenantScopeEnforcementOptions.EnvironmentVariable, null)
+            .Set(MeridianDatabaseEnvironment.UnifiedVariable, null)
+            .Set(FundAccountsStartup.ConnectionStringVariable, null);
+        await using var configService = new ConfigurationService(Logger.None);
+        var originalOut = Console.Out;
+        try
+        {
+            using var output = new StringWriter();
+            Console.SetOut(output);
+            // The planner eagerly discovers every command. Account authority must stay deferred
+            // until a statement run reads its book so operators can diagnose the invalid file.
+            using var plan = CommandDispatchPlanner.Create(config, configPath, Logger.None, configService);
+            var (handled, result) = await plan.Dispatcher.TryDispatchAsync([command]);
+
+            handled.Should().BeTrue();
+            if (command == "--help")
+            {
+                result.ExitCode.Should().Be(0);
+                output.ToString().Should().Contain("Meridian");
+            }
+            else
+            {
+                result.ExitCode.Should().NotBe(0);
+                output.ToString().Should().Contain(malformedJson ? "Invalid JSON syntax" : "TenantScopeEnforcement");
+            }
+            (await File.ReadAllTextAsync(configPath)).Should().Be(invalidContent);
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     [Fact]
     public async Task TryRunAsync_StatementImportCommand_UsesPlannerServicesAndDisposesProvider()
     {

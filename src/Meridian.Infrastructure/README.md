@@ -6,10 +6,12 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Infrastructure
+
+Local ETL post-processing requires the checksum, length and file timestamps captured while staging. Replacement deliveries at the same filename fail cleanup without being deleted or archived. Destructive cleanup atomically claims the original directory entry and verifies it again before acting; a conflicting new drop remains in place, and an interrupted claim is restored or retained for explicit recovery.
 
 Robinhood read-only synchronization logs failed HTTP status codes without endpoint URLs or response
 bodies, which can contain account identifiers or provider-returned private details.
@@ -45,6 +47,30 @@ This layer owns external integration details while depending on lower contracts 
   SFTP publisher adapter for the Contracts-owned ETL publisher port.
 
 ## Important workflows
+
+Streaming readiness requires acknowledged authentication and successful subscription replay on both
+initial connection and recovery. Alpaca validates the provider's full subscription acknowledgment
+before confirming replay or live subscription changes; rejected or timed-out changes invalidate
+readiness. Transient provider control errors remain retryable instead of becoming credential failures.
+Acknowledgments allow Alpaca's automatic correction and cancel/error channels only for requested
+trade symbols. Invalid syntax, symbol-limit, and unsupported-channel errors remain non-retryable
+configuration failures, so reconnect attempts cannot exhaust their budgets on a permanent request.
+Alpaca reconciles subscriptions against the current transport,
+sends explicit unsubscribe frames after the last local reference is removed, and replays only
+remaining subscriptions. WebSocket application messages, heartbeats, and close frames share a
+per-connection send gate; canceled queued writes cannot move to a replacement connection.
+
+Polygon daily/intraday history and corporate actions follow every continuation page with per-request
+pacing and overlapping-record deduplication. Repeated cursors, invalid response envelopes, and failed
+continuation requests fail the fetch rather than certifying partial coverage. The hosted corporate-action
+fetcher reports endpoint completion and acknowledged persistence counts on success, typed HTTP/authentication/
+throttling/persistence failures, and caller cancellation. An interrupted fetch retains completed writes.
+Composite history preserves unavailable-provider evidence when candidates are backed off or throttled;
+only successfully queried empty coverage can produce a no-data result, with bounded throttling retries.
+
+Polygon streaming rejects missing, malformed, nonpositive, and out-of-range source timestamps, then
+applies shared trade, quote, and aggregate quality validation. Source time remains distinct from
+receipt metadata on published events; receipt time never substitutes for missing source evidence.
 
 Canonical statement imports stream JSON to an exclusive temporary file, force its contents to
 disk, then publish with a no-overwrite rename and the host-supplied `IAtomicFileWriter`

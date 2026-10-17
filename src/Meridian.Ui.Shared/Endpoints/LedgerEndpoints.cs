@@ -29,6 +29,7 @@ public static partial class LedgerEndpoints
     {
         MapDisposalTaxEndpoints(app, jsonOptions);
         MapConsolidationEndpoints(app, jsonOptions);
+        MapAccountOversightEndpoints(app, jsonOptions);
         app.MapGet(UiApiRoutes.LedgerBooks, async (
             string? fundProfileId,
             Guid? fundStructureNodeId,
@@ -747,7 +748,16 @@ public static partial class LedgerEndpoints
                     return Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." });
                 }
 
-                var actor = ResolveMutationActor(context, request.Actor);
+                var adjustment = scope.Plan.LateAdjustments.FirstOrDefault(row =>
+                    string.Equals(row.RequestId, request.RequestId?.Trim(), StringComparison.OrdinalIgnoreCase));
+                var reviewRole = adjustment?.MaterialityPolicy.ReviewRole ?? scope.Plan.MaterialityPolicy.ReviewRole;
+                if (!TryResolveActor(context, out var actor) || string.IsNullOrWhiteSpace(reviewRole) ||
+                    !EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+                        .Contains(reviewRole.Trim(), StringComparer.OrdinalIgnoreCase))
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 var result = await service
                     .ReviewLateAdjustmentScopedAsync(
                         request with { Actor = actor, ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin) },

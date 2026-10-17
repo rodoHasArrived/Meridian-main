@@ -99,7 +99,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 AtomicTaxLotMutationKind.Disposal, [evidence],
                 disposalSelections: [new(secondLot.TaxLotRecordId, secondLot.LotId, secondLot.Version,
                     1m, 1m, 0, evidence.EvidenceId, 100m, 100m)],
-                reliefMethod: "Fifo", policyRevision: "tax-policy-v1");
+                reliefMethod: "Fifo", policyRevision: "tax-policy-v1", referenceVersions: first.ReferenceVersions);
             await database.JournalStore.AppendAssetPostingAsync(second);
             await database.JournalStore.SaveWashSaleDeferralsAsync([Claim(second, shared, 20m)]);
 

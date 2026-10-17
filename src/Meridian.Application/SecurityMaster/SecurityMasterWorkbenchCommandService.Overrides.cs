@@ -31,11 +31,14 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         // the field-edit route holds across its patch + draft creation. Without it, an edit could
         // commit its Pending value after the revision query below but before the decision, and the
         // security-level approval would silently co-approve the concurrent unreviewed value.
-        var fieldEditGate = await FieldEditGates.AcquireAsync(securityId, ct).ConfigureAwait(false);
+        var fieldEditGate = await AcquireFieldEditGateAsync(securityId, ct).ConfigureAwait(false);
         try
         {
-            return await RecordOverrideApprovalDecisionUnderGateAsync(
-                securityId, revisionId, reviewer, rationale, ct).ConfigureAwait(false);
+            return await ExecuteMutationAsync(securityId, async () =>
+            {
+                return await RecordOverrideApprovalDecisionUnderGateAsync(
+                    securityId, revisionId, reviewer, rationale, ct).ConfigureAwait(false);
+            }, ct).ConfigureAwait(false);
         }
         finally
         {
@@ -143,29 +146,32 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         // discard routes serialize under: without it, a raw patch can land between an approval's
         // ungoverned-key scan and its recorded decision, and the security-level Approved would
         // silently co-approve a value no reviewer ever saw.
-        var fieldEditGate = await FieldEditGates.AcquireAsync(securityId, ct).ConfigureAwait(false);
+        var fieldEditGate = await AcquireFieldEditGateAsync(securityId, ct).ConfigureAwait(false);
         try
         {
-            // While ANY revision is mid-lifecycle, the overlay is under review and free-form
-            // mutation is refused outright — the gate alone only serializes calls, it cannot stop
-            // a patch from landing BETWEEN a submission and its approval and changing the
-            // dictionary the reviewer decides over (a whole-record revision's approval covers the
-            // entire overlay, with no per-key scan to catch the insertion), nor from resetting an
-            // APPROVED revision's decided overlay to Pending while it awaits publish. The patch
-            // becomes legal again once the revisions are published or discarded.
-            var revisions = await _revisions.ListBySecurityAsync(securityId, ct).ConfigureAwait(false);
-            if (revisions.Any(static revision => revision.State is SecurityMasterRevisionStateDto.Draft
-                or SecurityMasterRevisionStateDto.Submitted
-                or SecurityMasterRevisionStateDto.Approved))
+            return await ExecuteMutationAsync(securityId, async () =>
             {
-                throw new InvalidOperationException(
-                    $"Operator-override patches for security '{securityId:D}' must wait for the governed revision " +
-                    "workflow: revisions are staged or awaiting publish (Draft/Submitted/Approved), and a free-form " +
-                    "patch would change the overlay their reviewers decided over. Publish or discard those revisions " +
-                    "first.");
-            }
+                // While ANY revision is mid-lifecycle, the overlay is under review and free-form
+                // mutation is refused outright — the gate alone only serializes calls, it cannot stop
+                // a patch from landing BETWEEN a submission and its approval and changing the
+                // dictionary the reviewer decides over (a whole-record revision's approval covers the
+                // entire overlay, with no per-key scan to catch the insertion), nor from resetting an
+                // APPROVED revision's decided overlay to Pending while it awaits publish. The patch
+                // becomes legal again once the revisions are published or discarded.
+                var revisions = await _revisions.ListBySecurityAsync(securityId, ct).ConfigureAwait(false);
+                if (revisions.Any(static revision => revision.State is SecurityMasterRevisionStateDto.Draft
+                    or SecurityMasterRevisionStateDto.Submitted
+                    or SecurityMasterRevisionStateDto.Approved))
+                {
+                    throw new InvalidOperationException(
+                        $"Operator-override patches for security '{securityId:D}' must wait for the governed revision " +
+                        "workflow: revisions are staged or awaiting publish (Draft/Submitted/Approved), and a free-form " +
+                        "patch would change the overlay their reviewers decided over. Publish or discard those revisions " +
+                        "first.");
+                }
 
-            return await _overrides.PatchAsync(securityId, request, updatedBy, ct).ConfigureAwait(false);
+                return await _overrides.PatchAsync(securityId, request, updatedBy, ct).ConfigureAwait(false);
+            }, ct).ConfigureAwait(false);
         }
         finally
         {
@@ -185,39 +191,42 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         // submit → approve → publish/discard seams, or any ModifySecurityMaster actor (including
         // the editor) could directly approve a value whose revision is still Draft and have
         // governed runs treat it as usable.
-        var fieldEditGate = await FieldEditGates.AcquireAsync(securityId, ct).ConfigureAwait(false);
+        var fieldEditGate = await AcquireFieldEditGateAsync(securityId, ct).ConfigureAwait(false);
         try
         {
-            // APPROVED revisions count too — especially whole-record ones, whose null FieldPath
-            // can never match an overlay key in the scan below: they await publish, which
-            // converges the overlay decision itself, and a direct decision in that window could
-            // approve the overlay under an unrelated actor (or reject it outright) and have the
-            // publish treat the non-Pending status as already converged.
-            var revisions = await _revisions.ListBySecurityAsync(securityId, ct).ConfigureAwait(false);
-            if (revisions.Any(static revision => revision.State is SecurityMasterRevisionStateDto.Draft
-                or SecurityMasterRevisionStateDto.Submitted
-                or SecurityMasterRevisionStateDto.Approved))
+            return await ExecuteMutationAsync(securityId, async () =>
             {
-                throw new InvalidOperationException(
-                    $"Operator-override decisions for security '{securityId:D}' must go through the governed revision " +
-                    "workflow: revisions are staged or awaiting publish (Draft/Submitted/Approved), and a direct " +
-                    "decision would decide their values without the bound workflow's review.");
-            }
+                // APPROVED revisions count too — especially whole-record ones, whose null FieldPath
+                // can never match an overlay key in the scan below: they await publish, which
+                // converges the overlay decision itself, and a direct decision in that window could
+                // approve the overlay under an unrelated actor (or reject it outright) and have the
+                // publish treat the non-Pending status as already converged.
+                var revisions = await _revisions.ListBySecurityAsync(securityId, ct).ConfigureAwait(false);
+                if (revisions.Any(static revision => revision.State is SecurityMasterRevisionStateDto.Draft
+                    or SecurityMasterRevisionStateDto.Submitted
+                    or SecurityMasterRevisionStateDto.Approved))
+                {
+                    throw new InvalidOperationException(
+                        $"Operator-override decisions for security '{securityId:D}' must go through the governed revision " +
+                        "workflow: revisions are staged or awaiting publish (Draft/Submitted/Approved), and a direct " +
+                        "decision would decide their values without the bound workflow's review.");
+                }
 
-            var overlay = await _overrides.GetAsync(securityId, ct).ConfigureAwait(false);
-            if (overlay is { Values.Count: > 0 }
-                && overlay.Values.Keys.Any(key => revisions.Any(revision =>
-                    revision.State is not SecurityMasterRevisionStateDto.Rejected
-                    && !string.IsNullOrWhiteSpace(revision.FieldPath)
-                    && string.Equals(revision.FieldPath, key, StringComparison.OrdinalIgnoreCase))))
-            {
-                throw new InvalidOperationException(
-                    $"Operator-override decisions for security '{securityId:D}' must go through the governed revision " +
-                    "workflow: the overlay carries revision-backed values, whose decisions are recorded by the approve, " +
-                    "publish, and discard seams.");
-            }
+                var overlay = await _overrides.GetAsync(securityId, ct).ConfigureAwait(false);
+                if (overlay is { Values.Count: > 0 }
+                    && overlay.Values.Keys.Any(key => revisions.Any(revision =>
+                        revision.State is not SecurityMasterRevisionStateDto.Rejected
+                        && !string.IsNullOrWhiteSpace(revision.FieldPath)
+                        && string.Equals(revision.FieldPath, key, StringComparison.OrdinalIgnoreCase))))
+                {
+                    throw new InvalidOperationException(
+                        $"Operator-override decisions for security '{securityId:D}' must go through the governed revision " +
+                        "workflow: the overlay carries revision-backed values, whose decisions are recorded by the approve, " +
+                        "publish, and discard seams.");
+                }
 
-            return await _overrides.RecordApprovalDecisionAsync(securityId, decision, ct).ConfigureAwait(false);
+                return await _overrides.RecordApprovalDecisionAsync(securityId, decision, ct).ConfigureAwait(false);
+            }, ct).ConfigureAwait(false);
         }
         finally
         {

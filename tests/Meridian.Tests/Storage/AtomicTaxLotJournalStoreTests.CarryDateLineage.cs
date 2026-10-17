@@ -163,7 +163,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             disposalSelections: lots.Select((lot, index) => new LedgerTaxLotDisposalSelection(lot.TaxLotRecordId,
                 lot.LotId, lot.Version, lot.OpenQuantity, lot.OpenQuantity, index, proof.EvidenceId,
                 lot.UnitCost, lot.OpenQuantity * lot.UnitCost)).ToArray(),
-            reliefMethod: "Fifo", policyRevision: "tax-policy-v1");
+            reliefMethod: "Fifo", policyRevision: "tax-policy-v1", referenceVersions: template.ReferenceVersions);
         await database.JournalStore.AppendAssetPostingAsync(command);
         return command;
     }

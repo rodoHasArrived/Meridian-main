@@ -178,7 +178,7 @@ export function CoveredCallScreen() {
       {vm.errorBanner ? (
         <Card>
           <CardContent className="flex items-start gap-3 py-4 text-sm">
-            <AlertCircle className="h-5 w-5 flex-shrink-0 text-danger" aria-hidden="true" />
+            <AlertCircle className="h-5 w-5 shrink-0 text-danger" aria-hidden="true" />
             <div className="flex-1">
               <div className="font-semibold text-danger">Backtest issue</div>
               <p className="mt-1 text-foreground">{vm.errorBanner.summary}</p>
@@ -212,7 +212,7 @@ function ChainDataAdvisory() {
   return (
     <Card>
       <CardContent className="flex items-start gap-3 py-3 text-xs">
-        <Info className="h-4 w-4 flex-shrink-0 text-warning" aria-hidden="true" />
+        <Info className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
         <p className="text-foreground/80">
           <span className="font-semibold">Chain data is not point-in-time.</span>{" "}
           Slice 1 uses the configured <code>IOptionsChainProvider</code>'s live snapshot replicated across each scan date with DTE recomputed.

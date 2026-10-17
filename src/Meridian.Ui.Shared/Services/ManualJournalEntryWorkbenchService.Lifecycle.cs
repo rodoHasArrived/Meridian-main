@@ -521,11 +521,16 @@ public sealed partial class ManualJournalEntryWorkbenchService
             var positions = draft.Lines.Where(static line => line.SecurityId.HasValue ||
                 !string.IsNullOrWhiteSpace(line.LedgerAccountSymbol)).ToArray();
             var reason = positions.Length == 0 ? "Valuation has no identified position lines." : null;
+            if (draft.Lines.Any(line => !string.Equals(
+                    (line.Dimensions?.EntityId ?? line.EntityId ?? draft.EntityId)?.Trim() ?? "",
+                    draft.EntityId?.Trim() ?? "", StringComparison.OrdinalIgnoreCase)))
+                reason ??= "Valuation journal dimensions do not match the retained entity scope.";
             foreach (var position in positions)
             {
                 reason ??= ValuationMarkEvidenceGuard.Validate(draft.ValuationMarkEvidenceJson,
                     fundProfileId, draft.AccountingDate, position.SecurityId,
-                    position.LedgerAccountFinancialAccountId, position.LedgerAccountSymbol, draft.ValuationMarkEvidenceDigest);
+                    position.LedgerAccountFinancialAccountId, position.LedgerAccountSymbol, draft.ValuationMarkEvidenceDigest,
+                    draft.EntityId);
             }
             if (reason is not null)
                 issues.Add(Issue("manual-je.valuation-mark-review-required",

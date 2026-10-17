@@ -7,6 +7,9 @@
    re-add an external font import; self-host the WOFF2 as a bundled @font-face
    if the exact face is required. */
 
+@import "tailwindcss" source(none);
+@config "../../tailwind.config.ts";
+
 @font-face {
   font-family: "Segoe UI Variable Display";
   src: local("Segoe UI Variable Display"), local("Segoe UI Variable Display Semibold"), local("Segoe UI Semibold");
@@ -30,10 +33,6 @@
   font-style: normal;
   font-display: swap;
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 @layer base {
   /* Light appearance remains an explicit alias for nested panels that already
@@ -797,6 +796,23 @@
     @apply border-border;
   }
 
+  /* Tailwind 4 uses the browser's default button cursor and a translucent
+     current-color placeholder. Retain the workstation's established defaults;
+     explicit component utilities still override these base styles. */
+  button,
+  [role="button"] {
+    cursor: pointer;
+  }
+
+  :disabled {
+    cursor: default;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #9ca3af;
+  }
+
   body {
     @apply min-h-screen bg-background font-sans text-foreground antialiased;
     font-size: 13px;
@@ -852,6 +868,12 @@
 }
 
 @layer components {
+  /* Keep the default below caller-supplied text-size utilities. Tailwind 4
+     orders arbitrary text sizes after named sizes such as text-base. */
+  .card-title {
+    font-size: 0.875rem;
+  }
+
   .panel-surface {
     @apply rounded-xl border border-border/80 bg-card shadow-workstation transition-[border-color] duration-150;
   }
