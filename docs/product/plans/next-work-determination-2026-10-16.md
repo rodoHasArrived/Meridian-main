@@ -192,15 +192,59 @@ doc-health dashboard, so the P1 above unblocks it mechanically.
 
 ## What has not changed
 
-- **The roadmap registry is untouched since the 2026-10-14 review.** Parsed today: **42 rows — 17
-  `done`, 9 `planned`, 9 `in_progress`, 6 `accepted`, 1 `ready_for_acceptance`** — exactly the
-  inventory the readiness tracker records. No row moved in two days.
+- ~~**The roadmap registry is untouched since the 2026-10-14 review.** Parsed on 2026-10-16: **42
+  rows — 17 `done`, 9 `planned`, 9 `in_progress`, 6 `accepted`, 1 `ready_for_acceptance`** — exactly
+  the inventory the readiness tracker records. No row moved in two days.~~ **Superseded within a day —
+  see [Update (2026-10-17)](#update-2026-10-17-three-of-this-documents-readings-moved-overnight).**
+  The registry now holds **48 rows**.
 - **The user-requested work queue is unchanged:** `W10-LOT-002`, then `W10-MARK-001`, then
   `W10-SEAM-001`, before `W10-RECON-001` in that queue only. Registry ranking remains MARK 1,
   RECON 2, PROV 3, JRNL 5, SEAM 7, LOT 12.
 - **`W9-CORPACT-011` is still the program's only `ready_for_acceptance` row** — now **24 days** in
   that posture. #3170 ranked taking or declining it as P1; declining is still a result.
 - Every product item in #3170's summary table stands as written.
+
+## Update (2026-10-17): three of this document's readings moved overnight
+
+`main` advanced from `e5c20ca7` to **`e447587e`** while this document sat in review, taking
+[#3186](https://github.com/rodoHasArrived/Meridian-main/pull/3186) (which carried #3180, #3177, #3164
+and #3162) and [#3185](https://github.com/rodoHasArrived/Meridian-main/pull/3185). Re-verified
+against the merged tree:
+
+**1. Correction — the registry is no longer unchanged. It now holds 48 rows, not 42.** #3185
+registered **six new `W11` rows** (`W11-PASSPORT-001`, `W11-COVER-001`, `W11-STAKE-001`,
+`W11-SHADOW-001`, `W11-PACK-001`, `W11-EXEC-001`), all `planned`. The count is now **17 `done`, 15
+`planned`, 9 `in_progress`, 6 `accepted`, 1 `ready_for_acceptance`**. The `done`/`in_progress`/
+`accepted`/`ready_for_acceptance` postures are untouched, so nothing in the ranking above changes —
+but "no row moved" is no longer a true statement, and the readiness tracker's "42 rows" inventory is
+now stale too.
+
+**2. The sequencing warning above has already materialized.**
+`build/scripts/ci/script-test-quarantine.json` now reads **`"quarantined_modules": {}`** — #3180
+merged and drained all three entries. So `test_desktop_screen_blueprint_checklist`,
+`test_live_execution_controls_route_consistency` and `test_export_project_artifact_workflow` are
+gating `main` **as of now**, in the lane whose two teardown races are still unfixed. This does not
+moot the warning; it closes the window on acting before the fact. The P0 above is unchanged and
+slightly more urgent.
+
+**3. The generated-conflict finding is reinforced, and this document's own PR proved it.**
+Re-measured against `e447587e`: of six remaining active PRs, four conflict, for **15 conflicts that
+are still 100% generated files** — now across **five** paths rather than three, adding
+`docs/status/coverage-report.md` and `docs/status/example-validation.md`. And
+[#3187](https://github.com/rodoHasArrived/Meridian-main/pull/3187) — this document — went `dirty` on
+exactly `doc-health-dashboard.{json,md}` plus `example-validation.md` overnight, making it the
+seventh PR to pay the same tax. Resolving it needed no decisions: the repo's own resolver handled the
+dashboard pair, and regeneration produced the rest.
+
+**New finding, found by using the resolver rather than reading it.**
+`build/scripts/resolve-generated-merge-conflicts.py` covers four of the five colliding paths —
+`doc-health-dashboard.{json,md}` and `coverage-report.md` in `GENERATED_FILES` (`:20-39`), and
+`source-hash-manifest.json` through its dedicated hash merger (`:42`). **`docs/status/example-validation.md`
+is in none of them**, so the resolver reports `REVIEW` and stops. It is a generated file:
+`run-docs-automation.py --profile core` rewrites it from `validate-examples`. Adding that one path to
+`GENERATED_FILES` makes the resolver complete over the currently-colliding set. The file's own comment
+warns against replacing the list with a wildcard over `docs/status`, so this is a one-line addition,
+not a glob.
 
 ## Process finding: one determination closed, one still open, and this is the seventh
 
@@ -236,7 +280,8 @@ reports **2 broken links across 2,571 checked** today:
 | **P1** | **Return 0 for a `manual` disposition in `generated_repair.py:544-546`**, with a regression test | 31 of 31 `workflow_run` invocations failed; **zero green runs ever**. The workflow's own step conditions prove `manual` was meant to finish green |
 | **P1** | **Then run the existing resolver over the six conflicted PRs** (`build/scripts/resolve-generated-merge-conflicts.py`) | 15 of 15 conflicts in the active queue are generated files already enumerated in that script. No PR in the active queue is blocked by a real disagreement |
 | **P1** | **Promote #3170's `.gitattributes` / regenerate-on-merge item** | Same root cause as the two rows above, now measured on a different file set (`doc-health-dashboard`, not the workstation bundle). Recurring by construction |
-| **P2** | **Sequence #3180 after the race fixes**, or land it knowing the lane's red rate becomes harder to attribute | It drains all three quarantined modules into a lane already failing a third of the time, and fixes neither race |
+| **P1** | **Add `docs/status/example-validation.md` to `GENERATED_FILES`** in `resolve-generated-merge-conflicts.py:20-39` | One line makes the resolver complete over the five currently-colliding generated paths. Found by running it on this document's own merge, where it reported `REVIEW` and stopped |
+| ~~P2~~ **done** | ~~Sequence #3180 after the race fixes~~ | **#3180 merged via #3186 on 2026-10-17.** The quarantine is now empty and all three modules gate `main` with the two races unfixed, so the warning is spent and the P0 above is more urgent |
 | **P2** | **Merge or close #3170** | It is the only document carrying the current ranking, and it is a draft |
 | **P2** | **Take or decline `W9-CORPACT-011`** (now 24 days at `ready_for_acceptance`) | Carried from #3170. Zero engineering; declining is a result |
 
