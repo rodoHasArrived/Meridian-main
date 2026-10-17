@@ -5901,3 +5901,80 @@ uses a third read source (`queryService.GetByIdAsync`, `SecurityMasterEndpoints.
 write paths and audit, and cash-flow, factor and lot integration. E1 and the zero-caller claims
 for `LotQuantity`, the curve `Publish` and the two projectors were checked by direct reading and
 grep. No tests were run, because no source changed.
+
+### Addendum — re-check at `0342643d` (after #3191)
+
+This addendum re-checks the pass above against main at `0342643d`. Since `e447587e`, only #3191
+(asset-class descriptor slice 3) has touched Security Master source.
+
+**Narrowed by #3191 (E3).**
+- `SecurityKindMapping` now reads the class → `InstrumentType` direction from
+  `SecurityAssetClassDescriptor.InstrumentTypes`.
+- The profile-backed checks in `SecurityMasterService` and `AssetClassValidatorRegistry` now read
+  `RequiresGovernedProfile` / `SupportsProfileBackedTerms`.
+- `OpenLotAmortization` reads `SupportsCanonicalBulletAmortization`.
+- The operational-readiness specs are exposed to the parity guards.
+
+These items are struck from the E3 list. The browser taxonomy, the CSV hint, the pack journal
+templates, the WPF `RequiresContractMultiplier` match and the items below remain.
+
+**Still open, unchanged.** E1: `AmendTermBlockAsync` (`SecurityMasterService.cs:274-294`) still
+builds its patch from an unfenced projection read, with no `Version == ExpectedVersion` check.
+E2 and E4 are unchanged on main. Open PR #3194 addresses part of E4, by requiring the format tag on
+every write.
+
+#### E5 — Asset Operations routes obligations through private class predicates that disagree with the catalog (MEDIUM)
+
+`AssetObligationProjectionService.IsFixedIncome / IsDirectLoan / IsPrivateFund /
+IsStructuredOrCustom` (`AssetObligationProjectionService.cs:848-868`) decide which obligations and
+projected cash flows a security gets. They do not read `CashFlowBehavior` or
+`AssetOperationsCapabilities`, and `ProjectFromSecurityMaster` is called for every class without
+a capability gate.
+- **Deposit is dropped.** The catalog declares Deposit `ContractualSchedule`, and
+  `StructuredCashFlowTermsResolver` resolves its `interestRate`. The Asset Operations fixed-income
+  set (`Bond`, `TreasuryBill`, `CommercialPaper`, `CertificateOfDeposit`, `StructuredCredit`)
+  omits Deposit. A term deposit therefore projects interest in the Security Master cash-flow
+  service and shows none in Asset Operations. Repo (`FinancingInterest`) has no obligation route
+  either.
+- **Dead class names.** `IsPrivateFund` matches `"PrivateFund"` and `"PartnershipInterest"`.
+  These are not catalog classes; they appear only as planned classes in `SecurityAssetPackRegistry`
+  and as import aliases. A security could reach this check only through an alias the catalog would
+  already have canonicalised.
+- **No guard.** The ratchet lists this file as a known dispatch site whose predicates are "held to
+  the catalog elsewhere". No test references these predicates; `AssetObligationProjectionServiceTests`
+  covers individual classes, not catalog parity.
+
+Fix: derive the routing from `CashFlowBehavior` (or a descriptor obligation-route fact) and gate on
+`AssetOperationsCapabilities`. Add a parity test over `SecurityAssetClassCatalog.AssetClasses`.
+
+#### E6 — The literal ratchet only catches lists, not single-class branches (LOW)
+
+`SecurityAssetClassLiteralRatchetTests` counts a file only when it names five or more distinct
+classes. About 60 `string.Equals(assetClass, "<Class>")`-style branches across 24 files fall below
+that threshold. Examples:
+- `SecurityMasterDataQualityService` hard-codes MA002 (bond coupon) and MA003 (option
+  strike/expiry). The schema already marks `strike` and `expiry` `Req`, and Warrant's strike and
+  expiry are never checked.
+- `AssetOperationsReadService.cs:56` special-cases `"Bond"`.
+- `SecurityMasterWorkbenchCommandService` (4) and `SecurityValidationService` (3).
+
+These are the one-off branches a new class silently misses. Two fixes would help: derive MA002 and
+MA003 from the schema's required fields, as MA001 already does from `RequiresMaturity`, and extend
+the ratchet to count equality comparisons against catalog class names.
+
+#### Priorities after this addendum
+
+1. E1 (unchanged, HIGH).
+2. E2 consumer wiring (unchanged).
+3. E5: catalog-driven Asset Operations routing and a parity test. This is small, and it fixes a
+   visible Deposit gap.
+4. E3/E6: browser taxonomy onto the registry endpoint; schema-derived data-quality rules;
+   a tighter ratchet.
+5. E4: mutable cash-flow-source, entitlement and conflict tables onto the governance log
+   (`termsFormat` is in flight in #3194).
+
+**Method.** Read-only re-check of `0342643d`. The changed files were found with
+`git diff e447587e 0342643d -- src`. E5 was confirmed by reading the predicates, the catalog's
+`CashFlowBehavior` and `AssetOperationsCapabilities`, `StructuredCashFlowTermsResolver`, and
+`AssetOperationsReadService`. E6 counts come from a grep of class-equality comparisons in `src/`.
+No source changed, so no tests were run.
