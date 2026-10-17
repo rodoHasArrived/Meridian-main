@@ -588,6 +588,83 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
+    public void Scenario_MissingTermsFormat_ProducesWarningNamingTheInferredFamily()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [CreateIdentifier(SecurityIdentifierKind.Ticker, "AAPL", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = 1,
+                classification = "Common",
+                accountingClassification = "TradingAsset"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING"
+            && issue.Severity == SecurityValidationSeverityDto.Warning
+            && issue.AffectedFields.Contains($"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}")
+            && issue.Message.Contains($"'{SecurityTermsFormats.Flat}'", StringComparison.Ordinal));
+        report.HasBlockingIssues.Should().BeFalse("an untagged payload is a backfill item, not a blocker");
+    }
+
+    [Fact]
+    public void Scenario_DeclaredTermsFormat_ProducesNoFormatIssue()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [CreateIdentifier(SecurityIdentifierKind.Ticker, "AAPL", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new Dictionary<string, object?>
+            {
+                ["schemaVersion"] = 1,
+                [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
+                [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault("Equity").TermsVersion,
+                ["classification"] = "Common",
+                ["accountingClassification"] = "TradingAsset"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().NotContain(static issue => issue.Code.StartsWith("SM_ASSET_SPECIFIC_TERMS_FORMAT_", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Scenario_UnknownTermsFormat_ProducesError()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [CreateIdentifier(SecurityIdentifierKind.Ticker, "AAPL", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new Dictionary<string, object?>
+            {
+                ["schemaVersion"] = 1,
+                [SecurityTermsEnvelope.FormatKey] = "tabular",
+                ["classification"] = "Common",
+                ["accountingClassification"] = "TradingAsset"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().Contain(issue =>
+            issue.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_UNKNOWN"
+            && issue.Severity == SecurityValidationSeverityDto.Error
+            && issue.Message.Contains("'tabular'", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void Scenario_UnsupportedAssetSpecificSchemaVersion_ProducesCompatibilityError()
     {
         var record = CreateProjection(

@@ -9118,6 +9118,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto"
     },
     {
@@ -9743,6 +9749,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.FaceValueLot"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.FundUnitLot"
     },
     {
       "kind": "contract-set-member",
@@ -21982,6 +21994,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto"
     },
     {
@@ -22607,6 +22625,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.FaceValueLot"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.FundUnitLot"
     },
     {
       "kind": "contract-set-member",
@@ -33789,6 +33813,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot",
+      "target": "contract:Meridian.Contracts.SecurityMaster.IUnitizedLot"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingApprovalResultDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingApprovalDto"
     },
@@ -34258,6 +34288,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.FaceValueLot",
+      "target": "contract:Meridian.Contracts.SecurityMaster.IUnitizedLot"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.FundUnitLot",
       "target": "contract:Meridian.Contracts.SecurityMaster.IUnitizedLot"
     },
     {
@@ -47616,6 +47652,12 @@
       "target": "database:security_master.operations_workflow_audit.event_type"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_securities_terms_format on security_master.securities",
+      "target": "database:security_master.securities.terms_format"
+    },
+    {
       "constraint": "corporate_action_canonical_sources_proposal_id_fkey",
       "kind": "foreign-key",
       "label": "proposal_id",
@@ -50500,7 +50542,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e3dcffd4dcc5e2fd6526aef4ac05550540571dde9f0a3207b842087f856a1b99",
+  "fingerprint": "dbf3fcca9b550facfc1627ef73994cb51e80a4e871f7459aae715bdef3251a60",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -59668,6 +59710,12 @@
       "label": "Meridian.Contracts.SecurityMaster.CashFlowLegRateKind"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CommitmentLot"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto",
       "kind": "contract-type",
@@ -60296,6 +60344,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.FaceValueLot",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.FaceValueLot"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.FundUnitLot",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.FundUnitLot"
     },
     {
       "classification": "service_contract",
@@ -72155,6 +72209,11 @@
       "label": "security_master.ck_operations_workflow_audit_event_type on security_master.operations_workflow_audit"
     },
     {
+      "id": "database:security_master.ck_securities_terms_format on security_master.securities",
+      "kind": "database-object",
+      "label": "security_master.ck_securities_terms_format on security_master.securities"
+    },
+    {
       "id": "database:security_master.commodity_projection",
       "kind": "database-table",
       "label": "security_master.commodity_projection",
@@ -73203,6 +73262,11 @@
       "label": "security_master.securities.security_id"
     },
     {
+      "id": "database:security_master.securities.terms_format",
+      "kind": "database-object",
+      "label": "security_master.securities.terms_format"
+    },
+    {
       "id": "database:security_master.securities_pkey",
       "kind": "database-object",
       "label": "security_master.securities_pkey"
@@ -73779,11 +73843,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3315,
-    "contract_set_memberships": 3960,
-    "edges": 8391,
+    "contract_references": 3317,
+    "contract_set_memberships": 3964,
+    "edges": 8398,
     "foreign_keys": 137,
     "logical_references": 6,
-    "nodes": 4032
+    "nodes": 4036
   }
 }
