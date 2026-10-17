@@ -4175,7 +4175,7 @@ Meridian-main
 │   │   │   ├── ISecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── KeyedGatePool.cs
-│   │   │   ├── NullSecurityMasterReferenceServices.cs
+│   │   │   ├── NullSecurityMasterClearwaterServices.cs
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── PostgresSecurityMasterConflictService.cs
 │   │   │   ├── PostgresSecurityMasterRevisionStore.cs
@@ -4428,7 +4428,6 @@ Meridian-main
 │   │   │   ├── AssetOperationsDtos.cs
 │   │   │   ├── AssetOperationsReferenceDtos.cs
 │   │   │   ├── CorporateActionAccountingDtos.cs
-│   │   │   ├── ICorporateActionRuleProfile.cs
 │   │   │   ├── InstrumentPositionDtos.cs
 │   │   │   ├── PortfolioCashLadderDtos.cs
 │   │   │   └── RetainedEvidenceIdentityDto.cs
@@ -5695,6 +5694,7 @@ Meridian-main
 │   │   │   ├── AccountCashForecastService.cs
 │   │   │   ├── AssetObligationProjectionService.cs
 │   │   │   ├── AssetOperationsReadService.cs
+│   │   │   ├── ClearwaterCorporateActionRuleProfileV1.cs
 │   │   │   ├── CorporateActionAccountingProjectionService.CanonicalLots.cs
 │   │   │   ├── CorporateActionAccountingProjectionService.cs
 │   │   │   ├── CorporateActionAccountingProjectionService.Fingerprints.cs
@@ -6125,8 +6125,6 @@ Meridian-main
 │   │   ├── Program.cs
 │   │   └── QuantScriptWorker.Sidecar.targets
 │   ├── Meridian.ReferenceData
-│   │   ├── CorporateActions
-│   │   │   └── ClearwaterCorporateActionRuleProfileV1.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── Data
 │   │   │   │   └── security-reference-taxonomies.json
@@ -10226,7 +10224,7 @@ Meridian-main
 │   │   │   ├── LedgerNetBalanceCentralizationTests.cs
 │   │   │   ├── ProjectReferenceGraph.cs
 │   │   │   ├── ProjectReferenceGraphTests.cs
-│   │   │   └── VendorNeutralDomainTests.cs
+│   │   │   └── SecurityAssetClassLiteralRatchetTests.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AccountCashForecastTests.cs
 │   │   │   ├── AcquisitionTermsCompletionTests.cs
@@ -10996,6 +10994,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
 │   │   │   ├── SecurityAssetClassRegistryCoverageTests.cs
+│   │   │   ├── SecurityAssetClassSurfaceParityTests.cs
 │   │   │   ├── SecurityAssetProfileGovernanceServiceTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChainTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterPipelineTests.cs
