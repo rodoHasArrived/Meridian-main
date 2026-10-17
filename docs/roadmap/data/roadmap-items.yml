@@ -2265,3 +2265,242 @@ items:
       - type: reference
         path: docs/product/meridian-design-document.md
     last_reviewed: 2026-10-16
+
+  - id: W12-BOOK-001
+    title: Accounting book, basis, and FX control workbench
+    wave: W12
+    sequence: 1
+    stage_gates:
+      - AccountingRecords
+      - PortfolioLedgerReview
+    workspace:
+      - Accounting
+      - Settings
+    owner_lane: Accounting and Ledger
+    status: planned
+    health: green
+    priority: medium
+    evidence_posture: planned_evidence
+    current_summary: >-
+      Proposed sequence 1 of the fund-operations direction registered by DEC-FUND-OPERATIONS-DIRECTION-001.
+      Connect existing accounting-book, multi-currency journal, translation, and lot foundations to
+      governed book setup, basis comparison, FX revaluation, and trade/settlement bridges described in
+      charter Sections 6.2.1 and 11.7. Reuse W9-GOV-008, W10-MARK-001, W10-LOT-002, W10-TAX-001,
+      W10-PROV-001, and W10-SEAM-001 for their respective controls; W11-SHADOW-001 retains promotion
+      authority and W10-CONSOL-001 retains consolidation scope. Registration adds workflow direction
+      without changing W9-W11 ordering or claiming implementation, operator acceptance, or a release.
+    exit_criteria:
+      - Two books for one entity declare supported accounting bases, functional currencies, fiscal calendars, chart mappings, policy versions, and independent period states. A financial account, ledger account, and accounting book retain distinct identities.
+      - One economic event links its separately approved book postings; a foreign-currency partially settled sale explains basis, trade/settlement timing, lot treatment, and market versus FX differences without aggregating unlike currencies or silently rewriting history. Partial multi-book completion stays visible and blocks outputs requiring the missing postings.
+      - Translation and revaluation retain original and functional amounts, rate direction/date/source revision, rule version, and rounding. Missing, stale, conflicting, or incorrectly directed rate evidence blocks the affected operation; retained-input replay reproduces the result.
+      - The authoritative write rechecks exact approved scope, input/policy versions, and period authority. Retry cannot duplicate revaluation journals, closed periods reject ordinary changes, and corrections retain linked reversal/adjustment history across affected books and reports.
+      - Configuration cloning creates a new draft and validates target mappings; it cannot copy balances, transactions, credentials, approvals, or period locks. Book controls operate inside the existing supported deployment envelope.
+      - Browser and WPF use shared book/FX contracts and services for scope, amounts, evidence, blockers, and approvals. Acceptance links the durable worked examples, negative cases, operator walkthrough, and existing dependency evidence needed by the supported bases.
+    source_modules:
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-DESIGN-ENTITIES
+      - SRC-LEDGER
+      - SRC-STORAGE
+      - SRC-CONTRACTS
+      - SRC-UI-SHARED
+      - SRC-UI-SERVICES
+      - SRC-UI-DASHBOARD
+      - SRC-WPF
+    evidence:
+      - type: reference
+        path: docs/product/meridian-design-document.md
+    last_reviewed: 2026-10-17
+
+  - id: W12-CAPITAL-001
+    title: Governed investor capital and allocation lifecycle
+    wave: W12
+    sequence: 2
+    stage_gates:
+      - AccountingRecords
+      - PortfolioLedgerReview
+      - GovernedReportPack
+    workspace:
+      - Accounting
+      - Reporting
+    owner_lane: Accounting and Ledger
+    status: planned
+    health: green
+    priority: medium
+    evidence_posture: planned_evidence
+    current_summary: >-
+      Proposed sequence 2 of the fund-operations direction registered by DEC-FUND-OPERATIONS-DIRECTION-001.
+      Extend the durable operator lifecycle around existing share-class unit registers, single-NAV
+      equalization, partnership allocation, fees, waterfalls, and capital-account reconciliation.
+      Reuse the bounded W9-NAV-006 economics and W9-REPORT-005 output without reopening their acceptance.
+      Charter Sections 6.2.2, 6.7, and 10 define effective participation, supported master-feeder/SPV
+      graphs, series methods, and conservation. Book/FX controls use W12-BOOK-001 and close uses
+      W10-SEAM-001. Capital acceptance ties to the existing W9-REPORT-005 statement; W12-FINRPT-001
+      consumes the resulting records for richer downstream packs and is not a prerequisite for this
+      row's acceptance. This is fund-specialization direction and does
+      not change legal ownership, consolidation authority, earlier sequence, or production gates.
+    exit_criteria:
+      - Fund, feeder, SPV, class, series, and investor participation retain effective dates, source terms, and approved policy versions. Commitment, subscription request, approved dealing, unit issuance, and observed cash receipt remain distinct linked events.
+      - Allocation binds the period-effective participant set and eligible income, gains/losses, expenses, and fees. Allocated amounts conserve source totals with separately retained deterministic rounding residuals, including under reordered input records.
+      - The selected equalization or series method declares hurdle, high-water-mark basis, crystallization dates, and governed investor fee exceptions. Different subscription dates, loss/recovery, and partial redemption reproduce the intended economics; changed terms invalidate pending review.
+      - Transfers, resubscriptions, and series conversions preserve economic value, source/successor identity, relevant economic dates, and fee history. Backdated corrections retain prior issued results and use approved adjustment and restatement chains.
+      - Each supported master-feeder/SPV graph shape prevents cycles, foreign scope, and duplicate economic inclusion. Legal ownership, economic allocation, and consolidation perimeter remain separate; unsupported structures and fee conventions block rather than infer a treatment.
+      - A durable worked scenario reconciles fund NAV through class/series and investor capital to posted ledger, unit register, and issued statement on both operator surfaces. New durable nouns have domain dictionary and shared contract definitions before implementation; operator acceptance links the supported structures, failure cases, and reused W9 evidence.
+    source_modules:
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-DESIGN-ENTITIES
+      - SRC-DESIGN-INSTRUMENTS
+      - SRC-LEDGER
+      - SRC-FSHARP-LEDGER
+      - SRC-DESIGN-REPORTING
+      - SRC-STORAGE
+      - SRC-CONTRACTS
+      - SRC-UI-SHARED
+      - SRC-UI-SERVICES
+      - SRC-UI-DASHBOARD
+      - SRC-WPF
+    evidence:
+      - type: reference
+        path: docs/product/meridian-design-document.md
+    last_reviewed: 2026-10-17
+
+  - id: W12-YEND-001
+    title: Fiscal year-end close and opening-balance roll-forward
+    wave: W12
+    sequence: 3
+    stage_gates:
+      - AccountingRecords
+      - GovernedReportPack
+    workspace:
+      - Accounting
+      - Reporting
+    owner_lane: Accounting and Ledger
+    status: planned
+    health: green
+    priority: medium
+    evidence_posture: planned_evidence
+    current_summary: >-
+      Proposed sequence 3 of the fund-operations direction registered by DEC-FUND-OPERATIONS-DIRECTION-001.
+      Activate the existing year-end close projector through the governed operator path in charter
+      Sections 6.2.1 and 11.7. Reuse W10-SEAM-001 for authoritative period readiness, W10-JRNL-001 for
+      draft infrastructure, W12-BOOK-001 for book/basis controls, and W9-REPORT-005 for retained outputs.
+      Accounting balance roll-forward is distinct from close-plan template rollover. The row adds
+      workflow and acceptance evidence without changing earlier sequencing or claiming a release.
+    exit_criteria:
+      - A fiscal close plan identifies every required constituent period, accounting book, closing policy, retained trial balance, and approver. Missing period authority or an unclosed required period blocks the close rather than treating it as an empty period.
+      - Reviewed closing journals and next-year opening balances preserve entity, account, book, currency, and applicable capital dimensions. Retained earnings versus investor-capital treatment follows the declared policy, and open lots, accruals, and exceptions follow explicit carryforward rules.
+      - Closing journals use an explicitly authorized year-end posting period or adjustment route; they cannot implicitly reopen a closed constituent period or bypass the authoritative posting and approval controls.
+      - A retained close receipt links input snapshots, closing journals, opening balances, versions, and approvals. Repeating the same operation recovers that receipt without closing income twice or duplicating opening entries, including after restart.
+      - A late adjustment follows governed reopen/correction/re-close rules, preserves the original close and issued packages, and identifies affected subsequent periods and revised opening balances. A changed policy or input requires renewed approval.
+      - A full-year, dimension-preserving worked example and missing-period, duplicate-run, and late-correction cases run through shared browser/WPF services on durable storage. Acceptance links the close receipt, operator walkthrough, and period/journal/report evidence.
+    source_modules:
+      - SRC-LEDGER
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-DESIGN-REPORTING
+      - SRC-DESIGN-DOCUMENTS
+      - SRC-STORAGE
+      - SRC-CONTRACTS
+      - SRC-UI-SHARED
+      - SRC-UI-SERVICES
+      - SRC-UI-DASHBOARD
+      - SRC-WPF
+    evidence:
+      - type: reference
+        path: docs/product/meridian-design-document.md
+    last_reviewed: 2026-10-17
+
+  - id: W12-FINRPT-001
+    title: Ledger-backed financial statement control pack
+    wave: W12
+    sequence: 4
+    stage_gates:
+      - GovernedReportPack
+      - AccountingRecords
+    workspace:
+      - Reporting
+      - Accounting
+    owner_lane: Accounting and Ledger
+    status: planned
+    health: green
+    priority: medium
+    evidence_posture: planned_evidence
+    current_summary: >-
+      Proposed sequence 4 of the fund-operations direction registered by DEC-FUND-OPERATIONS-DIRECTION-001.
+      Bind existing financial-statement builders and W9-REPORT-005 rendering to the controlled
+      definitions, reconciliation totals, comparative snapshots, and tied fund/class/investor packs
+      in charter Section 18.1. Return calculations remain W10-PERF-001; this row owns reconciled
+      presentation and dimensional P&L/contribution schedules. Reuse W10-PROV-001 and W11-PASSPORT-001
+      for proof, W11-STAKE-001 for recipient access, W11-SHADOW-001 for official/shadow authority,
+      and W10-SEAM-001 for close blockers. Book and
+      participation support depend on the applicable W12-BOOK-001 and W12-CAPITAL-001 evidence.
+      Scope is governed statement delivery, not a second renderer, broad self-service builder, or filing platform.
+    exit_criteria:
+      - Definitions bind entity/perimeter, book, basis, currency, period, cutoff, retained source snapshot, account mappings, and template/formula versions. Draft previews are distinct from outputs derived from approved posted records; missing mappings, unsupported inputs, or incompatible scopes block certification.
+      - One retained journal set yields trial balance, balance sheet, income statement, cash-flow statement, and partners-capital outputs whose balance, accounting-equation, and income-to-capital checks agree. For a fixed declared cash perimeter, opening cash plus classified cash flows and separately evidenced exchange-rate effects ties to closing cash. An unchanged foreign-currency cash balance shows FX effects without a receipt/payment, and a compound cash-transfer/noncash-accrual journal does not invent flows. Other non-flow categories or perimeter changes require separately supported definitions and evidence; unexplained residuals block certification and release.
+      - Fund/class/series NAV, units, capital movements, fees, and investor statements reconcile at one approved cutoff. A component-level shadow-NAV bridge preserves independent source operands and individual quantity, price, FX, accrual, fee, capital, and allocation breaks even when total differences offset.
+      - P&L components and eligible security/strategy/sector/fund/class/vintage groupings reconcile to the declared total with residuals visible. Return schedules consume W10-PERF-001 with explicit method, cash-flow/valuation dates, fee/currency treatment, completeness, and ambiguous-result handling; master-feeder and consolidated versus gross inclusion remain explicit.
+      - Every amount-bearing line and total drills through the shared proof contract to retained journals or source calculations. Exports include machine-readable agreement totals and an evidence manifest; a frozen package reproduces after later source, mapping, or classification changes.
+      - Scheduled runs assemble candidates; release rechecks exact approved versions, close blockers, entitlements, and delivery authority. Changed inputs or definitions require renewed review, prior packages remain frozen, and tax/regulatory datasets do not imply filing authority.
+      - Both operator surfaces expose one shared set of statements, scopes, reconciliation results, and blockers. Acceptance links a complete fund/class/investor package, comparative and restatement cases, durable operator evidence, and the specific dependency capabilities used.
+    source_modules:
+      - SRC-LEDGER
+      - SRC-DESIGN-REPORTING
+      - SRC-DESIGN-DOCUMENTS
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-CONTRACTS
+      - SRC-UI-SHARED
+      - SRC-UI-SERVICES
+      - SRC-UI-DASHBOARD
+      - SRC-WPF
+    evidence:
+      - type: reference
+        path: docs/product/meridian-design-document.md
+    last_reviewed: 2026-10-17
+
+  - id: W12-CREDIT-001
+    title: DirectLoan operations and evidence reconciliation
+    wave: W12
+    sequence: 5
+    stage_gates:
+      - PortfolioLedgerReview
+      - AccountingRecords
+    workspace:
+      - Portfolio
+      - Accounting
+    owner_lane: Accounting and Ledger
+    status: planned
+    health: green
+    priority: medium
+    evidence_posture: planned_evidence
+    current_summary: >-
+      Proposed sequence 5 of the fund-operations direction registered by DEC-FUND-OPERATIONS-DIRECTION-001.
+      Converge existing DirectLoan terms, servicing/accrual/PIK and remittance services, atomic
+      loan/ledger persistence, and retained servicer-evidence contracts into the operator workflow
+      specified in charter Section 6.8. Security Master remains instrument authority. Reuse existing
+      financial approvals and W10-MARK-001, W10-SEAM-001, and W10-PROV-001; translation depends on
+      W12-BOOK-001 and tied statements use W12-FINRPT-001. Registration concerns workflow depth and
+      acceptance, not absent loan calculators, new live servicer/trustee adapters, payment release,
+      origination, borrower portals, syndication, or a reopening of full alternative-asset operations.
+    exit_criteria:
+      - Every financial transition binds canonical Security Master identity, exact tenant/company/entity/account/book scope, approved terms and servicing revisions, source observations, and rule versions. Missing or changed authority blocks; servicing cannot create a competing instrument master.
+      - Commitment, funded and outstanding contractual principal, cash-interest receivable, PIK, fees, and carrying value remain distinct. Expected flows and accruals retain interval, principal basis, day-count/calendar, rate source, spread/floor/cap convention, and currency. Expected-flow scenarios may use labeled forecast fixings; posted accruals require approved observed fixings or an explicitly approved estimation policy with retained estimate provenance. Missing observations cannot silently become forecast-derived authoritative amounts, and unsupported inputs block the affected operation.
+      - Independent borrower/servicer batches retain original payload/hash, source revision, normalized rows, mapping, and approval evidence. Changed content under the same revision is rejected, and retained-input replay preserves the original reconciliation and its source operands.
+      - A mixed remittance conserves cash across principal, interest, fees, penalties, and unapplied cash. PIK is not cash received and discount/premium amortization is not principal repayment. Partial application, retry, or restart cannot duplicate a receipt, servicing application, or journal.
+      - Ledger-affecting loan events, canonical journals, and required audit records commit atomically under exact approved scope, source/terms versions, and period authority. Applicable policy-controlled accruals preserve Section 21; backdated or closed-period corrections retain linked history through the approved adjustment/reopen route.
+      - Covenant assessments retain the executed term, test rule, units, threshold, observation/test date, borrower evidence, and review disposition. Missing or unsupported clauses require review; breach acknowledgment cannot itself approve default, nonaccrual, restructuring, write-off, or payment.
+      - Durable fixed-rate and floating-reset scenarios cover draw, cash/PIK separation, partial payment, corrected remittance, closed-period correction, and restart recovery, with source-to-loan-to-ledger-to-report agreement. Browser/WPF share calculations, evidence, and blockers. The initial scope declares one contractual currency per loan and links operator acceptance only for demonstrated terms and workflows.
+    source_modules:
+      - SRC-APP
+      - SRC-FSHARP-DIRECTLENDING
+      - SRC-DESIGN-INSTRUMENTS
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-LEDGER
+      - SRC-STORAGE
+      - SRC-CONTRACTS
+      - SRC-UI-SHARED
+      - SRC-UI-SERVICES
+      - SRC-UI-DASHBOARD
+      - SRC-WPF
+    evidence:
+      - type: reference
+        path: docs/product/meridian-design-document.md
+    last_reviewed: 2026-10-17
