@@ -28,7 +28,7 @@ For the current product framing and capability thesis, use the [Meridian Design 
 
 - .NET SDK pinned by [global.json](../../global.json)
 - PowerShell 7 for Windows helper scripts
-- Node.js 24 and npm for browser development, matching the dev container and browser CI
+- Node.js 24 and npm for browser development, pinned by [.nvmrc](../../.nvmrc) and browser CI
 - Python 3.11 or newer for build and documentation automation
 - Git
 - Bash for the canonical `scripts/ci.sh` validation lanes (Git Bash or WSL on Windows)
@@ -36,6 +36,20 @@ For the current product framing and capability thesis, use the [Meridian Design 
 - Optional: one configured data provider for live or credentialed historical data.
 
 ## First Local Setup
+
+Check the prerequisites for the work you plan to run before restoring or building:
+
+```powershell
+python build/python/cli/buildctl.py doctor --profile unit-test
+python build/python/cli/buildctl.py doctor --profile browser
+python build/python/cli/buildctl.py doctor --profile desktop
+python build/python/cli/buildctl.py doctor --profile full-quality-gate
+```
+
+These profiles only inspect prerequisites and print fixes. Unit-test checks do not require provider
+credentials or running services. Desktop checks require Windows and PowerShell 7. The full gate also
+checks the pinned Python packages, actionlint, and PowerShell needed by the script suite. See
+[engineering prerequisite checks](../engineering/README.md#prerequisite-checks) for details.
 
 If `make` is available:
 

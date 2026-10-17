@@ -5,7 +5,7 @@ Provides environment health checks, build diagnostics, and tooling utilities
 for the Meridian project.
 
 Usage:
-    python3 build/python/cli/buildctl.py doctor [--quick] [--no-fail-on-warn]
+    python3 build/python/cli/buildctl.py doctor [--quick] [--no-fail-on-warn] [--profile <name>] [--json]
     python3 build/python/cli/buildctl.py build --project <path> --configuration <cfg>
     python3 build/python/cli/buildctl.py test --project <path> [--filter <expr>]
     python3 build/python/cli/buildctl.py validation-status
@@ -41,6 +41,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_profiles import prepare_profile, mark_profile_built, mark_profile_build_started, normalize_properties
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from prerequisites import PROFILE_NAMES, check_node, check_prerequisites, check_python
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -689,11 +692,11 @@ def _check_dotnet() -> tuple[bool, bool, str]:
 
 
 def _check_python() -> tuple[bool, bool, str]:
-    version = platform.python_version()
-    major, minor = sys.version_info[:2]
-    if (major, minor) < (3, 10):
-        return False, False, f"Python {version} found, 3.10+ required"
-    return True, False, f"Python {version}"
+    result = check_python()
+    detail = f"{result.details}; expected {result.expected}"
+    if result.fix:
+        detail += f"; fix: {result.fix}"
+    return result.status == "pass", result.status == "warn", detail
 
 
 def _check_git() -> tuple[bool, bool, str]:
@@ -963,10 +966,10 @@ def _check_packages_props() -> tuple[bool, bool, str, str | None]:
 
 
 def _print_check(label: str, ok: bool, is_warn: bool, detail: str, *, width: int = 38) -> None:
-    if ok:
-        status = PASS if sys.stdout.isatty() else "pass"
-    elif is_warn:
+    if is_warn:
         status = WARN if sys.stdout.isatty() else "warn"
+    elif ok:
+        status = PASS if sys.stdout.isatty() else "pass"
     else:
         status = FAIL if sys.stdout.isatty() else "FAIL"
     padded = label.ljust(width)
@@ -982,6 +985,37 @@ def _print_fix(fix: str) -> None:
 def cmd_doctor(args: argparse.Namespace) -> int:
     quick: bool = getattr(args, "quick", False)
     no_fail_on_warn: bool = getattr(args, "no_fail_on_warn", False)
+    profile: str | None = getattr(args, "profile", None)
+    json_output: bool = getattr(args, "json", False)
+
+    if profile:
+        results = check_prerequisites(REPO_ROOT, profile)
+        if json_output:
+            print(json.dumps([result.__dict__ for result in results], indent=2))
+        else:
+            print(f"Meridian Prerequisite Check ({profile})")
+            print("=" * 50)
+            for result in results:
+                _print_check(
+                    result.name,
+                    result.status == "pass",
+                    result.status == "warn",
+                    f"{result.details}; expected {result.expected}",
+                )
+                if result.fix:
+                    _print_fix(result.fix)
+            print()
+            failures = sum(result.status == "fail" for result in results)
+            warnings = sum(result.status == "warn" for result in results)
+            print(f"{failures} failure(s), {warnings} warning(s).")
+        return int(
+            any(result.status == "fail" for result in results)
+            or (not no_fail_on_warn and any(result.status == "warn" for result in results))
+        )
+
+    if json_output:
+        print("doctor --json requires --profile; select a prerequisite profile.", file=sys.stderr)
+        return 2
 
     print()
     print(_color("Meridian Environment Health Check", BLUE) if sys.stdout.isatty() else "Meridian Environment Health Check")
@@ -990,18 +1024,21 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
     failures: list[str] = []
     warnings: list[str] = []
+    prerequisite_failed = False
 
     # --- Tooling ---
     print(_color("Tooling", BLUE) if sys.stdout.isatty() else "Tooling")
 
     ok, is_warn, detail = _check_python()
-    _print_check("Python 3.10+", ok, is_warn, detail)
-    if not ok:
+    _print_check("Python 3.11+", ok, is_warn, detail)
+    prerequisite_failed |= not ok or is_warn
+    if not ok or is_warn:
         (warnings if is_warn else failures).append(f"Python: {detail}")
 
     ok, is_warn, detail = _check_dotnet()
     _print_check(".NET SDK 10+", ok, is_warn, detail)
-    if not ok:
+    prerequisite_failed |= not ok or is_warn
+    if not ok or is_warn:
         (warnings if is_warn else failures).append(f".NET SDK: {detail}")
 
     ok, is_warn, detail = _check_git()
@@ -1009,14 +1046,13 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     if not ok:
         (warnings if is_warn else failures).append(f"Git: {detail}")
 
-    if _have("node"):
-        result = _run(["node", "--version"])
-        ver = result.stdout.strip().splitlines()[0] if result.returncode == 0 else "unknown"
-        _print_check("Node.js", True, False, f"{ver} (optional — diagram generation)")
-    else:
-        _print_check("Node.js", False, True, "not found (optional — needed for diagram generation)")
-        _print_fix("Install from https://nodejs.org")
-        warnings.append("Node.js not installed (optional)")
+    node = check_node(REPO_ROOT)
+    supported = node.status == "pass"
+    _print_check("Node.js", supported, not supported, f"{node.details}; expected {node.expected} (optional browser tooling)")
+    if node.fix:
+        _print_fix(node.fix)
+    if not supported:
+        warnings.append(f"Node.js: {node.details}; expected {node.expected} (optional)")
 
     print()
 
@@ -1056,22 +1092,25 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
     ok, is_warn, detail, fix = _check_global_json()
     _print_check("global.json SDK constraint", ok, is_warn, detail)
+    prerequisite_failed |= not ok or is_warn
     if fix:
         _print_fix(fix)
-    if not ok:
+    if not ok or is_warn:
         (warnings if is_warn else failures).append(f"global.json: {detail}")
 
     ok, is_warn, detail, fix = _check_packages_props()
     _print_check("Directory.Packages.props", ok, is_warn, detail)
+    prerequisite_failed |= not ok or is_warn
     if fix:
         _print_fix(fix)
-    if not ok:
+    if not ok or is_warn:
         (warnings if is_warn else failures).append(f"Directory.Packages.props: {detail}")
 
     for rel, ok, is_warn, detail in _check_files():
         _print_check(rel, ok, is_warn, detail)
         if not ok:
             (warnings if is_warn else failures).append(f"File {rel}: {detail}")
+            prerequisite_failed = True
 
     print()
 
@@ -1082,16 +1121,20 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         _print_check(rel, ok, is_warn, detail)
         if not ok:
             (warnings if is_warn else failures).append(f"Directory {rel}: {detail}")
+            prerequisite_failed = True
 
     print()
 
     # --- Solution restore ---
     print(_color("Solution", BLUE) if sys.stdout.isatty() else "Solution")
 
-    ok, is_warn, detail = _check_solution_restore(quick)
-    _print_check("dotnet restore", ok, is_warn, detail)
-    if not ok:
-        (warnings if is_warn else failures).append(f"Restore: {detail}")
+    if prerequisite_failed or failures:
+        _print_check("dotnet restore", False, True, "Skipped: fix prerequisite failures before restoring")
+    else:
+        ok, is_warn, detail = _check_solution_restore(quick)
+        _print_check("dotnet restore", ok, is_warn, detail)
+        if not ok:
+            (warnings if is_warn else failures).append(f"Restore: {detail}")
 
     print()
 
@@ -1820,6 +1863,14 @@ def build_parser() -> argparse.ArgumentParser:
     # doctor
     p_doctor = sub.add_parser("doctor", help="Run environment health check")
     p_doctor.add_argument("--quick", action="store_true", help="Skip dotnet restore")
+    p_doctor.add_argument(
+        "--profile", choices=PROFILE_NAMES,
+        help="Check prerequisites for the selected workflow without restoring or building",
+    )
+    p_doctor.add_argument(
+        "--json", action="store_true",
+        help="Output prerequisite profile checks as JSON (requires --profile)",
+    )
     p_doctor.add_argument(
         "--no-fail-on-warn",
         action="store_true",

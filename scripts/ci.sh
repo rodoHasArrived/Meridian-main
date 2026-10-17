@@ -51,15 +51,22 @@ done
 
 python_cmd=""
 for candidate in python3 python; do
-  if command -v "$candidate" >/dev/null 2>&1 &&
-    "$candidate" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' >/dev/null 2>&1; then
-    python_cmd="$candidate"
-    break
+  if command -v "$candidate" >/dev/null 2>&1; then
+    # Preserve an available interpreter for an actionable report when neither
+    # candidate meets the shared minimum, while preferring one that can run CI.
+    if [[ -z "$python_cmd" ]]; then
+      python_cmd="$candidate"
+    fi
+    if "$candidate" build/python/prerequisites.py --python-version-ok >/dev/null 2>&1; then
+      python_cmd="$candidate"
+      break
+    fi
   fi
 done
 
 if [[ -z "$python_cmd" ]]; then
-  echo "Python 3.11 or newer is required to run Meridian CI." >&2
+  echo "Python is required to check Meridian CI prerequisites." >&2
+  echo "Install Python from https://www.python.org/downloads/ and add python3 or python to PATH." >&2
   exit 127
 fi
 
@@ -389,6 +396,11 @@ quality_gate() {
   verify_docs
   verify_workflows
 }
+
+# Check the whole selected lane before its first restore, build, or dependency install.
+# Doctor and setup use this same definition, including supported versions and package fixes.
+run_step "Check shared prerequisites" \
+  "$python_cmd" build/python/prerequisites.py --lane "$selected_lane"
 
 case "$selected_lane" in
   quality-gate)

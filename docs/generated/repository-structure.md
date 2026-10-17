@@ -1093,7 +1093,8 @@ Meridian-main
 │   │   │   └── errors
 │   │   │       ├── msbuild.json
 │   │   │       └── nuget.json
-│   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   └── prerequisites.py
 │   ├── rules
 │   │   └── doc-rules.yaml
 │   └── scripts
@@ -12002,6 +12003,7 @@ Meridian-main
 │   │   ├── test_desktop_screen_blueprint_checklist.py
 │   │   ├── test_direct_lending_outbox_claim_sql.py
 │   │   ├── test_doc_render_determinism.py
+│   │   ├── test_doctor_profiles.py
 │   │   ├── test_documentation_workflow.py
 │   │   ├── test_endpoint_benchmark.py
 │   │   ├── test_export_project_artifact_workflow.py
@@ -12183,6 +12185,7 @@ Meridian-main
 ├── .gitleaksignore
 ├── .globalconfig
 ├── .markdownlint.json
+├── .nvmrc
 ├── .rgignore
 ├── .vsconfig
 ├── AGENTS.md
