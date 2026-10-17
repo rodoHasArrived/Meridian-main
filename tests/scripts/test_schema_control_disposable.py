@@ -34,26 +34,25 @@ event = {'kind': 'docker', 'args': args, 'time': time.monotonic()}
 with (backend / 'events.jsonl').open('a', encoding='utf-8') as stream:
     stream.write(json.dumps(event) + '\n')
 
-def write_resource(path, item):
-    temporary = path.with_name(path.name + '.' + uuid.uuid4().hex + '.tmp')
-    try:
-        temporary.write_text(json.dumps(item))
-        temporary.replace(path)
-    finally:
-        temporary.unlink(missing_ok=True)
-
 def find_resource(identity):
-    for path in backend.glob('resource-*.json'):
+    # Concurrent runs share this directory and remove their own resources while a sibling is
+    # scanning it, so a file can vanish between the glob and the read.
+    for path in sorted(backend.glob('resource-*.json')):
         try:
-            content = path.read_text()
+            item = json.loads(path.read_text())
         except FileNotFoundError:
-            # Another run can remove its own container after this directory listing.
             continue
-        item = json.loads(content)
         if identity in (item['Id'], item['Name']):
             return path, item
     print('No such container', file=sys.stderr)
     raise SystemExit(1)
+
+def write_resource(path, item):
+    # Publish atomically: a plain write_text truncates first, so a scanning sibling could read an
+    # empty or partial document. The temporary name does not match the resource-*.json glob.
+    temporary = path.with_suffix('.tmp')
+    temporary.write_text(json.dumps(item))
+    os.replace(temporary, path)
 
 if command == os.environ.get('FAKE_FAIL_COMMAND'):
     print('synthetic Docker failure', file=sys.stderr)
