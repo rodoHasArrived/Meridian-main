@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "3796609140335564b703eebe13aa9410944d5df8aa408506222f740b41414849",
+  "database_fingerprint": "739ee70e44ee3c500ae02452f8f3ef203f2b22c57077e1d963454134d7898ea3",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -24385,7 +24385,7 @@
       "object": "index:ledger.ix_tax_lots_asset_scope_open"
     },
     {
-      "fingerprint": "367b5f39fd9c73d079bb61ffb4ba8e12e23250bdbfca14b1a2a1c85cf99d3902",
+      "fingerprint": "4bd3c7c2cc8f99b8dabe74a4d37a6e3721c71f8a17ee41b41ab053c0ba0812ff",
       "object": "index:ledger.ix_tax_lots_book_account_open"
     },
     {
@@ -24577,11 +24577,11 @@
       "object": "index:ledger.ux_tax_lot_mutations_batch_ordinal"
     },
     {
-      "fingerprint": "b51a4d21c2ef445ab31165dcb15dc27390de93f37cbcafb9b1f5e1a2ce024f8e",
+      "fingerprint": "04270fc7b289c6d288903a0ff7a442bd2e51208f41d1caa7a12e49fc531b386d",
       "object": "index:ledger.ux_tax_lot_policies_book_account_effective"
     },
     {
-      "fingerprint": "d64da56cd9e2d87407e6b78191454b2a69925ee4ea4293846de9b51625c0b398",
+      "fingerprint": "ca85da81e39fe9170cb771bb2c496d2ee5d315fd070074e736264cd0b4e2b895",
       "object": "index:ledger.ux_tax_lots_book_account_lot"
     },
     {
@@ -26517,7 +26517,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "df3248cd8b97d5d19f688de5461ddfc622b7f3d8015de00cd733bad2d4ea6d09",
+      "fingerprint": "aa594f4046e7fc3191005a86905b4eea9faa9c26bb2770a6e151f3204683e112",
       "object": "schema:ledger"
     },
     {
@@ -26881,11 +26881,11 @@
       "object": "table:ledger.tax_lot_mutations"
     },
     {
-      "fingerprint": "57ce658dbf9d7c2f3929e8acd367c7b9c5ef6c84cd7a6fdb133b04e7c83d259f",
+      "fingerprint": "4d492accdc3cb6948f54503fb4b616e56cbd0b79f5d4c936a40b292a88af1c03",
       "object": "table:ledger.tax_lot_policies"
     },
     {
-      "fingerprint": "e1636021fdf7fc12b7ab81d34ed4e252c771bfaea9919288e6d32502eaf24870",
+      "fingerprint": "2fbab82b0fbf344a864891f90fa2f7ffa718fdcd1ace088ab87879991d8be4b4",
       "object": "table:ledger.tax_lots"
     },
     {
@@ -65094,7 +65094,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "df3248cd8b97d5d19f688de5461ddfc622b7f3d8015de00cd733bad2d4ea6d09",
+      "fingerprint": "aa594f4046e7fc3191005a86905b4eea9faa9c26bb2770a6e151f3204683e112",
       "foreign_tables": [],
       "functions": [
         {
@@ -78780,7 +78780,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "57ce658dbf9d7c2f3929e8acd367c7b9c5ef6c84cd7a6fdb133b04e7c83d259f",
+          "fingerprint": "4d492accdc3cb6948f54503fb4b616e56cbd0b79f5d4c936a40b292a88af1c03",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -78832,9 +78832,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_tax_lot_policies_book_account_effective ON ledger.tax_lot_policies USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text), effective_date)",
-              "expression": "COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text)",
-              "fingerprint": "b51a4d21c2ef445ab31165dcb15dc27390de93f37cbcafb9b1f5e1a2ce024f8e",
+              "definition": "CREATE UNIQUE INDEX ux_tax_lot_policies_book_account_effective ON ledger.tax_lot_policies USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), effective_date)",
+              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "04270fc7b289c6d288903a0ff7a442bd2e51208f41d1caa7a12e49fc531b386d",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -78842,7 +78842,7 @@
                 "account_name",
                 "account_type",
                 "COALESCE(symbol, ''::text)",
-                "COALESCE(financial_account_id, ''::text)",
+                "lower(COALESCE(financial_account_id, ''::text))",
                 "effective_date"
               ],
               "live": true,
@@ -79638,7 +79638,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "e1636021fdf7fc12b7ab81d34ed4e252c771bfaea9919288e6d32502eaf24870",
+          "fingerprint": "2fbab82b0fbf344a864891f90fa2f7ffa718fdcd1ace088ab87879991d8be4b4",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -79670,9 +79670,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE INDEX ix_tax_lots_book_account_open ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text), acquired_date, lot_id) WHERE (open_quantity > (0)::numeric)",
-              "expression": "COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text)",
-              "fingerprint": "367b5f39fd9c73d079bb61ffb4ba8e12e23250bdbfca14b1a2a1c85cf99d3902",
+              "definition": "CREATE INDEX ix_tax_lots_book_account_open ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), acquired_date, lot_id) WHERE (open_quantity > (0)::numeric)",
+              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "4bd3c7c2cc8f99b8dabe74a4d37a6e3721c71f8a17ee41b41ab053c0ba0812ff",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -79680,7 +79680,7 @@
                 "account_name",
                 "account_type",
                 "COALESCE(symbol, ''::text)",
-                "COALESCE(financial_account_id, ''::text)",
+                "lower(COALESCE(financial_account_id, ''::text))",
                 "acquired_date",
                 "lot_id"
               ],
@@ -79811,9 +79811,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_tax_lots_book_account_lot ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text), lot_id)",
-              "expression": "COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text)",
-              "fingerprint": "d64da56cd9e2d87407e6b78191454b2a69925ee4ea4293846de9b51625c0b398",
+              "definition": "CREATE UNIQUE INDEX ux_tax_lots_book_account_lot ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), lot_id)",
+              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "ca85da81e39fe9170cb771bb2c496d2ee5d315fd070074e736264cd0b4e2b895",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -79821,7 +79821,7 @@
                 "account_name",
                 "account_type",
                 "COALESCE(symbol, ''::text)",
-                "COALESCE(financial_account_id, ''::text)",
+                "lower(COALESCE(financial_account_id, ''::text))",
                 "lot_id"
               ],
               "live": true,
@@ -93785,7 +93785,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "57ce658dbf9d7c2f3929e8acd367c7b9c5ef6c84cd7a6fdb133b04e7c83d259f",
+          "fingerprint": "4d492accdc3cb6948f54503fb4b616e56cbd0b79f5d4c936a40b292a88af1c03",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -93837,9 +93837,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_tax_lot_policies_book_account_effective ON ledger.tax_lot_policies USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text), effective_date)",
-              "expression": "COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text)",
-              "fingerprint": "b51a4d21c2ef445ab31165dcb15dc27390de93f37cbcafb9b1f5e1a2ce024f8e",
+              "definition": "CREATE UNIQUE INDEX ux_tax_lot_policies_book_account_effective ON ledger.tax_lot_policies USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), effective_date)",
+              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "04270fc7b289c6d288903a0ff7a442bd2e51208f41d1caa7a12e49fc531b386d",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -93847,7 +93847,7 @@
                 "account_name",
                 "account_type",
                 "COALESCE(symbol, ''::text)",
-                "COALESCE(financial_account_id, ''::text)",
+                "lower(COALESCE(financial_account_id, ''::text))",
                 "effective_date"
               ],
               "live": true,
@@ -94643,7 +94643,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "e1636021fdf7fc12b7ab81d34ed4e252c771bfaea9919288e6d32502eaf24870",
+          "fingerprint": "2fbab82b0fbf344a864891f90fa2f7ffa718fdcd1ace088ab87879991d8be4b4",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -94675,9 +94675,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE INDEX ix_tax_lots_book_account_open ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text), acquired_date, lot_id) WHERE (open_quantity > (0)::numeric)",
-              "expression": "COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text)",
-              "fingerprint": "367b5f39fd9c73d079bb61ffb4ba8e12e23250bdbfca14b1a2a1c85cf99d3902",
+              "definition": "CREATE INDEX ix_tax_lots_book_account_open ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), acquired_date, lot_id) WHERE (open_quantity > (0)::numeric)",
+              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "4bd3c7c2cc8f99b8dabe74a4d37a6e3721c71f8a17ee41b41ab053c0ba0812ff",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -94685,7 +94685,7 @@
                 "account_name",
                 "account_type",
                 "COALESCE(symbol, ''::text)",
-                "COALESCE(financial_account_id, ''::text)",
+                "lower(COALESCE(financial_account_id, ''::text))",
                 "acquired_date",
                 "lot_id"
               ],
@@ -94816,9 +94816,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_tax_lots_book_account_lot ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text), lot_id)",
-              "expression": "COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text)",
-              "fingerprint": "d64da56cd9e2d87407e6b78191454b2a69925ee4ea4293846de9b51625c0b398",
+              "definition": "CREATE UNIQUE INDEX ux_tax_lots_book_account_lot ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), lot_id)",
+              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "ca85da81e39fe9170cb771bb2c496d2ee5d315fd070074e736264cd0b4e2b895",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -94826,7 +94826,7 @@
                 "account_name",
                 "account_type",
                 "COALESCE(symbol, ''::text)",
-                "COALESCE(financial_account_id, ''::text)",
+                "lower(COALESCE(financial_account_id, ''::text))",
                 "lot_id"
               ],
               "live": true,
