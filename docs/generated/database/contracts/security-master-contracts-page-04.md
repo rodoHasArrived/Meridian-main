@@ -2,11 +2,21 @@
 
 # `security-master-contracts` data objects - page 4 of 5
 
-Objects 241-320 of 321. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 323. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityForwardCurve["SecurityForwardCurve"] {
+        +DateOnly AsOfDate
+        +string IndexName
+        +IReadOnlyList~SecurityForwardCurvePoint~ Points
+        +string? Source
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityForwardCurvePoint["SecurityForwardCurvePoint"] {
+        +DateOnly Date
+        +decimal Rate
+    }
     class Meridian_Contracts_SecurityMaster_SecurityHistoryRequest["SecurityHistoryRequest"] {
         +Guid SecurityId
         +int Take
@@ -473,34 +483,7 @@ classDiagram
         +Guid SecurityId
         +StructuredCashFlowSourceKind SourceKind
     }
-    class Meridian_Contracts_SecurityMaster_UpsertCorporateActionProcessingOptionRequestDto["UpsertCorporateActionProcessingOptionRequestDto"] {
-        +string Actor
-        +IReadOnlyList~string~? Blockers
-        +Guid CaseId
-        +string CompanyId
-        +string? CorrelationId
-        +string Description
-        +long ExpectedVersion
-        +string IdempotencyKey
-        +string Label
-        +string OptionCode
-        +Guid? OptionId
-        +JsonElement? Parameters
-    }
-    class Meridian_Contracts_SecurityMaster_UpsertDataVendorEntitlementRequest["UpsertDataVendorEntitlementRequest"] {
-        +string? AccountId
-        +string Actor
-        +decimal? AumThresholdUsd
-        +string? ClientId
-        +string? ContactEmail
-        +string? ContractReference
-        +DataVendorDataType DataType
-        +int? DefaultMaxDaysStale
-        +DateTimeOffset EffectiveFrom
-        +DateTimeOffset? EffectiveTo
-        +Guid? EntitlementId
-        +string? ExpectedRefreshCadence
-    }
+    Meridian_Contracts_SecurityMaster_SecurityForwardCurve --> Meridian_Contracts_SecurityMaster_SecurityForwardCurvePoint
     Meridian_Contracts_SecurityMaster_SecurityIdentifierDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlow --> Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowKind
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlow --> Meridian_Contracts_SecurityMaster_SecurityIncomeComponent

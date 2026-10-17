@@ -2,11 +2,25 @@
 
 # `security-master-contracts` data objects - page 2 of 5
 
-Objects 81-160 of 321. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 323. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto["CorporateActionProcessingCaseDto"] {
+        +CorporateActionCaseAccountingStatusDto? AccountingStatus
+        +CorporateActionCaseActionAvailabilityDto? ActionAvailability
+        +string? AssignedTo
+        +string? BlockedReason
+        +Guid CaseId
+        +Guid CorporateActionId
+        +DateTimeOffset CreatedAtUtc
+        +string CreatedBy
+        +string? MethodologyProfileId
+        +Guid ProposalId
+        +CorporateActionCaseScopeDto Scope
+        +Guid SecurityId
+    }
     class Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto["CorporateActionProcessingOptionDto"] {
         +IReadOnlyList~string~ Blockers
         +Guid CaseId
@@ -341,6 +355,13 @@ classDiagram
         +decimal PricePercentOfPar
         +Guid SecurityId
     }
+    class Meridian_Contracts_SecurityMaster_FundUnitLot["FundUnitLot"] {
+        +DateOnly AcquiredDate
+        +string LotId
+        +decimal NavPerUnit
+        +Guid SecurityId
+        +decimal Units
+    }
     class Meridian_Contracts_SecurityMaster_ICorporateActionCaseAccountingService["ICorporateActionCaseAccountingService"] {
     }
     class Meridian_Contracts_SecurityMaster_ICorporateActionOperationsService["ICorporateActionOperationsService"] {
@@ -471,20 +492,10 @@ classDiagram
         +decimal? RedemptionPrice
         +Guid SecurityId
     }
-    class Meridian_Contracts_SecurityMaster_PricingHierarchyEntryDto["PricingHierarchyEntryDto"] {
-        +int MaxDaysStale
-        +int Priority
-        +string SourceDisplayName
-        +string SourceId
-    }
-    class Meridian_Contracts_SecurityMaster_PrincipalPaydownCorporateActionTerms["PrincipalPaydownCorporateActionTerms"] {
-        +string EventType
-        +decimal? PaydownRatio
-        +decimal? PostPaydownFactor
-        +decimal? PrincipalAmount
-    }
+    Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto
     Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto --> Meridian_Contracts_SecurityMaster_CorporateActionProviderReleaseStatusDto
+    Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalAcceptanceResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalAcceptanceResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDto
     Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDecisionResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDto
     Meridian_Contracts_SecurityMaster_CorporateActionSourceProposalDto --> Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto
@@ -503,9 +514,9 @@ classDiagram
     Meridian_Contracts_SecurityMaster_EdgarSecurityDataRecord --> Meridian_Contracts_SecurityMaster_EdgarFundHolding
     Meridian_Contracts_SecurityMaster_ExchangeCorporateActionTerms --> Meridian_Contracts_SecurityMaster_CorporateActionTerms
     Meridian_Contracts_SecurityMaster_FaceValueLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
+    Meridian_Contracts_SecurityMaster_FundUnitLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
     Meridian_Contracts_SecurityMaster_InMemorySecurityForwardCurveProvider --> Meridian_Contracts_SecurityMaster_ISecurityForwardCurveProvider
     Meridian_Contracts_SecurityMaster_IssuerFactSnapshot --> Meridian_Contracts_SecurityMaster_EdgarXbrlFact
     Meridian_Contracts_SecurityMaster_OfferCorporateActionTerms --> Meridian_Contracts_SecurityMaster_CorporateActionTerms
     Meridian_Contracts_SecurityMaster_PayloadCorporateActionTerms --> Meridian_Contracts_SecurityMaster_CorporateActionTerms
-    Meridian_Contracts_SecurityMaster_PrincipalPaydownCorporateActionTerms --> Meridian_Contracts_SecurityMaster_CorporateActionTerms
 ```
