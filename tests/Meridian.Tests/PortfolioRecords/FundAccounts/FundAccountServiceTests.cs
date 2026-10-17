@@ -205,9 +205,16 @@ public sealed class FundAccountServiceTests
             "custodian statement" => () => svc.IngestCustodianStatementAsync(
                 new IngestCustodianStatementRequest(
                     Guid.NewGuid(), accountId, today, "Custodian", "JSON", null, [], "test")),
-            "bank statement" => () => svc.IngestBankStatementAsync(
-                new IngestBankStatementRequest(
-                    Guid.NewGuid(), accountId, today, "Bank", null, [], "test")),
+            "bank statement" => () =>
+            {
+                // A bank statement revision needs at least one line to reach the account lookup.
+                var batchId = Guid.NewGuid();
+                return svc.IngestBankStatementAsync(new IngestBankStatementRequest(
+                    batchId, accountId, today, "Bank", null,
+                    [new BankStatementLineDto(Guid.NewGuid(), batchId, accountId, today, today, 10m, "USD",
+                        "CREDIT", "Wire transfer", null, null)],
+                    "test"));
+            },
             "reconciliation" => () => svc.ReconcileAccountAsync(
                 new ReconcileAccountRequest(accountId, today, "test")),
             "sync history" => () => svc.RecordSyncHistoryAsync(

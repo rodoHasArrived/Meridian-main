@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 243,
-    "warning": 243
+    "total": 245,
+    "warning": 245
   },
   "failed": false,
   "findings": [
@@ -1725,6 +1725,34 @@
     {
       "details": {
         "columns": [
+          "superseded_by_result_id"
+        ],
+        "constraint": "account_reconciliation_breaks_superseded_by_result_id_fkey",
+        "schema": "fund_accounts",
+        "table": "account_reconciliation_breaks"
+      },
+      "message": "Foreign key fund_accounts.account_reconciliation_breaks.account_reconciliation_breaks_superseded_by_result_id_fkey is not covered by a left-prefix index.",
+      "object": "fund_accounts.account_reconciliation_breaks.account_reconciliation_breaks_superseded_by_result_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "superseded_by_sync_history_id"
+        ],
+        "constraint": "account_sync_history_superseded_by_sync_history_id_fkey",
+        "schema": "fund_accounts",
+        "table": "account_sync_history"
+      },
+      "message": "Foreign key fund_accounts.account_sync_history.account_sync_history_superseded_by_sync_history_id_fkey is not covered by a left-prefix index.",
+      "object": "fund_accounts.account_sync_history.account_sync_history_superseded_by_sync_history_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "account_id"
         ],
         "constraint": "bank_statement_batch_account_id_fkey",
@@ -2655,5 +2683,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "7b8e72fb06f84fc1e785be066b77a4543deab85df8d5a9fee585845583dd504f"
+  "fingerprint": "1ad32fca66d05fde49bccaffe48fa2b54e3e1497b703d8f83997ab8af3c6ba94"
 }

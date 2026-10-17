@@ -29,6 +29,75 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
         new(_fixture.Options, tenantAccessor);
 
     [FundAccountDatabaseFact]
+    public async Task Reconciliation_BatchedReadRejectsMixedTenantScopeWithoutReturningPartialHistory()
+    {
+        var alpha = new PostgresFundAccountStore(_fixture.Options, new FixedTenantAccessor("alpha"), TenantScopeEnforcementOptions.FailClosed);
+        var beta = new PostgresFundAccountStore(_fixture.Options, new FixedTenantAccessor("beta"), TenantScopeEnforcementOptions.FailClosed);
+        var account = MakeAccount();
+        var foreign = MakeAccount();
+        await alpha.TryCreateAccountAsync(account);
+        await beta.TryCreateAccountAsync(foreign);
+        var now = DateTimeOffset.UtcNow;
+        var run = new AccountReconciliationRunDto(Guid.NewGuid(), account.AccountId, new(2026, 10, 15), "Breaks", 1, 0, 1, 10m, now, now, "ops");
+        var result = new AccountReconciliationResultDto(Guid.NewGuid(), run.ReconciliationRunId, "CashBalance", false, "Cash", "Break", 100m, 90m, -10m, "difference");
+        await alpha.InsertReconciliationRunAsync(run, [result]);
+
+        (await alpha.GetReconciliationResultsForAccountsAsync([account.AccountId], openOnly: true)).Should().ContainSingle();
+        await FluentActions.Awaiting(() => alpha.GetReconciliationResultsForAccountsAsync([account.AccountId, foreign.AccountId]))
+            .Should().ThrowAsync<UnauthorizedAccessException>();
+        await FluentActions.Awaiting(() => beta.GetReconciliationResultsForAccountsAsync([account.AccountId], openOnly: true))
+            .Should().ThrowAsync<UnauthorizedAccessException>();
+        (await alpha.GetReconciliationResultsAsync(run.ReconciliationRunId)).Should().ContainSingle().Which.ResultId.Should().Be(result.ResultId);
+    }
+
+    [FundAccountDatabaseFact]
+    public async Task Reconciliation_PositionCountLabelsShareStableIdentityAndEqualTimeEvidenceStaysOpen()
+    {
+        var store = CreateStore();
+        var account = MakeAccount();
+        await store.UpsertAccountAsync(account);
+        var now = DateTimeOffset.UtcNow;
+        var run = new AccountReconciliationRunDto(Guid.NewGuid(), account.AccountId, new(2026, 10, 15), "Breaks", 1, 0, 1, 1m, now, now, "ops");
+        var failure = new AccountReconciliationResultDto(Guid.NewGuid(), run.ReconciliationRunId, "PositionCount (2 lines)", false, "Positions", "Break", 1m, 2m, 1m, "count differs");
+        await store.InsertReconciliationRunAsync(run, [failure]);
+        var equalTime = run with { ReconciliationRunId = Guid.NewGuid(), Status = "Matched", TotalBreaks = 0 };
+        var match = failure with { ResultId = Guid.NewGuid(), ReconciliationRunId = equalTime.ReconciliationRunId, CheckLabel = "PositionCount", IsMatch = true, Status = "Matched" };
+        await store.InsertReconciliationRunAsync(equalTime, [match]);
+        (await store.GetReconciliationResultsAsync(run.ReconciliationRunId)).Single().IsOpenBreak.Should().BeTrue();
+        var corrected = equalTime with { ReconciliationRunId = Guid.NewGuid(), RequestedAt = now.AddMinutes(1), CompletedAt = now.AddMinutes(1) };
+        var correctedMatch = match with { ResultId = Guid.NewGuid(), ReconciliationRunId = corrected.ReconciliationRunId };
+        await store.InsertReconciliationRunAsync(corrected, [correctedMatch]);
+        var retained = (await store.GetReconciliationResultsAsync(run.ReconciliationRunId)).Single();
+        retained.SupersededByResultId.Should().Be(correctedMatch.ResultId);
+        retained.ResolvedAt.Should().NotBeNull();
+        retained.IsOpenBreak.Should().BeFalse();
+    }
+
+    [FundAccountDatabaseFact]
+    public async Task Reconciliation_DelayedOlderRunAndReplayCannotReplaceCorrectedAuthority()
+    {
+        var store = CreateStore();
+        var account = MakeAccount();
+        await store.UpsertAccountAsync(account);
+        var now = DateTimeOffset.UtcNow;
+        var date = new DateOnly(2026, 10, 15);
+        var corrected = new AccountReconciliationRunDto(Guid.NewGuid(), account.AccountId, date, "Matched", 1, 1, 0, 0m, now, now, "ops");
+        var match = new AccountReconciliationResultDto(Guid.NewGuid(), corrected.ReconciliationRunId, "CashBalance", true, "Cash", "Matched", 100m, 100m, 0m, "corrected");
+        await store.InsertReconciliationRunAsync(corrected, [match]);
+        var older = corrected with { ReconciliationRunId = Guid.NewGuid(), RequestedAt = now.AddMinutes(-1), Status = "Breaks", TotalMatched = 0, TotalBreaks = 1 };
+        var oldBreak = match with { ResultId = Guid.NewGuid(), ReconciliationRunId = older.ReconciliationRunId, IsMatch = false, Status = "Break", ActualAmount = 90m, Variance = -10m };
+        await store.InsertReconciliationRunAsync(older, [oldBreak]);
+        await store.InsertReconciliationRunAsync(older, [oldBreak]);
+
+        var retained = (await store.GetReconciliationResultsAsync(older.ReconciliationRunId)).Single();
+        retained.IsMatch.Should().BeFalse();
+        retained.SupersededByResultId.Should().Be(match.ResultId);
+        retained.ResolvedAt.Should().NotBeNull();
+        retained.IsOpenBreak.Should().BeFalse();
+        (await store.GetReconciliationResultsAsync(corrected.ReconciliationRunId)).Single().SupersededByResultId.Should().BeNull();
+    }
+
+    [FundAccountDatabaseFact]
     public async Task TryCreateAccountAsync_ConcurrentSameIdentity_CreatesExactlyOneWithoutOverwriting()
     {
         var store = CreateStore();
@@ -380,7 +449,11 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
             (await store.GetCustodianPositionsAsync(first.AccountId, asOfDate, cts.Token))
                 .Should().ContainSingle().Which.Should().Be(custodianLine);
             (await store.GetBankStatementLinesAsync(first.AccountId, null, null, cts.Token))
-                .Should().ContainSingle().Which.Should().Be(bankLine);
+                .Should().ContainSingle().Which.Should().Be(bankLine with
+                {
+                    StatementRevision = 1,
+                    StatementAsOfDate = bankBatch.StatementDate
+                });
         }
         finally
         {

@@ -535,9 +535,9 @@ public sealed partial class ProviderLedgerReconciliationService
                 .ConfigureAwait(false);
         IReadOnlyList<BankStatementLineDto> bankStatementLines = internalSnapshot is null
             ? []
-            : await _fundAccountService
-                .GetBankStatementLinesAsync(accountId, internalSnapshot.AsOfDate, internalSnapshot.AsOfDate, ct)
-                .ConfigureAwait(false);
+            : BankStatementClosingBalanceAuthority.ForStatementDate(await _fundAccountService
+                .GetBankStatementLinesAsync(accountId, ct: ct)
+                .ConfigureAwait(false), internalSnapshot.AsOfDate).ToArray();
         var shadowBookComparison = BuildShadowBookComparison(
             accountId,
             createdAt,
@@ -966,14 +966,11 @@ public sealed partial class ProviderLedgerReconciliationService
             return [];
         }
 
-        var closingBalance = bankStatementLines
-            .Where(static line => line.ClosingBalance.HasValue)
-            .OrderBy(static line => line.ValueDate)
-            .ThenBy(static line => line.TransactionDate)
-            .LastOrDefault()
-            ?.ClosingBalance;
-        var bankIncomeCashFlow = bankStatementLines
-            .Where(static line => IsIncomeTransaction(line.TransactionType))
+        var selectedLines = BankStatementClosingBalanceAuthority.SelectAuthoritativeLines(bankStatementLines, internalSnapshot?.Currency);
+        var closingBalance = BankStatementClosingBalanceAuthority.SelectClosingBalance(bankStatementLines, internalSnapshot?.Currency);
+        var bankIncomeCashFlow = selectedLines?
+            .Where(line => IsIncomeTransaction(line.TransactionType)
+                && (internalSnapshot is null || string.Equals(line.Currency, internalSnapshot.Currency, StringComparison.OrdinalIgnoreCase)))
             .Sum(static line => line.Amount);
         decimal? providerIncomeCashFlow = providerProjection is null
             ? null

@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-10-14
+last_reviewed: 2026-10-15
 ---
 
 # src/Meridian.Backtesting
@@ -68,8 +68,19 @@ retain operator text and replace generated composite summaries with only the cur
 lineage; a single-component successor no longer claims the prior composite's contributors. Cash-in-lieu
 disposals relieve the remaining fractional securities basis or short payable and recognize the
 resulting account-scoped gain or loss in both the ledger and asset-event cash-flow evidence, including
-when no successor position remains. Canonical symbol attribution is still fill-derived: it neither
-replays corporate-action quantity/basis changes before later fills nor includes cash-in-lieu P&L. A
+when no successor position remains. Metrics consume the final account snapshots' booked closures
+and retained cash-in-lieu disposal evidence. Attribution uses exact relieved basis and account
+positions, preserving successor economics and offsetting account positions. Realized symbol
+attribution also includes booked per-share corporate-action consideration, income, and fees under
+the source symbol; cash-in-lieu principal is excluded while its retained disposal gain is included.
+Completed outcomes are
+counted per account, symbol, and closing order; partial fills and lot slices of one closing order
+remain one outcome, breakeven outcomes count, and each fractional disposal adds one outcome.
+Win rate and profit factor deduct the acquisition and closing fees allocated to those disposals.
+Acquisition fees follow component entitlements through transformations and stay separate from
+securities basis. Older snapshots without retained closures cannot certify trade outcomes; metrics
+do not reconstruct missing accounting evidence from fills. External summary imports retain their
+own declared coverage instead of invoking this native calculation. A
 source-to-destination collision with opposite position directions fails before mutation because it
 requires explicit close/cover economics. Short lots preserve explicit direction in position,
 account, and aggregate snapshots. Legacy adjustment services that cannot enforce the engine's

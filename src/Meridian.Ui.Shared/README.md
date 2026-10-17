@@ -11,6 +11,33 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Ui.Shared
 
+Banking workspace balances, latest source transactions and statement dates use retained header,
+revision and sequence authority. Missing or ambiguous balances remain null. Provider bank cash-flow
+comparisons project complete authoritative statement revisions before summing; ambiguity produces an
+unavailable comparison instead of duplicated income. Governance cash-flow reads return HTTP 409 with
+an explicit evidence-unavailable problem when relevant statement authorities conflict.
+
+Legacy fund-account queue status, family-office reconciliation and workspace summaries consume the
+shared batched retained-result contract. Superseded failures and unverified checks do not count as
+active breaks; missing independent evidence still prevents queue sign-off. Family-office readers
+recognize the native verified `Matched` outcome while retaining blockers from other active scopes.
+
+Bank-statement CSV imports accept optional positive `line_sequence` and `statement_revision`
+columns. Missing sequences retain source file order; missing revisions use 1. Each file must have
+unique sequences and one revision, shared by manual uploads and scheduled feeds. Corrected files
+declare a higher revision. Provider shadow cash comparisons use the same statement authority as
+account reconciliation instead of choosing a balance from arrival order.
+
+`ProviderConnectionLifecycleService` verifies retained Xero, NetSuite and QuickBooks
+connections through credential-bound adapters. Each adapter reads and rotates only the
+selected connection's secrets; provider-wide credentials never supply scoped verification.
+Verification must match both the retained external account and current credential generation,
+and the lifecycle retains the authenticated operator identity once for the result.
+Xero tenant GUID formats and NetSuite account case/underscore aliases compare by provider
+identity; successful results retain the selected connection's exact external-account text.
+QuickBooks realms and other provider identities keep ordinal comparison, and vault ownership
+keys and exact ownership checks remain unchanged.
+
 Late-adjustment review requires the authenticated operator's built-in role or named role profile
 to match the review role retained on the adjustment's materiality policy, alongside ledger mutation
 permission and an independent requester/reviewer. Administrative mutation permission does not

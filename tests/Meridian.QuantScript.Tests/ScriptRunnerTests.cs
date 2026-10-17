@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using Meridian.QuantScript.Api;
 using Meridian.QuantScript.Compilation;
 using Meridian.QuantScript.Plotting;
@@ -670,6 +671,44 @@ public sealed class ScriptRunnerTests
 
         result.Success.Should().BeTrue();
         result.ConsoleOutput.Should().Contain("ctx=SPY|2024-01-02|2024-02-03|daily");
+    }
+
+    [Fact]
+    public async Task RunAsync_BrowserJsonContext_ReachesWorkerDataRequestsAndCalculatedPlots()
+    {
+        var from = new DateOnly(2026, 1, 1);
+        var to = new DateOnly(2026, 1, 3);
+        var dataContext = new Mock<IQuantDataContext>(MockBehavior.Strict);
+        dataContext.Setup(context => context.PricesAsync("AAPL", from, to, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PriceSeries("AAPL", [
+                new PriceBar(from, 100, 100, 100, 100, 1_000),
+                new PriceBar(from.AddDays(1), 120, 120, 120, 120, 1_000),
+                new PriceBar(to, 90, 90, 90, 90, 1_000)
+            ]));
+        var runner = BuildRunner(dataContext: dataContext.Object, runTimeoutSeconds: 30);
+        // Object-valued HTTP parameters arrive as JsonElement strings, rather than DateOnly.
+        var parameters = JsonSerializer.Deserialize<Dictionary<string, object?>>("""
+            { "context.symbol": "AAPL", "context.from": "2026-01-01",
+              "context.to": "2026-01-03", "context.interval": "daily" }
+            """)!;
+        const string source = """
+            var prices = await Data.PricesAsync(ContextSymbol, ContextFrom.Value, ContextTo.Value);
+            Print($"Loaded {prices.Count} bars for {ContextSymbol}|{ContextInterval}");
+            var returns = prices.DailyReturns();
+            returns.PlotCumulative();
+            returns.PlotDrawdown();
+            """;
+
+        var result = await runner.RunAsync(source, parameters);
+
+        result.Success.Should().BeTrue(result.RuntimeError);
+        result.ConsoleOutput.Should().Contain("Loaded 3 bars for AAPL|daily");
+        var cumulative = result.Plots.Should().ContainSingle(plot => plot.Type == PlotType.CumulativeReturn).Which;
+        cumulative.Series![^1].Value.Should().BeApproximately(-0.1, 1e-12);
+        var drawdown = result.Plots.Should().ContainSingle(plot => plot.Type == PlotType.Drawdown).Which;
+        drawdown.Series![^1].Value.Should().BeApproximately(-0.25, 1e-12);
+        dataContext.Verify(context => context.PricesAsync("AAPL", from, to, It.IsAny<CancellationToken>()), Times.Once);
+        dataContext.VerifyNoOtherCalls();
     }
 
     // ── Null-parameters coercion ──────────────────────────────────────────────

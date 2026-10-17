@@ -47,9 +47,12 @@ public sealed record BankStatementLineDto(
     string TransactionType,
     string Description,
     string? Reference,
-    decimal? ClosingBalance)
+    decimal? ClosingBalance,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? LineSequence = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? StatementRevision = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateOnly? StatementAsOfDate = null)
 {
-    public DateOnly StatementDate => ValueDate;
+    public DateOnly StatementDate => StatementAsOfDate ?? ValueDate;
 
     public decimal? RunningBalance => ClosingBalance;
 }
@@ -91,7 +94,8 @@ public sealed record IngestBankStatementRequest(
     string? Notes,
     IReadOnlyList<BankStatementLineDto> Lines,
     string LoadedBy,
-    bool IsBackfill = false);
+    bool IsBackfill = false,
+    int StatementRevision = 1);
 
 
 public sealed record CustodianStatementBatchDto(
@@ -112,7 +116,8 @@ public sealed record BankStatementBatchDto(
     string BankName,
     int LineCount,
     DateTimeOffset IngestedAt,
-    string LoadedBy);
+    string LoadedBy,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? StatementRevision = null);
 
 /// Header record for an account-level reconciliation run.
 public sealed record AccountReconciliationRunDto(
@@ -139,7 +144,15 @@ public sealed record AccountReconciliationResultDto(
     decimal? ExpectedAmount,
     decimal? ActualAmount,
     decimal? Variance,
-    string Reason);
+    string Reason,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? SupersededByResultId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? ResolvedAt = null)
+{
+    /// <summary>Shared active-blocker contract; original check outcomes remain historical evidence.</summary>
+    [JsonIgnore]
+    public bool IsOpenBreak => SupersededByResultId is null && !IsMatch
+        && !string.Equals(Status, "Unverified", StringComparison.OrdinalIgnoreCase);
+}
 
 /// <summary>Provider account-link posture for account-scoped sync and readiness.</summary>
 [JsonConverter(typeof(JsonStringEnumConverter<AccountProviderLinkStatusDto>))]

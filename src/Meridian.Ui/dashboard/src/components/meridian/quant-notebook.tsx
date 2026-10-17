@@ -21,7 +21,8 @@ import type {
   QuantNotebookDataResultViewModel,
   QuantNotebookViewModel
 } from "@/components/meridian/quant-notebook.view-model";
-import type { CellKind, CellOutput } from "@/types";
+import { QuantPlotChart } from "@/components/meridian/quant-plot";
+import type { CellKind, CellOutput, QuantTrade } from "@/types";
 
 /** Map a `Badge` variant onto a Concrete operator-severity status string so notebook cell
  * execution states resolve to the right severity color through the shared `SeverityBadge`
@@ -71,6 +72,15 @@ const dataResultColumns: DenseDataTableColumn<QuantNotebookDataResultRowViewMode
     align: "right",
     render: (row) => <span className="font-mono">{row.volumeLabel}</span>
   }
+];
+
+const tradeColumns: DenseDataTableColumn<QuantTrade & { id: string }>[] = [
+  { id: "timestamp", label: "Timestamp", render: (trade) => trade.timestamp },
+  { id: "symbol", label: "Symbol", render: (trade) => trade.symbol },
+  { id: "side", label: "Side", render: (trade) => trade.side },
+  { id: "quantity", label: "Quantity", align: "right", render: (trade) => trade.quantity.toString() },
+  { id: "price", label: "Price", align: "right", render: (trade) => trade.price.toString() },
+  { id: "commission", label: "Commission", align: "right", render: (trade) => trade.commission.toString() }
 ];
 
 // ── Top-level notebook ─────────────────────────────────────────────────────────
@@ -550,6 +560,28 @@ function CellOutputPanel({ output }: { output: CellOutput[] }) {
 }
 
 function CellOutputLine({ line }: { line: CellOutput }) {
+  if (line.kind === "plot") {
+    return (
+      <section className="my-2" aria-label={line.text}>
+        <h3 className="mb-1 font-semibold">{line.text}</h3>
+        <QuantPlotChart plot={line.plot} />
+      </section>
+    );
+  }
+
+  if (line.kind === "trades") {
+    return (
+      <DenseDataTable
+        columns={tradeColumns}
+        rows={line.trades.map((trade, index) => ({ ...trade, id: index.toString() }))}
+        getRowId={(trade) => trade.id}
+        emptyText="No trades were emitted."
+        ariaLabel={line.text}
+        caption="Script-emitted trades from this cell execution."
+      />
+    );
+  }
+
   const prefix =
     line.kind === "metric" ? "→ "
     : line.kind === "signal" ? "⚡ "

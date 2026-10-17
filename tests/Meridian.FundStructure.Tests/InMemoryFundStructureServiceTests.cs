@@ -925,6 +925,73 @@ public sealed class InMemoryFundStructureServiceTests
         Assert.False(view.Accounts[0].UsedTrendFallback);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetCashFlowViewAsync_BankFallbackUsesWholeAuthoritativeRevision(bool ambiguous)
+    {
+        var fixture = await CreateHybridFixtureAsync();
+        var date = new DateOnly(2026, 4, 7);
+        var asOf = new DateTimeOffset(2026, 4, 7, 12, 0, 0, TimeSpan.Zero);
+        var correctedBatch = Guid.NewGuid();
+        var final = new BankStatementLineDto(Guid.NewGuid(), correctedBatch, fixture.AdvisoryAccountId,
+            date.AddDays(-1), date.AddDays(-1), 20m, "USD", "Interest", "Final corrected income", null, 120m, LineSequence: 20);
+        var first = final with { LineId = Guid.NewGuid(), LineSequence = 10, ValueDate = date, Amount = 10m, ClosingBalance = 100m };
+        await fixture.AccountService.IngestBankStatementAsync(new(correctedBatch, fixture.AdvisoryAccountId, date,
+            "Bank", null, [final, first], "tests", StatementRevision: 2));
+        var oldBatch = Guid.NewGuid();
+        await fixture.AccountService.IngestBankStatementAsync(new(oldBatch, fixture.AdvisoryAccountId, date,
+            "Bank", null, [first with { LineId = Guid.NewGuid(), BatchId = oldBatch, ClosingBalance = 90m, Amount = 99m }],
+            "tests", StatementRevision: ambiguous ? 2 : 1));
+        var query = new GovernanceCashFlowQuery(GovernanceCashFlowScopeKindDto.Account,
+            AccountId: fixture.AdvisoryAccountId, AsOf: asOf);
+
+        if (ambiguous)
+        {
+            var unavailable = await Assert.ThrowsAsync<BankStatementEvidenceUnavailableException>(() => fixture.StructureService.GetCashFlowViewAsync(query));
+            Assert.Contains("unavailable", unavailable.Message);
+        }
+        else
+        {
+            var view = await fixture.StructureService.GetCashFlowViewAsync(query);
+            Assert.NotNull(view);
+            Assert.Equal(120m, view.CurrentCashBalance);
+            Assert.Equal(30m, view.RealizedLadder.NetPosition);
+            Assert.Equal(2, view.RealizedEntries.Count);
+        }
+    }
+
+    [Fact]
+    public async Task GetCashFlowViewAsync_UnrelatedAmbiguousStatementsDoNotBlockCurrentCurrencyWindow()
+    {
+        var fixture = await CreateHybridFixtureAsync();
+        var date = new DateOnly(2026, 4, 7);
+        var batch = Guid.NewGuid();
+        await fixture.AccountService.IngestBankStatementAsync(new(batch, fixture.AdvisoryAccountId, date, "Bank", null,
+            [new(Guid.NewGuid(), batch, fixture.AdvisoryAccountId, date, date, 20m, "USD", "Interest", "Current", null, 120m)], "tests"));
+        foreach (var (header, value, currency) in new[]
+        {
+            (date.AddDays(10), date, "USD"),
+            (date.AddDays(-40), date.AddDays(-40), "USD"),
+            (date.AddDays(-1), date.AddDays(-1), "EUR")
+        })
+        {
+            for (var i = 0; i < 2; i++)
+            {
+                var unrelatedBatch = Guid.NewGuid();
+                await fixture.AccountService.IngestBankStatementAsync(new(unrelatedBatch, fixture.AdvisoryAccountId, header, "Bank", null,
+                    [new(Guid.NewGuid(), unrelatedBatch, fixture.AdvisoryAccountId, value, value, 99m, currency, "Interest", "Unrelated", null, 999m)], "tests"));
+            }
+        }
+
+        var view = await fixture.StructureService.GetCashFlowViewAsync(new(GovernanceCashFlowScopeKindDto.Account,
+            AccountId: fixture.AdvisoryAccountId, AsOf: new DateTimeOffset(2026, 4, 7, 12, 0, 0, TimeSpan.Zero)));
+
+        Assert.NotNull(view);
+        Assert.Equal(120m, view.CurrentCashBalance);
+        Assert.Equal(20m, view.RealizedLadder.NetPosition);
+    }
+
     [Fact]
     public async Task PostgresFundStructureService_GetCashFlowViewAsync_ProjectsCashFlowFromStoredStructure()
     {

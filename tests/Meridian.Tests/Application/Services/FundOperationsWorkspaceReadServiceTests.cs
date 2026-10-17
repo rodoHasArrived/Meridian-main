@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.IO.Compression;
 using System.Globalization;
 using System.Security.Cryptography;
@@ -26,6 +27,92 @@ namespace Meridian.Tests.Application.Services;
 
 public sealed class FundOperationsWorkspaceReadServiceTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetWorkspaceAsync_BankBalanceUsesRevisionAndSequenceWithHeaderDate(bool ambiguous)
+    {
+        var fundProfileId = $"fund-{Guid.NewGuid():N}";
+        var accounts = new InMemoryFundAccountService();
+        var securityMaster = new NullSecurityMasterQueryService();
+        var service = new FundOperationsWorkspaceReadService(accounts, new StrategyRunStore(),
+            new PortfolioReadService(), new NavAttributionService(securityMaster), new ReportGenerationService(securityMaster));
+        var account = await accounts.CreateAccountAsync(new(Guid.NewGuid(), AccountTypeDto.Bank,
+            "BANK-AUTHORITY", "Statement authority", "USD", DateTimeOffset.UtcNow, "ops",
+            FundId: TranslateFundProfileId(fundProfileId), LedgerReference: "LEDGER"));
+        var headerDate = new DateOnly(2026, 10, 15);
+        var correctedBatch = Guid.NewGuid();
+        var final = new BankStatementLineDto(Guid.NewGuid(), correctedBatch, account.AccountId,
+            headerDate.AddDays(-2), headerDate.AddDays(-3), 20m, "USD", "Interest", "Corrected final", null, 110m, LineSequence: 20);
+        var earlier = final with { LineId = Guid.NewGuid(), LineSequence = 10, ValueDate = headerDate, Amount = 10m, ClosingBalance = 100m };
+        await accounts.IngestBankStatementAsync(new(correctedBatch, account.AccountId, headerDate, "Bank", null, [final, earlier], "ops", StatementRevision: 2));
+        var oldBatch = Guid.NewGuid();
+        await accounts.IngestBankStatementAsync(new(oldBatch, account.AccountId, headerDate, "Bank", null,
+            [earlier with { LineId = Guid.NewGuid(), BatchId = oldBatch, LineSequence = 100, ClosingBalance = 90m }], "ops", StatementRevision: ambiguous ? 2 : 1));
+
+        var view = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(fundProfileId));
+        var bank = view.BankSnapshots.Should().ContainSingle().Which;
+        bank.LastStatementDate.Should().Be(headerDate);
+        bank.StatementLineCount.Should().Be(3, "source history remains visible");
+        if (ambiguous)
+        {
+            bank.CurrentBalance.Should().BeNull();
+            bank.LatestTransactionAmount.Should().BeNull();
+        }
+        else
+        {
+            bank.CurrentBalance.Should().Be(110m);
+            bank.LatestTransactionAmount.Should().Be(20m);
+        }
+    }
+
+    [Fact]
+    public async Task GetWorkspaceAsync_CorrectedAccountEvidenceClearsQueueTotalsWhileRetainingRunHistory()
+    {
+        var fundProfileId = $"fund-{Guid.NewGuid():N}";
+        var accounts = new InMemoryFundAccountService();
+        var securityMaster = new NullSecurityMasterQueryService();
+        var observedService = DispatchProxy.Create<IFundAccountService, ReconciliationReadSpy>();
+        var spy = (ReconciliationReadSpy)observedService;
+        spy.Inner = accounts;
+        var service = new FundOperationsWorkspaceReadService(observedService, new StrategyRunStore(),
+            new PortfolioReadService(), new NavAttributionService(securityMaster), new ReportGenerationService(securityMaster));
+        var account = await accounts.CreateAccountAsync(new(Guid.NewGuid(), AccountTypeDto.Bank,
+            "BANK-RESOLUTION", "Resolution test", "USD", DateTimeOffset.UtcNow, "ops",
+            FundId: TranslateFundProfileId(fundProfileId), LedgerReference: "LEDGER"));
+        var date = new DateOnly(2026, 10, 15);
+        await accounts.RecordBalanceSnapshotAsync(new(account.AccountId, date, "USD", 100m, "internal"));
+        var batch = Guid.NewGuid();
+        await accounts.IngestBankStatementAsync(new(batch, account.AccountId, date, "Bank", null,
+            [new(Guid.NewGuid(), batch, account.AccountId, date, date, 90m, "USD", "credit", "balance", null, 90m)], "ops"));
+        var original = await accounts.ReconcileAccountAsync(new(account.AccountId, date, "ops"));
+        var before = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(fundProfileId));
+        before.Accounts.Should().ContainSingle().Which.OpenBreaks.Should().Be(1);
+        before.Reconciliation.OpenBreakCount.Should().Be(1);
+        var initialBatchReads = spy.BatchReads;
+        initialBatchReads.Should().BeGreaterThan(0);
+        spy.SingleResultReads.Should().Be(0);
+        spy.Reset();
+        for (var i = 0; i < 20; i++)
+            await accounts.ReconcileAccountAsync(new(account.AccountId, date, "ops"));
+        var repeated = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(fundProfileId));
+        repeated.Reconciliation.OpenBreakCount.Should().Be(1);
+        spy.BatchReads.Should().Be(initialBatchReads, "historical runs must not add database result queries");
+        spy.SingleResultReads.Should().Be(0);
+        repeated.Reconciliation.RecentRuns.Single(run => run.ReconciliationRunId == original.ReconciliationRunId)
+            .Status.Should().Be("Superseded", "a replacement disagreement is not a resolution");
+
+        await accounts.RecordBalanceSnapshotAsync(new(account.AccountId, date, "USD", 90m, "internal"));
+        await accounts.ReconcileAccountAsync(new(account.AccountId, date, "ops"));
+        var after = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(fundProfileId));
+        after.Accounts.Should().ContainSingle().Which.OpenBreaks.Should().Be(0);
+        after.Reconciliation.OpenBreakCount.Should().Be(0);
+        after.Reconciliation.BreakAmountTotal.Should().Be(0m);
+        after.Reconciliation.RecentRuns.Should().Contain(run => run.Status == "Resolved");
+        (await accounts.GetReconciliationRunsAsync(account.AccountId))
+            .Single(run => run.ReconciliationRunId == original.ReconciliationRunId).TotalBreaks.Should().Be(1);
+    }
+
     [Fact]
     public async Task GetWorkspaceAsync_WithRunsAccountsAndBanking_ReturnsAggregatedWorkspace()
     {
@@ -2437,6 +2524,24 @@ public sealed class FundOperationsWorkspaceReadServiceTests
 
         public void Save(IReadOnlyList<ReportPackDeliveryAttemptDto> updatedAttempts)
         {
+        }
+    }
+    public class ReconciliationReadSpy : DispatchProxy
+    {
+        public IFundAccountService Inner { get; set; } = null!;
+        private int _batchReads;
+        private int _singleResultReads;
+        public int BatchReads => _batchReads;
+        public int SingleResultReads => _singleResultReads;
+        public void Reset() { _batchReads = 0; _singleResultReads = 0; }
+
+        protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
+        {
+            if (targetMethod!.Name == nameof(IFundAccountService.GetReconciliationResultsForAccountsAsync))
+                Interlocked.Increment(ref _batchReads);
+            if (targetMethod.Name == nameof(IFundAccountService.GetReconciliationResultsAsync))
+                Interlocked.Increment(ref _singleResultReads);
+            return targetMethod.Invoke(Inner, args);
         }
     }
 }

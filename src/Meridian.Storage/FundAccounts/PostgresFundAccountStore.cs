@@ -586,16 +586,22 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         IReadOnlyList<BankStatementLineDto> lines,
         CancellationToken ct)
     {
+        bool isNewBatch;
         await using (var cmd = connection.CreateCommand())
         {
             cmd.Transaction = transaction;
             cmd.CommandText = $"""
                 INSERT INTO {Qualified("bank_statement_batch")}
-                    (batch_id, account_id, statement_date, bank_name, file_name, line_count, ingested_at, loaded_by)
+                    (batch_id, account_id, statement_date, bank_name, file_name, line_count, ingested_at, loaded_by, statement_revision)
                 VALUES
-                    (@batch_id, @account_id, @statement_date, @bank_name, null, @line_count, @ingested_at, @loaded_by)
+                    (@batch_id, @account_id, @statement_date, @bank_name, null, @line_count, @ingested_at, @loaded_by, @statement_revision)
                 ON CONFLICT (batch_id) DO UPDATE SET batch_id = EXCLUDED.batch_id
                 WHERE bank_statement_batch.account_id = EXCLUDED.account_id
+                  AND bank_statement_batch.statement_date = EXCLUDED.statement_date
+                  AND bank_statement_batch.statement_revision = EXCLUDED.statement_revision
+                  AND bank_statement_batch.line_count = EXCLUDED.line_count
+                  AND bank_statement_batch.bank_name = EXCLUDED.bank_name
+                RETURNING (xmax = 0)
                 """;
             cmd.Parameters.AddWithValue("batch_id", batch.BatchId);
             cmd.Parameters.AddWithValue("account_id", batch.AccountId);
@@ -604,8 +610,25 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Parameters.AddWithValue("line_count", batch.LineCount);
             cmd.Parameters.AddWithValue("ingested_at", batch.IngestedAt);
             cmd.Parameters.AddWithValue("loaded_by", batch.LoadedBy);
-            if (await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 0)
-                throw new UnauthorizedAccessException("The retained statement batch belongs to another account.");
+            cmd.Parameters.AddWithValue("statement_revision", batch.StatementRevision ?? 1);
+            if (await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false) is not bool inserted)
+                throw new UnauthorizedAccessException("The retained statement batch belongs to another account or has different statement authority.");
+            isNewBatch = inserted;
+        }
+
+        if (!isNewBatch)
+        {
+            // The header row lock serializes concurrent retries through the membership check.
+            await using var membership = connection.CreateCommand();
+            membership.Transaction = transaction;
+            membership.CommandText = $"SELECT statement_line_id FROM {Qualified("bank_statement_line")} WHERE batch_id = @batch_id";
+            membership.Parameters.AddWithValue("batch_id", batch.BatchId);
+            var retainedIds = new HashSet<Guid>();
+            await using var reader = await membership.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+                retainedIds.Add(reader.GetGuid(0));
+            if (retainedIds.Count != lines.Count || !retainedIds.SetEquals(lines.Select(static line => line.LineId)))
+                throw new InvalidOperationException("A retained bank statement's line membership cannot change; use a new statement revision.");
         }
 
         foreach (var line in lines)
@@ -615,11 +638,23 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.CommandText = $"""
                 INSERT INTO {Qualified("bank_statement_line")}
                     (statement_line_id, batch_id, account_id, statement_date, value_date,
-                     amount, currency, transaction_type, description, external_reference, running_balance)
+                     amount, currency, transaction_type, description, external_reference, running_balance, line_sequence)
                 VALUES
                     (@statement_line_id, @batch_id, @account_id, @statement_date, @value_date,
-                     @amount, @currency, @transaction_type, @description, @external_reference, @running_balance)
-                ON CONFLICT (statement_line_id) DO NOTHING
+                     @amount, @currency, @transaction_type, @description, @external_reference, @running_balance, @line_sequence)
+                ON CONFLICT (statement_line_id) DO UPDATE SET statement_line_id = EXCLUDED.statement_line_id
+                WHERE bank_statement_line.batch_id = EXCLUDED.batch_id
+                  AND bank_statement_line.account_id = EXCLUDED.account_id
+                  AND bank_statement_line.statement_date = EXCLUDED.statement_date
+                  AND bank_statement_line.value_date = EXCLUDED.value_date
+                  AND bank_statement_line.amount = EXCLUDED.amount
+                  AND bank_statement_line.currency = EXCLUDED.currency
+                  AND bank_statement_line.transaction_type = EXCLUDED.transaction_type
+                  AND bank_statement_line.description = EXCLUDED.description
+                  AND bank_statement_line.external_reference IS NOT DISTINCT FROM EXCLUDED.external_reference
+                  AND bank_statement_line.running_balance IS NOT DISTINCT FROM EXCLUDED.running_balance
+                  AND (bank_statement_line.line_sequence IS NULL
+                       OR bank_statement_line.line_sequence IS NOT DISTINCT FROM EXCLUDED.line_sequence)
                 """;
             cmd.Parameters.AddWithValue("statement_line_id", line.LineId);
             cmd.Parameters.AddWithValue("batch_id", line.BatchId);
@@ -632,7 +667,9 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Parameters.AddWithValue("description", line.Description);
             cmd.Parameters.AddWithValue("external_reference", (object?)line.Reference ?? DBNull.Value);
             cmd.Parameters.AddWithValue("running_balance", line.ClosingBalance.HasValue ? (object)line.ClosingBalance.Value : DBNull.Value);
-            await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            cmd.Parameters.AddWithValue("line_sequence", NpgsqlTypes.NpgsqlDbType.Integer, (object?)line.LineSequence ?? DBNull.Value);
+            if (await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 0)
+                throw new InvalidOperationException("A retained bank statement line cannot change; use a new statement revision.");
         }
     }
 
@@ -727,23 +764,25 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         await using var cmd = connection.CreateCommand();
         var sb = new StringBuilder();
         sb.AppendLine($"""
-            SELECT statement_line_id, batch_id, account_id, statement_date, value_date,
-                   amount, currency, transaction_type, description, external_reference, running_balance
-            FROM {Qualified("bank_statement_line")}
-            WHERE account_id = @account_id
+            SELECT l.statement_line_id, l.batch_id, l.account_id, l.statement_date, l.value_date,
+                   l.amount, l.currency, l.transaction_type, l.description, l.external_reference, l.running_balance,
+                   l.line_sequence, b.statement_revision, b.statement_date AS statement_as_of_date
+            FROM {Qualified("bank_statement_line")} l
+            JOIN {Qualified("bank_statement_batch")} b ON b.batch_id = l.batch_id AND b.account_id = l.account_id
+            WHERE l.account_id = @account_id
             """);
         cmd.Parameters.AddWithValue("account_id", accountId);
         if (fromDate.HasValue)
         {
-            sb.AppendLine("  AND statement_date >= @from_date");
+            sb.AppendLine("  AND l.statement_date >= @from_date");
             cmd.Parameters.AddWithValue("from_date", fromDate.Value);
         }
         if (toDate.HasValue)
         {
-            sb.AppendLine("  AND statement_date <= @to_date");
+            sb.AppendLine("  AND l.statement_date <= @to_date");
             cmd.Parameters.AddWithValue("to_date", toDate.Value);
         }
-        sb.AppendLine("  ORDER BY statement_date DESC");
+        sb.AppendLine("  ORDER BY l.statement_date DESC, b.statement_date DESC, b.statement_revision DESC, l.line_sequence");
         cmd.CommandText = sb.ToString();
 
         await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
@@ -761,7 +800,10 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 TransactionType: reader.GetString(reader.GetOrdinal("transaction_type")),
                 Description: reader.GetString(reader.GetOrdinal("description")),
                 Reference: reader.IsDBNull(reader.GetOrdinal("external_reference")) ? null : reader.GetString(reader.GetOrdinal("external_reference")),
-                ClosingBalance: reader.IsDBNull(reader.GetOrdinal("running_balance")) ? null : reader.GetDecimal(reader.GetOrdinal("running_balance"))));
+                ClosingBalance: reader.IsDBNull(reader.GetOrdinal("running_balance")) ? null : reader.GetDecimal(reader.GetOrdinal("running_balance")),
+                LineSequence: reader.IsDBNull(reader.GetOrdinal("line_sequence")) ? null : reader.GetInt32(reader.GetOrdinal("line_sequence")),
+                StatementRevision: reader.GetInt32(reader.GetOrdinal("statement_revision")),
+                StatementAsOfDate: reader.GetFieldValue<DateOnly>(reader.GetOrdinal("statement_as_of_date"))));
         }
         return results;
     }
@@ -774,7 +816,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         CancellationToken ct = default)
     {
         RequireWriteTenant();
-        if (_tenantScope.IsFailClosed && results.Any(result => result.ReconciliationRunId != run.ReconciliationRunId))
+        if (results.Any(result => result.ReconciliationRunId != run.ReconciliationRunId))
             throw new UnauthorizedAccessException("Reconciliation results must belong to their run.");
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var tx = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
@@ -790,6 +832,14 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         IReadOnlyList<AccountReconciliationResultDto> results,
         CancellationToken ct)
     {
+        // Fence all writers of one account/date, including separate service instances.
+        await using (var scopeLock = connection.CreateCommand())
+        {
+            scopeLock.Transaction = transaction;
+            scopeLock.CommandText = "SELECT pg_advisory_xact_lock(hashtextextended(@scope, 0))";
+            scopeLock.Parameters.AddWithValue("scope", $"{_options.Schema}|reconciliation|{run.AccountId:N}|{run.AsOfDate:yyyy-MM-dd}");
+            await scopeLock.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
         await using (var cmd = connection.CreateCommand())
         {
             cmd.Transaction = transaction;
@@ -804,6 +854,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                      @requested_at, @completed_at, @requested_by)
                 ON CONFLICT (reconciliation_run_id) DO UPDATE SET reconciliation_run_id = EXCLUDED.reconciliation_run_id
                 WHERE account_reconciliation_run.account_id = EXCLUDED.account_id
+                RETURNING (xmax = 0)
                 """;
             cmd.Parameters.AddWithValue("reconciliation_run_id", run.ReconciliationRunId);
             cmd.Parameters.AddWithValue("account_id", run.AccountId);
@@ -816,8 +867,11 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Parameters.AddWithValue("requested_at", run.RequestedAt);
             cmd.Parameters.AddWithValue("completed_at", run.CompletedAt.HasValue ? (object)run.CompletedAt.Value : DBNull.Value);
             cmd.Parameters.AddWithValue("requested_by", run.RequestedBy);
-            if (await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 0)
+            var inserted = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
+            if (inserted is not bool isNew)
                 throw new UnauthorizedAccessException("The retained reconciliation run belongs to another account.");
+            if (!isNew)
+                return; // Replaying immutable history cannot reopen or supersede later observations.
         }
 
         foreach (var result in results)
@@ -846,6 +900,62 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Parameters.AddWithValue("actual_amount", result.ActualAmount.HasValue ? (object)result.ActualAmount.Value : DBNull.Value);
             cmd.Parameters.AddWithValue("variance", result.Variance.HasValue ? (object)result.Variance.Value : DBNull.Value);
             cmd.Parameters.AddWithValue("reason", result.Reason);
+            if (await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 0)
+                throw new InvalidOperationException("The reconciliation result identity is already retained by another run.");
+        }
+
+        foreach (var result in results.Where(r => !string.Equals(r.Status, "Unverified", StringComparison.OrdinalIgnoreCase)))
+        {
+            await using var cmd = connection.CreateCommand();
+            cmd.Transaction = transaction;
+            cmd.CommandText = $"""
+                -- A delayed older observation joins history without replacing newer authority.
+                UPDATE {Qualified("account_reconciliation_breaks")} incoming
+                SET superseded_by_result_id = authority.result_id,
+                    resolved_at = CASE WHEN NOT incoming.is_match AND authority.is_match
+                        THEN authority.completed_at ELSE NULL END
+                FROM (
+                    SELECT result_id, is_match, completed_at FROM (
+                    SELECT candidate.result_id, candidate.is_match, candidate_run.requested_at,
+                           coalesce(candidate_run.completed_at, candidate_run.requested_at) AS completed_at,
+                           count(*) over (partition by candidate_run.requested_at) AS peers,
+                           max(candidate_run.requested_at) over () AS latest
+                    FROM {Qualified("account_reconciliation_breaks")} candidate
+                    JOIN {Qualified("account_reconciliation_run")} candidate_run USING (reconciliation_run_id)
+                    WHERE candidate_run.account_id = @account_id AND candidate_run.as_of_date = @as_of_date
+                      AND candidate_run.requested_at > @requested_at
+                      AND lower(candidate.category) = lower(@category)
+                      AND (CASE WHEN lower(candidate.check_label) LIKE 'positioncount (%' THEN 'positioncount' ELSE lower(candidate.check_label) END) = lower(@check_label)
+                      AND lower(candidate.status) <> 'unverified'
+                    ) candidates WHERE requested_at = latest AND peers = 1
+                ) authority
+                WHERE incoming.result_id = @result_id;
+
+                UPDATE {Qualified("account_reconciliation_breaks")} previous
+                SET superseded_by_result_id = @result_id,
+                    resolved_at = CASE WHEN NOT previous.is_match
+                        AND lower(previous.status) <> 'unverified' AND @is_match
+                        THEN @resolved_at ELSE NULL END
+                FROM {Qualified("account_reconciliation_run")} previous_run
+                WHERE previous.reconciliation_run_id = previous_run.reconciliation_run_id
+                  AND previous_run.account_id = @account_id AND previous_run.as_of_date = @as_of_date
+                  AND previous_run.requested_at < @requested_at
+                  AND previous.reconciliation_run_id <> @run_id
+                  AND NOT EXISTS (SELECT 1 FROM {Qualified("account_reconciliation_breaks")} incoming
+                                  WHERE incoming.result_id = @result_id AND incoming.superseded_by_result_id IS NOT NULL)
+                  AND previous.superseded_by_result_id IS NULL
+                  AND lower(previous.category) = lower(@category)
+                  AND (CASE WHEN lower(previous.check_label) LIKE 'positioncount (%' THEN 'positioncount' ELSE lower(previous.check_label) END) = lower(@check_label)
+                """;
+            cmd.Parameters.AddWithValue("requested_at", run.RequestedAt);
+            cmd.Parameters.AddWithValue("result_id", result.ResultId);
+            cmd.Parameters.AddWithValue("is_match", result.IsMatch);
+            cmd.Parameters.AddWithValue("resolved_at", run.CompletedAt ?? run.RequestedAt);
+            cmd.Parameters.AddWithValue("account_id", run.AccountId);
+            cmd.Parameters.AddWithValue("as_of_date", run.AsOfDate);
+            cmd.Parameters.AddWithValue("run_id", run.ReconciliationRunId);
+            cmd.Parameters.AddWithValue("category", result.Category);
+            cmd.Parameters.AddWithValue("check_label", result.CheckLabel.StartsWith("PositionCount (", StringComparison.OrdinalIgnoreCase) ? "PositionCount" : result.CheckLabel);
             await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }
@@ -886,6 +996,49 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         return results;
     }
 
+    public async Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsForAccountsAsync(
+        IReadOnlyCollection<Guid> accountIds, bool openOnly = false, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(accountIds);
+        ct.ThrowIfCancellationRequested();
+        var ids = accountIds.Distinct().ToArray();
+        var tenant = _tenantScope.IsFailClosed ? RequireWriteTenant() : null;
+        if (ids.Length == 0)
+            return Array.Empty<AccountReconciliationResultDto>();
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        if (_tenantScope.IsFailClosed)
+        {
+            // Validate the whole requested scope once; a mixed-tenant batch cannot return partial data.
+            await using var owner = connection.CreateCommand();
+            owner.CommandText = $"""
+                SELECT count(*) FROM {Qualified("account_definition")}
+                WHERE account_id = ANY(@account_ids) AND lower(trim(tenant_id)) = lower(trim(@tenant))
+                """;
+            owner.Parameters.AddWithValue("account_ids", NpgsqlDbType.Array | NpgsqlDbType.Uuid, ids);
+            owner.Parameters.AddWithValue("tenant", tenant!);
+            if ((long)(await owner.ExecuteScalarAsync(ct).ConfigureAwait(false))! != ids.Length)
+                throw new UnauthorizedAccessException("Every requested account must be owned by the caller's tenant.");
+        }
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = $"""
+            SELECT result.result_id, result.reconciliation_run_id, result.check_label,
+                   result.is_match, result.category, result.status, result.expected_amount, result.actual_amount,
+                   result.variance, result.reason, result.superseded_by_result_id, result.resolved_at
+            FROM {Qualified("account_reconciliation_breaks")} result
+            JOIN {Qualified("account_reconciliation_run")} run USING (reconciliation_run_id)
+            WHERE run.account_id = ANY(@account_ids)
+              AND (NOT @open_only OR (result.superseded_by_result_id IS NULL AND NOT result.is_match
+                                     AND lower(result.status) <> 'unverified'))
+            """;
+        cmd.Parameters.AddWithValue("account_ids", NpgsqlDbType.Array | NpgsqlDbType.Uuid, ids);
+        cmd.Parameters.AddWithValue("open_only", openOnly);
+        await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        var results = new List<AccountReconciliationResultDto>();
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            results.Add(ReadReconciliationResult(reader));
+        return results;
+    }
+
     public async Task<IReadOnlyList<AccountReconciliationResultDto>> GetReconciliationResultsAsync(
         Guid reconciliationRunId, CancellationToken ct = default)
     {
@@ -904,7 +1057,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         cmd.CommandText = $"""
             SELECT result_id, reconciliation_run_id, check_label,
                    is_match, category, status, expected_amount, actual_amount,
-                   variance, reason
+                   variance, reason, superseded_by_result_id, resolved_at
             FROM {Qualified("account_reconciliation_breaks")}
             WHERE reconciliation_run_id = @reconciliation_run_id
             """;
@@ -914,7 +1067,13 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         var results = new List<AccountReconciliationResultDto>();
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            results.Add(new AccountReconciliationResultDto(
+            results.Add(ReadReconciliationResult(reader));
+        }
+        return results;
+    }
+
+    private static AccountReconciliationResultDto ReadReconciliationResult(NpgsqlDataReader reader)
+        => new AccountReconciliationResultDto(
                 ResultId: reader.GetGuid(reader.GetOrdinal("result_id")),
                 ReconciliationRunId: reader.GetGuid(reader.GetOrdinal("reconciliation_run_id")),
                 CheckLabel: reader.GetString(reader.GetOrdinal("check_label")),
@@ -924,29 +1083,49 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 ExpectedAmount: reader.IsDBNull(reader.GetOrdinal("expected_amount")) ? null : reader.GetDecimal(reader.GetOrdinal("expected_amount")),
                 ActualAmount: reader.IsDBNull(reader.GetOrdinal("actual_amount")) ? null : reader.GetDecimal(reader.GetOrdinal("actual_amount")),
                 Variance: reader.IsDBNull(reader.GetOrdinal("variance")) ? null : reader.GetDecimal(reader.GetOrdinal("variance")),
-                Reason: reader.GetString(reader.GetOrdinal("reason"))));
-        }
-        return results;
-    }
+                Reason: reader.GetString(reader.GetOrdinal("reason")),
+                SupersededByResultId: reader.IsDBNull(reader.GetOrdinal("superseded_by_result_id")) ? null : reader.GetGuid(reader.GetOrdinal("superseded_by_result_id")),
+                ResolvedAt: reader.IsDBNull(reader.GetOrdinal("resolved_at")) ? null : reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("resolved_at")));
 
     // ── Sync history ──────────────────────────────────────────────────────────
 
     public async Task InsertSyncHistoryAsync(AccountSyncHistoryEntryDto entry, CancellationToken ct = default)
+        => await UpsertSyncHistoryAsync(entry, ct).ConfigureAwait(false);
+
+    public async Task<AccountSyncHistoryEntryDto> UpsertSyncHistoryAsync(AccountSyncHistoryEntryDto entry, CancellationToken ct = default)
     {
         RequireWriteTenant();
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
         await RequireAccountOwnerAsync(connection, transaction, entry.AccountId, ct).ConfigureAwait(false);
-        await InsertSyncHistoryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        var retained = await InsertSyncHistoryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return retained;
     }
 
-    private async Task InsertSyncHistoryAsync(
+    private async Task<AccountSyncHistoryEntryDto> InsertSyncHistoryAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction? transaction,
         AccountSyncHistoryEntryDto entry,
         CancellationToken ct)
     {
+        await using (var owner = connection.CreateCommand())
+        {
+            owner.Transaction = transaction;
+            owner.CommandText = $"SELECT account_id FROM {Qualified("account_sync_history")} WHERE sync_history_id = @id FOR UPDATE";
+            owner.Parameters.AddWithValue("id", entry.SyncHistoryId);
+            if (await owner.ExecuteScalarAsync(ct).ConfigureAwait(false) is Guid accountId && accountId != entry.AccountId)
+                throw new UnauthorizedAccessException("The retained sync record belongs to another account.");
+        }
+        var correlated = !string.IsNullOrWhiteSpace(entry.CorrelationId);
+        var conflictTarget = correlated
+            ? "(account_id, lower(trim(capability)), lower(trim(correlation_id))) WHERE correlation_id IS NOT NULL AND trim(correlation_id) <> '' AND superseded_by_sync_history_id IS NULL"
+            : "(sync_history_id)";
+        // Terminal success outranks degradation/failure; delayed retries cannot restore Pending.
+        static string Rank(string alias) => $"CASE {alias}.status WHEN 'Succeeded' THEN 3 WHEN 'Degraded' THEN 2 WHEN 'Pending' THEN 0 ELSE 1 END";
+        var accepts = $"({Rank("EXCLUDED")} > {Rank("account_sync_history")} OR ({Rank("EXCLUDED")} = {Rank("account_sync_history")} AND (account_sync_history.completed_at IS NULL OR EXCLUDED.completed_at >= account_sync_history.completed_at)))";
+        var columns = new[] { "status", "provider_link_status", "provider_id", "external_account_id", "completed_at", "fresh_until", "failure_kind", "failure_message", "raw_evidence_path", "projection_evidence_path", "security_missing_count", "warnings" };
+        var updates = string.Join(",\n", columns.Select(column => $"{column} = CASE WHEN {accepts} THEN EXCLUDED.{column} ELSE account_sync_history.{column} END"));
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = transaction;
         cmd.CommandText = $"""
@@ -960,19 +1139,11 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                  @provider_id, @external_account_id, @attempted_at, @completed_at, @fresh_until,
                  @failure_kind, @failure_message, @correlation_id, @requested_by,
                  @raw_evidence_path, @projection_evidence_path, @security_missing_count, @warnings::jsonb)
-            ON CONFLICT (sync_history_id) DO UPDATE SET
-                status                  = EXCLUDED.status,
-                provider_link_status    = EXCLUDED.provider_link_status,
-                provider_id             = EXCLUDED.provider_id,
-                external_account_id     = EXCLUDED.external_account_id,
-                attempted_at            = EXCLUDED.attempted_at,
-                completed_at            = EXCLUDED.completed_at,
-                fresh_until             = EXCLUDED.fresh_until,
-                failure_kind            = EXCLUDED.failure_kind,
-                failure_message         = EXCLUDED.failure_message,
-                security_missing_count  = EXCLUDED.security_missing_count,
-                warnings                = EXCLUDED.warnings
+            ON CONFLICT {conflictTarget} DO UPDATE SET
+                {updates}
             WHERE account_sync_history.account_id = EXCLUDED.account_id
+              AND lower(trim(account_sync_history.capability)) = lower(trim(EXCLUDED.capability))
+            RETURNING account_sync_history.*
             """;
         cmd.Parameters.AddWithValue("sync_history_id", entry.SyncHistoryId);
         cmd.Parameters.AddWithValue("account_id", entry.AccountId);
@@ -992,8 +1163,10 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         cmd.Parameters.AddWithValue("projection_evidence_path", (object?)entry.ProjectionEvidencePath ?? DBNull.Value);
         cmd.Parameters.AddWithValue("security_missing_count", entry.SecurityMissingCount);
         cmd.Parameters.AddWithValue("warnings", JsonSerializer.Serialize(entry.Warnings, JsonOpts));
-        if (await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 0)
-            throw new UnauthorizedAccessException("The retained sync record belongs to another account.");
+        await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+            throw new UnauthorizedAccessException("The retained sync record belongs to another account or capability.");
+        return ReadSyncHistoryEntry(reader);
     }
 
     public async Task<IReadOnlyList<AccountSyncHistoryEntryDto>> GetSyncHistoryAsync(
@@ -1009,12 +1182,12 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                    failure_kind, failure_message, correlation_id, requested_by,
                    raw_evidence_path, projection_evidence_path, security_missing_count, warnings
             FROM {Qualified("account_sync_history")}
-            WHERE account_id = @account_id
+            WHERE account_id = @account_id AND superseded_by_sync_history_id IS NULL
             """);
         cmd.Parameters.AddWithValue("account_id", accountId);
         if (!string.IsNullOrWhiteSpace(capability))
         {
-            sb.AppendLine("  AND lower(capability) = lower(@capability)");
+            sb.AppendLine("  AND lower(trim(capability)) = lower(trim(@capability))");
             cmd.Parameters.AddWithValue("capability", capability);
         }
         sb.AppendLine("  ORDER BY attempted_at DESC, completed_at DESC NULLS LAST");
@@ -1309,7 +1482,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                     ct).ConfigureAwait(false);
             }
 
-            foreach (var reconciliation in accountImport.ReconciliationRuns)
+            foreach (var reconciliation in accountImport.ReconciliationRuns.OrderBy(r => r.Run.RequestedAt))
             {
                 await InsertReconciliationRunAsync(
                     connection,

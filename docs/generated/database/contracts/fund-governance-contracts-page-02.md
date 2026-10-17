@@ -30,7 +30,7 @@ classDiagram
         +string AccountCode
         +Guid AccountId
         +string BaseCurrency
-        +decimal CurrentCashBalance
+        +decimal? CurrentCashBalance
         +string DisplayName
         +DateOnly? LatestSnapshotDate
         +string? LedgerReference
@@ -134,11 +134,11 @@ classDiagram
         +DateTimeOffset AsOf
         +int BucketDays
         +string Currency
-        +decimal CurrentCashBalance
+        +decimal? CurrentCashBalance
         +int ForecastDays
         +int HistoricalDays
         +DateTimeOffset HistoricalWindowStart
-        +decimal ProjectedClosingCashBalance
+        +decimal? ProjectedClosingCashBalance
         +IReadOnlyList~GovernanceCashFlowEntryDto~ ProjectedEntries
         +GovernanceCashFlowLadderDto ProjectedLadder
     }
@@ -158,6 +158,7 @@ classDiagram
         +string LoadedBy
         +string? Notes
         +DateOnly StatementDate
+        +int StatementRevision
     }
     class Meridian_Contracts_FundStructure_IngestCustodianStatementRequest["IngestCustodianStatementRequest"] {
         +Guid AccountId

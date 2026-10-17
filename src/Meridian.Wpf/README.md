@@ -11,6 +11,11 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Wpf
 
+The fund-account projection adapter counts active reconciliation results through the same batched
+service query as the browser, while retaining historical run totals. Its bank snapshot adapter uses
+retained statement revision and source sequence; conflicting evidence stays unavailable. These plain
+.NET adapter contracts are also compiled into the cross-platform shared regression suite.
+
 Offline retention recognizes market JSONL/parquet files only from explicit event-type names and supported storage layouts. Unknown files and the workstation Evidence Vault remain retained and appear as skipped in the dry run, even when aged evidence shares the market-data root. Depth files use their own policy cutoff.
 
 The loan summary lists principal amounts by their recorded currency; mixed, unspecified, and

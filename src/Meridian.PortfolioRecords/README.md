@@ -11,6 +11,16 @@ last_reviewed: 2026-10-07
 
 # src/Meridian.PortfolioRecords
 
+`BankStatementClosingBalanceAuthority` projects complete highest-revision batches before selecting
+balances or aggregating cash flows. Competing batches at the same account/header-date/revision remain
+unavailable, including when their closing balances happen to agree. Currency filtering follows revision
+selection so a replacement cannot leak a superseded currency's amount. Source rows remain retained.
+
+Reconciliation readers can load an exact account set through one batched retained-result query,
+optionally filtering to active breaks. PostgreSQL checks strict tenant ownership for the whole
+requested batch before returning any result. Readiness and workstation queues avoid querying
+every historical run individually; immutable run totals and original result outcomes remain history.
+
 ## Purpose
 
 Physical bounded-context module project for portfolio records, positions, activity, holdings,
@@ -58,10 +68,23 @@ so these records cannot appear ready solely because a balance exists.
 Correlated margin corrections retain the existing snapshot ID when effective time changes.
 Corrections onto another snapshot's effective time are rejected without replacing either record.
 
-Sync-history correlation deduplication still uses a service-level lookup before insertion and is
-not atomic across concurrent PostgreSQL writers. Read cancellation is not uniform across all
-ports; same-day bank closing-balance ordering and historical reconciliation-break resolution
-remain follow-up work under the existing contracts.
+Sync-history correlations deduplicate atomically within account and capability using a PostgreSQL
+unique index/upsert. Concurrent or delayed retries return the retained identity and cannot regress
+a successful or completed attempt to a weaker outcome. Existing duplicate rows remain retained with
+supersession links and no longer count as current attempts.
+
+Reconciliation results retain their original outcome and durable replacement/resolution links.
+Verified reruns supersede only the same account, date, category and stable check identity; missing
+evidence never clears a break. Delayed older runs cannot supersede newer observations, and equal-time
+authority stays unresolved. Readiness, shared workspace summaries and break queues count the same
+active-result state. New migrations backfill unambiguous historical replacements; local snapshots
+restore the same lifecycle from retained observations.
+
+Bank closing balances use statement date, explicit revision and source row sequence. Corrected
+revisions and original rows remain retained; ingestion time and GUID ordering cannot choose financial
+authority. Ambiguous legacy rows remain unverified. Read cancellation is not uniform across all ports.
+Both stores refuse a bank statement revision with no lines: authority is selected from retained
+lines, so an empty higher revision would otherwise leave the lower revision authoritative.
 
 ## Diagrams
 

@@ -309,12 +309,15 @@ public sealed class FamilyOfficeReadService
             return contexts;
         }
 
+        var retainedResults = await _fundAccountService.GetReconciliationResultsForAccountsAsync(
+            accounts.Select(account => account.AccountId).ToArray(), ct: ct).ConfigureAwait(false);
+        var resultsByRun = retainedResults.ToLookup(result => result.ReconciliationRunId);
         foreach (var account in accounts)
         {
             ct.ThrowIfCancellationRequested();
             var snapshot = await _fundAccountService.GetLatestBalanceSnapshotAsync(account.AccountId, ct).ConfigureAwait(false);
             var reconciliationRuns = await _fundAccountService.GetReconciliationRunsAsync(account.AccountId, ct).ConfigureAwait(false);
-            var openBreaks = await _fundAccountService.GetOpenBreaksAsync(account.AccountId, ct).ConfigureAwait(false);
+            var reconciliationResults = reconciliationRuns.SelectMany(run => resultsByRun[run.ReconciliationRunId]).ToArray();
             var readiness = await _fundAccountService.GetReadinessAsync(account.AccountId, ct).ConfigureAwait(false);
             StrategyRunDetail? runDetail = null;
             if (_strategyRunReadService is not null && !string.IsNullOrWhiteSpace(account.RunId))
@@ -322,7 +325,7 @@ public sealed class FamilyOfficeReadService
                 runDetail = await _strategyRunReadService.GetRunDetailAsync(account.RunId, ct).ConfigureAwait(false);
             }
 
-            contexts.Add(BuildAccountContext(account, snapshot, reconciliationRuns, openBreaks, readiness, runDetail, generatedAt));
+            contexts.Add(BuildAccountContext(account, snapshot, reconciliationRuns, reconciliationResults, readiness, runDetail, generatedAt));
         }
 
         return contexts;
@@ -332,7 +335,7 @@ public sealed class FamilyOfficeReadService
         AccountSummaryDto account,
         AccountBalanceSnapshotDto? snapshot,
         IReadOnlyList<AccountReconciliationRunDto> reconciliationRuns,
-        IReadOnlyList<AccountReconciliationBreakDto> openBreaks,
+        IReadOnlyList<AccountReconciliationResultDto> reconciliationResults,
         AccountReadinessSnapshotDto? readiness,
         StrategyRunDetail? runDetail,
         DateTimeOffset generatedAt)
@@ -342,7 +345,7 @@ public sealed class FamilyOfficeReadService
         var marketValue = snapshot?.SecuritiesMarketValue ?? runDetail?.Portfolio?.LongMarketValue ?? 0m;
         var accrued = snapshot?.AccruedInterest ?? 0m;
         var totalEquity = cash + marketValue + accrued + (snapshot?.PendingSettlement ?? 0m);
-        var reconciliationStatus = ResolveReconciliationStatus(reconciliationRuns, openBreaks);
+        var reconciliationStatus = ResolveReconciliationStatus(reconciliationRuns, reconciliationResults);
         var evidenceCompleteness = ResolveEvidenceCompleteness(snapshot?.ExternalReference, readiness);
         var source = snapshot?.Source ?? (runDetail?.Portfolio is null ? "fund-account" : "portfolio-read-service");
 
@@ -367,7 +370,7 @@ public sealed class FamilyOfficeReadService
             LastReviewedBy: null,
             LastReviewedAtUtc: null);
 
-        return new AccountContext(account, summary, snapshot, reconciliationRuns, openBreaks, readiness, runDetail);
+        return new AccountContext(account, summary, snapshot, reconciliationRuns, reconciliationResults, readiness, runDetail);
     }
 
     private static IReadOnlyList<FamilyAssetSummaryDto> BuildPublicAssets(IReadOnlyList<AccountContext> accounts, List<string> warnings)
@@ -641,9 +644,9 @@ public sealed class FamilyOfficeReadService
             EvidenceLinks: evidenceLinks);
     }
 
-    private static string ResolveReconciliationStatus(IReadOnlyList<AccountReconciliationRunDto> runs, IReadOnlyList<AccountReconciliationBreakDto> breaks)
+    private static string ResolveReconciliationStatus(IReadOnlyList<AccountReconciliationRunDto> runs, IReadOnlyList<AccountReconciliationResultDto> results)
     {
-        if (breaks.Count > 0)
+        if (results.Any(static result => result.IsOpenBreak))
         {
             return "OpenBreaks";
         }
@@ -654,7 +657,10 @@ public sealed class FamilyOfficeReadService
             return "NotReconciled";
         }
 
-        return latest.TotalBreaks == 0 && latest.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase)
+        var latestResults = results.Where(result => result.ReconciliationRunId == latest.ReconciliationRunId).ToArray();
+        return latestResults.Length > 0 && latestResults.All(static result => result.IsMatch)
+            && (latest.Status.Equals("Matched", StringComparison.OrdinalIgnoreCase)
+                || latest.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase))
             ? "Reconciled"
             : latest.Status;
     }
@@ -686,7 +692,7 @@ public sealed class FamilyOfficeReadService
         FamilyAccountSummaryDto Summary,
         AccountBalanceSnapshotDto? Snapshot,
         IReadOnlyList<AccountReconciliationRunDto> ReconciliationRuns,
-        IReadOnlyList<AccountReconciliationBreakDto> OpenBreaks,
+        IReadOnlyList<AccountReconciliationResultDto> ReconciliationResults,
         AccountReadinessSnapshotDto? Readiness,
         StrategyRunDetail? RunDetail);
 }
