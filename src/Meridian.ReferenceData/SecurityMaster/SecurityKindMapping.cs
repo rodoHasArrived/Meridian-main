@@ -17,38 +17,9 @@ namespace Meridian.ReferenceData.SecurityMaster;
 /// </summary>
 public static class SecurityKindMapping
 {
-    // AssetClass strings match SecurityKind.assetClass in SecurityMaster.fs.
-    private static readonly IReadOnlyDictionary<string, IReadOnlyList<InstrumentType>> AssetClassToInstrumentTypes =
-        new Dictionary<string, IReadOnlyList<InstrumentType>>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["Equity"] = [InstrumentType.Equity],
-            ["Option"] = [InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.FuturesOption],
-            ["Future"] = [InstrumentType.Future, InstrumentType.SingleStockFuture],
-            ["Bond"] = [InstrumentType.Bond],
-            ["FxSpot"] = [InstrumentType.Forex],
-            ["Deposit"] = [InstrumentType.Deposit],
-            ["MoneyMarketFund"] = [InstrumentType.Equity],
-            ["CertificateOfDeposit"] = [InstrumentType.Deposit],
-            ["CommercialPaper"] = [InstrumentType.Bond],
-            ["TreasuryBill"] = [InstrumentType.Bond],
-            ["Repo"] = [InstrumentType.Repo],
-            ["CashSweep"] = [InstrumentType.Deposit],
-            ["OtherSecurity"] = [],
-            ["CustomAsset"] = [],
-            ["Swap"] = [InstrumentType.Swap],
-            ["DirectLoan"] = [InstrumentType.DirectLoan],
-            ["StructuredCredit"] = [],
-            ["PrivateFundInterest"] = [],
-            ["PrivateCompanyEquity"] = [],
-            ["RealEstateHolding"] = [],
-            ["CommitmentGuarantee"] = [],
-            ["Commodity"] = [InstrumentType.Commodity],
-            ["CryptoCurrency"] = [InstrumentType.Crypto],
-            ["Cfd"] = [InstrumentType.CFD],
-            ["Warrant"] = [InstrumentType.Warrant],
-            ["InvestmentFund"] = [],
-        };
-
+    // The asset-class -> InstrumentType direction is declared on SecurityAssetClassCatalog
+    // (SecurityAssetClassDescriptor.InstrumentTypes). Only the reverse direction lives here because
+    // it is not one-to-one (several asset classes share an InstrumentType).
     private static readonly IReadOnlyDictionary<InstrumentType, string> InstrumentTypeToAssetClass =
         new Dictionary<InstrumentType, string>
         {
@@ -106,8 +77,8 @@ public static class SecurityKindMapping
     /// Returns an empty list when the asset class is not mapped to a market-data instrument type.
     /// </summary>
     public static IReadOnlyList<InstrumentType> ToInstrumentTypes(string assetClass) =>
-        AssetClassToInstrumentTypes.TryGetValue(assetClass, out var types)
-            ? types
+        CanonicalAssetClassLookup.TryGetValue(assetClass, out var canonicalAssetClass)
+            ? SecurityAssetClassCatalog.GetOrDefault(canonicalAssetClass).InstrumentTypes ?? Array.Empty<InstrumentType>()
             : Array.Empty<InstrumentType>();
 
     /// <summary>

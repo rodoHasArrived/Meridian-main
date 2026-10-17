@@ -34444,6 +34444,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
+      "target": "contract:Meridian.Contracts.Domain.Enums.InstrumentType"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBehavior"
     },
     {
@@ -50494,7 +50500,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "625e214a6224ec54f6183f57e80e63d270728bff981094999529ba886cde5d16",
+  "fingerprint": "e3dcffd4dcc5e2fd6526aef4ac05550540571dde9f0a3207b842087f856a1b99",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -73773,9 +73779,9 @@
     }
   ],
   "summary": {
-    "contract_references": 3314,
+    "contract_references": 3315,
     "contract_set_memberships": 3960,
-    "edges": 8390,
+    "edges": 8391,
     "foreign_keys": 137,
     "logical_references": 6,
     "nodes": 4032
