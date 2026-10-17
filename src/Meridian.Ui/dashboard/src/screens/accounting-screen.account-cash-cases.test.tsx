@@ -93,6 +93,21 @@ describe("account cash continuity operator panel", () => {
     expect(screen.getByText(/by reviewer/)).toBeVisible();
   });
 
+  it("discards an unsaved assignment draft without retaining it", async () => {
+    render(<AccountCashCasesPanel scope={scope} context={context} />);
+    await selectCase();
+    const form = within(screen.getByRole("form", { name: "Assign cash case owner" }));
+    await userEvent.clear(form.getByLabelText("Case owner"));
+    await userEvent.type(form.getByLabelText("Case owner"), "analyst-b");
+    await userEvent.type(form.getByLabelText("Assignment rationale"), "Draft that should not be kept");
+    await userEvent.click(form.getByRole("button", { name: "Discard assignment" }));
+    expect(api.assignCashCase).not.toHaveBeenCalled();
+    const reset = within(screen.getByRole("form", { name: "Assign cash case owner" }));
+    expect(reset.getByLabelText("Case owner")).toHaveValue("analyst-a");
+    expect(reset.getByLabelText("Assignment rationale")).toHaveValue("");
+    expect(reset.queryByRole("button", { name: "Discard assignment" })).not.toBeInTheDocument();
+  });
+
   it("blocks a stale assignment until the operator refreshes retained case versions", async () => {
     api.assignCashCase.mockRejectedValueOnce(new ApiError({ path: "/cash-cases", status: 409, detail: "Version conflict" }));
     render(<AccountCashCasesPanel scope={scope} context={context} />);

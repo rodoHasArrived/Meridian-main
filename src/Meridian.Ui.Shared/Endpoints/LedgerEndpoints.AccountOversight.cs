@@ -249,6 +249,7 @@ public static partial class LedgerEndpoints
         { return Results.Conflict(new { code = "CASH_FORECAST_SOURCE_AUTHORITY_REQUIRED", error = ex.Message }); }
         catch (InvalidOperationException ex) { return Results.Conflict(new { error = ex.Message }); }
         catch (InvalidDataException) { return OversightUnavailable("Retained oversight evidence is unavailable or corrupt; restore it before retrying."); }
+        catch (TimeoutException) { return OversightUnavailable("Retained oversight history is locked by another writer; retry shortly."); }
         catch (LedgerBookServiceException ex) { return MapServiceException(ex); }
     }
 

@@ -23,7 +23,10 @@ binds its complete normalized source content across all retained runs; rebinding
 the store lease before any case changes. Unchanged revisions can be reused; corrections require
 new versions. Null cash-tolerance entries are rejected before rule evaluation. Explicitly
 provision `FileAccountCashReconciliationStore.InitializeAsync` before use; loss of retained state
-cannot silently restart history. Source clearing confers no governed close approval.
+cannot silently restart history. A retry adopts only a valid empty state left by interrupted
+provisioning; unmarked retained history still requires recovery. Corrupt or missing initialized state
+raises `InvalidDataException`, and the writer lease times out after 30 seconds with
+`TimeoutException`. Source clearing confers no governed close approval.
 See [account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
 `AccountCashReconciliationContinuityTests` for the first `W10-RECON-001` acceptance slice.
 Tolerance profile IDs and versions also bind immutable complete rules across the scoped history.
