@@ -21,6 +21,7 @@ Opening and closing cash require independently identifiable retained observation
 single-day periods with equal balances. Linked expected and actual flows must agree on security
 identity, including whether an identity is absent. Existing receipts remain immutable; formerly
 certified inputs violating these guards fail replay closed and require source review.
+`AccountCashForecastService.CaptureAsync` rejects a non-UTC or missing recording time as caller input before the engine or store runs.
 Certification describes cash evidence reconciliation and grants no payment authority. See
 [account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
 `AccountCashForecastTests` for the bounded contract.

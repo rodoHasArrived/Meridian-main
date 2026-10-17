@@ -1,3 +1,5 @@
+using System.Buffers;
+using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Domain.Reconciliation;
@@ -41,7 +43,7 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
             var toleranceHash = ToleranceHash(input.Tolerance);
             if (document.Runs.Where(item => item.Input.Scope == input.Scope)
                 .Select(item => item.Input.Tolerance)
-                .Any(prior => prior.ProfileId == input.Tolerance.ProfileId && prior.Version == input.Tolerance.Version
+                .Any(prior => prior.ProfileId.Trim() == input.Tolerance.ProfileId.Trim() && prior.Version == input.Tolerance.Version
                     && !Sha256Digest.FixedEquals(ToleranceHash(prior), toleranceHash)))
                 throw new InvalidOperationException("A retained tolerance version cannot be rebound to changed rules; use a new version.");
             var relevantCases = document.Cases.Where(item => Owns(input, item)).ToArray();
@@ -50,6 +52,8 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
                 .MaxBy(item => item.Input.ObservedAtUtc);
             if (latest is not null && input.ObservedAtUtc <= latest.Input.ObservedAtUtc)
                 throw new InvalidOperationException("A new run must be later than the retained comparison head.");
+            if (latest is not null && input.BusinessDate < latest.Input.BusinessDate)
+                throw new InvalidOperationException("A new run cannot carry an earlier business date than the retained comparison head.");
             var currencies = input.Left.Rows.Concat(input.Right.Rows).Select(item => item.Row.Currency)
                 .Concat(relevantCases.Select(item => item.Currency)).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
             var comparisons = Evaluate(input, currencies);
@@ -137,7 +141,15 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
             };
             var run = new ReconciliationRun(Guid.Empty, input.BusinessDate, input.ObservedAtUtc, false, 1,
                 CaseId(input, currency) + ":" + input.RunId, snapshots);
-            var result = _matcher.Run(run, input.Tolerance);
+            (IReadOnlyList<MatchGroup> matches, IReadOnlyList<BreakRecord> breaks, IReadOnlyList<MatchEvidence> evidence) result;
+            try
+            {
+                result = _matcher.Run(run, input.Tolerance);
+            }
+            catch (OverflowException exception)
+            {
+                throw new ArgumentException("Cash balances or tolerance thresholds exceed supported decimal arithmetic.", nameof(input), exception);
+            }
             var cleared = left.Length == 1 && right.Length == 1 && result.breaks.Count == 0
                 && result.matches.Count == 1 && result.matches[0].Classification is BreakClassification.Matched or BreakClassification.MatchedWithinTolerance;
             return new AccountCashComparison(currency, cleared ? "SourceCleared" : left.Length == 0 || right.Length == 0 ? "MissingEvidence" : "Open",
@@ -149,6 +161,8 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
         ArgumentNullException.ThrowIfNull(input);
         RequireScope(input.Scope);
         ArgumentException.ThrowIfNullOrWhiteSpace(input.RunId);
+        if (input.RunId.Trim().Any(static ch => char.IsWhiteSpace(ch) || char.IsControl(ch) || ch is '/' or '\\' or '?' or '#' or '%'))
+            throw new ArgumentException("A run identity must round-trip through replay routes; whitespace, control characters and '/', '\\', '?', '#', '%' are refused.", nameof(input));
         ArgumentException.ThrowIfNullOrWhiteSpace(input.InitialOwner);
         ArgumentNullException.ThrowIfNull(input.Tolerance);
         ArgumentException.ThrowIfNullOrWhiteSpace(input.Tolerance.ProfileId);
@@ -159,12 +173,16 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
             || rule.BasisPointCashTolerance < 0 || rule.SettlementDateTolerance < TimeSpan.Zero)
             || input.Tolerance.CashRules.Select(rule => rule.RuleId).Distinct(StringComparer.Ordinal).Count() != input.Tolerance.CashRules.Count)
             throw new ArgumentException("Cash tolerance rules must have unique identities and nonnegative thresholds.", nameof(input));
+        if (input.Tolerance.CashRules.Count == 0)
+            throw new ArgumentException("At least one executed cash tolerance rule is required.", nameof(input));
+        if (input.Tolerance.PositionRules.Any(rule => rule is null) || input.Tolerance.TransactionRules.Any(rule => rule is null))
+            throw new ArgumentException("Tolerance rule collections cannot contain null entries.", nameof(input));
         var sources = new[] { input.Left, input.Right }.Select(source => NormalizeSource(source, input)).OrderBy(source => source.SourceId, StringComparer.Ordinal).ToArray();
         if (sources[0].SourceId == sources[1].SourceId || sources[0].SourceType == sources[1].SourceType)
             throw new ArgumentException("The first cash-balance slice requires two independent source identities and types.", nameof(input));
         if (sources[0].EvidenceReference.Trim() == sources[1].EvidenceReference.Trim()
-            || sources[0].Rows.Select(item => item.OriginalPayload.Trim())
-                .Intersect(sources[1].Rows.Select(item => item.OriginalPayload.Trim()), StringComparer.Ordinal).Any())
+            || sources[0].Rows.Select(item => CanonicalObservation(item.OriginalPayload))
+                .Intersect(sources[1].Rows.Select(item => CanonicalObservation(item.OriginalPayload)), StringComparer.Ordinal).Any())
             throw new ArgumentException("The two sources require distinct retained evidence references and original observations; copied evidence is not independent.", nameof(input));
         // Freeze caller-owned lists before they cross the durable boundary.
         var normalized = input with { RunId = input.RunId.Trim(), Left = sources[0], Right = sources[1], InitialOwner = input.InitialOwner.Trim(), ObservedAtUtc = input.ObservedAtUtc.ToUniversalTime() };
@@ -199,6 +217,29 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
         if (rows.Select(item => item.Row.Currency).Distinct(StringComparer.Ordinal).Count() != rows.Length)
             throw new ArgumentException("This slice accepts one cash balance per source and currency; duplicates are ambiguous.", nameof(source));
         return source with { SourceId = source.SourceId.Trim(), Rows = rows, CapturedAtUtc = source.CapturedAtUtc.ToUniversalTime() };
+    }
+
+    /// <summary>
+    /// Copied JSON observations stay copies after reformatting, so JSON payloads compare by their
+    /// compact serialization; any other payload compares as trimmed text. Retained payloads are untouched.
+    /// </summary>
+    private static string CanonicalObservation(string payload)
+    {
+        var trimmed = payload.Trim();
+        if (trimmed.Length == 0 || trimmed[0] is not ('{' or '['))
+            return trimmed;
+        try
+        {
+            using var document = JsonDocument.Parse(trimmed);
+            var buffer = new ArrayBufferWriter<byte>();
+            using (var writer = new Utf8JsonWriter(buffer))
+                document.RootElement.WriteTo(writer);
+            return Encoding.UTF8.GetString(buffer.WrittenSpan);
+        }
+        catch (JsonException)
+        {
+            return trimmed;
+        }
     }
 
     private static bool Owns(AccountCashReconciliationRequest input, AccountCashReconciliationCase item)

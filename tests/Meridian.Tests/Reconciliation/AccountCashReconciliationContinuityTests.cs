@@ -615,6 +615,116 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.RunAsync(Request("new-run", 1, 1000m, 1000m)));
     }
 
+    [Fact]
+    public async Task Reformatted_copied_json_observation_is_rejected_as_dependent_evidence()
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 1000m);
+        var reformatted = request.Left.Rows[0].OriginalPayload.Replace(",", ",\n  ").Replace(":", ": ");
+        reformatted.Should().NotBe(request.Left.Rows[0].OriginalPayload);
+        var copied = request with { Right = request.Right with { Rows = [request.Right.Rows[0] with { OriginalPayload = reformatted }] } };
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(copied));
+
+        failure.Message.Should().Contain("copied evidence is not independent");
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.ReplayAsync(_scope, "first"));
+    }
+
+    [Fact]
+    public async Task Backdated_business_date_cannot_replace_the_comparison_head()
+    {
+        var service = await ServiceAsync();
+        await service.RunAsync(Request("head", 2, 1000m, 990m));
+        var before = Assert.Single(await service.GetCasesAsync(_scope));
+        var earlierDay = _start;
+        var backdated = new AccountCashReconciliationRequest("backdated", _scope, DateOnly.FromDateTime(earlierDay.UtcDateTime), _start.AddDays(3),
+            Source("accounting-ledger", ReconciliationSourceType.InternalLedger, _scope, earlierDay, ("USD", 1000m)),
+            Source("custodian", ReconciliationSourceType.Custodian, _scope, earlierDay, ("USD", 1000m)),
+            Profile(1, 0.01m), "initial-owner");
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => service.RunAsync(backdated));
+
+        failure.Message.Should().Contain("earlier business date");
+        Assert.Single(await (await ServiceAsync()).GetCasesAsync(_scope)).Should().BeEquivalentTo(before);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.ReplayAsync(_scope, "backdated"));
+    }
+
+    [Fact]
+    public async Task Decimal_overflow_during_comparison_is_rejected_as_invalid_input()
+    {
+        var service = await ServiceAsync();
+        var request = Request("overflow", 0, decimal.MaxValue, decimal.MinValue);
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(request));
+
+        failure.Message.Should().Contain("decimal arithmetic");
+        failure.InnerException.Should().BeOfType<OverflowException>();
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("position")]
+    [InlineData("transaction")]
+    public async Task Null_position_or_transaction_rule_is_rejected_before_history_changes(string collection)
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 990m);
+        request = collection == "position"
+            ? request with { Tolerance = request.Tolerance with { PositionRules = [null!] } }
+            : request with { Tolerance = request.Tolerance with { TransactionRules = [null!] } };
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(request));
+
+        failure.Message.Should().Contain("null entries");
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("day/custodian")]
+    [InlineData("run one")]
+    [InlineData("run%2Fone")]
+    [InlineData("run?replay=1")]
+    [InlineData("run#1")]
+    [InlineData("run\\one")]
+    public async Task Run_identity_that_cannot_round_trip_replay_routes_is_rejected(string runId)
+    {
+        var service = await ServiceAsync();
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(Request(runId, 0, 1000m, 990m)));
+
+        failure.Message.Should().Contain("round-trip");
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Empty_cash_rule_set_cannot_clear_a_comparison()
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 1000m);
+        request = request with { Tolerance = request.Tolerance with { CashRules = [] } };
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(request));
+
+        failure.Message.Should().Contain("At least one executed cash tolerance rule");
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Padded_profile_identity_cannot_rebind_a_retained_tolerance_version()
+    {
+        var service = await ServiceAsync();
+        var original = await service.RunAsync(Request("first", 0, 1000m, 990m));
+        var padded = Request("padded", 1, 1000m, 990m);
+        padded = padded with { Tolerance = Profile(1, 20m) with { ProfileId = " " + padded.Tolerance.ProfileId + " " } };
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => service.RunAsync(padded));
+
+        failure.Message.Should().Contain("retained tolerance version");
+        Assert.Single(await service.GetCasesAsync(_scope)).History.Select(item => item.RunId).Should().Equal("first");
+        (await service.ReplayAsync(_scope, "first")).Should().BeEquivalentTo(original, options => options.WithStrictOrdering());
+    }
+
     private async Task<AccountCashReconciliationService> ServiceAsync()
     {
         var store = new FileAccountCashReconciliationStore(_root);

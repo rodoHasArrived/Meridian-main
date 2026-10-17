@@ -106,6 +106,19 @@ describe("account cash continuity operator panel", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: "Retain owner assignment" })).toBeEnabled());
   });
 
+  it("blocks capturing a comparison while an owner assignment draft is unsaved", async () => {
+    render(<AccountCashCasesPanel scope={scope} context={context} />);
+    await selectCase();
+    await userEvent.type(screen.getByLabelText("Assignment rationale"), "Pending owner note");
+    const preview = within(await importFile());
+    expect(preview.getByRole("button", { name: "Capture cash comparison" })).toBeDisabled();
+    expect(screen.getByText("Save or discard the owner assignment before selecting another case or capturing a comparison.")).toBeVisible();
+    await userEvent.click(screen.getByRole("button", { name: "Discard assignment" }));
+    await waitFor(() => expect(preview.getByRole("button", { name: "Capture cash comparison" })).toBeEnabled());
+    await userEvent.click(preview.getByRole("button", { name: "Capture cash comparison" }));
+    await waitFor(() => expect(api.runCashComparison).toHaveBeenCalledOnce());
+  });
+
   it("reproduces an explicitly selected older run and exposes frozen rows, rule version and hashes", async () => {
     render(<AccountCashCasesPanel scope={scope} context={context} />);
     await selectCase();

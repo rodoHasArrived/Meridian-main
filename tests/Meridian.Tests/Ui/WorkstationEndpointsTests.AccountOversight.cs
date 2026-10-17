@@ -629,6 +629,55 @@ public sealed partial class WorkstationEndpointsTests
         (await cash.Service.GetCasesAsync(request.Scope)).Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task AccountOversight_UnconfiguredSecurityMasterReportsClosePricesUnavailableInsteadOfEmptyHistory()
+    {
+        var bookId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(OversightBooks(bookId, OversightBook(bookId, accountId)).Object);
+            services.AddSingleton<ISecurityMasterPricingService>(new Meridian.Application.SecurityMaster.NullSecurityMasterPricingService());
+        }, currentUserPermissions: OversightWritePermissions, currentUserName: "preparer-session", mapLedgerApi: true);
+        var client = app.GetTestClient();
+        var route = OversightBaseRoute(bookId, accountId) + "/close-price-sets/2026-05-31";
+
+        using var history = await client.GetAsync(route);
+        using var single = await client.GetAsync($"{route}/{Guid.NewGuid():D}");
+        using var created = await client.PostAsJsonAsync(route, OversightCreatePriceRequest(bookId, accountId));
+
+        history.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        single.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        created.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        (await history.Content.ReadAsStringAsync()).Should().Contain("not configured");
+    }
+
+    [Fact]
+    public async Task AccountOversight_NonUtcForecastRecordingTimeIsRejectedAsValidationBeforeRetention()
+    {
+        var bookId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        using var cash = new OversightCashFixture();
+        var store = new FileAccountCashForecastStore(cash.Root);
+        await store.InitializeAsync();
+        var evidence = new Mock<IEvidenceArtifactStore>(MockBehavior.Strict);
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(OversightBooks(bookId, OversightBook(bookId, accountId)).Object);
+            services.AddSingleton<IAccountCashForecastService>(new Meridian.Instruments.AssetOperations.AccountCashForecastService(store));
+            services.AddSingleton(evidence.Object);
+        }, currentUserPermissions: UserPermission.ManageLedgerReports, mapLedgerApi: true);
+        var request = OversightForecastRequest(bookId, accountId) with { RecordedAtUtc = OversightObservedAt.ToOffset(TimeSpan.FromHours(2)) };
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            OversightBaseRoute(bookId, accountId) + "/cash-forecasts", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        (await response.Content.ReadAsStringAsync()).Should().Contain("UTC");
+        (await store.GetHistoryAsync(request.Scope)).Should().BeEmpty();
+        evidence.VerifyNoOtherCalls();
+    }
+
     private static LedgerBookDto OversightBook(Guid bookId, Guid accountId)
         => new(bookId, "oversight-fund", accountId, FundStructureNodeKindDto.Account, "Account book", "USD", OversightObservedAt, OversightObservedAt);
 

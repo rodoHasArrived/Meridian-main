@@ -66,6 +66,7 @@ executed tolerance versions. Select an observation to replay its original rows a
 An owner handoff requires a rationale and the retained case version; after a conflict, refresh
 before retrying. Import a complete comparison handoff, inspect its structured preview, then
 capture it explicitly. A failed capture retains the imported run identity for a safe retry.
+Save or discard an owner assignment draft before capturing a comparison.
 
 Use **Close prices** to prepare an explicit security population at elapsed UTC cutoffs, review
 selected and competing observations, and inspect units, overrides and blockers. Select retained
@@ -74,7 +75,10 @@ corrections retain the same security population and link the latest version. Aft
 capture outcome, reload the original valuation date's history, then use **Verify retained price
 capture** or **Retry same price capture** to submit the unchanged command with its retained
 request identity. New captures and approvals stay locked until that command is confirmed.
-After an uncertain approval outcome, reload history and inspect the retained review.
+After an uncertain approval outcome, return to the approval's valuation date and reload its
+history; the workbench verifies the retained review there before unlocking further actions.
+When Security Master is not configured, close-price routes report unavailability rather than
+empty history.
 
 Use **Cash forecast** to import a scoped forecast handoff, inspect its opening/closing cash,
 expected and actual flows, three dates, declared FX, source reviews and factor revisions, then
@@ -114,7 +118,10 @@ and retry under these controls. Their stored case state and history are not rewr
 any prior `SourceCleared` result and submit a new run with independently sourced observations and
 new source versions where the retained source content changes.
 
-Run again after a source correction with a new run ID and later observation time. The amount,
+Run again after a source correction with a new run ID, later observation time and a business
+date no earlier than the retained head; run IDs cannot contain whitespace or `/ \ ? # %`, at
+least one cash tolerance rule is required, and reformatted copies of a source payload remain
+dependent evidence. The amount,
 row ID, business date and tolerance version do not create a different case. The case retains its
 original first-seen time and owner. Equal or tolerated balances mark `SourceCleared`; missing
 balances cannot clear an existing case. Recurrence reopens the same case while earlier resolution
