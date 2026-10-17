@@ -469,6 +469,12 @@ public sealed class OAuthTokenRefreshService : IAsyncDisposable
                     await _vault.ImportOAuthTokensAsync(tokens, ct).ConfigureAwait(false);
                 }).ConfigureAwait(false);
             }
+            else if (File.Exists(_tokenPersistencePath))
+            {
+                // The contents have no proven owner, but leaving their legacy permissions intact
+                // can expose bearer and refresh tokens to other local users.
+                LegacyCredentialFileMigration.RestrictAccess(_tokenPersistencePath);
+            }
             var retained = await ReadOwnedTokensAsync(CancellationToken.None).ConfigureAwait(false);
             _tokens.Clear();
             foreach (var pair in retained)

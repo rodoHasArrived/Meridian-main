@@ -46,6 +46,15 @@ public static class LegacyCredentialFileMigration
         await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Restricts a retained legacy credential snapshot without claiming its unassigned contents.
+    /// </summary>
+    public static void RestrictAccess(string sourcePath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
+        RestrictExistingSource(Path.GetFullPath(sourcePath));
+    }
+
     private static async Task<FileStream> AcquireLockAsync(string path, CancellationToken ct)
     {
         var started = System.Diagnostics.Stopwatch.StartNew();

@@ -75,17 +75,24 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
     }
 
     [Fact]
-    public async Task ScopedService_DoesNotClaimOrDestroyUnassignedLegacyTokens()
+    public async Task ScopedService_RestrictsButDoesNotClaimOrDestroyUnassignedLegacyTokens()
     {
         Directory.CreateDirectory(Path.GetDirectoryName(TokenPath)!);
         var legacy = JsonSerializer.Serialize(new Dictionary<string, OAuthToken> { ["provider"] = SampleToken() });
         await File.WriteAllTextAsync(TokenPath, legacy);
+        if (!OperatingSystem.IsWindows())
+        {
+            File.SetUnixFileMode(TokenPath, UnixFileMode.UserRead | UnixFileMode.UserWrite |
+                UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+        }
         await using var scoped = new OAuthTokenRefreshService(_root,
             ownershipScope: new ProviderCredentialScope("tenant", "connection", "account", "paper"));
         await scoped.InitializeAsync();
         scoped.GetToken("provider").Should().BeNull();
         await scoped.StoreTokenAsync("provider", SampleToken("owned-access"));
         (await File.ReadAllTextAsync(TokenPath)).Should().Be(legacy);
+        if (!OperatingSystem.IsWindows())
+            File.GetUnixFileMode(TokenPath).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
         (await new FileProviderCredentialStore(_root).ReadOAuthTokensAsync()).Should().BeEmpty();
     }
 
