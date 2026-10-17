@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "952850b06ccb024ec589e39c6b4cbc97488c9f80b6d1610916250230a967a95b",
+      "fingerprint": "0e1c40f396c94c7614b1f790a7145d76bb6f55764b58a12936012d85ec92eaf4",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -420,6 +420,7 @@
         "Meridian.Contracts.AssetOperations.IAccountCashForecastStore",
         "Meridian.Contracts.AssetOperations.IAssetOperationsCommandService",
         "Meridian.Contracts.AssetOperations.IAssetOperationsQueryService",
+        "Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile",
         "Meridian.Contracts.AssetOperations.InstrumentAccountingSides",
         "Meridian.Contracts.AssetOperations.InstrumentEconomicSides",
         "Meridian.Contracts.AssetOperations.InstrumentRoleDto",
@@ -2876,7 +2877,7 @@
       "directories": [
         "src/Meridian.Contracts/AssetOperations"
       ],
-      "fingerprint": "8fe281f5ae154019ee03f5d1c86a4787f87b78e814b3ee342c8a60c74f44072e",
+      "fingerprint": "bdbed14f3ba5ebac56ea30295c910eacbc7597725c575f27fcfa796816bf7f91",
       "id": "asset-operations-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.AssetOperations"
@@ -2977,6 +2978,7 @@
         "Meridian.Contracts.AssetOperations.IAccountCashForecastStore",
         "Meridian.Contracts.AssetOperations.IAssetOperationsCommandService",
         "Meridian.Contracts.AssetOperations.IAssetOperationsQueryService",
+        "Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile",
         "Meridian.Contracts.AssetOperations.InstrumentAccountingSides",
         "Meridian.Contracts.AssetOperations.InstrumentEconomicSides",
         "Meridian.Contracts.AssetOperations.InstrumentRoleDto",
@@ -4122,7 +4124,7 @@
       ]
     }
   ],
-  "fingerprint": "2e5446cfe5cfe53409d35c8152f576eb7e0ea1a55c43f64c6ea92367692ebc22",
+  "fingerprint": "b074064b54d5a0987d728eb753ca71384ff159551506c5c6615abf6dd308f370",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4501,7 +4503,7 @@
         "all-contracts",
         "asset-operations-contracts"
       ],
-      "fingerprint": "110ab1bcc21a6364fe430761b37cd55e366a8bce7f478857fc5b1012f3360d5a",
+      "fingerprint": "b37028f2b6be746ea073d4af684ebf23c04608291792c7e30a8509f34802fce8",
       "mapped_schemas": [
         "asset_operations"
       ],
@@ -4602,6 +4604,7 @@
         "Meridian.Contracts.AssetOperations.IAccountCashForecastStore",
         "Meridian.Contracts.AssetOperations.IAssetOperationsCommandService",
         "Meridian.Contracts.AssetOperations.IAssetOperationsQueryService",
+        "Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile",
         "Meridian.Contracts.AssetOperations.InstrumentAccountingSides",
         "Meridian.Contracts.AssetOperations.InstrumentEconomicSides",
         "Meridian.Contracts.AssetOperations.InstrumentRoleDto",
@@ -64525,6 +64528,44 @@
         {
           "line": 292,
           "path": "src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "asset-operations-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "asset-operations-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "a80f2a0a2232f99e41fe1c6cf1656d4c292b0584118dd8b378410f3b29855cd8",
+      "full_name": "Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile",
+      "id": "Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile",
+      "kind": "interface",
+      "mapped_schemas": [
+        "asset_operations"
+      ],
+      "members": [],
+      "name": "ICorporateActionRuleProfile",
+      "namespace": "Meridian.Contracts.AssetOperations",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile",
+      "references": [],
+      "source": {
+        "line": 13,
+        "path": "src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs"
+      },
+      "sources": [
+        {
+          "line": 13,
+          "path": "src/Meridian.Contracts/AssetOperations/ICorporateActionRuleProfile.cs"
         }
       ],
       "type_parameters": []

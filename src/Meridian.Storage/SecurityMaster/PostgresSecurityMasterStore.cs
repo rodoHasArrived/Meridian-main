@@ -1485,7 +1485,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         int? SettlementCycleDays,
         string? HolidayCalendarId,
         long Version,
-        // Clearwater extended lifecycle fields.
+        // Extended lifecycle fields (migration 017).
         decimal? Par,
         string? PaymentFrequency,
         DateOnly? LegalFinalMaturity,

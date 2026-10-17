@@ -16,7 +16,12 @@ namespace Meridian.Application.SecurityMaster.CorporateActions;
 /// </summary>
 public sealed class CorporateActionOperationsService : ICorporateActionOperationsService
 {
-    public const string ClearwaterMethodologyProfileId = "clearwater-corporate-actions/v1";
+    /// <summary>
+    /// Methodology profile recorded on a case when the caller names none. The value is persisted on
+    /// retained cases and equals the registered rule profile's key (guarded by
+    /// <c>CorporateActionOperationsServiceTests</c>); the domain does not reference the vendor type.
+    /// </summary>
+    public const string DefaultMethodologyProfileId = "clearwater-corporate-actions/v1";
 
     /// <summary>
     /// The standing reason a source decision is refused when the scope authority cannot answer.
@@ -225,7 +230,7 @@ public sealed class CorporateActionOperationsService : ICorporateActionOperation
             Actor = request.Actor.Trim(),
             IdempotencyKey = request.IdempotencyKey.Trim(),
             MethodologyProfileId = NormalizeOptional(request.MethodologyProfileId)
-                ?? ClearwaterMethodologyProfileId,
+                ?? DefaultMethodologyProfileId,
             Reason = NormalizeOptional(request.Reason),
             CorrelationId = NormalizeOptional(request.CorrelationId),
         };

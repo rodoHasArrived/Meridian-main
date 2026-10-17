@@ -2458,6 +2458,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.IPortfolioCapitalScheduleProvider"
     },
     {
@@ -17711,6 +17717,12 @@
       "label": "",
       "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.IAssetOperationsQueryService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile"
     },
     {
       "kind": "contract-set-member",
@@ -50500,7 +50512,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e3dcffd4dcc5e2fd6526aef4ac05550540571dde9f0a3207b842087f856a1b99",
+  "fingerprint": "90dba631cfe43110d81aeeb13df2cabdb1428df3b24ecc86a4d589824dd64c67",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -53006,6 +53018,12 @@
       "id": "contract:Meridian.Contracts.AssetOperations.IAssetOperationsQueryService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.IAssetOperationsQueryService"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile"
     },
     {
       "classification": "service_contract",
@@ -73780,10 +73798,10 @@
   ],
   "summary": {
     "contract_references": 3315,
-    "contract_set_memberships": 3960,
-    "edges": 8391,
+    "contract_set_memberships": 3962,
+    "edges": 8393,
     "foreign_keys": 137,
     "logical_references": 6,
-    "nodes": 4032
+    "nodes": 4033
   }
 }
