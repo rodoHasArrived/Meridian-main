@@ -34,13 +34,14 @@ public sealed class RobinhoodMarketDataClientTests : IDisposable
     private static RobinhoodMarketDataClient CreateSut(
         HttpMessageHandler handler,
         out CapturingPublisher publisher,
-        string? accessToken = "test-token")
+        string? accessToken = "test-token",
+        TimeSpan? requestTimeout = null)
     {
         publisher = new CapturingPublisher();
         var quoteCollector = new QuoteCollector(publisher);
 
         return new RobinhoodMarketDataClient(
-            new StubHttpClientFactory(handler),
+            new StubHttpClientFactory(handler, requestTimeout),
             quoteCollector,
             NullLogger<RobinhoodMarketDataClient>.Instance,
             accessToken: accessToken);
@@ -268,6 +269,80 @@ public sealed class RobinhoodMarketDataClientTests : IDisposable
 
     // ── Stub infrastructure ──────────────────────────────────────────────
 
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized, false, ProviderFailureKind.AuthenticationOrAuthorizationFailure)]
+    [InlineData(HttpStatusCode.Forbidden, false, ProviderFailureKind.AuthenticationOrAuthorizationFailure)]
+    [InlineData(HttpStatusCode.TooManyRequests, false, ProviderFailureKind.ProviderRateLimit)]
+    [InlineData(HttpStatusCode.ServiceUnavailable, false, ProviderFailureKind.ProviderOutage)]
+    [InlineData(HttpStatusCode.Unauthorized, true, ProviderFailureKind.AuthenticationOrAuthorizationFailure)]
+    [InlineData(HttpStatusCode.TooManyRequests, true, ProviderFailureKind.ProviderRateLimit)]
+    [InlineData(HttpStatusCode.ServiceUnavailable, true, ProviderFailureKind.ProviderOutage)]
+    public async Task PollCycle_FailedBatchPreservesFailureKindAcrossOtherBatches(
+        HttpStatusCode failedStatus, bool successFirst, ProviderFailureKind expectedKind)
+    {
+        var statuses = successFirst
+            ? new[] { HttpStatusCode.OK, failedStatus }
+            : new[] { failedStatus, HttpStatusCode.OK };
+        var handler = new SequencedHttpHandler(statuses);
+        await using var sut = CreateSut(handler, out _);
+        for (var i = 0; i < 51; i++)
+            sut.SubscribeQuotes(new Meridian.Contracts.Configuration.SymbolConfig($"SYM{i}"));
+
+        (await InvokePollCycleAsync(sut)).Should().BeFalse();
+
+        var diagnostics = sut.GetConnectionDiagnosticsSnapshot();
+        diagnostics.LastFailureKind.Should().Be(expectedKind);
+        diagnostics.LastError.Should().NotBeNullOrEmpty();
+        handler.RequestCount.Should().Be(successFirst ? 2 : 1,
+            "a failed batch must stop the cycle before another response can overwrite its failure");
+    }
+
+    [Fact]
+    public async Task PollCycle_RequestTimeoutIsTransient_AndNextSuccessfulCycleClearsError()
+    {
+        var handler = new TimeoutThenSuccessHttpHandler();
+        await using var sut = CreateSut(handler, out _, requestTimeout: TimeSpan.FromMilliseconds(20));
+        sut.SubscribeQuotes(new Meridian.Contracts.Configuration.SymbolConfig("AAPL"));
+
+        (await InvokePollCycleAsync(sut)).Should().BeFalse();
+        sut.GetConnectionDiagnosticsSnapshot().LastFailureKind.Should().Be(
+            ProviderFailureKind.TransientNetworkFailure);
+        (await InvokePollCycleAsync(sut)).Should().BeTrue();
+        sut.GetConnectionDiagnosticsSnapshot().LastFailureKind.Should().BeNull();
+        sut.GetDiagnosticsSnapshot().LastError.Should().BeNull();
+    }
+
+    private sealed class SequencedHttpHandler(params HttpStatusCode[] statuses) : HttpMessageHandler
+    {
+        public int RequestCount { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+            => Task.FromResult(new HttpResponseMessage(statuses[RequestCount++])
+            {
+                Content = new StringContent("{\"results\":[]}")
+            });
+    }
+
+    private sealed class TimeoutThenSuccessHttpHandler : HttpMessageHandler
+    {
+        private int _requests;
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            if (_requests++ == 0)
+                await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"results\":[]}")
+            };
+        }
+    }
+
+    private static Task<bool> InvokePollCycleAsync(RobinhoodMarketDataClient sut)
+        => (Task<bool>)typeof(RobinhoodMarketDataClient).GetMethod(
+            "PollOnceAsync", BindingFlags.Instance | BindingFlags.NonPublic)!.Invoke(sut, [CancellationToken.None])!;
+
     private sealed class StubHttpHandler : HttpMessageHandler
     {
         private readonly HttpStatusCode _statusCode;
@@ -289,11 +364,20 @@ public sealed class RobinhoodMarketDataClientTests : IDisposable
     private sealed class StubHttpClientFactory : IHttpClientFactory
     {
         private readonly HttpMessageHandler _handler;
+        private readonly TimeSpan _requestTimeout;
 
-        public StubHttpClientFactory(HttpMessageHandler handler) => _handler = handler;
+        public StubHttpClientFactory(HttpMessageHandler handler, TimeSpan? requestTimeout = null)
+        {
+            _handler = handler;
+            _requestTimeout = requestTimeout ?? TimeSpan.FromSeconds(100);
+        }
 
         public HttpClient CreateClient(string name) =>
-            new HttpClient(_handler, disposeHandler: false) { BaseAddress = new Uri("https://api.robinhood.com/") };
+            new HttpClient(_handler, disposeHandler: false)
+            {
+                BaseAddress = new Uri("https://api.robinhood.com/"),
+                Timeout = _requestTimeout
+            };
     }
 
     private sealed class CancelledHttpHandler : HttpMessageHandler

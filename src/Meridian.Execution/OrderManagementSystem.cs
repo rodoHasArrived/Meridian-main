@@ -44,6 +44,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     // Retaining the proven mapping prevents a UUID-shaped client id from ever being treated as a
     // broker id merely because the values happen to collide.
     private readonly ConcurrentDictionary<string, string> _orderBrokerIds = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, string> _brokerOrderAliases = new(StringComparer.Ordinal);
     // Serializes pre-trade risk validation with the registration that reserves the order's
     // exposure. Without it, concurrent submissions each evaluate against the same
     // pre-order book and can collectively breach a ceiling none of them breaches alone.
@@ -892,148 +893,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     public const string AmbiguousSubmissionReason = "AmbiguousSubmission";
 
     /// <inheritdoc />
-    public async Task<OrderResult> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default)
-    {
-        using var operation = EnterOperation();
-
-        if (!_orders.TryGetValue(orderId, out var state))
-        {
-            await RecordOrderLifecycleAuditAsync(
-                action: "OrderModifyRejected",
-                outcome: "Rejected",
-                orderId: orderId,
-                state: null,
-                report: null,
-                message: "Order not found",
-                ct: ct).ConfigureAwait(false);
-
-            return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
-        }
-
-        // A quantity increase or any supplied limit/stop price is a new risk decision. Notional
-        // increases are not the only dangerous direction: lowering a sell limit or a buy stop can
-        // move an accepted order straight through the market. Validation and the amended
-        // reservation run under the same gate as placement so neither exposure nor price controls
-        // can be bypassed through modification.
-        OrderState? speculativeReservation = null;
-        RiskValidationResult? amendmentDecision = null;
-        var amendmentDispatchAttempted = false;
-        IReadOnlyList<string>? amendmentWarnings = null;
-        if (RequiresRiskRevalidation(state, modification))
-        {
-            var gate = await ReserveAmendedExposureAsync(orderId, state, modification, ct).ConfigureAwait(false);
-            amendmentWarnings = gate.Warnings;
-            if (gate.Refusal is not null)
-            {
-                await RecordOrderLifecycleAuditAsync(
-                    action: "OrderModifyRejected",
-                    outcome: "Rejected",
-                    orderId: orderId,
-                    state: state,
-                    report: null,
-                    message: gate.Refusal,
-                    metadata: BuildOrderModificationAuditMetadata(modification, state, report: null, amendmentWarnings, gate.RiskDecision),
-                    ct: ct).ConfigureAwait(false);
-
-                return new OrderResult
-                {
-                    Success = false,
-                    OrderId = orderId,
-                    OrderState = state,
-                    ErrorMessage = gate.Refusal,
-                    RiskWarnings = amendmentWarnings
-                };
-            }
-
-            speculativeReservation = gate.Reservation;
-            amendmentDecision = gate.RiskDecision;
-        }
-
-        ExecutionReport report;
-        try
-        {
-            ct.ThrowIfCancellationRequested();
-            amendmentDispatchAttempted = true;
-            report = await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
-        }
-        catch
-        {
-            // The gateway never accepted the amendment: the speculative reservation must
-            // not outlive the attempt, or the order table and every exposure snapshot
-            // would keep reserving a size the broker does not hold.
-            //
-            // The rate slot follows the placement path's rule rather than the state
-            // reservation's: a modify that threw after dispatch may still have reached the venue,
-            // so it is committed. Over-counting a rate window is the safe direction.
-            // Cancellation after the gateway call began is ambiguous, not pre-dispatch. Gateways
-            // that send and then await acknowledgement on the same token — the brokerage adapter
-            // does — cancel while the venue already holds the amended exposure. The only proof of
-            // pre-dispatch is the check before the call, which throws before the flag is set.
-            SettleRiskReservations(amendmentDecision, commit: amendmentDispatchAttempted, orderId);
-            RollBackSpeculativeReservation(orderId, speculativeReservation, state);
-            throw;
-        }
-
-        if (report.OrderStatus is OrderStatus.Rejected)
-        {
-            // The broker refused the amendment outright, so nothing routed.
-            SettleRiskReservations(amendmentDecision, commit: false, orderId);
-            RollBackSpeculativeReservation(orderId, speculativeReservation, state);
-            // Do not apply a rejected modify to order state: ApplyReport would let the terminal
-            // Rejected overwrite a completed Filled/Cancelled order, and returning Success would
-            // misreport that overwrite as a successful modify. Mirror the cancel path and fail.
-            await RecordOrderLifecycleAuditAsync(
-                action: "OrderModifyRejected",
-                outcome: report.OrderStatus.ToString(),
-                orderId: orderId,
-                state: state,
-                report: report,
-                message: report.RejectReason ?? "Modify request rejected",
-                metadata: BuildOrderModificationAuditMetadata(modification, state, report, amendmentWarnings),
-                ct: ct).ConfigureAwait(false);
-
-            return new OrderResult
-            {
-                Success = false,
-                OrderId = orderId,
-                OrderState = state,
-                ErrorMessage = report.RejectReason ?? "Modify request rejected"
-            };
-        }
-
-        // The amendment reached the venue and was accepted, so its capacity is spent.
-        SettleRiskReservations(amendmentDecision, commit: true, orderId);
-
-        // The gateway report stream is not an authorization channel. Only this locally
-        // initiated modification may change the quantity cap, and it may do so only to
-        // the quantity the caller requested; never to a gateway-supplied quantity.
-        var updated = _orders.AddOrUpdate(
-            orderId,
-            _ => ApplyReport(state, report, modification.NewQuantity),
-            (_, existing) => ApplyReport(existing, report, modification.NewQuantity));
-        await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId), updated, ct).ConfigureAwait(false);
-        await RecordOrderLifecycleAuditAsync(
-            action: "OrderModified",
-            outcome: updated.Status.ToString(),
-            orderId: orderId,
-            state: updated,
-            report: report,
-            message: report.RejectReason,
-            metadata: BuildOrderModificationAuditMetadata(modification, updated, report, amendmentWarnings),
-            ct: ct).ConfigureAwait(false);
-
-        // Warnings raised while approving the amendment describe the exposure the caller
-        // now holds, so they travel with the accepted result — not only with a refusal.
-        return new OrderResult
-        {
-            Success = true,
-            OrderId = orderId,
-            OrderState = updated,
-            RiskWarnings = amendmentWarnings
-        };
-    }
-
-    /// <inheritdoc />
     public IReadOnlyList<OrderState> GetOpenOrders()
     {
         return _orders.Values
@@ -1366,15 +1225,40 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         }
     }
 
-    private async Task ProcessGatewayReportCoreAsync(ExecutionReport report, CancellationToken ct)
+    private async Task ProcessGatewayReportCoreAsync(ExecutionReport report, CancellationToken ct, decimal? authorizedQuantity = null)
     {
+        report = NormalizeBrokerOrderIdentity(report);
         var orderId = report.ClientOrderId ?? report.OrderId;
         if (IsCompactedBrokerageReport(report))
             return;
+        if (report.ReportType is ExecutionReportType.ModificationPending && !_pendingModificationOrderIds.ContainsKey(orderId))
+            return;
+        var resolvedAmendment = PrepareAmendmentReport(orderId, ref report, authorizedQuantity);
         var recoveryVersion = string.IsNullOrWhiteSpace(orderId) ? 0L : GetBrokerageRecoveryVersion(orderId);
         if (!string.IsNullOrWhiteSpace(orderId))
         {
             RememberBrokerOrderId(orderId, report);
+        }
+
+        // An operation refusal without a matching broker snapshot has no authority to
+        // change lifecycle state. It can still be returned to the initiating caller.
+        if (report.ReportType is ExecutionReportType.CancelRejected or ExecutionReportType.ModificationRejected
+            && (!_orders.TryGetValue(orderId, out var refusedState)
+                || !string.Equals(refusedState.Symbol, report.Symbol, StringComparison.OrdinalIgnoreCase)
+                || refusedState.Side != report.Side))
+            return;
+
+        if (report.FillPriceIsCumulativeAverage && report.FilledQuantity > 0m
+            && _orders.TryGetValue(orderId, out var prior) && report.FilledQuantity > prior.FilledQuantity
+            && prior.FilledQuantity > 0m)
+        {
+            if (report.FillPrice is not > 0m || prior.AverageFillPrice is not > 0m)
+                throw new InvalidDataException("Broker cumulative fill economics are incomplete.");
+            var price = (report.FilledQuantity * report.FillPrice.Value
+                - prior.FilledQuantity * prior.AverageFillPrice.Value) / (report.FilledQuantity - prior.FilledQuantity);
+            if (price <= 0m)
+                throw new InvalidDataException("Broker cumulative fill economics contradict prior executions.");
+            report = report with { FillPrice = price, FillPriceIsCumulativeAverage = false };
         }
 
         var isFillReport = report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled
@@ -1397,7 +1281,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
             var previousFilledQuantity = 0m;
             while (!string.IsNullOrWhiteSpace(orderId) && _orders.TryGetValue(orderId, out var existing))
             {
-                var merged = ApplyReport(existing, report);
+                var executionLimit = GetPendingAmendmentForRecovery(orderId) is { } pendingAmendment
+                    ? Math.Max(pendingAmendment.Original.Quantity, pendingAmendment.Proposed.Quantity) : (decimal?)null;
+                var merged = ApplyReport(existing, report, authorizedQuantity, executionLimit);
                 if (_orders.TryUpdate(orderId, merged, existing))
                 {
                     previousFilledQuantity = existing.FilledQuantity;
@@ -1479,6 +1365,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
 
             if (updatedState is not null)
             {
+                if (resolvedAmendment is not null)
+                    _pendingModificationOrderIds.TryRemove(new KeyValuePair<string, PendingOrderAmendment>(orderId!, resolvedAmendment));
                 RetainProcessedBrokerageOrder(orderId!, report, recoveryVersion);
                 await RecordSessionOrderUpdateAsync(ResolveSessionId(orderId!), updatedState, ct).ConfigureAwait(false);
             }

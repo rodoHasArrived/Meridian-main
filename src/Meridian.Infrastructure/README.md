@@ -11,6 +11,35 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Infrastructure
 
+Broker amendment and cancellation failures retain the broker-observed order status and use
+operation-specific reports. Alpaca amendments resolve explicit client/broker identifier namespaces
+and retain replacement aliases. Successful PATCH responses remain provisional until independent
+replacement evidence confirms the successor. While a replacement is unconfirmed, cancellation also
+cancels the candidate successor and stays pending until it is proven inactive. Amendment recovery
+refuses evidence read across a connection change, and `accepted_for_bidding` is a valid provisional
+snapshot state. Durable trade-update hashes omit derived metadata
+while serialized pending reports retain it, preserving replay identities across upgrades.
+Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
+fills against pending exposure, keeps cancellation available, and keys
+positions by account plus qualified contract identity. Robinhood replacement submits only after
+confirmed cancellation with cumulative fill evidence, for the intended total less chain fills.
+Unconfirmed Robinhood replacement attempts retain their reference and reconcile exact broker
+history before further operations. Empty, incomplete, or ambiguous history remains unresolved;
+confirmed candidates restore replacement-chain routing and cumulative fill economics.
+
+Running Robinhood read-only account, portfolio, and activity synchronization reads the current
+host-owned OAuth token for each request, including connection, rotation, and revocation. Polling
+distinguishes lifetime cancellation from request timeouts and retains authentication, throttling,
+and outage classifications for failed batches.
+
+Alpha Vantage adjusted OHLC uses the adjusted-close/raw-close ratio independently of the session's
+split coefficient. Yahoo daily history includes boundary padding and uses historical exchange
+timezone rules for session dates, falling back to the supplied offset and then UTC when absent.
+Alpaca symbol search initializes authentication after credentials are assigned. OpenFIGI resolution
+learns canonical identities only from complete, unambiguous exchange and instrument evidence;
+broad NASDAQ requests include UW, UQ, and UR while exact venue requests remain distinct;
+discovery can still return candidate lists. These corrections support `W1-DATA-001` and `W7-LIVE-001`.
+
 Local ETL post-processing requires the checksum, length and file timestamps captured while staging. Replacement deliveries at the same filename fail cleanup without being deleted or archived. Destructive cleanup atomically claims the original directory entry and verifies it again before acting; a conflicting new drop remains in place, and an interrupted claim is restored or retained for explicit recovery.
 
 Robinhood read-only synchronization logs failed HTTP status codes without endpoint URLs or response

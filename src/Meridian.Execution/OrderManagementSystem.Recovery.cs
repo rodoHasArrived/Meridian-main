@@ -14,24 +14,33 @@ public sealed partial class OrderManagementSystem
     private static OrderState ApplyReport(
         OrderState current,
         ExecutionReport report,
-        decimal? locallyAuthorizedModifiedQuantity = null)
+        decimal? locallyAuthorizedModifiedQuantity = null,
+        decimal? pendingExecutionLimit = null)
     {
+        var authorizedQuantity = report.ReportType is ExecutionReportType.Modified
+            && report.OrderStatus is not OrderStatus.Rejected
+            && locallyAuthorizedModifiedQuantity is > 0m
+            ? Math.Max(locallyAuthorizedModifiedQuantity.Value, current.FilledQuantity)
+            : current.Quantity;
+
         // Cancel/expiry can arrive ahead of an already executed fill. Preserve terminal
         // state unless authoritative cumulative execution advances; never reopen or resize.
         if (IsTerminal(current.Status))
         {
-            if (current.Status == OrderStatus.Filled
-                || report.FilledQuantity <= current.FilledQuantity
+            if (report.FilledQuantity <= current.FilledQuantity
                 || report.FillPrice is not > 0m
                 || !string.Equals(current.Symbol, report.Symbol, StringComparison.OrdinalIgnoreCase)
                 || current.Side != report.Side)
                 return current;
-            var filled = Math.Min(current.Quantity, report.FilledQuantity);
+            var terminalQuantity = pendingExecutionLimit is > 0m
+                ? Math.Max(current.Quantity, Math.Min(pendingExecutionLimit.Value, report.FilledQuantity)) : current.Quantity;
+            var filled = Math.Min(terminalQuantity, report.FilledQuantity);
             return current with
             {
+                Quantity = terminalQuantity,
                 FilledQuantity = filled,
                 AverageFillPrice = ComputeAverageFillPrice(current, filled, report.FillPrice),
-                Status = filled >= current.Quantity ? OrderStatus.Filled : current.Status,
+                Status = filled >= terminalQuantity ? OrderStatus.Filled : current.Status,
                 LastUpdatedAt = report.Timestamp
             };
         }
@@ -39,12 +48,8 @@ public sealed partial class OrderManagementSystem
         // Gateway-streamed modifications are not trusted to authorize a quantity change.
         // A quantity may change only while applying the response to a locally initiated
         // modification, and is capped to the local request rather than report data.
-        var authorizedQuantity = report.ReportType is ExecutionReportType.Modified
-            && report.OrderStatus is OrderStatus.Accepted
-            && locallyAuthorizedModifiedQuantity is > 0m
-            ? Math.Max(locallyAuthorizedModifiedQuantity.Value, current.FilledQuantity)
-            : current.Quantity;
-
+        if (pendingExecutionLimit is > 0m && report.FillPrice is > 0m)
+            authorizedQuantity = Math.Max(authorizedQuantity, Math.Min(pendingExecutionLimit.Value, report.FilledQuantity));
         return current with
         {
             Status = report.OrderStatus,
@@ -76,12 +81,12 @@ public sealed partial class OrderManagementSystem
     // Serial admission keeps both from booking the same missing increment concurrently.
     private readonly SemaphoreSlim _brokerageRecoveryReportGate = new(1, 1);
 
-    private async Task ProcessGatewayReportAsync(ExecutionReport report, CancellationToken ct)
+    private async Task ProcessGatewayReportAsync(ExecutionReport report, CancellationToken ct, decimal? authorizedQuantity = null)
     {
         await _brokerageRecoveryReportGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await ProcessGatewayReportCoreAsync(report, ct).ConfigureAwait(false);
+            await ProcessGatewayReportCoreAsync(report, ct, authorizedQuantity).ConfigureAwait(false);
         }
         finally
         {
@@ -112,6 +117,12 @@ public sealed partial class OrderManagementSystem
         {
             _compactedBrokerageOrders[tombstone.OrderId] = tombstone;
             _dispatchedOrderIds[tombstone.OrderId] = 0;
+            foreach (var alias in tombstone.BrokerOrderAliases ?? [])
+            {
+                if (string.IsNullOrWhiteSpace(alias)
+                    || !_brokerOrderAliases.TryAdd(alias, tombstone.OrderId))
+                    throw new InvalidDataException("Retired broker aliases conflict with another order identity.");
+            }
         }
         foreach (var retained in _recoveryStore.Load())
         {
@@ -120,8 +131,22 @@ public sealed partial class OrderManagementSystem
             _dispatchedOrderIds[state.OrderId] = 0;
             if (retained.RequiresRecovery || state.Status is not (OrderStatus.Filled or OrderStatus.Rejected))
                 _recoveryOrderIds[state.OrderId] = 0;
+            if (retained.PendingAmendment is { } pending)
+                _pendingModificationOrderIds[state.OrderId] = pending;
+            else if (retained.RequiresAmendmentRecovery)
+                _pendingModificationOrderIds[state.OrderId] = new PendingOrderAmendment(state, state, retained.BrokerOrderId);
             if (!string.IsNullOrWhiteSpace(retained.BrokerOrderId))
+            {
                 _orderBrokerIds[state.OrderId] = retained.BrokerOrderId;
+                _brokerOrderAliases[retained.BrokerOrderId] = state.OrderId;
+            }
+            foreach (var alias in retained.BrokerOrderAliases ?? [])
+            {
+                if (string.IsNullOrWhiteSpace(alias)
+                    || _brokerOrderAliases.TryGetValue(alias, out var owner) && owner != state.OrderId)
+                    throw new InvalidDataException("Retained broker aliases conflict with another order identity.");
+                _brokerOrderAliases[alias] = state.OrderId;
+            }
             if (state.FundAccountId is { } accountId)
                 _orderFinancialAccountIds[state.OrderId] = accountId.ToString("D");
             _orderContractMultipliers[state.OrderId] = state.ContractMultiplier;
@@ -135,7 +160,8 @@ public sealed partial class OrderManagementSystem
     {
         EnsureBrokerageRecoveryScope();
         _orderBrokerIds.TryGetValue(state.OrderId, out var brokerOrderId);
-        _recoveryStore?.Save(new RetainedBrokerageOrder(state, brokerOrderId, true));
+        _recoveryStore?.Save(new RetainedBrokerageOrder(state, brokerOrderId, true)
+        { BrokerOrderAliases = GetBrokerOrderAliases(state.OrderId) });
         _dispatchedOrderIds[state.OrderId] = 0;
         _recoveryOrderIds[state.OrderId] = 0;
     }
@@ -179,15 +205,23 @@ public sealed partial class OrderManagementSystem
             return;
         // A delayed acknowledgement must not checkpoint a newer fill whose own side effects
         // are still running, or invalidate the recovery evidence of an already processed fill.
-        if (report.FilledQuantity < state.FilledQuantity)
+        if (report.FilledQuantity < state.FilledQuantity && report.ReportType is not ExecutionReportType.ModificationPending)
             return;
         lock (_brokerageRecoveryStateSync)
         {
             // Completing a report that began before a later disconnect cannot reconcile that
             // newer uncertainty. Persist its completed fills while retaining the newer block.
-            var requiresRecovery = observedRecoveryVersion != _brokerageRecoveryVersions.GetValueOrDefault(orderId);
+            var requiresAmendmentRecovery = _pendingModificationOrderIds.ContainsKey(orderId)
+                || report.ReportType is ExecutionReportType.ModificationPending;
+            var requiresRecovery = requiresAmendmentRecovery
+                || observedRecoveryVersion != _brokerageRecoveryVersions.GetValueOrDefault(orderId);
             _orderBrokerIds.TryGetValue(orderId, out var brokerOrderId);
-            _recoveryStore?.Save(new RetainedBrokerageOrder(state, brokerOrderId, requiresRecovery));
+            _recoveryStore?.Save(new RetainedBrokerageOrder(state, brokerOrderId, requiresRecovery)
+            {
+                BrokerOrderAliases = GetBrokerOrderAliases(orderId),
+                RequiresAmendmentRecovery = requiresAmendmentRecovery,
+                PendingAmendment = GetPendingAmendmentForRecovery(orderId)
+            });
             if (requiresRecovery)
                 _recoveryOrderIds[orderId] = 0;
             else
@@ -206,15 +240,39 @@ public sealed partial class OrderManagementSystem
             var orderId = report.ClientOrderId ?? report.OrderId;
             if (_inFlightDispatches.ContainsKey(orderId))
                 throw new InvalidOperationException("Order submission is still in progress; broker recovery must wait for its outcome.");
+            if (report.ReportType is ExecutionReportType.ModificationPending)
+            {
+                // A pending outcome can still book fills, so it must prove the same identity and
+                // fill economics as a resolved one; only its order quantity stays undetermined.
+                var pendingTerms = GetPendingAmendmentForRecovery(orderId);
+                var maximumQuantity = pendingTerms is null
+                    ? _orders.GetValueOrDefault(orderId)?.Quantity ?? 0m
+                    : Math.Max(pendingTerms.Original.Quantity, pendingTerms.Proposed.Quantity);
+                if (!_orders.TryGetValue(orderId, out var pendingState)
+                    || !_dispatchedOrderIds.ContainsKey(orderId)
+                    || !string.Equals(pendingState.Symbol, report.Symbol, StringComparison.OrdinalIgnoreCase)
+                    || pendingState.Side != report.Side
+                    || report.FilledQuantity < pendingState.FilledQuantity
+                    || report.FilledQuantity > maximumQuantity
+                    || (report.FilledQuantity > pendingState.FilledQuantity && report.FillPrice is not > 0m))
+                    throw new InvalidDataException("Broker recovery evidence does not match the retained order.");
+                await ProcessGatewayReportCoreAsync(report, ct).ConfigureAwait(false);
+                MarkBrokerageRecoveryRequired(orderId);
+                return;
+            }
+            var pending = GetPendingAmendmentForRecovery(orderId);
+            var selectedTerms = pending is null ? null : SelectAmendmentTerms(report, pending);
+            var confirmedQuantity = selectedTerms?.Quantity ?? _orders.GetValueOrDefault(orderId)?.Quantity ?? 0m;
             if (!_orders.TryGetValue(orderId, out var state)
                 || !_dispatchedOrderIds.ContainsKey(orderId)
                 || !string.Equals(state.Symbol, report.Symbol, StringComparison.OrdinalIgnoreCase)
                 || state.Side != report.Side
                 || report.FilledQuantity < state.FilledQuantity
-                || report.FilledQuantity > state.Quantity
+                || report.FilledQuantity > confirmedQuantity
                 || (report.FilledQuantity > state.FilledQuantity && report.FillPrice is not > 0m)
-                || (report.OrderQuantity > 0m && report.OrderQuantity != state.Quantity)
+                || (report.OrderQuantity > 0m && report.OrderQuantity != confirmedQuantity)
                 || (IsTerminalStatus(state.Status) && report.OrderStatus != state.Status
+                    && !(pending is not null && IsTerminalStatus(report.OrderStatus))
                     && !(report.FilledQuantity > state.FilledQuantity
                         && report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)))
                 throw new InvalidDataException("Broker recovery evidence does not match the retained order.");
@@ -229,9 +287,31 @@ public sealed partial class OrderManagementSystem
                     - state.FilledQuantity * state.AverageFillPrice.Value) / increment;
                 if (incrementPrice <= 0m)
                     throw new InvalidDataException("Broker recovery fill economics contradict retained executions.");
-                report = report with { FillPrice = incrementPrice };
+                report = report with { FillPrice = incrementPrice, FillPriceIsCumulativeAverage = false };
+            }
+            var recoveryVersion = GetBrokerageRecoveryVersion(orderId);
+            var canResolveAmendment = !IsTerminal(state.Status) || IsTerminal(report.OrderStatus);
+            if (selectedTerms is not null)
+            {
+                if (canResolveAmendment)
+                {
+                    var confirmed = ApplyAmendmentTerms(state, selectedTerms);
+                    if (IsTerminal(state.Status) && IsTerminal(report.OrderStatus)
+                        && selectedTerms == pending?.Proposed
+                        && !(report.ReportType is ExecutionReportType.ModificationRejected
+                            && report.GatewayOrderId == pending?.OriginalBrokerOrderId))
+                        confirmed = confirmed with { Status = report.OrderStatus };
+                    _orders[orderId] = confirmed;
+                }
+                if (report.GatewayOrderId is { Length: > 0 } confirmedBrokerId)
+                {
+                    _orderBrokerIds[orderId] = confirmedBrokerId;
+                    _brokerOrderAliases.TryAdd(confirmedBrokerId, orderId);
+                }
             }
             await ProcessGatewayReportCoreAsync(report, ct).ConfigureAwait(false);
+            if (canResolveAmendment && _pendingModificationOrderIds.TryRemove(orderId, out _))
+                RetainProcessedBrokerageOrder(orderId, report, recoveryVersion);
         }
         finally
         {
