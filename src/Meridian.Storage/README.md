@@ -316,6 +316,9 @@ prior events, in addition to existing history. This requires volume validation b
 acceptance. The hashed genesis inventory identifies pre-upgrade facts without claiming their old
 contents were protected. A coherent rollback of the audit head, suffix, and corresponding facts
 requires an external checkpoint to detect, even when the rest of the database remains unchanged.
+`PostgresLedgerJournalStore` (`ILedgerEventAuditVerifier`) and `PostgresAccountingConfigurationStore`
+(`IAccountingAuditChainVerifier`) also expose read-only verification that runs the same full scan
+under the head lock and commits nothing; a break is reported, never repaired.
 The same limitation applies to coordinated rewriting of facts, their event hashes, and the database
 head; a locally recomputed chain is not independent authentication of its history.
 Coverage permits new SQL columns but compares retained column values, including nested JSON, exactly.

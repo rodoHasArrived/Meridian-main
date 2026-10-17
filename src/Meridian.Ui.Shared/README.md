@@ -245,6 +245,9 @@ Period creation requires a resolved authenticated actor and overwrites any clien
 `CreatedBy` before calling the shared ledger service. The actor is retained in the same-transaction
 PostgreSQL ledger audit. `WorkstationEndpointsTests.LedgerAuditActor` exercises spoofed client
 attribution against the real period service and PostgreSQL store.
+`GET /api/ledger/audit-integrity` (`AdminMaintenance`) runs `AccountingAuditIntegrityService` over the
+composed accounting-action and ledger-event audit chains without appending, reporting each as
+`verified`, `broken`, `not-configured`, or `unavailable` with counts and break position only.
 Generated-candidate posting and manual journal lifecycle routes also require a resolved authenticated
 actor; permission alone cannot authorize use of a client-supplied posting identity.
 

@@ -2,11 +2,52 @@
 
 # `ledger-contracts` data objects - page 3 of 5
 
-Objects 161-240 of 329. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 336. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_ClosePlanTemplateDto["ClosePlanTemplateDto"] {
+        +ClosePreparationCalendarDto Calendar
+        +DateTimeOffset CapturedAtUtc
+        +string CapturedBy
+        +Guid FundAccountId
+        +string FundProfileId
+        +IReadOnlyList~ClosePreparationHistoryDto~ History
+        +MaterialityPolicyDto MaterialityPolicy
+        +string Name
+        +string SourceAccountingPolicyId
+        +string SourceAccountingPolicyVersion
+        +Guid SourceLedgerBookId
+        +string SourcePeriodId
+    }
+    class Meridian_Contracts_Ledger_ClosePlanTemplateTaskDto["ClosePlanTemplateTaskDto"] {
+        +CloseTaskConfigurationDto Configuration
+        +CloseDeadlineRuleDto DeadlineRule
+        +DateOnly SourceDueDate
+    }
+    class Meridian_Contracts_Ledger_ClosePostingBalanceDto["ClosePostingBalanceDto"] {
+        +string AccountName
+        +string AccountType
+        +decimal Balance
+        +LedgerDimensionSetDto? Dimensions
+        +string? FinancialAccountId
+        +string? Symbol
+    }
+    class Meridian_Contracts_Ledger_ClosePostingGateDto["ClosePostingGateDto"] {
+        +IReadOnlyList~ClosePostingBalanceDto~ Balances
+        +IReadOnlyList~Guid~ ClosingBatchJournalEntryIds
+        +string Detail
+        +Guid? DraftJournalEntryId
+        +ManualJournalEntryStatusDto? DraftStatus
+        +IReadOnlyList~string~ EvidenceLinks
+        +string GateId
+        +string? IdempotencyKey
+        +bool IsReadyForLock
+        +string Label
+        +decimal NetIncomeRoll
+        +IReadOnlyList~Guid~ ReversalDraftJournalEntryIds
+    }
     class Meridian_Contracts_Ledger_ClosePostingGateStateDto["ClosePostingGateStateDto"] {
     }
     class Meridian_Contracts_Ledger_ClosePreparationCalendarDto["ClosePreparationCalendarDto"] {
@@ -346,6 +387,8 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_IAccountingActionAuditStore["IAccountingActionAuditStore"] {
     }
+    class Meridian_Contracts_Ledger_IAccountingAuditChainVerifier["IAccountingAuditChainVerifier"] {
+    }
     class Meridian_Contracts_Ledger_IAccountingAuditPendingMarkerStore["IAccountingAuditPendingMarkerStore"] {
     }
     class Meridian_Contracts_Ledger_IAccountingConfigurationService["IAccountingConfigurationService"] {
@@ -357,6 +400,8 @@ classDiagram
     class Meridian_Contracts_Ledger_IConsolidationDraftGuard["IConsolidationDraftGuard"] {
     }
     class Meridian_Contracts_Ledger_ILedgerBookService["ILedgerBookService"] {
+    }
+    class Meridian_Contracts_Ledger_ILedgerEventAuditVerifier["ILedgerEventAuditVerifier"] {
     }
     class Meridian_Contracts_Ledger_IManualJournalEntryDraftStore["IManualJournalEntryDraftStore"] {
     }
@@ -594,77 +639,12 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_LedgerCurrencyRounding["LedgerCurrencyRounding"] {
     }
-    class Meridian_Contracts_Ledger_LedgerDimensionSetDto["LedgerDimensionSetDto"] {
-        +string? AccountId
-        +string? BookId
-        +string? CapitalAccountId
-        +string? CostCenterId
-        +string? CounterpartyId
-        +string? CustomerId
-        +string? EntityId
-        +IReadOnlyDictionary~string__string~ ExternalGlDimensions
-        +string? FundId
-        +Guid? InstrumentId
-        +string? InvestorId
-        +string? OrganizationId
-    }
-    class Meridian_Contracts_Ledger_LedgerDimensionTags["LedgerDimensionTags"] {
-    }
-    class Meridian_Contracts_Ledger_LedgerDisposalTaxParcelDto["LedgerDisposalTaxParcelDto"] {
-        +DateOnly AcquiredDate
-        +string Character
-        +string CostBasis
-        +string? DeferredLoss
-        +string EconomicGainOrLoss
-        +bool HoldingPeriodCarried
-        +int HoldingPeriodDays
-        +DateOnly HoldingPeriodStart
-        +string LotId
-        +string Proceeds
-        +string Quantity
-        +string? RecognizedGainOrLoss
-    }
-    class Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto["LedgerDisposalTaxResultDto"] {
-        +string AccountName
-        +bool CanChange
-        +string? Character
-        +string? DeferredLoss
-        +string? EconomicGainOrLoss
-        +Guid JournalEntryId
-        +Guid MutationBatchId
-        +IReadOnlyList~LedgerDisposalTaxParcelDto~ Parcels
-        +string? PolicyRevision
-        +string? RecognizedGainOrLoss
-        +DateTimeOffset? RecordedAt
-        +bool ReEvaluationRequired
-    }
-    class Meridian_Contracts_Ledger_LedgerJournalEntryDto["LedgerJournalEntryDto"] {
-        +AccountingBasisKindDto AccountingBasis
-        +string AccountingPolicyId
-        +string AccountingPolicyVersion
-        +LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval
-        +Guid AggregateId
-        +Guid? CommandId
-        +Guid? CorrelationId
-        +DateTimeOffset CreatedAt
-        +string Description
-        +long GlobalSequence
-        +bool IsBalanced
-        +Guid JournalEntryId
-    }
-    class Meridian_Contracts_Ledger_LedgerJournalEntryLineDto["LedgerJournalEntryLineDto"] {
-        +string AccountName
-        +string AccountType
-        +decimal Credit
-        +decimal Debit
-        +string Description
-        +LedgerDimensionSetDto? Dimensions
-        +Guid EntryId
-        +string? FinancialAccountId
-        +Guid JournalEntryId
-        +string? Symbol
-        +DateTimeOffset Timestamp
-    }
+    Meridian_Contracts_Ledger_ClosePlanTemplateDto --> Meridian_Contracts_Ledger_ClosePlanTemplateTaskDto
+    Meridian_Contracts_Ledger_ClosePlanTemplateDto --> Meridian_Contracts_Ledger_ClosePreparationCalendarDto
+    Meridian_Contracts_Ledger_ClosePlanTemplateDto --> Meridian_Contracts_Ledger_ClosePreparationHistoryDto
+    Meridian_Contracts_Ledger_ClosePlanTemplateTaskDto --> Meridian_Contracts_Ledger_CloseTaskConfigurationDto
+    Meridian_Contracts_Ledger_ClosePostingGateDto --> Meridian_Contracts_Ledger_ClosePostingBalanceDto
+    Meridian_Contracts_Ledger_ClosePostingGateDto --> Meridian_Contracts_Ledger_ClosePostingGateStateDto
     Meridian_Contracts_Ledger_ClosePreparationPreviewDto --> Meridian_Contracts_Ledger_ClosePreparationCalendarDto
     Meridian_Contracts_Ledger_ClosePreparationPreviewDto --> Meridian_Contracts_Ledger_ClosePreparationIssueDto
     Meridian_Contracts_Ledger_ClosePreparationPreviewDto --> Meridian_Contracts_Ledger_ClosePreparationTaskDto
@@ -685,17 +665,12 @@ classDiagram
     Meridian_Contracts_Ledger_ConsolidationViewDto --> Meridian_Contracts_Ledger_ConsolidationDraftSummaryDto
     Meridian_Contracts_Ledger_ConsolidationViewDto --> Meridian_Contracts_Ledger_ConsolidationMatchDto
     Meridian_Contracts_Ledger_ConsolidationViewDto --> Meridian_Contracts_Ledger_ConsolidationRequestDto
-    Meridian_Contracts_Ledger_DimensionMappingProfileDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
-    Meridian_Contracts_Ledger_ExternalGlExportLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportCertificationDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportLineDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageDto --> Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto --> Meridian_Contracts_Ledger_ExternalGlExportLineDto
     Meridian_Contracts_Ledger_ExternalGlExportPackageManifestDto --> Meridian_Contracts_Ledger_ExternalGlExportReconciliationSafeguardStateDto
     Meridian_Contracts_Ledger_ExternalGlMappingProfileDto --> Meridian_Contracts_Ledger_DimensionMappingProfileDto
-    Meridian_Contracts_Ledger_FinancialStatementPackageDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
-    Meridian_Contracts_Ledger_GeneratedPostingLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
-    Meridian_Contracts_Ledger_InvestorCapitalStatementDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleActionRequestDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleActionDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleActionResultDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleTransitionDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleTransitionDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleActionDto
@@ -705,10 +680,5 @@ classDiagram
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentRequest --> Meridian_Contracts_Ledger_LedgerBookRequiredScopeDto
     Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto --> Meridian_Contracts_Ledger_LedgerBookRolloutIssueSeverityDto
-    Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceReportDto --> Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto
-    Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxParcelDto
-    Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerAdjustmentApprovalMetadataDto
-    Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerJournalEntryLineDto
-    Meridian_Contracts_Ledger_LedgerJournalEntryLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
 ```
