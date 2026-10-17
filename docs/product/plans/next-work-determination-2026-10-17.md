@@ -3,7 +3,9 @@
 **Status:** prioritization input; not a governance decision and not a roadmap-status document
 **Owner:** core-team
 **Reviewed:** 2026-10-17
-**Baseline:** `origin/main` at `0342643deec73314b71bd792ceaca3f5c66f6cc5` (2026-10-17 14:24 UTC)
+**Baseline:** `origin/main` at `0342643deec73314b71bd792ceaca3f5c66f6cc5` (2026-10-17 14:24 UTC).
+`main` advanced to `30b98549` at 14:50 UTC, 26 minutes later — see
+[Update (2026-10-17, 14:55 UTC)](#update-2026-10-17-1455-utc-the-window-closed-on-0342643d-in-26-minutes)
 **Supersedes:** the [2026-10-16 determination](next-work-determination-2026-10-16.md) as the latest
 prioritization pointer. Its bar has been **met**, which is why this document re-ranks rather than
 deferring. The [2026-10-15 determination (#3170)](https://github.com/rodoHasArrived/Meridian-main/pull/3170)
@@ -253,6 +255,39 @@ that is authoritative for the P0 release gate.
   that posture, since 2026-09-22. Taking or declining it remains zero engineering, and declining is
   still a result.
 - Every product item in #3170's summary table stands as written.
+
+## Update (2026-10-17, 14:55 UTC): the window closed on `0342643d` in 26 minutes
+
+`main` advanced from `0342643d` to **`30b98549`** (#3192, *"commitment and fund-unit lots; paper
+lots join the shared lot shape"*) at 14:50 UTC — **26 minutes after the baseline above**, and
+before this document was opened for review. This is not a correction to the analysis; it is the
+analysis happening on schedule, and it is worth recording precisely because it was the predicted
+failure mode rather than a surprise.
+
+Two consequences, re-verified against the new head:
+
+**1. The RC target moved, and the tag was not taken.** `0342643d` was a commit with seven of seven
+lanes green, and it is now two commits behind the head with no `v*` tag pointing at it. `Meridian CI`
+on `30b98549` ([run 39042429968](https://github.com/rodoHasArrived/Meridian-main/actions/runs/39042429968))
+was still **queued** when this update was written, so whether the new head is also certifiable is
+not yet known. **The P0 above is unchanged in substance and its timing claim is now demonstrated:**
+the window is a property of the head, the head moved inside half an hour, and the signatures that
+would have let someone tag `0342643d` are still absent. Re-verify the current head's lanes before
+picking an RC commit; do not inherit `0342643d`'s green from this document.
+
+**2. This document's own PR became the next data point in its own finding.**
+[#3197](https://github.com/rodoHasArrived/Meridian-main/pull/3197) went un-mergeable within the
+hour, conflicting on exactly **`docs/status/doc-health-dashboard.{json,md}`** — the pair measured
+above at 43% of the last 200 commits. The resolution required no decisions:
+`build/scripts/resolve-generated-merge-conflicts.py` reported
+`2 generated conflict(s); 0 conflict(s) require review` and resolved both.
+
+The two commits `#3192` brought with it make the point without further comment:
+`b3a7f78b chore: merge main and regenerate generated artifacts` and
+`507a9d0c docs: regenerate doc-health dashboard after merging main`. **Three branches paid the same
+tax on the same file pair inside one hour**, each by hand or by running the resolver, because no
+`merge=` driver exists. The P1 row for `.gitattributes` is the one item on this list whose cost is
+being paid continuously and visibly in commit subjects.
 
 ## Process finding: the acting is now outpacing the ranking
 
