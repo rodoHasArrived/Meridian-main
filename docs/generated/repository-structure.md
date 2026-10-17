@@ -1788,6 +1788,7 @@ Meridian-main
 │   │   │   ├── w10-mark-001-fail-closed-marks.md
 │   │   │   └── web-ui-report-run-stream-blueprint-2026-07.md
 │   │   ├── plans
+│   │   │   ├── desktop-workstation-screen-blueprint.md
 │   │   │   ├── god-file-burn-down-plan.md
 │   │   │   ├── README.md
 │   │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
@@ -1799,6 +1800,11 @@ Meridian-main
 │   │   ├── actions-rollout-source-2026-10-05.json.gz
 │   │   ├── actions-storage-audit-2026-10-05.json
 │   │   ├── actions-storage-audit-2026-10-05.md
+│   │   ├── actions-workflow-audit-2026-10-15.json
+│   │   ├── actions-workflow-followup-2026-10-15.md
+│   │   ├── actions-workflow-policy-2026-10-15.json
+│   │   ├── actions-workflow-report-2026-10-15.json.gz
+│   │   ├── actions-workflow-source-2026-10-15.json.gz
 │   │   ├── ci-cd-optimization.md
 │   │   ├── dead-code-inventory.md
 │   │   ├── docs-regeneration-automation-design.md
@@ -11035,6 +11041,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterPostgresProjectionNotificationTests.cs
 │   │   │   ├── SecurityMasterPostgresProjectionNotificationTests.Monotonicity.cs
 │   │   │   ├── SecurityMasterPostgresRoundTripTests.cs
+│   │   │   ├── SecurityMasterPostgresSearchPaginationTests.cs
 │   │   │   ├── SecurityMasterPostingAuthorityPostgresTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterPricingServiceTests.cs
@@ -11124,6 +11131,7 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CurrentBasis.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.DeferralRecipients.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Direction.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.DirectWrites.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HoldingPeriodEvidence.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ProceedsAllocation.cs
@@ -12079,6 +12087,7 @@ Meridian-main
 │   │   ├── test_web_workstation_installer.py
 │   │   ├── test_windows_ci_runner.py
 │   │   ├── test_windows_desktop_build_workflow.py
+│   │   ├── test_workflow_scheduling.py
 │   │   ├── test_wpf_msix_install_guidance.py
 │   │   ├── test_wpf_msix_manifest.py
 │   │   └── workflow_assertions.py

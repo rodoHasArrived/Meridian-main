@@ -56,6 +56,10 @@ Ledger composition registers the read-only `CanonicalLotAmortizationService` alo
 `CanonicalLotCorporateActionService` uses the same deferred authoritative stores to prepare the
 single retained successor instruction and draft it through the event spine. Preview preserves
 the chart path separately from the durable ledger account; posting requires independent approval.
+The event spine also receives the complete Security Master store. Successor preparation and
+drafting compare reviewed source/target projection hashes; an absent store blocks that path
+without preventing other event-spine services from being composed.
+
 
 PostgreSQL composition registers the canonical-symbol seeder and its security-ID lookup as one
 singleton. Failed post-write reseeds retry with bounded backoff and coalesced requests until success

@@ -4,7 +4,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ROUTES_FILE = REPO_ROOT / "src/Meridian.Contracts/Api/UiApiRoutes.cs"
-DOC_FILE = REPO_ROOT / "docs/operations/live-execution-controls.md"
+DOC_FILE = REPO_ROOT / "docs/reference/provider-capability-matrix.md"
 
 
 def _extract_constant(name: str) -> str:
