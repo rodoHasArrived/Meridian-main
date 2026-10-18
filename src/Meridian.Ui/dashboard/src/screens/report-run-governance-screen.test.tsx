@@ -92,7 +92,9 @@ describe("ReportRunGovernanceScreen", () => {
     expect(screen.getByText("Group: checker-group")).toBeInTheDocument();
     expect(screen.getByText("Company: company-1")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Retained trial-balance amounts" })).toBeInTheDocument();
-    expect(getReportAmountBindings).toHaveBeenCalledWith("run-1", { signal: expect.any(AbortSignal) });
+    // The amounts panel loads from a passive effect after its first render.
+    await waitFor(() =>
+      expect(getReportAmountBindings).toHaveBeenCalledWith("run-1", { signal: expect.any(AbortSignal) }));
 
     const validate = screen.getByRole("button", { name: "Validate" });
     const submit = screen.getByRole("button", { name: "Submit for review" });
