@@ -404,7 +404,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterConflictService, PostgresSecurityMasterConflictService>();
             services.AddSingleton<ISecurityMasterRevisionStore, PostgresSecurityMasterRevisionStore>();
 
-            // Clearwater-model extensions: pricing hierarchy, cash flow, entitlements, data quality
+            // Reference-data governance extensions: pricing hierarchy, cash flow, entitlements, data quality
             services.AddSingleton<ISecurityMasterPricingStore, PostgresSecurityMasterPricingStore>();
             services.AddSingleton<ISecurityMasterCashFlowStore, PostgresSecurityMasterCashFlowStore>();
             services.AddSingleton<IDataVendorEntitlementStore, PostgresDataVendorEntitlementStore>();

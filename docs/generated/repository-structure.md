@@ -4177,7 +4177,7 @@ Meridian-main
 │   │   │   ├── ISecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── KeyedGatePool.cs
-│   │   │   ├── NullSecurityMasterClearwaterServices.cs
+│   │   │   ├── NullSecurityMasterReferenceServices.cs
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── PostgresSecurityMasterConflictService.cs
 │   │   │   ├── PostgresSecurityMasterRevisionStore.cs
@@ -4430,6 +4430,7 @@ Meridian-main
 │   │   │   ├── AssetOperationsDtos.cs
 │   │   │   ├── AssetOperationsReferenceDtos.cs
 │   │   │   ├── CorporateActionAccountingDtos.cs
+│   │   │   ├── ICorporateActionRuleProfile.cs
 │   │   │   ├── InstrumentPositionDtos.cs
 │   │   │   ├── PortfolioCashLadderDtos.cs
 │   │   │   └── RetainedEvidenceIdentityDto.cs
@@ -5698,7 +5699,6 @@ Meridian-main
 │   │   │   ├── AccountCashForecastService.cs
 │   │   │   ├── AssetObligationProjectionService.cs
 │   │   │   ├── AssetOperationsReadService.cs
-│   │   │   ├── ClearwaterCorporateActionRuleProfileV1.cs
 │   │   │   ├── CorporateActionAccountingProjectionService.CanonicalLots.cs
 │   │   │   ├── CorporateActionAccountingProjectionService.cs
 │   │   │   ├── CorporateActionAccountingProjectionService.Fingerprints.cs
@@ -6129,6 +6129,8 @@ Meridian-main
 │   │   ├── Program.cs
 │   │   └── QuantScriptWorker.Sidecar.targets
 │   ├── Meridian.ReferenceData
+│   │   ├── CorporateActions
+│   │   │   └── ClearwaterCorporateActionRuleProfileV1.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── Data
 │   │   │   │   └── security-reference-taxonomies.json
@@ -10229,7 +10231,8 @@ Meridian-main
 │   │   │   ├── LedgerNetBalanceCentralizationTests.cs
 │   │   │   ├── ProjectReferenceGraph.cs
 │   │   │   ├── ProjectReferenceGraphTests.cs
-│   │   │   └── SecurityAssetClassLiteralRatchetTests.cs
+│   │   │   ├── SecurityAssetClassLiteralRatchetTests.cs
+│   │   │   └── VendorNeutralDomainTests.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AccountCashForecastTests.cs
 │   │   │   ├── AcquisitionTermsCompletionTests.cs

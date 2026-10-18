@@ -12,7 +12,7 @@ namespace Meridian.Application.SecurityMaster;
 /// Manages structured cash flow source assignments and delegates projections to
 /// <see cref="IStructuredCashFlowProvider"/> implementations.
 /// Client-provided sources take precedence and remain until explicitly changed,
-/// consistent with the Clearwater cash flow governance model.
+/// consistent with the cash flow source governance model.
 /// </summary>
 /// <remarks>
 /// Economic terms are resolved once, up front, into a typed <see cref="StructuredCashFlowTerms"/> via

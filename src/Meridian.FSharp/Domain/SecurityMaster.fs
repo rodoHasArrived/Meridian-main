@@ -190,7 +190,7 @@ type BondSubclass =
     // --- Short-term / money-market debt ---
     /// Variable Rate Demand Note — daily or weekly reset rate; investor may tender on demand.
     | Vrdn
-    /// Auction Rate Security — rate resets at periodic auction; Clearwater may hold at par.
+    /// Auction Rate Security — rate resets at periodic auction; vendor pricing conventions may hold it at par.
     | AuctionRate
     // --- Bank / leveraged finance ---
     /// Syndicated or bilateral bank loan; floating rate, principal schedule per credit agreement.
