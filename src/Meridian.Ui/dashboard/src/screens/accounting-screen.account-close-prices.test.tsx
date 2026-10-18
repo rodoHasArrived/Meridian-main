@@ -328,9 +328,13 @@ describe("AccountClosePricesPanel", () => {
     expect(api.approve).toHaveBeenCalledOnce();
   });
 
-  it("keeps the uncertainty lock when a different reviewer's approval was retained for the snapshot", async () => {
+  it.each([
+    ["a different reviewer", "other-reviewer", "Approved elsewhere"],
+    ["a reviewer differing only by case", context.actor.toUpperCase(), "Reviewed"]
+  ])("keeps the uncertainty lock when %s's approval was retained for the snapshot", async (_label, reviewer, rationale) => {
     const pending = deferred<ClosePriceSet>();
-    const foreign: ClosePriceSet = { ...retained(), approval: { snapshotId, snapshotSha256: "retained-digest", reviewer: "other-reviewer", rationale: "Approved elsewhere", approvedAt: `${date}T00:00:02Z` } };
+    expect(reviewer).not.toBe(context.actor);
+    const foreign: ClosePriceSet = { ...retained(), approval: { snapshotId, snapshotSha256: "retained-digest", reviewer, rationale, approvedAt: `${date}T00:00:02Z` } };
     api.list.mockImplementation(async () => [api.approve.mock.calls.length ? foreign : retained()]);
     api.approve.mockReturnValue(pending.promise);
     render(<AccountClosePricesPanel scope={scope} context={context} />);
@@ -342,10 +346,10 @@ describe("AccountClosePricesPanel", () => {
     expect(await screen.findByText("Write outcome needs verification")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Reload price history" }));
     expect(await screen.findByText("A different approval was retained for this snapshot")).toBeInTheDocument();
-    expect(screen.getByRole("alert")).toHaveTextContent(`Snapshot ${snapshotId} carries an approval by other-reviewer. Your approval as ${context.actor} was not recorded`);
+    expect(screen.getByRole("alert")).toHaveTextContent(`Snapshot ${snapshotId} carries an approval by ${reviewer}. Your approval as ${context.actor} was not recorded`);
     expect(screen.getByText("Write outcome needs verification")).toBeInTheDocument();
     expect(screen.queryByText("The pending approval is retained against the immutable snapshot digest.")).not.toBeInTheDocument();
-    expect(screen.getByText("Approved by other-reviewer")).toBeInTheDocument();
+    expect(screen.getByText(`Approved by ${reviewer}`)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Approve immutable price set" })).toBeDisabled();
     expect(api.approve).toHaveBeenCalledOnce();
   });

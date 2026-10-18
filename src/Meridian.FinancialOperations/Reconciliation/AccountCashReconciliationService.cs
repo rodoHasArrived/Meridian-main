@@ -257,6 +257,15 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
                     WriteCanonical(item, writer);
                 writer.WriteEndArray();
                 break;
+            case JsonValueKind.Number:
+                // Compare numbers by value, not spelling: 1000, 1000.0 and 1e3 are the same observation.
+                if (element.TryGetDecimal(out var number))
+                    writer.WriteNumberValue(number / 1.0000000000000000000000000000m);
+                else if (element.TryGetDouble(out var wide))
+                    writer.WriteNumberValue(wide);
+                else
+                    element.WriteTo(writer);
+                break;
             default:
                 element.WriteTo(writer);
                 break;
@@ -295,8 +304,8 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
     /// </summary>
     private static void RequireNewRunAdmission(AccountCashReconciliationRequest input, string parameterName)
     {
-        if (input.RunId.Any(static ch => char.IsWhiteSpace(ch) || char.IsControl(ch) || ch is '/' or '\\' or '?' or '#' or '%'))
-            throw new ArgumentException("A run identity must round-trip through replay routes; whitespace, control characters and '/', '\\', '?', '#', '%' are refused.", parameterName);
+        if (input.RunId is "." or ".." || input.RunId.Any(static ch => char.IsWhiteSpace(ch) || char.IsControl(ch) || ch is '/' or '\\' or '?' or '#' or '%'))
+            throw new ArgumentException("A run identity must round-trip through replay routes; whitespace, control characters, the dot segments '.' and '..', and '/', '\\', '?', '#', '%' are refused.", parameterName);
         if (input.Tolerance.CashRules.Count == 0)
             throw new ArgumentException("At least one executed cash tolerance rule is required.", parameterName);
         if (input.Tolerance.PositionRules.Any(rule => rule is null) || input.Tolerance.TransactionRules.Any(rule => rule is null))

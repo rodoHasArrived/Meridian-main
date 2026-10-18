@@ -625,6 +625,12 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
     public async Task Reordered_copied_json_observation_is_rejected_as_dependent_evidence(string shape)
         => await Copied_json_observation_is_rejected_as_dependent_evidence(shape);
 
+    [Theory]
+    [InlineData("number-exponent")]
+    [InlineData("number-fraction")]
+    public async Task Respelled_number_in_copied_json_observation_is_rejected_as_dependent_evidence(string shape)
+        => await Copied_json_observation_is_rejected_as_dependent_evidence(shape);
+
     private async Task Copied_json_observation_is_rejected_as_dependent_evidence(string shape)
     {
         var service = await ServiceAsync();
@@ -638,6 +644,16 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
                 break;
             case "property-order":
                 reformatted = ReverseProperties(original);
+                break;
+            case "number-exponent":
+                original = """{"balance":{"amount":1000,"currency":"USD"},"source":"ledger"}""";
+                reformatted = """{"balance":{"amount":1e3,"currency":"USD"},"source":"ledger"}""";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+            case "number-fraction":
+                original = """{"balance":{"amount":1000,"currency":"USD"},"source":"ledger"}""";
+                reformatted = """{"balance":{"amount":1000.00,"currency":"USD"},"source":"ledger"}""";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
                 break;
             default:
                 original = """{"balance":{"amount":1000,"currency":"USD"},"source":"ledger","tags":["a","b"]}""";
@@ -711,6 +727,8 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
     [InlineData("run?replay=1")]
     [InlineData("run#1")]
     [InlineData("run\\one")]
+    [InlineData(".")]
+    [InlineData("..")]
     public async Task Run_identity_that_cannot_round_trip_replay_routes_is_rejected(string runId)
     {
         var service = await ServiceAsync();

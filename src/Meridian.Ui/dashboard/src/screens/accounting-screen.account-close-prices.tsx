@@ -43,7 +43,9 @@ function utcInput(value: string): string | null {
 }
 
 function sameApproval(retained: { reviewer: string; rationale: string }, submitted: { reviewer: string; rationale: string }): boolean {
-  return retained.reviewer.trim().toLowerCase() === submitted.reviewer.trim().toLowerCase() && retained.rationale.trim() === submitted.rationale.trim();
+  // Exact, trimmed identity: the server records and compares reviewer and rationale case-sensitively,
+  // so a retained approval that differs only by case is another reviewer's decision, not this one.
+  return retained.reviewer.trim() === submitted.reviewer.trim() && retained.rationale.trim() === submitted.rationale.trim();
 }
 
 function belongsTo(set: ClosePriceSet, scope: OversightScope, date: string): boolean {
