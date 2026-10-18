@@ -385,7 +385,7 @@
       "ordinal": 43,
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/043_security_master_close_price_approval_null_guards.sql",
       "schema": "security_master",
-      "sha256": "36767e1612bf98b4ec5ce24296dad77074a2e6f7ea69a8efdee9c525a72c406e"
+      "sha256": "ab8fd15279bc3bd00bf79684ab7c0f1dda45faf51a62e8462236cfbd1098011d"
     },
     {
       "filename": "001_direct_lending.sql",
@@ -1199,7 +1199,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "5ed960a980df5d3743827342eaec87fb85a80c9473db055f04d09407f0afe84e",
+  "fingerprint": "fbc5b7e87c601c04367d59914fd49ba55b28ab4cec4bea9c59b3fbcf705ec163",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
