@@ -56,6 +56,25 @@ cannot approve values they staged. The event store and projection store join
 `PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap and
 Commodity projections are now declarative registry plans rather than hand-written writers.
 
+The reference-projection read side is shared as well. Every `Postgres*ReferenceProjectionStore`
+composes `PostgresReferenceProjectionReader` for its connection, command and row plumbing, and a
+store whose table is a `SecurityTermsProjectionRegistry` descriptor (Equity, Future, FxSpot, Swap,
+Commodity, CryptoCurrency, Deposit, MoneyMarketFund, CertificateOfDeposit, DirectLoan,
+StructuredCredit and their child tables) selects the descriptor's column list rather than
+restating it, mapping rows by column name through `ProjectionRow`. The registry is therefore the
+single statement of a projection table's columns on the write and read sides; only the specialized
+Bond and Option stores carry their own select lists. The per-class store interfaces and row
+records are unchanged, so `*ProjectionService` consumers and DI registrations did not move.
+
+Security Master migration `044_security_master_declarative_terms_projections.sql` gives the twelve
+remaining unprojected classes (CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Cfd,
+Warrant, InvestmentFund, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,
+CommitmentGuarantee) a relational projection written by the same declarative
+`SecurityTermsProjectionRegistry` descriptor path, so every catalog class except the
+profile-governed CustomAsset is now projected (25 of 26). Guid-typed terms project as `uuid`
+columns. The tables are created empty; an existing database populates them through
+`SecurityMasterRebuildOrchestrator.RebuildAssetClassAsync` per class.
+
 Security Master migration `042_security_master_terms_format_column.sql` promotes the terms-payload
 family to a queryable `securities.terms_format` column (ADR-024). The backfill never rewrites the
 payload: a declared `termsFormat` wins and an untagged row is classified by the same shape rule
@@ -325,13 +344,14 @@ prior events, in addition to existing history. This requires volume validation b
 acceptance. The hashed genesis inventory identifies pre-upgrade facts without claiming their old
 contents were protected. A coherent rollback of the audit head, suffix, and corresponding facts
 requires an external checkpoint to detect, even when the rest of the database remains unchanged.
-`PostgresLedgerJournalStore` (`ILedgerEventAuditVerifier`) and `PostgresAccountingConfigurationStore`
-(`IAccountingAuditChainVerifier`) also expose read-only verification that runs the same full scan
-under the head lock and commits nothing; a break is reported, never repaired.
 The same limitation applies to coordinated rewriting of facts, their event hashes, and the database
 head; a locally recomputed chain is not independent authentication of its history.
 Coverage permits new SQL columns but compares retained column values, including nested JSON, exactly.
 `LedgerEventAuditPostgresTests` exercises these boundaries; hosted PostgreSQL proof is required.
+`PostgresLedgerJournalStore` (`ILedgerEventAuditVerifier`) and `PostgresAccountingConfigurationStore`
+(`IAccountingAuditChainVerifier`) also expose read-only verification that runs the same full scan
+under the head lock and commits nothing; a break is reported, never repaired. It is subject to the
+same limits as the append-time scan above.
 
 Audit actors come from validated posting commands or period transitions. Missing legacy attribution
 remains null. The period-creation endpoint stamps the authenticated creator; generated candidate
