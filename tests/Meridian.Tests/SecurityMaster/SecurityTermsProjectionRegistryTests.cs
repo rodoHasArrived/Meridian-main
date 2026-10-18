@@ -872,10 +872,11 @@ public sealed class SecurityTermsProjectionRegistryTests
 
     /// <summary>
     /// <c>alter table __SCHEMA__.t add column [if not exists] c …[, add column …];</c> — every
-    /// <c>column</c> capture is one added column name.
+    /// <c>column</c> capture is one added column name. A type's own parenthesised arguments
+    /// (<c>numeric(18, 10)</c>) are skipped as a unit so their comma does not end the clause.
     /// </summary>
     private static readonly Regex AlterTableAddColumnPattern = new(
-        @"alter\s+table\s+(?:if\s+exists\s+)?__SCHEMA__\.(?<table>\w+)\s+(?:add\s+column\s+(?:if\s+not\s+exists\s+)?(?<column>\w+)[^,;]*,?\s*)+;",
+        @"alter\s+table\s+(?:if\s+exists\s+)?__SCHEMA__\.(?<table>\w+)\s+(?:add\s+column\s+(?:if\s+not\s+exists\s+)?(?<column>\w+)(?:\([^)]*\)|[^,;(])*,?\s*)+;",
         RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
     private static SecurityTermsProjectionDescriptor Descriptor(string assetClass)
