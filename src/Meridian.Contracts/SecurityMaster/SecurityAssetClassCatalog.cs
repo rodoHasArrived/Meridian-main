@@ -182,7 +182,7 @@ public static class SecurityAssetClassCatalog
             InstrumentTypes: [InstrumentType.Bond],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.ContractualSchedule,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -202,7 +202,7 @@ public static class SecurityAssetClassCatalog
             InstrumentTypes: [InstrumentType.Bond],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.ContractualSchedule,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -222,7 +222,7 @@ public static class SecurityAssetClassCatalog
             InstrumentTypes: [InstrumentType.Repo],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.FinancingInterest,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -237,7 +237,7 @@ public static class SecurityAssetClassCatalog
             InstrumentTypes: [InstrumentType.Deposit],
             LotUnit: SecurityLotUnitKind.CurrencyAmount,
             CashFlowBehavior: SecurityCashFlowBehavior.ProviderSupplied,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -251,7 +251,7 @@ public static class SecurityAssetClassCatalog
             RequiresGovernedProfile: true,
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -341,7 +341,7 @@ public static class SecurityAssetClassCatalog
             AssetPackIds: ["private-fund-partnership"],
             LotUnit: SecurityLotUnitKind.Commitment,
             CashFlowBehavior: SecurityCashFlowBehavior.ProviderSupplied,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -356,7 +356,7 @@ public static class SecurityAssetClassCatalog
             AssetPackIds: ["private-fund-partnership"],
             LotUnit: SecurityLotUnitKind.Shares,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -372,7 +372,7 @@ public static class SecurityAssetClassCatalog
             AssetPackIds: ["real-estate"],
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.ProviderSupplied,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -387,7 +387,7 @@ public static class SecurityAssetClassCatalog
             AssetPackIds: ["commitment-guarantee"],
             LotUnit: SecurityLotUnitKind.Commitment,
             CashFlowBehavior: SecurityCashFlowBehavior.ProviderSupplied,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -434,7 +434,7 @@ public static class SecurityAssetClassCatalog
             InstrumentTypes: [InstrumentType.CFD],
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -448,7 +448,7 @@ public static class SecurityAssetClassCatalog
             InstrumentTypes: [InstrumentType.Warrant],
             LotUnit: SecurityLotUnitKind.Contracts,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             LotMultiplierTermKey: "multiplier",
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
@@ -465,7 +465,7 @@ public static class SecurityAssetClassCatalog
             AssetPackIds: ["public-equity-etf"],
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.FundDistributions,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [

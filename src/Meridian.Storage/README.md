@@ -56,6 +56,25 @@ cannot approve values they staged. The event store and projection store join
 `PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap and
 Commodity projections are now declarative registry plans rather than hand-written writers.
 
+The reference-projection read side is shared as well. Every `Postgres*ReferenceProjectionStore`
+composes `PostgresReferenceProjectionReader` for its connection, command and row plumbing, and a
+store whose table is a `SecurityTermsProjectionRegistry` descriptor (Equity, Future, FxSpot, Swap,
+Commodity, CryptoCurrency, Deposit, MoneyMarketFund, CertificateOfDeposit, DirectLoan,
+StructuredCredit and their child tables) selects the descriptor's column list rather than
+restating it, mapping rows by column name through `ProjectionRow`. The registry is therefore the
+single statement of a projection table's columns on the write and read sides; only the specialized
+Bond and Option stores carry their own select lists. The per-class store interfaces and row
+records are unchanged, so `*ProjectionService` consumers and DI registrations did not move.
+
+Security Master migration `044_security_master_declarative_terms_projections.sql` gives the twelve
+remaining unprojected classes (CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Cfd,
+Warrant, InvestmentFund, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,
+CommitmentGuarantee) a relational projection written by the same declarative
+`SecurityTermsProjectionRegistry` descriptor path, so every catalog class except the
+profile-governed CustomAsset is now projected (25 of 26). Guid-typed terms project as `uuid`
+columns. The tables are created empty; an existing database populates them through
+`SecurityMasterRebuildOrchestrator.RebuildAssetClassAsync` per class.
+
 Security Master migration `042_security_master_terms_format_column.sql` promotes the terms-payload
 family to a queryable `securities.terms_format` column (ADR-024). The backfill never rewrites the
 payload: a declared `termsFormat` wins and an untagged row is classified by the same shape rule

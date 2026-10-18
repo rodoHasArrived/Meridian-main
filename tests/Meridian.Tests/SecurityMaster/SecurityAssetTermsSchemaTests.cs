@@ -23,15 +23,10 @@ public sealed class SecurityAssetTermsSchemaTests
     // catalog-vs-projection gap is a conscious decision instead of silent drift.
     private static readonly string[] IntentionallyUnprojectedAssetClasses =
     [
-        "CommercialPaper",
-        "TreasuryBill",
-        "Repo",
-        "CashSweep",
-        "OtherSecurity",
-        "CustomAsset",
-        "Cfd",
-        "Warrant",
-        "InvestmentFund"
+        // The profile-governed class: its fields vary per approved profile, so there is no fixed
+        // column set to project. Every other catalog class is projected (migration 044 closed the
+        // last eight declared gaps and the whole ops-capable backlog).
+        "CustomAsset"
     ];
 
     // The Asset Operations classes still waiting for a relational terms projection. These are NOT
@@ -41,13 +36,7 @@ public sealed class SecurityAssetTermsSchemaTests
     // because the guards below hold the backlog to a different standard than a declared gap — it may
     // only ever shrink, and each entry costs a SecurityTermsProjectionRegistry descriptor plus its
     // DDL to clear.
-    private static readonly string[] OpsCapableProjectionBacklog =
-    [
-        "PrivateFundInterest",
-        "PrivateCompanyEquity",
-        "RealEstateHolding",
-        "CommitmentGuarantee"
-    ];
+    private static readonly string[] OpsCapableProjectionBacklog = [];
 
     // The ops-capable classes that were unprojected when the backlog guard was written. The backlog
     // may only ever be a SUBSET of this: an entry can leave it by gaining a projection, and nothing
