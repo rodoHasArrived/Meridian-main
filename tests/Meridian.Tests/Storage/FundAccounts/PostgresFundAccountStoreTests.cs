@@ -224,9 +224,11 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
 
         await store.InsertSyncHistoryAsync(entry, cts.Token);
         var freshUntil = DateTimeOffset.UtcNow.AddHours(2);
+        var completedAttempt = entry.AttemptedAt.AddMinutes(5);
         await store.InsertSyncHistoryAsync(entry with
         {
             Status = AccountSyncStatusDto.Succeeded,
+            AttemptedAt = completedAttempt,
             CompletedAt = DateTimeOffset.UtcNow,
             FreshUntil = freshUntil,
             Warnings = new[] { "stale price" },
@@ -238,6 +240,8 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
         history[0].Status.Should().Be(AccountSyncStatusDto.Succeeded);
         history[0].FreshUntil.Should().BeCloseTo(freshUntil, TimeSpan.FromMilliseconds(2));
         history[0].Warnings.Should().BeEquivalentTo("stale price");
+        history[0].AttemptedAt.Should().BeCloseTo(completedAttempt, TimeSpan.FromMilliseconds(2),
+            "readers order sync history by attempt time, so the accepted outcome must carry its own");
         history[0].RequestedBy.Should().Be(entry.RequestedBy,
             "the ON CONFLICT column list intentionally preserves the original requester");
     }

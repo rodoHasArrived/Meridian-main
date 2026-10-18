@@ -1124,7 +1124,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         // Terminal success outranks degradation/failure; delayed retries cannot restore Pending.
         static string Rank(string alias) => $"CASE {alias}.status WHEN 'Succeeded' THEN 3 WHEN 'Degraded' THEN 2 WHEN 'Pending' THEN 0 ELSE 1 END";
         var accepts = $"({Rank("EXCLUDED")} > {Rank("account_sync_history")} OR ({Rank("EXCLUDED")} = {Rank("account_sync_history")} AND (account_sync_history.completed_at IS NULL OR EXCLUDED.completed_at >= account_sync_history.completed_at)))";
-        var columns = new[] { "status", "provider_link_status", "provider_id", "external_account_id", "completed_at", "fresh_until", "failure_kind", "failure_message", "raw_evidence_path", "projection_evidence_path", "security_missing_count", "warnings" };
+        var columns = new[] { "status", "attempted_at", "provider_link_status", "provider_id", "external_account_id", "completed_at", "fresh_until", "failure_kind", "failure_message", "raw_evidence_path", "projection_evidence_path", "security_missing_count", "warnings" };
         var updates = string.Join(",\n", columns.Select(column => $"{column} = CASE WHEN {accepts} THEN EXCLUDED.{column} ELSE account_sync_history.{column} END"));
         await using var cmd = connection.CreateCommand();
         cmd.Transaction = transaction;

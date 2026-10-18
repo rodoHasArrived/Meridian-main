@@ -266,6 +266,78 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
             File.ReadAllBytes(file.Key).Should().Equal(file.Value);
     }
 
+    [Fact]
+    public async Task OpenWriter_RecentlyWrittenSource_IsDeferredAndPreserved()
+    {
+        var path = await CreateSourceAsync();
+        var before = Directory.GetFiles(TestDataRoot).ToDictionary(file => file, File.ReadAllBytes);
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        FileCompressionResult result;
+        // Same sharing mode as JsonlStorageSink.EnsureStream for an active output file.
+        await using (new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read | FileShare.Delete))
+            result = await service.CompressAsync(new FileCompressionOptions(
+                BackupBeforeCompression: false, MinimumQuietPeriod: TimeSpan.FromMinutes(5)));
+
+        result.Success.Should().BeFalse();
+        result.Errors.Should().ContainSingle();
+        File.Exists(path + ".gz").Should().BeFalse();
+        foreach (var file in before)
+            File.ReadAllBytes(file.Key).Should().Equal(file.Value);
+    }
+
+    [Theory]
+    [InlineData("StagedVerified")]
+    [InlineData("PublicationSynced")]
+    public async Task AppendDuringCompression_KeepsSourceAndPublishesNoIncompleteArchive(string stageName)
+    {
+        var path = await CreateSourceAsync();
+        var stage = Enum.Parse<CompressionPublicationStage>(stageName);
+        var late = Serialize(BuildTrade(99)) + "\n";
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot })
+        {
+            CompressionCheckpoint = checkpoint =>
+            {
+                if (checkpoint == stage)
+                {
+                    using var writer = new FileStream(path, FileMode.Append, FileAccess.Write, FileShare.Read | FileShare.Delete);
+                    writer.Write(Encoding.UTF8.GetBytes(late));
+                }
+            }
+        };
+
+        var result = await service.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false));
+
+        result.Success.Should().BeFalse();
+        File.Exists(path + ".gz").Should().BeFalse();
+        File.ReadAllText(path).Should().EndWith(late);
+    }
+
+    [Fact]
+    public async Task CompressedArchive_RetainsChecksumCoverageAndDetectsLaterCorruption()
+    {
+        var path = await CreateSourceAsync();
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        (await service.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false))).Success.Should().BeTrue();
+
+        File.Exists(path + ".sha256").Should().BeFalse();
+        var sidecar = (await File.ReadAllTextAsync(path + ".gz.sha256")).Split(' ', 2)[0];
+        sidecar.Should().Be(Convert.ToHexString(
+            System.Security.Cryptography.SHA256.HashData(await File.ReadAllBytesAsync(path + ".gz"))).ToLowerInvariant());
+        (await service.RunHealthCheckAsync(new HealthCheckOptions(ValidateChecksums: true)))
+            .Issues.Should().NotContain(issue => issue.Type == IssueType.ChecksumMismatch);
+
+        await using (var archive = new FileStream(path + ".gz", FileMode.Open, FileAccess.Write))
+        {
+            archive.Position = archive.Length - 1;
+            archive.WriteByte(0xFF);
+        }
+
+        (await service.RunHealthCheckAsync(new HealthCheckOptions(ValidateChecksums: true)))
+            .Issues.Should().Contain(issue => issue.Type == IssueType.ChecksumMismatch);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(1)]

@@ -947,6 +947,9 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         return !isOpen;
     }
 
+    // Well beyond JsonlStorageSink's idle-handle close (two flush intervals).
+    internal static readonly TimeSpan ScheduledCompressionQuietPeriod = TimeSpan.FromMinutes(5);
+
     private async Task<MaintenanceResult> RunCompressionAsync(
         MaintenanceTaskOptions options,
         string[] targetPaths,
@@ -957,7 +960,9 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
             DryRun: options.DryRun,
             BackupBeforeCompression: options.BackupBeforeRepair,
             BackupPath: options.BackupPath,
-            Paths: targetPaths
+            Paths: targetPaths,
+            // Scheduled runs sweep every healthy file, including ones a sink may still append to.
+            MinimumQuietPeriod: ScheduledCompressionQuietPeriod
         );
 
         var result = await _fileMaintenanceService.CompressAsync(compressionOptions, ct);

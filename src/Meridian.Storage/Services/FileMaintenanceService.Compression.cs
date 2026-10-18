@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.IO.Compression;
+using System.Security.Cryptography;
 using Meridian.Contracts.Integrity;
 using Meridian.Storage.Archival;
 
@@ -35,6 +36,11 @@ public sealed partial class FileMaintenanceService
             ct.ThrowIfCancellationRequested();
             try
             {
+                if (DateTime.UtcNow - File.GetLastWriteTimeUtc(file) < options.MinimumQuietPeriod)
+                {
+                    errors.Add($"Compression deferred for recently written file {file}; it may still be open for appends.");
+                    continue;
+                }
                 var issues = new ConcurrentBag<HealthIssue>();
                 await CheckFileHealthAsync(new FileInfo(file), new HealthCheckOptions(), issues, ct);
                 var blockers = issues.Where(issue => issue.Severity >= IssueSeverity.Warning).ToList();
@@ -142,69 +148,142 @@ public sealed partial class FileMaintenanceService
         if (!filePath.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
             return false;
         var outputPath = filePath + ".gz";
-        if (File.Exists(outputPath + ".sha256"))
-            throw new IOException($"Refusing to replace existing compression destination or checksum: {outputPath}");
+        var outputSidecar = outputPath + ".sha256";
+        if (File.Exists(outputSidecar) && !File.Exists(outputPath))
+            throw new IOException($"Refusing to replace existing compression checksum without its archive: {outputSidecar}");
 
-        var sourceChecksum = await ComputeChecksumAsync(filePath, ct);
-        if (File.Exists(outputPath))
+        // Fence live writers for the whole verify-publish-delete window. JsonlStorageSink reopens a
+        // closed path on demand, so the source must be proven unchanged before publication and
+        // again before deletion; a late append keeps the source and withdraws our new archive.
+        FileStream source;
+        try
         {
-            // A crash after create-only publication can leave both complete representations.
-            // Resume cleanup only after proving equality; never overwrite a retained destination.
+            // Windows refuses this open while a writer holds the file and blocks new writers for the
+            // fence's lifetime; readers may share it. Unix locks cannot tell readers from writers, so
+            // there the quiet period and the unchanged-source checks below are the fence.
+            source = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+        }
+        catch (IOException ex)
+        {
+            throw new IOException($"Refusing to compress a file that is open for writing: {filePath}", ex);
+        }
+
+        await using (source)
+        {
+            var sourceChecksum = await ComputeChecksumAsync(source, ct);
+            var sourceStamp = SourceStamp(filePath);
+            var retainSidecar = File.Exists(filePath + ".sha256");
+            if (File.Exists(outputPath))
+            {
+                // A crash after create-only publication can leave both complete representations.
+                // Resume cleanup only after proving equality; never overwrite a retained destination.
+                try
+                {
+                    await using var retained = new FileStream(outputPath, FileMode.Open,
+                        FileAccess.ReadWrite, FileShare.Read);
+                    await VerifyCompressedSourceAsync(filePath, source, retained, sourceChecksum, ct);
+                    retained.Flush(flushToDisk: true);
+                    if (File.Exists(outputSidecar))
+                        await VerifyChecksumSidecarAsync(outputSidecar, retained, ct);
+                    await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(outputPath)!, CancellationToken.None);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    throw new IOException($"Refusing to replace existing compression destination; recovery verification failed: {outputPath}", ex);
+                }
+                CompressionCheckpoint?.Invoke(CompressionPublicationStage.PublicationSynced);
+                if (retainSidecar && !File.Exists(outputSidecar))
+                    await WriteChecksumSidecarAsync(outputPath, ct);
+                RequireUnchangedSource(filePath, sourceStamp);
+                await CompleteCompressionCleanupAsync(filePath);
+                return true;
+            }
+            var stagedPath = outputPath + $".{Guid.NewGuid():N}.recompress.tmp";
             try
             {
-                await using var retained = new FileStream(outputPath, FileMode.Open,
-                    FileAccess.ReadWrite, FileShare.Read);
-                await VerifyCompressedSourceAsync(filePath, retained, sourceChecksum, ct);
-                retained.Flush(flushToDisk: true);
+                await AtomicFileWriter.WriteStreamAsync(stagedPath, async output =>
+                {
+                    source.Position = 0;
+                    await using var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true);
+                    await source.CopyToAsync(gzip, ct);
+                }, ct);
+                // Verify the actual decompressed bytes before publishing and removing the source.
+                await using (var staged = File.OpenRead(stagedPath))
+                    await VerifyCompressedSourceAsync(filePath, source, staged, sourceChecksum, ct);
+                CompressionCheckpoint?.Invoke(CompressionPublicationStage.StagedVerified);
+                ct.ThrowIfCancellationRequested();
+                RequireUnchangedSource(filePath, sourceStamp);
+                File.Move(stagedPath, outputPath, overwrite: false);
+                CompressionCheckpoint?.Invoke(CompressionPublicationStage.Published);
                 await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(outputPath)!, CancellationToken.None);
+                CompressionCheckpoint?.Invoke(CompressionPublicationStage.PublicationSynced);
             }
-            catch (OperationCanceledException)
+            finally
             {
-                throw;
+                File.Delete(stagedPath);
             }
-            catch (Exception ex)
+            // Carry integrity evidence to the archive before the source's sidecar is removed;
+            // health checks verify a file only against its own sidecar.
+            if (retainSidecar)
+                await WriteChecksumSidecarAsync(outputPath, ct);
+            if (SourceStamp(filePath) != sourceStamp)
             {
-                throw new IOException($"Refusing to replace existing compression destination; recovery verification failed: {outputPath}", ex);
+                // Appended after verification: the archive we just published is incomplete.
+                File.Delete(outputSidecar);
+                File.Delete(outputPath);
+                await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(outputPath)!, CancellationToken.None);
+                throw new IOException($"Source changed during compression; kept the source and withdrew the archive: {filePath}");
             }
-            CompressionCheckpoint?.Invoke(CompressionPublicationStage.PublicationSynced);
             await CompleteCompressionCleanupAsync(filePath);
             return true;
         }
-        var stagedPath = outputPath + $".{Guid.NewGuid():N}.recompress.tmp";
-        try
-        {
-            await AtomicFileWriter.WriteStreamAsync(stagedPath, async output =>
-            {
-                await using var input = File.OpenRead(filePath);
-                await using var gzip = new GZipStream(output, CompressionLevel.Optimal, leaveOpen: true);
-                await input.CopyToAsync(gzip, ct);
-            }, ct);
-            // Verify the actual decompressed bytes before publishing and removing the source.
-            await using (var staged = File.OpenRead(stagedPath))
-                await VerifyCompressedSourceAsync(filePath, staged, sourceChecksum, ct);
-            CompressionCheckpoint?.Invoke(CompressionPublicationStage.StagedVerified);
-            ct.ThrowIfCancellationRequested();
-            File.Move(stagedPath, outputPath, overwrite: false);
-            CompressionCheckpoint?.Invoke(CompressionPublicationStage.Published);
-            await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(outputPath)!, CancellationToken.None);
-            CompressionCheckpoint?.Invoke(CompressionPublicationStage.PublicationSynced);
-        }
-        finally
-        {
-            File.Delete(stagedPath);
-        }
-        await CompleteCompressionCleanupAsync(filePath);
-        return true;
     }
 
-    private async Task VerifyCompressedSourceAsync(string filePath, Stream compressed, string sourceChecksum, CancellationToken ct)
+    private static (long Length, DateTime LastWriteUtc) SourceStamp(string filePath)
+    {
+        var info = new FileInfo(filePath);
+        return (info.Length, info.LastWriteTimeUtc);
+    }
+
+    private static void RequireUnchangedSource(string filePath, (long Length, DateTime LastWriteUtc) expected)
+    {
+        if (SourceStamp(filePath) != expected)
+            throw new IOException($"Source changed during compression; it was not replaced: {filePath}");
+    }
+
+    private static async Task VerifyCompressedSourceAsync(
+        string filePath, FileStream source, Stream compressed, string sourceChecksum, CancellationToken ct)
     {
         await using var gzip = new GZipStream(compressed, CompressionMode.Decompress, leaveOpen: true);
         var readbackChecksum = await Sha256Digest.ComputeAsync(gzip, ct);
-        var currentSourceChecksum = await ComputeChecksumAsync(filePath, ct);
+        var currentSourceChecksum = await ComputeChecksumAsync(source, ct);
         if (!Sha256Digest.FixedEquals(sourceChecksum, readbackChecksum) ||
             !Sha256Digest.FixedEquals(sourceChecksum, currentSourceChecksum))
             throw new IOException($"Compression readback did not match the unchanged source: {filePath}");
+    }
+
+    private static async Task<string> ComputeChecksumAsync(FileStream stream, CancellationToken ct)
+    {
+        stream.Position = 0;
+        return Convert.ToHexString(await SHA256.HashDataAsync(stream, ct)).ToLowerInvariant();
+    }
+
+    private async Task WriteChecksumSidecarAsync(string archivePath, CancellationToken ct)
+    {
+        var checksum = await ComputeChecksumAsync(archivePath, ct);
+        await AtomicFileWriter.WriteAsync(archivePath + ".sha256", $"{checksum}  {Path.GetFileName(archivePath)}", ct);
+        await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(archivePath)!, CancellationToken.None);
+    }
+
+    private static async Task VerifyChecksumSidecarAsync(string sidecarPath, FileStream archive, CancellationToken ct)
+    {
+        var expected = (await File.ReadAllTextAsync(sidecarPath, ct)).Split(' ', 2)[0].Trim();
+        if (!string.Equals(expected, await ComputeChecksumAsync(archive, ct), StringComparison.OrdinalIgnoreCase))
+            throw new IOException($"Compression checksum does not match its archive: {sidecarPath}");
     }
 
     private async Task CompleteCompressionCleanupAsync(string filePath)
@@ -234,7 +313,8 @@ public sealed record FileCompressionOptions(
     bool DryRun = false,
     bool BackupBeforeCompression = true,
     string? BackupPath = null,
-    string[]? Paths = null);
+    string[]? Paths = null,
+    TimeSpan MinimumQuietPeriod = default);
 
 public sealed record FileCompressionResult(
     int FilesProcessed,

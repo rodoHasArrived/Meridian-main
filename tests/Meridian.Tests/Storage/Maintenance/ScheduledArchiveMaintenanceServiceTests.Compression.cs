@@ -20,8 +20,9 @@ public sealed partial class ScheduledArchiveMaintenanceServiceTests
         var sourcePath = Path.Combine(scopedDirectory, "a.jsonl");
         var sourceBytes = Encoding.UTF8.GetBytes(string.Concat(Enumerable.Repeat("{\"symbol\":\"SPY\",\"label\":\"café\",\"price\":450.25}\r\n", 60)));
         await AtomicFileWriter.WriteWithChecksumAsync(sourcePath, sourceBytes);
+        File.SetLastWriteTimeUtc(sourcePath, DateTime.UtcNow - ScheduledArchiveMaintenanceService.ScheduledCompressionQuietPeriod - TimeSpan.FromMinutes(1));
         var checksumBytes = await File.ReadAllBytesAsync(sourcePath + ".sha256");
-        var outsidePath = WriteFile("outside/b.jsonl", "{\"price\":10}\n");
+        var outsidePath = WriteQuietFile("outside/b.jsonl", "{\"price\":10}\n");
         var sut = CreateSut(fileMaintenance: RealFileMaintenance());
 
         var execution = await sut.ExecuteMaintenanceAsync(MaintenanceTaskType.Compression,
@@ -54,7 +55,7 @@ public sealed partial class ScheduledArchiveMaintenanceServiceTests
     [Fact]
     public async Task ExecuteMaintenanceAsync_CompressionBackupFailure_PreventsEverySourceMutation()
     {
-        var paths = new[] { WriteFile("a.jsonl", "{\"seq\":1}\n"), WriteFile("b.jsonl", "{\"seq\":2}\n") };
+        var paths = new[] { WriteQuietFile("a.jsonl", "{\"seq\":1}\n"), WriteQuietFile("b.jsonl", "{\"seq\":2}\n") };
         var original = await Task.WhenAll(paths.Select(path => File.ReadAllBytesAsync(path)));
         var blockedBackupPath = Path.Combine(_tempRoot, "backup-destination");
         await File.WriteAllTextAsync(blockedBackupPath, "a regular file cannot hold a backup directory");
@@ -79,7 +80,7 @@ public sealed partial class ScheduledArchiveMaintenanceServiceTests
     [Fact]
     public async Task ExecuteMaintenanceAsync_CompressionDestinationCollision_PreservesBothArchivesAndReportsFailure()
     {
-        var path = WriteFile("a.jsonl", "{\"seq\":1}\n");
+        var path = WriteQuietFile("a.jsonl", "{\"seq\":1}\n");
         byte[] retainedCompressed = [0x1f, 0x8b, 0x08, 0x00, 0x01];
         await File.WriteAllBytesAsync(path + ".gz", retainedCompressed);
         var sut = CreateSut(fileMaintenance: RealFileMaintenance());
@@ -100,7 +101,7 @@ public sealed partial class ScheduledArchiveMaintenanceServiceTests
     [InlineData(true)]
     public async Task ExecuteMaintenanceAsync_CompressionUnhealthyEvidence_RemainsUnresolvedAndUnchanged(bool wrongChecksum)
     {
-        var path = WriteFile("a.jsonl", wrongChecksum ? "{\"seq\":1}\n" : "{\"seq\":1}\nbad-json\n");
+        var path = WriteQuietFile("a.jsonl", wrongChecksum ? "{\"seq\":1}\n" : "{\"seq\":1}\nbad-json\n");
         if (wrongChecksum)
             await File.WriteAllTextAsync(path + ".sha256", $"{new string('0', 64)}  a.jsonl");
         var before = await File.ReadAllBytesAsync(path);
@@ -121,7 +122,7 @@ public sealed partial class ScheduledArchiveMaintenanceServiceTests
     [Fact]
     public async Task ExecuteMaintenanceAsync_CompressionDryRun_PreservesSourceWithoutWritingRecoveryOrGzipCopies()
     {
-        var path = WriteFile("a.jsonl", "{\"seq\":1}\n");
+        var path = WriteQuietFile("a.jsonl", "{\"seq\":1}\n");
         var sut = CreateSut(fileMaintenance: RealFileMaintenance());
 
         var execution = await sut.ExecuteMaintenanceAsync(MaintenanceTaskType.Compression,
@@ -163,5 +164,13 @@ public sealed partial class ScheduledArchiveMaintenanceServiceTests
         using var output = new MemoryStream();
         await gzip.CopyToAsync(output);
         return output.ToArray();
+    }
+
+    // Scheduled compression defers recently written files; age sources past the quiet period.
+    private string WriteQuietFile(string relativePath, string content)
+    {
+        var path = WriteFile(relativePath, content);
+        File.SetLastWriteTimeUtc(path, DateTime.UtcNow - ScheduledArchiveMaintenanceService.ScheduledCompressionQuietPeriod - TimeSpan.FromMinutes(1));
+        return path;
     }
 }

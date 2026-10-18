@@ -38,7 +38,10 @@ Scheduled compression uses `CompressAsync` and its compression-specific result, 
 repair completion. It selects healthy plain JSONL files within the requested paths, completes all
 required backups before mutation, and verifies decompressed bytes against the unchanged source
 before publishing a create-only gzip destination and deleting the original. Successful encoding
-changes report compressed files and bytes saved with zero repaired issues. Unhealthy sources,
+changes report compressed files and bytes saved with zero repaired issues. Scheduled runs defer files written
+within the last five minutes, and every run refuses to delete a source whose length or timestamp
+changed after verification, withdrawing the new archive instead. A source checksum sidecar is
+carried to the gzip archive before the original sidecar is removed. Unhealthy sources,
 failed backups, destination collisions and incomplete transformations remain explicit failures;
 their recovery copies are retained in execution history. `FileMaintenanceService.Compression.cs`
 owns this operation and the backup helper shared with repair.
