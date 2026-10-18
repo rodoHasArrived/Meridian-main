@@ -23,7 +23,7 @@ public sealed class ProjectionFanOutTests
     public void ARewriteInTheSameClass_RunsOnlyThatWriter_WhateverTheCasing()
     {
         PostgresSecurityMasterStore.ProjectionWritersFor("equity", "Equity")
-            .Should().Equal("Equity", "the stored class is compared case-insensitively, like the writers' own gates");
+            .Should().Equal(new[] { "Equity" }, "the stored class is compared case-insensitively, like the writers' own gates");
     }
 
     [Fact]
