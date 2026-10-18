@@ -289,6 +289,9 @@ public sealed partial class PostgresSecurityMasterStore
             SecurityAssetTermFieldType.Date => element.ValueKind == JsonValueKind.String && DateOnly.TryParse(element.GetString(), out var date)
                 ? date.ToDateTime(TimeOnly.MinValue)
                 : null,
+            SecurityAssetTermFieldType.Guid => element.ValueKind == JsonValueKind.String && Guid.TryParse(element.GetString(), out var guid)
+                ? guid
+                : null,
             _ => null
         };
 

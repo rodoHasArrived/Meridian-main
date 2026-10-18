@@ -229,6 +229,14 @@ internal sealed record SecurityTermsProjectionDescriptor(
 /// and Option remain specialized: each fans out to several projection tables (lifecycle, accrual,
 /// issuer; series, lifecycle, aliases) with a legacy nested-shape fallback.
 /// </para>
+/// <para>
+/// Migration 044 then projected the twelve classes that had never had a relational projection
+/// (CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Cfd, Warrant, InvestmentFund,
+/// PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding, CommitmentGuarantee) as pure
+/// declarations over their terms contract, so every catalog class except the profile-governed
+/// CustomAsset now has a projection — 25 of 26 — and the catalog's <c>ProjectionKind</c> says which
+/// path writes each one.
+/// </para>
 /// </summary>
 internal static partial class SecurityTermsProjectionRegistry
 {
@@ -492,6 +500,183 @@ internal static partial class SecurityTermsProjectionRegistry
                     PostgresSecurityMasterStore.GetOptionalString(record.AssetSpecificTerms, "deliveryCountry"))
             ],
             ChildTables: [])
+,
+        // The twelve classes below (migration 044) had no relational projection at all: their terms
+        // were reachable only by parsing the JSONB blob one security at a time. Each is a pure data
+        // declaration over the terms contract — gates on the terms the schema marks Required, nullable
+        // columns for the rest, NOT NULL DEFAULT FALSE for the one required flag — with no derived
+        // columns, so the registry's generic writer is the whole implementation. CustomAsset stays
+        // unprojected on purpose: its fields are governed per profile and have no fixed column set.
+        new(
+            AssetClass: "CommercialPaper",
+            TableName: "commercial_paper_projection",
+            Columns:
+            [
+                Gate("issuer_name", "issuerName", SecurityAssetTermFieldType.String),
+                Gate("maturity_date", "maturity", SecurityAssetTermFieldType.Date),
+                Optional("discount_rate", "discountRate", SecurityAssetTermFieldType.Decimal),
+                Optional("day_count", "dayCount", SecurityAssetTermFieldType.String, Verbatim),
+                Flag("is_asset_backed", "isAssetBacked", defaultWhenAbsent: false)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "TreasuryBill",
+            TableName: "treasury_bill_projection",
+            Columns:
+            [
+                Gate("maturity_date", "maturity", SecurityAssetTermFieldType.Date),
+                Optional("auction_date", "auctionDate", SecurityAssetTermFieldType.Date),
+                Optional("cusip", "cusip", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.TrimUpperInvariant),
+                Optional("discount_rate", "discountRate", SecurityAssetTermFieldType.Decimal)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "Repo",
+            TableName: "repo_projection",
+            Columns:
+            [
+                Gate("counterparty", "counterparty", SecurityAssetTermFieldType.String),
+                Gate("start_date", "startDate", SecurityAssetTermFieldType.Date),
+                Gate("end_date", "endDate", SecurityAssetTermFieldType.Date),
+                Optional("repo_rate", "repoRate", SecurityAssetTermFieldType.Decimal),
+                Optional("collateral_type", "collateralType", SecurityAssetTermFieldType.String),
+                Optional("haircut", "haircut", SecurityAssetTermFieldType.Decimal)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "CashSweep",
+            TableName: "cash_sweep_projection",
+            Columns:
+            [
+                Gate("program_name", "programName", SecurityAssetTermFieldType.String),
+                Gate("sweep_vehicle_type", "sweepVehicleType", SecurityAssetTermFieldType.String),
+                Optional("sweep_frequency", "sweepFrequency", SecurityAssetTermFieldType.String),
+                Optional("target_account_type", "targetAccountType", SecurityAssetTermFieldType.String),
+                Optional("yield_rate", "yieldRate", SecurityAssetTermFieldType.Decimal)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "OtherSecurity",
+            TableName: "other_security_projection",
+            Columns:
+            [
+                Gate("category", "category", SecurityAssetTermFieldType.String),
+                Optional("sub_type", "subType", SecurityAssetTermFieldType.String),
+                Optional("maturity_date", "maturity", SecurityAssetTermFieldType.Date),
+                Optional("issuer_name", "issuerName", SecurityAssetTermFieldType.String),
+                Optional("settlement_type", "settlementType", SecurityAssetTermFieldType.String)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "Cfd",
+            TableName: "cfd_projection",
+            Columns:
+            [
+                Gate("underlying_asset_class", "underlyingAssetClass", SecurityAssetTermFieldType.String),
+                Optional("underlying_description", "underlyingDescription", SecurityAssetTermFieldType.String),
+                Optional("leverage", "leverage", SecurityAssetTermFieldType.Decimal)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "Warrant",
+            TableName: "warrant_projection",
+            Columns:
+            [
+                // The first Guid-typed projected term: an underlying Security Master identity, so it
+                // is a uuid column that joins straight back to securities.security_id.
+                Gate("underlying_id", "underlyingId", SecurityAssetTermFieldType.Guid),
+                Gate("warrant_type", "warrantType", SecurityAssetTermFieldType.String),
+                Optional("strike", "strike", SecurityAssetTermFieldType.Decimal),
+                Optional("expiry_date", "expiry", SecurityAssetTermFieldType.Date),
+                Optional("multiplier", "multiplier", SecurityAssetTermFieldType.Decimal)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "InvestmentFund",
+            TableName: "investment_fund_projection",
+            Columns:
+            [
+                // Every InvestmentFund term is optional, so the projection has no gate: a fund row
+                // exists for every record of the class and reads null where a term is unknown.
+                Optional("fund_type", "fundType", SecurityAssetTermFieldType.String),
+                Optional("fund_family", "fundFamily", SecurityAssetTermFieldType.String),
+                Optional("nav_currency", "navCurrency", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.TrimUpperInvariant),
+                Optional("distribution_policy", "distributionPolicy", SecurityAssetTermFieldType.String),
+                Optional("is_stable_nav", "isStableNav", SecurityAssetTermFieldType.Boolean),
+                Optional("pricing_source", "pricingSource", SecurityAssetTermFieldType.String)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "PrivateFundInterest",
+            TableName: "private_fund_interest_projection",
+            Columns:
+            [
+                Gate("gp_sponsor", "gpSponsor", SecurityAssetTermFieldType.String),
+                Gate("strategy", "strategy", SecurityAssetTermFieldType.String),
+                Gate("vintage", "vintage", SecurityAssetTermFieldType.Integer),
+                Gate("commitment", "commitment", SecurityAssetTermFieldType.Decimal),
+                Optional("funded_amount", "fundedAmount", SecurityAssetTermFieldType.Decimal),
+                Optional("unfunded_amount", "unfundedAmount", SecurityAssetTermFieldType.Decimal),
+                Gate("nav_date", "navDate", SecurityAssetTermFieldType.Date),
+                Optional("lockup", "lockup", SecurityAssetTermFieldType.String)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "PrivateCompanyEquity",
+            TableName: "private_company_equity_projection",
+            Columns:
+            [
+                Gate("issuer", "issuer", SecurityAssetTermFieldType.String),
+                Gate("share_class", "shareClass", SecurityAssetTermFieldType.String),
+                Gate("round", "round", SecurityAssetTermFieldType.String),
+                Optional("ownership_percent", "ownershipPercent", SecurityAssetTermFieldType.Decimal),
+                Gate("cost_basis", "costBasis", SecurityAssetTermFieldType.Decimal),
+                Optional("latest_valuation", "latestValuation", SecurityAssetTermFieldType.Decimal),
+                Optional("transfer_restrictions", "transferRestrictions", SecurityAssetTermFieldType.String)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "RealEstateHolding",
+            TableName: "real_estate_holding_projection",
+            Columns:
+            [
+                Gate("property_type", "propertyType", SecurityAssetTermFieldType.String),
+                Gate("address_or_market", "addressOrMarket", SecurityAssetTermFieldType.String),
+                Gate("ownership_percent", "ownershipPercent", SecurityAssetTermFieldType.Decimal),
+                Gate("appraisal_value", "appraisalValue", SecurityAssetTermFieldType.Decimal),
+                Gate("valuation_date", "valuationDate", SecurityAssetTermFieldType.Date),
+                Optional("debt_stack", "debtStack", SecurityAssetTermFieldType.String),
+                Optional("sponsor", "sponsor", SecurityAssetTermFieldType.String)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "CommitmentGuarantee",
+            TableName: "commitment_guarantee_projection",
+            Columns:
+            [
+                Gate("counterparty", "counterparty", SecurityAssetTermFieldType.String),
+                Optional("beneficiary", "beneficiary", SecurityAssetTermFieldType.String),
+                Gate("committed_amount", "committedAmount", SecurityAssetTermFieldType.Decimal),
+                Optional("unfunded_amount", "unfundedAmount", SecurityAssetTermFieldType.Decimal),
+                Gate("effective_date", "effectiveDate", SecurityAssetTermFieldType.Date),
+                Optional("expiry_date", "expiryDate", SecurityAssetTermFieldType.Date),
+                Optional("fee_rate", "feeRate", SecurityAssetTermFieldType.Decimal),
+                Optional("collateral", "collateral", SecurityAssetTermFieldType.String)
+            ],
+            ChildTables:
+            [
+                // Same element shape as the direct-loan covenant list: a typed covenant with a prose
+                // threshold ("$5m", "4.5x") that must never be coerced to a number.
+                new(
+                    TableName: "commitment_guarantee_covenant_projection",
+                    TermKey: "covenants",
+                    Columns:
+                    [
+                        new("covenant_type", "covenantType", SecurityAssetTermFieldType.String, Required: true),
+                        new("threshold", "threshold", SecurityAssetTermFieldType.String, Required: true),
+                        new("notes", "notes", SecurityAssetTermFieldType.String)
+                    ])
+            ])
     ];
 
     /// <summary>A verbatim common-terms string column (exchange, country of risk, issuer).</summary>
@@ -721,14 +906,16 @@ internal static partial class SecurityTermsProjectionRegistry
 
     /// <summary>
     /// The term types a projected column can carry. Array and Object are structural (Array is fanned
-    /// out to a child table instead), and Guid has no scalar reader on the projection path.
+    /// out to a child table instead); every other declared type has a scalar reader on the projection
+    /// path, Guid landing in a uuid column.
     /// </summary>
     private static bool IsProjectableScalar(SecurityAssetTermFieldType type)
         => type is SecurityAssetTermFieldType.String
             or SecurityAssetTermFieldType.Decimal
             or SecurityAssetTermFieldType.Integer
             or SecurityAssetTermFieldType.Boolean
-            or SecurityAssetTermFieldType.Date;
+            or SecurityAssetTermFieldType.Date
+            or SecurityAssetTermFieldType.Guid;
 
     /// <summary>
     /// Table and column names are interpolated into projection SQL, so they are held to a literal
