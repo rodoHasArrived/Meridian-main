@@ -38,7 +38,10 @@ Scheduled compression uses `CompressAsync` and its compression-specific result, 
 repair completion. It selects healthy plain JSONL files within the requested paths, completes all
 required backups before mutation, and verifies decompressed bytes against the unchanged source
 before publishing a create-only gzip destination and deleting the original. Successful encoding
-changes report compressed files and bytes saved with zero repaired issues. Scheduled runs defer files written
+changes report compressed files and bytes saved with zero repaired issues. In-process, `JsonlStorageSink` holds a shared
+`JsonlWriteFence` lease while its append stream is open and compression takes the path
+exclusively, so an open file is refused and a reopening sink waits until the source is gone.
+Scheduled runs also defer files written
 within the last five minutes, and every run refuses to delete a source whose length or timestamp
 changed after verification, withdrawing the new archive instead. A source checksum sidecar is
 carried to the gzip archive before the original sidecar is removed. Unhealthy sources,

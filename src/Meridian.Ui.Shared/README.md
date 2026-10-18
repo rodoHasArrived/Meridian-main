@@ -25,7 +25,9 @@ recognize the native verified `Matched` outcome while retaining blockers from ot
 Bank-statement CSV imports accept optional positive `line_sequence` and `statement_revision`
 columns. Missing sequences retain source file order; missing revisions use 1. Each file must have
 unique sequences and one revision, shared by manual uploads and scheduled feeds. Corrected files
-declare a higher revision. Provider shadow cash comparisons use the same statement authority as
+declare a higher revision. A file that declares `statement_revision` must also declare its
+statement date, through a `statement_date` column or the upload or schedule statement date,
+so a re-dated correction still supersedes the original. Provider shadow cash comparisons use the same statement authority as
 account reconciliation instead of choosing a balance from arrival order.
 
 `ProviderConnectionLifecycleService` verifies retained Xero, NetSuite and QuickBooks

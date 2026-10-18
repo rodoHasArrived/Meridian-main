@@ -40,8 +40,11 @@ internal static class JsonlArchiveFiles
             })
             .ToArray();
 
+    // Symmetric with OpenReadAsync: a retained gzip path whose archive was withdrawn still
+    // resolves to its surviving plain source, and a plain path to its published gzip.
     internal static bool Exists(string path) => File.Exists(path) ||
-        (path.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase) && File.Exists(path + ".gz"));
+        (path.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase) && File.Exists(path + ".gz")) ||
+        (IsGzipArchive(path) && File.Exists(path[..^3]));
 
     /// <summary>
     /// Retains a handle before the caller inspects length or codec. A captured plain path can

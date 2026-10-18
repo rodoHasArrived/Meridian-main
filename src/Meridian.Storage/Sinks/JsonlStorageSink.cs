@@ -511,6 +511,8 @@ public sealed class JsonlStorageSink : IStorageSink
         private readonly bool _compressed;
         private readonly bool _copyOnWrite;
         private FileStream? _stream;
+        // Held while _stream is open so compression cannot delete a source we append to.
+        private IDisposable? _fenceLease;
         private bool _dirtySinceFsync;
         private bool _compressedFileValidated;
         private long _fsyncCount;
@@ -578,6 +580,7 @@ public sealed class JsonlStorageSink : IStorageSink
                 if (_copyOnWrite)
                 {
                     EnsureCompressedFileIsReadable();
+                    using var fence = await JsonlWriteFence.EnterWriteAsync(_path, ct).ConfigureAwait(false);
                     await AtomicFileWriter.AppendAsync(
                         _path,
                         stream => WriteSingleEventAsync(stream, evt, ct),
@@ -610,6 +613,7 @@ public sealed class JsonlStorageSink : IStorageSink
                 if (_copyOnWrite)
                 {
                     EnsureCompressedFileIsReadable();
+                    using var fence = await JsonlWriteFence.EnterWriteAsync(_path, ct).ConfigureAwait(false);
                     await AtomicFileWriter.AppendAsync(
                         _path,
                         stream => WriteEventsAsync(stream, events, ct),
@@ -666,6 +670,8 @@ public sealed class JsonlStorageSink : IStorageSink
 
             await _stream.DisposeAsync().ConfigureAwait(false);
             _stream = null;
+            _fenceLease?.Dispose();
+            _fenceLease = null;
         }
 
         // Caller holds _gate. If a cancellable write fails after reaching the OS, restore the
@@ -673,7 +679,25 @@ public sealed class JsonlStorageSink : IStorageSink
         // original events without joining valid JSON to a torn prefix.
         private async Task WriteAppendStreamAsync(Func<FileStream, Task> write, CancellationToken ct)
         {
-            var stream = EnsureStream();
+            FileStream stream;
+            if (_stream is null)
+            {
+                _fenceLease ??= await JsonlWriteFence.EnterWriteAsync(_path, ct).ConfigureAwait(false);
+                try
+                {
+                    stream = EnsureStream();
+                }
+                catch
+                {
+                    _fenceLease.Dispose();
+                    _fenceLease = null;
+                    throw;
+                }
+            }
+            else
+            {
+                stream = _stream;
+            }
             var startPosition = stream.Position;
             try
             {

@@ -267,6 +267,15 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
+    public async Task WithdrawnGzipPath_ReplaysTheSurvivingSource()
+    {
+        var path = await CreateSourceAsync();
+
+        JsonlArchiveFiles.Exists(path + ".gz").Should().BeTrue();
+        (await ReadAllAsync(new JsonlReplayer(path + ".gz").ReadEventsAsync())).Should().Equal(ExpectedLines());
+    }
+
+    [Fact]
     public async Task OpenWriter_RecentlyWrittenSource_IsDeferredAndPreserved()
     {
         var path = await CreateSourceAsync();

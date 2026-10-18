@@ -8,7 +8,9 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Storage;
+using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Services;
 using Meridian.Storage.Sinks;
 using Meridian.Tests.Infrastructure;
 using Xunit;
@@ -210,6 +212,84 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
         }
 
         return lines;
+    }
+
+    [Fact]
+    public async Task Compression_RefusesFileWhileSinkHoldsItsAppendStream()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        await using var sink = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions);
+        await sink.AppendAsync(CreateTestEvent("AAPL", 1));
+        await sink.FlushAsync();
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl").Should().ContainSingle().Subject;
+        var before = await File.ReadAllBytesAsync(dayFile);
+
+        var result = await new FileMaintenanceService(options)
+            .CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false));
+
+        result.Success.Should().BeFalse();
+        result.Errors.Should().ContainSingle(error => error.Contains("open for writing"));
+        File.Exists(dayFile + ".gz").Should().BeFalse();
+        (await File.ReadAllBytesAsync(dayFile)).Should().Equal(before);
+    }
+
+    [Fact]
+    public async Task SinkReopenDuringCompression_WaitsAndLandsInAFreshSource_NeverInTheDeletedOne()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await first.AppendAsync(CreateTestEvent("AAPL", 1));
+            await first.FlushAsync();
+        }
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl").Should().ContainSingle().Subject;
+        var original = await File.ReadAllBytesAsync(dayFile);
+        await using var second = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions);
+        Task? lateWrite = null;
+        var service = new FileMaintenanceService(options)
+        {
+            CompressionCheckpoint = stage =>
+            {
+                if (stage != CompressionPublicationStage.StagedVerified)
+                    return;
+                lateWrite = Task.Run(async () =>
+                {
+                    await second.AppendAsync(CreateTestEvent("AAPL", 2));
+                    await second.FlushAsync();
+                });
+                // The reopen must wait on the fence rather than append to the doomed source.
+                lateWrite.Wait(TimeSpan.FromMilliseconds(200)).Should().BeFalse();
+            }
+        };
+
+        var result = await service.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false));
+        await lateWrite!.WaitAsync(TimeSpan.FromSeconds(10));
+
+        result.Success.Should().BeTrue();
+        await using (var archive = new GZipStream(File.OpenRead(dayFile + ".gz"), CompressionMode.Decompress))
+        using (var decompressed = new MemoryStream())
+        {
+            await archive.CopyToAsync(decompressed);
+            decompressed.ToArray().Should().Equal(original, "the archive holds exactly the verified source");
+        }
+        File.ReadAllLines(dayFile).Should().ContainSingle("the late event lands in a fresh source, not the deleted one");
+    }
+
+    [Fact]
+    public async Task WriteFence_ExclusiveHolderRefusedWhileWriterHoldsLease()
+    {
+        var path = Path.Combine(TestDataRoot, "fence.jsonl");
+        using (await JsonlWriteFence.EnterWriteAsync(path, CancellationToken.None))
+            JsonlWriteFence.TryEnterExclusive(path, out _).Should().BeFalse();
+
+        JsonlWriteFence.TryEnterExclusive(path, out var exclusive).Should().BeTrue();
+        var waiting = JsonlWriteFence.EnterWriteAsync(path, CancellationToken.None).AsTask();
+        await Task.Delay(50);
+        waiting.IsCompleted.Should().BeFalse();
+        exclusive.Dispose();
+        (await waiting.WaitAsync(TimeSpan.FromSeconds(5))).Dispose();
     }
 
     private static MarketEvent CreateTestEvent(string symbol, int sequence)
