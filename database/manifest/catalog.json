@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "3796609140335564b703eebe13aa9410944d5df8aa408506222f740b41414849",
+  "database_fingerprint": "1f62ec0e67e0be53e544a8a3518efd5d1ff3170ef1a221c1ef80beb32e83ef11",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -23661,7 +23661,7 @@
       "object": "function:reporting.validate_reporting_statement_revision_append()"
     },
     {
-      "fingerprint": "4647500092b2060c636bbe17b37b74910374dc399d72653a16e36e43710b1d5c",
+      "fingerprint": "95b118ebfec4474c3fa6623f6dacd4c8ecff3e0fea3efb77f527d3d97a59af1c",
       "object": "function:security_master.guard_close_price_approval_append()"
     },
     {
@@ -26533,7 +26533,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "caa7916334d929d5dc0a988d66f11d906178a63ac7b8a554c8e506ee01a3b6d5",
+      "fingerprint": "be4781e751100033bd7d658f2b143e033e0b52c8405904de31870ec63ca79d70",
       "object": "schema:security_master"
     },
     {
@@ -124930,7 +124930,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "caa7916334d929d5dc0a988d66f11d906178a63ac7b8a554c8e506ee01a3b6d5",
+      "fingerprint": "be4781e751100033bd7d658f2b143e033e0b52c8405904de31870ec63ca79d70",
       "foreign_tables": [],
       "functions": [
         {
@@ -124949,8 +124949,8 @@
             }
           ],
           "comment": null,
-          "definition_hash": "c84ba4778ac12df330834532c2fd4d60ad8f7e1be216f864a945daa8613e9ed7",
-          "fingerprint": "4647500092b2060c636bbe17b37b74910374dc399d72653a16e36e43710b1d5c",
+          "definition_hash": "a01b7d77fd3d821e74e5cea153cc24f4762998347909072bdbbb61f630b02040",
+          "fingerprint": "95b118ebfec4474c3fa6623f6dacd4c8ecff3e0fea3efb77f527d3d97a59af1c",
           "kind": "function",
           "language": "plpgsql",
           "name": "guard_close_price_approval_append",
