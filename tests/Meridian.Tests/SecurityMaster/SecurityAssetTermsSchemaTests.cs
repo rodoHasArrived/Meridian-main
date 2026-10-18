@@ -24,7 +24,7 @@ public sealed class SecurityAssetTermsSchemaTests
     private static readonly string[] IntentionallyUnprojectedAssetClasses =
     [
         // The profile-governed class: its fields vary per approved profile, so there is no fixed
-        // column set to project. Every other catalog class is projected (migration 043 closed the
+        // column set to project. Every other catalog class is projected (migration 044 closed the
         // last eight declared gaps and the whole ops-capable backlog).
         "CustomAsset"
     ];

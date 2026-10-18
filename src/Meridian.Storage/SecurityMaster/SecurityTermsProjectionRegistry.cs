@@ -230,7 +230,7 @@ internal sealed record SecurityTermsProjectionDescriptor(
 /// issuer; series, lifecycle, aliases) with a legacy nested-shape fallback.
 /// </para>
 /// <para>
-/// Migration 043 then projected the twelve classes that had never had a relational projection
+/// Migration 044 then projected the twelve classes that had never had a relational projection
 /// (CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Cfd, Warrant, InvestmentFund,
 /// PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding, CommitmentGuarantee) as pure
 /// declarations over their terms contract, so every catalog class except the profile-governed
@@ -501,7 +501,7 @@ internal static partial class SecurityTermsProjectionRegistry
             ],
             ChildTables: [])
 ,
-        // The twelve classes below (migration 043) had no relational projection at all: their terms
+        // The twelve classes below (migration 044) had no relational projection at all: their terms
         // were reachable only by parsing the JSONB blob one security at a time. Each is a pure data
         // declaration over the terms contract — gates on the terms the schema marks Required, nullable
         // columns for the rest, NOT NULL DEFAULT FALSE for the one required flag — with no derived
