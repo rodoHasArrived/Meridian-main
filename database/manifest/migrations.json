@@ -379,13 +379,13 @@
       "sha256": "eeff3142bc3d4d27d0cd1646b0ea1075662b4734f478eca80af27499287debf4"
     },
     {
-      "filename": "043_security_master_declarative_terms_projections.sql",
+      "filename": "043_security_master_close_price_approval_null_guards.sql",
       "immutable": true,
       "migration_set_id": "security-master",
       "ordinal": 43,
-      "path": "src/Meridian.Storage/SecurityMaster/Migrations/043_security_master_declarative_terms_projections.sql",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/043_security_master_close_price_approval_null_guards.sql",
       "schema": "security_master",
-      "sha256": "06a9b87e2ad87c945e325270f2d06842a938038653945feaa80e6afcb2515f11"
+      "sha256": "ab8fd15279bc3bd00bf79684ab7c0f1dda45faf51a62e8462236cfbd1098011d"
     },
     {
       "filename": "001_direct_lending.sql",
@@ -1199,7 +1199,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "6f7888175db5c7bcfbf192b6eb9e9063ee3fac006ace6316c1cd846352e1c28e",
+  "fingerprint": "fbc5b7e87c601c04367d59914fd49ba55b28ab4cec4bea9c59b3fbcf705ec163",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
