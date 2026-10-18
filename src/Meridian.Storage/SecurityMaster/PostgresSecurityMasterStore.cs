@@ -70,6 +70,35 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     internal static IReadOnlyList<string> ProjectedAssetClasses { get; } =
         ProjectionWriters.Select(static writer => writer.AssetClass).ToArray();
 
+    /// <summary>
+    /// The writers an upsert runs, by the asset class the <c>securities</c> row held before the
+    /// write and the class it holds now. A projection row for class X can only exist while the
+    /// security's stored class is X (every write path goes through <see cref="UpsertProjectionCoreAsync"/>,
+    /// which clears X's rows the moment the class moves on), so a write has to visit at most two
+    /// writers: the current class's, which upserts or clears its own rows depending on the gates,
+    /// and the prior class's when the class changed, which clears the rows it left behind. Every
+    /// other writer would delete rows that cannot be there. Returned in registry order, so a class
+    /// change clears the old projection before the new one is published when the old writer is
+    /// registered first.
+    /// </summary>
+    internal static IReadOnlyList<string> ProjectionWritersFor(string? priorAssetClass, string currentAssetClass)
+    {
+        ArgumentNullException.ThrowIfNull(currentAssetClass);
+
+        var classChanged = priorAssetClass is not null
+            && !string.Equals(priorAssetClass, currentAssetClass, StringComparison.OrdinalIgnoreCase);
+
+        return ProjectionWriters
+            .Where(writer =>
+                string.Equals(writer.AssetClass, currentAssetClass, StringComparison.OrdinalIgnoreCase)
+                || (classChanged && string.Equals(writer.AssetClass, priorAssetClass, StringComparison.OrdinalIgnoreCase)))
+            .Select(static writer => writer.AssetClass)
+            .ToArray();
+    }
+
+    private static readonly IReadOnlyDictionary<string, AssetProjectionWriter> ProjectionWritersByAssetClass =
+        ProjectionWriters.ToDictionary(static writer => writer.AssetClass, StringComparer.OrdinalIgnoreCase);
+
     private readonly SecurityMasterOptions _options;
     private readonly SecurityMasterNodeIdentity _nodeIdentity;
 
@@ -381,6 +410,12 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         SecurityProjectionRecord record,
         CancellationToken ct)
     {
+        // The class the row held before this write decides which stale projection, if any, has to
+        // be cleared below. Read under the row lock the upsert is about to take anyway (it is the
+        // same lock, taken a statement earlier), so a competing writer cannot change the class
+        // between this read and the upsert's own ON CONFLICT recheck.
+        var priorAssetClass = await ReadAssetClassForUpdateAsync(connection, transaction, record.SecurityId, ct).ConfigureAwait(false);
+
         await using (var command = connection.CreateCommand())
         {
             command.Transaction = transaction;
@@ -480,16 +515,37 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             await ReplaceAliasesAsync(connection, transaction, record.SecurityId, record.Aliases, ct).ConfigureAwait(false);
         }
 
-        // Fan out to every registered per-asset-class projection writer. Each writer upserts its own
-        // projection when the record matches its asset class and deletes any stale row otherwise, so
-        // every writer runs for every record (class changes clean up the previous projection). Adding a
-        // projected asset class is a single additive registration in ProjectionWriters plus its writer.
-        foreach (var writer in ProjectionWriters)
+        // Fan out to the per-asset-class projection writers this write can affect: the current
+        // class's writer upserts its projection (or clears it when a gate fails), and when the class
+        // changed, the prior class's writer runs against the non-matching record and clears the rows
+        // it left behind. Running every registered writer here used to cost one delete per table
+        // for rows that cannot exist (N6 in the extensibility review); ProjectionWritersFor states
+        // the invariant that makes the narrower visit sufficient. Adding a projected asset class is
+        // still a single additive registration in ProjectionWriters.
+        foreach (var assetClass in ProjectionWritersFor(priorAssetClass, record.AssetClass))
         {
-            await writer.WriteAsync(this, connection, transaction, record, ct).ConfigureAwait(false);
+            await ProjectionWritersByAssetClass[assetClass].WriteAsync(this, connection, transaction, record, ct).ConfigureAwait(false);
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// The asset class the <c>securities</c> row currently holds, locked for the rest of the
+    /// transaction, or <see langword="null"/> when the security has never been projected.
+    /// </summary>
+    private async Task<string?> ReadAssetClassForUpdateAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid securityId,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"select asset_class from {Qualified("securities")} where security_id = @security_id for update;";
+        command.Parameters.AddWithValue("security_id", securityId);
+        var result = await command.ExecuteScalarAsync(ct).ConfigureAwait(false);
+        return result is string assetClass ? assetClass : null;
     }
 
     private async Task UpsertBondProjectionTablesAsync(
