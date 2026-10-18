@@ -98,15 +98,22 @@ public sealed class AccountingAuditIntegrityService(
             var verification = await ledgerEventAuditVerifier.VerifyLedgerEventAuditAsync(ct).ConfigureAwait(false);
             return new(chain, AuditChainIntegrityStatus.Verified, verification.ChainedEvents, verification.UnprotectedGenesisFacts);
         }
+        catch (LedgerValidationException ex) when (ex.Data[LedgerEventAuditFailureData.UnsupportedSchemaVersion] is true)
+        {
+            // As for the accounting chain: hashing rules this build does not implement leave the
+            // chain unverified, which is not evidence of tampering.
+            return new(chain, AuditChainIntegrityStatus.Unavailable, 0, 0, "UnsupportedSchemaVersion", ex.Message);
+        }
         catch (LedgerValidationException ex)
         {
             // The PostgreSQL store raises its integrity failures as ledger validation errors whose
             // message names the break (it carries no ledger content) and whose data records how far
-            // the scan got and where it stopped, when the failure site knows.
+            // the scan got, where it stopped, and the genesis facts outside the chain, when the
+            // failure site knows.
             return new(chain,
                 AuditChainIntegrityStatus.Broken,
                 ReadLong(ex, LedgerEventAuditFailureData.ChainedEventsVerified) ?? 0,
-                0,
+                ReadLong(ex, LedgerEventAuditFailureData.UnprotectedGenesisFacts) ?? 0,
                 "IntegrityFailure",
                 ex.Message,
                 ReadLong(ex, LedgerEventAuditFailureData.FailedSequence));

@@ -6,14 +6,14 @@
  * end to end, so it runs on demand rather than on every screen load.
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { getAuditIntegrityReport } from "@/lib/api/audit-integrity.api";
-import { isApiError } from "@/lib/api-errors";
+import { isAbortError, isApiError } from "@/lib/api-errors";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import {
   buildAuditIntegrityViewModel,
@@ -26,14 +26,25 @@ export function AuditChainIntegrityPanel() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ title: string; detail: string } | null>(null);
+  const inFlight = useRef<AbortController | null>(null);
+
+  // Leaving the screen abandons the run: the server stops scanning and releases the chain-head
+  // locks and its single-flight slot instead of finishing for a result nobody will read.
+  useEffect(() => () => inFlight.current?.abort(), []);
 
   const verify = useCallback(async () => {
+    inFlight.current?.abort();
+    const controller = new AbortController();
+    inFlight.current = controller;
     setBusy(true);
     setError(null);
     setNotice(null);
     try {
-      setView(buildAuditIntegrityViewModel(await getAuditIntegrityReport()));
+      setView(buildAuditIntegrityViewModel(await getAuditIntegrityReport({ signal: controller.signal })));
     } catch (reason) {
+      if (isAbortError(reason) || controller.signal.aborted) {
+        return;
+      }
       setView(null);
       // Refusals are not verification failures: say why nothing was checked instead of raising an alarm.
       if (isApiError(reason) && reason.status === 403) {
@@ -50,7 +61,10 @@ export function AuditChainIntegrityPanel() {
         setError(reason instanceof Error ? reason.message : "Audit integrity check failed.");
       }
     } finally {
-      setBusy(false);
+      if (inFlight.current === controller) {
+        inFlight.current = null;
+        setBusy(false);
+      }
     }
   }, []);
 

@@ -101,6 +101,7 @@ public sealed class AccountingAuditIntegrityServiceTests : IDisposable
         var failure = new LedgerValidationException("Ledger audit integrity failure: Ledger audit event 8 has been mutated, removed, or reordered.");
         failure.Data[LedgerEventAuditFailureData.FailedSequence] = 8L;
         failure.Data[LedgerEventAuditFailureData.ChainedEventsVerified] = 7L;
+        failure.Data[LedgerEventAuditFailureData.UnprotectedGenesisFacts] = 3L;
 
         var report = await new AccountingAuditIntegrityService(accountingAuditStore: null, new ThrowingLedgerVerifier(failure)).VerifyAsync();
 
@@ -108,6 +109,21 @@ public sealed class AccountingAuditIntegrityServiceTests : IDisposable
         ledger.Status.Should().Be(AuditChainIntegrityStatus.Broken);
         ledger.LinksChecked.Should().Be(7);
         ledger.FailedSequence.Should().Be(8);
+        ledger.UnprotectedPreChainCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task VerifyAsync_ReportsALedgerChainUnderUnsupportedHashingRulesAsUnverifiedNotBroken()
+    {
+        var failure = new LedgerValidationException("Ledger audit integrity failure: The retained ledger audit head has an unsupported version.");
+        failure.Data[LedgerEventAuditFailureData.UnsupportedSchemaVersion] = true;
+
+        var report = await new AccountingAuditIntegrityService(accountingAuditStore: null, new ThrowingLedgerVerifier(failure)).VerifyAsync();
+
+        report.AllVerified.Should().BeFalse();
+        var ledger = report.Chains.Single(chain => chain.Chain == AuditChainIdentifiers.LedgerEvents);
+        ledger.Status.Should().Be(AuditChainIntegrityStatus.Unavailable);
+        ledger.FailureKind.Should().Be("UnsupportedSchemaVersion");
     }
 
     [Fact]

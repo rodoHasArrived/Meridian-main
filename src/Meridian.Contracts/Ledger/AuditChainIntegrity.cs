@@ -41,6 +41,15 @@ public static class LedgerEventAuditFailureData
 
     /// <summary>Chained events that verified before the failure (<see cref="long"/>).</summary>
     public const string ChainedEventsVerified = "Meridian.LedgerEventAudit.ChainedEventsVerified";
+
+    /// <summary>Genesis facts retained before chaining, once the genesis inventory itself verified (<see cref="long"/>).</summary>
+    public const string UnprotectedGenesisFacts = "Meridian.LedgerEventAudit.UnprotectedGenesisFacts";
+
+    /// <summary>
+    /// Present (<see langword="true"/>) when the chain was written under hashing rules this build does
+    /// not implement, so it could not be checked; this is not evidence of tampering.
+    /// </summary>
+    public const string UnsupportedSchemaVersion = "Meridian.LedgerEventAudit.UnsupportedSchemaVersion";
 }
 
 /// <summary>Stable status values for <see cref="AuditChainIntegrityResultDto.Status"/>.</summary>

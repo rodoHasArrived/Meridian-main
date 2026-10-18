@@ -42,7 +42,8 @@ capture; a new command cannot silently replace the unresolved action.
 Accounting → Configuration includes an on-demand audit chain integrity check over
 `GET /api/ledger/audit-integrity`. It reports each hash-chained log (accounting actions, ledger
 events) as verified, broken with its failure kind and sequence, unavailable, or not kept in this
-deployment, and never rolls an unchecked chain into a passing verdict. Focused coverage lives in
+deployment, and never rolls an unchecked chain into a passing verdict. Leaving the screen aborts a
+running check so the server releases the chain locks. Focused coverage lives in
 `accounting-screen.audit-integrity*.test.ts(x)`.
 
 Governed Journal Entry Detail exposes retained disposal tax results from the shared period and

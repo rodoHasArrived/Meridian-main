@@ -62,6 +62,21 @@ describe("AuditChainIntegrityPanel", () => {
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 
+  it("aborts a running verification when the panel unmounts", async () => {
+    let signal: AbortSignal | undefined;
+    api.getAuditIntegrityReport.mockImplementation((options) => {
+      signal = options?.signal ?? undefined;
+      return new Promise(() => {});
+    });
+    const { unmount } = render(<AuditChainIntegrityPanel />);
+
+    await userEvent.click(screen.getByRole("button", { name: /Verify the accounting and ledger audit chains/ }));
+    expect(signal?.aborted).toBe(false);
+    unmount();
+
+    expect(signal?.aborted).toBe(true);
+  });
+
   it("reports a concurrent run as busy rather than failed", async () => {
     api.getAuditIntegrityReport.mockRejectedValue(new ApiError({ path: "/api/ledger/audit-integrity", status: 429 }));
     render(<AuditChainIntegrityPanel />);
