@@ -76,7 +76,9 @@ capture outcome, reload the original valuation date's history, then use **Verify
 capture** or **Retry same price capture** to submit the unchanged command with its retained
 request identity. New captures and approvals stay locked until that command is confirmed.
 After an uncertain approval outcome, return to the approval's valuation date and reload its
-history; the workbench verifies the retained review there before unlocking further actions.
+history; the workbench verifies that the retained review carries your reviewer identity and
+rationale before unlocking further actions. If another reviewer's approval was retained for that
+snapshot instead, the lock stays and the banner states that your decision was not recorded.
 When Security Master is not configured, close-price routes report unavailability rather than
 empty history.
 
@@ -119,7 +121,8 @@ any prior `SourceCleared` result and submit a new run with independently sourced
 new source versions where the retained source content changes.
 
 Run again after a source correction with a new run ID, later observation time and a business
-date no earlier than the retained head; run IDs cannot contain whitespace or `/ \ ? # %`, at
+date no earlier than the retained head; new run IDs cannot contain whitespace or `/ \ ? # %`
+(runs retained before this rule still replay and re-submit under their original IDs), at
 least one cash tolerance rule is required, and reformatted copies of a source payload remain
 dependent evidence. The amount,
 row ID, business date and tolerance version do not create a different case. The case retains its
