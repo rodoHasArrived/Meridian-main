@@ -628,6 +628,7 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
     [Theory]
     [InlineData("number-exponent")]
     [InlineData("number-fraction")]
+    [InlineData("root-scalar")]
     public async Task Respelled_number_in_copied_json_observation_is_rejected_as_dependent_evidence(string shape)
         => await Copied_json_observation_is_rejected_as_dependent_evidence(shape);
 
@@ -648,6 +649,11 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
             case "number-exponent":
                 original = """{"balance":{"amount":1000,"currency":"USD"},"source":"ledger"}""";
                 reformatted = """{"balance":{"amount":1e3,"currency":"USD"},"source":"ledger"}""";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+            case "root-scalar":
+                original = "1000";
+                reformatted = "1e3";
                 request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
                 break;
             case "number-fraction":

@@ -217,12 +217,13 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
     /// <summary>
     /// Copied JSON observations stay copies after reformatting or property reordering, so JSON payloads
     /// compare by a compact canonical form: object properties sorted by ordinal key at every depth, array
-    /// order and scalar text preserved. Any other payload compares as trimmed text. Retained payloads are untouched.
+    /// order preserved, numbers written by value. Root-level JSON scalars canonicalize the same way. Any payload
+    /// that is not valid JSON compares as trimmed text. Retained payloads are untouched.
     /// </summary>
     private static string CanonicalObservation(string payload)
     {
         var trimmed = payload.Trim();
-        if (trimmed.Length == 0 || trimmed[0] is not ('{' or '['))
+        if (trimmed.Length == 0)
             return trimmed;
         try
         {
