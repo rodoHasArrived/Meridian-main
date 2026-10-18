@@ -698,6 +698,36 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
     }
 
     [Fact]
+    public async Task Legacy_retained_run_identity_still_replays_and_resubmits_while_new_identities_are_route_safe()
+    {
+        var store = new FileAccountCashReconciliationStore(_root);
+        await store.InitializeAsync();
+        var service = new AccountCashReconciliationService(store);
+        var original = await service.RunAsync(Request("first", 0, 1000m, 990m));
+        const string legacyRunId = "legacy run/2026%09";
+        // Retained before the route-safety rule: rewrite the durable record directly, bypassing RunAsync.
+        var legacy = service.EvaluateUnretained(Request(legacyRunId, 0, 1000m, 990m));
+        legacy.InputHash.Should().NotBe(original.InputHash);
+        await store.WithStateAsync(document => (document with { Runs = [legacy] }, 0), true, CancellationToken.None);
+
+        var replay = await (await ServiceAsync()).ReplayAsync(_scope, legacyRunId);
+        replay.Input.RunId.Should().Be(legacyRunId);
+        replay.InputHash.Should().Be(legacy.InputHash);
+        replay.ResultHash.Should().Be(legacy.ResultHash);
+        replay.Should().BeEquivalentTo(legacy, options => options.WithStrictOrdering());
+        replay.Comparisons.Should().ContainSingle().Which.ObservationState.Should().Be("Open");
+
+        var resubmitted = await service.RunAsync(Request(legacyRunId, 0, 1000m, 990m));
+        resubmitted.Should().BeEquivalentTo(legacy, options => options.WithStrictOrdering());
+        var rebind = await Assert.ThrowsAsync<InvalidOperationException>(() => service.RunAsync(Request(legacyRunId, 0, 1000m, 980m)));
+        rebind.Message.Should().Contain("cannot be rebound");
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(Request("new run/2026%09", 1, 1000m, 990m)));
+        failure.Message.Should().Contain("round-trip");
+        Assert.Single(await (await ServiceAsync()).GetCasesAsync(_scope)).History.Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task Empty_cash_rule_set_cannot_clear_a_comparison()
     {
         var service = await ServiceAsync();

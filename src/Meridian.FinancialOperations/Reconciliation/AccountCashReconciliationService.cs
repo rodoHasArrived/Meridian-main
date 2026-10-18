@@ -26,6 +26,10 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
                     throw new InvalidOperationException("A retained run cannot be rebound to changed sources, scope or tolerance.");
                 return (document, retained);
             }
+            // Only a new run identity must round-trip through replay routes. Runs retained before this
+            // rule, and idempotent re-submissions of them, keep replaying under their original identity.
+            if (!IsRouteSafeRunId(input.RunId))
+                throw new ArgumentException("A run identity must round-trip through replay routes; whitespace, control characters and '/', '\\', '?', '#', '%' are refused.", nameof(request));
             foreach (var source in new[] { input.Left, input.Right })
             {
                 var history = document.Runs.Where(item => item.Input.Scope == input.Scope)
@@ -161,8 +165,6 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
         ArgumentNullException.ThrowIfNull(input);
         RequireScope(input.Scope);
         ArgumentException.ThrowIfNullOrWhiteSpace(input.RunId);
-        if (input.RunId.Trim().Any(static ch => char.IsWhiteSpace(ch) || char.IsControl(ch) || ch is '/' or '\\' or '?' or '#' or '%'))
-            throw new ArgumentException("A run identity must round-trip through replay routes; whitespace, control characters and '/', '\\', '?', '#', '%' are refused.", nameof(input));
         ArgumentException.ThrowIfNullOrWhiteSpace(input.InitialOwner);
         ArgumentNullException.ThrowIfNull(input.Tolerance);
         ArgumentException.ThrowIfNullOrWhiteSpace(input.Tolerance.ProfileId);
@@ -259,6 +261,16 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
         => "cash-balance:" + Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(new[] { input.Scope.TenantId, input.Scope.CompanyId,
             input.Scope.AccountId, input.Scope.LedgerBookId.ToString("D"), input.Left.SourceId, input.Left.SourceType.ToString(),
             input.Right.SourceId, input.Right.SourceType.ToString(), currency }, AccountCashReconciliationJsonContext.Default.StringArray));
+    /// <summary>Evaluates a request exactly as retention would, without consulting or changing the store.</summary>
+    internal AccountCashReconciliationRun EvaluateUnretained(AccountCashReconciliationRequest request)
+    {
+        var input = Normalize(request);
+        var currencies = input.Left.Rows.Concat(input.Right.Rows).Select(item => item.Row.Currency).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+        var comparisons = Evaluate(input, currencies);
+        return new AccountCashReconciliationRun(input, InputHash(input), comparisons, ResultHash(comparisons));
+    }
+    private static bool IsRouteSafeRunId(string runId)
+        => !runId.Any(static ch => char.IsWhiteSpace(ch) || char.IsControl(ch) || ch is '/' or '\\' or '?' or '#' or '%');
     private static string InputHash(AccountCashReconciliationRequest input)
         => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(input, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationRequest));
     private static string SourceHash(AccountCashBalanceSource source)
