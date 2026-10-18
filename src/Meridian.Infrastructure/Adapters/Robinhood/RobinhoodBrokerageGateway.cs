@@ -46,7 +46,8 @@ namespace Meridian.Infrastructure.Adapters.Robinhood;
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory for HTTP connections")]
-public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrderAmendmentRecoveryGateway
+public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrderAmendmentRecoveryGateway,
+    IPreassignedReplacementReferenceGateway
 {
     private const string BaseUrl = "https://api.robinhood.com";
     private const string OptionsPositionsUrl = BaseUrl + "/options/positions/?nonzero=true";
@@ -365,8 +366,13 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
                 : BuildOptionModifyRequest(snapshot.Id, snapshot.Option!, modification) with { Quantity = remaining };
 
             // Robinhood ref_id is unique per submission; retain the canonical client identity
-            // separately while all historical broker IDs continue resolving to this chain.
-            request = request with { ClientOrderId = Guid.NewGuid().ToString("N") };
+            // separately while all historical broker IDs continue resolving to this chain. The
+            // OMS assigns and persists the ref before dispatch so restart recovery can find it.
+            request = request with
+            {
+                ClientOrderId = string.IsNullOrWhiteSpace(modification.ReplacementClientOrderId)
+                ? Guid.NewGuid().ToString("N") : modification.ReplacementClientOrderId
+            };
             // Retain the attempt before dispatch. A timed out POST may already have created a
             // live order: another amendment must not generate a second replacement blindly.
             var attempt = new ReplacementAttempt(request.ClientOrderId!, request, snapshot,
@@ -470,15 +476,30 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
                 if (original is not { Status: OrderStatus.Cancelled, FilledQuantity: { } originalFilled }
                     || !string.Equals(original.Symbol, retainedOrder.Symbol, StringComparison.OrdinalIgnoreCase)
                     || original.Side != retainedOrder.Side
-                    || originalFilled < 0m || retainedOrder.FilledQuantity < originalFilled
-                    || retainedOrder.FilledQuantity >= amendment.Proposed.Quantity
+                    || originalFilled < 0m
                     || retainedOrder.FilledQuantity > 0m && retainedOrder.AverageFillPrice is not > 0m
                     || originalFilled > 0m && original.AverageFillPrice is not > 0m)
+                    return null;
+                // With the chain's earlier members retained, attribute each member's final fills
+                // from the broker: a predecessor fill the store never booked is then recovered
+                // exactly instead of blocking. Without them, only the retained aggregate is known.
+                var prior = amendment.PriorChainBrokerOrderIds is { } priorIds
+                    ? await ReadPriorChainFillsAsync(client, priorIds, retainedOrder, ct).ConfigureAwait(false)
+                    : retainedOrder.FilledQuantity >= originalFilled
+                        ? (Quantity: retainedOrder.FilledQuantity - originalFilled,
+                           Notional: retainedOrder.FilledQuantity * (retainedOrder.AverageFillPrice ?? 0m)
+                               - originalFilled * (original.AverageFillPrice ?? 0m))
+                        : ((decimal Quantity, decimal Notional)?)null;
+                if (prior is not { } chainPrior)
+                    return null;
+                var basisFilled = chainPrior.Quantity + originalFilled;
+                var basisNotional = chainPrior.Notional + originalFilled * (original.AverageFillPrice ?? 0m);
+                if (basisFilled < retainedOrder.FilledQuantity || basisFilled >= amendment.Proposed.Quantity)
                     return null;
                 if (original.Equity is null && (original.Option?.Legs is not { Length: 1 } legs
                     || string.IsNullOrWhiteSpace(legs[0].Option) || string.IsNullOrWhiteSpace(legs[0].PositionEffect)))
                     return null;
-                var remaining = amendment.Proposed.Quantity - retainedOrder.FilledQuantity;
+                var remaining = amendment.Proposed.Quantity - basisFilled;
                 var request = original.Equity is { } equity
                     ? new OrderRequest
                     {
@@ -497,12 +518,11 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
                         NewStopPrice = amendment.Proposed.StopPrice
                     });
                 request = request with { ClientOrderId = amendment.CandidateClientOrderId };
-                var basisNotional = retainedOrder.FilledQuantity * (retainedOrder.AverageFillPrice ?? 0m);
                 chain.Snapshot = original;
-                chain.PriorFilledQuantity = retainedOrder.FilledQuantity - originalFilled;
-                chain.PriorFilledNotional = basisNotional - originalFilled * (original.AverageFillPrice ?? 0m);
+                chain.PriorFilledQuantity = chainPrior.Quantity;
+                chain.PriorFilledNotional = chainPrior.Notional;
                 chain.PendingReplacement = new ReplacementAttempt(amendment.CandidateClientOrderId, request, original,
-                    amendment.Proposed.Quantity, retainedOrder.FilledQuantity, basisNotional);
+                    amendment.Proposed.Quantity, basisFilled, basisNotional);
                 _orderChains[original.Id] = chain;
                 _orderChains[amendment.CandidateClientOrderId] = chain;
             }
@@ -536,6 +556,27 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         {
             chain.OperationGate.Release();
         }
+    }
+
+    // Earlier chain members were confirmed cancelled before each replacement, so their broker
+    // snapshots carry final fills. Any missing, working or mismatched member proves nothing.
+    private async Task<(decimal Quantity, decimal Notional)?> ReadPriorChainFillsAsync(
+        HttpClient client, IReadOnlyCollection<string> brokerOrderIds, OrderState retainedOrder, CancellationToken ct)
+    {
+        decimal quantity = 0m, notional = 0m;
+        foreach (var brokerOrderId in brokerOrderIds)
+        {
+            var member = await ReadOrderSnapshotAsync(client, brokerOrderId, ct).ConfigureAwait(false);
+            if (member is not { FilledQuantity: { } filled }
+                || member.Status is not (OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired)
+                || !string.Equals(member.Symbol, retainedOrder.Symbol, StringComparison.OrdinalIgnoreCase)
+                || member.Side != retainedOrder.Side
+                || filled < 0m || filled > 0m && member.AverageFillPrice is not > 0m)
+                return null;
+            quantity += filled;
+            notional += filled * (member.AverageFillPrice ?? 0m);
+        }
+        return (quantity, notional);
     }
 
     /// <inheritdoc />

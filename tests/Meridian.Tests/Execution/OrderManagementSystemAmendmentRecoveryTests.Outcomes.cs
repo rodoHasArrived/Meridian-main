@@ -293,6 +293,38 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
         }
     }
 
+    [Fact]
+    public async Task PreassignedReplacementReference_IsDurableBeforeGatewayDispatch()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"amendment-preassigned-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var path = Path.Combine(directory, "orders.json");
+            RetainedBrokerageOrder? retainedAtDispatch = null;
+            OrderModification? dispatched = null;
+            var gateway = new PreassignedReferenceGateway(new RecoverableAmendmentGateway(), modification =>
+            {
+                dispatched = modification;
+                retainedAtDispatch = new FileBrokerageOrderRecoveryStore(path, "alpaca").Load().Single();
+            });
+            await using var oms = CreateRecoveryOms(gateway, path);
+            (await oms.PlaceOrderAsync(RecoveryRequest())).Success.Should().BeTrue();
+
+            (await oms.ModifyOrderAsync("local", new OrderModification { NewQuantity = 20m })).Success.Should().BeFalse();
+
+            dispatched!.ReplacementClientOrderId.Should().NotBeNullOrWhiteSpace();
+            retainedAtDispatch!.PendingAmendment!.CandidateClientOrderId.Should().Be(dispatched.ReplacementClientOrderId,
+                "a crash after the broker accepts the replacement must still leave its reference durable");
+            retainedAtDispatch.PendingAmendment.PriorChainBrokerOrderIds.Should().BeEmpty();
+            retainedAtDispatch.PendingAmendment.OriginalBrokerOrderId.Should().Be("original-broker");
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     private static OrderManagementSystem CreateRecoveryOms(IBrokerageGateway gateway, string path,
         BrokerageConfiguration? configuration = null) => new(gateway, NullLogger<OrderManagementSystem>.Instance,
             brokerageConfiguration: configuration, recoveryStore: new FileBrokerageOrderRecoveryStore(path, "alpaca"),
@@ -376,6 +408,34 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
             OrderLimitPrice = limit,
             FillPriceIsCumulativeAverage = true
         };
+    }
+
+    private sealed class PreassignedReferenceGateway(RecoverableAmendmentGateway inner, Action<OrderModification> dispatching)
+        : IBrokerageGateway, IExecutionGatewayModeProvider, IBrokerageConnectionState, IPreassignedReplacementReferenceGateway
+    {
+        public string GatewayId => inner.GatewayId;
+        public string BrokerDisplayName => inner.BrokerDisplayName;
+        public BrokerageCapabilities BrokerageCapabilities => inner.BrokerageCapabilities;
+        public ExecutionMode ExecutionMode => inner.ExecutionMode;
+        public bool IsConnected => inner.IsConnected;
+        public bool IsExecutionStreamHealthy => true;
+        public string ScopeIdentity => inner.ScopeIdentity;
+        public long ConnectionGeneration => 1;
+        public ValueTask DisposeAsync() => inner.DisposeAsync();
+        public Task ConnectAsync(CancellationToken ct = default) => inner.ConnectAsync(ct);
+        public Task DisconnectAsync(CancellationToken ct = default) => inner.DisconnectAsync(ct);
+        public Task<ExecutionReport> SubmitOrderAsync(OrderRequest request, CancellationToken ct = default) => inner.SubmitOrderAsync(request, ct);
+        public Task<ExecutionReport> ModifyOrderAsync(string id, OrderModification modification, CancellationToken ct = default)
+        {
+            dispatching(modification);
+            return inner.ModifyOrderAsync(id, modification, ct);
+        }
+        public Task<ExecutionReport> CancelOrderAsync(string id, CancellationToken ct = default) => inner.CancelOrderAsync(id, ct);
+        public IAsyncEnumerable<ExecutionReport> StreamExecutionReportsAsync(CancellationToken ct = default) => inner.StreamExecutionReportsAsync(ct);
+        public Task<AccountInfo> GetAccountInfoAsync(CancellationToken ct = default) => inner.GetAccountInfoAsync(ct);
+        public Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default) => inner.GetPositionsAsync(ct);
+        public Task<IReadOnlyList<BrokerOrder>> GetOpenOrdersAsync(CancellationToken ct = default) => inner.GetOpenOrdersAsync(ct);
+        public Task<BrokerHealthStatus> CheckHealthAsync(CancellationToken ct = default) => inner.CheckHealthAsync(ct);
     }
 
     private sealed class AmendmentOnlyGateway(RecoverableAmendmentGateway inner) : IBrokerageGateway,

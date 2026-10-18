@@ -26,7 +26,9 @@ positions by account plus qualified contract identity. Robinhood replacement sub
 confirmed cancellation with cumulative fill evidence, for the intended total less chain fills.
 Unconfirmed Robinhood replacement attempts retain their reference and reconcile exact broker
 history before further operations. Empty, incomplete, or ambiguous history remains unresolved;
-confirmed candidates restore replacement-chain routing and cumulative fill economics.
+confirmed candidates restore replacement-chain routing and cumulative fill economics. Robinhood
+submits replacements under the OMS-persisted reference, and restart recovery reads each earlier
+chain member's final fills so a predecessor fill the store never booked is attributed exactly.
 
 Running Robinhood read-only account, portfolio, and activity synchronization reads the current
 host-owned OAuth token for each request, including connection, rotation, and revocation. Polling

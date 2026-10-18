@@ -17,4 +17,12 @@ public sealed record PendingOrderAmendment(OrderState Original, OrderState Propo
     public string? CandidateBrokerOrderId { get; init; }
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? CandidateClientOrderId { get; init; }
+
+    /// <summary>
+    /// Broker ids of replacement-chain members before <see cref="OriginalBrokerOrderId"/>, in no
+    /// particular order. Empty means the original is the chain's first member; null means unknown
+    /// (retained before this field existed). Recovery reads their final fills authoritatively.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string[]? PriorChainBrokerOrderIds { get; init; }
 }
