@@ -118,6 +118,41 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     }
 
     [Theory]
+    [InlineData("InterestOnly", "InterestOnly")]
+    [InlineData("PrincipalOnly", "PrincipalOnly")]
+    [InlineData("Clo", null)]
+    public void ReplayWithoutLegacyTerms_StructuredCreditRecoversStripKindsFromTheEconomicFlags(string kind, string? expectedRebuiltKind)
+    {
+        // The economic document carries the typed kind only as the IO/PO flags, so replay can give
+        // an IO or PO strip its kind back; any other family is not recoverable and stays absent
+        // rather than being guessed.
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            "StructuredCredit",
+            new
+            {
+                tranche = "X-1",
+                collateralType = "AgencyPool",
+                originalFace = 1_000_000m,
+                couponOrIndex = "5.5",
+                maturity = "2036-01-15",
+                structuredCreditKind = kind
+            });
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("StructuredCredit", original));
+
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
+
+        if (expectedRebuiltKind is null)
+        {
+            rebuilt.TryGetProperty("structuredCreditKind", out _).Should().BeFalse("the economic document does not carry this family");
+        }
+        else
+        {
+            rebuilt.GetProperty("structuredCreditKind").GetString().Should().Be(expectedRebuiltKind);
+        }
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void ReplayWithoutLegacyTerms_CommercialPaperKeepsItsRequiredAssetBackedFlag(bool isAssetBacked)

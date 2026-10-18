@@ -168,5 +168,8 @@ This command verifies referenced files and directories exist; it does not valida
   carries no default that changes the reading of a version-1 payload, so the version-1 → 2 upcast is
   the identity: readers accept both versions through `SecurityTermsEnvelope` and the absent terms
   read as unset. A field transformation step is only owed when a later version renames, retypes or
-  gives a default to a term.
+  gives a default to a term. Economic replay without retained flat terms recovers the three pool
+  statistics from the `structuredProduct` module and gives an IO or PO strip its kind back from the
+  module's `isInterestOnly` / `isPrincipalOnly` flags; any other family is not carried by the
+  economic document and stays absent rather than guessed.
 
