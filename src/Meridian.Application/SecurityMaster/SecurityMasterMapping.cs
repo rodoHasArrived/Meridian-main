@@ -365,7 +365,16 @@ internal static class SecurityMasterMapping
                 GetRequiredString(terms, "couponOrIndex"),
                 ToOption(GetOptionalString(terms, "factorSchedule")),
                 ToFSharpList(GetOptionalArrayItemsStrict(terms, "factorScheduleEntries").Select(ToFactorScheduleEntry)),
-                ToOption(GetOptionalDateOnly(terms, "maturity")))),
+                ToOption(GetOptionalDateOnly(terms, "maturity")),
+                ToStructuredCreditKindOption(GetOptionalString(terms, "structuredCreditKind")),
+                ToOption(GetOptionalString(terms, "seniority")),
+                ToOption(GetOptionalDecimal(terms, "attachmentPoint")),
+                ToOption(GetOptionalDecimal(terms, "detachmentPoint")),
+                ToOption(GetOptionalDecimal(terms, "weightedAverageCoupon")),
+                ToOption(GetOptionalInt(terms, "weightedAverageMaturityMonths")),
+                ToOption(GetOptionalInt(terms, "weightedAverageLoanAgeMonths")),
+                ToOption(GetOptionalDateOnly(terms, "reinvestmentPeriodEnd")),
+                ToOption(GetOptionalDateOnly(terms, "nonCallPeriodEnd")))),
             "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
                 GetRequiredString(terms, "gpSponsor"),
                 GetRequiredString(terms, "strategy"),
@@ -1051,6 +1060,28 @@ internal static class SecurityMasterMapping
             not null => FSharpOption<BondSubclass>.Some(BondSubclass.NewOther(raw)),
             null => FSharpOption<BondSubclass>.None
         };
+
+    /// <summary>
+    /// The typed securitisation family. An unrecognised label is kept verbatim as
+    /// <c>OtherStructuredCreditKind</c> rather than dropped, mirroring the F# parser; the taxonomy
+    /// validator is what reports a label outside the governed vocabulary.
+    /// </summary>
+    private static FSharpOption<StructuredCreditKind> ToStructuredCreditKindOption(string? raw)
+        => string.IsNullOrWhiteSpace(raw)
+            ? FSharpOption<StructuredCreditKind>.None
+            : FSharpOption<StructuredCreditKind>.Some(raw.Trim() switch
+            {
+                "AgencyMbs" => StructuredCreditKind.AgencyMbs,
+                "NonAgencyMbs" => StructuredCreditKind.NonAgencyMbs,
+                "CommercialMbs" => StructuredCreditKind.CommercialMbs,
+                "AssetBacked" => StructuredCreditKind.AssetBacked,
+                "Clo" => StructuredCreditKind.Clo,
+                "Cdo" => StructuredCreditKind.Cdo,
+                "Cmo" => StructuredCreditKind.Cmo,
+                "InterestOnly" => StructuredCreditKind.InterestOnly,
+                "PrincipalOnly" => StructuredCreditKind.PrincipalOnly,
+                var other => StructuredCreditKind.NewOtherStructuredCreditKind(other)
+            });
 
     private static FSharpOption<VotingRightsCat> ToVotingRightsCatOption(string? raw)
         => raw switch

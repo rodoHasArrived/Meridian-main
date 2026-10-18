@@ -847,6 +847,63 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
+    public void Scenario_StructuredCreditTypedTrancheTerms_OutOfRangeValuesBlockReadiness_AndNullsPass()
+    {
+        // Terms version 2: the typed tranche terms are optional, but when supplied they are
+        // governed — the kind against its taxonomy, the attachment/detachment points as fractions.
+        var invalid = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                structuredCreditKind = "SyntheticWidget",
+                attachmentPoint = 12m,
+                detachmentPoint = 0.2m,
+                weightedAverageCoupon = -1m
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(invalid, [invalid], Now);
+
+        report.HasBlockingIssues.Should().BeTrue();
+        report.Issues.Select(static issue => issue.Code).Should().Contain(new[]
+        {
+            "SM_STRUCTURED_CREDIT_KIND_INVALID",
+            "SM_STRUCTURED_CREDIT_ATTACHMENT_INVALID",
+            "SM_STRUCTURED_CREDIT_WAC_INVALID"
+        });
+        report.Issues.Should().NotContain(static issue => issue.Code == "SM_STRUCTURED_CREDIT_DETACHMENT_INVALID");
+
+        // The canonical serializer writes null for an unset optional term; that is "not supplied".
+        var canonicalNulls = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                structuredCreditKind = (string?)null,
+                attachmentPoint = (decimal?)null,
+                detachmentPoint = (decimal?)null
+            }));
+
+        service.ValidateRecord(canonicalNulls, [canonicalNulls], Now).Issues
+            .Should().NotContain(static issue => issue.Code.StartsWith("SM_STRUCTURED_CREDIT_", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void Scenario_ProfileBackedPrivateFundInterest_AsFirstClass_UsesProfileFieldsForValidation()
     {
         var record = CreateProjection(

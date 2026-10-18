@@ -871,6 +871,15 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
         FactorSchedule = Some "monthly-trustee"
         FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 0.9825m } ]
         Maturity = Some (DateOnly(2031, 6, 15))
+        Kind = Some StructuredCreditKind.Clo
+        Seniority = Some "Mezzanine"
+        AttachmentPoint = Some 0.12m
+        DetachmentPoint = Some 0.20m
+        WeightedAverageCoupon = Some 7.85m
+        WeightedAverageMaturityMonths = Some 58
+        WeightedAverageLoanAgeMonths = Some 14
+        ReinvestmentPeriodEnd = Some (DateOnly(2028, 6, 15))
+        NonCallPeriodEnd = Some (DateOnly(2027, 6, 15))
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -892,6 +901,27 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
     payload.GetProperty("originalFace").GetDecimal() |> should equal 1_000_000m
     payload.GetProperty("currentFactor").GetDecimal() |> should equal 0.9825m
     payload.GetProperty("maturity").GetString() |> should equal "2031-06-15"
+    // Typed tranche terms (asset-class terms version 2) travel as flat keys beside the version-1 terms.
+    payload.GetProperty("structuredCreditKind").GetString() |> should equal "Clo"
+    payload.GetProperty("seniority").GetString() |> should equal "Mezzanine"
+    payload.GetProperty("attachmentPoint").GetDecimal() |> should equal 0.12m
+    payload.GetProperty("detachmentPoint").GetDecimal() |> should equal 0.20m
+    payload.GetProperty("weightedAverageCoupon").GetDecimal() |> should equal 7.85m
+    payload.GetProperty("weightedAverageMaturityMonths").GetInt32() |> should equal 58
+    payload.GetProperty("weightedAverageLoanAgeMonths").GetInt32() |> should equal 14
+    payload.GetProperty("reinvestmentPeriodEnd").GetString() |> should equal "2028-06-15"
+    payload.GetProperty("nonCallPeriodEnd").GetString() |> should equal "2027-06-15"
+
+[<Fact>]
+let ``StructuredCreditKind labels round-trip and keep an unknown label verbatim`` () =
+    for kind in [ StructuredCreditKind.AgencyMbs; StructuredCreditKind.NonAgencyMbs; StructuredCreditKind.CommercialMbs
+                  StructuredCreditKind.AssetBacked; StructuredCreditKind.Clo; StructuredCreditKind.Cdo; StructuredCreditKind.Cmo
+                  StructuredCreditKind.InterestOnly; StructuredCreditKind.PrincipalOnly ] do
+        kind |> StructuredCreditKind.asString |> StructuredCreditKind.parse |> should equal kind
+
+    StructuredCreditKind.parse " Clo " |> should equal StructuredCreditKind.Clo
+    StructuredCreditKind.parse "SyntheticWidget" |> should equal (StructuredCreditKind.OtherStructuredCreditKind "SyntheticWidget")
+    StructuredCreditKind.OtherStructuredCreditKind "SyntheticWidget" |> StructuredCreditKind.asString |> should equal "SyntheticWidget"
 
 [<Fact>]
 let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Maturity module`` () =
@@ -908,6 +938,15 @@ let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Ma
         FactorSchedule = Some "monthly-trustee"
         FactorScheduleEntries = []
         Maturity = Some (DateOnly(2031, 6, 15))
+        Kind = Some StructuredCreditKind.InterestOnly
+        Seniority = None
+        AttachmentPoint = None
+        DetachmentPoint = None
+        WeightedAverageCoupon = Some 6.5m
+        WeightedAverageMaturityMonths = Some 240
+        WeightedAverageLoanAgeMonths = Some 36
+        ReinvestmentPeriodEnd = None
+        NonCallPeriodEnd = None
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -922,6 +961,16 @@ let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Ma
     let maturityModule =
         definition.Terms.Maturity |> Option.defaultWith (fun () -> failwith "Expected Maturity term module")
     maturityModule.MaturityDate |> should equal (Some (DateOnly(2031, 6, 15)))
+
+    // The typed pool statistics reach the StructuredProduct module, and the typed kind decides the
+    // strip flags instead of the tranche-label heuristic.
+    let structuredProduct =
+        definition.Terms.StructuredProduct |> Option.defaultWith (fun () -> failwith "Expected StructuredProduct term module")
+    structuredProduct.WeightedAvgCoupon |> should equal (Some 6.5m)
+    structuredProduct.WeightedAvgMaturityMonths |> should equal (Some 240)
+    structuredProduct.WeightedAvgLoanAgeMos |> should equal (Some 36)
+    structuredProduct.IsInterestOnly |> should equal true
+    structuredProduct.IsPrincipalOnly |> should equal false
 
 [<Fact>]
 let ``SecurityMasterLegacyUpgrade maps preferred classification into term modules`` () =
@@ -1519,10 +1568,41 @@ let ``Structured credit factors above one are rejected`` () =
         FactorSchedule = None
         FactorScheduleEntries = []
         Maturity = None
+        Kind = None
+        Seniority = None
+        AttachmentPoint = None
+        DetachmentPoint = None
+        WeightedAverageCoupon = None
+        WeightedAverageMaturityMonths = None
+        WeightedAverageLoanAgeMonths = None
+        ReinvestmentPeriodEnd = None
+        NonCallPeriodEnd = None
     }
 
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with CurrentFactor = Some 1.5m })
     |> should contain "structured_credit_current_factor_invalid"
+
+    // Typed tranche terms: the attachment and detachment points are fractions of the deal balance,
+    // ordered attachment <= detachment; the pool statistics cannot be negative; the CLO period
+    // dates cannot run past the legal final maturity.
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with AttachmentPoint = Some 12m })
+    |> should contain "structured_credit_attachment_point_invalid"
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with DetachmentPoint = Some -0.1m })
+    |> should contain "structured_credit_detachment_point_invalid"
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with AttachmentPoint = Some 0.3m; DetachmentPoint = Some 0.2m })
+    |> should contain "structured_credit_attachment_above_detachment"
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with AttachmentPoint = Some 0.2m; DetachmentPoint = Some 0.2m })
+    |> should not' (contain "structured_credit_attachment_above_detachment")
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with WeightedAverageCoupon = Some -1m })
+    |> should contain "structured_credit_weighted_average_coupon_invalid"
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with WeightedAverageMaturityMonths = Some -1 })
+    |> should contain "structured_credit_weighted_average_maturity_invalid"
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with WeightedAverageLoanAgeMonths = Some -1 })
+    |> should contain "structured_credit_weighted_average_loan_age_invalid"
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with Maturity = Some (DateOnly(2031, 6, 15)); ReinvestmentPeriodEnd = Some (DateOnly(2032, 1, 1)) })
+    |> should contain "structured_credit_period_after_maturity"
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with Maturity = Some (DateOnly(2031, 6, 15)); NonCallPeriodEnd = Some (DateOnly(2027, 6, 15)) })
+    |> should not' (contain "structured_credit_period_after_maturity")
 
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 1.2m } ] })
     |> should contain "structured_credit_factor_schedule_invalid"

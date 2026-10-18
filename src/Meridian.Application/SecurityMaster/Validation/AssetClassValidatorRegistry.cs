@@ -208,7 +208,15 @@ internal static class DefaultAssetClassValidators
                     FieldRule.RequiredString("collateralType", "SM_STRUCTURED_CREDIT_COLLATERAL_REQUIRED", "Structured credit collateral type is missing", "Structured credit records must include a pool or collateral type."),
                     FieldRule.RequiredPositive("originalFace", "SM_STRUCTURED_CREDIT_ORIGINAL_FACE_INVALID", "Structured credit original face is invalid", "Structured credit original face must be greater than zero."),
                     FieldRule.OptionalNonNegative("currentFactor", "SM_STRUCTURED_CREDIT_CURRENT_FACTOR_INVALID", "Structured credit current factor is invalid", "Structured credit current factor must be zero or greater when supplied."),
-                    FieldRule.RequiredString("couponOrIndex", "SM_STRUCTURED_CREDIT_COUPON_INDEX_REQUIRED", "Structured credit coupon/index is missing", "Structured credit records must include a coupon or index reference.")
+                    FieldRule.RequiredString("couponOrIndex", "SM_STRUCTURED_CREDIT_COUPON_INDEX_REQUIRED", "Structured credit coupon/index is missing", "Structured credit records must include a coupon or index reference."),
+                    FieldRule.OptionalAllowedString("structuredCreditKind", SecurityReferenceTaxonomyCatalog.Default.GetValues(SecurityReferenceTaxonomyKeys.StructuredCreditKind), "SM_STRUCTURED_CREDIT_KIND_INVALID", "Structured credit kind is not a governed value", "Structured credit kind must be one of the structured-credit-kind taxonomy values when supplied."),
+                    FieldRule.OptionalFraction("attachmentPoint", "SM_STRUCTURED_CREDIT_ATTACHMENT_INVALID", "Structured credit attachment point is invalid", "Structured credit attachment point must be a fraction between zero and one when supplied."),
+                    FieldRule.OptionalFraction("detachmentPoint", "SM_STRUCTURED_CREDIT_DETACHMENT_INVALID", "Structured credit detachment point is invalid", "Structured credit detachment point must be a fraction between zero and one when supplied."),
+                    FieldRule.OptionalNonNegative("weightedAverageCoupon", "SM_STRUCTURED_CREDIT_WAC_INVALID", "Structured credit weighted-average coupon is invalid", "Structured credit weighted-average coupon must be zero or greater when supplied."),
+                    FieldRule.OptionalNonNegative("weightedAverageMaturityMonths", "SM_STRUCTURED_CREDIT_WAM_INVALID", "Structured credit weighted-average maturity is invalid", "Structured credit weighted-average maturity months must be zero or greater when supplied."),
+                    FieldRule.OptionalNonNegative("weightedAverageLoanAgeMonths", "SM_STRUCTURED_CREDIT_WALA_INVALID", "Structured credit weighted-average loan age is invalid", "Structured credit weighted-average loan age months must be zero or greater when supplied."),
+                    DateOrderRule.Optional("reinvestmentPeriodEnd", "maturity", "SM_STRUCTURED_CREDIT_REINVESTMENT_END_INVALID", "Structured credit reinvestment period end is invalid", "Structured credit reinvestment period end must be on or before maturity."),
+                    DateOrderRule.Optional("nonCallPeriodEnd", "maturity", "SM_STRUCTURED_CREDIT_NON_CALL_END_INVALID", "Structured credit non-call period end is invalid", "Structured credit non-call period end must be on or before maturity.")
                 ]),
             new JsonAssetClassValidator(
                 "PrivateFundInterest",
@@ -774,6 +782,14 @@ internal sealed record FieldRule(
     public static FieldRule OptionalNonNegative(string fieldPath, string code, string title, string message)
         => new(fieldPath, SecurityFieldRuleKind.OptionalNonNegativeNumber, SecurityValidationSeverityDto.Error, code, title, message);
 
+    /// <summary>A string that, when supplied, must be one of <paramref name="allowedValues"/>; absent or null passes.</summary>
+    public static FieldRule OptionalAllowedString(string fieldPath, IReadOnlyList<string> allowedValues, string code, string title, string message)
+        => new(fieldPath, SecurityFieldRuleKind.OptionalAllowedString, SecurityValidationSeverityDto.Error, code, title, message, allowedValues);
+
+    /// <summary>A number that, when supplied, must lie in [0, 1]; absent or null passes.</summary>
+    public static FieldRule OptionalFraction(string fieldPath, string code, string title, string message)
+        => new(fieldPath, SecurityFieldRuleKind.OptionalFraction, SecurityValidationSeverityDto.Error, code, title, message);
+
     public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
     {
         var field = $"assetSpecificTerms.{FieldPath}";
@@ -782,6 +798,14 @@ internal sealed record FieldRule(
             return RequiresPresence(RuleKind)
                 ? Issue(field)
                 : null;
+        }
+
+        // The canonical serializer writes null where a domain value is None; the two optional
+        // rule kinds introduced for the typed structured-credit terms read that as "not supplied".
+        if (property.ValueKind == JsonValueKind.Null
+            && RuleKind is SecurityFieldRuleKind.OptionalAllowedString or SecurityFieldRuleKind.OptionalFraction)
+        {
+            return null;
         }
 
         var isValid = RuleKind switch
@@ -794,6 +818,8 @@ internal sealed record FieldRule(
             SecurityFieldRuleKind.RequiredArrayNotEmpty => property.ValueKind == JsonValueKind.Array && property.GetArrayLength() > 0,
             SecurityFieldRuleKind.OptionalPositiveNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value > 0m,
             SecurityFieldRuleKind.OptionalNonNegativeNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value >= 0m,
+            SecurityFieldRuleKind.OptionalAllowedString => JsonValidationReader.HasAllowedString(property, AllowedValues ?? Array.Empty<string>()),
+            SecurityFieldRuleKind.OptionalFraction => JsonValidationReader.TryGetDecimal(property, out var value) && value >= 0m && value <= 1m,
             _ => true
         };
 
@@ -984,7 +1010,9 @@ internal enum SecurityFieldRuleKind
     RequiredPositiveNumber,
     RequiredArrayNotEmpty,
     OptionalPositiveNumber,
-    OptionalNonNegativeNumber
+    OptionalNonNegativeNumber,
+    OptionalAllowedString,
+    OptionalFraction
 }
 
 internal static class JsonValidationReader

@@ -470,6 +470,52 @@ type FactorScheduleEntry = {
     Factor: decimal
 }
 
+/// The securitisation family a structured-credit tranche belongs to. Carried as a typed term so
+/// reporting, risk and reconciliation can partition on it instead of inferring it from the free-text
+/// tranche label or the collateral type; <c>OtherStructuredCreditKind</c> keeps an unrecognised
+/// vendor label verbatim rather than dropping it.
+[<RequireQualifiedAccess>]
+type StructuredCreditKind =
+    | AgencyMbs
+    | NonAgencyMbs
+    | CommercialMbs
+    | AssetBacked
+    | Clo
+    | Cdo
+    | Cmo
+    | InterestOnly
+    | PrincipalOnly
+    | OtherStructuredCreditKind of string
+
+[<RequireQualifiedAccess>]
+module StructuredCreditKind =
+    let asString kind =
+        match kind with
+        | StructuredCreditKind.AgencyMbs -> "AgencyMbs"
+        | StructuredCreditKind.NonAgencyMbs -> "NonAgencyMbs"
+        | StructuredCreditKind.CommercialMbs -> "CommercialMbs"
+        | StructuredCreditKind.AssetBacked -> "AssetBacked"
+        | StructuredCreditKind.Clo -> "Clo"
+        | StructuredCreditKind.Cdo -> "Cdo"
+        | StructuredCreditKind.Cmo -> "Cmo"
+        | StructuredCreditKind.InterestOnly -> "InterestOnly"
+        | StructuredCreditKind.PrincipalOnly -> "PrincipalOnly"
+        | StructuredCreditKind.OtherStructuredCreditKind label -> label
+
+    /// Parses the wire label; an unrecognised label is kept verbatim as <c>OtherStructuredCreditKind</c>.
+    let parse (label: string) =
+        match label.Trim() with
+        | "AgencyMbs" -> StructuredCreditKind.AgencyMbs
+        | "NonAgencyMbs" -> StructuredCreditKind.NonAgencyMbs
+        | "CommercialMbs" -> StructuredCreditKind.CommercialMbs
+        | "AssetBacked" -> StructuredCreditKind.AssetBacked
+        | "Clo" -> StructuredCreditKind.Clo
+        | "Cdo" -> StructuredCreditKind.Cdo
+        | "Cmo" -> StructuredCreditKind.Cmo
+        | "InterestOnly" -> StructuredCreditKind.InterestOnly
+        | "PrincipalOnly" -> StructuredCreditKind.PrincipalOnly
+        | other -> StructuredCreditKind.OtherStructuredCreditKind other
+
 type StructuredCreditTerms = {
     Tranche: string
     PoolId: string option
@@ -487,6 +533,25 @@ type StructuredCreditTerms = {
     /// persisted maturity the calculated projection paths produce nothing for the record, so the
     /// factor schedule alone cannot drive amortization math.
     Maturity: DateOnly option
+    /// Securitisation family (agency/non-agency/commercial MBS, ABS, CLO, CDO, CMO, IO/PO strip).
+    Kind: StructuredCreditKind option
+    /// Position in the capital structure as the deal labels it (e.g. "Senior", "Mezzanine", "Equity").
+    Seniority: string option
+    /// Loss attachment point of the tranche as a fraction of the deal balance (0.0–1.0).
+    AttachmentPoint: decimal option
+    /// Loss detachment point of the tranche as a fraction of the deal balance (0.0–1.0), at or above
+    /// <see cref="AttachmentPoint"/>.
+    DetachmentPoint: decimal option
+    /// Weighted-average coupon of the underlying collateral pool (%).
+    WeightedAverageCoupon: decimal option
+    /// Weighted-average remaining maturity of the collateral pool in months (WAM).
+    WeightedAverageMaturityMonths: int option
+    /// Weighted-average loan age of the collateral pool in months (WALA).
+    WeightedAverageLoanAgeMonths: int option
+    /// CLO: last day of the reinvestment period, after which collections pay down the notes.
+    ReinvestmentPeriodEnd: DateOnly option
+    /// CLO: last day of the non-call period, before which the notes cannot be refinanced.
+    NonCallPeriodEnd: DateOnly option
 }
 
 type PrivateFundInterestTerms = {

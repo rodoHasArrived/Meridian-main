@@ -158,3 +158,15 @@ This command verifies referenced files and directories exist; it does not valida
 ---
 
 *Last Updated: 2026-10-17*
+
+## Applications
+
+- **StructuredCredit terms version 2 (2026-10-18).** Added `structuredCreditKind`, `seniority`,
+  `attachmentPoint`, `detachmentPoint`, `weightedAverageCoupon`, `weightedAverageMaturityMonths`,
+  `weightedAverageLoanAgeMonths`, `reinvestmentPeriodEnd` and `nonCallPeriodEnd` as optional flat
+  terms and bumped `SecurityAssetClassDescriptor.TermsVersion` to 2. Every addition is optional and
+  carries no default that changes the reading of a version-1 payload, so the version-1 → 2 upcast is
+  the identity: readers accept both versions through `SecurityTermsEnvelope` and the absent terms
+  read as unset. A field transformation step is only owed when a later version renames, retypes or
+  gives a default to a term.
+

@@ -478,16 +478,26 @@ module SecurityMasterLegacyUpgrade =
                         Some {
                             Factor = terms.CurrentFactor
                             FactorDate = None
-                            WeightedAvgCoupon = None
-                            WeightedAvgMaturityMonths = None
-                            WeightedAvgLoanAgeMos = None
+                            WeightedAvgCoupon = terms.WeightedAverageCoupon
+                            WeightedAvgMaturityMonths = terms.WeightedAverageMaturityMonths
+                            WeightedAvgLoanAgeMos = terms.WeightedAverageLoanAgeMonths
                             CollateralType = Some terms.CollateralType
                             PoolIdentifier = terms.PoolId
                             TrancheClass = Some terms.Tranche
                             PrepaymentAssumption = None
                             AverageLifeYears = None
-                            IsInterestOnly = terms.Tranche.Contains("IO", StringComparison.OrdinalIgnoreCase)
-                            IsPrincipalOnly = terms.Tranche.Contains("PO", StringComparison.OrdinalIgnoreCase)
+                            // The typed kind decides the strip flags when it is present; the tranche
+                            // label heuristic stays for records that predate the typed term.
+                            IsInterestOnly =
+                                match terms.Kind with
+                                | Some StructuredCreditKind.InterestOnly -> true
+                                | Some _ -> false
+                                | None -> terms.Tranche.Contains("IO", StringComparison.OrdinalIgnoreCase)
+                            IsPrincipalOnly =
+                                match terms.Kind with
+                                | Some StructuredCreditKind.PrincipalOnly -> true
+                                | Some _ -> false
+                                | None -> terms.Tranche.Contains("PO", StringComparison.OrdinalIgnoreCase)
                             NotionalBalance = Some terms.OriginalFace
                             Originator = None
                             CreditEnhancementPct = None

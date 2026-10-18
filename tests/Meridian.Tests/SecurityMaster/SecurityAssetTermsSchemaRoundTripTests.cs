@@ -249,7 +249,16 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
                 new { asOfDate = "2026-06-01", factor = 0.8412m },
                 new { asOfDate = "2026-07-01", factor = 0.8235m }
             },
-            maturity = "2031-06-15"
+            maturity = "2031-06-15",
+            structuredCreditKind = "Clo",
+            seniority = "Mezzanine",
+            attachmentPoint = 0.12m,
+            detachmentPoint = 0.20m,
+            weightedAverageCoupon = 7.85m,
+            weightedAverageMaturityMonths = 58,
+            weightedAverageLoanAgeMonths = 14,
+            reinvestmentPeriodEnd = "2028-06-15",
+            nonCallPeriodEnd = "2027-06-15"
         },
         ["PrivateFundInterest"] = new
         {

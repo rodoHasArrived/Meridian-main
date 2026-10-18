@@ -420,7 +420,10 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("currentFactor", ("structuredProduct", "factor")),
             Map("couponOrIndex", ("coupon", "couponType")),
             Map("factorSchedule", ("coupon", "paymentFrequency")),
-            Map("maturity", MaturityDate)
+            Map("maturity", MaturityDate),
+            Map("weightedAverageCoupon", ("structuredProduct", "weightedAvgCoupon")),
+            Map("weightedAverageMaturityMonths", ("structuredProduct", "weightedAvgMaturityMonths")),
+            Map("weightedAverageLoanAgeMonths", ("structuredProduct", "weightedAvgLoanAgeMos"))
         ]),
         ("PrivateFundInterest", [Map("gpSponsor", ("issuer", "issuerName"), ("fund", "fundFamily")), Map("strategy", ("issuer", "issuerProgram"))]),
         ("PrivateCompanyEquity",
