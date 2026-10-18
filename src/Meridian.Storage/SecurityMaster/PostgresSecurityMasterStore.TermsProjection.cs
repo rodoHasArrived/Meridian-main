@@ -362,9 +362,7 @@ public sealed partial class PostgresSecurityMasterStore
     {
         ArgumentNullException.ThrowIfNull(child);
 
-        var columns = SecurityTermsProjectionRegistry.ChildKeyColumns
-            .Concat(child.Columns.Select(static column => column.ColumnName))
-            .ToArray();
+        var columns = SecurityTermsProjectionRegistry.ChildColumnNames(child);
 
         return new StringBuilder()
             .Append("insert into ").Append(schema).Append('.').Append(child.TableName).Append(" (")
@@ -380,10 +378,7 @@ public sealed partial class PostgresSecurityMasterStore
         => $"delete from {schema}.{tableName} where security_id = @security_id;";
 
     private static IReadOnlyList<string> ProjectedColumnNames(SecurityTermsProjectionDescriptor descriptor)
-        => SecurityTermsProjectionRegistry.LeadingIdentityColumnsFor(descriptor)
-            .Concat(descriptor.Columns.Select(static column => column.ColumnName))
-            .Concat(SecurityTermsProjectionRegistry.TrailingIdentityColumns)
-            .ToArray();
+        => SecurityTermsProjectionRegistry.ParentColumnNames(descriptor);
 
     private SecurityTermsProjectionSql GetTermsProjectionSql(SecurityTermsProjectionDescriptor descriptor)
         => TermsProjectionSqlCache.GetOrAdd(

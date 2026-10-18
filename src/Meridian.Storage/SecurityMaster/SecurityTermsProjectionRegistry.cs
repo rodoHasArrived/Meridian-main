@@ -287,6 +287,44 @@ internal static partial class SecurityTermsProjectionRegistry
     internal static readonly IReadOnlyList<string> ChildKeyColumns = ["security_id", "ordinal"];
 
     /// <summary>
+    /// The descriptor registered for <paramref name="assetClass"/> (canonical name, ordinal match).
+    /// Throws for a class without a registry projection: the specialized Bond and Option writers
+    /// and the profile-governed CustomAsset are not here.
+    /// </summary>
+    internal static SecurityTermsProjectionDescriptor Require(string assetClass)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(assetClass);
+        return Descriptors.FirstOrDefault(descriptor =>
+                string.Equals(descriptor.AssetClass, assetClass, StringComparison.Ordinal))
+            ?? throw new ArgumentException(
+                $"'{assetClass}' has no SecurityTermsProjectionRegistry descriptor.",
+                nameof(assetClass));
+    }
+
+    /// <summary>
+    /// Every column of <paramref name="descriptor"/>'s parent table in write order: the leading
+    /// identity columns, the class-specific columns, then the trailing identity columns. The upsert
+    /// binds exactly this list and the reference-projection readers select it.
+    /// </summary>
+    internal static IReadOnlyList<string> ParentColumnNames(SecurityTermsProjectionDescriptor descriptor)
+    {
+        ArgumentNullException.ThrowIfNull(descriptor);
+        return LeadingIdentityColumnsFor(descriptor)
+            .Concat(descriptor.Columns.Select(static column => column.ColumnName))
+            .Concat(TrailingIdentityColumns)
+            .ToArray();
+    }
+
+    /// <summary>Every column of <paramref name="child"/> in write order: the key columns, then its element columns.</summary>
+    internal static IReadOnlyList<string> ChildColumnNames(SecurityTermsProjectionChildTable child)
+    {
+        ArgumentNullException.ThrowIfNull(child);
+        return ChildKeyColumns
+            .Concat(child.Columns.Select(static column => column.ColumnName))
+            .ToArray();
+    }
+
+    /// <summary>
     /// The registered schema-driven projections, in fan-out order. DirectLoan and StructuredCredit
     /// are the first two Asset Operations classes to leave their economic terms in a JSONB blob:
     /// both declare ProjectedCashFlows, Reconciliation and LedgerProjection in
