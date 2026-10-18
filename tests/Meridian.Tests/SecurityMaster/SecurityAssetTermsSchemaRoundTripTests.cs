@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.FSharp.Domain;
 using Meridian.FSharp.SecurityMasterInterop;
 
 namespace Meridian.Tests.SecurityMaster;
@@ -590,6 +591,72 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
             .Should().Throw<InvalidOperationException>()
             .WithMessage("*'Floter' is not a declared 'couponType' value*")
             .WithMessage("*Fixed, Floating, ZeroCoupon, Step, InflationLinked*");
+    }
+
+    [Theory]
+    [InlineData("weightedAverageMaturityMonths", 1.5, "a whole number")]
+    [InlineData("weightedAverageCoupon", "seven", "a decimal number")]
+    [InlineData("reinvestmentPeriodEnd", "someday", "an ISO-8601 date")]
+    public void StructuredCredit_MalformedOptionalTrancheTerm_IsRejectedOnWrite(string property, object value, string expected)
+    {
+        // The typed tranche terms are optional, but a supplied value that does not parse as its
+        // declared type must not be read as absent: the canonical serializer would persist null and
+        // silently discard what the caller sent.
+        var payload = new Dictionary<string, object?>
+        {
+            ["tranche"] = "A-1",
+            ["collateralType"] = "CLO",
+            ["originalFace"] = 1_000_000m,
+            ["couponOrIndex"] = "SOFR+250",
+            ["maturity"] = "2031-06-15",
+            [property] = value
+        };
+
+        FluentActions.Invoking(() => CreateSnapshot("StructuredCredit", payload))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage($"*'{property}' must be {expected} when supplied*");
+    }
+
+    [Fact]
+    public void StructuredCredit_MalformedOptionalTrancheTerm_StillReadsAsUnset()
+    {
+        // Read tolerance: a stored row carrying a malformed optional term stays loadable, with the
+        // term unset. Only the WRITE is refused.
+        var legacyTerms = JsonSerializer.SerializeToElement(new
+        {
+            tranche = "A-1",
+            collateralType = "CLO",
+            originalFace = 1_000_000m,
+            couponOrIndex = "SOFR+250",
+            weightedAverageMaturityMonths = 1.5m
+        });
+
+        var record = SecurityMasterMapping.ToRecord(LegacyProjection("StructuredCredit", legacyTerms));
+
+        var terms = ((SecurityKind.StructuredCredit)record.Kind).Item;
+        terms.WeightedAverageMaturityMonths.Should().BeNull();
+    }
+
+    [Fact]
+    public void StructuredCredit_KindLabel_MatchesCaseInsensitively_AndCanonicalises()
+    {
+        // The taxonomy validator accepts governed labels case-insensitively, so the mapper must too:
+        // a provider's "interestonly" has to drive the typed IO semantics, not land in
+        // OtherStructuredCreditKind and switch the IO flag off.
+        var snapshot = CreateSnapshot("StructuredCredit", new
+        {
+            tranche = "IO-1",
+            collateralType = "AgencyPool",
+            originalFace = 1_000_000m,
+            couponOrIndex = "5.5",
+            structuredCreditKind = "interestonly"
+        });
+
+        var terms = ((SecurityKind.StructuredCredit)snapshot.Record.Kind).Item;
+        terms.Kind.Should().NotBeNull();
+        terms.Kind!.Value.Should().Be(StructuredCreditKind.InterestOnly);
+        using var document = JsonDocument.Parse(snapshot.AssetSpecificTermsJson);
+        document.RootElement.GetProperty("structuredCreditKind").GetString().Should().Be("InterestOnly");
     }
 
     [Fact]

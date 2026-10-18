@@ -894,13 +894,54 @@ public sealed class SecurityValidationServiceTests
                 collateralType = "CLO",
                 originalFace = 1000000m,
                 couponOrIndex = "SOFR+250",
+                currentFactor = (decimal?)null,
                 structuredCreditKind = (string?)null,
                 attachmentPoint = (decimal?)null,
-                detachmentPoint = (decimal?)null
+                detachmentPoint = (decimal?)null,
+                weightedAverageCoupon = (decimal?)null,
+                weightedAverageMaturityMonths = (int?)null,
+                weightedAverageLoanAgeMonths = (int?)null,
+                reinvestmentPeriodEnd = (string?)null,
+                nonCallPeriodEnd = (string?)null
             }));
 
         service.ValidateRecord(canonicalNulls, [canonicalNulls], Now).Issues
             .Should().NotContain(static issue => issue.Code.StartsWith("SM_STRUCTURED_CREDIT_", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Scenario_StructuredCreditAttachmentAboveDetachment_BlocksReadiness()
+    {
+        // Both points are valid fractions on their own; the loss interval they describe is not. The
+        // domain command validator already refuses this on write, and readiness validation of
+        // imported or restored rows must agree rather than certify an impossible tranche.
+        var inverted = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                attachmentPoint = 0.8m,
+                detachmentPoint = 0.2m
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(inverted, [inverted], Now);
+
+        report.HasBlockingIssues.Should().BeTrue();
+        var issue = report.Issues.Should().ContainSingle(static item =>
+            item.Code == "SM_STRUCTURED_CREDIT_ATTACHMENT_ABOVE_DETACHMENT").Subject;
+        issue.Severity.Should().Be(SecurityValidationSeverityDto.Error);
+        issue.AffectedFields.Should().BeEquivalentTo(new[] { "assetSpecificTerms.attachmentPoint", "assetSpecificTerms.detachmentPoint" });
+        report.Issues.Should().NotContain(static item =>
+            item.Code == "SM_STRUCTURED_CREDIT_ATTACHMENT_INVALID" || item.Code == "SM_STRUCTURED_CREDIT_DETACHMENT_INVALID");
     }
 
     [Fact]
