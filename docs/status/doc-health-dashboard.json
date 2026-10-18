@@ -1,6 +1,6 @@
 {
   "total_files": 740,
-  "total_lines": 163609,
+  "total_lines": 163629,
   "orphaned_count": 249,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -1637,7 +1637,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 5809,
+      "line_count": 5819,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2861,7 +2861,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12241,
+      "line_count": 12243,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6069,7 +6069,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1185,
+      "line_count": 1193,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

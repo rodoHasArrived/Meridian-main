@@ -97,6 +97,14 @@ cannot approve values they staged. The event store and projection store join
 `PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap and
 Commodity projections are now declarative registry plans rather than hand-written writers.
 
+Projection fan-out is keyed by asset class. `UpsertProjectionCoreAsync` reads the security's stored
+`asset_class` under the row lock the upsert takes anyway and runs only the writers that write can
+affect: the current class's writer (which publishes, or clears its own rows when a gate fails) and,
+when the class changed, the prior class's writer (which clears the rows it left behind). A
+projection row for class X exists only while the stored class is X, so the other writers have
+nothing to delete; running all of them cost ~28 no-op deletes per record once migration 044 brought
+the registry to 25 writers.
+
 The reference-projection read side is shared as well. Every `Postgres*ReferenceProjectionStore`
 composes `PostgresReferenceProjectionReader` for its connection, command and row plumbing, and a
 store whose table is a `SecurityTermsProjectionRegistry` descriptor (Equity, Future, FxSpot, Swap,
