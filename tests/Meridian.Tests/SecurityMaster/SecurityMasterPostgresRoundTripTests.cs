@@ -264,6 +264,67 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task UpsertProjection_PersistsTheTermsFormatColumn_FromTheTagOrTheShapeRule()
+    {
+        // Migration 042 promotes the payload family to `terms_format`. A tagged payload stores its
+        // declared family; a payload that predates the tag stores what ResolveFormat infers, which is
+        // the same rule the migration backfill applied — so the column has one definition.
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var tagged = Guid.NewGuid();
+        var untagged = Guid.NewGuid();
+        await store.UpsertProjectionAsync(TermsFormatProjection(tagged, "TFT", JsonSerializer.SerializeToElement(new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = 1,
+            [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
+            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault("Equity").TermsVersion,
+            ["classification"] = "Common"
+        })));
+        await store.UpsertProjectionAsync(TermsFormatProjection(untagged, "TFU", JsonSerializer.SerializeToElement(new
+        {
+            schemaVersion = 1,
+            classification = "Common"
+        })));
+
+        (await ReadTermsFormatAsync(tagged)).Should().Be(SecurityTermsFormats.Flat);
+        (await ReadTermsFormatAsync(untagged)).Should().Be(SecurityTermsFormats.Flat);
+
+        var stored = await store.GetProjectionAsync(untagged);
+        SecurityTermsEnvelope.GetDeclaredFormat(stored!.AssetSpecificTerms).Should().BeNull(
+            "the store never mutates the payload to add the tag; writers own stamping");
+    }
+
+    private static SecurityProjectionRecord TermsFormatProjection(Guid securityId, string ticker, JsonElement assetSpecificTerms)
+    {
+        var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);
+        return new SecurityProjectionRecord(
+            SecurityId: securityId,
+            AssetClass: "Equity",
+            Status: SecurityStatusDto.Active,
+            DisplayName: $"Terms format {ticker}",
+            Currency: "USD",
+            PrimaryIdentifierKind: "Ticker",
+            PrimaryIdentifierValue: ticker,
+            CommonTerms: JsonSerializer.SerializeToElement(new { currency = "USD", exchange = "XNAS" }),
+            AssetSpecificTerms: assetSpecificTerms,
+            Provenance: JsonSerializer.SerializeToElement(new { sourceSystem = "test" }),
+            Version: 1,
+            EffectiveFrom: effectiveFrom,
+            EffectiveTo: null,
+            Identifiers: [new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, ticker, true, effectiveFrom)],
+            Aliases: []);
+    }
+
+    private async Task<string?> ReadTermsFormatAsync(Guid securityId)
+    {
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"select terms_format from {_fixture.Options.Schema}.securities where security_id = @security_id;";
+        command.Parameters.AddWithValue("security_id", securityId);
+        return await command.ExecuteScalarAsync() as string;
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task AppendCorporateActionAsync_PersistsEconomicFingerprintAgainstPostgres()
     {
         var securityId = Guid.NewGuid();

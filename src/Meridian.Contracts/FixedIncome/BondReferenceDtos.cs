@@ -37,7 +37,7 @@ public sealed record BondLifecycleDto(
     DateOnly MaturityDate,
     bool IsCallable,
     long Version,
-    // --- Clearwater extended lifecycle fields ---
+    // --- Extended lifecycle fields (migration 017) ---
     /// <summary>Face/par value; used in market-value calculation: Par × Factor × Price / 100.</summary>
     decimal? Par = null,
     string? BondSubclass = null,

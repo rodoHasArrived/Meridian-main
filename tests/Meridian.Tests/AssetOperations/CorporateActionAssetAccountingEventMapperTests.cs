@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 using Meridian.Instruments.AssetOperations;
+using Meridian.ReferenceData.CorporateActions;
 
 namespace Meridian.Tests.AssetOperations;
 
@@ -17,7 +18,7 @@ public sealed class CorporateActionAssetAccountingEventMapperTests
     private static readonly Guid PolicyDecisionId = Guid.Parse("88888888-8888-8888-8888-888888888888");
     private static readonly DateTimeOffset MappedAtUtc = DateTimeOffset.Parse("2026-08-25T10:00:00Z");
 
-    private readonly CorporateActionAccountingProjectionService _projector = new();
+    private readonly CorporateActionAccountingProjectionService _projector = new(ClearwaterCorporateActionRuleProfileV1.Instance);
     private readonly CorporateActionAssetAccountingEventMapper _sut = new();
 
     [Fact]

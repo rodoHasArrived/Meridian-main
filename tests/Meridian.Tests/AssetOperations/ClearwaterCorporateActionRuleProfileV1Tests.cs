@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
-using Meridian.Instruments.AssetOperations;
+using Meridian.ReferenceData.CorporateActions;
 
 namespace Meridian.Tests.AssetOperations;
 
@@ -59,5 +59,27 @@ public sealed class ClearwaterCorporateActionRuleProfileV1Tests
             CorporateActionPolicyDependencyDto.StatutoryConversionTreatment);
         statutoryTender.DefaultRecipe.Should().Contain(CorporateActionEconomicOperationKindDto.Redemption);
         gaapTender.DefaultRecipe.Should().Contain(CorporateActionEconomicOperationKindDto.CorporateActionSale);
+    }
+
+    [Fact]
+    public void Instance_ImplementsTheRuleProfileContract_WithTheStaticAnswers()
+    {
+        ICorporateActionRuleProfile profile = ClearwaterCorporateActionRuleProfileV1.Instance;
+
+        profile.ProfileId.Should().Be(ClearwaterCorporateActionRuleProfileV1.ProfileId);
+        profile.ProfileVersion.Should().Be(ClearwaterCorporateActionRuleProfileV1.ProfileVersion);
+        profile.ProfileKey.Should().Be(ClearwaterCorporateActionRuleProfileV1.ProfileKey);
+        profile.SelectedRuleVersion.Should().Be(ClearwaterCorporateActionRuleProfileV1.SelectedRuleVersion);
+        profile.EffectiveFrom.Should().Be(ClearwaterCorporateActionRuleProfileV1.EffectiveFrom);
+        profile.IsEffectiveOn(ClearwaterCorporateActionRuleProfileV1.EffectiveFrom.AddDays(-1)).Should().BeFalse();
+
+        foreach (var actionType in Enum.GetValues<CorporateActionAccountingTypeDto>())
+        {
+            foreach (var basis in Enum.GetValues<AccountingBasisKindDto>())
+            {
+                profile.Resolve(actionType, basis)
+                    .Should().BeEquivalentTo(ClearwaterCorporateActionRuleProfileV1.Resolve(actionType, basis));
+            }
+        }
     }
 }

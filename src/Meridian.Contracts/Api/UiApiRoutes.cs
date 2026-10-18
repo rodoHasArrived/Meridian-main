@@ -414,7 +414,7 @@ public static class UiApiRoutes
     public const string SecurityMasterIngestStatus = "/api/security-master/ingest/status";
     public const string SecurityMasterEdgarIngest = "/api/security-master/ingest/edgar";
 
-    // Pricing hierarchy & golden copy (Clearwater pricing model)
+    // Pricing hierarchy & golden copy
     public const string SecurityMasterPricingHierarchy = "/api/security-master/{securityId:guid}/pricing-hierarchy";
     public const string SecurityMasterPriceGoldenCopy = "/api/security-master/{securityId:guid}/price-golden-copy";
     public const string SecurityMasterPriceComparison = "/api/security-master/{securityId:guid}/price-comparison";
