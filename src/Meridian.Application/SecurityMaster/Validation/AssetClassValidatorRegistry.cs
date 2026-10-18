@@ -212,6 +212,7 @@ internal static class DefaultAssetClassValidators
                     FieldRule.OptionalAllowedString("structuredCreditKind", SecurityReferenceTaxonomyCatalog.Default.GetValues(SecurityReferenceTaxonomyKeys.StructuredCreditKind), "SM_STRUCTURED_CREDIT_KIND_INVALID", "Structured credit kind is not a governed value", "Structured credit kind must be one of the structured-credit-kind taxonomy values when supplied."),
                     FieldRule.OptionalFraction("attachmentPoint", "SM_STRUCTURED_CREDIT_ATTACHMENT_INVALID", "Structured credit attachment point is invalid", "Structured credit attachment point must be a fraction between zero and one when supplied."),
                     FieldRule.OptionalFraction("detachmentPoint", "SM_STRUCTURED_CREDIT_DETACHMENT_INVALID", "Structured credit detachment point is invalid", "Structured credit detachment point must be a fraction between zero and one when supplied."),
+                    NumericOrderRule.Optional("attachmentPoint", "detachmentPoint", "SM_STRUCTURED_CREDIT_ATTACHMENT_ABOVE_DETACHMENT", "Structured credit attachment point exceeds detachment point", "Structured credit attachment point must be at or below the detachment point when both are supplied."),
                     FieldRule.OptionalNonNegative("weightedAverageCoupon", "SM_STRUCTURED_CREDIT_WAC_INVALID", "Structured credit weighted-average coupon is invalid", "Structured credit weighted-average coupon must be zero or greater when supplied."),
                     FieldRule.OptionalNonNegative("weightedAverageMaturityMonths", "SM_STRUCTURED_CREDIT_WAM_INVALID", "Structured credit weighted-average maturity is invalid", "Structured credit weighted-average maturity months must be zero or greater when supplied."),
                     FieldRule.OptionalNonNegative("weightedAverageLoanAgeMonths", "SM_STRUCTURED_CREDIT_WALA_INVALID", "Structured credit weighted-average loan age is invalid", "Structured credit weighted-average loan age months must be zero or greater when supplied."),
@@ -800,10 +801,9 @@ internal sealed record FieldRule(
                 : null;
         }
 
-        // The canonical serializer writes null where a domain value is None; the two optional
-        // rule kinds introduced for the typed structured-credit terms read that as "not supplied".
-        if (property.ValueKind == JsonValueKind.Null
-            && RuleKind is SecurityFieldRuleKind.OptionalAllowedString or SecurityFieldRuleKind.OptionalFraction)
+        // The canonical serializer writes null where a domain value is None, so for every optional
+        // rule kind a JSON null reads as "not supplied"; only a present, non-null value is governed.
+        if (property.ValueKind == JsonValueKind.Null && !RequiresPresence(RuleKind))
         {
             return null;
         }
@@ -880,6 +880,46 @@ internal sealed record DateOrderRule(
             Message,
             [$"assetSpecificTerms.{StartFieldPath}", $"assetSpecificTerms.{EndFieldPath}"],
             "Correct the effective-date ordering and resubmit the Security Master amendment.");
+}
+
+/// <summary>
+/// Cross-field numeric ordering: the start field must be at or below the end field. Mirrors
+/// <see cref="DateOrderRule"/> for numbers; with <c>RequiresBothFields</c> false a missing or
+/// null side is "not supplied" and the per-field rules govern each value on its own.
+/// </summary>
+internal sealed record NumericOrderRule(
+    string LowerFieldPath,
+    string UpperFieldPath,
+    bool RequiresBothFields,
+    string Code,
+    string Title,
+    string Message) : ISecurityValidationRule
+{
+    public static NumericOrderRule Optional(string lowerFieldPath, string upperFieldPath, string code, string title, string message)
+        => new(lowerFieldPath, upperFieldPath, false, code, title, message);
+
+    public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
+    {
+        var hasLower = JsonValidationReader.TryGetAssetTermDecimal(context.Record.AssetSpecificTerms, LowerFieldPath, context.Record.AssetClass, out var lower);
+        var hasUpper = JsonValidationReader.TryGetAssetTermDecimal(context.Record.AssetSpecificTerms, UpperFieldPath, context.Record.AssetClass, out var upper);
+        if (!hasLower || !hasUpper)
+        {
+            return RequiresBothFields
+                ? Issue()
+                : null;
+        }
+
+        return lower <= upper ? null : Issue();
+    }
+
+    private SecurityValidationIssueDto Issue()
+        => SecurityValidationIssueFactory.Create(
+            SecurityValidationSeverityDto.Error,
+            Code,
+            Title,
+            Message,
+            [$"assetSpecificTerms.{LowerFieldPath}", $"assetSpecificTerms.{UpperFieldPath}"],
+            "Correct the numeric ordering and resubmit the Security Master amendment.");
 }
 
 internal sealed record DistinctStringRule(
@@ -1138,6 +1178,17 @@ internal static class JsonValidationReader
         }
 
         return DateOnly.TryParse(property.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.None, out value);
+    }
+
+    public static bool TryGetAssetTermDecimal(JsonElement root, string path, string assetClass, out decimal value)
+    {
+        if (TryGetAssetTermProperty(root, path, assetClass, out var property) && TryGetDecimal(property, out value))
+        {
+            return true;
+        }
+
+        value = default;
+        return false;
     }
 
     public static bool TryGetAssetTermDate(JsonElement root, string path, string assetClass, out DateOnly value)

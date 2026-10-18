@@ -920,6 +920,10 @@ let ``StructuredCreditKind labels round-trip and keep an unknown label verbatim`
         kind |> StructuredCreditKind.asString |> StructuredCreditKind.parse |> should equal kind
 
     StructuredCreditKind.parse " Clo " |> should equal StructuredCreditKind.Clo
+    // Governed labels match case-insensitively (the taxonomy validator accepts them that way) and
+    // canonicalise, so a provider's "interestonly" still drives the typed IO semantics.
+    StructuredCreditKind.parse "interestonly" |> should equal StructuredCreditKind.InterestOnly
+    StructuredCreditKind.parse "AGENCYMBS" |> should equal StructuredCreditKind.AgencyMbs
     StructuredCreditKind.parse "SyntheticWidget" |> should equal (StructuredCreditKind.OtherStructuredCreditKind "SyntheticWidget")
     StructuredCreditKind.OtherStructuredCreditKind "SyntheticWidget" |> StructuredCreditKind.asString |> should equal "SyntheticWidget"
 

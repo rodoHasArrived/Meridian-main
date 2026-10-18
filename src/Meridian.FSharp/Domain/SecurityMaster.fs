@@ -502,19 +502,22 @@ module StructuredCreditKind =
         | StructuredCreditKind.PrincipalOnly -> "PrincipalOnly"
         | StructuredCreditKind.OtherStructuredCreditKind label -> label
 
-    /// Parses the wire label; an unrecognised label is kept verbatim as <c>OtherStructuredCreditKind</c>.
+    /// Parses the wire label. Governed labels match case-insensitively, as the taxonomy validator
+    /// does, and canonicalise to the named case; an unrecognised label is kept verbatim as
+    /// <c>OtherStructuredCreditKind</c>.
     let parse (label: string) =
-        match label.Trim() with
-        | "AgencyMbs" -> StructuredCreditKind.AgencyMbs
-        | "NonAgencyMbs" -> StructuredCreditKind.NonAgencyMbs
-        | "CommercialMbs" -> StructuredCreditKind.CommercialMbs
-        | "AssetBacked" -> StructuredCreditKind.AssetBacked
-        | "Clo" -> StructuredCreditKind.Clo
-        | "Cdo" -> StructuredCreditKind.Cdo
-        | "Cmo" -> StructuredCreditKind.Cmo
-        | "InterestOnly" -> StructuredCreditKind.InterestOnly
-        | "PrincipalOnly" -> StructuredCreditKind.PrincipalOnly
-        | other -> StructuredCreditKind.OtherStructuredCreditKind other
+        let trimmed = label.Trim()
+        match trimmed.ToUpperInvariant() with
+        | "AGENCYMBS" -> StructuredCreditKind.AgencyMbs
+        | "NONAGENCYMBS" -> StructuredCreditKind.NonAgencyMbs
+        | "COMMERCIALMBS" -> StructuredCreditKind.CommercialMbs
+        | "ASSETBACKED" -> StructuredCreditKind.AssetBacked
+        | "CLO" -> StructuredCreditKind.Clo
+        | "CDO" -> StructuredCreditKind.Cdo
+        | "CMO" -> StructuredCreditKind.Cmo
+        | "INTERESTONLY" -> StructuredCreditKind.InterestOnly
+        | "PRINCIPALONLY" -> StructuredCreditKind.PrincipalOnly
+        | _ -> StructuredCreditKind.OtherStructuredCreditKind trimmed
 
 type StructuredCreditTerms = {
     Tranche: string

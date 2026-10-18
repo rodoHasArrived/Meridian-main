@@ -368,13 +368,16 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDateOnly(terms, "maturity")),
                 ToStructuredCreditKindOption(GetOptionalString(terms, "structuredCreditKind")),
                 ToOption(GetOptionalString(terms, "seniority")),
-                ToOption(GetOptionalDecimal(terms, "attachmentPoint")),
-                ToOption(GetOptionalDecimal(terms, "detachmentPoint")),
-                ToOption(GetOptionalDecimal(terms, "weightedAverageCoupon")),
-                ToOption(GetOptionalInt(terms, "weightedAverageMaturityMonths")),
-                ToOption(GetOptionalInt(terms, "weightedAverageLoanAgeMonths")),
-                ToOption(GetOptionalDateOnly(terms, "reinvestmentPeriodEnd")),
-                ToOption(GetOptionalDateOnly(terms, "nonCallPeriodEnd")))),
+                // Typed tranche terms are optional, but a WRITE must not read a malformed supplied
+                // value as absent: persisting null for "1.5" months or an unparseable date would
+                // silently discard caller input. Reads stay tolerant so stored rows remain loadable.
+                ToOption(GetOptionalDecimal(terms, "attachmentPoint", mode)),
+                ToOption(GetOptionalDecimal(terms, "detachmentPoint", mode)),
+                ToOption(GetOptionalDecimal(terms, "weightedAverageCoupon", mode)),
+                ToOption(GetOptionalInt(terms, "weightedAverageMaturityMonths", mode)),
+                ToOption(GetOptionalInt(terms, "weightedAverageLoanAgeMonths", mode)),
+                ToOption(GetOptionalDateOnly(terms, "reinvestmentPeriodEnd", mode)),
+                ToOption(GetOptionalDateOnly(terms, "nonCallPeriodEnd", mode)))),
             "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
                 GetRequiredString(terms, "gpSponsor"),
                 GetRequiredString(terms, "strategy"),
@@ -991,6 +994,43 @@ internal static class SecurityMasterMapping
             ? intValue
             : null;
 
+    /// <summary>
+    /// Write-strict optional readers: in <see cref="SecurityKindMappingMode.Write"/> a property that
+    /// is present and not null but does not parse as its declared type is rejected instead of being
+    /// read as absent. In read mode they match the tolerant readers above.
+    /// </summary>
+    private static decimal? GetOptionalDecimal(JsonElement json, string propertyName, SecurityKindMappingMode mode)
+    {
+        var parsed = GetOptionalDecimal(json, propertyName);
+        if (parsed is null && mode == SecurityKindMappingMode.Write && HasNonNullProperty(json, propertyName))
+            throw new InvalidOperationException(MalformedOptionalValue(propertyName, "a decimal number"));
+        return parsed;
+    }
+
+    private static int? GetOptionalInt(JsonElement json, string propertyName, SecurityKindMappingMode mode)
+    {
+        var parsed = GetOptionalInt(json, propertyName);
+        if (parsed is null && mode == SecurityKindMappingMode.Write && HasNonNullProperty(json, propertyName))
+            throw new InvalidOperationException(MalformedOptionalValue(propertyName, "a whole number"));
+        return parsed;
+    }
+
+    private static DateOnly? GetOptionalDateOnly(JsonElement json, string propertyName, SecurityKindMappingMode mode)
+    {
+        var parsed = GetOptionalDateOnly(json, propertyName);
+        if (parsed is null && mode == SecurityKindMappingMode.Write && HasNonNullProperty(json, propertyName))
+            throw new InvalidOperationException(MalformedOptionalValue(propertyName, "an ISO-8601 date"));
+        return parsed;
+    }
+
+    private static bool HasNonNullProperty(JsonElement json, string propertyName)
+        => json.ValueKind == JsonValueKind.Object
+           && json.TryGetProperty(propertyName, out var value)
+           && value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined);
+
+    private static string MalformedOptionalValue(string propertyName, string expected)
+        => $"Property '{propertyName}' must be {expected} when supplied; omit it or send null to leave it unset.";
+
     private static int GetRequiredInt(JsonElement json, string propertyName)
         => GetOptionalInt(json, propertyName)
            ?? throw new InvalidOperationException($"Missing required integer '{propertyName}'.");
@@ -1062,26 +1102,31 @@ internal static class SecurityMasterMapping
         };
 
     /// <summary>
-    /// The typed securitisation family. An unrecognised label is kept verbatim as
-    /// <c>OtherStructuredCreditKind</c> rather than dropped, mirroring the F# parser; the taxonomy
-    /// validator is what reports a label outside the governed vocabulary.
+    /// The typed securitisation family. Governed labels match case-insensitively, as the taxonomy
+    /// validator does, and canonicalise to the named case; an unrecognised label is kept verbatim as
+    /// <c>OtherStructuredCreditKind</c> rather than dropped, mirroring the F# parser, and the
+    /// taxonomy validator is what reports it.
     /// </summary>
     private static FSharpOption<StructuredCreditKind> ToStructuredCreditKindOption(string? raw)
-        => string.IsNullOrWhiteSpace(raw)
-            ? FSharpOption<StructuredCreditKind>.None
-            : FSharpOption<StructuredCreditKind>.Some(raw.Trim() switch
-            {
-                "AgencyMbs" => StructuredCreditKind.AgencyMbs,
-                "NonAgencyMbs" => StructuredCreditKind.NonAgencyMbs,
-                "CommercialMbs" => StructuredCreditKind.CommercialMbs,
-                "AssetBacked" => StructuredCreditKind.AssetBacked,
-                "Clo" => StructuredCreditKind.Clo,
-                "Cdo" => StructuredCreditKind.Cdo,
-                "Cmo" => StructuredCreditKind.Cmo,
-                "InterestOnly" => StructuredCreditKind.InterestOnly,
-                "PrincipalOnly" => StructuredCreditKind.PrincipalOnly,
-                var other => StructuredCreditKind.NewOtherStructuredCreditKind(other)
-            });
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return FSharpOption<StructuredCreditKind>.None;
+
+        var label = raw.Trim();
+        return FSharpOption<StructuredCreditKind>.Some(label.ToUpperInvariant() switch
+        {
+            "AGENCYMBS" => StructuredCreditKind.AgencyMbs,
+            "NONAGENCYMBS" => StructuredCreditKind.NonAgencyMbs,
+            "COMMERCIALMBS" => StructuredCreditKind.CommercialMbs,
+            "ASSETBACKED" => StructuredCreditKind.AssetBacked,
+            "CLO" => StructuredCreditKind.Clo,
+            "CDO" => StructuredCreditKind.Cdo,
+            "CMO" => StructuredCreditKind.Cmo,
+            "INTERESTONLY" => StructuredCreditKind.InterestOnly,
+            "PRINCIPALONLY" => StructuredCreditKind.PrincipalOnly,
+            _ => StructuredCreditKind.NewOtherStructuredCreditKind(label)
+        });
+    }
 
     private static FSharpOption<VotingRightsCat> ToVotingRightsCatOption(string? raw)
         => raw switch
