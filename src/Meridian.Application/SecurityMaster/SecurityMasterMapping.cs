@@ -366,11 +366,12 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(terms, "factorSchedule")),
                 ToFSharpList(GetOptionalArrayItemsStrict(terms, "factorScheduleEntries").Select(ToFactorScheduleEntry)),
                 ToOption(GetOptionalDateOnly(terms, "maturity")),
-                ToStructuredCreditKindOption(GetOptionalString(terms, "structuredCreditKind")),
-                ToOption(GetOptionalString(terms, "seniority")),
                 // Typed tranche terms are optional, but a WRITE must not read a malformed supplied
-                // value as absent: persisting null for "1.5" months or an unparseable date would
-                // silently discard caller input. Reads stay tolerant so stored rows remain loadable.
+                // value as absent: persisting null for a numeric kind, "1.5" months or an unparseable
+                // date would silently discard caller input. Reads stay tolerant so stored rows remain
+                // loadable.
+                ToStructuredCreditKindOption(GetOptionalString(terms, "structuredCreditKind", mode)),
+                ToOption(GetOptionalString(terms, "seniority", mode)),
                 ToOption(GetOptionalDecimal(terms, "attachmentPoint", mode)),
                 ToOption(GetOptionalDecimal(terms, "detachmentPoint", mode)),
                 ToOption(GetOptionalDecimal(terms, "weightedAverageCoupon", mode)),
@@ -999,6 +1000,14 @@ internal static class SecurityMasterMapping
     /// is present and not null but does not parse as its declared type is rejected instead of being
     /// read as absent. In read mode they match the tolerant readers above.
     /// </summary>
+    private static string? GetOptionalString(JsonElement json, string propertyName, SecurityKindMappingMode mode)
+    {
+        var parsed = GetOptionalString(json, propertyName);
+        if (parsed is null && mode == SecurityKindMappingMode.Write && HasNonNullProperty(json, propertyName))
+            throw new InvalidOperationException(MalformedOptionalValue(propertyName, "a string"));
+        return parsed;
+    }
+
     private static decimal? GetOptionalDecimal(JsonElement json, string propertyName, SecurityKindMappingMode mode)
     {
         var parsed = GetOptionalDecimal(json, propertyName);

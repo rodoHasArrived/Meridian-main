@@ -910,6 +910,38 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
+    public void Scenario_StructuredCreditPeriodEndThatIsNotADate_BlocksReadiness()
+    {
+        // The ordering rule reads an unparseable date as "not supplied", so a malformed period end
+        // on an imported or restored row needs its own rule to be reported.
+        var malformed = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                maturity = "2036-01-15",
+                reinvestmentPeriodEnd = "someday",
+                nonCallPeriodEnd = "2028-01-15"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(malformed, [malformed], Now);
+
+        report.HasBlockingIssues.Should().BeTrue();
+        report.Issues.Should().ContainSingle(static item => item.Code == "SM_STRUCTURED_CREDIT_REINVESTMENT_END_NOT_A_DATE");
+        report.Issues.Should().NotContain(static item =>
+            item.Code == "SM_STRUCTURED_CREDIT_NON_CALL_END_NOT_A_DATE" || item.Code == "SM_STRUCTURED_CREDIT_REINVESTMENT_END_INVALID");
+    }
+
+    [Fact]
     public void Scenario_StructuredCreditAttachmentAboveDetachment_BlocksReadiness()
     {
         // Both points are valid fractions on their own; the loss interval they describe is not. The
