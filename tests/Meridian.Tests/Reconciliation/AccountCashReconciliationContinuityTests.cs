@@ -617,11 +617,35 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
 
     [Fact]
     public async Task Reformatted_copied_json_observation_is_rejected_as_dependent_evidence()
+        => await Copied_json_observation_is_rejected_as_dependent_evidence("whitespace");
+
+    [Theory]
+    [InlineData("property-order")]
+    [InlineData("nested-property-order")]
+    public async Task Reordered_copied_json_observation_is_rejected_as_dependent_evidence(string shape)
+        => await Copied_json_observation_is_rejected_as_dependent_evidence(shape);
+
+    private async Task Copied_json_observation_is_rejected_as_dependent_evidence(string shape)
     {
         var service = await ServiceAsync();
         var request = Request("first", 0, 1000m, 1000m);
-        var reformatted = request.Left.Rows[0].OriginalPayload.Replace(",", ",\n  ").Replace(":", ": ");
-        reformatted.Should().NotBe(request.Left.Rows[0].OriginalPayload);
+        var original = request.Left.Rows[0].OriginalPayload;
+        string reformatted;
+        switch (shape)
+        {
+            case "whitespace":
+                reformatted = original.Replace(",", ",\n  ").Replace(":", ": ");
+                break;
+            case "property-order":
+                reformatted = ReverseProperties(original);
+                break;
+            default:
+                original = """{"balance":{"amount":1000,"currency":"USD"},"source":"ledger","tags":["a","b"]}""";
+                reformatted = """{ "tags": ["a", "b"], "source": "ledger", "balance": { "currency": "USD", "amount": 1000 } }""";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+        }
+        reformatted.Should().NotBe(original);
         var copied = request with { Right = request.Right with { Rows = [request.Right.Rows[0] with { OriginalPayload = reformatted }] } };
 
         var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(copied));
@@ -776,6 +800,14 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
                 var reformatted = request.Left.Rows[0].OriginalPayload.Replace(",", ",\n  ").Replace(":", ": ");
                 return (request with { Right = request.Right with { Rows = [request.Right.Rows[0] with { OriginalPayload = reformatted }] } }, "copied evidence is not independent");
         }
+    }
+
+    private static string ReverseProperties(string json)
+    {
+        using var document = System.Text.Json.JsonDocument.Parse(json);
+        var properties = document.RootElement.EnumerateObject().Reverse().ToArray();
+        properties.Length.Should().BeGreaterThan(1);
+        return "{" + string.Join(",", properties.Select(property => System.Text.Json.JsonSerializer.Serialize(property.Name) + ":" + property.Value.GetRawText())) + "}";
     }
 
     private async Task<AccountCashReconciliationService> ServiceAsync()

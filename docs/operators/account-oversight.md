@@ -122,7 +122,7 @@ new source versions where the retained source content changes.
 
 Run again after a source correction with a new run ID, later observation time and a business
 date no earlier than the retained head; new run IDs cannot contain whitespace or `/ \ ? # %`, at
-least one cash tolerance rule is required, and reformatted copies of a source payload remain
+least one cash tolerance rule is required, and reformatted or reordered copies of a source payload remain
 dependent evidence. These rules apply only to new runs: runs retained before them still replay
 and re-submit under their original IDs and tolerance contents. The amount,
 row ID, business date and tolerance version do not create a different case. The case retains its

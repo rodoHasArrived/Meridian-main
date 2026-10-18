@@ -215,8 +215,9 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
     }
 
     /// <summary>
-    /// Copied JSON observations stay copies after reformatting, so JSON payloads compare by their
-    /// compact serialization; any other payload compares as trimmed text. Retained payloads are untouched.
+    /// Copied JSON observations stay copies after reformatting or property reordering, so JSON payloads
+    /// compare by a compact canonical form: object properties sorted by ordinal key at every depth, array
+    /// order and scalar text preserved. Any other payload compares as trimmed text. Retained payloads are untouched.
     /// </summary>
     private static string CanonicalObservation(string payload)
     {
@@ -228,12 +229,37 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
             using var document = JsonDocument.Parse(trimmed);
             var buffer = new ArrayBufferWriter<byte>();
             using (var writer = new Utf8JsonWriter(buffer))
-                document.RootElement.WriteTo(writer);
+                WriteCanonical(document.RootElement, writer);
             return Encoding.UTF8.GetString(buffer.WrittenSpan);
         }
         catch (JsonException)
         {
             return trimmed;
+        }
+    }
+
+    private static void WriteCanonical(JsonElement element, Utf8JsonWriter writer)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                writer.WriteStartObject();
+                foreach (var property in element.EnumerateObject().OrderBy(property => property.Name, StringComparer.Ordinal))
+                {
+                    writer.WritePropertyName(property.Name);
+                    WriteCanonical(property.Value, writer);
+                }
+                writer.WriteEndObject();
+                break;
+            case JsonValueKind.Array:
+                writer.WriteStartArray();
+                foreach (var item in element.EnumerateArray())
+                    WriteCanonical(item, writer);
+                writer.WriteEndArray();
+                break;
+            default:
+                element.WriteTo(writer);
+                break;
         }
     }
 

@@ -175,6 +175,9 @@ public static partial class LedgerEndpoints
                 if (request.Scope is null || request.Scope.AccountId != scope.AccountId
                     || request.Scope.BookId != scope.BookId || request.Scope.BaseCurrency != scope.Book.BaseCurrency)
                     return OversightScopeDenied();
+                // Caller-input checks run before any retained-evidence verification or vault I/O.
+                if (request.RecordedAtUtc == default || request.RecordedAtUtc.Offset != TimeSpan.Zero)
+                    throw new ArgumentException("Forecast recording time must be an explicit UTC instant.", nameof(request));
                 if (request.RecordedAtUtc > DateTimeOffset.UtcNow)
                     throw new ArgumentException("Forecast recording time cannot be later than the authenticated capture time.", nameof(request));
                 var service = context.RequestServices.GetService<IAccountCashForecastService>();

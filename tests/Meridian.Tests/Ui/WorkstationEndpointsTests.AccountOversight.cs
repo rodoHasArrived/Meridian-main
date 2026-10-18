@@ -8,6 +8,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Tenancy;
+using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Identity.Auth;
@@ -668,6 +669,44 @@ public sealed partial class WorkstationEndpointsTests
             services.AddSingleton(evidence.Object);
         }, currentUserPermissions: UserPermission.ManageLedgerReports, mapLedgerApi: true);
         var request = OversightForecastRequest(bookId, accountId) with { RecordedAtUtc = OversightObservedAt.ToOffset(TimeSpan.FromHours(2)) };
+
+        using var response = await app.GetTestClient().PostAsJsonAsync(
+            OversightBaseRoute(bookId, accountId) + "/cash-forecasts", request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        (await response.Content.ReadAsStringAsync()).Should().Contain("UTC");
+        (await store.GetHistoryAsync(request.Scope)).Should().BeEmpty();
+        evidence.VerifyNoOtherCalls();
+    }
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(null)]
+    public async Task AccountOversight_NonUtcOrMissingForecastRecordingTimeWithEvidenceIsRejectedBeforeEvidenceVerification(int? offsetHours)
+    {
+        var bookId = Guid.NewGuid();
+        var accountId = Guid.NewGuid();
+        using var cash = new OversightCashFixture();
+        var store = new FileAccountCashForecastStore(cash.Root);
+        await store.InitializeAsync();
+        var evidence = new Mock<IEvidenceArtifactStore>(MockBehavior.Strict);
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(OversightBooks(bookId, OversightBook(bookId, accountId)).Object);
+            services.AddSingleton<IAccountCashForecastService>(new Meridian.Instruments.AssetOperations.AccountCashForecastService(store));
+            services.AddSingleton(evidence.Object);
+        }, currentUserPermissions: UserPermission.ManageLedgerReports, mapLedgerApi: true);
+        var reviewed = OversightObservedAt.AddHours(-1);
+        var provenance = new AccountCashProvenanceDto("bank", "coupon-1.actual.v1", new string('a', 64), AccountCashEvidenceRole.Observation,
+            new RetainedEvidenceIdentityDto("doc-1", EvidenceVaultReference.CanonicalPrefix + Guid.NewGuid().ToString("D"), new string('a', 64),
+                "bank", "coupon-1.actual.v1", "Accepted", "reviewer", reviewed, OversightDate, 1, reviewed, "reviewer", "account", accountId.ToString("D")));
+        var flow = new AccountCashFlowDto("coupon-1", "coupon-1.actual.v1", accountId.ToString("D"), bookId.ToString("D"), AccountCashFlowStatus.Actual,
+            "Coupon", 10m, "USD", OversightDate, OversightDate, OversightDate, provenance);
+        var request = OversightForecastRequest(bookId, accountId) with
+        {
+            Flows = [flow],
+            RecordedAtUtc = offsetHours is { } hours ? OversightObservedAt.ToOffset(TimeSpan.FromHours(hours)) : default
+        };
 
         using var response = await app.GetTestClient().PostAsJsonAsync(
             OversightBaseRoute(bookId, accountId) + "/cash-forecasts", request);
