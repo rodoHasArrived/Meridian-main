@@ -631,6 +631,7 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
     [InlineData("root-scalar")]
     [InlineData("wide-number")]
     [InlineData("wide-exponent")]
+    [InlineData("zero-padded-exponent")]
     public async Task Respelled_number_in_copied_json_observation_is_rejected_as_dependent_evidence(string shape)
         => await Copied_json_observation_is_rejected_as_dependent_evidence(shape);
 
@@ -651,6 +652,21 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         var run = await service.RunAsync(request);
 
         run.Input.RunId.Should().Be("first");
+    }
+
+    [Theory]
+    [InlineData("""{"amount":0,"amount":100}""", "duplicate JSON property names")]
+    [InlineData("1e1000000000000000000", "exponent wider than 18 digits")]
+    public async Task Ambiguous_or_unbounded_json_observation_is_refused_as_input(string payload, string rejection)
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 1000m);
+        request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = payload }] } };
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(request));
+
+        failure.Message.Should().Contain(rejection);
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
     }
 
     [Fact]
@@ -698,6 +714,11 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
             case "wide-exponent":
                 original = "1e2147483648";
                 reformatted = "10e2147483647";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+            case "zero-padded-exponent":
+                original = "1000";
+                reformatted = "1e+000000000000000000000000003";
                 request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
                 break;
             case "root-scalar":

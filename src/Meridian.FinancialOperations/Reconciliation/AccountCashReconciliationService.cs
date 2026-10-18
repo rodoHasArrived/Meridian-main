@@ -232,14 +232,29 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
             return trimmed;
         if (depth > MaxObservationDepth)
             throw new ArgumentException($"An original observation nested deeper than {MaxObservationDepth} JSON levels cannot be compared for independence and is refused.", parameterName);
-        using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = MaxObservationDepth });
-        var buffer = new ArrayBufferWriter<byte>();
-        using (var writer = new Utf8JsonWriter(buffer))
-            WriteCanonical(document.RootElement, writer);
-        return Encoding.UTF8.GetString(buffer.WrittenSpan);
+        JsonDocument document;
+        try
+        {
+            // Duplicate property names are ambiguous (last-wins consumers see one value, this canonical form
+            // would keep both), so they are refused rather than compared.
+            document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = MaxObservationDepth, AllowDuplicateProperties = false });
+        }
+        catch (JsonException exception)
+        {
+            throw new ArgumentException("An original observation with duplicate JSON property names is ambiguous and is refused.", parameterName, exception);
+        }
+        using (document)
+        {
+            var buffer = new ArrayBufferWriter<byte>();
+            using (var writer = new Utf8JsonWriter(buffer))
+                WriteCanonical(document.RootElement, writer, parameterName);
+            return Encoding.UTF8.GetString(buffer.WrittenSpan);
+        }
     }
 
     private const int MaxObservationDepth = 64;
+    /// <summary>Exponent digits after leading zeros; 18 keeps the arithmetic in <see cref="long"/> with no parse cost to bound.</summary>
+    private const int MaxObservationExponentDigits = 18;
 
     /// <summary>Non-recursive validity and depth scan, so over-depth JSON is distinguished from non-JSON text.</summary>
     private static bool IsJson(ReadOnlySpan<byte> bytes, out int depth)
@@ -258,7 +273,7 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
         }
     }
 
-    private static void WriteCanonical(JsonElement element, Utf8JsonWriter writer)
+    private static void WriteCanonical(JsonElement element, Utf8JsonWriter writer, string parameterName)
     {
         switch (element.ValueKind)
         {
@@ -267,18 +282,18 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
                 foreach (var property in element.EnumerateObject().OrderBy(property => property.Name, StringComparer.Ordinal))
                 {
                     writer.WritePropertyName(property.Name);
-                    WriteCanonical(property.Value, writer);
+                    WriteCanonical(property.Value, writer, parameterName);
                 }
                 writer.WriteEndObject();
                 break;
             case JsonValueKind.Array:
                 writer.WriteStartArray();
                 foreach (var item in element.EnumerateArray())
-                    WriteCanonical(item, writer);
+                    WriteCanonical(item, writer, parameterName);
                 writer.WriteEndArray();
                 break;
             case JsonValueKind.Number:
-                writer.WriteRawValue(CanonicalNumber(element.GetRawText()), skipInputValidation: true);
+                writer.WriteRawValue(CanonicalNumber(element.GetRawText(), parameterName), skipInputValidation: true);
                 break;
             default:
                 element.WriteTo(writer);
@@ -288,16 +303,26 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
 
     /// <summary>
     /// Exact canonical spelling of a JSON number: 1000, 1000.00 and 1e3 all become "1E3", with no precision
-    /// or exponent limit, so distinct wide values never collide and respelled equal values always do.
+    /// limit, so distinct wide values never collide and respelled equal values always do. The exponent is
+    /// bounded to <see cref="MaxObservationExponentDigits"/> significant digits so the work is linear in the
+    /// token and the arithmetic cannot overflow; anything wider is refused as input.
     /// </summary>
-    private static string CanonicalNumber(string raw)
+    private static string CanonicalNumber(string raw, string parameterName)
     {
         var negative = raw[0] == '-';
         var body = negative ? raw[1..] : raw;
         var exponentAt = body.IndexOfAny(['e', 'E']);
-        // BigInteger: JSON permits exponents beyond Int32, and the later adjustments must not wrap.
-        var exponent = exponentAt < 0 ? System.Numerics.BigInteger.Zero
-            : System.Numerics.BigInteger.Parse(body[(exponentAt + 1)..], System.Globalization.NumberStyles.AllowLeadingSign, System.Globalization.CultureInfo.InvariantCulture);
+        long exponent = 0;
+        if (exponentAt >= 0)
+        {
+            var exponentText = body[(exponentAt + 1)..];
+            var exponentNegative = exponentText[0] == '-';
+            var exponentDigits = exponentText.TrimStart('+', '-').TrimStart('0');
+            if (exponentDigits.Length > MaxObservationExponentDigits)
+                throw new ArgumentException($"An original observation with a JSON exponent wider than {MaxObservationExponentDigits} digits is refused.", parameterName);
+            if (exponentDigits.Length > 0)
+                exponent = long.Parse(exponentDigits, System.Globalization.CultureInfo.InvariantCulture) * (exponentNegative ? -1 : 1);
+        }
         var mantissa = exponentAt < 0 ? body : body[..exponentAt];
         var point = mantissa.IndexOf('.');
         var digits = point < 0 ? mantissa : mantissa.Remove(point, 1);
