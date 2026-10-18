@@ -288,14 +288,16 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
 
     /// <summary>
     /// Exact canonical spelling of a JSON number: 1000, 1000.00 and 1e3 all become "1E3", with no precision
-    /// limit, so distinct wide values never collide and respelled equal values always do.
+    /// or exponent limit, so distinct wide values never collide and respelled equal values always do.
     /// </summary>
     private static string CanonicalNumber(string raw)
     {
         var negative = raw[0] == '-';
         var body = negative ? raw[1..] : raw;
         var exponentAt = body.IndexOfAny(['e', 'E']);
-        var exponent = exponentAt < 0 ? 0 : int.Parse(body[(exponentAt + 1)..], System.Globalization.CultureInfo.InvariantCulture);
+        // BigInteger: JSON permits exponents beyond Int32, and the later adjustments must not wrap.
+        var exponent = exponentAt < 0 ? System.Numerics.BigInteger.Zero
+            : System.Numerics.BigInteger.Parse(body[(exponentAt + 1)..], System.Globalization.NumberStyles.AllowLeadingSign, System.Globalization.CultureInfo.InvariantCulture);
         var mantissa = exponentAt < 0 ? body : body[..exponentAt];
         var point = mantissa.IndexOf('.');
         var digits = point < 0 ? mantissa : mantissa.Remove(point, 1);

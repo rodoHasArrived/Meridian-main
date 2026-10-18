@@ -630,18 +630,22 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
     [InlineData("number-fraction")]
     [InlineData("root-scalar")]
     [InlineData("wide-number")]
+    [InlineData("wide-exponent")]
     public async Task Respelled_number_in_copied_json_observation_is_rejected_as_dependent_evidence(string shape)
         => await Copied_json_observation_is_rejected_as_dependent_evidence(shape);
 
-    [Fact]
-    public async Task Distinct_wide_numbers_beyond_decimal_range_are_independent_observations()
+    [Theory]
+    [InlineData("1e30", "1000000000000000000000000000001")]
+    [InlineData("1e2147483648", "1e2147483647")]
+    [InlineData("1e-2147483649", "2e-2147483649")]
+    public async Task Distinct_wide_numbers_beyond_decimal_range_are_independent_observations(string left, string right)
     {
         var service = await ServiceAsync();
         var request = Request("first", 0, 1000m, 1000m);
         request = request with
         {
-            Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = "1e30" }] },
-            Right = request.Right with { Rows = [request.Right.Rows[0] with { OriginalPayload = "1000000000000000000000000000001" }] }
+            Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = left }] },
+            Right = request.Right with { Rows = [request.Right.Rows[0] with { OriginalPayload = right }] }
         };
 
         var run = await service.RunAsync(request);
@@ -689,6 +693,11 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
             case "wide-number":
                 original = """{"id":1000000000000000000000000000000,"source":"ledger"}""";
                 reformatted = """{"id":1e30,"source":"ledger"}""";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+            case "wide-exponent":
+                original = "1e2147483648";
+                reformatted = "10e2147483647";
                 request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
                 break;
             case "root-scalar":
