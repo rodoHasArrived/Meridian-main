@@ -135,10 +135,19 @@ public sealed partial class AlpacaBrokerageGateway
             return null;
 
         // 422 means Alpaca will not cancel it (often already terminal); the re-read decides.
-        var (_, candidateStatus, _) = await VerifyCancellationAgainstBrokerAsync(client, candidateId, ct).ConfigureAwait(false);
-        return candidateStatus is OrderStatus.Cancelled or OrderStatus.Filled or OrderStatus.Rejected or OrderStatus.Expired
-            ? null
-            : $"Alpaca cancelled the predecessor, but its unconfirmed replacement {candidateId} remains {candidateStatus}.";
+        var (candidateOrder, candidateStatus, _) = await VerifyCancellationAgainstBrokerAsync(client, candidateId, ct).ConfigureAwait(false);
+        if (candidateStatus is not (OrderStatus.Cancelled or OrderStatus.Filled or OrderStatus.Rejected or OrderStatus.Expired))
+            return $"Alpaca cancelled the predecessor, but its unconfirmed replacement {candidateId} remains {candidateStatus}.";
+        if (ParseDecimal(candidateOrder?.FilledQty) <= 0m)
+            return null;
+        // A terminal candidate that executed proves the replacement took effect. Publish its
+        // cumulative fills through the replacement chain before the predecessor's cancel report,
+        // which describes only the predecessor; otherwise those fills depend on a delayed stream.
+        var resolution = await ObserveReplacementAsync(client, attempt, ct).ConfigureAwait(false);
+        if (resolution is not { ReportType: ExecutionReportType.Modified })
+            return $"Alpaca replacement {candidateId} executed before cancellation but its replacement chain is unconfirmed; recovery must book its fills.";
+        await _reportChannel.Writer.WriteAsync(resolution, ct).ConfigureAwait(false);
+        return null;
     }
 
     private async Task<AlpacaOrderResponse?> ResolveOrderForCancellationAsync(

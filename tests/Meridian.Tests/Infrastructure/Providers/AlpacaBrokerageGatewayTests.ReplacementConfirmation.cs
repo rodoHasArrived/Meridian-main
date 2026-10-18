@@ -192,6 +192,61 @@ public sealed partial class AlpacaBrokerageGatewayTests
         deletions.Should().Equal("/v2/orders/candidate");
     }
 
+    [Fact]
+    public async Task Cancellation_FilledUnconfirmedCandidate_PublishesCandidateFillsBeforePredecessorCancel()
+    {
+        var executed = false;
+        using var handler = new Meridian.Tests.TestHelpers.StubHttpMessageHandler(request =>
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            if (path == "/v2/account")
+                return new(HttpStatusCode.OK) { Content = BuildAccountResponse() };
+            if (request.Method == HttpMethod.Patch)
+                return new(HttpStatusCode.OK)
+                {
+                    Content = BuildOrderResponse("candidate", "pending_new",
+                    clientOrderId: "candidate-client", qty: "20", replaces: "original", limitPrice: "149")
+                };
+            if (request.Method == HttpMethod.Delete)
+                return new((HttpStatusCode)422);
+            if (path == "/v2/orders/candidate")
+                return new(HttpStatusCode.OK)
+                {
+                    Content = BuildOrderResponse("candidate", executed ? "filled" : "pending_new",
+                    clientOrderId: "candidate-client", qty: "20", filledQty: executed ? "20" : "0",
+                    filledAvgPrice: executed ? "149" : null, replaces: "original", limitPrice: "149")
+                };
+            return new(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse("original", executed ? "replaced" : "accepted",
+                clientOrderId: "local", qty: "10", replacedBy: executed ? "candidate" : null, limitPrice: "150")
+            };
+        });
+        await using var gateway = CreateSut(handler);
+        await gateway.ConnectAsync();
+        await using var oms = new OrderManagementSystem(new SimulatedAlpaca(gateway), NullLogger<OrderManagementSystem>.Instance);
+        (await oms.PlaceOrderAsync(new OrderRequest
+        {
+            ClientOrderId = "local",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m
+        })).Success.Should().BeTrue();
+        (await oms.ModifyOrderAsync("local", new OrderModification { NewQuantity = 20m, NewLimitPrice = 149m })).Success.Should().BeFalse();
+        // The candidate executes while its trade-update stream is delayed.
+        executed = true;
+
+        await oms.CancelOrderAsync("local");
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        while (oms.GetOrder("local")!.FilledQuantity != 20m)
+            await Task.Delay(10, timeout.Token);
+        oms.GetOrder("local")!.Quantity.Should().Be(20m);
+        oms.GetOrder("local")!.AverageFillPrice.Should().Be(149m);
+    }
+
     [Theory]
     [InlineData("accepted", "accepted", ExecutionReportType.ModificationPending, "original")]
     [InlineData("replaced", "pending_new", ExecutionReportType.ModificationPending, "original")]

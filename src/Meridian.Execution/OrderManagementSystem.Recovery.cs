@@ -245,9 +245,12 @@ public sealed partial class OrderManagementSystem
                 // A pending outcome can still book fills, so it must prove the same identity and
                 // fill economics as a resolved one; only its order quantity stays undetermined.
                 var pendingTerms = GetPendingAmendmentForRecovery(orderId);
-                var maximumQuantity = pendingTerms is null
-                    ? _orders.GetValueOrDefault(orderId)?.Quantity ?? 0m
-                    : Math.Max(pendingTerms.Original.Quantity, pendingTerms.Proposed.Quantity);
+                // The live stream can resolve the amendment while its lookup is in flight. Checked
+                // under the report gate, a pending answer for a resolved amendment is stale: it books
+                // nothing and must not re-block an order no amendment recovery will revisit.
+                if (pendingTerms is null)
+                    return;
+                var maximumQuantity = Math.Max(pendingTerms.Original.Quantity, pendingTerms.Proposed.Quantity);
                 if (!_orders.TryGetValue(orderId, out var pendingState)
                     || !_dispatchedOrderIds.ContainsKey(orderId)
                     || !string.Equals(pendingState.Symbol, report.Symbol, StringComparison.OrdinalIgnoreCase)

@@ -222,6 +222,35 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
     }
 
     [Fact]
+    public async Task StalePendingRecoveryReport_AfterAmendmentResolved_DoesNotReblockOrder()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"amendment-stale-pending-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            await using var oms = CreateRecoveryOms(new RecoverableAmendmentGateway(), Path.Combine(directory, "orders.json"));
+            (await oms.PlaceOrderAsync(RecoveryRequest())).Success.Should().BeTrue();
+            (await oms.ModifyOrderAsync("local", new OrderModification { NewQuantity = 20m })).Success.Should().BeFalse();
+            await oms.ReconcileRecoveryOrderAsync(RecoverableAmendmentGateway.Report(ExecutionReportType.Modified,
+                OrderStatus.PartiallyFilled, 2m, 20m, 100m) with
+            { GatewayOrderId = "candidate-broker", ReplacesOrderId = "original-broker" });
+            oms.GetPendingAmendmentForRecovery("local").Should().BeNull();
+            oms.GetRecoveryOrders().Should().BeEmpty();
+
+            // A lookup that started before the resolution answers "still pending" afterwards.
+            await oms.ReconcileRecoveryOrderAsync(RecoverableAmendmentGateway.Report(ExecutionReportType.ModificationPending,
+                OrderStatus.PartiallyFilled, 2m, 20m, 100m));
+
+            oms.GetRecoveryOrders().Should().BeEmpty("a stale pending answer must not re-block a resolved amendment");
+            oms.GetOrder("local")!.Quantity.Should().Be(20m);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task RecoveryService_DispatchesAmendmentOnlyCapability_AndLeavesUnsupportedOrdinaryRecoveryUnresolved()
     {
         var directory = Path.Combine(Path.GetTempPath(), $"amendment-only-{Guid.NewGuid():N}");
