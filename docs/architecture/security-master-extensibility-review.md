@@ -1047,6 +1047,16 @@ and not to the registry type, which would discard working enforcement.
 
 ### N6 — Projection fan-out writes to every asset class on every upsert
 
+> **Superseded 2026-10-18.** `UpsertProjectionCoreAsync` now reads the security's stored
+> `asset_class` under the row lock the upsert takes anyway (`select … for update`, one statement)
+> and visits only the writers `PostgresSecurityMasterStore.ProjectionWritersFor` names: the current
+> class's writer, which publishes or clears its own rows, and the prior class's writer when the
+> class changed, which clears the rows it left behind. A projection row for class X can only exist
+> while the stored class is X, so no other writer has anything to delete. With 25 registered
+> writers after migration 044 the per-record cost had grown to ~28 fan-out deletes; it is now at
+> most two writer visits plus the one read. `ProjectionFanOutTests` pins the selection and
+> `ProjectionFanOutPostgresTests` proves the invariant across a class change against PostgreSQL.
+
 `UpsertProjectionCoreAsync` runs all 11 registered writers for every record
 (`PostgresSecurityMasterStore.cs:386-389`), and each writer whose class does not match issues a
 delete instead of returning (`:392-402`). A single equity upsert therefore issues **thirteen** fan-out
