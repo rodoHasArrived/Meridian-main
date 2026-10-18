@@ -411,9 +411,9 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         CancellationToken ct)
     {
         // The class the row held before this write decides which stale projection, if any, has to
-        // be cleared below. Read under the row lock the upsert is about to take anyway (it is the
-        // same lock, taken a statement earlier), so a competing writer cannot change the class
-        // between this read and the upsert's own ON CONFLICT recheck.
+        // be cleared below. Read under a per-security advisory lock plus the row lock the upsert is
+        // about to take anyway, so a competing writer cannot change the class — or create the row
+        // — between this read and the upsert's own ON CONFLICT recheck.
         var priorAssetClass = await ReadAssetClassForUpdateAsync(connection, transaction, record.SecurityId, ct).ConfigureAwait(false);
 
         await using (var command = connection.CreateCommand())
@@ -533,6 +533,14 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     /// <summary>
     /// The asset class the <c>securities</c> row currently holds, locked for the rest of the
     /// transaction, or <see langword="null"/> when the security has never been projected.
+    /// <para>
+    /// A row lock cannot serialize an absent key: two transactions creating the same security for
+    /// the first time would both read "no row", both skip the prior-class cleanup, and the one that
+    /// loses the ON CONFLICT race would leave its projection beside the winner's. The per-security
+    /// advisory lock taken first serializes those first writes too, so a null here means the row
+    /// did not exist and no concurrent writer can create it before this transaction's upsert.
+    /// The lock is transaction-scoped and released at commit.
+    /// </para>
     /// </summary>
     private async Task<string?> ReadAssetClassForUpdateAsync(
         NpgsqlConnection connection,
@@ -540,6 +548,14 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         Guid securityId,
         CancellationToken ct)
     {
+        await using (var lockCommand = connection.CreateCommand())
+        {
+            lockCommand.Transaction = transaction;
+            lockCommand.CommandText = "select pg_advisory_xact_lock(hashtextextended(@lock_scope, 0));";
+            lockCommand.Parameters.AddWithValue("lock_scope", $"{_options.Schema}.securities:{securityId:N}");
+            await lockCommand.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = $"select asset_class from {Qualified("securities")} where security_id = @security_id for update;";
