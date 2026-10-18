@@ -38,7 +38,9 @@ Focused coverage lives in `accounting-screen.account-*.test.tsx` and `account-ov
 Close-price capture retains its request identity and submitted command after an uncertain response.
 After an authoritative history reload, the operator can explicitly recover or retry that same
 capture; a new command cannot silently replace the unresolved action. An uncertain approval is
-verified only on its original valuation date, and a cash comparison cannot be captured while an owner assignment draft is unsaved.
+verified only on its original valuation date against the submitted reviewer and rationale; a
+different retained approval keeps the lock and is reported as not the operator's own decision. A
+cash comparison cannot be captured while an owner assignment draft is unsaved.
 
 Governed Journal Entry Detail exposes retained disposal tax results from the shared period and
 journal read model. Operators can inspect mixed parcel character, carried holding-period starts,

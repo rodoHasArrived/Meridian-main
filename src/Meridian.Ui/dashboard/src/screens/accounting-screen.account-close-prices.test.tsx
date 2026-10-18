@@ -43,8 +43,9 @@ function retained(overrides: Partial<ClosePriceSet["snapshot"]> = {}): ClosePric
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((done) => { resolve = done; });
-  return { promise, resolve };
+  let reject!: (reason: unknown) => void;
+  const promise = new Promise<T>((done, fail) => { resolve = done; reject = fail; });
+  return { promise, resolve, reject };
 }
 function captured(request: CreateClosePriceSetRequest): ClosePriceSet {
   return retained({ snapshotId: request.requestId!, createdBy: request.createdBy,
@@ -324,6 +325,28 @@ describe("AccountClosePricesPanel", () => {
     expect(screen.queryByText("Write outcome needs verification")).not.toBeInTheDocument();
     expect(screen.getByText("This version already has an immutable approval.")).toBeInTheDocument();
     await act(async () => { pending.resolve(approved); });
+    expect(api.approve).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the uncertainty lock when a different reviewer's approval was retained for the snapshot", async () => {
+    const pending = deferred<ClosePriceSet>();
+    const foreign: ClosePriceSet = { ...retained(), approval: { snapshotId, snapshotSha256: "retained-digest", reviewer: "other-reviewer", rationale: "Approved elsewhere", approvedAt: `${date}T00:00:02Z` } };
+    api.list.mockImplementation(async () => [api.approve.mock.calls.length ? foreign : retained()]);
+    api.approve.mockReturnValue(pending.promise);
+    render(<AccountClosePricesPanel scope={scope} context={context} />);
+    await screen.findByText("Retained version 1 · " + date);
+    fireEvent.change(screen.getByLabelText("Independent review rationale"), { target: { value: "Reviewed" } });
+    fireEvent.click(screen.getByRole("button", { name: "Approve immutable price set" }));
+    await waitFor(() => expect(api.approve).toHaveBeenCalledOnce());
+    await act(async () => { pending.reject(new Error("gateway timeout")); });
+    expect(await screen.findByText("Write outcome needs verification")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Reload price history" }));
+    expect(await screen.findByText("A different approval was retained for this snapshot")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(`Snapshot ${snapshotId} carries an approval by other-reviewer. Your approval as ${context.actor} was not recorded`);
+    expect(screen.getByText("Write outcome needs verification")).toBeInTheDocument();
+    expect(screen.queryByText("The pending approval is retained against the immutable snapshot digest.")).not.toBeInTheDocument();
+    expect(screen.getByText("Approved by other-reviewer")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Approve immutable price set" })).toBeDisabled();
     expect(api.approve).toHaveBeenCalledOnce();
   });
 

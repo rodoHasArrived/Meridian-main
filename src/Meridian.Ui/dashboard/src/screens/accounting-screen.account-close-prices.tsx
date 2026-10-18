@@ -42,6 +42,10 @@ function utcInput(value: string): string | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
+function sameApproval(retained: { reviewer: string; rationale: string }, submitted: { reviewer: string; rationale: string }): boolean {
+  return retained.reviewer.trim().toLowerCase() === submitted.reviewer.trim().toLowerCase() && retained.rationale.trim() === submitted.rationale.trim();
+}
+
 function belongsTo(set: ClosePriceSet, scope: OversightScope, date: string): boolean {
   return set.snapshot.accountId === scope.accountId && set.snapshot.bookId === scope.ledgerBookId
     && set.snapshot.valuationDate === date;
@@ -77,7 +81,7 @@ function ScopedClosePricesPanel({ scope, context, onDirtyChange }: Props) {
   const [captureFoundInHistory, setCaptureFoundInHistory] = useState(false);
   const capture = useRef<{ fingerprint: string; request: CreateClosePriceSetRequest } | null>(null);
   /** The approval whose server outcome is unknown; it is verified only on its own valuation date. */
-  const pendingApproval = useRef<{ valuationDate: string; snapshotId: string } | null>(null);
+  const pendingApproval = useRef<{ valuationDate: string; snapshotId: string; reviewer: string; rationale: string } | null>(null);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [notice, setNotice] = useState("");
   const [draftDirty, setDraftDirty] = useState(false);
@@ -163,12 +167,19 @@ function ScopedClosePricesPanel({ scope, context, onDirtyChange }: Props) {
           setNotice(`Return to valuation date ${approval.valuationDate} and reload its history to verify the pending approval before approving or preparing again.`);
         } else {
           const found = sorted.find((set) => set.snapshot.snapshotId === approval.snapshotId);
-          pendingApproval.current = null;
-          setUncertainWrite(false);
           if (found) setSelected(found);
-          setNotice(found?.approval
-            ? "The pending approval is retained against the immutable snapshot digest."
-            : "The pending approval was not retained. Review the current version before submitting the approval again.");
+          if (found?.approval && !sameApproval(found.approval, approval)) {
+            // Another reviewer's approval reached this immutable snapshot first: the submitted decision
+            // was not recorded. Keep the lock so the operator cannot mistake it for their own approval.
+            setNotice("");
+            setError({ summary: "A different approval was retained for this snapshot", details: [`Snapshot ${approval.snapshotId} carries an approval by ${found.approval.reviewer}. Your approval as ${approval.reviewer} was not recorded; review the retained decision before acting on this version.`] });
+          } else {
+            pendingApproval.current = null;
+            setUncertainWrite(false);
+            setNotice(found?.approval
+              ? "The pending approval is retained against the immutable snapshot digest."
+              : "The pending approval was not retained. Review the current version before submitting the approval again.");
+          }
         }
       } else if (uncertainWrite && uncertainCapture && capture.current) {
         const original = capture.current.request;
@@ -253,7 +264,7 @@ function ScopedClosePricesPanel({ scope, context, onDirtyChange }: Props) {
     if (active.current || (action === "prepare" ? prepareReason : approvalReason)) return;
     if (action === "approve") {
       capture.current = null;
-      pendingApproval.current = { valuationDate: date, snapshotId: visible!.snapshot.snapshotId };
+      pendingApproval.current = { valuationDate: date, snapshotId: visible!.snapshot.snapshotId, reviewer: context.actor, rationale: reviewRationale.trim() };
       setCaptureRecoveryReady(false); setCaptureFoundInHistory(false); setUncertainCapture(false);
     }
     if (action === "prepare" && !canRecoverCapture) {
