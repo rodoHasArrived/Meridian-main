@@ -20,7 +20,10 @@ exposure until authoritative recovery selects the actual outcome. The reservatio
 retained outcome measures larger, keeping its quantity and prices together rather than combining
 independent maxima. A pending gateway answer is applied atomically with the check that the amendment
 is still unresolved, so a confirmation that races it is reported as the actual outcome. Pending
-recovery reports must prove the same identity and fill evidence as resolved ones. A pending
+recovery reports must prove the same identity and fill evidence as resolved ones. Cancelling an order with a retained
+unconfirmed replacement also cancels the retained candidate, so a restart cannot leave a successor
+working; the cancellation stays pending until the candidate is proven inactive without fills.
+Trail-only amendments retain the requested trail and report the broker's actual outcome. A pending
 recovery answer that arrives after the live stream resolved the amendment is discarded without
 re-blocking the order. Late amendment acknowledgements
 preserve terminal lifecycle state; unresolved amendment exposure and open-order capacity remain

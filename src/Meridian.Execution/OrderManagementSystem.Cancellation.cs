@@ -42,7 +42,23 @@ public sealed partial class OrderManagementSystem
         var cancellationIdentifier = string.IsNullOrWhiteSpace(gatewayOrderId)
             ? new OrderCancellationIdentifier(orderId, OrderCancellationIdentifierKind.ClientOrderId)
             : new OrderCancellationIdentifier(gatewayOrderId, OrderCancellationIdentifierKind.BrokerOrderId);
+        // After a restart the gateway's in-process replacement bookkeeping is gone, so only the
+        // OMS still knows a retained amendment may have a live successor. Cancel it explicitly.
+        var unresolvedCandidate = await CancelRetainedReplacementCandidateAsync(orderId, gatewayOrderId, ct)
+            .ConfigureAwait(false);
         var report = await CancelAtGatewayAsync(cancellationIdentifier, ct).ConfigureAwait(false);
+        if (unresolvedCandidate is not null
+            && report.OrderStatus is OrderStatus.Cancelled && report.ReportType is not ExecutionReportType.CancelRejected)
+        {
+            // The predecessor is gone but its possible successor is not proven inactive (or has
+            // fills only amendment recovery may book), so the order stays in cancellation sweeps.
+            report = report with
+            {
+                ReportType = ExecutionReportType.CancelRejected,
+                OrderStatus = OrderStatus.PendingCancel,
+                RejectReason = unresolvedCandidate
+            };
+        }
         if (_gateway is not IExplicitOrderCancellationGateway
             && report.ReportType is ExecutionReportType.Rejected && report.OrderStatus is OrderStatus.Rejected)
         {
@@ -117,6 +133,36 @@ public sealed partial class OrderManagementSystem
             OrderId = orderId,
             OrderState = updated
         };
+    }
+
+    /// <returns>null when there is no retained candidate or it is proven inactive without fills;
+    /// otherwise why the cancellation cannot complete yet.</returns>
+    private async Task<string?> CancelRetainedReplacementCandidateAsync(
+        string orderId, string? predecessorBrokerId, CancellationToken ct)
+    {
+        if (_gateway is not IExplicitOrderCancellationGateway
+            || GetPendingAmendmentForRecovery(orderId) is not { CandidateBrokerOrderId: { Length: > 0 } candidateId }
+            || string.Equals(candidateId, predecessorBrokerId, StringComparison.Ordinal))
+            return null;
+        ExecutionReport candidate;
+        try
+        {
+            candidate = await CancelAtGatewayAsync(
+                new OrderCancellationIdentifier(candidateId, OrderCancellationIdentifierKind.BrokerOrderId), ct)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return $"Replacement candidate {candidateId} could not be cancelled: {ex.Message}";
+        }
+        if (candidate.FilledQuantity > 0m)
+        {
+            MarkBrokerageRecoveryRequired(orderId);
+            return $"Replacement candidate {candidateId} has fills that amendment recovery must book.";
+        }
+        return candidate.OrderStatus is OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired
+            ? null
+            : $"Replacement candidate {candidateId} is not proven inactive.";
     }
 
     private Task<ExecutionReport> CancelAtGatewayAsync(
