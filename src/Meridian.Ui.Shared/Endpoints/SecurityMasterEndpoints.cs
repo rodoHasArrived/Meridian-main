@@ -1262,7 +1262,7 @@ public static partial class SecurityMasterEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
-        // Clearwater-model extensions. These map only when a real (non-null) implementation is
+        // Reference-data governance extensions. These map only when a real (non-null) implementation is
         // registered: when Security Master is unconfigured the NullSecurityMaster* fallbacks are
         // still present in DI, and their write/run paths throw, so mapping against them would turn
         // requests into 500s instead of leaving the routes unavailable.

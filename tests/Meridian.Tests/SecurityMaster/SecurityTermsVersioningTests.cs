@@ -237,4 +237,78 @@ public sealed class SecurityTermsVersioningTests
         envelope.PayloadVersion.Should().Be(SecurityMasterEventPayloads.EconomicDefinitionVersion);
         SecurityMasterEventPayloads.Resolve(envelope).PayloadVersion.Should().Be(EconomicTermsSchema.Current);
     }
+
+    // ── Stored terms_format column (migration 042, ADR-024) ─────────────────────────────────────
+
+    private const string TermsFormatMigration = "src/Meridian.Storage/SecurityMaster/Migrations/042_security_master_terms_format_column.sql";
+
+    [Fact]
+    public void TermsFormatMigration_BackfillMirrorsResolveFormat_ForEveryFormatAndEconomicModule()
+    {
+        // The migration classifies untagged rows in SQL with the same rule ResolveFormat applies in
+        // code. The two cannot share an implementation, so this pins the SQL to the code's vocabulary:
+        // every storable format name and every economic module key the shape rule consults.
+        var sql = File.ReadAllText(Path.Combine(FindRepoRoot(), TermsFormatMigration));
+
+        foreach (var format in SecurityTermsFormats.All)
+        {
+            sql.Should().Contain($"'{format}'", $"the backfill and check constraint must know the '{format}' family");
+        }
+
+        foreach (var module in SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.EconomicTermsModules)
+        {
+            sql.Should().Contain($"'{module}'", $"an untagged v2 document carrying '{module}' is classified economic by ResolveFormat");
+        }
+
+        sql.Should().Contain($"'{SecurityTermsEnvelope.FormatKey}'");
+        sql.Should().Contain($"= {EconomicTermsSchema.Current}", "only the reserved economic codec version routes untagged rows to the economic family");
+    }
+
+    [Fact]
+    public void ResolveStorableTermsFormat_UsesTheDeclaredTagAndRefusesAnUnknownOne()
+    {
+        var tagged = Projection("Bond", Json("""{"schemaVersion":1,"termsFormat":"flat","maturity":"2030-01-15"}"""));
+        var untaggedEconomic = Projection("Bond", Json("""{"schemaVersion":2,"coupon":{"couponRate":4.5}}"""));
+        var unknown = Projection("Bond", Json("""{"schemaVersion":1,"termsFormat":"tabular"}"""));
+
+        Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore.ResolveStorableTermsFormat(tagged).Should().Be(SecurityTermsFormats.Flat);
+        Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore.ResolveStorableTermsFormat(untaggedEconomic).Should().Be(SecurityTermsFormats.Economic);
+        var refuse = () => Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore.ResolveStorableTermsFormat(unknown);
+
+        refuse.Should().Throw<InvalidOperationException>().WithMessage("*'tabular'*not a storable terms format*");
+    }
+
+    private static SecurityProjectionRecord Projection(string assetClass, JsonElement assetSpecificTerms)
+        => new(
+            SecurityId: Guid.NewGuid(),
+            AssetClass: assetClass,
+            Status: SecurityStatusDto.Active,
+            DisplayName: $"{assetClass} terms format",
+            Currency: "USD",
+            PrimaryIdentifierKind: "Ticker",
+            PrimaryIdentifierValue: "TF",
+            CommonTerms: Json("""{"displayName":"terms format","currency":"USD"}"""),
+            AssetSpecificTerms: assetSpecificTerms,
+            Provenance: Json("""{"sourceSystem":"tests"}"""),
+            Version: 1,
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            EffectiveTo: null,
+            Identifiers: [],
+            Aliases: []);
+
+    private static string FindRepoRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Meridian.sln")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Unable to locate Meridian repository root.");
+    }
 }

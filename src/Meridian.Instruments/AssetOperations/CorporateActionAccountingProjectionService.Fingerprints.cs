@@ -28,15 +28,16 @@ public sealed partial class CorporateActionAccountingProjectionService
     /// or retained-evidence inputs. Length-prefixed tokens avoid delimiter ambiguity.
     /// </summary>
     private static string BuildProjectionInputHash(
+        ICorporateActionRuleProfile ruleProfile,
         CorporateActionAccountingProjectionRequest request,
         CorporateActionTreatmentDecisionDto decision,
         IReadOnlyList<CorporateActionProjectionEvidenceDependencyDto> evidence,
         string currency)
     {
         var builder = new StringBuilder(1024);
-        AppendToken(builder, ClearwaterCorporateActionRuleProfileV1.ProfileKey);
-        AppendToken(builder, ClearwaterCorporateActionRuleProfileV1.ProfileVersion);
-        AppendToken(builder, ClearwaterCorporateActionRuleProfileV1.SelectedRuleVersion);
+        AppendToken(builder, ruleProfile.ProfileKey);
+        AppendToken(builder, ruleProfile.ProfileVersion);
+        AppendToken(builder, ruleProfile.SelectedRuleVersion);
         AppendToken(builder, ModelKey);
         AppendToken(builder, ModelVersion);
         AppendToken(builder, EngineVersion);

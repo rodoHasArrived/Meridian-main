@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.ReferenceData.CorporateActions;
 using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
@@ -159,7 +160,7 @@ internal static class CapitalReturnTestData
             AccountingScope: new CorporateActionAccountingProjectionScopeDto("tenant-alpha", "company-alpha", fund,
                 lot.LedgerBookId, periodId ?? Guid.NewGuid(), periodVersion, "US"),
             LotSnapshotId: lotSnapshot, LotSnapshotVersion: lot.Version, PolicyDecisionId: policyId);
-        var service = new CorporateActionAccountingProjectionService();
+        var service = new CorporateActionAccountingProjectionService(ClearwaterCorporateActionRuleProfileV1.Instance);
         var intent = service.Project(request);
         intent.Status.Should().Be(CorporateActionProjectionStatusDto.Projected);
         var mutation = intent.LotMutations!.Mutations.Single() with

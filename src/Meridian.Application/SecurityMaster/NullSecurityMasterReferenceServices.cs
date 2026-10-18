@@ -4,7 +4,7 @@ using Meridian.Contracts.SecurityMaster;
 namespace Meridian.Application.SecurityMaster;
 
 /// <summary>
-/// No-op implementations for Clearwater-model Security Master services, registered
+/// No-op implementations for the Security Master reference-data governance services, registered
 /// when <c>MERIDIAN_SECURITY_MASTER_CONNECTION_STRING</c> is not configured.
 /// </summary>
 
