@@ -1,5 +1,15 @@
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_ReportLineProvenanceDto["ReportLineProvenanceDto"] {
+        +decimal Amount
+        +string Currency
+        +LedgerDimensionSetDto Dimensions
+        +IReadOnlyList~string~ EvidenceLinks
+        +string LineId
+        +string LineLabel
+        +string SourceKind
+        +string StatementId
+    }
     class Meridian_Contracts_Ledger_RestatementWorkflowDto["RestatementWorkflowDto"] {
         +ManualJournalEntryStatusDto ApprovalState
         +IReadOnlyList~string~ EvidenceLinks

@@ -59,15 +59,24 @@ public sealed class AccountingAuditIntegrityService(
         try
         {
             var verification = await verifier.VerifyAuditChainAsync(ct).ConfigureAwait(false);
-            return verification.IsValid
-                ? new(chain, AuditChainIntegrityStatus.Verified, verification.LinksChecked, verification.PreChainEventCount)
-                : new(chain,
-                    AuditChainIntegrityStatus.Broken,
-                    verification.LinksChecked,
-                    verification.PreChainEventCount,
-                    verification.Status.ToString(),
-                    verification.Detail,
-                    verification.FailedSequence);
+            if (verification.IsValid)
+            {
+                return new(chain, AuditChainIntegrityStatus.Verified, verification.LinksChecked, verification.PreChainEventCount);
+            }
+
+            // A chain written under hashing rules this build does not implement could not be
+            // checked at all -- the expected state during a rolling upgrade or downgrade -- so it is
+            // reported as unverified, never as evidence of tampering.
+            var status = verification.Status == AccountingAuditChainStatus.UnsupportedSchemaVersion
+                ? AuditChainIntegrityStatus.Unavailable
+                : AuditChainIntegrityStatus.Broken;
+            return new(chain,
+                status,
+                verification.LinksChecked,
+                verification.PreChainEventCount,
+                verification.Status.ToString(),
+                verification.Detail,
+                verification.FailedSequence);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -92,14 +101,24 @@ public sealed class AccountingAuditIntegrityService(
         catch (LedgerValidationException ex)
         {
             // The PostgreSQL store raises its integrity failures as ledger validation errors whose
-            // message names the break; it carries no ledger content.
-            return new(chain, AuditChainIntegrityStatus.Broken, 0, 0, "IntegrityFailure", ex.Message);
+            // message names the break (it carries no ledger content) and whose data records how far
+            // the scan got and where it stopped, when the failure site knows.
+            return new(chain,
+                AuditChainIntegrityStatus.Broken,
+                ReadLong(ex, LedgerEventAuditFailureData.ChainedEventsVerified) ?? 0,
+                0,
+                "IntegrityFailure",
+                ex.Message,
+                ReadLong(ex, LedgerEventAuditFailureData.FailedSequence));
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             return Unavailable(chain, ex);
         }
     }
+
+    private static long? ReadLong(Exception ex, string key)
+        => ex.Data.Contains(key) && ex.Data[key] is long value ? value : null;
 
     // The exception message is deliberately not echoed: a connection failure can carry host and
     // credential fragments, and the type is enough to route the operator to the store's logs.

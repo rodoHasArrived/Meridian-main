@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { getAuditIntegrityReport } from "@/lib/api/audit-integrity.api";
+import { isApiError } from "@/lib/api-errors";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import {
   buildAuditIntegrityViewModel,
@@ -24,15 +25,30 @@ export function AuditChainIntegrityPanel() {
   const [view, setView] = useState<AuditIntegrityViewModel | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ title: string; detail: string } | null>(null);
 
   const verify = useCallback(async () => {
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
       setView(buildAuditIntegrityViewModel(await getAuditIntegrityReport()));
     } catch (reason) {
       setView(null);
-      setError(reason instanceof Error ? reason.message : "Audit integrity check failed.");
+      // Refusals are not verification failures: say why nothing was checked instead of raising an alarm.
+      if (isApiError(reason) && reason.status === 403) {
+        setNotice({
+          title: "Requires maintenance authority",
+          detail: "Audit chain verification spans every tenant's records, so it is limited to operators with AdminMaintenance."
+        });
+      } else if (isApiError(reason) && reason.status === 429) {
+        setNotice({
+          title: "Verification already running",
+          detail: "Another audit chain verification is in progress. Retry when it completes."
+        });
+      } else {
+        setError(reason instanceof Error ? reason.message : "Audit integrity check failed.");
+      }
     } finally {
       setBusy(false);
     }
@@ -67,6 +83,7 @@ export function AuditChainIntegrityPanel() {
       </CardHeader>
       <CardContent className="space-y-3">
         {error ? <StatusBanner role="alert" tone="danger" title="Audit integrity check failed" detail={error} /> : null}
+        {notice ? <StatusBanner role="status" tone="info" title={notice.title} detail={notice.detail} /> : null}
         {view ? (
           <>
             <StatusBanner

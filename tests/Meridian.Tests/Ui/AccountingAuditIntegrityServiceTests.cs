@@ -96,6 +96,35 @@ public sealed class AccountingAuditIntegrityServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task VerifyAsync_ReportsALedgerBreakWithHowFarTheScanGotAndWhereItStopped()
+    {
+        var failure = new LedgerValidationException("Ledger audit integrity failure: Ledger audit event 8 has been mutated, removed, or reordered.");
+        failure.Data[LedgerEventAuditFailureData.FailedSequence] = 8L;
+        failure.Data[LedgerEventAuditFailureData.ChainedEventsVerified] = 7L;
+
+        var report = await new AccountingAuditIntegrityService(accountingAuditStore: null, new ThrowingLedgerVerifier(failure)).VerifyAsync();
+
+        var ledger = report.Chains.Single(chain => chain.Chain == AuditChainIdentifiers.LedgerEvents);
+        ledger.Status.Should().Be(AuditChainIntegrityStatus.Broken);
+        ledger.LinksChecked.Should().Be(7);
+        ledger.FailedSequence.Should().Be(8);
+    }
+
+    [Fact]
+    public async Task VerifyAsync_ReportsAChainItCannotReadUnderThisBuildsRulesAsUnverifiedNotBroken()
+    {
+        var report = await new AccountingAuditIntegrityService(
+            new FixedAccountingVerifier(new AccountingAuditChainVerification(
+                AccountingAuditChainStatus.UnsupportedSchemaVersion, LinksChecked: 0, PreChainEventCount: 0, "Chain schema version 2 is not version 1.")),
+            ledgerEventAuditVerifier: null).VerifyAsync();
+
+        report.AllVerified.Should().BeFalse();
+        var accounting = report.Chains.Single(chain => chain.Chain == AuditChainIdentifiers.AccountingActions);
+        accounting.Status.Should().Be(AuditChainIntegrityStatus.Unavailable);
+        accounting.FailureKind.Should().Be(nameof(AccountingAuditChainStatus.UnsupportedSchemaVersion));
+    }
+
+    [Fact]
     public async Task VerifyAsync_ReportsAVerifiedLedgerChainWithItsUnprotectedGenesisFacts()
     {
         var report = await new AccountingAuditIntegrityService(
@@ -148,6 +177,17 @@ public sealed class AccountingAuditIntegrityServiceTests : IDisposable
             string? tenantId = null, string? companyId = null) => throw exception;
 
         public Task<AccountingAuditChainVerification> VerifyAuditChainAsync(CancellationToken ct = default) => throw exception;
+    }
+
+    private sealed class FixedAccountingVerifier(AccountingAuditChainVerification result) : IAccountingActionAuditStore, IAccountingAuditChainVerifier
+    {
+        public Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default) => Task.CompletedTask;
+
+        public Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
+            string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default,
+            string? tenantId = null, string? companyId = null) => Task.FromResult<IReadOnlyList<AccountingActionAuditEventDto>>([]);
+
+        public Task<AccountingAuditChainVerification> VerifyAuditChainAsync(CancellationToken ct = default) => Task.FromResult(result);
     }
 
     private sealed class ThrowingLedgerVerifier(Exception exception) : ILedgerEventAuditVerifier

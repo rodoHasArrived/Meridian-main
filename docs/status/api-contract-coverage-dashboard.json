@@ -2105,7 +2105,7 @@
     {
       "method": "GET",
       "path": "/api/ledger/audit-integrity",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AuditIntegrity.cs:24",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AuditIntegrity.cs:30",
       "documented": true
     },
     {

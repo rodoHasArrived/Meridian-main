@@ -248,6 +248,8 @@ attribution against the real period service and PostgreSQL store.
 `GET /api/ledger/audit-integrity` (`AdminMaintenance`) runs `AccountingAuditIntegrityService` over the
 composed accounting-action and ledger-event audit chains without appending, reporting each as
 `verified`, `broken`, `not-configured`, or `unavailable` with counts and break position only.
+A chain written under a newer schema is `unavailable`, not `broken`. One run is admitted per host at a
+time (a concurrent request gets 429) because the scan holds the same head locks appends take.
 Generated-candidate posting and manual journal lifecycle routes also require a resolved authenticated
 actor; permission alone cannot authorize use of a client-supplied posting identity.
 

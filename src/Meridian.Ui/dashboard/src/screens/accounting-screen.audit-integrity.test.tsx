@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as integrityApi from "@/lib/api/audit-integrity.api";
+import { ApiError } from "@/lib/api-errors";
 import { AuditChainIntegrityPanel } from "@/screens/accounting-screen.audit-integrity";
 
 vi.mock("@/lib/api/audit-integrity.api", () => ({
@@ -40,13 +41,34 @@ describe("AuditChainIntegrityPanel", () => {
     expect(screen.getByText("40 chained entries checked")).toBeInTheDocument();
   });
 
-  it("surfaces a refused or failed request without inventing a verdict", async () => {
-    api.getAuditIntegrityReport.mockRejectedValue(new Error("403 Forbidden"));
+  it("surfaces a failed request without inventing a verdict", async () => {
+    api.getAuditIntegrityReport.mockRejectedValue(new Error("Network unreachable"));
     render(<AuditChainIntegrityPanel />);
 
     await userEvent.click(screen.getByRole("button", { name: /Verify the accounting and ledger audit chains/ }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("403 Forbidden");
+    expect(await screen.findByRole("alert")).toHaveTextContent("Network unreachable");
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  it("explains a permission refusal instead of reporting a failure", async () => {
+    api.getAuditIntegrityReport.mockRejectedValue(new ApiError({ path: "/api/ledger/audit-integrity", status: 403 }));
+    render(<AuditChainIntegrityPanel />);
+
+    await userEvent.click(screen.getByRole("button", { name: /Verify the accounting and ledger audit chains/ }));
+
+    expect(await screen.findByText("Requires maintenance authority")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  it("reports a concurrent run as busy rather than failed", async () => {
+    api.getAuditIntegrityReport.mockRejectedValue(new ApiError({ path: "/api/ledger/audit-integrity", status: 429 }));
+    render(<AuditChainIntegrityPanel />);
+
+    await userEvent.click(screen.getByRole("button", { name: /Verify the accounting and ledger audit chains/ }));
+
+    expect(await screen.findByText("Verification already running")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });

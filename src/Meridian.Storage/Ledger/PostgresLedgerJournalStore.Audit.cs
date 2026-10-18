@@ -62,7 +62,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifi
             from {Qualified("ledger_event_audit_genesis")};
             """;
         if (!string.Equals(genesisHash, await command.ExecuteScalarAsync(ct).ConfigureAwait(false) as string, StringComparison.Ordinal))
-            throw AuditIntegrityFailure("The retained ledger audit genesis inventory has changed.");
+            throw AuditIntegrityFailure("The retained ledger audit genesis inventory has changed.", chainedEventsVerified: 0);
 
         command.CommandText = $"""
             select chain_sequence, subject_kind, subject_id, subject_version, action, actor,
@@ -87,14 +87,24 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifi
                 if (retainedSequence != sequence || retainedPrevious != previous
                     || ComputeLedgerAuditPayloadHash(fact) != payloadHash
                     || AccountingAuditChain.ComputeEntryHash(sequence, previous, payloadHash) != entryHash)
-                    throw AuditIntegrityFailure($"Ledger audit event {sequence} has been mutated, removed, or reordered.");
+                    throw AuditIntegrityFailure($"Ledger audit event {sequence} has been mutated, removed, or reordered.", sequence, sequence - 1);
                 sequence++;
                 previous = entryHash;
             }
         }
         if (head.NextSequence != sequence || head.LastHash != previous)
-            throw AuditIntegrityFailure("The ledger audit suffix and retained head disagree.");
-        await VerifyLedgerAuditCoverageAsync(connection, transaction, ct).ConfigureAwait(false);
+            throw AuditIntegrityFailure("The ledger audit suffix and retained head disagree.", sequence, sequence - 1);
+        try
+        {
+            await VerifyLedgerAuditCoverageAsync(connection, transaction, ct).ConfigureAwait(false);
+        }
+        catch (LedgerValidationException ex) when (!ex.Data.Contains(LedgerEventAuditFailureData.ChainedEventsVerified))
+        {
+            // Every link verified; the coverage check failed after the scan completed.
+            ex.Data[LedgerEventAuditFailureData.ChainedEventsVerified] = sequence - 1;
+            throw;
+        }
+
         return head;
     }
 
@@ -255,5 +265,14 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifi
         return Convert.ToHexStringLower(hash.GetHashAndReset());
     }
 
-    private static LedgerValidationException AuditIntegrityFailure(string message) => new("Ledger audit integrity failure: " + message);
+    private static LedgerValidationException AuditIntegrityFailure(
+        string message, long? failedSequence = null, long? chainedEventsVerified = null)
+    {
+        var failure = new LedgerValidationException("Ledger audit integrity failure: " + message);
+        if (failedSequence is { } at)
+            failure.Data[LedgerEventAuditFailureData.FailedSequence] = at;
+        if (chainedEventsVerified is { } verified)
+            failure.Data[LedgerEventAuditFailureData.ChainedEventsVerified] = verified;
+        return failure;
+    }
 }

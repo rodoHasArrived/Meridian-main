@@ -19,21 +19,46 @@ public static partial class LedgerEndpoints
     /// chain positions -- no audit content -- so it is gated on maintenance authority rather than a
     /// fund tenant scope.
     /// </summary>
+    /// <remarks>
+    /// Verification scans every chained row while holding each chain's head row lock, the same lock
+    /// ledger and accounting appends take, so concurrent runs would queue behind one another and
+    /// hold up posting for the whole time. One run at a time is admitted per host; a request that
+    /// arrives while one is running is refused with 429 rather than queued.
+    /// </remarks>
     private static void MapAuditIntegrityEndpoint(WebApplication app, JsonSerializerOptions jsonOptions)
     {
         app.MapGet(UiApiRoutes.LedgerAuditIntegrity, async (HttpContext context) =>
         {
-            var services = context.RequestServices;
-            var service = new AccountingAuditIntegrityService(
-                services.GetService<IAccountingActionAuditStore>(),
-                services.GetService<ILedgerJournalStore>() as ILedgerEventAuditVerifier,
-                services.GetService<TimeProvider>());
+            if (!await AuditIntegrityGate.WaitAsync(0, context.RequestAborted).ConfigureAwait(false))
+            {
+                return Results.Problem(
+                    statusCode: StatusCodes.Status429TooManyRequests,
+                    title: "Audit chain verification already running",
+                    detail: "Another audit chain verification is in progress on this host. Retry when it completes.");
+            }
 
-            var report = await service.VerifyAsync(context.RequestAborted).ConfigureAwait(false);
-            return Results.Json(report, jsonOptions);
+            try
+            {
+                var services = context.RequestServices;
+                var service = new AccountingAuditIntegrityService(
+                    services.GetService<IAccountingActionAuditStore>(),
+                    services.GetService<ILedgerJournalStore>() as ILedgerEventAuditVerifier,
+                    services.GetService<TimeProvider>());
+
+                var report = await service.VerifyAsync(context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(report, jsonOptions);
+            }
+            finally
+            {
+                AuditIntegrityGate.Release();
+            }
         })
         .WithName("VerifyLedgerAuditIntegrity").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingAuditIntegrityReportDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
+
+    private static readonly SemaphoreSlim AuditIntegrityGate = new(1, 1);
 }

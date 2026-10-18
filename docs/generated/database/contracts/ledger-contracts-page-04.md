@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 4 of 5
 
-Objects 241-320 of 336. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 337. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -50,6 +50,8 @@ classDiagram
         +string? RecognizedGainOrLoss
         +DateTimeOffset? RecordedAt
         +bool ReEvaluationRequired
+    }
+    class Meridian_Contracts_Ledger_LedgerEventAuditFailureData["LedgerEventAuditFailureData"] {
     }
     class Meridian_Contracts_Ledger_LedgerEventAuditVerification["LedgerEventAuditVerification"] {
         +long ChainedEvents
@@ -782,16 +784,6 @@ classDiagram
         +string FileName
         +string Format
     }
-    class Meridian_Contracts_Ledger_ReportLineProvenanceDto["ReportLineProvenanceDto"] {
-        +decimal Amount
-        +string Currency
-        +LedgerDimensionSetDto Dimensions
-        +IReadOnlyList~string~ EvidenceLinks
-        +string LineId
-        +string LineLabel
-        +string SourceKind
-        +string StatementId
-    }
     Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxParcelDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerJournalEntryLineDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerPostingKindDto
@@ -885,5 +877,4 @@ classDiagram
     Meridian_Contracts_Ledger_ReportExportArtifactDto --> Meridian_Contracts_Ledger_ReportDimensionScopeDto
     Meridian_Contracts_Ledger_ReportExportArtifactManifestDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_ReportExportArtifactManifestDto --> Meridian_Contracts_Ledger_ReportDimensionScopeDto
-    Meridian_Contracts_Ledger_ReportLineProvenanceDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
 ```

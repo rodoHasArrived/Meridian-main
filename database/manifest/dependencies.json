@@ -7636,6 +7636,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerEventAuditFailureData"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerEventAuditVerification"
     },
     {
@@ -21251,6 +21257,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerEventAuditFailureData"
     },
     {
       "kind": "contract-set-member",
@@ -50741,7 +50753,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "1373239214100fc0e325226cb50fb8a7223f7556b38a890c8b0005b019502a6a",
+  "fingerprint": "19311ba9b7ea18fb03e947f887b6be523e2a287cd38411fbff3e3a521b90028d",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -58425,6 +58437,12 @@
       "id": "contract:Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.LedgerDisposalTaxResultDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerEventAuditFailureData",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerEventAuditFailureData"
     },
     {
       "classification": "record",
@@ -74184,10 +74202,10 @@
   ],
   "summary": {
     "contract_references": 3318,
-    "contract_set_memberships": 3980,
-    "edges": 8431,
+    "contract_set_memberships": 3982,
+    "edges": 8433,
     "foreign_keys": 138,
     "logical_references": 6,
-    "nodes": 4060
+    "nodes": 4061
   }
 }

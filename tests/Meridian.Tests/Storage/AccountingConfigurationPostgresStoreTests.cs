@@ -591,6 +591,34 @@ public sealed class AccountingConfigurationPostgresStoreTests
 
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
+    public async Task VerifyAuditChainAsync_ReportsTheBreakAndOnlyTheLinksCheckedBeforeIt()
+    {
+        // Read-only verification over the same mid-chain edit. The scan stops at the first broken
+        // link, so the result must count what was actually verified, not the head's full length.
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var store = database.AccountingConfigurationStore;
+
+        var first = AuditEvent();
+        await store.AppendAsync(first);
+        await store.AppendAsync(AuditEvent());
+        await store.AppendAsync(AuditEvent());
+        (await store.VerifyAuditChainAsync()).Should().Match<AccountingAuditChainVerification>(
+            verification => verification.IsValid && verification.LinksChecked == 3);
+
+        await ExecuteAsync(
+            database,
+            "update {0}.accounting_action_audit_events set actor = 'intruder@example.test' where audit_event_id = @id;",
+            ("id", first.AuditEventId));
+
+        var verification = await store.VerifyAuditChainAsync();
+
+        verification.Status.Should().Be(AccountingAuditChainStatus.EventMutated);
+        verification.FailedSequence.Should().Be(AccountingAuditChainState.FirstSequence);
+        verification.LinksChecked.Should().Be(0, "the very first link broke, so none verified");
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AnEventDeletedFromTheMiddleOfTheChain_StopsTheNextAppend()
     {
         // The other shape of the same gap. Every surviving link still digests and binds correctly,
