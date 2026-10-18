@@ -26,9 +26,11 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 [ImplementsAdr("ADR-001", "IB brokerage provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
-public sealed class IBBrokerageGateway :
+public sealed partial class IBBrokerageGateway :
     IBrokerageGateway,
     IExecutionGatewayModeProvider,
+    IBrokerageOrderRecoveryGateway,
+    IBrokerageOrderAmendmentRecoveryGateway,
     IBrokerageAccountCatalog,
     IBrokeragePortfolioSync,
     IBrokerageActivitySync
@@ -44,6 +46,7 @@ public sealed class IBBrokerageGateway :
     private readonly ConcurrentDictionary<int, BrokerOrder> _openOrders = new();
     private readonly ConcurrentDictionary<int, ExecutionReport> _latestOrderReports = new();
     private readonly ConcurrentDictionary<int, string> _openOrderAccounts = new();
+    private readonly ConcurrentDictionary<int, string> _openOrderSecurityTypes = new();
     private readonly ConcurrentDictionary<string, IBExecutionUpdate> _executions = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<int, PendingOrderOperation> _pendingOrderOperations = new();
     private readonly ConcurrentDictionary<int, PendingOrderOperation> _unconfirmedAmendments = new();
@@ -159,6 +162,7 @@ public sealed class IBBrokerageGateway :
         await _client.ConnectAsync(ct).ConfigureAwait(false);
         await PrimeNextOrderIdAsync(ct).ConfigureAwait(false);
 
+        Interlocked.Increment(ref _connectionEpoch);
         _connected = true;
 
         _logger.LogInformation(
@@ -173,6 +177,7 @@ public sealed class IBBrokerageGateway :
             return;
 
         await _client.DisconnectAsync(ct).ConfigureAwait(false);
+        Interlocked.Increment(ref _connectionEpoch);
         _connected = false;
 
         _logger.LogInformation("IB brokerage disconnected");
@@ -253,6 +258,11 @@ public sealed class IBBrokerageGateway :
         ct.ThrowIfCancellationRequested();
 
         var (gatewayOrderId, context) = ResolveOrder(orderId);
+        // The open-order snapshot omits time-in-force and contract detail; resubmitting those
+        // guessed terms could silently change the working order, so recovered orders cancel only.
+        if (context.RecoveredFromSnapshot)
+            throw new InvalidOperationException(
+                $"Order '{orderId}' was recovered from IB's open-order snapshot and cannot be amended; cancel and resubmit it.");
         var updatedRequest = context.ToModifiedRequest(modification);
         var updatedContext = context with
         {
@@ -767,6 +777,7 @@ public sealed class IBBrokerageGateway :
             _openOrderAccounts.TryRemove(gatewayOrderId, out _);
         else
             _openOrderAccounts[gatewayOrderId] = update.Account.Trim();
+        _openOrderSecurityTypes[gatewayOrderId] = update.SecurityType ?? string.Empty;
 
         var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
         _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
@@ -1351,7 +1362,8 @@ public sealed class IBBrokerageGateway :
         OptionContractIdentity? OptionContract,
         IReadOnlyList<OrderLeg>? Legs,
         IReadOnlyDictionary<string, string>? Metadata,
-        DateTimeOffset CreatedAt)
+        DateTimeOffset CreatedAt,
+        bool RecoveredFromSnapshot = false)
     {
         public static SubmittedOrderContext FromRequest(int gatewayOrderId, string meridianOrderId, OrderRequest request)
             => new(

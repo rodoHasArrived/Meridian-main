@@ -20,7 +20,10 @@ that cancellation publishes its cumulative fills through the replacement chain f
 amendment recovery refuse evidence read across a connection change, rechecked before every report, and `accepted_for_bidding` is a valid provisional
 snapshot state. Durable trade-update hashes omit derived metadata
 while serialized pending reports retain it, preserving replay identities across upgrades.
-Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
+Interactive Brokers implements order and amendment restart recovery from its authoritative
+open-order snapshot, matched by orderRef: echoed terms select the amendment outcome, absent or
+ambiguous orders stay unresolved, evidence read across a reconnect is refused, and recovered
+orders can be cancelled but not amended. Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
 fills against pending exposure, keeps cancellation available, and keys
 positions by account plus qualified contract identity. Robinhood replacement submits only after
 confirmed cancellation with cumulative fill evidence, for the intended total less chain fills.

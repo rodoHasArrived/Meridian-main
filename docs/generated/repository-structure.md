@@ -5575,6 +5575,7 @@ Meridian-main
 │   │   │   │   ├── IBApiLimits.cs
 │   │   │   │   ├── IBApiVersionValidator.cs
 │   │   │   │   ├── IBBrokerageGateway.cs
+│   │   │   │   ├── IBBrokerageGateway.Recovery.cs
 │   │   │   │   ├── IBBrokerageInterop.cs
 │   │   │   │   ├── IBBuildGuidance.cs
 │   │   │   │   ├── IBCallbackRouter.cs
@@ -10644,6 +10645,7 @@ Meridian-main
 │   │   │   │   ├── IBBrokerageGatewayTests.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.Operations.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.PositionIdentity.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.Recovery.cs
 │   │   │   │   ├── IBDataServicesTests.cs
 │   │   │   │   ├── IBHistoricalProviderContractTests.cs
 │   │   │   │   ├── IBMarketDataClientContractTests.cs
