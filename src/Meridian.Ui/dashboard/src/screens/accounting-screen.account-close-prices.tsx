@@ -170,7 +170,11 @@ function ScopedClosePricesPanel({ scope, context, onDirtyChange }: Props) {
         } else {
           const found = sorted.find((set) => set.snapshot.snapshotId === approval.snapshotId);
           if (found) setSelected(found);
-          if (found?.approval && !sameApproval(found.approval, approval)) {
+          if (!found) {
+            // The submitted snapshot existed when the approval was sent, so its absence means this
+            // history read is incomplete, not that the approval failed. The outcome stays unknown.
+            setNotice(`Snapshot ${approval.snapshotId} is not visible in the reloaded history, so the pending approval cannot be verified. Reload again before approving or preparing.`);
+          } else if (found.approval && !sameApproval(found.approval, approval)) {
             // Another reviewer's approval reached this immutable snapshot first: the submitted decision
             // was not recorded. Keep the lock so the operator cannot mistake it for their own approval.
             setNotice("");
@@ -178,7 +182,8 @@ function ScopedClosePricesPanel({ scope, context, onDirtyChange }: Props) {
           } else {
             pendingApproval.current = null;
             setUncertainWrite(false);
-            setNotice(found?.approval
+            if (found.approval) setReviewRationale("");
+            setNotice(found.approval
               ? "The pending approval is retained against the immutable snapshot digest."
               : "The pending approval was not retained. Review the current version before submitting the approval again.");
           }

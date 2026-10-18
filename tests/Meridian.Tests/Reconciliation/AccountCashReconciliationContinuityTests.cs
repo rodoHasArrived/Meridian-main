@@ -786,6 +786,20 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
     }
 
     [Fact]
+    public async Task Padded_profile_identity_with_identical_rules_is_the_same_retained_tolerance_version()
+    {
+        var service = await ServiceAsync();
+        await service.RunAsync(Request("first", 0, 1000m, 990m));
+        var padded = Request("padded", 1, 1000m, 990m);
+        padded = padded with { Tolerance = padded.Tolerance with { ProfileId = " " + padded.Tolerance.ProfileId + " " } };
+
+        var run = await service.RunAsync(padded);
+
+        run.Input.RunId.Should().Be("padded");
+        Assert.Single(await service.GetCasesAsync(_scope)).History.Select(item => item.RunId).Should().Equal("first", "padded");
+    }
+
+    [Fact]
     public async Task Padded_profile_identity_cannot_rebind_a_retained_tolerance_version()
     {
         var service = await ServiceAsync();

@@ -318,8 +318,9 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
         => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(input, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationRequest));
     private static string SourceHash(AccountCashBalanceSource source)
         => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(source, AccountCashReconciliationJsonContext.Default.AccountCashBalanceSource));
+    /// <summary>Rules hash over the profile with its identity trimmed, matching the padded-identity comparison.</summary>
     private static string ToleranceHash(StatementToleranceProfile tolerance)
-        => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(tolerance, AccountCashReconciliationJsonContext.Default.StatementToleranceProfile));
+        => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(tolerance with { ProfileId = tolerance.ProfileId.Trim() }, AccountCashReconciliationJsonContext.Default.StatementToleranceProfile));
     private static string ResultHash(AccountCashComparison[] result)
         => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(result, AccountCashReconciliationJsonContext.Default.AccountCashComparisonArray));
 }
