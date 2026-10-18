@@ -313,6 +313,7 @@ describe("AccountClosePricesPanel", () => {
     await waitFor(() => expect(api.approve).toHaveBeenCalledOnce());
     fireEvent.change(screen.getByLabelText("Valuation date (UTC)"), { target: { value: "2026-01-01" } });
     expect(await screen.findByText("Write outcome needs verification")).toBeInTheDocument();
+    expect(dirty).toHaveBeenLastCalledWith(true);
     expect(screen.getByText(new RegExp(`An approval may have reached the server for valuation date ${date}`))).toBeInTheDocument();
     await screen.findByText("No close-price input is retained for this account, book and date.");
     fireEvent.click(screen.getByRole("button", { name: "Reload price history" }));

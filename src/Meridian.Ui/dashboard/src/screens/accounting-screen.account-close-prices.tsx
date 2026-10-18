@@ -87,7 +87,9 @@ function ScopedClosePricesPanel({ scope, context, onDirtyChange }: Props) {
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [notice, setNotice] = useState("");
   const [draftDirty, setDraftDirty] = useState(false);
-  const dirty = draftDirty || reviewRationale.length > 0;
+  // An unverified write is unsaved work: the pending approval or capture needed to verify it lives only
+  // in this panel, so scope navigation must confirm before the remount discards it.
+  const dirty = draftDirty || reviewRationale.length > 0 || uncertainWrite;
   const active = useRef<AbortController | null>(null);
   const contextMatches = context.accountId === scope.accountId && context.bookId === scope.ledgerBookId;
   const canRead = contextMatches && context.canReadPrices;

@@ -217,25 +217,44 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
     /// <summary>
     /// Copied JSON observations stay copies after reformatting or property reordering, so JSON payloads
     /// compare by a compact canonical form: object properties sorted by ordinal key at every depth, array
-    /// order preserved, numbers written by value. Root-level JSON scalars canonicalize the same way. Any payload
-    /// that is not valid JSON compares as trimmed text. Retained payloads are untouched.
+    /// order preserved, numbers reduced to an exact significand and exponent. Root-level JSON scalars
+    /// canonicalize the same way. A payload that is not valid JSON compares as trimmed text; valid JSON
+    /// nested deeper than <see cref="MaxObservationDepth"/> is refused rather than compared as text.
+    /// Retained payloads are untouched.
     /// </summary>
-    private static string CanonicalObservation(string payload)
+    private static string CanonicalObservation(string payload, string parameterName)
     {
         var trimmed = payload.Trim();
         if (trimmed.Length == 0)
             return trimmed;
+        var bytes = Encoding.UTF8.GetBytes(trimmed);
+        if (!IsJson(bytes, out var depth))
+            return trimmed;
+        if (depth > MaxObservationDepth)
+            throw new ArgumentException($"An original observation nested deeper than {MaxObservationDepth} JSON levels cannot be compared for independence and is refused.", parameterName);
+        using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = MaxObservationDepth });
+        var buffer = new ArrayBufferWriter<byte>();
+        using (var writer = new Utf8JsonWriter(buffer))
+            WriteCanonical(document.RootElement, writer);
+        return Encoding.UTF8.GetString(buffer.WrittenSpan);
+    }
+
+    private const int MaxObservationDepth = 64;
+
+    /// <summary>Non-recursive validity and depth scan, so over-depth JSON is distinguished from non-JSON text.</summary>
+    private static bool IsJson(ReadOnlySpan<byte> bytes, out int depth)
+    {
+        depth = 0;
         try
         {
-            using var document = JsonDocument.Parse(trimmed);
-            var buffer = new ArrayBufferWriter<byte>();
-            using (var writer = new Utf8JsonWriter(buffer))
-                WriteCanonical(document.RootElement, writer);
-            return Encoding.UTF8.GetString(buffer.WrittenSpan);
+            var reader = new Utf8JsonReader(bytes, new JsonReaderOptions { MaxDepth = int.MaxValue });
+            while (reader.Read())
+                depth = Math.Max(depth, reader.CurrentDepth);
+            return true;
         }
         catch (JsonException)
         {
-            return trimmed;
+            return false;
         }
     }
 
@@ -259,18 +278,36 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
                 writer.WriteEndArray();
                 break;
             case JsonValueKind.Number:
-                // Compare numbers by value, not spelling: 1000, 1000.0 and 1e3 are the same observation.
-                if (element.TryGetDecimal(out var number))
-                    writer.WriteNumberValue(number / 1.0000000000000000000000000000m);
-                else if (element.TryGetDouble(out var wide))
-                    writer.WriteNumberValue(wide);
-                else
-                    element.WriteTo(writer);
+                writer.WriteRawValue(CanonicalNumber(element.GetRawText()), skipInputValidation: true);
                 break;
             default:
                 element.WriteTo(writer);
                 break;
         }
+    }
+
+    /// <summary>
+    /// Exact canonical spelling of a JSON number: 1000, 1000.00 and 1e3 all become "1E3", with no precision
+    /// limit, so distinct wide values never collide and respelled equal values always do.
+    /// </summary>
+    private static string CanonicalNumber(string raw)
+    {
+        var negative = raw[0] == '-';
+        var body = negative ? raw[1..] : raw;
+        var exponentAt = body.IndexOfAny(['e', 'E']);
+        var exponent = exponentAt < 0 ? 0 : int.Parse(body[(exponentAt + 1)..], System.Globalization.CultureInfo.InvariantCulture);
+        var mantissa = exponentAt < 0 ? body : body[..exponentAt];
+        var point = mantissa.IndexOf('.');
+        var digits = point < 0 ? mantissa : mantissa.Remove(point, 1);
+        if (point >= 0)
+            exponent -= mantissa.Length - point - 1;
+        digits = digits.TrimStart('0');
+        var trailing = digits.Length - digits.TrimEnd('0').Length;
+        digits = digits[..^trailing];
+        exponent += trailing;
+        if (digits.Length == 0)
+            return "0";
+        return (negative ? "-" : "") + digits + "E" + exponent.ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 
     private static bool Owns(AccountCashReconciliationRequest input, AccountCashReconciliationCase item)
@@ -311,8 +348,8 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
             throw new ArgumentException("At least one executed cash tolerance rule is required.", parameterName);
         if (input.Tolerance.PositionRules.Any(rule => rule is null) || input.Tolerance.TransactionRules.Any(rule => rule is null))
             throw new ArgumentException("Tolerance rule collections cannot contain null entries.", parameterName);
-        if (input.Left.Rows.Select(item => CanonicalObservation(item.OriginalPayload))
-            .Intersect(input.Right.Rows.Select(item => CanonicalObservation(item.OriginalPayload)), StringComparer.Ordinal).Any())
+        if (input.Left.Rows.Select(item => CanonicalObservation(item.OriginalPayload, parameterName))
+            .Intersect(input.Right.Rows.Select(item => CanonicalObservation(item.OriginalPayload, parameterName)), StringComparer.Ordinal).Any())
             throw new ArgumentException("The two sources require distinct retained evidence references and original observations; copied evidence is not independent.", parameterName);
     }
     private static string InputHash(AccountCashReconciliationRequest input)

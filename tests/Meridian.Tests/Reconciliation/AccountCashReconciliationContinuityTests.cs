@@ -629,8 +629,43 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
     [InlineData("number-exponent")]
     [InlineData("number-fraction")]
     [InlineData("root-scalar")]
+    [InlineData("wide-number")]
     public async Task Respelled_number_in_copied_json_observation_is_rejected_as_dependent_evidence(string shape)
         => await Copied_json_observation_is_rejected_as_dependent_evidence(shape);
+
+    [Fact]
+    public async Task Distinct_wide_numbers_beyond_decimal_range_are_independent_observations()
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 1000m);
+        request = request with
+        {
+            Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = "1e30" }] },
+            Right = request.Right with { Rows = [request.Right.Rows[0] with { OriginalPayload = "1000000000000000000000000000001" }] }
+        };
+
+        var run = await service.RunAsync(request);
+
+        run.Input.RunId.Should().Be("first");
+    }
+
+    [Fact]
+    public async Task Over_depth_json_observation_is_refused_instead_of_compared_as_text()
+    {
+        var service = await ServiceAsync();
+        var deep = new string('[', 65) + "1000" + new string(']', 65);
+        var request = Request("first", 0, 1000m, 1000m);
+        request = request with
+        {
+            Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = deep }] },
+            Right = request.Right with { Rows = [request.Right.Rows[0] with { OriginalPayload = deep.Replace("1000", " 1e3 ") }] }
+        };
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(request));
+
+        failure.Message.Should().Contain("nested deeper than 64");
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
+    }
 
     private async Task Copied_json_observation_is_rejected_as_dependent_evidence(string shape)
     {
@@ -649,6 +684,11 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
             case "number-exponent":
                 original = """{"balance":{"amount":1000,"currency":"USD"},"source":"ledger"}""";
                 reformatted = """{"balance":{"amount":1e3,"currency":"USD"},"source":"ledger"}""";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+            case "wide-number":
+                original = """{"id":1000000000000000000000000000000,"source":"ledger"}""";
+                reformatted = """{"id":1e30,"source":"ledger"}""";
                 request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
                 break;
             case "root-scalar":
