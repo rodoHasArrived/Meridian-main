@@ -26,10 +26,7 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
                     throw new InvalidOperationException("A retained run cannot be rebound to changed sources, scope or tolerance.");
                 return (document, retained);
             }
-            // Only a new run identity must round-trip through replay routes. Runs retained before this
-            // rule, and idempotent re-submissions of them, keep replaying under their original identity.
-            if (!IsRouteSafeRunId(input.RunId))
-                throw new ArgumentException("A run identity must round-trip through replay routes; whitespace, control characters and '/', '\\', '?', '#', '%' are refused.", nameof(request));
+            RequireNewRunAdmission(input, nameof(request));
             foreach (var source in new[] { input.Left, input.Right })
             {
                 var history = document.Runs.Where(item => item.Input.Scope == input.Scope)
@@ -175,16 +172,12 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
             || rule.BasisPointCashTolerance < 0 || rule.SettlementDateTolerance < TimeSpan.Zero)
             || input.Tolerance.CashRules.Select(rule => rule.RuleId).Distinct(StringComparer.Ordinal).Count() != input.Tolerance.CashRules.Count)
             throw new ArgumentException("Cash tolerance rules must have unique identities and nonnegative thresholds.", nameof(input));
-        if (input.Tolerance.CashRules.Count == 0)
-            throw new ArgumentException("At least one executed cash tolerance rule is required.", nameof(input));
-        if (input.Tolerance.PositionRules.Any(rule => rule is null) || input.Tolerance.TransactionRules.Any(rule => rule is null))
-            throw new ArgumentException("Tolerance rule collections cannot contain null entries.", nameof(input));
         var sources = new[] { input.Left, input.Right }.Select(source => NormalizeSource(source, input)).OrderBy(source => source.SourceId, StringComparer.Ordinal).ToArray();
         if (sources[0].SourceId == sources[1].SourceId || sources[0].SourceType == sources[1].SourceType)
             throw new ArgumentException("The first cash-balance slice requires two independent source identities and types.", nameof(input));
         if (sources[0].EvidenceReference.Trim() == sources[1].EvidenceReference.Trim()
-            || sources[0].Rows.Select(item => CanonicalObservation(item.OriginalPayload))
-                .Intersect(sources[1].Rows.Select(item => CanonicalObservation(item.OriginalPayload)), StringComparer.Ordinal).Any())
+            || sources[0].Rows.Select(item => item.OriginalPayload.Trim())
+                .Intersect(sources[1].Rows.Select(item => item.OriginalPayload.Trim()), StringComparer.Ordinal).Any())
             throw new ArgumentException("The two sources require distinct retained evidence references and original observations; copied evidence is not independent.", nameof(input));
         // Freeze caller-owned lists before they cross the durable boundary.
         var normalized = input with { RunId = input.RunId.Trim(), Left = sources[0], Right = sources[1], InitialOwner = input.InitialOwner.Trim(), ObservedAtUtc = input.ObservedAtUtc.ToUniversalTime() };
@@ -269,8 +262,23 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
         var comparisons = Evaluate(input, currencies);
         return new AccountCashReconciliationRun(input, InputHash(input), comparisons, ResultHash(comparisons));
     }
-    private static bool IsRouteSafeRunId(string runId)
-        => !runId.Any(static ch => char.IsWhiteSpace(ch) || char.IsControl(ch) || ch is '/' or '\\' or '?' or '#' or '%');
+    /// <summary>
+    /// Admission rules that apply only when a genuinely new run is accepted. <see cref="Normalize"/> stays
+    /// shape-preserving for retained inputs, so runs retained before these rules, and idempotent
+    /// re-submissions of them, keep replaying under their original identity and tolerance contents.
+    /// </summary>
+    private static void RequireNewRunAdmission(AccountCashReconciliationRequest input, string parameterName)
+    {
+        if (input.RunId.Any(static ch => char.IsWhiteSpace(ch) || char.IsControl(ch) || ch is '/' or '\\' or '?' or '#' or '%'))
+            throw new ArgumentException("A run identity must round-trip through replay routes; whitespace, control characters and '/', '\\', '?', '#', '%' are refused.", parameterName);
+        if (input.Tolerance.CashRules.Count == 0)
+            throw new ArgumentException("At least one executed cash tolerance rule is required.", parameterName);
+        if (input.Tolerance.PositionRules.Any(rule => rule is null) || input.Tolerance.TransactionRules.Any(rule => rule is null))
+            throw new ArgumentException("Tolerance rule collections cannot contain null entries.", parameterName);
+        if (input.Left.Rows.Select(item => CanonicalObservation(item.OriginalPayload))
+            .Intersect(input.Right.Rows.Select(item => CanonicalObservation(item.OriginalPayload)), StringComparer.Ordinal).Any())
+            throw new ArgumentException("The two sources require distinct retained evidence references and original observations; copied evidence is not independent.", parameterName);
+    }
     private static string InputHash(AccountCashReconciliationRequest input)
         => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(input, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationRequest));
     private static string SourceHash(AccountCashBalanceSource source)

@@ -697,33 +697,36 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         (await service.GetCasesAsync(_scope)).Should().BeEmpty();
     }
 
-    [Fact]
-    public async Task Legacy_retained_run_identity_still_replays_and_resubmits_while_new_identities_are_route_safe()
+    [Theory]
+    [InlineData("route-unsafe-run-id")]
+    [InlineData("empty-cash-rules")]
+    [InlineData("null-position-rule")]
+    [InlineData("null-transaction-rule")]
+    [InlineData("reformatted-copied-payload")]
+    public async Task Legacy_retained_run_still_replays_and_resubmits_while_the_same_new_run_is_rejected(string legacyShape)
     {
         var store = new FileAccountCashReconciliationStore(_root);
         await store.InitializeAsync();
         var service = new AccountCashReconciliationService(store);
         var original = await service.RunAsync(Request("first", 0, 1000m, 990m));
-        const string legacyRunId = "legacy run/2026%09";
-        // Retained before the route-safety rule: rewrite the durable record directly, bypassing RunAsync.
-        var legacy = service.EvaluateUnretained(Request(legacyRunId, 0, 1000m, 990m));
+        var (legacyRequest, expectedRejection) = LegacyRequest(legacyShape, "legacy", 0);
+        // Retained before the admission rule existed: write the durable record directly, bypassing RunAsync.
+        var legacy = service.EvaluateUnretained(legacyRequest);
         legacy.InputHash.Should().NotBe(original.InputHash);
         await store.WithStateAsync(document => (document with { Runs = [legacy] }, 0), true, CancellationToken.None);
 
-        var replay = await (await ServiceAsync()).ReplayAsync(_scope, legacyRunId);
-        replay.Input.RunId.Should().Be(legacyRunId);
-        replay.InputHash.Should().Be(legacy.InputHash);
-        replay.ResultHash.Should().Be(legacy.ResultHash);
+        var replay = await (await ServiceAsync()).ReplayAsync(_scope, legacyRequest.RunId);
         replay.Should().BeEquivalentTo(legacy, options => options.WithStrictOrdering());
-        replay.Comparisons.Should().ContainSingle().Which.ObservationState.Should().Be("Open");
+        replay.Comparisons.Should().ContainSingle().Which.ObservationState.Should().Be(legacyShape == "reformatted-copied-payload" ? "SourceCleared" : "Open");
 
-        var resubmitted = await service.RunAsync(Request(legacyRunId, 0, 1000m, 990m));
+        var resubmitted = await service.RunAsync(legacyRequest);
         resubmitted.Should().BeEquivalentTo(legacy, options => options.WithStrictOrdering());
-        var rebind = await Assert.ThrowsAsync<InvalidOperationException>(() => service.RunAsync(Request(legacyRunId, 0, 1000m, 980m)));
+        var rebind = await Assert.ThrowsAsync<InvalidOperationException>(() => service.RunAsync(legacyRequest with { InitialOwner = "someone-else" }));
         rebind.Message.Should().Contain("cannot be rebound");
 
-        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(Request("new run/2026%09", 1, 1000m, 990m)));
-        failure.Message.Should().Contain("round-trip");
+        var (fresh, _) = LegacyRequest(legacyShape, "fresh", 1);
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(fresh));
+        failure.Message.Should().Contain(expectedRejection);
         Assert.Single(await (await ServiceAsync()).GetCasesAsync(_scope)).History.Should().ContainSingle();
     }
 
@@ -753,6 +756,26 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         failure.Message.Should().Contain("retained tolerance version");
         Assert.Single(await service.GetCasesAsync(_scope)).History.Select(item => item.RunId).Should().Equal("first");
         (await service.ReplayAsync(_scope, "first")).Should().BeEquivalentTo(original, options => options.WithStrictOrdering());
+    }
+
+    private (AccountCashReconciliationRequest Request, string Rejection) LegacyRequest(string shape, string runId, int days)
+    {
+        var request = Request(runId, days, 1000m, 990m);
+        switch (shape)
+        {
+            case "route-unsafe-run-id":
+                return (request with { RunId = runId + " run/2026%09" }, "round-trip");
+            case "empty-cash-rules":
+                return (request with { Tolerance = request.Tolerance with { CashRules = [] } }, "At least one executed cash tolerance rule");
+            case "null-position-rule":
+                return (request with { Tolerance = request.Tolerance with { PositionRules = [null!] } }, "null entries");
+            case "null-transaction-rule":
+                return (request with { Tolerance = request.Tolerance with { TransactionRules = [null!] } }, "null entries");
+            default:
+                request = Request(runId, days, 1000m, 1000m);
+                var reformatted = request.Left.Rows[0].OriginalPayload.Replace(",", ",\n  ").Replace(":", ": ");
+                return (request with { Right = request.Right with { Rows = [request.Right.Rows[0] with { OriginalPayload = reformatted }] } }, "copied evidence is not independent");
+        }
     }
 
     private async Task<AccountCashReconciliationService> ServiceAsync()
