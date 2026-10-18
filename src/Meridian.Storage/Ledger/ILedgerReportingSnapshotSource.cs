@@ -19,10 +19,13 @@ public interface ILedgerReportingSnapshotSource
 }
 
 /// <summary>
-/// Captured journals, their tax-lot history and the requested report period in the exact ledger
-/// book. Calculations and checkpoint evidence retain these facts rather than reading live state.
+/// Captured journals, their tax-lot history, corporate-action successor batches and the requested
+/// report period in the exact ledger book. Calculations and checkpoint evidence retain these facts
+/// rather than reading live state. A null successor history means the source cannot capture it, so
+/// retained corporate-action journals cannot be certified from this snapshot.
 /// </summary>
 public sealed record LedgerReportingSnapshot(
     IReadOnlyList<LedgerJournalEntryRecord> Journals,
     IReadOnlyList<LedgerTaxLotDisposalHistoryRecord> TaxLotDisposalHistory,
-    LedgerAccountingPeriod? Period = null);
+    LedgerAccountingPeriod? Period = null,
+    IReadOnlyList<AtomicTaxLotJournalResult>? OpenLotSuccessorHistory = null);

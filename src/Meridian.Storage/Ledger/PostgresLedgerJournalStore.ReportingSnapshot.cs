@@ -49,11 +49,13 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerReportingSnapsho
         }
 
         var journals = await QueryAsync(connection, transaction, query, lineDimensionsJson, ct).ConfigureAwait(false);
-        var history = await GetTaxLotDisposalHistoryAsync(connection, transaction, ledgerBookId,
-                journals.Select(static record => record.Entry.JournalEntryId).Distinct().ToArray(), ct)
+        var journalIds = journals.Select(static record => record.Entry.JournalEntryId).Distinct().ToArray();
+        var history = await GetTaxLotDisposalHistoryAsync(connection, transaction, ledgerBookId, journalIds, ct)
+            .ConfigureAwait(false);
+        var successors = await GetOpenLotSuccessorHistoryAsync(connection, transaction, ledgerBookId, journalIds, ct)
             .ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
-        return new LedgerReportingSnapshot(journals, history, period);
+        return new LedgerReportingSnapshot(journals, history, period, successors);
     }
 
     private async Task EnsureReportingBookReadAuthorityAsync(

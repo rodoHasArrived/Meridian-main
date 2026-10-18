@@ -79,6 +79,28 @@ public static partial class SecurityMasterEndpoints
         /// An optional <c>asOf</c> date scopes selectability to a write EFFECTIVE AT that date, so
         /// backdated amendments can discover the historical version governing their effective date.
         /// </summary>
+        /// <summary>
+        /// Lists every Security Master asset class with its term fields, UI hints, lot unit, cash-flow
+        /// behaviour and projection kind, read from the single asset-class registry. Both
+        /// workstations build create and edit forms from this instead of free-text field paths.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterAssetClasses, () =>
+            Results.Json(SecurityAssetClassRegistry.ToDtos(), jsonOptions))
+        .WithName("ListSecurityMasterAssetClasses").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<IReadOnlyList<SecurityAssetClassDefinitionDto>>(StatusCodes.Status200OK);
+
+        /// <summary>
+        /// Returns one asset class's registry definition. Accepts the canonical name or a catalog
+        /// alias (e.g. <c>MBS</c>); returns <c>404</c> for an unknown class.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterAssetClassDefinition, (string assetClass) =>
+            SecurityAssetClassRegistry.TryGet(assetClass, out var definition)
+                ? Results.Json(SecurityAssetClassRegistry.ToDto(definition), jsonOptions)
+                : Results.NotFound())
+        .WithName("GetSecurityMasterAssetClassDefinition").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<SecurityAssetClassDefinitionDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
         group.MapGet(UiApiRoutes.SecurityMasterAssetProfiles, (
             [FromQuery] DateOnly? asOf,
             [FromServices] ISecurityAssetProfileCatalog profileCatalog) =>
@@ -405,6 +427,67 @@ public static partial class SecurityMasterEndpoints
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
         /// <summary>
+        /// Replaces one nested term block (an object or array term the asset class declares, such as
+        /// preferred terms, a call schedule or swap legs) and carries every other term unchanged.
+        /// </summary>
+        /// <remarks>
+        /// <para>The declared blocks are the Object and Array fields of the asset-class registry
+        /// (<c>/api/security-master/asset-classes/{assetClass}</c>). Returns 400 for an undeclared block
+        /// or a JSON kind that does not match, and 404 for an unknown security.</para>
+        /// </remarks>
+        group.MapPut(UiApiRoutes.SecurityMasterTermBlock, async (
+            Guid securityId,
+            string blockKey,
+            AmendSecurityTermBlockRequest request,
+            HttpContext context,
+            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterService service,
+            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
+            CancellationToken ct) =>
+        {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+
+            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+                return governedRefusal;
+
+            var current = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (current is null)
+            {
+                return Results.NotFound();
+            }
+
+            if (!SecurityTermBlocks.For(current.AssetClass).Any(field => string.Equals(field.Key, blockKey, StringComparison.Ordinal)))
+            {
+                return Results.Problem(
+                    $"Asset class '{current.AssetClass}' declares no term block '{blockKey}'.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var detail = await service
+                    .AmendTermBlockAsync(securityId, blockKey, request with { UpdatedBy = ResolveActor(context) }, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(detail, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("AmendSecurityMasterTermBlock").RequirePermission(UserPermission.ModifySecurityMaster)
+        .Accepts<AmendSecurityTermBlockRequest>("application/json")
+        .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>
         /// Marks a security as inactive (soft delete). The security record remains in the database for audit purposes.
         /// </summary>
         /// <remarks>
@@ -439,7 +522,7 @@ public static partial class SecurityMasterEndpoints
         /// </summary>
         /// <remarks>
         /// <para>A new alias is created, or an identical request for the same alias ID is replayed idempotently.</para>
-        /// <para>Material replacement or retirement of an existing alias ID returns 409 until append-only alias revisions are available. A new ID is additive; it does not retire the old alias.</para>
+        /// <para>A material change to an existing alias ID is recorded as a correction: an alias revision is appended and the current alias updated, while recorded-as-of reads before the correction keep the prior values. Re-pointing an alias ID at a different security returns 409. A new ID is additive; it does not retire the old alias.</para>
         /// <para>Supported identifier kinds: ISIN, CUSIP, Ticker, FIGI, SEDOL, LEI, RIC, Bloomberg ID, etc.</para>
         /// <para>Returns 200 OK with the upserted alias detail.</para>
         /// </remarks>
@@ -639,6 +722,70 @@ public static partial class SecurityMasterEndpoints
         })
         .WithName("GetSecurityMasterCorporateActions").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<CorporateActionDto>>(StatusCodes.Status200OK);
+
+        /// <summary>
+        /// Returns the declared income schedule (dividends, special dividends, fund distributions,
+        /// returns of capital) built from the security's effective corporate actions.
+        /// </summary>
+        /// <remarks>
+        /// <para>Amounts are per unit held. Distributions without a pay date, amount, currency or a
+        /// recognised <c>distributionComponent</c> are reported under <c>gaps</c>.</para>
+        /// <para><c>from</c>/<c>to</c> bound the payment date inclusively. Returns 404 for an unknown security.</para>
+        /// </remarks>
+        group.MapGet(UiApiRoutes.SecurityMasterIncomeCashFlows, async (
+            Guid securityId,
+            [FromQuery] DateOnly? from,
+            [FromQuery] DateOnly? to,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
+        {
+            var security = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (security is null)
+            {
+                return Results.NotFound();
+            }
+
+            var actions = await queryService.GetCorporateActionsAsync(securityId, ct).ConfigureAwait(false);
+            var schedule = SecurityIncomeCashFlowProjector.Build(
+                securityId, security.AssetClass, actions, DateTimeOffset.UtcNow, from, to);
+            return Results.Json(schedule, jsonOptions);
+        })
+        .WithName("GetSecurityMasterIncomeCashFlows").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<SecurityIncomeCashFlowScheduleDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
+        /// Returns the dated factor history: the declared factor schedule, factors observed on
+        /// effective principal paydowns, and the dated scalar factor, with same-day disagreements.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterFactorHistory, async (
+            Guid securityId,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
+        {
+            var security = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (security is null)
+            {
+                return Results.NotFound();
+            }
+
+            var actions = await queryService.GetCorporateActionsAsync(securityId, ct).ConfigureAwait(false);
+            var termSources = security.AssetSpecificTerms.ValueKind == System.Text.Json.JsonValueKind.Object
+                && SecurityTermReader.TryGetProperty(security.AssetSpecificTerms, "profileFields", out var profileFields)
+                && profileFields.ValueKind == System.Text.Json.JsonValueKind.Object
+                    ? new[] { profileFields, security.AssetSpecificTerms }
+                    : new[] { security.AssetSpecificTerms };
+            var history = SecurityFactorHistoryProjector.Build(
+                securityId,
+                StructuredCashFlowTermsResolver.Resolve(security),
+                SecurityTermReader.ReadDate(termSources, "factorDate", "currentFactorDate"),
+                actions,
+                DateTimeOffset.UtcNow);
+            return Results.Json(history, jsonOptions);
+        })
+        .WithName("GetSecurityMasterFactorHistory").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<SecurityFactorHistoryDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
 
         /// <summary>
         /// Records a new corporate action event for a security (dividend, split, merger, etc.).
@@ -977,6 +1124,10 @@ public static partial class SecurityMasterEndpoints
                     : await workbenchService.PatchOperatorOverridesAsync(securityId, request, actor, ct).ConfigureAwait(false);
                 return Results.Json(updated, jsonOptions);
             }
+            catch (SecurityMasterMutationConflictException exception)
+            {
+                return Results.Conflict(new { error = exception.Message });
+            }
             catch (InvalidOperationException exception) when (exception.Message.Contains("governed revision workflow", StringComparison.Ordinal))
             {
                 // Staged revisions are mid-review — a conflicting-state condition, not a client
@@ -1018,6 +1169,13 @@ public static partial class SecurityMasterEndpoints
             var decision = new OperatorOverrideDecision(request.Decision, ResolveActor(context), request.Comment);
             try
             {
+                // Independent review on every route, whatever store or workbench seam the host
+                // composes: the actor who staged the pending values cannot approve them.
+                if (await store.GetAsync(securityId, ct).ConfigureAwait(false) is { } overlay)
+                {
+                    OperatorOverrideReviewRules.EnsureIndependentReview(securityId, overlay, decision);
+                }
+
                 // A direct decision bypasses the revision lifecycle's controls (bound workflow,
                 // independent reviewer, staged-value deferral). When the host wires the workbench
                 // service, the decision goes through its governed seam, which refuses while staged
@@ -1031,6 +1189,14 @@ public static partial class SecurityMasterEndpoints
             catch (ArgumentException exception)
             {
                 return Results.BadRequest(new { error = exception.Message });
+            }
+            catch (OperatorOverrideSelfApprovalException exception)
+            {
+                return Results.Json(new { error = exception.Message }, statusCode: StatusCodes.Status403Forbidden);
+            }
+            catch (SecurityMasterMutationConflictException exception)
+            {
+                return Results.Conflict(new { error = exception.Message });
             }
             catch (InvalidOperationException exception) when (exception.Message.Contains("governed revision workflow", StringComparison.Ordinal))
             {
@@ -1096,7 +1262,7 @@ public static partial class SecurityMasterEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
-        // Clearwater-model extensions. These map only when a real (non-null) implementation is
+        // Reference-data governance extensions. These map only when a real (non-null) implementation is
         // registered: when Security Master is unconfigured the NullSecurityMaster* fallbacks are
         // still present in DI, and their write/run paths throw, so mapping against them would turn
         // requests into 500s instead of leaving the routes unavailable.

@@ -1,7 +1,9 @@
 using Meridian.FinancialOperations.Ledger;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Ledger;
+using Meridian.ReferenceData.CorporateActions;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.SecurityMaster;
@@ -56,6 +58,9 @@ internal sealed class LedgerFeatureRegistration : IServiceFeatureRegistration
         // the projector produces reviewed economic/lot/posting intent and the mapper adapts a
         // promoted rule-pack result to an Asset Accounting Event Spine request. Neither service
         // appends a journal or bypasses the spine's policy, evidence, period, and approval gates.
+        // The projector depends on the rule-profile contract; the vendor methodology is wired here,
+        // at the composition root, so the domain never names it.
+        services.TryAddSingleton<ICorporateActionRuleProfile>(ClearwaterCorporateActionRuleProfileV1.Instance);
         services.TryAddSingleton<CorporateActionAccountingProjectionService>();
         services.TryAddSingleton<ICorporateActionAccountingProjectionService>(sp =>
             sp.GetRequiredService<CorporateActionAccountingProjectionService>());
@@ -71,7 +76,13 @@ internal sealed class LedgerFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<IAccountingPolicyService>(),
                 sp.GetService<IAccountingConfigurationService>(),
                 sp.GetService<IAccountingPostingCandidateAuthorityBuilder>(),
-                sp.GetService<ILedgerJournalStore>())!);
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<Meridian.Storage.SecurityMaster.ISecurityMasterStore>())!);
+        services.TryAddSingleton(sp => new CanonicalLotCorporateActionService(
+            sp.GetService<ILedgerJournalStore>(),
+            sp.GetService<ISecurityMasterStore>(),
+            sp.GetService<IInstrumentPositionProjectionStore>(),
+            sp.GetService<IAssetAccountingEventSpineService>()));
         services.TryAddSingleton<IAccountingPostingCandidatePostService>(sp =>
             new AccountingPostingCandidatePostService(
                 sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>(),

@@ -137,13 +137,14 @@ public static class DailyPortfolioPricingDraftBuilder
                     line.FinancialAccountId, effectiveDate, line.PriceObservedOn, line.MarkPrice,
                     line.Confidence, input.Policy.FreshnessPolicy.MaximumAgeDays,
                     input.Policy.FreshnessPolicy.MinimumConfidence, input.Policy.FreshnessPolicy.Version,
-                    line.EvidenceReference)).ToArray()),
+                    line.EvidenceReference, input.EntityId)).ToArray()),
             ["valuation.freshnessPolicyVersion"] = input.Policy.FreshnessPolicy.Version,
             ["valuation.policyId"] = input.Policy.PolicyId,
             ["valuation.method"] = input.Policy.ValuationMethod,
             ["valuation.periodId"] = input.PeriodId,
             ["valuation.baseCurrency"] = input.BaseCurrency,
             ["valuation.fundId"] = input.Policy.FundId,
+            ["valuation.entityId"] = input.EntityId ?? string.Empty,
             ["valuation.symbol"] = scope.Symbol,
             ["valuation.securityId"] = scope.SecurityId?.ToString("D") ?? string.Empty,
             ["valuation.financialAccountId"] = scope.FinancialAccountId,
@@ -239,6 +240,9 @@ public static class DailyPortfolioPricingDraftBuilder
             .Append(scope.SecurityId?.ToString("D") ?? "none").Append('|')
             .Append(scope.Symbol).Append('|')
             .Append(scope.FinancialAccountId);
+
+        if (input.EntityId is not null)
+            canonical.Append("|entity=").Append(Escape(input.EntityId));
 
         foreach (var line in lines)
         {

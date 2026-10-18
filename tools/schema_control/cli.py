@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import shutil
 import subprocess
 import sys
@@ -30,6 +31,12 @@ from .migrations import (
     resolve_git_commit,
 )
 from .render import render_snapshot
+from .reservations import (
+    generate_migration_docs,
+    load_reservation_register,
+    reservation_findings,
+    scaffold_migration,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -333,10 +340,25 @@ def _migration_manifest(
         base_ref = resolve_git_commit(root, base_ref)
     inventory = build_migration_inventory(root, config)
     findings = list(inventory.findings)
+    register = load_reservation_register(root, config)
+    base_reader = git_base_file_reader(root, base_ref) if base_ref else None
+    if register is not None:
+        findings.extend(reservation_findings(inventory, register, base_reader))
+        if (
+            not any(item.severity == "error" for item in findings)
+            and not generate_migration_docs(root, config, check=True)
+        ):
+            findings.append(
+                Finding(
+                    "migration-reservation-docs-stale",
+                    "error",
+                    "Migration reservation documentation is stale; run generate-migration-docs.",
+                    path="docs/engineering/blueprints/README.md",
+                )
+            )
     findings.extend(_waiver_findings(waivers))
     if base_ref:
         base_config = _base_schema_control_config(root, base_ref)
-        base_reader = git_base_file_reader(root, base_ref)
         findings.extend(compare_immutable_migrations(inventory, base_reader))
         destructive, _ = _filter_waived_findings(
             detect_destructive_changes(inventory, base_reader),
@@ -724,6 +746,13 @@ def _promote(root: Path, config: Mapping[str, Any], candidate_root: Path) -> Non
             remove_path(backup)
 
 
+def _positive_seconds(value: str) -> float:
+    seconds = float(value)
+    if not math.isfinite(seconds) or seconds <= 0:
+        raise argparse.ArgumentTypeError("Timeout must be a finite positive number of seconds.")
+    return seconds
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Build and verify Meridian PostgreSQL schema artifacts."
@@ -739,6 +768,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--waivers", default=str(DEFAULT_WAIVERS), help="Migration waiver JSON."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    new_migration = subparsers.add_parser(
+        "new-migration", help="Scaffold SQL with an available, unreserved ordinal."
+    )
+    new_migration.add_argument("--migration-set", required=True)
+    new_migration.add_argument("--name", required=True, help="Lowercase snake_case name.")
+    new_migration.add_argument("--ordinal", type=int, default=None)
+
+    migration_docs = subparsers.add_parser(
+        "generate-migration-docs", help="Render the migration reservation table."
+    )
+    migration_docs.add_argument("--check", action="store_true", help="Fail on stale docs.")
 
     inventory = subparsers.add_parser(
         "inventory", help="Run static migration checks without PostgreSQL."
@@ -760,6 +801,14 @@ def build_parser() -> argparse.ArgumentParser:
             "--candidate-root", default="build/schema-control/candidate"
         )
 
+    local = subparsers.add_parser(
+        "local", help="Verify or snapshot using an owned disposable PostgreSQL container."
+    )
+    local.add_argument("--mode", choices=("verify", "snapshot"), default="verify")
+    local.add_argument("--base-ref", default=None)
+    local.add_argument("--image", default=None, help="Override the registry's PostgreSQL image.")
+    local.add_argument("--readiness-timeout", type=_positive_seconds, default=60.0)
+
     promote = subparsers.add_parser(
         "promote", help="Copy a reviewed candidate into committed outputs."
     )
@@ -776,8 +825,35 @@ def main(argv: Sequence[str] | None = None) -> int:
     root = Path(args.root).resolve()
     try:
         config = _load_json(_resolve(root, args.config))
+        if args.command == "new-migration":
+            path = scaffold_migration(
+                root, config, args.migration_set, args.name, args.ordinal
+            )
+            print(f"Created migration: {path.relative_to(root).as_posix()}")
+            return 0
+        if args.command == "generate-migration-docs":
+            result = generate_migration_docs(root, config, check=args.check)
+            if args.check and not result:
+                print("Migration reservation documentation is stale.", file=sys.stderr)
+                return 1
+            print("Migration reservation documentation is current.")
+            return 0
         policies = _load_json(_resolve(root, args.policies))
         waivers = _load_json(_resolve(root, args.waivers))
+        if args.command == "local":
+            from .disposable import run_disposable
+
+            return run_disposable(
+                root=root,
+                config=config,
+                mode=args.mode,
+                base_ref=args.base_ref,
+                config_path=args.config,
+                policies_path=args.policies,
+                waivers_path=args.waivers,
+                image=args.image,
+                readiness_timeout=args.readiness_timeout,
+            )
         if args.command == "inventory":
             _, manifest = _migration_manifest(root, config, waivers, args.base_ref)
             write_json_if_changed(_resolve(root, args.output), manifest)

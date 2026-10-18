@@ -1,0 +1,30 @@
+{
+  "helperPath": "ci/run-with-child-reaper.py",
+  "helperSha256": "d73e3078e5e7d04c1d27ac0d28b194aa49f4251153ff46dc786cfe33e75c6421",
+  "mechanism": "Linux PR_SET_CHILD_SUBREAPER supplies missing container-init child reaping around the unchanged command; source, tests, assertions and CI script are unchanged.",
+  "originalCommand": "bash scripts/ci.sh",
+  "executedWrapperCommand": "PATH=/workspace/scratch/w10-seam-tools:/workspace/.dotnet:$PATH DOTNET_ROOT=/workspace/.dotnet NUGET_PACKAGES=/workspace/.nuget/packages MERIDIAN_CI_TEST_MAX_PARALLEL=2 python /workspace/scratch/w10-seam-tools/run-with-child-reaper.py bash scripts/ci.sh > /workspace/scratch/w10-seam-ci-final.log 2>&1",
+  "reproductionCommand": "MERIDIAN_CI_TEST_MAX_PARALLEL=2 python docs/testing/evidence/w10-seam-refresh-20261006/ci/run-with-child-reaper.py bash scripts/ci.sh",
+  "environment": {
+    "toolchain": "Configured .NET SDK, NuGet cache and actionlint on PATH, as for the original gate.",
+    "MERIDIAN_CI_TEST_MAX_PARALLEL": "2",
+    "parallelismLimit": "Existing supported CI setting runs the same test roster with at most two processes after builds; no test filter, assertion, or governance change."
+  },
+  "targetedCheck": {
+    "state": "passed",
+    "command": "PATH=/workspace/.dotnet:$PATH DOTNET_ROOT=/workspace/.dotnet NUGET_PACKAGES=/workspace/.nuget/packages python /workspace/scratch/w10-seam-tools/run-with-child-reaper.py dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --no-build --filter 'FullyQualifiedName~Meridian.Tests.Mcp.ToolProcessRunnerTests' --logger 'trx;LogFileName=reaper-check.trx' --results-directory /workspace/scratch/w10-seam-reaper-check > /workspace/scratch/w10-seam-reaper-check.log 2>&1",
+    "helperSha256": "d73e3078e5e7d04c1d27ac0d28b194aa49f4251153ff46dc786cfe33e75c6421",
+    "evidence": [
+      "ci/reaper-check.log.gz",
+      "ci/reaper-check.trx.gz"
+    ],
+    "result": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "processCompletion": "Root confirmed targeted command completion with exit 0; log and TRX agree."
+    }
+  },
+  "operatorDecision": "pending"
+}

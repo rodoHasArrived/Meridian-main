@@ -1,0 +1,46 @@
+Verify .NET SDK	0	0
+Verify Python	0	0
+Restore .NET solution	0	7
+Verify .NET formatting	0	44
+Validate warning suppression inventory	0	0
+Enforce ApiClientService caller ratchet	0	1
+Enforce no-new-god-file ratchet	0	0
+Enforce consolidated-helper duplication ratchet	0	8
+Enforce inline SHA-256 hashing ratchet	0	2
+Enforce posture-environment test serialization	0	2
+Enforce server-derived ActionOrigin at endpoints	0	1
+Enforce declared file-store concurrency postures	0	1
+Enforce ledger-book-native accounting scope	0	1
+Enforce ledger dimension coverage across surfaces	0	0
+Build web workstation .NET lane	0	190
+Run .NET non-integration test projects	0	1494
+Validate browser evidence reader	0	0
+Verify Node.js	0	0
+Verify npm	0	0
+Verify Python	0	0
+Install dashboard dependencies from lockfile	0	8
+Generated UI contract drift gate	0	0
+Lint dashboard source	0	34
+Enforce strictNullChecks on dashboard source	0	57
+Run dashboard tests	0	377
+Build dashboard bundle	0	50
+Workstation bundle freshness gate	0	0
+Verify Python	0	0
+Validate dashboard type barrel	0	1
+Validate C#/TypeScript contract parity	0	0
+Validate observability contract	0	4
+Validate sample config data sources	0	0
+Validate monitoring deployment	0	0
+Validate status docs delivery claims	0	0
+Validate status doc staleness	0	0
+Check docs automation dependencies	0	1
+Validate Claude agent definitions	0	0
+Validate provider-validation script tests	0	14
+Validate TODO registry contract	0	6
+Validate AI contract drift	0	0
+Validate AI navigation freshness	0	0
+Validate lane vocabulary	0	0
+Validate AI handoff checklist schema	0	2
+Reject whole-repo generated documentation drift	0	4
+Regenerate the workflows overview	0	0
+Verify whole-repo generated documentation is committed	1	0

@@ -29,15 +29,6 @@ public enum BondAmortizationMethod
     PurchasedCreditImpaired
 }
 
-/// FAS 91-style yield adjustment method for prepaying structured securities.
-[JsonConverter(typeof(JsonStringEnumConverter<BondYieldAdjustmentMethod>))]
-public enum BondYieldAdjustmentMethod
-{
-    Retrospective,
-    Prospective,
-    NoAdjustment
-}
-
 public sealed record BondLifecycleDto(
     Guid SecurityId,
     BondLifecycleStat LifecycleStat,
@@ -46,7 +37,7 @@ public sealed record BondLifecycleDto(
     DateOnly MaturityDate,
     bool IsCallable,
     long Version,
-    // --- Clearwater extended lifecycle fields ---
+    // --- Extended lifecycle fields (migration 017) ---
     /// <summary>Face/par value; used in market-value calculation: Par × Factor × Price / 100.</summary>
     decimal? Par = null,
     string? BondSubclass = null,
@@ -92,18 +83,6 @@ public sealed record BondInflationLinkedDto(
     decimal? IndexFloor,
     long Version);
 
-/// Account or lot-level accounting elections controlling amortization, yield update, and cash-flow source.
-public sealed record BondAccountingElectionsDto(
-    Guid SecurityId,
-    BondAmortizationMethod AmortizationMethod,
-    string? YieldUpdateFrequency,
-    BondYieldAdjustmentMethod? AdjustmentMethod,
-    string? CashFlowSource,
-    bool IgnoreCallDates,
-    bool IgnorePutDates,
-    bool IsLotLevelNoAmortization,
-    long Version);
-
 public sealed record BondReferenceDto(
     Guid SecurityId,
     string DisplayName,
@@ -115,5 +94,4 @@ public sealed record BondReferenceDto(
     BondAccrualConventionDto? AccrualConvention,
     long Version,
     BondSinkingFundDto? SinkingFund = null,
-    BondInflationLinkedDto? InflationLinked = null,
-    BondAccountingElectionsDto? AccountingElections = null);
+    BondInflationLinkedDto? InflationLinked = null);

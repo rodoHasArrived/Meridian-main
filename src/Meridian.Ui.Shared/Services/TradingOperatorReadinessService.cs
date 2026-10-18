@@ -281,12 +281,9 @@ public sealed partial class TradingOperatorReadinessService : ITradingOperatorRe
     {
         var blockers = new List<string>();
 
-        if (overallStatus != TradingAcceptanceGateStatusDto.Ready)
-        {
-            blockers.AddRange(acceptanceGates
-                .Where(static gate => gate.Status != TradingAcceptanceGateStatusDto.Ready)
-                .Select(static gate => $"acceptanceGate:{gate.GateId}"));
-        }
+        blockers.AddRange(acceptanceGates
+            .Where(static gate => gate.Status != TradingAcceptanceGateStatusDto.Ready)
+            .Select(static gate => $"acceptanceGate:{gate.GateId}"));
 
         if (!IsApprovedLivePromotionTrace(promotion))
         {

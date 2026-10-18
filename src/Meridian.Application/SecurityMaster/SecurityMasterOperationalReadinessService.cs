@@ -40,7 +40,8 @@ public interface ISecurityMasterOperationalReadinessService
 
 public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterOperationalReadinessService
 {
-    private static readonly IReadOnlyList<MultiAssetCoverageSpecification> Specifications =
+    // Internal so the asset-class parity guards can hold these rows to the catalog.
+    internal static readonly IReadOnlyList<MultiAssetCoverageSpecification> Specifications =
     [
         Listed(
             "Equity",
@@ -177,7 +178,7 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
     private readonly AssetClassValidatorRegistry _assetClassValidators;
     private readonly ISecurityAssetProfileCatalog _assetProfileCatalog;
 
-    private static readonly IReadOnlyDictionary<string, IReadOnlyList<AssetClassDepthTargetSpec>> AssetClassDepthTargetSpecs =
+    internal static readonly IReadOnlyDictionary<string, IReadOnlyList<AssetClassDepthTargetSpec>> AssetClassDepthTargetSpecs =
         new Dictionary<string, IReadOnlyList<AssetClassDepthTargetSpec>>(StringComparer.OrdinalIgnoreCase)
         {
             ["Bond"] =
@@ -865,8 +866,7 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         };
 
     private static bool RequiresGovernedProfile(string assetClass)
-        => string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase);
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresGovernedProfile;
 
     private static MultiAssetPackCoverageDto ToAssetPackCoverage(SecurityAssetPackDescriptor pack)
     {

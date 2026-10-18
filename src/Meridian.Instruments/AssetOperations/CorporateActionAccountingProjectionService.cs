@@ -43,6 +43,9 @@ public sealed record CorporateActionAccountingProjectionRequest(
     Guid? ElectionId = null,
     IReadOnlyList<CorporateActionLotMutationDto>? AuthoritativeLotMutations = null)
 {
+    /// <summary>Explicit reviewed split basis transfer; other callers retain the operational no-journal projection.</summary>
+    public bool CanonicalLotTransferJournal { get; init; }
+
     public IReadOnlyList<CorporateActionProjectionEvidenceDependencyDto> EvidenceManifest { get; init; } =
         EvidenceManifest ?? [];
 
@@ -53,22 +56,32 @@ public sealed record CorporateActionAccountingProjectionRequest(
 }
 
 /// <summary>
-/// Deterministic, fail-closed projector for the Clearwater v1 corporate-action profile. It emits
-/// economic and lot intent only; Financial Operations still owns promoted rule-pack mapping,
-/// review, and candidate preparation, and Ledger/Storage retain posting authority.
+/// Deterministic, fail-closed projector for the configured corporate-action rule profile
+/// (<see cref="ICorporateActionRuleProfile"/>). It emits economic and lot intent only; Financial
+/// Operations still owns promoted rule-pack mapping, review, and candidate preparation, and
+/// Ledger/Storage retain posting authority.
 /// </summary>
 public sealed partial class CorporateActionAccountingProjectionService : ICorporateActionAccountingProjectionService
 {
+    // Persisted model identity (fingerprints, projection DTOs). The value is a stored key and does
+    // not change when the rule profile behind the contract does.
     public const string ModelKey = "clearwater-corporate-action";
     public const string ModelVersion = "v1";
     public const string EngineVersion = "corporate-action-projection-v1";
+
+    private readonly ICorporateActionRuleProfile _ruleProfile;
+
+    public CorporateActionAccountingProjectionService(ICorporateActionRuleProfile ruleProfile)
+    {
+        _ruleProfile = ruleProfile ?? throw new ArgumentNullException(nameof(ruleProfile));
+    }
 
     public CorporateActionAccountingProjectionDto Project(CorporateActionAccountingProjectionRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.Economics);
 
-        var decision = ClearwaterCorporateActionRuleProfileV1.Resolve(request.ActionType, request.AccountingBasis);
+        var decision = _ruleProfile.Resolve(request.ActionType, request.AccountingBasis);
         decision = ApplyPolicySelections(decision, request.PolicyInputs);
 
         var evidenceManifest = request.EvidenceManifest
@@ -82,7 +95,7 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
             .ToArray();
         var currency = request.Currency?.Trim().ToUpperInvariant() ?? string.Empty;
         var blockers = ValidateCommon(request, evidenceManifest, currency);
-        var projectionInputHash = BuildProjectionInputHash(request, decision, evidenceManifest, currency);
+        var projectionInputHash = BuildProjectionInputHash(_ruleProfile, request, decision, evidenceManifest, currency);
 
         ProjectionComputation computation;
         try
@@ -131,7 +144,11 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
                 request.LotSnapshotId ?? Guid.Empty,
                 request.LotSnapshotVersion ?? 0,
                 request.PolicyDecisionId ?? Guid.Empty,
-                request.ElectionId);
+                request.ElectionId)
+            {
+                SourceCorporateActionId = request.SourceCorporateActionId,
+                CanonicalLotTransferJournal = request.CanonicalLotTransferJournal
+            };
         }
 
         var eventId = DeterministicGuid(BuildEventIdentity(request));
@@ -170,7 +187,7 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
             sourceDomain,
             sourceEntityId,
             economicEvent,
-            TermsVersion: ClearwaterCorporateActionRuleProfileV1.ProfileVersion,
+            TermsVersion: _ruleProfile.ProfileVersion,
             TermsHash: projectionInputHash,
             EvidenceLinks: evidence)
         {
@@ -186,7 +203,10 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
         return new CorporateActionAccountingProjectionDto(
             CorporateActionProjectionStatusDto.Projected,
             decision,
-            Round(computation.EventAmount, currency),
+            request.CanonicalLotTransferJournal
+                && (request.ActionType is CorporateActionAccountingTypeDto.StockSplit or CorporateActionAccountingTypeDto.ReverseStockSplit
+                    or CorporateActionAccountingTypeDto.MergerStock or CorporateActionAccountingTypeDto.SpinOff)
+                ? computation.EventAmount : Round(computation.EventAmount, currency),
             economicEvent,
             lineage,
             computation.Recipe,
@@ -212,7 +232,11 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
             request.LotSnapshotId ?? Guid.Empty,
             request.LotSnapshotVersion ?? 0,
             request.PolicyDecisionId ?? Guid.Empty,
-            request.ElectionId);
+            request.ElectionId)
+        {
+            SourceCorporateActionId = request.SourceCorporateActionId,
+            CanonicalLotTransferJournal = request.CanonicalLotTransferJournal
+        };
     }
 
     private static CorporateActionTreatmentDecisionDto ApplyPolicySelections(
@@ -234,7 +258,7 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
         };
     }
 
-    private static List<CorporateActionProjectionBlockerDto> ValidateCommon(
+    private List<CorporateActionProjectionBlockerDto> ValidateCommon(
         CorporateActionAccountingProjectionRequest request,
         IReadOnlyList<CorporateActionProjectionEvidenceDependencyDto> evidence,
         string currency)
@@ -285,9 +309,9 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
             "The expected position version does not match the persisted position version.");
         AddIf(blockers, request.EffectiveDate == default, "corporate-action.effective-date-required",
             "An effective date is required.");
-        AddIf(blockers, !ClearwaterCorporateActionRuleProfileV1.IsEffectiveOn(request.RuleProfileAsOfDate),
+        AddIf(blockers, !_ruleProfile.IsEffectiveOn(request.RuleProfileAsOfDate),
             "corporate-action.rule-profile-not-effective",
-            $"Rule profile {ClearwaterCorporateActionRuleProfileV1.ProfileKey} is not effective on " +
+            $"Rule profile {_ruleProfile.ProfileKey} is not effective on " +
             $"{request.RuleProfileAsOfDate:yyyy-MM-dd}.");
         AddIf(blockers, request.OccurredAtUtc == default, "corporate-action.occurred-at-required",
             "A non-default occurrence timestamp is required.");
@@ -1326,6 +1350,9 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
         AddIf(blockers, reverse && splitRatio >= 1m, "corporate-action.reverse-split-ratio-invalid",
             "A reverse stock split ratio must be between zero and one.");
 
+        if (request.CanonicalLotTransferJournal)
+            return ProjectCanonicalSplitTransfer(request, currency, blockers, positionQuantity, splitRatio);
+
         if (request.Economics.IdentifierChanged)
         {
             return ProjectBookValueExchange(request with
@@ -1380,11 +1407,11 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
     {
         AddIf(blockers, !request.PolicyInputs.RightsZeroValueApproved,
             "corporate-action.rights-zero-value-approval-required",
-            "The Clearwater zero-value rights convention requires explicit approval.");
+            "The rule profile's zero-value rights convention requires explicit approval.");
         var right = RequireSingleSuccessor(request, CorporateActionSuccessorRoleDto.Right, blockers);
         AddIf(blockers, right?.FairValue is > 0m,
             "corporate-action.rights-observable-value-review-required",
-            "A right with positive observable value cannot use the zero-value Clearwater convention.");
+            "A right with positive observable value cannot use the rule profile's zero-value convention.");
         if (right is null || blockers.Count > 0)
         {
             return ProjectionComputation.Empty;

@@ -70,7 +70,7 @@ The six capability columns mean implementations of the shared streaming, histori
 - Unit and fixture evidence does not establish live execution acceptance; brokerage use remains subject to shared execution governance.
 - Pacing values describe repository defaults; verify current provider terms and the configured account allowance before operation.
 
-**Degradation / fail-closed behavior:** Missing credentials prevent credential-gated backfill/search activation. Asset-stream routing fails closed when the requested feed has no usable entitlement; diagnostics preserve the selected feed and entitlement. REST and trade-update errors remain observable. Corporate-action HTTP failures and non-cancellation exceptions are logged and return empty action collections; empty results must not be treated as verified absence of actions. Cancellation propagates.
+**Degradation / fail-closed behavior:** Missing credentials prevent credential-gated backfill/search activation. Asset-stream routing fails closed when the requested feed has no usable entitlement; diagnostics preserve the selected feed and entitlement. REST and trade-update errors remain observable. Corporate-action HTTP failures and non-cancellation exceptions are logged and return empty action collections; empty results must not be treated as verified absence of actions. Cancellation propagates. Streaming readiness waits for authentication and full subscription acknowledgments; rejected or timed-out subscription changes invalidate readiness, while transient control errors remain retryable. Automatic correction/cancel channels are limited to requested trades; permanent request errors stop retries. Final subscription-reference removal sends an explicit upstream unsubscribe.
 
 **Implementation types:**
 
@@ -89,6 +89,7 @@ The six capability columns mean implementations of the shared streaming, histori
 
 **Targeted evidence:**
 
+- Test: [AlpacaConnectionReadinessTests](../../../tests/Meridian.Tests/Infrastructure/Providers/AlpacaConnectionReadinessTests.cs) (`tests/Meridian.Tests/Infrastructure/Providers/AlpacaConnectionReadinessTests.cs`)
 - Test: [AlpacaCredentialAndReconnectTests](../../../tests/Meridian.Tests/Infrastructure/Providers/AlpacaCredentialAndReconnectTests.cs) (`tests/Meridian.Tests/Infrastructure/Providers/AlpacaCredentialAndReconnectTests.cs`)
 - Test: [AlpacaAssetStreamRoutingTests](../../../tests/Meridian.Tests/Infrastructure/Providers/AlpacaAssetStreamRoutingTests.cs) (`tests/Meridian.Tests/Infrastructure/Providers/AlpacaAssetStreamRoutingTests.cs`)
 - Test: [AlpacaHistoricalDataProviderTests](../../../tests/Meridian.Tests/Infrastructure/Providers/AlpacaHistoricalDataProviderTests.cs) (`tests/Meridian.Tests/Infrastructure/Providers/AlpacaHistoricalDataProviderTests.cs`)
@@ -151,7 +152,7 @@ The six capability columns mean implementations of the shared streaming, histori
 - Shared factory, registry, rate-limit and failover behavior affects every runtime provider.
 - A successful construction or advertised capability is not live connectivity or entitlement evidence.
 
-**Degradation / fail-closed behavior:** Factory construction failures are logged and isolated per provider. Credential policy is resolved centrally; composite history rotates on structured rate-limit signals and retains bounded retry behavior. This folder is shared infrastructure, not an independently routable provider.
+**Degradation / fail-closed behavior:** Factory construction failures are logged and isolated per provider. Credential policy is resolved centrally; composite history rotates on structured rate-limit signals and retains bounded retry behavior. This folder is shared infrastructure, not an independently routable provider. Skipped unavailable candidates preserve failure evidence; confirmed empty coverage is distinct from backoff or throttling. Streaming initial connection and recovery both require successful authentication and replay before readiness.
 
 **Implementation types:**
 
@@ -164,6 +165,8 @@ The six capability columns mean implementations of the shared streaming, histori
 
 **Targeted evidence:**
 
+- Test: [CompositeHistoricalDataProviderTests](../../../tests/Meridian.Tests/Application/Backfill/CompositeHistoricalDataProviderTests.cs) (`tests/Meridian.Tests/Application/Backfill/CompositeHistoricalDataProviderTests.cs`)
+- Test: [WebSocketSendSessionTests](../../../tests/Meridian.Tests/Infrastructure/Resilience/WebSocketSendSessionTests.cs) (`tests/Meridian.Tests/Infrastructure/Resilience/WebSocketSendSessionTests.cs`)
 - Test: [ProviderFactoryCredentialContextTests](../../../tests/Meridian.Tests/Infrastructure/Providers/ProviderFactoryCredentialContextTests.cs) (`tests/Meridian.Tests/Infrastructure/Providers/ProviderFactoryCredentialContextTests.cs`)
 - Test: [CompositeProviderStaleDataTests](../../../tests/Meridian.Tests/Infrastructure/Providers/CompositeProviderStaleDataTests.cs) (`tests/Meridian.Tests/Infrastructure/Providers/CompositeProviderStaleDataTests.cs`)
 - Test: [ProviderRateLimitTrackerTests](../../../tests/Meridian.Tests/Infrastructure/Providers/ProviderRateLimitTrackerTests.cs) (`tests/Meridian.Tests/Infrastructure/Providers/ProviderRateLimitTrackerTests.cs`)
@@ -512,7 +515,7 @@ The six capability columns mean implementations of the shared streaming, histori
 - Streaming supports equities/options; broader historical Forex/Crypto/Index coverage does not imply stream support.
 - Pacing values describe repository defaults; verify current provider terms and the configured account allowance before operation.
 
-**Degradation / fail-closed behavior:** Missing keys prevent credential-gated factory activation and direct history calls fail. Authentication/rate-limit errors and reconnect state remain visible; duplicate or decreasing per-ticker session sequences are rejected. Corporate-action ingestion uses a hosted Security Master fetcher, not ICorporateActionProvider.
+**Degradation / fail-closed behavior:** Missing keys prevent credential-gated factory activation and direct history calls fail. Authentication/rate-limit errors and reconnect state remain visible; duplicate or decreasing per-ticker session sequences are rejected. Missing/invalid source times are rejected and accepted events retain separate receipt metadata. Historical pagination failures cannot certify complete coverage. Corporate-action ingestion uses a hosted Security Master fetcher, not ICorporateActionProvider; failures and cancellation retain completion and persistence progress.
 
 **Implementation types:**
 
@@ -529,6 +532,8 @@ The six capability columns mean implementations of the shared streaming, histori
 
 **Targeted evidence:**
 
+- Test: [PolygonTimestampIntegrityTests](../../../tests/Meridian.Tests/Infrastructure/Providers/PolygonTimestampIntegrityTests.cs) (`tests/Meridian.Tests/Infrastructure/Providers/PolygonTimestampIntegrityTests.cs`)
+- Test: [PolygonHistoricalPaginationTests](../../../tests/Meridian.Tests/Infrastructure/Providers/PolygonHistoricalPaginationTests.cs) (`tests/Meridian.Tests/Infrastructure/Providers/PolygonHistoricalPaginationTests.cs`)
 - Test: [PolygonMarketDataClientTests](../../../tests/Meridian.Tests/Infrastructure/Providers/PolygonMarketDataClientTests.cs) (`tests/Meridian.Tests/Infrastructure/Providers/PolygonMarketDataClientTests.cs`)
 - Test: [PolygonHistoricalProviderContractTests](../../../tests/Meridian.Tests/Infrastructure/Providers/PolygonProviderContractTests.cs) (`tests/Meridian.Tests/Infrastructure/Providers/PolygonProviderContractTests.cs`)
 - Test: [PolygonRecordedSessionReplayTests](../../../tests/Meridian.Tests/Infrastructure/Providers/PolygonRecordedSessionReplayTests.cs) (`tests/Meridian.Tests/Infrastructure/Providers/PolygonRecordedSessionReplayTests.cs`)

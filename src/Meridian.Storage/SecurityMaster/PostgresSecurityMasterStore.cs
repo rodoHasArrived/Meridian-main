@@ -16,15 +16,6 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     private const string OptionSeriesProjectionTable = "option_series_projection";
     private const string OptionLifecycleProjectionTable = "option_lifecycle_projection";
     private const string OptionAliasProjectionTable = "option_alias_projection";
-    private const string EquityProjectionTable = "equity_projection";
-    private const string FutureProjectionTable = "future_projection";
-    private const string FxSpotProjectionTable = "fxspot_projection";
-    private const string SwapProjectionTable = "swap_projection";
-    private const string CommodityProjectionTable = "commodity_projection";
-    private const string CryptoProjectionTable = "crypto_projection";
-    private const string DepositProjectionTable = "deposit_projection";
-    private const string MoneyMarketFundProjectionTable = "money_market_fund_projection";
-    private const string CertificateOfDepositProjectionTable = "certificate_of_deposit_projection";
 
     /// <summary>
     /// A registered per-asset-class relational projection writer: the asset class it owns and the
@@ -37,23 +28,16 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     /// <summary>
     /// The projection writers that predate <see cref="SecurityTermsProjectionRegistry"/>: classes
     /// whose projection needs real decisions rather than a column list — a derived lifecycle state,
-    /// a swap type scanned out of legs, a concatenated pair code, a legacy nested-coupon fallback.
-    /// They stay hand-written until each is migrated behind its own regression guard; the registry
-    /// is the destination for new classes, not a sweep over the shipped ones.
+    /// a swap type scanned out of legs, a concatenated pair code, a legacy nested-coupon fallback,
+    /// columns sourced from common terms, or (Commodity) terms the terms schema does not declare.
+    /// CryptoCurrency, Deposit, MoneyMarketFund and CertificateOfDeposit were migrated onto the
+    /// registry behind a database-backed parity guard; the rest stay hand-written until each is
+    /// migrated behind its own.
     /// </summary>
     private static readonly IReadOnlyList<AssetProjectionWriter> HandWrittenProjectionWriters =
     [
         new("Bond", static (store, c, t, r, ct) => store.UpsertBondProjectionTablesAsync(c, t, r, ct)),
         new("Option", static (store, c, t, r, ct) => store.UpsertOptionProjectionTablesAsync(c, t, r, ct)),
-        new("Equity", static (store, c, t, r, ct) => store.UpsertEquityProjectionAsync(c, t, r, ct)),
-        new("Future", static (store, c, t, r, ct) => store.UpsertFutureProjectionAsync(c, t, r, ct)),
-        new("FxSpot", static (store, c, t, r, ct) => store.UpsertFxSpotProjectionAsync(c, t, r, ct)),
-        new("Swap", static (store, c, t, r, ct) => store.UpsertSwapProjectionAsync(c, t, r, ct)),
-        new("Commodity", static (store, c, t, r, ct) => store.UpsertCommodityProjectionAsync(c, t, r, ct)),
-        new("CryptoCurrency", static (store, c, t, r, ct) => store.UpsertCryptoProjectionAsync(c, t, r, ct)),
-        new("Deposit", static (store, c, t, r, ct) => store.UpsertDepositProjectionAsync(c, t, r, ct)),
-        new("MoneyMarketFund", static (store, c, t, r, ct) => store.UpsertMoneyMarketFundProjectionAsync(c, t, r, ct)),
-        new("CertificateOfDeposit", static (store, c, t, r, ct) => store.UpsertCertificateOfDepositProjectionAsync(c, t, r, ct)),
     ];
 
     /// <summary>
@@ -75,22 +59,55 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                 (store, c, t, r, ct) => store.WriteTermsProjectionAsync(descriptor, c, t, r, ct)))
     ];
 
+    /// <summary>
+    /// The asset classes projected by a specialized writer. Locked to the classes the asset-class
+    /// registry declares <see cref="SecurityTermsProjectionKind.Specialized"/>.
+    /// </summary>
+    internal static IReadOnlyList<string> SpecializedProjectionAssetClasses { get; } =
+        HandWrittenProjectionWriters.Select(static writer => writer.AssetClass).ToArray();
+
     /// <summary>The asset classes that have a dedicated relational projection, in fan-out order.</summary>
     internal static IReadOnlyList<string> ProjectedAssetClasses { get; } =
         ProjectionWriters.Select(static writer => writer.AssetClass).ToArray();
 
     private readonly SecurityMasterOptions _options;
+    private readonly SecurityMasterNodeIdentity _nodeIdentity;
 
-    public PostgresSecurityMasterStore(SecurityMasterOptions options)
+    public PostgresSecurityMasterStore(SecurityMasterOptions options, SecurityMasterNodeIdentity? nodeIdentity = null)
     {
         _options = options;
+        _nodeIdentity = nodeIdentity ?? SecurityMasterNodeIdentity.CreateNew();
     }
 
     public async Task UpsertProjectionAsync(SecurityProjectionRecord record, CancellationToken ct = default)
     {
+        // Inside a canonical write scope the projection joins the shared transaction with the event
+        // append and field attribution; its change notification is delivered when that commits.
+        if (PostgresSecurityMasterMutation.IsActiveFor(_options, record.SecurityId))
+        {
+            await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
+            if (await UpsertProjectionCoreAsync(lease.Connection, lease.Transaction!, record, ct).ConfigureAwait(false))
+            {
+                await NotifyProjectionChangedAsync(
+                    lease.Connection,
+                    lease.Transaction!,
+                    SecurityProjectionChangeNotification.ForSecurity(_nodeIdentity.NodeId, record.SecurityId, record.Version),
+                    ct).ConfigureAwait(false);
+            }
+
+            return;
+        }
+
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
-        await UpsertProjectionCoreAsync(connection, transaction, record, ct).ConfigureAwait(false);
+        if (await UpsertProjectionCoreAsync(connection, transaction, record, ct).ConfigureAwait(false))
+        {
+            await NotifyProjectionChangedAsync(
+                connection,
+                transaction,
+                SecurityProjectionChangeNotification.ForSecurity(_nodeIdentity.NodeId, record.SecurityId, record.Version),
+                ct).ConfigureAwait(false);
+        }
         await transaction.CommitAsync(ct).ConfigureAwait(false);
     }
 
@@ -103,9 +120,54 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
 
-        foreach (var record in records)
+        var acceptedRecords = new List<SecurityProjectionRecord>(records.Count);
+        // Consistent row-lock ordering also keeps overlapping rebuild batches from deadlocking.
+        foreach (var record in records.OrderBy(record => record.SecurityId).ThenBy(record => record.Version))
         {
-            await UpsertProjectionCoreAsync(connection, transaction, record, ct).ConfigureAwait(false);
+            if (await UpsertProjectionCoreAsync(connection, transaction, record, ct).ConfigureAwait(false))
+                acceptedRecords.Add(record);
+        }
+
+        if (acceptedRecords.Count > SecurityProjectionChangeNotification.MaxPerSecurityNotificationsPerBatch)
+        {
+            await NotifyProjectionChangedAsync(
+                connection,
+                transaction,
+                SecurityProjectionChangeNotification.ForResync(_nodeIdentity.NodeId),
+                ct).ConfigureAwait(false);
+        }
+        else
+        {
+            foreach (var record in acceptedRecords)
+            {
+                await NotifyProjectionChangedAsync(
+                    connection,
+                    transaction,
+                    SecurityProjectionChangeNotification.ForSecurity(_nodeIdentity.NodeId, record.SecurityId, record.Version),
+                    ct).ConfigureAwait(false);
+            }
+        }
+
+        if (acceptedRecords.Count > 0)
+        {
+            // A rebuild rewrites governed projections from the event log; record that it happened,
+            // and which records it wrote, in the append-only governance log in the same transaction.
+            await PostgresSecurityGovernanceEventLog.AppendAsync(
+                connection,
+                transaction,
+                _options.Schema,
+                securityId: null,
+                SecurityGovernanceStreams.ProjectionRebuild,
+                "ProjectionBatchRebuilt",
+                "security-master.rebuild",
+                DateTimeOffset.UtcNow,
+                new
+                {
+                    projectionName,
+                    lastGlobalSequence,
+                    records = acceptedRecords.Select(static record => new { record.SecurityId, record.Version }).ToArray()
+                },
+                ct).ConfigureAwait(false);
         }
 
         await SaveCheckpointCoreAsync(connection, transaction, projectionName, lastGlobalSequence, ct).ConfigureAwait(false);
@@ -115,18 +177,58 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     public async Task DeactivateProjectionAsync(Guid securityId, DateTimeOffset effectiveTo, long version, CancellationToken ct = default)
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        int updated;
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText =
+                $"""
+                update {Qualified("securities")}
+                set status = 'Inactive',
+                    effective_to = @effective_to,
+                    version = @version
+                where security_id = @security_id and version <= @version;
+                """;
+            command.Parameters.AddWithValue("security_id", securityId);
+            command.Parameters.AddWithValue("effective_to", effectiveTo.UtcDateTime);
+            command.Parameters.AddWithValue("version", version);
+            updated = await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
+        if (updated > 0)
+        {
+            await NotifyProjectionChangedAsync(
+                connection,
+                transaction,
+                SecurityProjectionChangeNotification.ForSecurity(_nodeIdentity.NodeId, securityId, version),
+                ct).ConfigureAwait(false);
+        }
+
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Queues a projection-change notification on the writing transaction. PostgreSQL delivers a
+    /// <c>NOTIFY</c> issued inside a transaction only when that transaction commits (and drops it on
+    /// rollback), so other nodes can never observe a change the durable store does not hold.
+    /// </summary>
+    private async Task NotifyProjectionChangedAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        SecurityProjectionChangeNotification notification,
+        CancellationToken ct)
+    {
+        if (!_options.ProjectionCacheNotificationsEnabled)
+        {
+            return;
+        }
+
         await using var command = connection.CreateCommand();
-        command.CommandText =
-            $"""
-            update {Qualified("securities")}
-            set status = 'Inactive',
-                effective_to = @effective_to,
-                version = @version
-            where security_id = @security_id;
-            """;
-        command.Parameters.AddWithValue("security_id", securityId);
-        command.Parameters.AddWithValue("effective_to", effectiveTo.UtcDateTime);
-        command.Parameters.AddWithValue("version", version);
+        command.Transaction = transaction;
+        command.CommandText = "select pg_notify(@channel, @payload);";
+        command.Parameters.AddWithValue("channel", SecurityProjectionChangeNotification.ChannelFor(_options.Schema));
+        command.Parameters.AddWithValue("payload", notification.ToPayload());
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
@@ -169,7 +271,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                    or display_name ilike @pattern
                    or primary_identifier_value ilike @pattern)
                  and (@active_only = false or status = 'Active')
-               order by rank desc, display_name
+               order by rank desc, display_name, security_id
                limit @take offset @skip;
                """
             : $"""
@@ -179,7 +281,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                    display_name ilike @pattern
                    or primary_identifier_value ilike @pattern)
                  and (@active_only = false or status = 'Active')
-               order by display_name
+               order by display_name, security_id
                limit @take offset @skip;
                """;
 
@@ -190,10 +292,12 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Parameters.AddWithValue("skip", request.Skip);
 
         var ids = new List<Guid>();
-        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+        await using (var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false))
         {
-            ids.Add(reader.GetGuid(0));
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            {
+                ids.Add(reader.GetGuid(0));
+            }
         }
 
         var results = new List<SecuritySummaryDto>(ids.Count);
@@ -271,7 +375,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         await SaveCheckpointCoreAsync(connection, transaction: null, projectionName, lastGlobalSequence, ct).ConfigureAwait(false);
     }
 
-    private async Task UpsertProjectionCoreAsync(
+    private async Task<bool> UpsertProjectionCoreAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         SecurityProjectionRecord record,
@@ -282,17 +386,18 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             command.Transaction = transaction;
             command.CommandText =
                 $"""
-                insert into {Qualified("securities")} (
+                insert into {Qualified("securities")} as retained (
                     security_id, asset_class, status, display_name, currency, country_of_risk, issuer_name,
                     exchange_code, lot_size, tick_size, primary_identifier_kind, primary_identifier_value,
                     normalized_primary_identifier_value,
-                    common_terms, asset_specific_terms, provenance, version, schema_version, effective_from, effective_to)
+                    common_terms, asset_specific_terms, provenance, version, schema_version, terms_format,
+                    effective_from, effective_to)
                 values (
                     @security_id, @asset_class, @status, @display_name, @currency, @country_of_risk, @issuer_name,
                     @exchange_code, @lot_size, @tick_size, @primary_identifier_kind, @primary_identifier_value,
                     @normalized_primary_identifier_value,
                     @common_terms::jsonb, @asset_specific_terms::jsonb, @provenance::jsonb, @version, @schema_version,
-                    @effective_from, @effective_to)
+                    @terms_format, @effective_from, @effective_to)
                 on conflict (security_id) do update set
                     asset_class = excluded.asset_class,
                     status = excluded.status,
@@ -311,8 +416,10 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                     provenance = excluded.provenance,
                     version = excluded.version,
                     schema_version = excluded.schema_version,
+                    terms_format = excluded.terms_format,
                     effective_from = excluded.effective_from,
-                    effective_to = excluded.effective_to;
+                    effective_to = excluded.effective_to
+                where retained.version <= excluded.version;
                 """;
 
             // Promote the asset-specific-terms schema version into the queryable schema_version column.
@@ -325,6 +432,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             // for. Readability stays the mapping guard's decision, which resolves the version from
             // the blob through the upcaster chain and never consults this column.
             var schemaVersion = SecurityAssetSpecificTermsV0ToCurrentUpcaster.ResolveSchemaVersion(record.AssetSpecificTerms);
+            var termsFormat = ResolveStorableTermsFormat(record);
 
             command.Parameters.AddWithValue("security_id", record.SecurityId);
             command.Parameters.AddWithValue("asset_class", record.AssetClass);
@@ -344,13 +452,33 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             command.Parameters.AddWithValue("provenance", record.Provenance.GetRawText());
             command.Parameters.AddWithValue("version", record.Version);
             command.Parameters.AddWithValue("schema_version", schemaVersion);
+            command.Parameters.AddWithValue("terms_format", termsFormat);
             command.Parameters.AddWithValue("effective_from", record.EffectiveFrom.UtcDateTime);
             command.Parameters.AddWithValue("effective_to", (object?)record.EffectiveTo?.UtcDateTime ?? DBNull.Value);
-            await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+            // ON CONFLICT locks and rechecks the retained row after a competing writer commits.
+            // A skipped parent must skip every child replacement/deletion and its notification;
+            // checking the version in application code before this statement would still race.
+            if (await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 0)
+                return false;
         }
 
         await ReplaceIdentifiersAsync(connection, transaction, record.SecurityId, record.Identifiers, ct).ConfigureAwait(false);
-        await ReplaceAliasesAsync(connection, transaction, record.SecurityId, record.Aliases, ct).ConfigureAwait(false);
+        // The securities upsert above holds the parent row lock that alias writes also take first,
+        // so the recorded alias history cannot move between this stamp check and the replacement.
+        // A record carrying aliases read before a later alias write is an echo of superseded state:
+        // writing it back would durably undo that correction, so the current rows are kept instead.
+        if (record.Aliases is SecurityAliasSnapshot snapshot
+            && await ReadAliasRevisionStampAsync(connection, record.SecurityId, ct).ConfigureAwait(false) != snapshot.RevisionStamp)
+        {
+            record = record with
+            {
+                Aliases = await LoadAliasesAsync(connection, record.SecurityId, ct).ConfigureAwait(false)
+            };
+        }
+        else
+        {
+            await ReplaceAliasesAsync(connection, transaction, record.SecurityId, record.Aliases, ct).ConfigureAwait(false);
+        }
 
         // Fan out to every registered per-asset-class projection writer. Each writer upserts its own
         // projection when the record matches its asset class and deletes any stale row otherwise, so
@@ -360,6 +488,8 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         {
             await writer.WriteAsync(this, connection, transaction, record, ct).ConfigureAwait(false);
         }
+
+        return true;
     }
 
     private async Task UpsertBondProjectionTablesAsync(
@@ -457,12 +587,12 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            insert into {Qualified("projection_checkpoint")} (
+            insert into {Qualified("projection_checkpoint")} as retained (
                 projection_name, last_global_sequence, updated_at)
             values (
                 @projection_name, @last_global_sequence, @updated_at)
             on conflict (projection_name) do update set
-                last_global_sequence = excluded.last_global_sequence,
+                last_global_sequence = greatest(retained.last_global_sequence, excluded.last_global_sequence),
                 updated_at = excluded.updated_at;
             """;
         command.Parameters.AddWithValue("projection_name", projectionName);
@@ -601,8 +731,22 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         return results;
     }
 
-    private async Task<IReadOnlyList<SecurityAliasDto>> LoadAliasesAsync(NpgsqlConnection connection, Guid securityId, CancellationToken ct)
+    private async Task<long> ReadAliasRevisionStampAsync(NpgsqlConnection connection, Guid securityId, CancellationToken ct)
     {
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"select count(*) from {Qualified("security_alias_revisions")} where security_id = @security_id;";
+        command.Parameters.AddWithValue("security_id", securityId);
+        return (long)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false))!;
+    }
+
+    /// <summary>
+    /// Reads the current aliases as a <see cref="SecurityAliasSnapshot"/>. The revision stamp is read
+    /// first: an alias write committing between the two reads leaves the stamp older than the rows,
+    /// which a later projection replacement treats as stale (it keeps the rows) rather than current.
+    /// </summary>
+    private async Task<SecurityAliasSnapshot> LoadAliasesAsync(NpgsqlConnection connection, Guid securityId, CancellationToken ct)
+    {
+        var revisionStamp = await ReadAliasRevisionStampAsync(connection, securityId, ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
@@ -633,7 +777,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                 reader.GetBoolean(10)));
         }
 
-        return results;
+        return new SecurityAliasSnapshot(results, revisionStamp);
     }
 
     private async Task<Guid?> ResolveSecurityIdAsync(
@@ -1180,271 +1324,11 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     private static string BuildOptionChainId(string underlyingSymbol, DateOnly expiryDate)
         => $"{underlyingSymbol.Trim().ToUpperInvariant()}-{expiryDate:yyyyMMdd}";
 
-    private async Task UpsertEquityProjectionAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        SecurityProjectionRecord record,
-        CancellationToken ct)
-    {
-        if (!string.Equals(record.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
-        {
-            await using var del = connection.CreateCommand();
-            del.Transaction = transaction;
-            del.CommandText = $"delete from {Qualified(EquityProjectionTable)} where security_id = @security_id;";
-            del.Parameters.AddWithValue("security_id", record.SecurityId);
-            await del.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-            return;
-        }
-
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            $"""
-            insert into {Qualified(EquityProjectionTable)} (
-                security_id, display_name, currency, share_class, voting_rights_cat,
-                classification, exchange_code, country_of_risk, issuer_name,
-                primary_identifier_value, version)
-            values (
-                @security_id, @display_name, @currency, @share_class, @voting_rights_cat,
-                @classification, @exchange_code, @country_of_risk, @issuer_name,
-                @primary_identifier_value, @version)
-            on conflict (security_id) do update set
-                display_name = excluded.display_name,
-                currency = excluded.currency,
-                share_class = excluded.share_class,
-                voting_rights_cat = excluded.voting_rights_cat,
-                classification = excluded.classification,
-                exchange_code = excluded.exchange_code,
-                country_of_risk = excluded.country_of_risk,
-                issuer_name = excluded.issuer_name,
-                primary_identifier_value = excluded.primary_identifier_value,
-                version = excluded.version;
-            """;
-        command.Parameters.AddWithValue("security_id", record.SecurityId);
-        command.Parameters.AddWithValue("display_name", record.DisplayName);
-        command.Parameters.AddWithValue("currency", record.Currency ?? string.Empty);
-        command.Parameters.AddWithValue("share_class", (object?)GetOptionalString(record.AssetSpecificTerms, "shareClass") ?? DBNull.Value);
-        command.Parameters.AddWithValue("voting_rights_cat", (object?)GetOptionalString(record.AssetSpecificTerms, "votingRightsCat") ?? DBNull.Value);
-        command.Parameters.AddWithValue(
-            "classification",
-            (object?)SecurityTermReader.ReadEquityClassification(record.AssetSpecificTerms) ?? DBNull.Value);
-        command.Parameters.AddWithValue("exchange_code", (object?)GetOptionalString(record.CommonTerms, "exchange") ?? DBNull.Value);
-        command.Parameters.AddWithValue("country_of_risk", (object?)GetOptionalString(record.CommonTerms, "countryOfRisk") ?? DBNull.Value);
-        command.Parameters.AddWithValue("issuer_name", (object?)GetOptionalString(record.CommonTerms, "issuerName") ?? DBNull.Value);
-        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
-        command.Parameters.AddWithValue("version", record.Version);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
-
-    private async Task UpsertFutureProjectionAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        SecurityProjectionRecord record,
-        CancellationToken ct)
-    {
-        if (!string.Equals(record.AssetClass, "Future", StringComparison.OrdinalIgnoreCase) ||
-            !TryGetOptionalDateOnly(record.AssetSpecificTerms, "expiry", out var expiryDate) ||
-            expiryDate is null)
-        {
-            await using var del = connection.CreateCommand();
-            del.Transaction = transaction;
-            del.CommandText = $"delete from {Qualified(FutureProjectionTable)} where security_id = @security_id;";
-            del.Parameters.AddWithValue("security_id", record.SecurityId);
-            await del.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-            return;
-        }
-
-        var rootSymbol = (GetOptionalString(record.AssetSpecificTerms, "rootSymbol")
-            ?? record.PrimaryIdentifierValue.Trim().ToUpperInvariant());
-        var contractMonth = GetOptionalString(record.AssetSpecificTerms, "contractMonth") ?? string.Empty;
-        var multiplier = GetOptionalDecimal(record.AssetSpecificTerms, "multiplier") ?? 1m;
-        var isRollTarget = GetOptionalBool(record.AssetSpecificTerms, "isRollTarget") ?? false;
-        var lastTradingDate = GetOptionalDateOnly(record.AssetSpecificTerms, "lastTradingDt") ?? expiryDate;
-        var lifecycleStat =
-            record.EffectiveTo.HasValue ? "Retired" :
-            expiryDate.Value < DateOnly.FromDateTime(DateTime.UtcNow) ? "Expired" :
-            isRollTarget ? "RollTarget" :
-            "Active";
-
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            $"""
-            insert into {Qualified(FutureProjectionTable)} (
-                security_id, display_name, currency, root_symbol, contract_month, expiry_date,
-                multiplier, settlement_type, is_roll_target, roll_window_days, last_trading_dt,
-                first_notice_dt, delivery_month_dt, delivery_location_code, lifecycle_stat,
-                primary_identifier_value, version)
-            values (
-                @security_id, @display_name, @currency, @root_symbol, @contract_month, @expiry_date,
-                @multiplier, @settlement_type, @is_roll_target, @roll_window_days, @last_trading_dt,
-                @first_notice_dt, @delivery_month_dt, @delivery_location_code, @lifecycle_stat,
-                @primary_identifier_value, @version)
-            on conflict (security_id) do update set
-                display_name = excluded.display_name,
-                currency = excluded.currency,
-                root_symbol = excluded.root_symbol,
-                contract_month = excluded.contract_month,
-                expiry_date = excluded.expiry_date,
-                multiplier = excluded.multiplier,
-                settlement_type = excluded.settlement_type,
-                is_roll_target = excluded.is_roll_target,
-                roll_window_days = excluded.roll_window_days,
-                last_trading_dt = excluded.last_trading_dt,
-                first_notice_dt = excluded.first_notice_dt,
-                delivery_month_dt = excluded.delivery_month_dt,
-                delivery_location_code = excluded.delivery_location_code,
-                lifecycle_stat = excluded.lifecycle_stat,
-                primary_identifier_value = excluded.primary_identifier_value,
-                version = excluded.version;
-            """;
-        command.Parameters.AddWithValue("security_id", record.SecurityId);
-        command.Parameters.AddWithValue("display_name", record.DisplayName);
-        command.Parameters.AddWithValue("currency", record.Currency ?? string.Empty);
-        command.Parameters.AddWithValue("root_symbol", rootSymbol.Trim().ToUpperInvariant());
-        command.Parameters.AddWithValue("contract_month", contractMonth);
-        command.Parameters.AddWithValue("expiry_date", expiryDate.Value.ToDateTime(TimeOnly.MinValue));
-        command.Parameters.AddWithValue("multiplier", multiplier);
-        command.Parameters.AddWithValue("settlement_type", (object?)GetOptionalString(record.AssetSpecificTerms, "settlementType") ?? DBNull.Value);
-        command.Parameters.AddWithValue("is_roll_target", isRollTarget);
-        command.Parameters.AddWithValue("roll_window_days", (object?)GetOptionalInt(record.AssetSpecificTerms, "rollWindowDays") ?? DBNull.Value);
-        command.Parameters.AddWithValue("last_trading_dt", (object?)lastTradingDate?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
-        command.Parameters.AddWithValue("first_notice_dt", (object?)GetOptionalDateOnly(record.AssetSpecificTerms, "firstNoticeDt")?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
-        command.Parameters.AddWithValue("delivery_month_dt", (object?)GetOptionalDateOnly(record.AssetSpecificTerms, "deliveryMonthDt")?.ToDateTime(TimeOnly.MinValue) ?? DBNull.Value);
-        command.Parameters.AddWithValue("delivery_location_code", (object?)GetOptionalString(record.AssetSpecificTerms, "deliveryLocationCode") ?? DBNull.Value);
-        command.Parameters.AddWithValue("lifecycle_stat", lifecycleStat);
-        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
-        command.Parameters.AddWithValue("version", record.Version);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
-
-    private async Task UpsertFxSpotProjectionAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        SecurityProjectionRecord record,
-        CancellationToken ct)
-    {
-        var baseCurrency = GetOptionalString(record.AssetSpecificTerms, "baseCurrency");
-        var quoteCurrency = GetOptionalString(record.AssetSpecificTerms, "quoteCurrency");
-
-        if (!string.Equals(record.AssetClass, "FxSpot", StringComparison.OrdinalIgnoreCase) ||
-            string.IsNullOrWhiteSpace(baseCurrency) ||
-            string.IsNullOrWhiteSpace(quoteCurrency))
-        {
-            await using var del = connection.CreateCommand();
-            del.Transaction = transaction;
-            del.CommandText = $"delete from {Qualified(FxSpotProjectionTable)} where security_id = @security_id;";
-            del.Parameters.AddWithValue("security_id", record.SecurityId);
-            await del.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-            return;
-        }
-
-        var base_ = baseCurrency.Trim().ToUpperInvariant();
-        var quote = quoteCurrency.Trim().ToUpperInvariant();
-        var pairCode = $"{base_}{quote}";
-
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            $"""
-            insert into {Qualified(FxSpotProjectionTable)} (
-                security_id, display_name, base_currency, quote_currency, pair_code,
-                primary_identifier_value, version)
-            values (
-                @security_id, @display_name, @base_currency, @quote_currency, @pair_code,
-                @primary_identifier_value, @version)
-            on conflict (security_id) do update set
-                display_name = excluded.display_name,
-                base_currency = excluded.base_currency,
-                quote_currency = excluded.quote_currency,
-                pair_code = excluded.pair_code,
-                primary_identifier_value = excluded.primary_identifier_value,
-                version = excluded.version;
-            """;
-        command.Parameters.AddWithValue("security_id", record.SecurityId);
-        command.Parameters.AddWithValue("display_name", record.DisplayName);
-        command.Parameters.AddWithValue("base_currency", base_);
-        command.Parameters.AddWithValue("quote_currency", quote);
-        command.Parameters.AddWithValue("pair_code", pairCode);
-        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
-        command.Parameters.AddWithValue("version", record.Version);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
 
 
-    private async Task UpsertSwapProjectionAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        SecurityProjectionRecord record,
-        CancellationToken ct)
-    {
-        if (!string.Equals(record.AssetClass, "Swap", StringComparison.OrdinalIgnoreCase) ||
-            !TryBuildSwapProjection(record, out var projection))
-        {
-            await using var del = connection.CreateCommand();
-            del.Transaction = transaction;
-            del.CommandText = $"delete from {Qualified(SwapProjectionTable)} where security_id = @security_id;";
-            del.Parameters.AddWithValue("security_id", record.SecurityId);
-            await del.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-            return;
-        }
 
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            $"""
-            insert into {Qualified(SwapProjectionTable)} (
-                security_id, display_name, currency, swap_type,
-                effective_date, maturity_date, lifecycle_stat,
-                primary_identifier_value, version)
-            values (
-                @security_id, @display_name, @currency, @swap_type,
-                @effective_date, @maturity_date, @lifecycle_stat,
-                @primary_identifier_value, @version)
-            on conflict (security_id) do update set
-                display_name = excluded.display_name,
-                currency = excluded.currency,
-                swap_type = excluded.swap_type,
-                effective_date = excluded.effective_date,
-                maturity_date = excluded.maturity_date,
-                lifecycle_stat = excluded.lifecycle_stat,
-                primary_identifier_value = excluded.primary_identifier_value,
-                version = excluded.version;
-            """;
-        command.Parameters.AddWithValue("security_id", projection.SecurityId);
-        command.Parameters.AddWithValue("display_name", projection.DisplayName);
-        command.Parameters.AddWithValue("currency", projection.Currency);
-        command.Parameters.AddWithValue("swap_type", (object?)projection.SwapType ?? DBNull.Value);
-        command.Parameters.AddWithValue("effective_date", projection.EffectiveDate.ToDateTime(TimeOnly.MinValue));
-        command.Parameters.AddWithValue("maturity_date", projection.MaturityDate.ToDateTime(TimeOnly.MinValue));
-        command.Parameters.AddWithValue("lifecycle_stat", projection.LifecycleStat);
-        command.Parameters.AddWithValue("primary_identifier_value", projection.PrimaryIdentifierValue);
-        command.Parameters.AddWithValue("version", projection.Version);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
 
-    internal static bool TryBuildSwapProjection(SecurityProjectionRecord record, out SwapProjectionWriteModel projection)
-    {
-        var effectiveDate = GetOptionalDateOnly(record.AssetSpecificTerms, "effectiveDate");
-        var maturityDate = GetOptionalDateOnly(record.AssetSpecificTerms, "maturityDate");
-        if (effectiveDate is null || maturityDate is null)
-        {
-            projection = default!;
-            return false;
-        }
 
-        projection = new SwapProjectionWriteModel(
-            record.SecurityId,
-            record.DisplayName,
-            record.Currency,
-            DeriveSwapType(record.AssetSpecificTerms),
-            effectiveDate.Value,
-            maturityDate.Value,
-            "Active",
-            record.PrimaryIdentifierValue,
-            record.Version);
-        return true;
-    }
 
     /// <summary>
     /// Resolves the queryable <c>swap_type</c> from the swap terms. The serializer emits swap economics
@@ -1521,297 +1405,32 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         return string.Join("/", legTypes);
     }
 
-    private async Task UpsertCommodityProjectionAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        SecurityProjectionRecord record,
-        CancellationToken ct)
-    {
-        var commodityType = GetOptionalString(record.AssetSpecificTerms, "commodityType");
 
-        if (!string.Equals(record.AssetClass, "Commodity", StringComparison.OrdinalIgnoreCase) ||
-            string.IsNullOrWhiteSpace(commodityType))
-        {
-            await using var del = connection.CreateCommand();
-            del.Transaction = transaction;
-            del.CommandText = $"delete from {Qualified(CommodityProjectionTable)} where security_id = @security_id;";
-            del.Parameters.AddWithValue("security_id", record.SecurityId);
-            await del.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-            return;
-        }
-
-        var denomination = GetOptionalString(record.AssetSpecificTerms, "denomination");
-        var contractSize = GetOptionalDecimal(record.AssetSpecificTerms, "contractSize");
-        var exchangeCode = GetOptionalString(record.AssetSpecificTerms, "exchangeCode");
-        var deliveryCountry = GetOptionalString(record.AssetSpecificTerms, "deliveryCountry");
-
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            $"""
-            insert into {Qualified(CommodityProjectionTable)} (
-                security_id, display_name, currency, commodity_type, denomination,
-                contract_size, exchange_code, delivery_country,
-                primary_identifier_value, version)
-            values (
-                @security_id, @display_name, @currency, @commodity_type, @denomination,
-                @contract_size, @exchange_code, @delivery_country,
-                @primary_identifier_value, @version)
-            on conflict (security_id) do update set
-                display_name = excluded.display_name,
-                currency = excluded.currency,
-                commodity_type = excluded.commodity_type,
-                denomination = excluded.denomination,
-                contract_size = excluded.contract_size,
-                exchange_code = excluded.exchange_code,
-                delivery_country = excluded.delivery_country,
-                primary_identifier_value = excluded.primary_identifier_value,
-                version = excluded.version;
-            """;
-        command.Parameters.AddWithValue("security_id", record.SecurityId);
-        command.Parameters.AddWithValue("display_name", record.DisplayName);
-        command.Parameters.AddWithValue("currency", record.Currency);
-        command.Parameters.AddWithValue("commodity_type", commodityType.Trim());
-        command.Parameters.AddWithValue("denomination", (object?)denomination ?? DBNull.Value);
-        command.Parameters.AddWithValue("contract_size", (object?)contractSize ?? DBNull.Value);
-        command.Parameters.AddWithValue("exchange_code", (object?)exchangeCode ?? DBNull.Value);
-        command.Parameters.AddWithValue("delivery_country", (object?)deliveryCountry ?? DBNull.Value);
-        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
-        command.Parameters.AddWithValue("version", record.Version);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
-
-    private async Task UpsertCryptoProjectionAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        SecurityProjectionRecord record,
-        CancellationToken ct)
-    {
-        var baseCurrency = GetOptionalString(record.AssetSpecificTerms, "baseCurrency");
-        var quoteCurrency = GetOptionalString(record.AssetSpecificTerms, "quoteCurrency");
-
-        if (!string.Equals(record.AssetClass, "CryptoCurrency", StringComparison.OrdinalIgnoreCase) ||
-            string.IsNullOrWhiteSpace(baseCurrency) ||
-            string.IsNullOrWhiteSpace(quoteCurrency))
-        {
-            await using var del = connection.CreateCommand();
-            del.Transaction = transaction;
-            del.CommandText = $"delete from {Qualified(CryptoProjectionTable)} where security_id = @security_id;";
-            del.Parameters.AddWithValue("security_id", record.SecurityId);
-            await del.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-            return;
-        }
-
-        var network = GetOptionalString(record.AssetSpecificTerms, "network");
-
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            $"""
-            insert into {Qualified(CryptoProjectionTable)} (
-                security_id, display_name, base_currency, quote_currency, network,
-                primary_identifier_value, version)
-            values (
-                @security_id, @display_name, @base_currency, @quote_currency, @network,
-                @primary_identifier_value, @version)
-            on conflict (security_id) do update set
-                display_name = excluded.display_name,
-                base_currency = excluded.base_currency,
-                quote_currency = excluded.quote_currency,
-                network = excluded.network,
-                primary_identifier_value = excluded.primary_identifier_value,
-                version = excluded.version;
-            """;
-        command.Parameters.AddWithValue("security_id", record.SecurityId);
-        command.Parameters.AddWithValue("display_name", record.DisplayName);
-        command.Parameters.AddWithValue("base_currency", baseCurrency.Trim().ToUpperInvariant());
-        command.Parameters.AddWithValue("quote_currency", quoteCurrency.Trim().ToUpperInvariant());
-        command.Parameters.AddWithValue("network", (object?)network ?? DBNull.Value);
-        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
-        command.Parameters.AddWithValue("version", record.Version);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
-
-    private async Task UpsertDepositProjectionAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        SecurityProjectionRecord record,
-        CancellationToken ct)
-    {
-        var depositType = GetOptionalString(record.AssetSpecificTerms, "depositType");
-        var institutionName = GetOptionalString(record.AssetSpecificTerms, "institutionName");
-
-        if (!string.Equals(record.AssetClass, "Deposit", StringComparison.OrdinalIgnoreCase) ||
-            string.IsNullOrWhiteSpace(depositType) ||
-            string.IsNullOrWhiteSpace(institutionName))
-        {
-            await using var del = connection.CreateCommand();
-            del.Transaction = transaction;
-            del.CommandText = $"delete from {Qualified(DepositProjectionTable)} where security_id = @security_id;";
-            del.Parameters.AddWithValue("security_id", record.SecurityId);
-            await del.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-            return;
-        }
-
-        var maturity = GetOptionalDateOnly(record.AssetSpecificTerms, "maturity");
-        var interestRate = GetOptionalDecimal(record.AssetSpecificTerms, "interestRate");
-        var dayCount = GetOptionalString(record.AssetSpecificTerms, "dayCount");
-        var isCallable = GetOptionalBool(record.AssetSpecificTerms, "isCallable") ?? false;
-
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            $"""
-            insert into {Qualified(DepositProjectionTable)} (
-                security_id, display_name, currency, deposit_type, institution_name,
-                maturity_date, interest_rate, day_count, is_callable,
-                primary_identifier_value, version)
-            values (
-                @security_id, @display_name, @currency, @deposit_type, @institution_name,
-                @maturity_date, @interest_rate, @day_count, @is_callable,
-                @primary_identifier_value, @version)
-            on conflict (security_id) do update set
-                display_name = excluded.display_name,
-                currency = excluded.currency,
-                deposit_type = excluded.deposit_type,
-                institution_name = excluded.institution_name,
-                maturity_date = excluded.maturity_date,
-                interest_rate = excluded.interest_rate,
-                day_count = excluded.day_count,
-                is_callable = excluded.is_callable,
-                primary_identifier_value = excluded.primary_identifier_value,
-                version = excluded.version;
-            """;
-        command.Parameters.AddWithValue("security_id", record.SecurityId);
-        command.Parameters.AddWithValue("display_name", record.DisplayName);
-        command.Parameters.AddWithValue("currency", record.Currency);
-        command.Parameters.AddWithValue("deposit_type", depositType.Trim());
-        command.Parameters.AddWithValue("institution_name", institutionName.Trim());
-        command.Parameters.AddWithValue("maturity_date", maturity.HasValue ? (object)maturity.Value.ToDateTime(TimeOnly.MinValue) : DBNull.Value);
-        command.Parameters.AddWithValue("interest_rate", (object?)interestRate ?? DBNull.Value);
-        command.Parameters.AddWithValue("day_count", (object?)dayCount ?? DBNull.Value);
-        command.Parameters.AddWithValue("is_callable", isCallable);
-        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
-        command.Parameters.AddWithValue("version", record.Version);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
-
-    private async Task UpsertMoneyMarketFundProjectionAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        SecurityProjectionRecord record,
-        CancellationToken ct)
-    {
-        if (!string.Equals(record.AssetClass, "MoneyMarketFund", StringComparison.OrdinalIgnoreCase))
-        {
-            await using var delete = connection.CreateCommand();
-            delete.Transaction = transaction;
-            delete.CommandText = $"""delete from {Qualified(MoneyMarketFundProjectionTable)} where security_id = @security_id;""";
-            delete.Parameters.AddWithValue("security_id", record.SecurityId);
-            await delete.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-            return;
-        }
-
-        var fundFamily = GetOptionalString(record.AssetSpecificTerms, "fundFamily");
-        var sweepEligible = GetOptionalBool(record.AssetSpecificTerms, "sweepEligible") ?? false;
-        var weightedAverageMaturityDays = GetOptionalInt(record.AssetSpecificTerms, "weightedAverageMaturityDays");
-        var liquidityFeeEligible = GetOptionalBool(record.AssetSpecificTerms, "liquidityFeeEligible") ?? false;
-
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            $"""
-            insert into {Qualified(MoneyMarketFundProjectionTable)} (
-                security_id, display_name, currency, fund_family, sweep_eligible,
-                weighted_average_maturity_days, liquidity_fee_eligible, primary_identifier_value, version)
-            values (
-                @security_id, @display_name, @currency, @fund_family, @sweep_eligible,
-                @weighted_average_maturity_days, @liquidity_fee_eligible, @primary_identifier_value, @version)
-            on conflict (security_id) do update set
-                display_name = excluded.display_name,
-                currency = excluded.currency,
-                fund_family = excluded.fund_family,
-                sweep_eligible = excluded.sweep_eligible,
-                weighted_average_maturity_days = excluded.weighted_average_maturity_days,
-                liquidity_fee_eligible = excluded.liquidity_fee_eligible,
-                primary_identifier_value = excluded.primary_identifier_value,
-                version = excluded.version;
-            """;
-        command.Parameters.AddWithValue("security_id", record.SecurityId);
-        command.Parameters.AddWithValue("display_name", record.DisplayName);
-        command.Parameters.AddWithValue("currency", record.Currency);
-        command.Parameters.AddWithValue("fund_family", (object?)fundFamily?.Trim() ?? DBNull.Value);
-        command.Parameters.AddWithValue("sweep_eligible", sweepEligible);
-        command.Parameters.AddWithValue("weighted_average_maturity_days", (object?)weightedAverageMaturityDays ?? DBNull.Value);
-        command.Parameters.AddWithValue("liquidity_fee_eligible", liquidityFeeEligible);
-        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
-        command.Parameters.AddWithValue("version", record.Version);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
-
-    private async Task UpsertCertificateOfDepositProjectionAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        SecurityProjectionRecord record,
-        CancellationToken ct)
-    {
-        var issuerName = GetOptionalString(record.AssetSpecificTerms, "issuerName");
-        var maturity = GetOptionalDateOnly(record.AssetSpecificTerms, "maturity");
-
-        if (!string.Equals(record.AssetClass, "CertificateOfDeposit", StringComparison.OrdinalIgnoreCase) ||
-            string.IsNullOrWhiteSpace(issuerName) ||
-            !maturity.HasValue)
-        {
-            await using var delete = connection.CreateCommand();
-            delete.Transaction = transaction;
-            delete.CommandText = $"""delete from {Qualified(CertificateOfDepositProjectionTable)} where security_id = @security_id;""";
-            delete.Parameters.AddWithValue("security_id", record.SecurityId);
-            await delete.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-            return;
-        }
-
-        var couponRate = GetOptionalDecimal(record.AssetSpecificTerms, "couponRate");
-        var callableDate = GetOptionalDateOnly(record.AssetSpecificTerms, "callableDate");
-        var dayCount = GetOptionalString(record.AssetSpecificTerms, "dayCount");
-
-        await using var command = connection.CreateCommand();
-        command.Transaction = transaction;
-        command.CommandText =
-            $"""
-            insert into {Qualified(CertificateOfDepositProjectionTable)} (
-                security_id, display_name, currency, issuer_name, maturity_date,
-                coupon_rate, callable_date, day_count, primary_identifier_value, version)
-            values (
-                @security_id, @display_name, @currency, @issuer_name, @maturity_date,
-                @coupon_rate, @callable_date, @day_count, @primary_identifier_value, @version)
-            on conflict (security_id) do update set
-                display_name = excluded.display_name,
-                currency = excluded.currency,
-                issuer_name = excluded.issuer_name,
-                maturity_date = excluded.maturity_date,
-                coupon_rate = excluded.coupon_rate,
-                callable_date = excluded.callable_date,
-                day_count = excluded.day_count,
-                primary_identifier_value = excluded.primary_identifier_value,
-                version = excluded.version;
-            """;
-        command.Parameters.AddWithValue("security_id", record.SecurityId);
-        command.Parameters.AddWithValue("display_name", record.DisplayName);
-        command.Parameters.AddWithValue("currency", record.Currency);
-        command.Parameters.AddWithValue("issuer_name", issuerName.Trim());
-        command.Parameters.AddWithValue("maturity_date", maturity.Value.ToDateTime(TimeOnly.MinValue));
-        command.Parameters.AddWithValue("coupon_rate", (object?)couponRate ?? DBNull.Value);
-        command.Parameters.AddWithValue("callable_date", callableDate.HasValue ? (object)callableDate.Value.ToDateTime(TimeOnly.MinValue) : DBNull.Value);
-        command.Parameters.AddWithValue("day_count", (object?)dayCount ?? DBNull.Value);
-        command.Parameters.AddWithValue("primary_identifier_value", record.PrimaryIdentifierValue);
-        command.Parameters.AddWithValue("version", record.Version);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
-
-    private static string? GetOptionalString(JsonElement json, string propertyName)
+    internal static string? GetOptionalString(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
             ? value.GetString()
             : null;
+
+    /// <summary>
+    /// The terms-payload family written to the <c>terms_format</c> column (migration 042). A declared
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/> wins; a payload that predates the tag is
+    /// classified by the same shape rule the migration backfill applied, so the column has one
+    /// definition whether the row was migrated or written. The stored payload is never mutated to add
+    /// the tag — writers own stamping. A declared format this node does not know is refused here with
+    /// a precise reason rather than by the column's check constraint.
+    /// </summary>
+    internal static string ResolveStorableTermsFormat(SecurityProjectionRecord record)
+    {
+        var format = SecurityTermsEnvelope.ResolveFormat(record.AssetSpecificTerms);
+        if (!SecurityTermsFormats.IsKnown(format))
+        {
+            throw new InvalidOperationException(
+                $"Security '{record.SecurityId}' ({record.AssetClass}) declares {SecurityTermsEnvelope.FormatKey} '{format}', " +
+                $"which is not a storable terms format; expected one of {string.Join(", ", SecurityTermsFormats.All)}.");
+        }
+
+        return format;
+    }
 
     private static string NormalizePrimaryIdentifierValue(SecurityProjectionRecord record)
         => Enum.TryParse<SecurityIdentifierKind>(record.PrimaryIdentifierKind, ignoreCase: true, out var kind)
@@ -1845,7 +1464,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             ? intValue
             : null;
 
-    private static bool? GetOptionalBool(JsonElement json, string propertyName)
+    internal static bool? GetOptionalBool(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) &&
             value.ValueKind is JsonValueKind.True or JsonValueKind.False
             ? value.GetBoolean()
@@ -1856,7 +1475,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             ? value
             : null;
 
-    private static DateOnly? GetOptionalDateOnly(JsonElement json, string propertyName)
+    internal static DateOnly? GetOptionalDateOnly(JsonElement json, string propertyName)
         => TryGetOptionalDateOnly(json, propertyName, out var value) ? value : null;
 
     private static bool TryGetOptionalDateOnly(JsonElement json, string propertyName, out DateOnly? value)
@@ -1891,7 +1510,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         int? SettlementCycleDays,
         string? HolidayCalendarId,
         long Version,
-        // Clearwater extended lifecycle fields.
+        // Extended lifecycle fields (migration 017).
         decimal? Par,
         string? PaymentFrequency,
         DateOnly? LegalFinalMaturity,
@@ -1912,16 +1531,5 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         DateOnly? LastTradingDate,
         string LifecycleStat,
         DateTimeOffset ListedAt,
-        long Version);
-
-    internal sealed record SwapProjectionWriteModel(
-        Guid SecurityId,
-        string DisplayName,
-        string Currency,
-        string? SwapType,
-        DateOnly EffectiveDate,
-        DateOnly MaturityDate,
-        string LifecycleStat,
-        string PrimaryIdentifierValue,
         long Version);
 }

@@ -187,6 +187,22 @@
   white-space: nowrap;
 }
 
+/* Keep a readable search field and every operator control on laptop displays.
+   The search has its own row with brand and trust; actions get a second row
+   rather than consuming the search track down to an icon-sized sliver. */
+@media (min-width: 981px) and (max-width: 1599px) {
+  .workstation-masthead {
+    grid-template-columns: max-content minmax(0, 1fr) minmax(0, auto);
+    gap: 0.375rem 0.75rem;
+    padding-block: 0.375rem;
+  }
+
+  .workstation-masthead > .workstation-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+
 /* Trust strip (build / mode / source / provider posture) ------------------------ */
 .workstation-trust-strip {
   position: relative;
@@ -425,6 +441,16 @@ a.workstation-trust-item:focus-visible {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Session text sits on the dark masthead even when the workspace uses a light
+   theme. Light-surface status and muted text colours do not have enough contrast. */
+.workstation-session-card .mds-badge--paper {
+  color: #E9A983;
+}
+
+.workstation-session-card .workstation-session-role {
+  color: #BBB5AC;
 }
 
 /* ── Shell body (nav rail + workbench) ──────────────────────────────────────── */

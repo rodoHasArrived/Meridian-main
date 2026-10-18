@@ -1,0 +1,267 @@
+{
+  "schema_version": 1,
+  "reviewed_at_utc": "2026-10-14T20:49:09.275158+00:00",
+  "baseline_commit": "e0ecd952d24b1e8d09a8de282ed90c98cffe1bb3",
+  "workflows": [
+    {
+      "name": "Golden Path Validation",
+      "run_id": 38631108961,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/38631108961",
+      "conclusion": "success"
+    },
+    {
+      "name": "CodeQL",
+      "run_id": 38631108936,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/38631108936",
+      "conclusion": "success"
+    },
+    {
+      "name": "Windows Desktop Build",
+      "run_id": 38631109067,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/38631109067",
+      "conclusion": "success"
+    },
+    {
+      "name": "CI",
+      "run_id": 38631108934,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/38631108934",
+      "conclusion": "success"
+    },
+    {
+      "name": "Roadmap Source Docs",
+      "run_id": 38631108954,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/38631108954",
+      "conclusion": "success"
+    },
+    {
+      "name": "Documentation Automation",
+      "run_id": 38631109100,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/38631109100",
+      "conclusion": "success"
+    },
+    {
+      "name": "Meridian CI",
+      "run_id": 38631109092,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/38631109092",
+      "conclusion": "success"
+    },
+    {
+      "name": "Production Certification",
+      "run_id": 38631109170,
+      "url": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/38631109170",
+      "conclusion": "success"
+    }
+  ],
+  "artifact_identities": [
+    {
+      "id": 11927705731,
+      "name": "meridian-ci-integrations-5321-1",
+      "digest": "sha256:02654a2666d016ebaab65d68c0619862e809193357b8cd3a9c03a852b55288d6",
+      "created_at": "2026-10-14T20:32:46Z",
+      "run_id": 38631109092
+    },
+    {
+      "id": 11927495685,
+      "name": "meridian-ci-workflows-5321-1",
+      "digest": "sha256:e37a690b95d9d0aa3127a33432f8b87a6f131a5e108087a8b6d7b58c64af62aa",
+      "created_at": "2026-10-14T20:31:39Z",
+      "run_id": 38631109092
+    },
+    {
+      "id": 11927485636,
+      "name": "meridian-ci-browser-5321-1",
+      "digest": "sha256:ac4b4782f59d44b20a650096fdb245e6a113e46bf24e60930dd2a5ab808e6fb8",
+      "created_at": "2026-10-14T20:31:28Z",
+      "run_id": 38631109092
+    },
+    {
+      "id": 11926656599,
+      "name": "meridian-ci-docs-5321-1",
+      "digest": "sha256:8a59660419296338d47f5637cda6d1f9eb7570a0e66063eeccb5589653eaaa20",
+      "created_at": "2026-10-14T20:26:38Z",
+      "run_id": 38631109092
+    },
+    {
+      "id": 11926603484,
+      "name": "meridian-ci-dotnet-5321-1",
+      "digest": "sha256:bc99ed514c16ba5d1134b6a9da2adac13a5376b0b3683ac6128f12e5e56a7427",
+      "created_at": "2026-10-14T20:38:50Z",
+      "run_id": 38631109092
+    },
+    {
+      "id": 11927386033,
+      "name": "production-documentation-evidence-231-1",
+      "digest": "sha256:55d848612930edb970ceecd8e7415615a090248b3ce162e7def9777ed5d64531",
+      "created_at": "2026-10-14T20:33:28Z",
+      "run_id": 38631109170
+    },
+    {
+      "id": 11927236040,
+      "name": "production-recovery-drill-38631109170",
+      "digest": "sha256:b6d91aa9a6f3472ef9eec991613efbc091c28320d22b83c0291929a52ba91a32",
+      "created_at": "2026-10-14T20:33:11Z",
+      "run_id": 38631109170
+    },
+    {
+      "id": 11927092778,
+      "name": "production-certification-231-1",
+      "digest": "sha256:9526492c9c75103aad819f072223de0b61459861b5e5d647568ffe2b1b266a5e",
+      "created_at": "2026-10-14T20:43:48Z",
+      "run_id": 38631109170
+    },
+    {
+      "id": 11926383028,
+      "name": "production-dependency-evidence-231-1",
+      "digest": "sha256:ee1c8ee68dbb4f60a4a50e382b5cb587e97f950efcdb721ea6991e254b896c0e",
+      "created_at": "2026-10-14T20:34:29Z",
+      "run_id": 38631109170
+    }
+  ],
+  "ordinary_ci": {
+    "dotnet": {
+      "Passed": 20292,
+      "NotExecuted": 5
+    },
+    "postgresql": {
+      "Passed": 1250
+    },
+    "browser": {
+      "passed": 3767,
+      "failed": 0,
+      "skipped": 0,
+      "other": 0
+    },
+    "browser_batches": 43
+  },
+  "production_certification": {
+    "postgresql": {
+      "Passed": 1250
+    },
+    "runs": [
+      {
+        "file": "direct-lending-integrations_net10.0_20261014204346.trx",
+        "outcome": "Completed",
+        "counters": {
+          "total": "12",
+          "executed": "12",
+          "passed": "12",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        }
+      },
+      {
+        "file": "meridian-integrations_net10.0_20261014204327.trx",
+        "outcome": "Completed",
+        "counters": {
+          "total": "1238",
+          "executed": "1238",
+          "passed": "1238",
+          "failed": "0",
+          "error": "0",
+          "timeout": "0",
+          "aborted": "0",
+          "inconclusive": "0",
+          "passedButRunAborted": "0",
+          "notRunnable": "0",
+          "notExecuted": "0",
+          "disconnected": "0",
+          "warning": "0",
+          "completed": "0",
+          "inProgress": "0",
+          "pending": "0"
+        }
+      }
+    ],
+    "original_regressions": [
+      {
+        "name": "Meridian.Tests.Storage.AtomicTaxLotJournalStoreTests.AppendAssetPostingAsync_AcquisitionReplayDisposalAndRollbackShareOneTransaction",
+        "outcome": "Passed"
+      },
+      {
+        "name": "Meridian.Tests.SecurityMaster.PostgresSecurityMasterConflictServiceTests.ResolveAsync_PersistsWinnerAndResolverAcrossInstances",
+        "outcome": "Passed"
+      }
+    ]
+  },
+  "calendar_regressions": [
+    {
+      "name": "Meridian.Ui.Tests.Services.DataCalendarServiceTests.HolidayCells_AgreeWithCompletenessCalendar(year: 2027, month: 6, day: 18)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Meridian.Ui.Tests.Services.DataCalendarServiceTests.HolidayCells_AgreeWithCompletenessCalendar(year: 2027, month: 1, day: 1)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Meridian.Ui.Tests.Services.DataCalendarServiceTests.CalendarAndCompleteness_UseTheSameInjectedPolicy",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Meridian.Ui.Tests.Services.DataCompletenessServiceTests.Holidays_AreExcludedFromCompletenessDenominatorAndMissingDays(year: 2026, month: 6, day: 19)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Meridian.Ui.Tests.Services.DataCompletenessServiceTests.Holidays_AreExcludedFromCompletenessDenominatorAndMissingDays(year: 2027, month: 6, day: 18)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Meridian.Ui.Tests.Services.DataCompletenessServiceTests.Holidays_AreExcludedFromCompletenessDenominatorAndMissingDays(year: 2027, month: 1, day: 1)",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Meridian.Ui.Tests.Services.DataCalendarServiceTests.HolidayCells_AgreeWithCompletenessCalendar(year: 2026, month: 6, day: 19)",
+      "outcome": "Passed"
+    }
+  ],
+  "ordinary_ci_original_regressions": [
+    {
+      "name": "Meridian.Tests.Storage.AtomicTaxLotJournalStoreTests.AppendAssetPostingAsync_AcquisitionReplayDisposalAndRollbackShareOneTransaction",
+      "outcome": "Passed"
+    },
+    {
+      "name": "Meridian.Tests.SecurityMaster.PostgresSecurityMasterConflictServiceTests.ResolveAsync_PersistsWinnerAndResolverAcrossInstances",
+      "outcome": "Passed"
+    }
+  ],
+  "roadmap_inventory": {
+    "rows": 42,
+    "statuses": {
+      "done": 17,
+      "planned": 9,
+      "in_progress": 9,
+      "accepted": 6,
+      "ready_for_acceptance": 1
+    }
+  },
+  "user_work_order": [
+    "W10-LOT-002",
+    "W10-MARK-001",
+    "W10-SEAM-001",
+    "W10-RECON-001"
+  ],
+  "risk": {
+    "id": "RISK-CALENDAR-COVERAGE-001",
+    "status": "open",
+    "omitted_holiday": "2026-06-19",
+    "seed_expiry": "2027-01-01",
+    "remaining_gate": "Live operator completeness denominator verification"
+  },
+  "limits": [
+    "Automated evidence does not grant operator acceptance or production release certification.",
+    "Roadmap statuses, sequence, dependencies, row review dates and acceptance criteria are unchanged.",
+    "LOT consumer integration/parity, compatibility retirement and shadow acceptance remain open.",
+    "MARK and SEAM live acceptance remain open; RECON is not advanced.",
+    "The separate full local run at 3f3f5d017 failed in seven unchanged script modules; no full local pass is claimed."
+  ]
+}

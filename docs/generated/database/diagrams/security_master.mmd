@@ -71,6 +71,18 @@ erDiagram
         numeric floating_spread_bps
         bigint version
     }
+    security_master_cash_sweep_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text program_name
+        text sweep_vehicle_type
+        text sweep_frequency
+        text target_account_type
+        numeric_18_8_ yield_rate
+        text primary_identifier_value
+        bigint version
+    }
     security_master_cash_transaction {
         uuid cash_transaction_id PK
         uuid loan_id FK
@@ -95,6 +107,50 @@ erDiagram
         numeric_12_6_ coupon_rate
         date callable_date
         text day_count
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_cfd_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text underlying_asset_class
+        text underlying_description
+        numeric_18_8_ leverage
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_commercial_paper_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text issuer_name
+        date maturity_date
+        numeric_18_8_ discount_rate
+        text day_count
+        boolean is_asset_backed
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_commitment_guarantee_covenant_projection {
+        uuid security_id PK,FK
+        integer ordinal PK
+        text covenant_type
+        text threshold
+        text notes
+    }
+    security_master_commitment_guarantee_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text counterparty
+        text beneficiary
+        numeric_28_10_ committed_amount
+        numeric_28_10_ unfunded_amount
+        date effective_date
+        date expiry_date
+        numeric_18_8_ fee_rate
+        text collateral
         text primary_identifier_value
         bigint version
     }
@@ -480,6 +536,19 @@ erDiagram
         text primary_identifier_value
         bigint version
     }
+    security_master_investment_fund_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text fund_type
+        text fund_family
+        text nav_currency
+        text distribution_policy
+        boolean is_stable_nav
+        text pricing_source
+        text primary_identifier_value
+        bigint version
+    }
     security_master_journal_entry {
         uuid journal_entry_id PK
         uuid loan_id FK
@@ -684,6 +753,18 @@ erDiagram
         numeric strike
         text put_call
     }
+    security_master_other_security_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text category
+        text sub_type
+        date maturity_date
+        text issuer_name
+        text settlement_type
+        text primary_identifier_value
+        bigint version
+    }
     security_master_outbox_message {
         uuid outbox_message_id PK
         text topic
@@ -707,6 +788,35 @@ erDiagram
         text allocation_rule
         uuid source_event_id FK
         timestamp_with_time_zone created_at
+    }
+    security_master_private_company_equity_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text issuer
+        text share_class
+        text round
+        numeric_18_8_ ownership_percent
+        numeric_28_10_ cost_basis
+        numeric_28_10_ latest_valuation
+        text transfer_restrictions
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_private_fund_interest_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text gp_sponsor
+        text strategy
+        integer vintage
+        numeric_28_10_ commitment
+        numeric_28_10_ funded_amount
+        numeric_28_10_ unfunded_amount
+        date nav_date
+        text lockup
+        text primary_identifier_value
+        bigint version
     }
     security_master_projected_cash_flow {
         uuid projected_flow_id PK
@@ -753,6 +863,20 @@ erDiagram
         text status
         text details
     }
+    security_master_real_estate_holding_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text property_type
+        text address_or_market
+        numeric_18_8_ ownership_percent
+        numeric_28_10_ appraisal_value
+        date valuation_date
+        text debt_stack
+        text sponsor
+        text primary_identifier_value
+        bigint version
+    }
     security_master_reconciliation_exception {
         uuid exception_id PK
         uuid reconciliation_result_id FK
@@ -790,6 +914,19 @@ erDiagram
         timestamp_with_time_zone completed_at
         text status
     }
+    security_master_repo_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text counterparty
+        date start_date
+        date end_date
+        numeric_18_8_ repo_rate
+        text collateral_type
+        numeric_18_8_ haircut
+        text primary_identifier_value
+        bigint version
+    }
     security_master_schema_migrations {
         integer ordinal
         text filename PK
@@ -818,6 +955,26 @@ erDiagram
         tsvector search_vector
         text normalized_primary_identifier_value
         integer schema_version
+        text terms_format
+    }
+    security_master_security_alias_revisions {
+        uuid alias_id PK
+        integer revision PK
+        uuid security_id FK
+        text alias_kind
+        text alias_value
+        text normalized_alias_value
+        text provider
+        text normalized_provider
+        text scope
+        text reason
+        timestamp_with_time_zone valid_from
+        timestamp_with_time_zone valid_to
+        boolean is_enabled
+        boolean is_retired
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+        timestamp_with_time_zone history_available_from
     }
     security_master_security_aliases {
         uuid alias_id PK
@@ -843,6 +1000,23 @@ erDiagram
         text client_confirmed_by
         timestamp_with_time_zone client_confirmed_at
     }
+    security_master_security_close_price_approvals {
+        uuid snapshot_id PK,FK
+        text payload
+        character_64_ payload_sha256
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_security_close_price_snapshots {
+        uuid snapshot_id PK
+        text account_id FK
+        text book_id FK
+        date valuation_date FK
+        integer version
+        uuid corrects_snapshot_id FK
+        text payload
+        character_64_ payload_sha256
+        timestamp_with_time_zone recorded_at
+    }
     security_master_security_events {
         bigint global_sequence PK
         uuid security_id
@@ -854,6 +1028,8 @@ erDiagram
         uuid causation_id
         jsonb payload
         jsonb metadata
+        text payload_type
+        integer payload_version
     }
     security_master_security_events_global_sequence_seq {
         text catalogued_object
@@ -869,6 +1045,19 @@ erDiagram
         text origin_reference
         timestamp_with_time_zone recorded_at
         bigint source_version
+    }
+    security_master_security_governance_events {
+        bigint global_sequence PK
+        uuid security_id
+        text stream
+        text event_type
+        text actor
+        timestamp_with_time_zone occurred_at
+        jsonb payload
+        integer payload_version
+    }
+    security_master_security_governance_events_global_sequence_seq {
+        text catalogued_object
     }
     security_master_security_identifiers {
         uuid security_id PK,FK
@@ -972,6 +1161,10 @@ erDiagram
         bigint version
         timestamp_with_time_zone snapshot_timestamp
         jsonb payload
+    }
+    security_master_security_workbench_generations {
+        uuid security_id PK
+        bigint generation
     }
     security_master_servicer_position_report_line {
         uuid servicer_report_line_id PK
@@ -1163,8 +1356,32 @@ erDiagram
         text primary_identifier_value
         bigint version
     }
+    security_master_treasury_bill_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        date maturity_date
+        date auction_date
+        text cusip
+        numeric_18_8_ discount_rate
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_warrant_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        uuid underlying_id
+        text warrant_type
+        numeric_28_10_ strike
+        date expiry_date
+        numeric_18_8_ multiplier
+        text primary_identifier_value
+        bigint version
+    }
     security_master_cash_transaction ||--o{ security_master_payment_allocation : "payment_allocation_cash_transaction_id_fkey"
     security_master_cash_transaction ||--o{ security_master_reconciliation_result : "reconciliation_result_cash_transaction_id_fkey"
+    security_master_commitment_guarantee_projection ||--o{ security_master_commitment_guarantee_covenant_projection : "commitment_guarantee_covenant_projection_security_id_fkey"
     security_master_corporate_action_case_accounting_approvals ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_approval_id_fkey"
     security_master_corporate_action_case_accounting_projections ||--o{ security_master_corporate_action_case_accounting_approvals : "corporate_action_case_accounting_approvals_projection_id_fkey"
     security_master_corporate_action_case_accounting_projections ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_projection_id_fkey"
@@ -1224,6 +1441,7 @@ erDiagram
     security_master_securities ||--o{ security_master_fxspot_projection : "fxspot_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_underlying_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_alias_revisions : "security_alias_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_aliases : "security_aliases_security_id_fkey"
     security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
     security_master_securities ||--o{ security_master_security_identifiers : "security_identifiers_security_id_fkey"
@@ -1232,6 +1450,8 @@ erDiagram
     security_master_securities ||--o{ security_master_security_pricing_hierarchy : "security_pricing_hierarchy_security_id_fkey"
     security_master_securities ||--o{ security_master_security_pricing_hierarchy_history : "security_pricing_hierarchy_history_security_id_fkey"
     security_master_securities ||--o{ security_master_security_raw_prices : "security_raw_prices_security_id_fkey"
+    security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_approvals : "security_close_price_approvals_snapshot_id_fkey"
+    security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_snapshots : "security_close_price_snapshot_corrects_snapshot_id_account_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_position_report_line : "servicer_position_report_line_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_statement_import_batch : "servicer_statement_import_batch_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_transaction_report_line : "servicer_transaction_report_line_servicer_report_batch_id_fkey"

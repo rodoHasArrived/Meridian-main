@@ -4,30 +4,53 @@ using Meridian.Contracts.Accounting.Lots;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Integrity;
-using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
-using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
-using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
-using Meridian.Storage.SecurityMaster;
-using Moq;
 using Npgsql;
 
 namespace Meridian.Tests.Storage;
 
 [Trait("Category", "Integration")]
-public sealed class OpenLotBackfillPostgresTests
+public sealed partial class OpenLotBackfillPostgresTests
 {
     private static readonly Guid BookOwnerNode = Guid.Parse("77777777-7777-7777-7777-777777777777");
+
+    [LedgerDatabaseFact]
+    public async Task LegacyShortPosition_CannotBeReviewedOrAppliedAsALongAcquisition()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var legacy = await SeedAsync(database);
+        var facts = OpenLotBackfillReconciliationTests.Facts(legacy);
+        var longStore = await StoreAsync(database, facts);
+        var exception = (await longStore.SurveyAsync(legacy.LedgerBookId)).Single();
+        var retained = await longStore.RetainEvidenceAsync(Retention(facts));
+        var shortStore = await StoreAsync(database, facts, positionSide: BookPositionSides.Short);
+
+        var review = () => shortStore.ReviewEvidenceAsync(Review(retained));
+        await review.Should().ThrowAsync<LedgerValidationException>().WithMessage("*book-position mapping*scope*");
+        (await shortStore.GetEvidenceAsync(legacy.LedgerBookId, retained.EvidenceRecordId))!.Version.Should().Be(1);
+        await longStore.ReviewEvidenceAsync(Review(retained));
+        var apply = Apply(legacy, exception, retained);
+        var applyAsLong = () => shortStore.ApplyAsync(apply);
+        await applyAsLong.Should().ThrowAsync<LedgerValidationException>().WithMessage("*book-position mapping*scope*");
+        var unchanged = (await shortStore.GetTaxLotsByIdsAsync(legacy.LedgerBookId, [legacy.TaxLotRecordId])).Single();
+        unchanged.Acquisition.Should().BeNull();
+        unchanged.Version.Should().Be(legacy.Version);
+
+        var receipt = await longStore.ApplyAsync(apply);
+        (await shortStore.ApplyAsync(apply)).Should().BeEquivalentTo(receipt,
+            "an already committed exact receipt replays without rewriting history under current position direction");
+    }
+
     [LedgerDatabaseFact]
     public async Task SurveyRetainReviewApply_RestoresReadinessAndRetainsRestartSafeEvidenceAndIdempotency()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var legacy = await SeedAsync(database);
         var facts = OpenLotBackfillReconciliationTests.Facts(legacy);
-        var store = Store(database, facts);
+        var store = await StoreAsync(database, facts);
         var queue = await store.SurveyAsync(legacy.LedgerBookId);
         queue.Should().ContainSingle().Which.Issues.Should().Contain("MissingAcquisitionCurrencyFxEvidence");
         (await store.SurveyAsync(legacy.LedgerBookId)).Single().Version.Should().Be(queue.Single().Version);
@@ -41,12 +64,12 @@ public sealed class OpenLotBackfillPostgresTests
         await automation.Should().ThrowAsync<HumanOperatorRequiredException>();
 
         await store.ReviewEvidenceAsync(Review(retained));
-        var mismatchedOwner = Store(database, facts, positionOwner: "other-entity");
+        var mismatchedOwner = await StoreAsync(database, facts, positionOwner: "other-entity");
         var wrongOwnerApply = () => mismatchedOwner.ApplyAsync(apply);
         await wrongOwnerApply.Should().ThrowAsync<LedgerValidationException>().WithMessage("*book-position mapping*scope*");
-        var normalizedOwner = Store(database, facts, positionOwner: " FUND-ALPHA ");
+        var normalizedOwner = await StoreAsync(database, facts, positionOwner: " FUND-ALPHA ");
         var receipt = await normalizedOwner.ApplyAsync(apply);
-        var restarted = Store(database, facts);
+        var restarted = await StoreAsync(database, facts);
         (await restarted.ListExceptionsAsync(legacy.LedgerBookId)).Should().BeEmpty();
         (await restarted.GetEvidenceAsync(legacy.LedgerBookId, retained.EvidenceRecordId))!
             .RetainedBy.Should().Be("preparer");
@@ -76,7 +99,7 @@ public sealed class OpenLotBackfillPostgresTests
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var legacy = await SeedAsync(database);
         var facts = OpenLotBackfillReconciliationTests.Facts(legacy);
-        var store = Store(database, facts);
+        var store = await StoreAsync(database, facts);
         var exception = (await store.SurveyAsync(legacy.LedgerBookId)).Single();
         var evidence = await store.RetainEvidenceAsync(Retention(facts));
 
@@ -114,7 +137,7 @@ public sealed class OpenLotBackfillPostgresTests
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var legacy = await SeedAsync(database);
         var facts = OpenLotBackfillReconciliationTests.Facts(legacy);
-        var store = Store(database, facts);
+        var store = await StoreAsync(database, facts);
         var queue = (await store.SurveyAsync(legacy.LedgerBookId)).Single();
         var evidence = await store.RetainEvidenceAsync(Retention(facts));
         await store.ReviewEvidenceAsync(Review(evidence));
@@ -126,7 +149,7 @@ public sealed class OpenLotBackfillPostgresTests
         (await store.ListExceptionsAsync(legacy.LedgerBookId)).Should().ContainSingle();
         var refreshed = (await store.SurveyAsync(legacy.LedgerBookId)).Single();
         refreshed.Version.Should().Be(queue.Version + 1);
-        var changedAuthority = Store(database, facts with { SecurityMasterVersion = facts.SecurityMasterVersion + 1 });
+        var changedAuthority = await StoreAsync(database, facts with { SecurityMasterVersion = facts.SecurityMasterVersion + 1 });
         var staleSecurity = () => changedAuthority.ApplyAsync(apply with
         { ExpectedLotVersion = current.Version, ExpectedExceptionVersion = refreshed.Version });
         await staleSecurity.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Security Master*stale*");
@@ -147,7 +170,7 @@ public sealed class OpenLotBackfillPostgresTests
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var legacy = await SeedAsync(database);
         var facts = OpenLotBackfillReconciliationTests.Facts(legacy);
-        var store = Store(database, facts);
+        var store = await StoreAsync(database, facts);
         var queue = (await store.SurveyAsync(legacy.LedgerBookId)).Single();
         var evidence = await store.RetainEvidenceAsync(Retention(facts));
         await store.ReviewEvidenceAsync(Review(evidence));
@@ -181,7 +204,7 @@ public sealed class OpenLotBackfillPostgresTests
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var closed = await SeedAsync(database, closed: true);
         var facts = OpenLotBackfillReconciliationTests.Facts(closed);
-        var store = Store(database, facts);
+        var store = await StoreAsync(database, facts);
         var queue = (await store.SurveyAsync(closed.LedgerBookId)).Single();
         var wrongScope = Retention(facts) with { TaxLotRecordId = Guid.NewGuid() };
         var retainWrongScope = () => store.RetainEvidenceAsync(wrongScope);
@@ -209,23 +232,9 @@ public sealed class OpenLotBackfillPostgresTests
         return await database.JournalStore.SaveTaxLotAsync(closed ? legacy with { OpenQuantity = 0m } : legacy);
     }
 
-    private static PostgresLedgerJournalStore Store(LedgerPostgresTestDatabase database, OpenLotBackfillFactsDto facts,
-        string positionOwner = "fund-alpha")
-    {
-        var json = JsonSerializer.SerializeToElement(new { });
-        var security = new Mock<ISecurityMasterStore>();
-        security.Setup(s => s.GetProjectionAsync(facts.SecurityId, It.IsAny<CancellationToken>())).ReturnsAsync(
-            new SecurityProjectionRecord(facts.SecurityId, "Equity", SecurityStatusDto.Active, "Issuer", "EUR",
-                "ISIN", "TEST", json, json, json, facts.SecurityMasterVersion,
-                DateTimeOffset.Parse("2020-01-01T00:00:00Z"), null, [], []));
-        var positions = new Mock<IInstrumentPositionProjectionStore>();
-        positions.Setup(p => p.GetBookPositionAsync(facts.BookPositionId, It.IsAny<CancellationToken>())).ReturnsAsync(
-            new BookPositionDto(facts.BookPositionId, facts.SecurityId, Guid.NewGuid(),
-                new AccountingBookContextDto(facts.LedgerBookId, positionOwner, BookOwnerNode,
-                    FundStructureNodeKindDto.Fund, "Book", "USD", AccountingBasisKindDto.Primary, "policy", "1"),
-                "Long", "Active", facts.AcquiredDate, Version: facts.BookPositionVersion));
-        return new(database.Options, backfillSecurityMaster: () => security.Object, backfillPositions: () => positions.Object);
-    }
+    private static async Task<PostgresLedgerJournalStore> StoreAsync(LedgerPostgresTestDatabase database,
+        OpenLotBackfillFactsDto facts, string positionOwner = "fund-alpha", string positionSide = BookPositionSides.Long)
+        => (await BackfillAuthority.CreateAsync(database, facts, positionOwner, positionSide)).Restart();
 
     private static RetainOpenLotBackfillEvidenceRequest Retention(OpenLotBackfillFactsDto facts)
     {

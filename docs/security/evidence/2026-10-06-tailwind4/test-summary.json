@@ -1,0 +1,14 @@
+{
+  "counts": {
+    "passed": 3555,
+    "failed": 0,
+    "skipped": 0,
+    "other": 0
+  },
+  "testIdentityDigest": "8b34080c1867b6b54fbe1fbabd0a14d0d169a41461d012990ea561fe96cb046c",
+  "testSeconds": 325.433231971,
+  "exitCode": 0,
+  "batchSize": 8,
+  "workers": 2,
+  "files": 327
+}

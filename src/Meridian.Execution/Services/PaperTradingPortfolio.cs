@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Margin;
 using Meridian.Execution.Models;
@@ -552,8 +553,11 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             return;
 
         PaperPosition? pos;
+        PaperPosition originalPosition;
         decimal originalQuantity;
         decimal originalCostBasis;
+        decimal originalTotalCostBasis;
+        long originalLotVersion;
 
         lock (_lock)
         {
@@ -565,10 +569,13 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
 
             originalQuantity = pos.Quantity;
             originalCostBasis = pos.CostBasis;
+            originalTotalCostBasis = pos.OpenCostBasis;
+            originalLotVersion = pos.LotVersion;
+            originalPosition = pos;
         }
 
         var adjustment = await _corporateActionAdjuster
-            .AdjustPositionAsync(symbol, originalQuantity, originalCostBasis, positionOpenedAt, ct)
+            .AdjustPositionAsync(symbol, originalQuantity, originalCostBasis, originalTotalCostBasis, positionOpenedAt, ct)
             .ConfigureAwait(false);
 
         if (adjustment.ActionCount == 0)
@@ -582,11 +589,9 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                 return;
             }
 
-            if (pos.Quantity == originalQuantity && pos.CostBasis == originalCostBasis)
+            if (ReferenceEquals(pos, originalPosition) && pos.LotVersion == originalLotVersion
+                && pos.Quantity == originalQuantity && pos.CostBasis == originalCostBasis)
             {
-                pos.Quantity = adjustment.AdjustedQuantity;
-                pos.CostBasis = adjustment.AdjustedCostBasis;
-
                 // Rescale the lot book by the same factors so lots stay consistent with the
                 // aggregate; otherwise the next lot-consuming fill falls into the shortfall
                 // fallback and mis-states realized P&L (e.g. selling through a post-split
@@ -597,7 +602,11 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                 var priceFactor = originalCostBasis == 0m
                     ? 1m
                     : adjustment.AdjustedCostBasis / originalCostBasis;
-                pos.RescaleLots(quantityFactor, priceFactor);
+                pos.RescaleLots(quantityFactor, priceFactor, adjustment.AdjustedQuantity, adjustment.AdjustedTotalCostBasis);
+                pos.Quantity = adjustment.AdjustedQuantity;
+                pos.CostBasis = adjustment.AdjustedTotalCostBasis.HasValue && pos.Quantity != 0m
+                    ? pos.OpenCostBasis / Math.Abs(pos.Quantity)
+                    : adjustment.AdjustedCostBasis;
                 // Ownership rides on quantity, so a split that doubles the position must
                 // double each fund's share too. Leaving the tallies behind would surface
                 // the difference as an unattributable residual a scoped operator cannot see.
@@ -692,7 +701,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         var notional = qty * price;
         pos.AddLot(qty, price, ts);
         var newQty = pos.Quantity + qty;
-        pos.CostBasis = newQty == 0m ? 0m : (pos.CostBasis * pos.Quantity + notional) / newQty;
+        pos.CostBasis = newQty == 0m ? 0m : pos.OpenCostBasis / newQty;
         pos.Quantity = newQty;
 
         if (account.MarginModel is RegTMarginModel regt)
@@ -824,7 +833,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         var newQty = pos.Quantity - qty;
         pos.CostBasis = newQty == 0m
             ? 0m
-            : (pos.CostBasis * Math.Abs(pos.Quantity) + proceeds) / Math.Abs(newQty);
+            : pos.OpenCostBasis / Math.Abs(newQty);
         pos.Quantity = newQty;
 
         if (account.MarginModel is RegTMarginModel regt)
@@ -1099,6 +1108,8 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     public decimal Quantity { get; set; }
     public decimal CostBasis { get; set; }
     public decimal MarketPrice { get; set; } = marketPrice;
+    public decimal OpenCostBasis { get; private set; }
+    public long LotVersion { get; private set; }
 
     /// <summary>
     /// Amount borrowed from the broker to fund this position.
@@ -1114,6 +1125,17 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     /// </summary>
     public bool UsesFaceValuePricing { get; set; }
 
+    /// <summary>
+    /// What one unit of this position's lots measures, from how its fills were quoted: face for
+    /// par-priced debt, contracts when a multiplier was recorded, otherwise shares.
+    /// </summary>
+    public SecurityLotUnitKind LotUnit => UsesFaceValuePricing
+        ? SecurityLotUnitKind.FaceValue
+        : ContractMultiplier != 1m ? SecurityLotUnitKind.Contracts : SecurityLotUnitKind.Shares;
+
+    /// <summary>The open lot book in the shared lot shape.</summary>
+    public IReadOnlyList<IUnitizedLot> UnitizedLots => _lots;
+
     /// <summary>Unsigned exposure magnitude (|qty| × price); use <see cref="SignedMarketValue"/> for equity math.</summary>
     public decimal MarketValue => Math.Abs(Quantity) * MarketPrice;
 
@@ -1121,11 +1143,10 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     public decimal SignedMarketValue => Quantity * MarketPrice;
 
     /// <summary>
-    /// Unrealised P&amp;L for longs and shorts alike: with a signed quantity,
-    /// (price − cost) × qty yields (cost − price) × |qty| for shorts, where
-    /// <see cref="CostBasis"/> is the weighted-average short entry price.
+    /// Unrealised P&amp;L uses exact retained basis; the display's weighted unit quote
+    /// cannot reconstruct the remaining basis after fractional relief.
     /// </summary>
-    public decimal UnrealisedPnl => (MarketPrice - CostBasis) * Quantity;
+    public decimal UnrealisedPnl => Math.Sign(Quantity) * (MarketValue - OpenCostBasis);
 
     public IReadOnlyList<PositionLotEntry> GetLots() => _lots
         .Select(static lot => new PositionLotEntry(
@@ -1142,7 +1163,9 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             return;
         }
 
-        _lots.Add(new PositionLot($"lot-{Guid.NewGuid():N}", signedQuantity, entryPrice, openedAt));
+        _lots.Add(new PositionLot(this, $"lot-{Guid.NewGuid():N}", signedQuantity, entryPrice, openedAt));
+        OpenCostBasis = _lots.Sum(static lot => lot.OpenCostBasis);
+        LotVersion++;
     }
 
     /// <summary>
@@ -1176,24 +1199,60 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         }
     }
 
-    public void RescaleLots(decimal quantityFactor, decimal priceFactor)
+    public void RescaleLots(decimal quantityFactor, decimal priceFactor, decimal adjustedQuantity, decimal? adjustedTotalCostBasis)
     {
-        if (quantityFactor == 1m && priceFactor == 1m)
+        if (quantityFactor == 1m && priceFactor == 1m
+            && (!adjustedTotalCostBasis.HasValue || adjustedTotalCostBasis.Value == OpenCostBasis))
         {
             return;
         }
 
+        var bases = RescaledLotBases(adjustedTotalCostBasis);
         var rescaled = _lots
             .Select(lot => new PositionLot(
+                this,
                 lot.LotId,
                 lot.OpenQuantity * quantityFactor,
                 lot.EntryPrice * priceFactor,
-                lot.OpenedAt))
-            .Where(static lot => lot.OpenQuantity != 0m)
+                lot.OpenedAt,
+                bases?.GetValueOrDefault(lot.LotId)))
             .ToList();
 
+        if (adjustedTotalCostBasis.HasValue && rescaled.Count > 0)
+        {
+            // Keep the aggregate and its lot book equal even when each scaled quantity
+            // rounds. No basis-bearing lot may silently vanish below decimal precision.
+            rescaled[^1].OpenQuantity += adjustedQuantity - rescaled.Sum(static lot => lot.OpenQuantity);
+            if (rescaled.Any(lot => lot.OpenQuantity == 0m
+                ? lot.OpenCostBasis != 0m
+                : Math.Sign(lot.OpenQuantity) != Math.Sign(adjustedQuantity)))
+                throw new InvalidOperationException("The corporate action cannot retain the lot quantities and carrying basis at decimal precision.");
+        }
+
         _lots.Clear();
-        _lots.AddRange(rescaled);
+        _lots.AddRange(rescaled.Where(static lot => lot.OpenQuantity != 0m));
+        OpenCostBasis = _lots.Sum(static lot => lot.OpenCostBasis);
+        LotVersion++;
+    }
+
+    private Dictionary<string, decimal>? RescaledLotBases(decimal? adjustedTotalCostBasis)
+    {
+        if (adjustedTotalCostBasis is not { } target)
+            return null; // Legacy adjusters supply only their existing quantity/quote factors.
+
+        var current = OpenCostBasis;
+        if (target == current)
+            return _lots.ToDictionary(static lot => lot.LotId, static lot => lot.OpenCostBasis);
+        if (current <= 0m || target < 0m)
+            throw new InvalidOperationException("An exact corporate-action basis change requires a positive retained basis pool and a non-negative result.");
+
+        // Existing lot basis is the allocation weight. The shared pool allocator keeps
+        // every result non-negative and assigns the exact total's rounding remainder.
+        var weights = _lots.Where(static lot => lot.OpenCostBasis > 0m)
+            .Select(static lot => new LotSlice<PositionLot>(lot, lot.OpenCostBasis, true)).ToArray();
+        return LotBasisRelief.Allocate(weights, static lot => lot.OpenCostBasis,
+                static lot => lot.OpenCostBasis, new LotBasisPool(current, target))
+            .ToDictionary(static slice => slice.Lot.LotId, static slice => slice.CostBasis);
     }
 
     public decimal ConsumeLots(decimal quantity, PositionLotSelectionMethod method, bool isCoveringShort)
@@ -1209,9 +1268,11 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             static lot => Math.Abs(lot.OpenQuantity));
 
         var removedCostBasis = 0m;
-        foreach (var slice in consumption.Slices)
+        var relief = LotBasisRelief.Allocate(consumption.Slices,
+            static lot => Math.Abs(lot.OpenQuantity), static lot => lot.OpenCostBasis);
+        foreach (var slice in relief)
         {
-            removedCostBasis += slice.Quantity * slice.Lot.EntryPrice;
+            removedCostBasis += slice.CostBasis;
 
             if (slice.ClosesLot)
             {
@@ -1219,6 +1280,7 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             }
             else
             {
+                slice.Lot.OpenCostBasis -= slice.CostBasis;
                 slice.Lot.OpenQuantity = slice.Lot.OpenQuantity > 0m
                     ? slice.Lot.OpenQuantity - slice.Quantity
                     : slice.Lot.OpenQuantity + slice.Quantity;
@@ -1232,7 +1294,9 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             removedCostBasis += consumption.Shortfall * CostBasis;
         }
 
+        OpenCostBasis = _lots.Sum(static lot => lot.OpenCostBasis);
         CostBasis = CalculateRemainingLotCostBasis(isCoveringShort);
+        LotVersion++;
 
         return removedCostBasis;
     }
@@ -1249,7 +1313,7 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
             return 0m;
         }
 
-        var remainingNotional = remainingLots.Sum(static lot => Math.Abs(lot.OpenQuantity) * lot.EntryPrice);
+        var remainingNotional = remainingLots.Sum(static lot => lot.OpenCostBasis);
         return remainingNotional / remainingQuantity;
     }
 
@@ -1328,10 +1392,25 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     };
 }
 
-internal sealed class PositionLot(string lotId, decimal openQuantity, decimal entryPrice, DateTimeOffset openedAt)
+/// <summary>
+/// One open paper lot. Implements the shared lot shape (<see cref="IUnitizedLot"/>) so the paper
+/// book is read the same way as execution, backtesting and ledger lots: the unit and multiplier
+/// are read live from the owning <see cref="PaperPosition"/>, which is what fills opened it in, so a
+/// contract multiplier recorded after the lot opened is never stale on the lot.
+/// </summary>
+internal sealed class PositionLot(PaperPosition position, string lotId, decimal openQuantity, decimal entryPrice,
+    DateTimeOffset openedAt, decimal? openCostBasis = null) : IUnitizedLot
 {
     public string LotId { get; } = lotId;
     public decimal OpenQuantity { get; set; } = openQuantity;
     public decimal EntryPrice { get; } = entryPrice;
+    public decimal OpenCostBasis { get; set; } = openCostBasis ?? Math.Abs(openQuantity) * entryPrice;
     public DateTimeOffset OpenedAt { get; } = openedAt;
+
+    /// <summary>Unsigned open size; <see cref="OpenQuantity"/> keeps the sign (negative for shorts).</summary>
+    public decimal Quantity => Math.Abs(OpenQuantity);
+
+    public SecurityLotUnitKind UnitKind => position.LotUnit;
+
+    public decimal Multiplier => position.ContractMultiplier;
 }

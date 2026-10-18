@@ -149,7 +149,7 @@ function ScriptLabPanel() {
             spellCheck={false}
             value={vm.source}
             onChange={(event) => vm.setSource(event.target.value)}
-            className="w-full min-h-[16rem] resize-y rounded-md border border-border/70 bg-background/60 p-3 font-mono text-xs leading-5 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            className="w-full min-h-[16rem] resize-y rounded-md border border-border/70 bg-background/60 p-3 font-mono text-xs leading-5 text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
             aria-label={vm.sourceEditor.ariaLabel}
             aria-describedby={vm.sourceEditor.describedBy}
           />
@@ -478,7 +478,7 @@ function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSideP
                       type="checkbox"
                       checked={row.checked}
                       onChange={(e) => onChange(row.name, e.target.checked ? "true" : "false")}
-                      className="h-4 w-4 rounded border border-border accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                      className="h-4 w-4 rounded border border-border accent-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                       aria-label={row.ariaLabel}
                       aria-describedby={row.descriptionId ?? undefined}
                     />
@@ -493,7 +493,7 @@ function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSideP
                     max={row.max}
                     step={row.step}
                     onChange={(e) => onChange(row.name, e.target.value)}
-                    className="w-full rounded-md border border-border/70 bg-background/60 px-2 py-1.5 font-mono text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="w-full rounded-md border border-border/70 bg-background/60 px-2 py-1.5 font-mono text-xs text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                     aria-label={row.ariaLabel}
                     aria-describedby={row.descriptionId ?? undefined}
                   />
@@ -505,7 +505,7 @@ function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSideP
                   <button
                     type="button"
                     onClick={() => onReset(row.name)}
-                    className="text-[10px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    className="text-[10px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                     aria-label={row.resetLabel}
                   >
                     {row.resetText}
@@ -552,7 +552,7 @@ function TemplatesPanel({ templates, state, onSelect }: TemplatesPanelProps) {
                 <button
                   type="button"
                   onClick={() => onSelect(template)}
-                  className="w-full rounded-md border border-border/60 bg-background/40 px-3 py-2 text-left text-sm transition-colors hover:bg-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full rounded-md border border-border/60 bg-background/40 px-3 py-2 text-left text-sm transition-colors hover:bg-secondary/40 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                   aria-label={template.ariaLabel}
                 >
                   <div className="font-semibold text-foreground">{template.title}</div>

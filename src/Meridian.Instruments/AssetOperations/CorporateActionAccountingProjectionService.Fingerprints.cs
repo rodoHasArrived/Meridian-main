@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Instruments.AssetOperations;
 
@@ -27,15 +28,16 @@ public sealed partial class CorporateActionAccountingProjectionService
     /// or retained-evidence inputs. Length-prefixed tokens avoid delimiter ambiguity.
     /// </summary>
     private static string BuildProjectionInputHash(
+        ICorporateActionRuleProfile ruleProfile,
         CorporateActionAccountingProjectionRequest request,
         CorporateActionTreatmentDecisionDto decision,
         IReadOnlyList<CorporateActionProjectionEvidenceDependencyDto> evidence,
         string currency)
     {
         var builder = new StringBuilder(1024);
-        AppendToken(builder, ClearwaterCorporateActionRuleProfileV1.ProfileKey);
-        AppendToken(builder, ClearwaterCorporateActionRuleProfileV1.ProfileVersion);
-        AppendToken(builder, ClearwaterCorporateActionRuleProfileV1.SelectedRuleVersion);
+        AppendToken(builder, ruleProfile.ProfileKey);
+        AppendToken(builder, ruleProfile.ProfileVersion);
+        AppendToken(builder, ruleProfile.SelectedRuleVersion);
         AppendToken(builder, ModelKey);
         AppendToken(builder, ModelVersion);
         AppendToken(builder, EngineVersion);
@@ -73,6 +75,10 @@ public sealed partial class CorporateActionAccountingProjectionService
         AppendToken(builder, request.AccountingScope?.PeriodId.ToString("N"));
         AppendToken(builder, Invariant(request.AccountingScope?.ExpectedPeriodVersion));
         AppendToken(builder, request.AccountingScope?.Jurisdiction.Trim());
+
+        // Absent mode preserves the retained fingerprint grammar.
+        if (request.CanonicalLotTransferJournal)
+            AppendToken(builder, "canonical-lot-transfer-journal/v1");
 
         foreach (var mutation in request.AuthoritativeLotMutations)
         {
@@ -264,16 +270,7 @@ public sealed partial class CorporateActionAccountingProjectionService
         => currency.Length == 3 && currency.All(static character => character is >= 'A' and <= 'Z');
 
     private static decimal Round(decimal amount, string currency)
-        => decimal.Round(amount, CurrencyMinorUnits(currency), MidpointRounding.AwayFromZero);
-
-    private static int CurrencyMinorUnits(string currency)
-        => currency switch
-        {
-            "BHD" or "IQD" or "JOD" or "KWD" or "LYD" or "OMR" or "TND" => 3,
-            "BIF" or "CLP" or "DJF" or "GNF" or "ISK" or "JPY" or "KMF" or "KRW" or "PYG" or
-                "RWF" or "UGX" or "UYI" or "VND" or "VUV" or "XAF" or "XOF" or "XPF" => 0,
-            _ => 2
-        };
+        => decimal.Round(amount, CurrencyMinorUnits.GetPrecision(currency), MidpointRounding.AwayFromZero);
 
     private sealed record ProjectionComputation(
         decimal EventAmount,

@@ -381,6 +381,9 @@ internal sealed class SecurityAssetProfileAssetClassValidator : ISecurityAssetCl
         "profileFields",
         "profileApproval",
         "schemaVersion",
+        SecurityTermsEnvelope.FormatKey,
+        SecurityTermsEnvelope.AssetClassTermsVersionKey,
+        SecurityTermsEnvelope.RetainedEconomicTermsKey,
         "securityId",
         "status",
         "version",
@@ -1026,13 +1029,7 @@ internal static class JsonValidationReader
     }
 
     private static bool SupportsProfileBackedTerms(string assetClass)
-        => string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "StructuredCredit", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "PrivateFundInterest", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "PrivateCompanyEquity", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "RealEstateHolding", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(assetClass, "CommitmentGuarantee", StringComparison.OrdinalIgnoreCase);
+        => Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsProfileBackedTerms;
 
     public static bool HasNonBlankString(JsonElement property)
         => property.ValueKind == JsonValueKind.String

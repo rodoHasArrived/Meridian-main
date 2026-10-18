@@ -182,7 +182,7 @@ public sealed class AllocationBudgetIntegrationTests : IDisposable
         Assert.True(
             allocated <= DedupCacheMissMaxBytes,
             $"DedupLedger cache-miss allocated {allocated} bytes; budget is {DedupCacheMissMaxBytes} bytes. " +
-            $"The prefix-cache + SHA256.TryHashData path should produce at most one short string allocation.");
+            $"The prefix-cache + warmed SHA-256 provider path should produce at most one short string allocation.");
     }
 
     // -----------------------------------------------------------------------

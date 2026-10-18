@@ -14,7 +14,15 @@ public static class LedgerOpenLotProjection
         var retainedBasis = record.Currency == acquisition.AcquisitionCurrency ? acquisition.TransactionCostBasis
             : record.Currency == acquisition.FunctionalCurrency ? acquisition.FunctionalCostBasis
             : throw new LedgerValidationException("Lot currency must identify its retained acquisition or functional basis convention.");
-        if (record.OriginalQuantity * record.UnitCost != retainedBasis)
+        // Unit successors retain allocated basis independently of a derived quote. Some fractional
+        // child quantities need a repeating quote; only their atomic, governed lineage may use the
+        // twelve-decimal storage quote. Never round the retained basis or relax ordinary acquisitions.
+        var derivedSuccessorQuote = acquisition.QuantityBasis == LotQuantityBasis.Units
+            && acquisition.CorporateActionLineage is not null
+            && record.OriginatingMutationBatchId is { } birthBatch && birthBatch != Guid.Empty
+            && record.BasisAdjustment is not null && record.OriginalQuantity > 0m
+            && record.UnitCost == decimal.Round(retainedBasis / record.OriginalQuantity, 12, MidpointRounding.ToEven);
+        if (record.OriginalQuantity * record.UnitCost != retainedBasis && !derivedSuccessorQuote)
             throw new LedgerValidationException("Lot basis differs from retained acquisition facts; a governed adjustment projection is required.");
         var face = acquisition.QuantityBasis == LotQuantityBasis.Face;
         if (face != record.HasFaceValueTerms || (face && (record.ParBasis != acquisition.FaceValueTerms?.ParBasis

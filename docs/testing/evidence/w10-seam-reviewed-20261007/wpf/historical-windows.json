@@ -1,0 +1,47 @@
+{
+  "scope": "Historical full-suite Windows automation; not runtime evidence for source candidate12565b.",
+  "runUrl": "https://github.com/rodoHasArrived/Meridian-main/actions/runs/37651053647",
+  "runId": "37651053647",
+  "jobId": "112894173708",
+  "artifactId": 11497972011,
+  "associatedPullRequestHead": "faf90ecfefa52a1515c5f379471cca3ccd8d2866",
+  "reportedCommitSha": "82118d790b0ffe21c18218ba7b3eb672a87b54b1",
+  "zipSha256": "d4f380297fe8d3a738620ffb15330328fd5e0301768b50432192800922fc8ad4",
+  "zipRetainedInThisPacket": false,
+  "trxPathInsideZip": "full/full_net10.0_20261007163848.trx",
+  "trxSha256": "b129dd04985b95ddcf6728e30e72878433fff819b2a6e07718bd13a8db9ab71a",
+  "trxRetainedInThisPacket": false,
+  "counters": {
+    "total": "2361",
+    "executed": "2360",
+    "passed": "2360",
+    "failed": "0",
+    "error": "0",
+    "timeout": "0",
+    "aborted": "0",
+    "inconclusive": "0",
+    "passedButRunAborted": "0",
+    "notRunnable": "0",
+    "notExecuted": "0",
+    "disconnected": "0",
+    "warning": "0",
+    "completed": "0",
+    "inProgress": "0",
+    "pending": "0"
+  },
+  "skippedFromResults": 1,
+  "explicitRenderingResult": {
+    "testName": "Meridian.Wpf.Tests.ViewModels.OperationsContinuityViewModelTests.SharedBlockers_RenderAllFieldsAndRepairRefresh_ThenClearAfterRepair",
+    "testId": "93eb5af0-7736-f477-aa2b-10d803ce8dbd",
+    "outcome": "Passed"
+  },
+  "skippedResults": [
+    {
+      "testName": "Meridian.Wpf.Tests.ViewModels.AccountingConfigureViewModelTests.ProductionCertificationProfile_SaveRetainsOperatorScopedControlEvidence",
+      "testId": "eb45a478-8c11-63e7-6c10-5e33e3cdcca3",
+      "outcome": "NotExecuted"
+    }
+  ],
+  "smokePublish": "not asserted from this artifact; no smoke-publish result is included",
+  "operatorDecision": "pending"
+}

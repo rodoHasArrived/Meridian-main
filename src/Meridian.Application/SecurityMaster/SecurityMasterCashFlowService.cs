@@ -12,7 +12,7 @@ namespace Meridian.Application.SecurityMaster;
 /// Manages structured cash flow source assignments and delegates projections to
 /// <see cref="IStructuredCashFlowProvider"/> implementations.
 /// Client-provided sources take precedence and remain until explicitly changed,
-/// consistent with the Clearwater cash flow governance model.
+/// consistent with the cash flow source governance model.
 /// </summary>
 /// <remarks>
 /// Economic terms are resolved once, up front, into a typed <see cref="StructuredCashFlowTerms"/> via
@@ -28,6 +28,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
     private readonly ISecurityMasterQueryService _queryService;
     private readonly IStructuredCashFlowLedgerBridge _ledgerBridge;
     private readonly ILogger<SecurityMasterCashFlowService> _logger;
+    private readonly ISecurityForwardCurveProvider? _forwardCurves;
 
     private static readonly TimeSpan StalenessThreshold = TimeSpan.FromDays(7);
 
@@ -36,13 +37,15 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         IEnumerable<IStructuredCashFlowProvider> providers,
         ISecurityMasterQueryService queryService,
         ILogger<SecurityMasterCashFlowService> logger,
-        IStructuredCashFlowLedgerBridge? ledgerBridge = null)
+        IStructuredCashFlowLedgerBridge? ledgerBridge = null,
+        ISecurityForwardCurveProvider? forwardCurves = null)
     {
         _store = store;
         _providers = providers?.ToList() ?? [];
         _queryService = queryService;
         _logger = logger;
         _ledgerBridge = ledgerBridge ?? new StructuredCashFlowLedgerBridge();
+        _forwardCurves = forwardCurves;
     }
 
     public Task<SecurityCashFlowSourceDto?> GetCashFlowSourceAsync(Guid securityId, CancellationToken ct = default)
@@ -113,8 +116,9 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         if (assignment.SourceKind is StructuredCashFlowSourceKind.CalculatedBullet
             or StructuredCashFlowSourceKind.CalculatedSinker)
         {
+            var forwardCurves = await LoadForwardCurvesAsync(security, ct).ConfigureAwait(false);
             var projection = BuildCalculatedProjection(
-                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc);
+                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, forwardCurves);
             var terms = projection.TermsUsed!;
             var usesNormalizedBasis = terms.PrincipalFace is not > 0m
                 && (!terms.HasLegs || terms.Legs!.Any(leg => leg.Notional is not > 0m));
@@ -210,12 +214,43 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         return securityId.ToString("N");
     }
 
+    /// <summary>
+    /// Loads the forward curve for each floating leg's index. Without a provider, or for an index
+    /// the provider has no curve for, the leg keeps the flat-forward projection.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, SecurityForwardCurve>> LoadForwardCurvesAsync(
+        SecurityDetailDto security, CancellationToken ct)
+    {
+        var curves = new Dictionary<string, SecurityForwardCurve>(StringComparer.OrdinalIgnoreCase);
+        if (_forwardCurves is null)
+        {
+            return curves;
+        }
+
+        var legs = StructuredCashFlowTermsResolver.Resolve(security).Legs ?? [];
+        var asOfDate = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime.Date);
+        foreach (var indexName in legs
+                     .Where(static leg => leg.RateKind == CashFlowLegRateKind.Floating && !string.IsNullOrWhiteSpace(leg.IndexName))
+                     .Select(static leg => leg.IndexName!.Trim())
+                     .Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            var curve = await _forwardCurves.GetForwardCurveAsync(indexName, asOfDate, ct).ConfigureAwait(false);
+            if (curve is { Points.Count: > 0 })
+            {
+                curves[indexName] = curve;
+            }
+        }
+
+        return curves;
+    }
+
     private static StructuredCashFlowProjectionDto BuildCalculatedProjection(
         SecurityDetailDto security,
         StructuredCashFlowSourceKind sourceKind,
         StructuredCashFlowScenario scenario,
         StructuredCashFlowStaleness staleness,
-        DateTimeOffset? sourceLastUpdatedUtc)
+        DateTimeOffset? sourceLastUpdatedUtc,
+        IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null)
     {
         var asOf = DateTimeOffset.UtcNow;
         var terms = StructuredCashFlowTermsResolver.Resolve(security);
@@ -245,7 +280,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         {
             return BuildLegBasedProjection(
                 security, sourceKind, scenario, staleness, sourceLastUpdatedUtc,
-                terms, factorSchedule, issueDate, maturity, asOf, asOfDate);
+                terms, factorSchedule, issueDate, maturity, asOf, asOfDate, forwardCurves);
         }
 
         if (terms.HasStepCouponSchedule || terms.InflationIndex is not null)
@@ -501,17 +536,19 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         DateOnly issueDate,
         DateOnly maturity,
         DateTimeOffset asOf,
-        DateOnly asOfDate)
+        DateOnly asOfDate,
+        IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves)
     {
         var legs = terms.Legs!;
-        var missingLegRate = legs.Any(leg => leg.RateKind == CashFlowLegRateKind.Fixed
-            ? leg.FixedRate is null : leg.CurrentIndexRate is null);
+        var missingLegRate = legs.Any(leg => IsLegRateMissing(leg, ResolveCurve(leg, forwardCurves)));
         var legSchedules = new List<StructuredCashFlowLegSchedule>(legs.Count);
         foreach (var leg in legs)
         {
+            var curve = ResolveCurve(leg, forwardCurves);
             legSchedules.Add(new StructuredCashFlowLegSchedule(
                 leg.LegId, leg.RateKind, leg.Direction,
-                BuildLegSchedule(leg, terms, scenario, issueDate, maturity, asOfDate)));
+                BuildLegSchedule(leg, terms, scenario, issueDate, maturity, asOfDate, curve),
+                DescribeRateSource(leg, curve)));
         }
 
         // Net receive-minus-pay only when every leg's direction is known (a single directionless
@@ -528,15 +565,38 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             missingLegRate ? "A cash-flow leg is missing its fixed rate or index fixing; zero is not a substitute for missing terms." : null);
     }
 
+    private static SecurityForwardCurve? ResolveCurve(
+        StructuredCashFlowLeg leg,
+        IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves)
+        => leg.RateKind == CashFlowLegRateKind.Floating
+           && !string.IsNullOrWhiteSpace(leg.IndexName)
+           && forwardCurves is not null
+           && forwardCurves.TryGetValue(leg.IndexName.Trim(), out var curve)
+            ? curve
+            : null;
+
+    // A floating leg with a forward curve can project without a retained fixing: the curve supplies
+    // every reset. Without one, the last fixing is required and zero is never substituted.
+    private static bool IsLegRateMissing(StructuredCashFlowLeg leg, SecurityForwardCurve? curve)
+        => leg.RateKind == CashFlowLegRateKind.Fixed
+            ? leg.FixedRate is null
+            : leg.CurrentIndexRate is null && curve is null;
+
+    private static string DescribeRateSource(StructuredCashFlowLeg leg, SecurityForwardCurve? curve)
+        => leg.RateKind == CashFlowLegRateKind.Fixed
+            ? "fixed"
+            : curve is not null ? curve.Describe() : "flatForward:lastFixing";
+
     private static IReadOnlyList<StructuredCashFlowScheduleEntry> BuildLegSchedule(
         StructuredCashFlowLeg leg,
         StructuredCashFlowTerms terms,
         StructuredCashFlowScenario scenario,
         DateOnly issueDate,
         DateOnly maturity,
-        DateOnly asOfDate)
+        DateOnly asOfDate,
+        SecurityForwardCurve? curve = null)
     {
-        if (leg.RateKind == CashFlowLegRateKind.Fixed ? leg.FixedRate is null : leg.CurrentIndexRate is null)
+        if (IsLegRateMissing(leg, curve))
             return [];
 
         var notional = leg.Notional ?? terms.PrincipalFace ?? 100m;
@@ -545,7 +605,6 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             return [];
         }
 
-        var annualRate = ResolveLegAnnualRate(leg, scenario);
         var dayCount = leg.DayCountConvention ?? terms.DayCountConvention;
         var periodMonths = Math.Max(1, 12 / ResolvePaymentFrequencyPerYear(leg.PaymentFrequency ?? terms.PaymentFrequency));
         var periods = BuildPaymentPeriods(issueDate, maturity, periodMonths)
@@ -560,6 +619,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         for (var i = 0; i < periods.Length; i++)
         {
             var (accrualStart, date) = periods[i];
+            var annualRate = ResolveLegAnnualRate(leg, scenario, curve, accrualStart, asOfDate);
             var interest = annualRate > 0m
                 ? RoundCash(notional * annualRate * DayCountConventions.Fraction(dayCount, accrualStart, date))
                 : 0m;
@@ -575,14 +635,29 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         return entries;
     }
 
-    private static decimal ResolveLegAnnualRate(StructuredCashFlowLeg leg, StructuredCashFlowScenario scenario)
+    private static decimal ResolveLegAnnualRate(
+        StructuredCashFlowLeg leg,
+        StructuredCashFlowScenario scenario,
+        SecurityForwardCurve? curve,
+        DateOnly accrualStart,
+        DateOnly asOfDate)
     {
         // Fixed legs pay their contractual rate regardless of scenario; floating legs reset with
-        // rates, so the scenario shift applies to them only. Floating projects at the last fixing
-        // plus spread — a deliberate flat-forward simplification, not a curve.
-        var rate = leg.RateKind == CashFlowLegRateKind.Fixed
-            ? NormalizeAnnualRate(leg.FixedRate ?? 0m)
-            : NormalizeAnnualRate(leg.CurrentIndexRate ?? 0m) + ((leg.SpreadBps ?? 0m) / 10_000m) + ScenarioRateShift(scenario);
+        // rates, so the scenario shift applies to them only. A period that has already reset (its
+        // accrual started on or before the as-of date) keeps the retained fixing. Later resets read
+        // the forward curve at the accrual start when one is supplied, and otherwise fall back to
+        // the last fixing (flat forward).
+        if (leg.RateKind == CashFlowLegRateKind.Fixed)
+        {
+            var fixedRate = NormalizeAnnualRate(leg.FixedRate ?? 0m);
+            return fixedRate < 0m ? 0m : fixedRate;
+        }
+
+        var hasReset = accrualStart <= asOfDate && leg.CurrentIndexRate is not null;
+        var index = !hasReset && curve?.RateAt(accrualStart) is decimal projected
+            ? projected
+            : leg.CurrentIndexRate ?? curve?.RateAt(accrualStart) ?? 0m;
+        var rate = NormalizeAnnualRate(index) + ((leg.SpreadBps ?? 0m) / 10_000m) + ScenarioRateShift(scenario);
         return rate < 0m ? 0m : rate;
     }
 

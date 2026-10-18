@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-05
+**Reviewed:** 2026-10-15
 
 This is the canonical developer and agent entrypoint for Meridian engineering and contribution work.
 It replaces hand-built planning and historical engineering prose with active operating guidance.
@@ -25,7 +25,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **CI/CD ownership and rollout:** [CI/CD validation ownership](ci-cd-optimization.md)
 - **Pipeline budget measurements (PRD-112):** [Bounded benchmark lane and retained evidence](pipeline-benchmark.md)
 - **Docs regeneration automation constraints:** [Docs Regeneration Automation — Design Constraints](docs-regeneration-automation-design.md)
-- **Browser/docs regeneration and generated merge conflicts:** [Run the complete maintained generation sequence](generated-merge-recovery.md)
+- **Browser/docs regeneration and generated merge conflicts:** [Prepare an isolated repair and reviewed-hash merge](generated-merge-recovery.md)
 - **Free development tools:** [Free Development Tools](free-development-tools.md)
 - **C#/WPF market study companion:** [Practical C# and WPF for Financial Markets](practical-csharp-wpf-financial-markets.md)
 
@@ -71,11 +71,45 @@ without supported source files. CI continues to check whitespace across `Meridia
 For hosted CI cache behavior, artifact locations, and timing comparisons, see
 [dependency caches and artifacts](../../.github/workflows/README.md#dependency-caches-and-artifacts).
 
-For completed PR-ready work, use the canonical repository gate:
+### Contributor validation path
+
+Run commands from the repository root. Start with the [checkout prerequisites](../start/README.md#prerequisites),
+then inspect the environment and any active local .NET validation before choosing a check:
+
+```powershell
+python build/python/cli/buildctl.py doctor --quick
+python build/python/cli/buildctl.py validation-status --summary
+```
+
+`doctor --quick` skips restore and reports missing tooling, services, configuration, and provider
+credentials. Warnings also produce a nonzero exit; read which capability is missing before
+attempting that lane. Live-provider credentials and PostgreSQL are not prerequisites for a focused
+browser or Python check. Doctor is a diagnostic, not proof that the selected lane passes.
+
+Choose the lane that covers the change while iterating. A lane runs its maintained prerequisites
+and checks in order; focused test commands below are useful for a shorter edit/test loop.
+
+| Change or failure | Maintained lane | Additional prerequisites |
+| --- | --- | --- |
+| .NET source or tests | `bash scripts/ci.sh --lane verify-dotnet` | SDK from `global.json`; the lane restores and builds before testing. |
+| Browser dashboard or generated UI contracts | `bash scripts/ci.sh --lane verify-browser` | Node.js 24 and npm; the lane installs dashboard dependencies from the lockfile. |
+| Documentation, source registry, roadmap, or AI guidance | `bash scripts/ci.sh --lane verify-docs` | `python -m pip install --requirement build/scripts/docs/requirements.txt`; generation can update tracked files, so review the resulting diff. |
+| Actions, CI tooling, or repository script tests | `bash scripts/ci.sh --lane verify-workflows` | `python -m pip install --requirement build/scripts/ci/requirements.txt`, actionlint 1.7.12, and PowerShell 7 for the recovery suites. |
+
+All lanes require Bash, Git, and Python 3.11 or newer. See the [workflow prerequisites](ci-cd-optimization.md)
+for the hosted tool installation. Before retrying a failure, open
+`artifacts/ci-summary/<lane>/summary.md`: it lists the failed step, the lane reproduction command,
+and focused commands for recognized failures. Retained build logs and .NET shard reports are
+under `artifacts/build-logs/` and `artifacts/test-results/dotnet/`. Diagnose resource or lock
+contention with `validation-status` and the recovery guidance below before starting another build.
+
+For completed PR-ready work, run the full canonical repository gate after the focused checks:
 
 ```powershell
 bash scripts/ci.sh
 ```
+
+Focused checks and environment diagnostics do not replace this gate or the required hosted checks.
 
 GitHub Actions `Meridian CI / quality-gate` is the authoritative merge result. Local work may
 happen on `main` when the user explicitly requests it or the checkout is intentionally operating
@@ -85,6 +119,22 @@ there. Do not bypass GitHub branch protections; for PR-ready publishing, use a
 The four-lane `Meridian CI / quality-gate` keeps its identity. The always-reported
 `Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
 Production Certification, including pull requests and merge groups.
+
+For tracked-output drift or conflicts after updating from main, prepare a candidate without
+changing your branch or index:
+
+```powershell
+git fetch origin main
+python build/scripts/repair-generated.py --base-ref origin/main --head-ref HEAD --install-dependencies
+```
+
+Inspect `artifacts/generated-repair/report.json` and any successful repair patches. Source/prose
+conflicts and reviewed module hashes that match neither parent require review. Eligible hosted PRs
+can receive an App-backed repair commit with fresh CI; forks retain the contributor path.
+See [repair and fallback details](generated-merge-recovery.md) and
+[hosted activation](ci-cd-optimization.md#generated-repair-and-maintenance-activation).
+Merge-group freshness checks still fail when combined output is stale; refresh the affected
+branches and rebuild the group.
 
 The .NET lane builds the web host, then all unique default test projects in one generated
 solution-filter build for the standard `Release` configuration. The filter follows shared
@@ -194,21 +244,39 @@ $baselineSha = git rev-parse --verify 'origin/main^{commit}'
 # Local, database-free migration inventory and safety checks
 python build/scripts/schema-control.py inventory --base-ref $baselineSha
 
-# Rebuild and verify against a disposable PostgreSQL database
+# Scaffold the next free migration ordinal and regenerate the reservation table
+python build/scripts/schema-control.py new-migration --migration-set ledger --name example
+python build/scripts/schema-control.py generate-migration-docs --check
+
+# Rebuild and verify with an owned disposable PostgreSQL container (requires Docker)
 python -m pip install --requirement tools/schema_control/requirements.txt
-python build/scripts/schema-control.py verify `
-  --database-url "postgresql://meridian:meridian@localhost:5432/meridian_schema_control" `
+python build/scripts/schema-control.py local `
   --base-ref $baselineSha
 
 # Generate a hosted snapshot artifact for review
 gh workflow run schema-control.yml --ref <branch> -f mode=snapshot -f baseline_ref=$baselineSha
 ```
 
+The local command allocates a fresh container, host port, and retained candidate directory for
+each run, so consecutive and concurrent worktree checks need no manual database reset or port
+selection. It retains verification and PostgreSQL logs and cleans up its owned resources after
+completion or cancellation. Use `local --mode snapshot` to prepare a reviewed candidate;
+`promote --candidate-root <printed-candidate-directory>` remains an explicit separate command.
+
 PR checks compare against the pull-request event's base SHA. Both manual modes require an explicit
 `baseline_ref`, resolved once to a commit. Run evidence records the baseline and the actual
 checked-out candidate SHA (normally the GitHub merge commit for PRs). Use that same pair to
 reproduce a comparison independently of later `origin/main` advances; see the schema-control guide
 for evidence paths and local working-tree details.
+
+The [machine-readable migration reservation register](../../database/migration-reservations.json)
+owns pending ordinal claims; the [blueprint table](blueprints/README.md#ledger-migration-ordinals)
+is generated from it and existing SQL filenames. `new-migration` advances past the highest on-disk
+ordinal and skips reservations. An explicit `--ordinal N` also refuses occupied or reserved numbers.
+Release a pending claim before scaffolding its implementation, and run
+`python build/scripts/schema-control.py generate-migration-docs` after editing reservations.
+Preserve applied filenames and ordinals, including the two historical Ledger `008` scripts.
+PR-base comparison rejects newly introduced ordinal collisions.
 
 Never point `snapshot` or `verify` at a shared or production database. The workflow's check mode is
 read-only with respect to the repository and fails when `database/manifest/**` or

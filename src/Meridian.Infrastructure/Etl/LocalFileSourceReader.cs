@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Meridian.Contracts.Etl;
 using Meridian.Contracts.Integrity;
 
@@ -6,6 +7,7 @@ namespace Meridian.Infrastructure.Etl;
 public sealed class LocalFileSourceReader : IEtlSourceReader
 {
     private readonly IEtlStagingStore _stagingStore;
+    private readonly ConditionalWeakTable<EtlRemoteFile, StagedIdentity> _stagedIdentities = new();
 
     public LocalFileSourceReader(IEtlStagingStore stagingStore)
     {
@@ -40,7 +42,11 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
     public async Task<EtlStagedFile> StageFileAsync(string jobId, EtlSourceDefinition source, EtlRemoteFile file, CancellationToken ct = default)
     {
         await using var stream = new FileStream(file.Path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
-        return await _stagingStore.StageAsync(jobId, file, stream, ct).ConfigureAwait(false);
+        var lastWriteTime = File.GetLastWriteTimeUtc(stream.SafeFileHandle);
+        var creationTime = File.GetCreationTimeUtc(stream.SafeFileHandle);
+        var staged = await _stagingStore.StageAsync(jobId, file, stream, ct).ConfigureAwait(false);
+        _stagedIdentities.AddOrUpdate(file, new StagedIdentity(staged.ChecksumSha256, staged.SizeBytes, lastWriteTime, creationTime));
+        return staged;
     }
 
     public async Task PostProcessFileAsync(EtlSourceDefinition source, EtlRemoteFile file, bool succeeded, CancellationToken ct = default)
@@ -53,22 +59,77 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
             return;
         }
 
-        switch (action)
+        if (!_stagedIdentities.TryGetValue(file, out var identity))
+            throw new InvalidOperationException("Local ETL post-processing requires the identity captured while staging this file.");
+
+        await identity.Gate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            case EtlSourcePostProcessingAction.Delete when File.Exists(file.Path):
-                File.Delete(file.Path);
-                break;
-            case EtlSourcePostProcessingAction.MoveToArchive when !string.IsNullOrWhiteSpace(source.ArchiveLocation):
-                await MoveLocalFileAsync(file.Path, source.ArchiveLocation, ct).ConfigureAwait(false);
-                break;
-            case EtlSourcePostProcessingAction.MoveToError when !string.IsNullOrWhiteSpace(source.ErrorLocation):
-                await MoveLocalFileAsync(file.Path, source.ErrorLocation, ct).ConfigureAwait(false);
-                break;
-            case EtlSourcePostProcessingAction.WriteDoneMarker:
-                await File.WriteAllTextAsync(file.Path + ".done", DateTimeOffset.UtcNow.ToString("O"), ct)
-                    .ConfigureAwait(false);
-                break;
+            if (!File.Exists(file.Path))
+                return; // The same staged input may already have been retained by an earlier attempt.
+
+            await VerifyStagedIdentityAsync(file.Path, identity, ct).ConfigureAwait(false);
+            if (action == EtlSourcePostProcessingAction.WriteDoneMarker)
+            {
+                await File.WriteAllTextAsync(file.Path + ".done", DateTimeOffset.UtcNow.ToString("O"), ct).ConfigureAwait(false);
+                return;
+            }
+
+            // Claim the directory entry atomically, then verify the claimed bytes. A producer can
+            // replace positions.csv after the first check, but cleanup never acts on that new entry.
+            var claimedPath = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(file.Path))!,
+                ".etl-processing-" + Guid.NewGuid().ToString("N"));
+            File.Move(file.Path, claimedPath);
+            try
+            {
+                await VerifyStagedIdentityAsync(claimedPath, identity, ct).ConfigureAwait(false);
+                switch (action)
+                {
+                    case EtlSourcePostProcessingAction.Delete:
+                        File.Delete(claimedPath);
+                        break;
+                    case EtlSourcePostProcessingAction.MoveToArchive when !string.IsNullOrWhiteSpace(source.ArchiveLocation):
+                        await MoveLocalFileAsync(claimedPath, source.ArchiveLocation, Path.GetFileName(file.Path), ct).ConfigureAwait(false);
+                        break;
+                    case EtlSourcePostProcessingAction.MoveToError when !string.IsNullOrWhiteSpace(source.ErrorLocation):
+                        await MoveLocalFileAsync(claimedPath, source.ErrorLocation, Path.GetFileName(file.Path), ct).ConfigureAwait(false);
+                        break;
+                }
+            }
+            finally
+            {
+                // A mismatch, cancellation or retention error must preserve the claimed input.
+                // Never overwrite another drop that arrived while this entry was claimed.
+                if (File.Exists(claimedPath))
+                {
+                    if (!File.Exists(file.Path))
+                        File.Move(claimedPath, file.Path);
+                    else
+                        throw new IOException($"ETL source changed during post-processing; preserved the claimed file at '{claimedPath}' and the new drop at '{file.Path}'.");
+                }
+            }
         }
+        finally
+        {
+            identity.Gate.Release();
+        }
+    }
+
+    private static async Task VerifyStagedIdentityAsync(string path, StagedIdentity identity, CancellationToken ct)
+    {
+        await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, useAsync: true);
+        if (stream.Length != identity.SizeBytes ||
+            File.GetLastWriteTimeUtc(stream.SafeFileHandle) != identity.LastWriteTimeUtc ||
+            File.GetCreationTimeUtc(stream.SafeFileHandle) != identity.CreationTimeUtc ||
+            !string.Equals(await Sha256Digest.ComputeAsync(stream, ct).ConfigureAwait(false), identity.ChecksumSha256, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Local ETL source changed since staging; post-processing left the unprocessed replacement in place.");
+        }
+    }
+
+    private sealed record StagedIdentity(string ChecksumSha256, long SizeBytes, DateTime LastWriteTimeUtc, DateTime CreationTimeUtc)
+    {
+        public SemaphoreSlim Gate { get; } = new(1, 1);
     }
 
     /// <summary>
@@ -77,10 +138,10 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
     /// already ran, so the source is simply dropped; a name held by different content resolves to
     /// a deterministic content-addressed sibling so both sources survive.
     /// </summary>
-    private static async Task MoveLocalFileAsync(string path, string directory, CancellationToken ct)
+    private static async Task MoveLocalFileAsync(string path, string directory, string fileName, CancellationToken ct)
     {
         Directory.CreateDirectory(directory);
-        var destination = Path.Combine(directory, Path.GetFileName(path));
+        var destination = Path.Combine(directory, fileName);
         if (!File.Exists(destination))
         {
             File.Move(path, destination);
@@ -98,7 +159,7 @@ public sealed class LocalFileSourceReader : IEtlSourceReader
 
         var disambiguated = Path.Combine(
             directory,
-            EtlArchiveNaming.BuildCollisionSafeName(Path.GetFileName(path), sourceHash));
+            EtlArchiveNaming.BuildCollisionSafeName(fileName, sourceHash));
         if (File.Exists(disambiguated))
         {
             // The name is derived from this content, so an occupant should carry it. Verify rather

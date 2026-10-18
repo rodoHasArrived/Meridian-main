@@ -77,7 +77,7 @@ public class ReportingAuthoritativeSourceUnavailableException : InvalidOperation
 /// structure, organization, book, period, accounting basis, currency, selected dimensions, and
 /// line-level dimensional stamps are all verified before a checkpoint is issued.
 /// </summary>
-public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritativeSource
+public sealed partial class LedgerReportingAuthoritativeSource : IReportingAuthoritativeSource
 {
     private const string SourceKind = "durable-ledger-journal";
 
@@ -91,16 +91,19 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         IFundProfileTenancyRegistry tenancyRegistry,
         IFundStructureService fundStructure,
         TimeProvider? timeProvider = null,
-        ILedgerTaxLotDisposalHistory? taxLotDisposalHistory = null)
+        ILedgerTaxLotDisposalHistory? taxLotDisposalHistory = null,
+        ILedgerOpenLotSuccessorHistory? openLotSuccessorHistory = null)
     {
         _journalStore = journalStore ?? throw new ArgumentNullException(nameof(journalStore));
         _tenancyRegistry = tenancyRegistry ?? throw new ArgumentNullException(nameof(tenancyRegistry));
         _fundStructure = fundStructure ?? throw new ArgumentNullException(nameof(fundStructure));
         _timeProvider = timeProvider ?? TimeProvider.System;
 
-        // The optional history argument is retained for caller compatibility. Certified relief
-        // must come from the atomic reporting snapshot seam, never a later independent read.
+        // The optional history arguments are retained for caller compatibility. Certified relief and
+        // corporate-action successor evidence must come from the atomic reporting snapshot seam,
+        // never a later independent read.
         _ = taxLotDisposalHistory;
+        _ = openLotSuccessorHistory;
     }
 
     public ValueTask<ReportingAuthoritativeSourceCapture> CaptureAsync(
@@ -191,6 +194,7 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
             OccurredTo: cutoffUtc);
         IReadOnlyList<LedgerJournalEntryRecord> records;
         IReadOnlyList<LedgerTaxLotDisposalHistoryRecord>? retainedTaxHistory = null;
+        IReadOnlyList<AtomicTaxLotJournalResult>? retainedSuccessorHistory = null;
         try
         {
             if (_journalStore is ILedgerReportingSnapshotSource snapshotSource)
@@ -199,6 +203,7 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
                     .ConfigureAwait(false);
                 records = captured.Journals;
                 retainedTaxHistory = captured.TaxLotDisposalHistory;
+                retainedSuccessorHistory = captured.OpenLotSuccessorHistory;
                 period = captured.Period
                     ?? throw Unavailable("The reporting snapshot did not retain its accounting period authority.");
                 ValidatePeriod(parameters, period, book);
@@ -225,6 +230,7 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
             .ThenBy(static record => record.Entry.JournalEntryId)
             .ToArray();
         var ordered = orderedHistory.Where(record => record.PeriodId == period.PeriodId).ToArray();
+        var completeJournals = ordered;
         ordered = FilterToCertifiedDimensions(
             ordered,
             period,
@@ -241,6 +247,8 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
             requiredDimensions);
 
         var rows = BuildRows(ordered, book, period, fundId, organization.OrganizationId);
+        rows = RetainOpenLotSuccessorEvidence(
+            rows, completeJournals, ordered, book, period, tenantId, companyId, fundId, retainedSuccessorHistory);
         if (parameters.Finality == ReportingFinalityDto.Final
             && rows.IsDefaultOrEmpty)
         {
@@ -251,7 +259,7 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         var populationSnapshot = BuildLedgerPopulationSnapshot(
             parameters, new LedgerAmountScopeDto(tenantId, companyId, fundId, book.LedgerBookId, period.PeriodId),
             book, period, basis, cutoffUtc, requiredDimensions, orderedHistory, retainedTaxHistory,
-            cancellationToken);
+            retainedSuccessorHistory, cancellationToken);
         populationSnapshot = populationSnapshot with
         {
             PeriodVersion = period.Version,
@@ -282,6 +290,9 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         evidence.Add($"ledger-sequence:{highestSequence.ToString(CultureInfo.InvariantCulture)}");
         evidence.Add($"ledger-rows:{rows.Length.ToString(CultureInfo.InvariantCulture)}");
         evidence.Add($"ledger-population:{retainedPopulation.SnapshotId}:{retainedPopulation.ContentHashSha256}");
+        foreach (var successorHash in rows.Where(static row => row.ContainsKey("openLotSuccessorEvidenceHash"))
+                     .Select(static row => row["openLotSuccessorEvidenceHash"]).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal))
+            evidence.Add($"open-lot-successor-evidence:{successorHash}");
         if (canonicalReportPack is not null)
         {
             evidence.Add(ReportingCertifiedLedgerPresentationBinding.BuildEvidenceId(canonicalReportPack));
@@ -312,6 +323,7 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
         LedgerLineDimensionSet selectedDimensions,
         LedgerJournalEntryRecord[] orderedHistory,
         IReadOnlyList<LedgerTaxLotDisposalHistoryRecord>? retainedTaxHistory,
+        IReadOnlyList<AtomicTaxLotJournalResult>? retainedSuccessorHistory,
         CancellationToken cancellationToken)
     {
         var fundId = scope.FundProfileId;
@@ -393,8 +405,13 @@ public sealed class LedgerReportingAuthoritativeSource : IReportingAuthoritative
                 retainedTaxHistory,
                 cancellationToken);
 
+        var corporateActionLotReports = BuildCorporateActionLotReports(
+                book.LedgerBookId, orderedHistory, book.BaseCurrency, selectedDimensions, retainedSuccessorHistory);
         return new ReportingLedgerPopulationSnapshot(scope, reportRequest,
-            orderedHistory.ToImmutableArray(), taxLotReliefProjections.ToImmutableArray());
+            orderedHistory.ToImmutableArray(), taxLotReliefProjections.ToImmutableArray())
+        {
+            CorporateActionLotReports = corporateActionLotReports.ToImmutableArray()
+        };
     }
 
     /// <summary>

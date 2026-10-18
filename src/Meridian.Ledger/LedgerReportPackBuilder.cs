@@ -18,7 +18,8 @@ public static class LedgerReportPackBuilder
         LedgerReportPackRequest request,
         ChartOfAccounts? chart = null,
         string? financialAccountId = null,
-        IReadOnlyList<LedgerTaxLotReliefProjection>? taxLotReliefProjections = null)
+        IReadOnlyList<LedgerTaxLotReliefProjection>? taxLotReliefProjections = null,
+        IReadOnlyList<CanonicalCorporateActionLotReport>? corporateActionLotReports = null)
     {
         ArgumentNullException.ThrowIfNull(ledger);
         ArgumentNullException.ThrowIfNull(request);
@@ -61,6 +62,14 @@ public static class LedgerReportPackBuilder
         {
             var content = JsonSerializer.Serialize(canonicalEvidence);
             artifacts.Add(new LedgerReportPackArtifact("canonical-open-lot-evidence.json", "application/json",
+                content, Sha256Digest.ComputeUtf8(content)));
+        }
+
+        if (corporateActionLotReports is { Count: > 0 })
+        {
+            var content = JsonSerializer.Serialize(corporateActionLotReports
+                .OrderBy(static report => report.JournalEntryId).ToArray());
+            artifacts.Add(new LedgerReportPackArtifact("corporate-action-lot-evidence.json", "application/json",
                 content, Sha256Digest.ComputeUtf8(content)));
         }
 

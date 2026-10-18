@@ -37,6 +37,9 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     // Owned lifetime token so background fire-and-forget tasks are cancelled on disposal.
     private readonly CancellationTokenSource _serviceCts = new();
 
+
+    private readonly ISecurityMasterCanonicalWriteScope _canonicalWriteScope;
+
     public SecurityMasterService(
         ISecurityMasterEventStore eventStore,
         ISecurityMasterSnapshotStore snapshotStore,
@@ -49,8 +52,10 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         SecurityMasterProjectionCache? projectionCache = null,
         SecurityMasterCanonicalSymbolSeedService? seedService = null,
         Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
-        ISecurityFieldProvenanceStore? fieldProvenance = null)
+        ISecurityFieldProvenanceStore? fieldProvenance = null,
+        ISecurityMasterCanonicalWriteScope? canonicalWriteScope = null)
     {
+        _canonicalWriteScope = canonicalWriteScope ?? PassthroughSecurityMasterCanonicalWriteScope.Instance;
         _eventStore = eventStore;
         _snapshotStore = snapshotStore;
         _store = store;
@@ -107,11 +112,13 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         var assetClassOverride = GetProfileBackedAssetClassOverride(currentProjection, request.AssetSpecificTermsPatch);
         var assetTermsOverride = GetProfileBackedAssetSpecificTermsOverride(currentProjection, request.AssetSpecificTermsPatch);
         var result = SecurityMasterCommandFacade.Amend(currentRecord, SecurityMasterMapping.ToAmendCommand(request, kindSourceProjection));
-        var projection = CreateProjectionFromResult(
-            result,
-            currentProjection.Aliases,
-            assetClassOverride,
-            assetTermsOverride);
+        var projection = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
+            currentProjection,
+            CreateProjectionFromResult(
+                result,
+                currentProjection.Aliases,
+                assetClassOverride,
+                assetTermsOverride));
         EnsureProfileBackedTermsAreCatalogValid(projection, request.EffectiveFrom);
 
         // The amend seam is the one place the pre-write golden copy and the incoming revision are
@@ -130,6 +137,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // amendment's value in a durably recorded conflict.
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var amendmentGate = await AmendmentGates.AcquireAsync(request.SecurityId, ct).ConfigureAwait(false);
+        SecurityProjectionRecord? persistedProjection = null;
         try
         {
             await RecordFieldConflictsBeforePersistAsync(currentProjection, projection, ct).ConfigureAwait(false);
@@ -142,21 +150,39 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 request.Reason,
                 projection.Version);
 
-            await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
-            await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
             // A governed field that just changed invalidates any prior conflict-resolution attribution
             // for that path: the recorded winner no longer supplied the current value. Changed paths
             // are computed independently of cross-source conflict creation — the previous winner
             // amending its OWN value opens no conflict, yet still makes the old attribution stale.
-            // Attribution runs IMMEDIATELY after the projection write (before snapshots and identifier
-            // conflict detection) to minimize the window in which a concurrent reader sees the new
-            // value with the old field attribution; true atomicity needs the shared-transaction seam
-            // tracked as follow-up work.
             var changedGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(
                 currentProjection, projection, _assetProfileCatalog);
-            await TryRetireStaleFieldResolutionProvenanceAsync(
-                changedGovernedFields, request.SecurityId, projection.Version, ct).ConfigureAwait(false);
-            await TryRecordCanonicalFieldAttributionAsync(changedGovernedFields, projection, ct).ConfigureAwait(false);
+            if (_canonicalWriteScope.IsAtomic)
+            {
+                // The event, the projection and the field attribution commit in one transaction:
+                // attribution can no longer be lost after the canonical write committed, and a
+                // failed attribution rolls the amendment back instead of leaving a stale incumbent.
+                await _canonicalWriteScope.ExecuteAsync(request.SecurityId, async () =>
+                {
+                    await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
+                    await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
+                    await RecordFieldLineageInScopeAsync(
+                        changedGovernedFields, changedGovernedFields, projection, ct).ConfigureAwait(false);
+                    return true;
+                }, ct).ConfigureAwait(false);
+                persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
+            }
+            else
+            {
+                await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
+                await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
+                persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
+                // Without a shared transaction, attribution runs IMMEDIATELY after the projection
+                // write (before snapshots and identifier conflict detection) to minimize the window
+                // in which a concurrent reader sees the new value with the old field attribution.
+                await TryRetireStaleFieldResolutionProvenanceAsync(
+                    changedGovernedFields, request.SecurityId, projection.Version, _serviceCts.Token).ConfigureAwait(false);
+                await TryRecordCanonicalFieldAttributionAsync(changedGovernedFields, projection, _serviceCts.Token).ConfigureAwait(false);
+            }
         }
         finally
         {
@@ -166,13 +192,15 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         // refreshing them before AppendAsync's ExpectedVersion check could mutate the governed
         // conflict queue for an amendment the event store then rejects. Best-effort — a failed
         // sweep leaves conflicts Open, where the resolve-time guard reconciles them lazily.
-        await TryReconcileOpenFieldConflictsAsync(projection, ct).ConfigureAwait(false);
+        if (persistedProjection is not null)
+            await TryReconcileOpenFieldConflictsAsync(persistedProjection, _serviceCts.Token).ConfigureAwait(false);
         // The snapshot and identifier-conflict steps are post-commit too: the event append and
         // projection upsert are durable, so a canceled request token must not surface a canceled
-        // amendment (the retry would fail concurrency on the advanced version) nor skip the
-        // cache/registry updates below.
-        await SaveSnapshotIfNeededAsync(economic, CancellationToken.None).ConfigureAwait(false);
-        await TryRecordConflictsAsync(projection, request.SecurityId, CancellationToken.None).ConfigureAwait(false);
+        // amendment (the retry would fail concurrency on the advanced version). Local cache and
+        // registry coherence has already been scheduled at the projection commit boundary.
+        await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
+        if (persistedProjection is not null)
+            await TryRecordConflictsAsync(persistedProjection, request.SecurityId, _serviceCts.Token).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action re-fetch so that updated identifiers
         // (e.g. ticker changes after a merger rename) are reflected in the backfill history.
@@ -197,10 +225,6 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                 }
             }, ct2);
         }
-
-        // Keep the in-memory projection cache and canonical registry consistent with the DB write.
-        _projectionCache?.Upsert(projection);
-        TryReseedRegistryInBackground();
 
         return SecurityMasterMapping.ToDetail(projection);
     }
@@ -247,6 +271,29 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         return await AmendTermsInternalAsync(amendRequest, eventType: "ConvertibleTermsAmended", ct).ConfigureAwait(false);
     }
 
+    public async Task<SecurityDetailDto> AmendTermBlockAsync(Guid securityId, string blockKey, AmendSecurityTermBlockRequest request, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
+
+        var amendRequest = new AmendSecurityTermsRequest(
+            SecurityId: securityId,
+            ExpectedVersion: request.ExpectedVersion,
+            CommonTerms: null,
+            AssetSpecificTermsPatch: SecurityTermBlocks.BuildPatch(
+                currentProjection.AssetClass, currentProjection.AssetSpecificTerms, blockKey, request.Block),
+            IdentifiersToAdd: Array.Empty<SecurityIdentifierDto>(),
+            IdentifiersToExpire: Array.Empty<SecurityIdentifierDto>(),
+            EffectiveFrom: request.EffectiveFrom,
+            SourceSystem: request.SourceSystem,
+            UpdatedBy: request.UpdatedBy,
+            SourceRecordId: request.SourceRecordId,
+            Reason: request.Reason);
+
+        return await AmendTermsInternalAsync(amendRequest, eventType: SecurityTermBlocks.AmendedEventType, ct).ConfigureAwait(false);
+    }
+
     public async Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
     {
         var aliasProjection = await _store.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
@@ -257,11 +304,13 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         EnsureAssetClassRoundTripsSafely(currentProjection);
         var currentRecord = SecurityMasterMapping.ToRecord(currentProjection);
         var result = SecurityMasterCommandFacade.Deactivate(currentRecord, SecurityMasterMapping.ToDeactivateCommand(request));
-        var projection = CreateProjectionFromResult(
-            result,
-            currentProjection.Aliases,
-            GetProfileBackedAssetClassOverride(currentProjection),
-            GetProfileBackedAssetSpecificTermsOverride(currentProjection, assetSpecificTermsPatch: null));
+        var projection = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
+            currentProjection,
+            CreateProjectionFromResult(
+                result,
+                currentProjection.Aliases,
+                GetProfileBackedAssetClassOverride(currentProjection),
+                GetProfileBackedAssetSpecificTermsOverride(currentProjection, assetSpecificTermsPatch: null)));
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
@@ -271,14 +320,14 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             request.Reason,
             projection.Version);
 
-        await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
-        await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
-        await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
-
-        // Keep the in-memory projection cache coherent with the durable write, matching the
-        // create/amend paths — without this a deactivated security kept reading Active from the
-        // warm cache until the next full re-warm.
-        _projectionCache?.Upsert(projection);
+        await _canonicalWriteScope.ExecuteAsync(request.SecurityId, async () =>
+        {
+            await _eventStore.AppendAsync(request.SecurityId, request.ExpectedVersion, [envelope], ct).ConfigureAwait(false);
+            await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
+            return true;
+        }, ct).ConfigureAwait(false);
+        await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
+        await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
     }
 
     public Task<SecurityAliasDto> UpsertAliasAsync(UpsertSecurityAliasRequest request, CancellationToken ct = default)
@@ -292,8 +341,8 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             request.Scope,
             request.Reason,
             request.CreatedBy,
-            // Proposed creation stamp. It is applied only to a new alias. An existing alias ID may be
-            // replayed idempotently, but material correction must use an append-only revision path.
+            // Proposed creation stamp. It is applied only to a new alias. For an existing alias ID the
+            // store retains the original creation facts; a material correction appends an alias revision.
             DateTimeOffset.UtcNow,
             request.ValidFrom,
             request.ValidTo,
@@ -320,18 +369,34 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             request.Reason,
             projection.Version);
 
-        await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [envelope], ct).ConfigureAwait(false);
-        await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
         // Creation is the first canonical write of every governed field the record supplies, so it
         // seeds the per-field attribution the same way an amend does — diffed against an empty
-        // baseline instead of a previous revision, and immediately after the projection write to
-        // minimize the unattributed window.
+        // baseline instead of a previous revision.
         var seededGovernedFields = SecurityMasterConflictDetection.ChangedGovernedFieldPaths(
             CreateEmptyGovernedBaseline(projection), projection, _assetProfileCatalog);
-        await TryRecordCanonicalFieldAttributionAsync(seededGovernedFields, projection, ct).ConfigureAwait(false);
-        await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
+        SecurityProjectionRecord? persistedProjection;
+        if (_canonicalWriteScope.IsAtomic)
+        {
+            await _canonicalWriteScope.ExecuteAsync(request.SecurityId, async () =>
+            {
+                await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [envelope], ct).ConfigureAwait(false);
+                await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
+                await RecordFieldLineageInScopeAsync([], seededGovernedFields, projection, ct).ConfigureAwait(false);
+                return true;
+            }, ct).ConfigureAwait(false);
+            persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
+        }
+        else
+        {
+            await _eventStore.AppendAsync(request.SecurityId, expectedVersion: 0, [envelope], ct).ConfigureAwait(false);
+            await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
+            persistedProjection = await OnProjectionCommittedAsync(projection.SecurityId).ConfigureAwait(false);
+            await TryRecordCanonicalFieldAttributionAsync(seededGovernedFields, projection, _serviceCts.Token).ConfigureAwait(false);
+        }
+        await SaveSnapshotIfNeededAsync(economic, _serviceCts.Token).ConfigureAwait(false);
 
-        await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
+        if (persistedProjection is not null)
+            await TryRecordConflictsAsync(persistedProjection, request.SecurityId, _serviceCts.Token).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action backfill for the newly-created security so
         // that historical corp action data is available immediately for backtesting.
@@ -357,31 +422,135 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             }, ct2);
         }
 
-        // Keep the in-memory projection cache and canonical registry consistent with the DB write.
-        _projectionCache?.Upsert(projection);
-        TryReseedRegistryInBackground();
-
         return SecurityMasterMapping.ToDetail(projection);
     }
 
+    /// <summary>
+    /// A projection write may be superseded before it reaches the store. Publish only durable
+    /// readback state, never the prepared command candidate. Later failures cannot skip recovery;
+    /// the request token cannot cancel the cache refresh or authoritative registry reseed.
+    /// </summary>
+    private async Task<SecurityProjectionRecord?> OnProjectionCommittedAsync(Guid securityId)
+    {
+        TryReseedRegistryInBackground();
+        if (_projectionCache is null && _conflictService is null)
+            return null;
+
+        var refreshed = await TryRefreshProjectionCacheAsync(securityId).ConfigureAwait(false);
+        if (!refreshed.Succeeded)
+            RetryProjectionCacheRefreshInBackground(securityId, recordConflicts: true);
+        return refreshed.Projection;
+    }
+
+    /// <summary>First delay before retrying a failed post-commit projection refresh; doubles up to a minute.</summary>
+    internal TimeSpan AliasCacheRefreshRetryDelay { get; init; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
+    /// Rereads committed state and installs it under the same gate as remote refreshes, then
+    /// reseeds. A failed read is retriable and cannot turn the accepted event/alias into a rollback.
+    /// </summary>
+    private async Task<(bool Succeeded, SecurityProjectionRecord? Projection)> TryRefreshProjectionCacheAsync(Guid securityId)
+    {
+        if (_projectionCache is not null)
+            await _projectionCache.RefreshGate.WaitAsync(_serviceCts.Token).ConfigureAwait(false);
+        try
+        {
+            var projection = await _store.GetProjectionAsync(securityId, _serviceCts.Token).ConfigureAwait(false);
+            if (projection is null)
+                _projectionCache?.Remove(securityId);
+            else
+                _projectionCache?.Upsert(projection);
+            TryReseedRegistryInBackground();
+            return (true, projection);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !_serviceCts.IsCancellationRequested)
+        {
+            _logger.LogWarning(ex,
+                "Security Master write committed but local projection refresh for {SecurityId} failed; it will be retried",
+                securityId);
+            return (false, null);
+        }
+        finally
+        {
+            _projectionCache?.RefreshGate.Release();
+        }
+    }
+
+    private void RetryProjectionCacheRefreshInBackground(Guid securityId, bool recordConflicts = false)
+    {
+        var ct = _serviceCts.Token;
+        _ = Task.Run(async () =>
+        {
+            var delay = AliasCacheRefreshRetryDelay;
+            try
+            {
+                while (true)
+                {
+                    await Task.Delay(delay, ct).ConfigureAwait(false);
+                    var refreshed = await TryRefreshProjectionCacheAsync(securityId).ConfigureAwait(false);
+                    if (refreshed.Succeeded)
+                    {
+                        if (recordConflicts && refreshed.Projection is { } projection)
+                        {
+                            await TryReconcileOpenFieldConflictsAsync(projection, ct).ConfigureAwait(false);
+                            await TryRecordConflictsAsync(projection, securityId, ct).ConfigureAwait(false);
+                        }
+                        return;
+                    }
+                    delay = TimeSpan.FromTicks(Math.Min(delay.Ticks * 2, TimeSpan.FromMinutes(1).Ticks));
+                }
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+            }
+        }, CancellationToken.None);
+    }
+
+    private int _registryReseedRequested;
+    private int _registryReseedRunning;
+    internal TimeSpan RegistryReseedRetryDelay { get; set; } = TimeSpan.FromSeconds(5);
+
     private void TryReseedRegistryInBackground()
     {
-        if (_seedService is null)
+        if (_seedService is null || _serviceCts.IsCancellationRequested)
+            return;
+
+        Interlocked.Exchange(ref _registryReseedRequested, 1);
+        if (Interlocked.CompareExchange(ref _registryReseedRunning, 1, 0) != 0)
             return;
 
         var ct = _serviceCts.Token;
         _ = Task.Run(async () =>
         {
+            var delay = RegistryReseedRetryDelay;
             try
             {
-                await _seedService.SeedAsync(ct).ConfigureAwait(false);
+                while (!ct.IsCancellationRequested && Interlocked.Exchange(ref _registryReseedRequested, 0) != 0)
+                {
+                    try
+                    {
+                        await _seedService.SeedAsync(ct).ConfigureAwait(false);
+                        delay = RegistryReseedRetryDelay;
+                    }
+                    catch (OperationCanceledException) when (ct.IsCancellationRequested) { break; }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Background canonical symbol registry re-seed failed; retrying.");
+                        Interlocked.Exchange(ref _registryReseedRequested, 1);
+                        await Task.Delay(delay, ct).ConfigureAwait(false);
+                        delay = TimeSpan.FromMilliseconds(Math.Min(delay.TotalMilliseconds * 2, 60_000));
+                    }
+                }
             }
-            catch (OperationCanceledException) { }
-            catch (Exception ex)
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+            finally
             {
-                _logger.LogWarning(ex, "Background canonical symbol registry re-seed failed.");
+                Interlocked.Exchange(ref _registryReseedRunning, 0);
+                // A request racing with the worker's last exchange still needs a worker.
+                if (!ct.IsCancellationRequested && Volatile.Read(ref _registryReseedRequested) != 0)
+                    TryReseedRegistryInBackground();
             }
-        }, ct);
+        });
     }
 
     private async Task TryRecordConflictsAsync(SecurityProjectionRecord projection, Guid securityId, CancellationToken ct)
@@ -658,6 +827,53 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
                     "Invalidating stale field attribution for {SecurityId} field {FieldPath} also failed; a stale incumbent may misattribute this field until the next successful write or resolution.",
                     projection.SecurityId, fieldPath);
             }
+        }
+    }
+
+    /// <summary>
+    /// Writes the field lineage of a canonical write inside its atomic scope: retires stale
+    /// conflict-resolution attribution for <paramref name="retiredResolutionPaths"/> and records
+    /// CanonicalWrite attribution for <paramref name="attributedPaths"/>. Any failure propagates and
+    /// rolls back the event append and projection upsert with it, so attribution can never lag the
+    /// canonical record it describes.
+    /// </summary>
+    private async Task RecordFieldLineageInScopeAsync(
+        IReadOnlyList<string> retiredResolutionPaths,
+        IReadOnlyList<string> attributedPaths,
+        SecurityProjectionRecord projection,
+        CancellationToken ct)
+    {
+        if (_fieldProvenance is null)
+            return;
+
+        var now = DateTimeOffset.UtcNow;
+        foreach (var fieldPath in retiredResolutionPaths)
+        {
+            await _fieldProvenance.RemoveAsync(
+                projection.SecurityId,
+                fieldPath,
+                SecurityFieldProvenanceOrigins.ConflictResolution,
+                clearedAt: now,
+                maxSourceVersion: projection.Version,
+                ct: ct).ConfigureAwait(false);
+        }
+
+        var provenance = SecurityMasterProvenanceReader.Read(projection.Provenance);
+        foreach (var fieldPath in attributedPaths)
+        {
+            await _fieldProvenance.UpsertAsync(
+                new SecurityFieldProvenanceRecord(
+                    projection.SecurityId,
+                    fieldPath,
+                    provenance.SourceSystem,
+                    provenance.AsOf,
+                    provenance.UpdatedBy,
+                    Confidence: null,
+                    SecurityFieldProvenanceOrigins.CanonicalWrite,
+                    OriginReference: $"version:{projection.Version}",
+                    now,
+                    SourceVersion: projection.Version),
+                ct).ConfigureAwait(false);
         }
     }
 
@@ -1609,13 +1825,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
     private static bool IsProfileBackedCustomAsset(string? assetClass, JsonElement assetSpecificTerms)
         => (string.IsNullOrWhiteSpace(assetClass)
-            || string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "StructuredCredit", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "PrivateFundInterest", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "PrivateCompanyEquity", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "RealEstateHolding", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(assetClass, "CommitmentGuarantee", StringComparison.OrdinalIgnoreCase))
+            || SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsProfileBackedTerms)
            && assetSpecificTerms.ValueKind == System.Text.Json.JsonValueKind.Object
            && assetSpecificTerms.TryGetProperty("customProfileId", out var customProfileId)
            && customProfileId.ValueKind == System.Text.Json.JsonValueKind.String
@@ -1701,11 +1911,23 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
     private async Task<SecurityAliasDto> UpsertAliasAsyncCore(SecurityAliasDto alias, CancellationToken ct)
     {
-        // The store retains the original created_at/created_by for an idempotent replay and rejects a
-        // material change to an existing alias ID. A null result cannot be treated as success because
-        // that would tell the caller a correction landed when no append-only revision was recorded.
-        var persisted = await _store.UpsertAliasAsync(alias, ct).ConfigureAwait(false);
-        return persisted ?? throw new SecurityAliasHistoryConflictException(alias.AliasId);
+        // The store retains the original created_at/created_by for an existing alias ID, appends an
+        // alias revision for a material correction, and rejects re-pointing an alias ID at another
+        // security. A null result cannot be treated as success because that would tell the caller a
+        // correction landed when no revision was recorded.
+        var persisted = await _store.UpsertAliasAsync(alias, ct).ConfigureAwait(false)
+            ?? throw new SecurityAliasHistoryConflictException(alias.AliasId);
+
+        // Aliases are part of the cached projection and seed the canonical registry, so a new or
+        // corrected alias refreshes both here; other nodes refresh from the store's notification.
+        TryReseedRegistryInBackground();
+        if (_projectionCache is not null
+            && !(await TryRefreshProjectionCacheAsync(alias.SecurityId).ConfigureAwait(false)).Succeeded)
+        {
+            RetryProjectionCacheRefreshInBackground(alias.SecurityId);
+        }
+
+        return persisted;
     }
 
     private Task SaveSnapshotIfNeededAsync(SecurityEconomicDefinitionRecord definition, CancellationToken ct)

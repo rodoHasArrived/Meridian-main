@@ -367,6 +367,12 @@ public class WebSocketConnectionManagerTests
         };
         yield return new object[]
         {
+            new Meridian.Core.Exceptions.ConfigurationException("Provider rejected the request (code 405)."),
+            ProviderFailureKind.LocalConfigurationError,
+            false
+        };
+        yield return new object[]
+        {
             new InvalidOperationException("Alpaca API key is not configured."),
             ProviderFailureKind.LocalConfigurationError,
             false

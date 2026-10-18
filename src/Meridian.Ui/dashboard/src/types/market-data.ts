@@ -144,6 +144,8 @@ export interface HistoricalBarPoint {
  */
 export interface HistoricalBarsResponse {
   success: boolean;
+  isPartial?: boolean;
+  fileFailures?: { sourceFile: string; error: string }[];
   message: string | null;
   symbol: string;
   intervalMinutes: number;

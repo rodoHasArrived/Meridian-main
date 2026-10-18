@@ -45,7 +45,9 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             [SecurityIdentifierKind.Valoren] = "Valoren",
             [SecurityIdentifierKind.PermTicker] = "PermTicker",
             [SecurityIdentifierKind.Ric] = "RIC",
-            [SecurityIdentifierKind.Cik] = "CIK"
+            [SecurityIdentifierKind.Cik] = "CIK",
+            [SecurityIdentifierKind.LoanX] = "LoanX ID",
+            [SecurityIdentifierKind.Clip] = "CLIP"
         };
     private static readonly IReadOnlyDictionary<string, SecurityIdentifierKind> IdentifierKindLookup =
         IdentifierKindDisplayNames.ToDictionary(static pair => pair.Value, static pair => pair.Key, StringComparer.OrdinalIgnoreCase);
@@ -376,6 +378,8 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         => JsonSerializer.SerializeToElement(new Dictionary<string, object?>
         {
             ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
+            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion,
             ["classification"] = string.Equals(assetClass, "Equity", StringComparison.OrdinalIgnoreCase) ? "Common" : null
         });
 

@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-05
+**Reviewed:** 2026-10-15
 
 Use this page for the fastest safe orientation in a fresh Meridian checkout. Run commands from the
 repository root unless a command says otherwise.
@@ -31,6 +31,7 @@ For the current product framing and capability thesis, use the [Meridian Design 
 - Node.js 24 and npm for browser development, matching the dev container and browser CI
 - Python 3.11 or newer for build and documentation automation
 - Git
+- Bash for the canonical `scripts/ci.sh` validation lanes (Git Bash or WSL on Windows)
 - Optional: GNU Make. On Windows, use the explicit commands below when `make` is unavailable.
 - Optional: one configured data provider for live or credentialed historical data.
 
@@ -144,6 +145,11 @@ npm --prefix src/Meridian.Ui/dashboard run build
 CI runs a freshness gate that fails when the tracked bundle lags `src/Meridian.Ui/dashboard`, so
 the served assets always match the same commit's dashboard source.
 
+When updating a feature branch causes generated bundle, documentation or hash conflicts, use the
+[isolated repair command](../engineering/generated-merge-recovery.md). It prepares pinned merge
+and generation evidence without changing your branch or local edits. Reviewed documentation hashes
+are reused only when they match the final module; combined source/prose changes still need review.
+
 ## First Help Commands
 
 Plain Windows/PowerShell path:
@@ -213,37 +219,38 @@ persisting the password in WPF config files.
 
 ## First Validation Paths
 
-Use the narrowest command that covers the surface you touched. These are safe first checks:
+Start with environment and active-validation diagnostics from the repository root:
 
 ```powershell
-dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
-dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
-python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --queue
-npm --prefix src/Meridian.Ui/dashboard run test
-python build/scripts/docs/check-ai-inventory.py --summary
+python build/python/cli/buildctl.py doctor --quick
+python build/python/cli/buildctl.py validation-status --summary
 ```
 
-For a repeated .NET edit/test loop, add `--profile worktree` or `--profile session:<name>` to
-`buildctl.py test` to reuse compatible build outputs. Reports remain unique to each run. Before
-handing off a change, omit `--profile` or use `--fresh` for fresh isolated test validation. See
-[persistent build profiles](../development/build-observability.md#persistent-build-profiles)
-for the matching build command and compatibility rules.
+Doctor skips restore in quick mode and exits nonzero for warnings as well as errors; read the
+reported capability before deciding which prerequisites the selected check needs.
 
-For completed PR-ready work, run the canonical repository gate, `bash scripts/ci.sh`; GitHub Actions
-`Meridian CI / quality-gate` remains the authoritative merge result.
-
-If local machine limits make a lane unreliable, dispatch the GitHub-hosted `Targeted Test` workflow
-for just the failing slice instead of retrying broad local scripts:
+Follow the [contributor validation path](../engineering/README.md#contributor-validation-path) to
+choose `verify-dotnet`, `verify-browser`, `verify-docs`, or `verify-workflows` and install that lane's
+dependencies. For a local .NET edit/test loop, use the contention-aware runner with a focused filter:
 
 ```powershell
-gh workflow run targeted-test.yml --ref <branch> -f mode=dotnet-filtered -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~<TestClassOrMethod>" --queue
 ```
 
-The full validation guide lives in [Engineering → Build/Test/Run](../engineering/README.md#buildtestrun):
-the contention-aware local test runner, recovery after a timed-out build or test, the
-GitHub-hosted `Targeted Test` workflow for when local limits make a lane unreliable, and the
-per-surface lanes (browser, WPF, schema control). Broaden to full solution, WPF, UI-service, MCP,
-integration, or performance lanes only when the changed layer requires it.
+After a lane fails, open `artifacts/ci-summary/<lane>/summary.md` for the failed step and reproduction
+commands. Correct the failure, rerun that lane, then run `bash scripts/ci.sh` before handing off
+PR-ready work. GitHub Actions remains the authoritative merge result.
+
+If local machine limits make a lane unreliable, follow the
+[recovery and hosted Targeted Test guidance](../engineering/README.md#buildtestrun).
+Once the branch is pushed, use the validated dispatcher for a focused hosted run:
+
+```powershell
+python build/scripts/ci/dispatch-targeted-test.py --ref <branch> --mode dotnet-filtered --dotnet-project tests/Meridian.Tests/Meridian.Tests.csproj --dotnet-filter "FullyQualifiedName~<TestClassOrMethod>" --wait
+```
+
+The full [engineering validation guide](../engineering/README.md#buildtestrun) also covers persistent
+build profiles and per-surface lanes for WPF, schema control, integration, and performance checks.
 
 ## Choose Your Next Path
 

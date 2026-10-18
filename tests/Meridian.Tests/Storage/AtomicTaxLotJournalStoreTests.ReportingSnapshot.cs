@@ -84,12 +84,14 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         {
             hold.Transaction = blockingTransaction;
             // Pause the actual storage capture at its first history query, after its journals were
-            // read. Regular journal posting and wash-sale evidence writes do not touch this table.
+            // read. Period and journal writes do not touch this table; history writers that read it
+            // are released with the pause below.
             hold.CommandText = $"lock table \"{database.Options.SchemaName}\".tax_lot_mutations in access exclusive mode;";
             await hold.ExecuteNonQueryAsync(ct);
         }
 
         var captureTask = snapshotStore.CaptureReportingSnapshotAsync(query, capturedPeriod.PeriodId, ct);
+        Task? historyWriter = null;
         var concurrentJournal = BuildJournalWrite(command.LedgerBookId, command.Journal.PeriodId,
             Guid.NewGuid(), "concurrent-reporting-post", amount: 25m);
         try
@@ -99,31 +101,27 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             await database.JournalStore.SavePeriodAsync(capturedPeriod with { Status = "Open", ClosedAt = null },
                 capturedPeriod.Version, ct: ct);
             await database.JournalStore.AppendAsync(concurrentJournal, ct);
-            if (retainedReplacement is null)
-            {
-                await database.JournalStore.SaveWashSaleDeferralsAsync([new(Guid.NewGuid(), command.LedgerBookId,
+            // These writers also read tax_lot_mutations (the successor carry guard and the open-lot
+            // basis trigger), so they start inside the pause and commit only after it is released.
+            // The capture's repeatable-read snapshot was established before it blocked, so neither
+            // commit can enter the retained population.
+            historyWriter = retainedReplacement is null
+                ? database.JournalStore.SaveWashSaleDeferralsAsync([new(Guid.NewGuid(), command.LedgerBookId,
                     command.MutationBatchId, TestSecurityId, new(2026, 5, 12), lots[0].Account,
                     replacement.TaxLotRecordId, replacement.LotId, 20m, 1m, lots[0].AcquiredDate,
                     command.PolicyRevision!, 30, WashSaleReplacementScope.LedgerBook,
-                    command.Journal.Entry.Timestamp)], ct);
-            }
-            else
-            {
+                    command.Journal.Entry.Timestamp)], ct)
                 // Corrupt capacity after the journals were retained. Every recipient and claim
                 // certification read must still use the capture's earlier transaction snapshot.
-                await using var writer = new NpgsqlConnection(database.Options.ConnectionString);
-                await writer.OpenAsync(ct);
-                await using var alter = writer.CreateCommand();
-                alter.CommandText = $"update \"{database.Options.SchemaName}\".tax_lots set original_quantity = 0.5, open_quantity = 0.5 where tax_lot_record_id = @id;";
-                alter.Parameters.AddWithValue("id", retainedReplacement.TaxLotRecordId);
-                (await alter.ExecuteNonQueryAsync(ct)).Should().Be(1);
-            }
+                : CorruptReplacementCapacityAsync(database.Options, retainedReplacement.TaxLotRecordId, ct);
         }
         finally
         {
             await blockingTransaction.RollbackAsync(CancellationToken.None);
         }
 
+        if (historyWriter is not null)
+            await historyWriter;
         var snapshot = await captureTask;
         snapshot.Period.Should().BeEquivalentTo(capturedPeriod);
         snapshot.Journals.Should().ContainSingle().Which.Entry.JournalEntryId
@@ -177,6 +175,17 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         recipient.ReplacementLotId.Should().Be(retainedReplacement.LotId);
         recipient.DeferredLoss.Should().Be(20m);
         history.MatchedReplacementQuantity.Should().Be(1m);
+    }
+
+    private static async Task CorruptReplacementCapacityAsync(
+        LedgerJournalStoreOptions options, Guid taxLotRecordId, CancellationToken ct)
+    {
+        await using var writer = new NpgsqlConnection(options.ConnectionString);
+        await writer.OpenAsync(ct);
+        await using var alter = writer.CreateCommand();
+        alter.CommandText = $"update \"{options.SchemaName}\".tax_lots set original_quantity = 0.5, open_quantity = 0.5 where tax_lot_record_id = @id;";
+        alter.Parameters.AddWithValue("id", taxLotRecordId);
+        (await alter.ExecuteNonQueryAsync(ct)).Should().Be(1);
     }
 
     private static async Task WaitForReportingHistoryReadAsync(

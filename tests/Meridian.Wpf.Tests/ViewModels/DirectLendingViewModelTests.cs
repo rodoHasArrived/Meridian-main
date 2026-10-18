@@ -7,6 +7,26 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class DirectLendingViewModelTests
 {
     [Fact]
+    public void BuildPortfolioStatusText_ShouldKeepCurrencyGroupsAndUnavailableLegacyTotalsExplicit()
+    {
+        var mixed = new LoanPortfolioSummaryDto(2, 2, 0, 0, 0, null, null, null, null, null, null, [],
+            [new(CurrencyCode.USD, 1_000m, 100m, 0m, 0m, 900m, 0m),
+             new(CurrencyCode.EUR, 2_000m, 200m, 0m, 0m, 1_800m, 0m)]);
+        DirectLendingViewModel.BuildPortfolioStatusText(mixed).Should()
+            .Contain("USD 100; EUR 200").And.NotContain("$");
+        DirectLendingViewModel.BuildPortfolioStatusText(mixed with
+        {
+            CurrencyTotals = null, TotalCurrency = CurrencyCode.EUR, TotalPrincipalOutstanding = 200m
+        }).Should().Contain("EUR 200").And.NotContain("$");
+        DirectLendingViewModel.BuildPortfolioStatusText(mixed with { CurrencyTotals = null })
+            .Should().Contain("unavailable (currency not reported)").And.NotContain("$");
+        DirectLendingViewModel.BuildPortfolioStatusText(mixed with
+        {
+            CurrencyTotals = [new(CurrencyCode.Other, null, null, null, null, null, null)]
+        }).Should().Contain("Other unavailable");
+    }
+
+    [Fact]
     public void CanPostAccrualForState_ShouldRequireSelectedIdleLoan()
     {
         var loan = BuildLoan();

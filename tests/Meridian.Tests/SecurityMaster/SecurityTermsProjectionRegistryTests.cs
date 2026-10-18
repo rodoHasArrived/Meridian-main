@@ -122,6 +122,143 @@ public sealed class SecurityTermsProjectionRegistryTests
     }
 
     [Fact]
+    public void Validate_RejectsTextNormalizationOnANonStringColumn()
+    {
+        var issues = SecurityTermsProjectionRegistry.Validate(
+        [
+            new(
+                AssetClass: "DirectLoan",
+                TableName: "direct_loan_probe_projection",
+                Columns:
+                [
+                    SecurityTermsProjectionColumn.Optional(
+                        "spread_bps", "spreadBps", SecurityAssetTermFieldType.Decimal, SecurityTermsProjectionTextNormalization.Verbatim)
+                ],
+                ChildTables: [])
+        ]);
+
+        issues.Should().ContainSingle().Which.Should().Contain("normalization applies only to String terms");
+    }
+
+    [Fact]
+    public void Validate_RejectsADefaultOnANonBooleanColumn()
+    {
+        var issues = SecurityTermsProjectionRegistry.Validate(
+        [
+            new(
+                AssetClass: "DirectLoan",
+                TableName: "direct_loan_probe_projection",
+                Columns: [new("spread_bps", "spreadBps", SecurityAssetTermFieldType.Decimal, DefaultWhenAbsent: 0m)],
+                ChildTables: [])
+        ]);
+
+        issues.Should().ContainSingle().Which.Should().Contain("only a bool default on a Boolean column");
+    }
+
+    [Fact]
+    public void Validate_RejectsAGateThatAlsoDeclaresADefault()
+    {
+        var issues = SecurityTermsProjectionRegistry.Validate(
+        [
+            new(
+                AssetClass: "Deposit",
+                TableName: "deposit_probe_projection",
+                Columns: [new("is_callable", "isCallable", SecurityAssetTermFieldType.Boolean, Gates: true, DefaultWhenAbsent: false)],
+                ChildTables: [])
+        ]);
+
+        issues.Should().ContainSingle().Which.Should().Contain("makes the gate unreachable");
+    }
+
+    [Fact]
+    public void Validate_StillReservesTheCurrencyColumnForADescriptorThatDoesNotProjectIt()
+    {
+        var issues = SecurityTermsProjectionRegistry.Validate(
+        [
+            new(
+                AssetClass: "CryptoCurrency",
+                TableName: "crypto_probe_projection",
+                Columns: [SecurityTermsProjectionColumn.Optional("currency", "network", SecurityAssetTermFieldType.String)],
+                ChildTables: [],
+                ProjectsCurrency: false)
+        ]);
+
+        issues.Should().ContainSingle().Which.Should().Contain("identity-spine column");
+    }
+
+    [Fact]
+    public void UpsertSql_OmitsCurrencyForADescriptorThatDoesNotProjectIt()
+    {
+        var descriptor = Descriptor("CryptoCurrency");
+
+        var sql = PostgresSecurityMasterStore.BuildTermsProjectionUpsertSql(descriptor, "security_master");
+
+        sql.Should().StartWith("insert into security_master.crypto_projection (security_id, display_name, base_currency, quote_currency, network, primary_identifier_value, version)");
+        sql.Should().NotContain("@currency");
+        PostgresSecurityMasterStore.TryBuildTermsProjection(
+                descriptor,
+                Record("CryptoCurrency", new { baseCurrency = "btc", quoteCurrency = "usd" }),
+                out var plan)
+            .Should().BeTrue();
+        plan.Columns.Select(column => column.ColumnName).Should().NotContain("currency");
+    }
+
+    [Fact]
+    public void TryBuild_AppliesEachColumnsDeclaredTextNormalizationAndBooleanDefault()
+    {
+        var crypto = Build("CryptoCurrency", new { baseCurrency = " btc ", quoteCurrency = "usd", network = "  Bitcoin " });
+        crypto.Value("base_currency").Should().Be("BTC");
+        crypto.Value("quote_currency").Should().Be("USD");
+        crypto.Value("network").Should().Be("  Bitcoin ", "network was always projected verbatim");
+
+        var fund = Build("MoneyMarketFund", new { fundFamily = "   " });
+        fund.Value("fund_family").Should().Be(string.Empty, "fund family is trimmed but never nulled");
+        fund.Value("sweep_eligible").Should().Be(false);
+        fund.Value("liquidity_fee_eligible").Should().Be(false);
+        fund.Value("weighted_average_maturity_days").Should().Be(DBNull.Value);
+
+        var flagged = Build("MoneyMarketFund", new { sweepEligible = true, liquidityFeeEligible = "yes" });
+        flagged.Value("sweep_eligible").Should().Be(true);
+        flagged.Value("liquidity_fee_eligible").Should().Be(false, "a wrong JSON kind falls back to the default");
+
+        static PostgresSecurityMasterStore.SecurityTermsProjectionPlan Build(string assetClass, object terms)
+        {
+            PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor(assetClass), Record(assetClass, terms), out var plan)
+                .Should().BeTrue();
+            return plan;
+        }
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void TryBuild_ABlankGateSuppressesTheProjectionWhateverItsNormalization(string blank)
+    {
+        // CryptoCurrency gates under TrimUpperInvariant; the gate must refuse blank text itself rather
+        // than rely on the normalization having nulled it.
+        PostgresSecurityMasterStore.TryBuildTermsProjection(
+                Descriptor("CryptoCurrency"),
+                Record("CryptoCurrency", new { baseCurrency = blank, quoteCurrency = "USD" }),
+                out _)
+            .Should().BeFalse();
+
+        var verbatimGate = new SecurityTermsProjectionDescriptor(
+            "Deposit",
+            "deposit_projection",
+            [
+                SecurityTermsProjectionColumn.Gate(
+                    "deposit_type", "depositType", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.Verbatim)
+            ],
+            []);
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(
+                verbatimGate,
+                Record("Deposit", new { depositType = blank }),
+                out _)
+            .Should().BeFalse();
+    }
+
+    [Fact]
     public void UpsertSql_RestatesEveryNonKeyColumnFromExcluded()
     {
         var descriptor = Descriptor("StructuredCredit");
@@ -543,7 +680,7 @@ public sealed class SecurityTermsProjectionRegistryTests
             AssertTableDeclares(
                 ddl,
                 descriptor.TableName,
-                SecurityTermsProjectionRegistry.LeadingIdentityColumns
+                SecurityTermsProjectionRegistry.LeadingIdentityColumnsFor(descriptor)
                     .Concat(descriptor.Columns.Select(column => column.ColumnName))
                     .Concat(SecurityTermsProjectionRegistry.TrailingIdentityColumns));
 
@@ -699,6 +836,106 @@ public sealed class SecurityTermsProjectionRegistryTests
     private static SecurityTermsProjectionDescriptor Descriptor(string assetClass)
         => SecurityTermsProjectionRegistry.Descriptors.Single(descriptor =>
             string.Equals(descriptor.AssetClass, assetClass, StringComparison.Ordinal));
+
+    /// <summary>The classes migration 044 projected for the first time (every catalog class but CustomAsset is now projected).</summary>
+    private static readonly string[] Migration044Classes =
+    [
+        "CommercialPaper", "TreasuryBill", "Repo", "CashSweep", "OtherSecurity", "Cfd", "Warrant",
+        "InvestmentFund", "PrivateFundInterest", "PrivateCompanyEquity", "RealEstateHolding", "CommitmentGuarantee"
+    ];
+
+    [Fact]
+    public void Registry_ProjectsEveryCatalogClassExceptCustomAsset()
+    {
+        var expected = SecurityAssetClassCatalog.AssetClasses
+            .Except(PostgresSecurityMasterStore.SpecializedProjectionAssetClasses, StringComparer.Ordinal)
+            .Except(new[] { "CustomAsset" }, StringComparer.Ordinal);
+
+        SecurityTermsProjectionRegistry.AssetClasses.Should().BeEquivalentTo(expected,
+            "CustomAsset is the one deliberate gap: its fields are governed per profile and have no fixed column set");
+        Migration044Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
+    }
+
+    [Fact]
+    public void EveryMigration044Class_ProjectsItsCanonicalFullPayload()
+    {
+        // The descriptors gate on the terms the schema marks Required, so the canonical full payload
+        // of each class — the one the domain serializer writes — must satisfy every gate. A gate that
+        // the canonical document could not satisfy would unproject every valid record of the class.
+        foreach (var assetClass in Migration044Classes)
+        {
+            var descriptor = SecurityTermsProjectionRegistry.Descriptors.Single(candidate => candidate.AssetClass == assetClass);
+            var record = SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(
+                assetClass,
+                SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+                    assetClass,
+                    SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass]));
+
+            PostgresSecurityMasterStore.TryBuildTermsProjection(descriptor, record, out var plan)
+                .Should().BeTrue($"the canonical {assetClass} document must satisfy every gate of its own projection");
+
+            foreach (var column in descriptor.Columns.Where(static column => column.Gates))
+            {
+                plan.Value(column.ColumnName).Should().NotBe(DBNull.Value, $"{assetClass}.{column.ColumnName} gates the projection");
+            }
+        }
+    }
+
+    [Fact]
+    public void TryBuild_ProjectsAGuidTermAsAUuidValue_AndGatesOnAMalformedOne()
+    {
+        var warrant = SecurityTermsProjectionRegistry.Descriptors.Single(static descriptor => descriptor.AssetClass == "Warrant");
+        var underlyingId = Guid.NewGuid();
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(
+                warrant,
+                Record("Warrant", new { underlyingId, warrantType = "Call", strike = 12.5m }),
+                out var plan)
+            .Should().BeTrue();
+        plan.Value("underlying_id").Should().Be(underlyingId, "a Guid term binds as a uuid, not as its text");
+        plan.Value("expiry_date").Should().Be(DBNull.Value);
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(
+                warrant,
+                Record("Warrant", new { underlyingId = "not-a-guid", warrantType = "Call" }),
+                out _)
+            .Should().BeFalse("a malformed Guid on a gating column suppresses the projection rather than writing a partial row");
+    }
+
+    [Fact]
+    public void TryBuild_FansOutCommitmentGuaranteeCovenants_AndTreatsAnAbsentListAsEmpty()
+    {
+        var guarantee = SecurityTermsProjectionRegistry.Descriptors.Single(static descriptor => descriptor.AssetClass == "CommitmentGuarantee");
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(
+                guarantee,
+                Record("CommitmentGuarantee", new
+                {
+                    counterparty = "Meridian Credit Bank",
+                    committedAmount = 12_000_000m,
+                    effectiveDate = "2026-01-01",
+                    covenants = new object[]
+                    {
+                        new { covenantType = "MinLiquidity", threshold = "$5m", notes = (string?)null },
+                        new { covenantType = "MaxLeverage", threshold = "4.5x", notes = "tested quarterly" }
+                    }
+                }),
+                out var plan)
+            .Should().BeTrue();
+
+        var rows = plan.ChildRows("commitment_guarantee_covenant_projection");
+        rows.Should().HaveCount(2);
+        rows.Select(row => Column(row, "ordinal")).Should().Equal(0, 1);
+        Column(rows[1], "threshold").Should().Be("4.5x", "the covenant threshold stays prose");
+        Column(rows[0], "notes").Should().Be(DBNull.Value);
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(
+                guarantee,
+                Record("CommitmentGuarantee", new { counterparty = "Bank", committedAmount = 1m, effectiveDate = "2026-01-01" }),
+                out var bare)
+            .Should().BeTrue();
+        bare.ChildRows("commitment_guarantee_covenant_projection").Should().BeEmpty();
+    }
 
     private static object? Column(
         IReadOnlyList<PostgresSecurityMasterStore.SecurityTermsProjectionValue> row,

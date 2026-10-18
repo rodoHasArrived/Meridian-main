@@ -8,7 +8,7 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.Ui.Shared.Services;
 
-/// <summary>Frozen journals and tax relief used by both activity rows and financial statements.</summary>
+/// <summary>Frozen journals, tax relief and corporate-action lot evidence used by both activity rows and financial statements.</summary>
 public sealed record ReportingLedgerPopulationSnapshot(
     LedgerAmountScopeDto Scope,
     LedgerReportPackRequest Request,
@@ -20,6 +20,9 @@ public sealed record ReportingLedgerPopulationSnapshot(
     public long PeriodVersion { get; init; }
 
     public ImmutableArray<IReadOnlyDictionary<string, string>> DatasetRows { get; init; } = [];
+
+    /// <summary>Corporate-action lot evidence captured with the journals; empty for legacy populations.</summary>
+    public ImmutableArray<CanonicalCorporateActionLotReport> CorporateActionLotReports { get; init; } = [];
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -65,7 +68,8 @@ public sealed record ReportingLedgerPopulationSnapshot(
 
         if (snapshot.Scope is null || snapshot.Request is null
             || snapshot.Journals.IsDefault || snapshot.TaxLotReliefProjections.IsDefault
-            || snapshot.DatasetRows.IsDefault || snapshot.Journals.Any(static journal => journal is null || journal.Entry is null)
+            || snapshot.DatasetRows.IsDefault || snapshot.CorporateActionLotReports.IsDefault
+            || snapshot.Journals.Any(static journal => journal is null || journal.Entry is null)
             || snapshot.DatasetRows.Any(static row => row is null || row.Values.Any(static value => value is null))
             || snapshot.Scope.TenantId != checkpoint.TenantId
             || snapshot.Scope.CompanyId != checkpoint.CompanyId
@@ -102,6 +106,7 @@ public sealed record ReportingLedgerPopulationSnapshot(
         var ledger = new Meridian.Ledger.Ledger();
         foreach (var record in Journals.OrderBy(static record => record.GlobalSequence))
             ledger.Post(record.Entry);
-        return LedgerReportPackBuilder.Build(ledger, Request, taxLotReliefProjections: TaxLotReliefProjections);
+        return LedgerReportPackBuilder.Build(ledger, Request, taxLotReliefProjections: TaxLotReliefProjections,
+            corporateActionLotReports: CorporateActionLotReports);
     }
 }

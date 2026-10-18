@@ -9,7 +9,15 @@ public sealed record PositionCorporateActionAdjustment(
     decimal AdjustedQuantity,
     decimal OriginalCostBasis,
     decimal AdjustedCostBasis,
-    int ActionCount);
+    int ActionCount)
+{
+    /// <summary>
+    /// Exact remaining carrying basis when the adjuster supports the retained-basis overload.
+    /// Null identifies a legacy result that supplies only an average unit quote.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? AdjustedTotalCostBasis { get; init; }
+}
 
 /// <summary>
 /// Adjusts an open live position's quantity and cost basis to account for stock splits and
@@ -34,4 +42,17 @@ public interface ILivePositionCorporateActionAdjuster
         decimal costBasis,
         DateTimeOffset positionOpenedAt,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Adjusts retained total carrying basis without reconstructing it from a rounded unit quote.
+    /// Legacy implementers keep their original behavior and return no exact total-basis evidence.
+    /// </summary>
+    Task<PositionCorporateActionAdjustment> AdjustPositionAsync(
+        string ticker,
+        decimal quantity,
+        decimal costBasis,
+        decimal totalCostBasis,
+        DateTimeOffset positionOpenedAt,
+        CancellationToken ct = default)
+        => AdjustPositionAsync(ticker, quantity, costBasis, positionOpenedAt, ct);
 }

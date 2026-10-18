@@ -1,0 +1,135 @@
+{
+  "acceptedHostedHead": "bba13ca9c156a42b5ca7f0f9c196d9199a70ef75",
+  "acceptedHostedTestedMerge": "f06b91711cadea591e09076f1e4e8ddad0643a35",
+  "acceptedTestedMergeParents": [
+    "1f94c380d3756063ebe4e4d73951ee0e3dfd58d0",
+    "bba13ca9c156a42b5ca7f0f9c196d9199a70ef75"
+  ],
+  "acceptedTestedMergeTree": "f25012776f1e7b5c570da8a12effaf607c61b66c",
+  "sourceCheckpointTree": "f25012776f1e7b5c570da8a12effaf607c61b66c",
+  "currentCommit": "bba13ca9c156a42b5ca7f0f9c196d9199a70ef75",
+  "unchangedFiles": [
+    {
+      "path": "Directory.Build.props",
+      "bytes": 4763,
+      "sha256": "4eb45de30383a18a041cb41404f0efc2c0c3b8302eee3a05e11e76db914b6db0",
+      "gitBlobSha": "637e5f099560b79061da3d34b82a58b5b3a44131"
+    },
+    {
+      "path": "Directory.Packages.props",
+      "bytes": 13142,
+      "sha256": "9d813f30753520936022dc06cc57b9ad8c532f8e76a0131b4de405ad351ea3bd",
+      "gitBlobSha": "7ac6668ce3db369667be4777253c66710b385e26"
+    },
+    {
+      "path": "benchmarks/Meridian.Benchmarks/Budget/PerformanceBudgetRegistry.cs",
+      "bytes": 8461,
+      "sha256": "5ad67bb123328d745e3f0a4825ac89f93acdd7fbfe349049804937ae6e17827e",
+      "gitBlobSha": "a5bd83205a2364d02e6b1c9f6dbe50b728c1c98c"
+    },
+    {
+      "path": "benchmarks/Meridian.Benchmarks/DeduplicationKeyBenchmarks.cs",
+      "bytes": 10714,
+      "sha256": "47cc817c2c2a05d9dfd4a48b840979808dcf290282ed94f9c35dfa1fe8750b49",
+      "gitBlobSha": "1a4a8e62007d0f79d8186f5be9bc28cf2b670b60"
+    },
+    {
+      "path": "benchmarks/Meridian.Benchmarks/PipelineBudgetBenchmarks.cs",
+      "bytes": 5292,
+      "sha256": "617d7c67cd5d6666d3f24e5052d06949519c2311dd20e6b6ce31bef6f8d4eff3",
+      "gitBlobSha": "e19d945f6092f0e1b28369b730899b53d79a0f14"
+    },
+    {
+      "path": "benchmarks/Meridian.Benchmarks/WalChecksumBenchmarks.cs",
+      "bytes": 7899,
+      "sha256": "8aef1c3df02c2e0f449a49b10dd22534991aef4bfec4bfdaefab6bbea4a03a98",
+      "gitBlobSha": "fdb75c5ffa6bb92ec00f0190f91e00d92ca159c7"
+    },
+    {
+      "path": "build/config/testing/pipeline-benchmark-profile.json",
+      "bytes": 979,
+      "sha256": "f89ebf264b25340f30c6c4a85d28007d10ffd53f0acb90684989880dc14f0e26",
+      "gitBlobSha": "44324aa317c5ddd81db101c5dfa65ebe7f0c1d2b"
+    },
+    {
+      "path": "build/scripts/ci/benchmark-pipeline.py",
+      "bytes": 11875,
+      "sha256": "ee2b6588a5dec6c968275798c7898d8b42ab947bf3522975eea1b4b12aa97b5a",
+      "gitBlobSha": "fca219ed36299e91fc0a5ac478193ac3229e50e0"
+    },
+    {
+      "path": "build/scripts/validate_budget.py",
+      "bytes": 24767,
+      "sha256": "6e9916dae0d7d11c7eb48a7a3ad43d2b03f6aabbc1507ad710b5525a25b334f4",
+      "gitBlobSha": "8019599321c989af4d0130f869814e576f2653d5"
+    },
+    {
+      "path": "global.json",
+      "bytes": 108,
+      "sha256": "c7ad0ac5b8129ae0a35f79bf578121bce3ba093099289e76f790e72444b729e0",
+      "gitBlobSha": "79f06617282a16fd51b3fbf6b287bb5820e31b98"
+    },
+    {
+      "path": "src/Meridian.Application/Pipeline/PersistentDedupLedger.cs",
+      "bytes": 37581,
+      "sha256": "173db18bbda3f15eb17b0938e44159d2c30d3f0af0b2ddd067af777454799c10",
+      "gitBlobSha": "7e5056b810b803553c70e9fd76e320ac1f6a9efd"
+    },
+    {
+      "path": "src/Meridian.Contracts/Integrity/Sha256Digest.cs",
+      "bytes": 10693,
+      "sha256": "fdd61ac6d504c27d5c7e5c50d9d9f8a8ca28e3e11bdc426638c7059032604f55",
+      "gitBlobSha": "a1f900c1e74c7c94185906d68472e2a2e6415892"
+    },
+    {
+      "path": "src/Meridian.Storage/Archival/WalChecksum.cs",
+      "bytes": 8103,
+      "sha256": "d184f707b85e6b6830ae4d54c691fb297ccaa6fef6068ee3e1f99a19b798d3bb",
+      "gitBlobSha": "ac855eea5f6dc3c85e651aa5f34efac00bb6c812"
+    },
+    {
+      "path": "src/Meridian.Storage/Archival/WriteAheadLog.cs",
+      "bytes": 57271,
+      "sha256": "19699aa6acef6d3be94eac9efbaedfde15668412f821068d797cd648428e211a",
+      "gitBlobSha": "bf573460756cdb63a1dcfd599ca4cbf29a578e07"
+    },
+    {
+      "path": "src/Meridian.Storage/Meridian.Storage.csproj",
+      "bytes": 3057,
+      "sha256": "138253dea8b389a7fee737c1117c94f8a40886243d2d32191dd3fdbca67f91c3",
+      "gitBlobSha": "c722bee29c9b70e1d82f6ff035094340babf8382"
+    },
+    {
+      "path": "tests/Meridian.Tests/Application/Pipeline/PersistentDedupLedgerTests.cs",
+      "bytes": 7929,
+      "sha256": "c60ec8bacade6436f3c6c5699196438ed2d57e186d8e80d93a675ba0788e6279",
+      "gitBlobSha": "d817e9599953262e61cdf46cc097c6dba90b69c5"
+    },
+    {
+      "path": "tests/Meridian.Tests/Contracts/Integrity/Sha256DigestTests.cs",
+      "bytes": 12244,
+      "sha256": "2cd39e2cca30e02ed18dfe6ca821c8c8c803641ecbd0cfd19e9870a0a7c4743e",
+      "gitBlobSha": "2f1f1b80f0f29519daaa9e82499e052b07a44096"
+    },
+    {
+      "path": "tests/Meridian.Tests/Performance/AllocationBudgetIntegrationTests.cs",
+      "bytes": 19649,
+      "sha256": "87cd96cbc00654595a4eb1a596c43650978ad4fcb11216d3db3793f6ab687104",
+      "gitBlobSha": "f69a4031a530e870ad04fa87b3f00a3352fd671a"
+    },
+    {
+      "path": "tests/Meridian.Tests/Storage/WriteAheadLogChecksumTests.cs",
+      "bytes": 11906,
+      "sha256": "d320b1051ddc2e3a9375986db00cda0468cf137724ccbf9779d6acb90640a6d4",
+      "gitBlobSha": "98917773164019601385fee90740d16efe16b344"
+    },
+    {
+      "path": "tests/Meridian.Tests/Storage/WriteAheadLogChecksumVersionTests.cs",
+      "bytes": 15517,
+      "sha256": "2ef2532c321d9344e3723a2bebc02a166f09336e132d4f5cecb00a14604a19f0",
+      "gitBlobSha": "764fd0cd68a2aa77715750b88b91849417259239"
+    }
+  ],
+  "proof": "GitHub Git Data API confirms the actual signed hosted tested merge has the identical complete Git tree as the local pushed source checkpoint; all twenty production/test/benchmark/toolchain files also match current source bytes and retained SHA-256 hashes. Later evidence/generated-document updates must preserve these source files.",
+  "gitHubMergeSignatureVerified": true
+}
