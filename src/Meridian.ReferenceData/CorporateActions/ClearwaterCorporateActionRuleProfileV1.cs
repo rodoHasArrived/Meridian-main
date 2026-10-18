@@ -1,19 +1,47 @@
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 
-namespace Meridian.Instruments.AssetOperations;
+namespace Meridian.ReferenceData.CorporateActions;
 
 /// <summary>
 /// Versioned interpretation of the supplied Clearwater corporate-action methodology. This is a
 /// projection profile, not GAAP, statutory, or tax authority. Policy-dependent branches remain
 /// explicit dependencies so callers cannot mistake a vendor default for an approved conclusion.
+/// <para>
+/// This is the vendor adapter behind <see cref="ICorporateActionRuleProfile"/>: it lives in the
+/// reference-data module rather than the domain, and the composition root injects
+/// <see cref="Instance"/> into the projector. The static members remain for direct callers.
+/// </para>
 /// </summary>
-public static class ClearwaterCorporateActionRuleProfileV1
+public sealed class ClearwaterCorporateActionRuleProfileV1 : ICorporateActionRuleProfile
 {
     public const string ProfileId = "clearwater-corporate-actions";
     public const string ProfileVersion = "v1";
     public const string ProfileKey = ProfileId + "/" + ProfileVersion;
     public const string SelectedRuleVersion = "v1";
+
+    public static ClearwaterCorporateActionRuleProfileV1 Instance { get; } = new();
+
+    private ClearwaterCorporateActionRuleProfileV1()
+    {
+    }
+
+    string ICorporateActionRuleProfile.ProfileId => ProfileId;
+
+    string ICorporateActionRuleProfile.ProfileVersion => ProfileVersion;
+
+    string ICorporateActionRuleProfile.ProfileKey => ProfileKey;
+
+    string ICorporateActionRuleProfile.SelectedRuleVersion => SelectedRuleVersion;
+
+    DateOnly ICorporateActionRuleProfile.EffectiveFrom => EffectiveFrom;
+
+    bool ICorporateActionRuleProfile.IsEffectiveOn(DateOnly evaluationDate) => IsEffectiveOn(evaluationDate);
+
+    CorporateActionTreatmentDecisionDto ICorporateActionRuleProfile.Resolve(
+        CorporateActionAccountingTypeDto actionType,
+        AccountingBasisKindDto accountingBasis)
+        => Resolve(actionType, accountingBasis);
 
     /// <summary>
     /// Meridian adoption date for this captured methodology profile. It is not an assertion about
