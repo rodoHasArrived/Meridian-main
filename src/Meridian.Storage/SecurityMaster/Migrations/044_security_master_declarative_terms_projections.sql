@@ -1,4 +1,4 @@
--- Migration 043: relational terms projections for the twelve asset classes that had none.
+-- Migration 044: relational terms projections for the twelve asset classes that had none.
 --
 -- Until now 13 of the 26 catalog classes had a relational projection; the other 13 kept their terms
 -- only inside securities.asset_specific_terms, reachable one security at a time by parsing the blob.

@@ -837,8 +837,8 @@ public sealed class SecurityTermsProjectionRegistryTests
         => SecurityTermsProjectionRegistry.Descriptors.Single(descriptor =>
             string.Equals(descriptor.AssetClass, assetClass, StringComparison.Ordinal));
 
-    /// <summary>The classes migration 043 projected for the first time (every catalog class but CustomAsset is now projected).</summary>
-    private static readonly string[] Migration043Classes =
+    /// <summary>The classes migration 044 projected for the first time (every catalog class but CustomAsset is now projected).</summary>
+    private static readonly string[] Migration044Classes =
     [
         "CommercialPaper", "TreasuryBill", "Repo", "CashSweep", "OtherSecurity", "Cfd", "Warrant",
         "InvestmentFund", "PrivateFundInterest", "PrivateCompanyEquity", "RealEstateHolding", "CommitmentGuarantee"
@@ -853,16 +853,16 @@ public sealed class SecurityTermsProjectionRegistryTests
 
         SecurityTermsProjectionRegistry.AssetClasses.Should().BeEquivalentTo(expected,
             "CustomAsset is the one deliberate gap: its fields are governed per profile and have no fixed column set");
-        Migration043Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
+        Migration044Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
     }
 
     [Fact]
-    public void EveryMigration043Class_ProjectsItsCanonicalFullPayload()
+    public void EveryMigration044Class_ProjectsItsCanonicalFullPayload()
     {
         // The descriptors gate on the terms the schema marks Required, so the canonical full payload
         // of each class — the one the domain serializer writes — must satisfy every gate. A gate that
         // the canonical document could not satisfy would unproject every valid record of the class.
-        foreach (var assetClass in Migration043Classes)
+        foreach (var assetClass in Migration044Classes)
         {
             var descriptor = SecurityTermsProjectionRegistry.Descriptors.Single(candidate => candidate.AssetClass == assetClass);
             var record = SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(

@@ -16,7 +16,9 @@ Tier migration decodes compressed input with the production JSONL replay decoder
 `PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
 account/book/date price snapshots and separate independent-review records (Security Master
 migration 037). Source receipts must match exactly; scoped advisory locks fence approvals and
-linked corrections. Database guards refuse replacement, deletion and truncation. The schema
+linked corrections. Database guards refuse replacement, deletion and truncation; migration
+`043_security_master_close_price_approval_null_guards.sql` replaces the approval guard function so a
+snapshot payload lacking `Blockers` or `CreatedBy` is rejected instead of passing a NULL check. The schema
 inventory exception records only the lexical false positive from `BEFORE TRUNCATE` rejection
 triggers and requires independent schema/storage review.
 
@@ -64,7 +66,7 @@ single statement of a projection table's columns on the write and read sides; on
 Bond and Option stores carry their own select lists. The per-class store interfaces and row
 records are unchanged, so `*ProjectionService` consumers and DI registrations did not move.
 
-Security Master migration `043_security_master_declarative_terms_projections.sql` gives the twelve
+Security Master migration `044_security_master_declarative_terms_projections.sql` gives the twelve
 remaining unprojected classes (CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Cfd,
 Warrant, InvestmentFund, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,
 CommitmentGuarantee) a relational projection written by the same declarative
