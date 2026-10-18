@@ -2458,6 +2458,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.IPortfolioCapitalScheduleProvider"
     },
     {
@@ -17723,6 +17729,12 @@
       "label": "",
       "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.IAssetOperationsQueryService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile"
     },
     {
       "kind": "contract-set-member",
@@ -47702,6 +47714,12 @@
       "target": "database:security_master.operations_workflow_audit.event_type"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_securities_terms_format on security_master.securities",
+      "target": "database:security_master.securities.terms_format"
+    },
+    {
       "constraint": "corporate_action_canonical_sources_proposal_id_fkey",
       "kind": "foreign-key",
       "label": "proposal_id",
@@ -50586,7 +50604,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "750591bee5ac783a3d4fdbce8c3ff5b4738bcf0ce23dd793fc179603808e7abb",
+  "fingerprint": "f6d3788fac3d1404749a896e3ca2390825fa9a6a541552a20fdb92df3d4f5556",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -53092,6 +53110,12 @@
       "id": "contract:Meridian.Contracts.AssetOperations.IAssetOperationsQueryService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.IAssetOperationsQueryService"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile"
     },
     {
       "classification": "service_contract",
@@ -72303,6 +72327,11 @@
       "label": "security_master.ck_operations_workflow_audit_event_type on security_master.operations_workflow_audit"
     },
     {
+      "id": "database:security_master.ck_securities_terms_format on security_master.securities",
+      "kind": "database-object",
+      "label": "security_master.ck_securities_terms_format on security_master.securities"
+    },
+    {
       "id": "database:security_master.commodity_projection",
       "kind": "database-table",
       "label": "security_master.commodity_projection",
@@ -73351,6 +73380,11 @@
       "label": "security_master.securities.security_id"
     },
     {
+      "id": "database:security_master.securities.terms_format",
+      "kind": "database-object",
+      "label": "security_master.securities.terms_format"
+    },
+    {
       "id": "database:security_master.securities_pkey",
       "kind": "database-object",
       "label": "security_master.securities_pkey"
@@ -73928,10 +73962,10 @@
   ],
   "summary": {
     "contract_references": 3317,
-    "contract_set_memberships": 3964,
-    "edges": 8405,
+    "contract_set_memberships": 3966,
+    "edges": 8408,
     "foreign_keys": 139,
     "logical_references": 6,
-    "nodes": 4044
+    "nodes": 4047
   }
 }

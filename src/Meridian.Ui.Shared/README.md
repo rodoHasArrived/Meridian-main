@@ -2349,7 +2349,7 @@ Security Master operator override store is registered, the passport also carries
 audit-history entries for the resolved instrument so controller review can see provider mapping
 confidence and governed override context in the same retained reconciliation record.
 The Security Master instrument passport reference-data workbench also consumes registered
-Clearwater pricing, cash-flow, vendor-entitlement, and data-quality services. Shared clients receive
+pricing, cash-flow, vendor-entitlement, and data-quality reference-data services. Shared clients receive
 sections for pricing hierarchy and stale fallback, cash-flow source governance, direct-client vendor
 contract evidence, retained quality-rule results, and independent review of manual creation,
 remapping, override, or critical-attribute changes instead of reconstructing those controls locally.

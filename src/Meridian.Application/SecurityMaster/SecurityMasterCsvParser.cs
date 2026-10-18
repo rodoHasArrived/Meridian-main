@@ -178,7 +178,7 @@ public sealed class SecurityMasterCsvParser
             SecurityId: Guid.NewGuid(),
             AssetClass: assetClass,
             CommonTerms: BuildCommonTerms(name, currency, exchange),
-            AssetSpecificTerms: BuildAssetSpecificTerms(),
+            AssetSpecificTerms: BuildAssetSpecificTerms(assetClass),
             Identifiers: identifiers,
             EffectiveFrom: ingestedAtUtc,
             SourceSystem: "SecurityMasterImport",
@@ -214,10 +214,17 @@ public sealed class SecurityMasterCsvParser
     /// nothing else. Every importable class declares its terms optional, so an empty term set is the
     /// complete, honest contract for the row — no term is invented for a column the file never had.
     /// </summary>
-    private static JsonElement BuildAssetSpecificTerms()
+    /// <summary>
+    /// Builds the minimal flat terms payload for an imported row, carrying the full terms envelope
+    /// (codec version, payload family, asset-class terms version) so the stored record never needs
+    /// shape detection to be classified.
+    /// </summary>
+    private static JsonElement BuildAssetSpecificTerms(string assetClass)
         => JsonSerializer.SerializeToElement(new Dictionary<string, object?>
         {
-            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
+            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion
         });
 
     /// <summary>

@@ -1366,6 +1366,7 @@ Meridian-main
 │   │   ├── 021-verified-operation-outcomes-and-case-history.md
 │   │   ├── 022-canonical-asset-class-homes.md
 │   │   ├── 023-host-wide-provider-credential-ownership.md
+│   │   ├── 024-terms-payload-format-and-version-policy.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
@@ -4177,7 +4178,7 @@ Meridian-main
 │   │   │   ├── ISecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── KeyedGatePool.cs
-│   │   │   ├── NullSecurityMasterClearwaterServices.cs
+│   │   │   ├── NullSecurityMasterReferenceServices.cs
 │   │   │   ├── NullSecurityMasterServices.cs
 │   │   │   ├── PostgresSecurityMasterConflictService.cs
 │   │   │   ├── PostgresSecurityMasterRevisionStore.cs
@@ -4430,6 +4431,7 @@ Meridian-main
 │   │   │   ├── AssetOperationsDtos.cs
 │   │   │   ├── AssetOperationsReferenceDtos.cs
 │   │   │   ├── CorporateActionAccountingDtos.cs
+│   │   │   ├── ICorporateActionRuleProfile.cs
 │   │   │   ├── InstrumentPositionDtos.cs
 │   │   │   ├── PortfolioCashLadderDtos.cs
 │   │   │   └── RetainedEvidenceIdentityDto.cs
@@ -5699,7 +5701,6 @@ Meridian-main
 │   │   │   ├── AccountCashForecastService.cs
 │   │   │   ├── AssetObligationProjectionService.cs
 │   │   │   ├── AssetOperationsReadService.cs
-│   │   │   ├── ClearwaterCorporateActionRuleProfileV1.cs
 │   │   │   ├── CorporateActionAccountingProjectionService.CanonicalLots.cs
 │   │   │   ├── CorporateActionAccountingProjectionService.cs
 │   │   │   ├── CorporateActionAccountingProjectionService.Fingerprints.cs
@@ -6133,6 +6134,8 @@ Meridian-main
 │   │   ├── Program.cs
 │   │   └── QuantScriptWorker.Sidecar.targets
 │   ├── Meridian.ReferenceData
+│   │   ├── CorporateActions
+│   │   │   └── ClearwaterCorporateActionRuleProfileV1.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── Data
 │   │   │   │   └── security-reference-taxonomies.json
@@ -6554,7 +6557,8 @@ Meridian-main
 │   │   │   │   ├── 038_security_master_alias_revisions.sql
 │   │   │   │   ├── 039_security_master_event_payload_version.sql
 │   │   │   │   ├── 040_security_master_governance_events.sql
-│   │   │   │   └── 041_security_master_governance_events_truncate_guard.sql
+│   │   │   │   ├── 041_security_master_governance_events_truncate_guard.sql
+│   │   │   │   └── 042_security_master_terms_format_column.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -10241,7 +10245,8 @@ Meridian-main
 │   │   │   ├── LedgerNetBalanceCentralizationTests.cs
 │   │   │   ├── ProjectReferenceGraph.cs
 │   │   │   ├── ProjectReferenceGraphTests.cs
-│   │   │   └── SecurityAssetClassLiteralRatchetTests.cs
+│   │   │   ├── SecurityAssetClassLiteralRatchetTests.cs
+│   │   │   └── VendorNeutralDomainTests.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AccountCashForecastTests.cs
 │   │   │   ├── AcquisitionTermsCompletionTests.cs
