@@ -216,6 +216,10 @@ internal static class DefaultAssetClassValidators
                     FieldRule.OptionalNonNegative("weightedAverageCoupon", "SM_STRUCTURED_CREDIT_WAC_INVALID", "Structured credit weighted-average coupon is invalid", "Structured credit weighted-average coupon must be zero or greater when supplied."),
                     FieldRule.OptionalNonNegative("weightedAverageMaturityMonths", "SM_STRUCTURED_CREDIT_WAM_INVALID", "Structured credit weighted-average maturity is invalid", "Structured credit weighted-average maturity months must be zero or greater when supplied."),
                     FieldRule.OptionalNonNegative("weightedAverageLoanAgeMonths", "SM_STRUCTURED_CREDIT_WALA_INVALID", "Structured credit weighted-average loan age is invalid", "Structured credit weighted-average loan age months must be zero or greater when supplied."),
+                    // The ordering rules below read an unparseable date as "not supplied"; these two
+                    // rules are what report a supplied period end that is not a date.
+                    FieldRule.OptionalDate("reinvestmentPeriodEnd", "SM_STRUCTURED_CREDIT_REINVESTMENT_END_NOT_A_DATE", "Structured credit reinvestment period end is not a date", "Structured credit reinvestment period end must be an ISO-8601 date when supplied."),
+                    FieldRule.OptionalDate("nonCallPeriodEnd", "SM_STRUCTURED_CREDIT_NON_CALL_END_NOT_A_DATE", "Structured credit non-call period end is not a date", "Structured credit non-call period end must be an ISO-8601 date when supplied."),
                     DateOrderRule.Optional("reinvestmentPeriodEnd", "maturity", "SM_STRUCTURED_CREDIT_REINVESTMENT_END_INVALID", "Structured credit reinvestment period end is invalid", "Structured credit reinvestment period end must be on or before maturity."),
                     DateOrderRule.Optional("nonCallPeriodEnd", "maturity", "SM_STRUCTURED_CREDIT_NON_CALL_END_INVALID", "Structured credit non-call period end is invalid", "Structured credit non-call period end must be on or before maturity.")
                 ]),
@@ -791,6 +795,10 @@ internal sealed record FieldRule(
     public static FieldRule OptionalFraction(string fieldPath, string code, string title, string message)
         => new(fieldPath, SecurityFieldRuleKind.OptionalFraction, SecurityValidationSeverityDto.Error, code, title, message);
 
+    /// <summary>A value that, when supplied, must parse as an ISO-8601 date; absent or null passes.</summary>
+    public static FieldRule OptionalDate(string fieldPath, string code, string title, string message)
+        => new(fieldPath, SecurityFieldRuleKind.OptionalDate, SecurityValidationSeverityDto.Error, code, title, message);
+
     public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
     {
         var field = $"assetSpecificTerms.{FieldPath}";
@@ -820,6 +828,7 @@ internal sealed record FieldRule(
             SecurityFieldRuleKind.OptionalNonNegativeNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value >= 0m,
             SecurityFieldRuleKind.OptionalAllowedString => JsonValidationReader.HasAllowedString(property, AllowedValues ?? Array.Empty<string>()),
             SecurityFieldRuleKind.OptionalFraction => JsonValidationReader.TryGetDecimal(property, out var value) && value >= 0m && value <= 1m,
+            SecurityFieldRuleKind.OptionalDate => JsonValidationReader.HasDate(property),
             _ => true
         };
 
@@ -1052,7 +1061,8 @@ internal enum SecurityFieldRuleKind
     OptionalPositiveNumber,
     OptionalNonNegativeNumber,
     OptionalAllowedString,
-    OptionalFraction
+    OptionalFraction,
+    OptionalDate
 }
 
 internal static class JsonValidationReader

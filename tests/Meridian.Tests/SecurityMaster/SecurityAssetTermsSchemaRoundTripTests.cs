@@ -597,6 +597,8 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
     [InlineData("weightedAverageMaturityMonths", 1.5, "a whole number")]
     [InlineData("weightedAverageCoupon", "seven", "a decimal number")]
     [InlineData("reinvestmentPeriodEnd", "someday", "an ISO-8601 date")]
+    [InlineData("structuredCreditKind", 42, "a string")]
+    [InlineData("seniority", 42, "a string")]
     public void StructuredCredit_MalformedOptionalTrancheTerm_IsRejectedOnWrite(string property, object value, string expected)
     {
         // The typed tranche terms are optional, but a supplied value that does not parse as its
