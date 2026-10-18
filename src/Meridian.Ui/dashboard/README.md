@@ -39,6 +39,12 @@ Close-price capture retains its request identity and submitted command after an 
 After an authoritative history reload, the operator can explicitly recover or retry that same
 capture; a new command cannot silently replace the unresolved action.
 
+Accounting → Configuration includes an on-demand audit chain integrity check over
+`GET /api/ledger/audit-integrity`. It reports each hash-chained log (accounting actions, ledger
+events) as verified, broken with its failure kind and sequence, unavailable, or not kept in this
+deployment, and never rolls an unchecked chain into a passing verdict. Focused coverage lives in
+`accounting-screen.audit-integrity*.test.ts(x)`.
+
 Governed Journal Entry Detail exposes retained disposal tax results from the shared period and
 journal read model. Operators can inspect mixed parcel character, carried holding-period starts,
 economic and recognized gain/loss, deferred loss, and the exact retained policy revision. Settled,

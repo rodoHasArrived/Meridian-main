@@ -7173,6 +7173,7 @@ Meridian-main
 │   │   │   │   │   │   ├── accounting-onboarding.api.test.ts
 │   │   │   │   │   │   ├── accounting-onboarding.api.ts
 │   │   │   │   │   │   ├── archive-maintenance.api.ts
+│   │   │   │   │   │   ├── audit-integrity.api.ts
 │   │   │   │   │   │   ├── banking-payments.api.ts
 │   │   │   │   │   │   ├── break-audit-rebuild.api.ts
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
@@ -7386,6 +7387,10 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.account-oversight.test.tsx
 │   │   │   │   │   ├── accounting-screen.account-oversight.tsx
 │   │   │   │   │   ├── accounting-screen.approvals.ts
+│   │   │   │   │   ├── accounting-screen.audit-integrity.test.tsx
+│   │   │   │   │   ├── accounting-screen.audit-integrity.tsx
+│   │   │   │   │   ├── accounting-screen.audit-integrity.view-model.test.ts
+│   │   │   │   │   ├── accounting-screen.audit-integrity.view-model.ts
 │   │   │   │   │   ├── accounting-screen.basis-bridge.view-model.ts
 │   │   │   │   │   ├── accounting-screen.break-audit-rebuild.test.tsx
 │   │   │   │   │   ├── accounting-screen.break-audit-rebuild.tsx
@@ -7763,6 +7768,7 @@ Meridian-main
 │   │   │   │   │   ├── account-oversight.ts
 │   │   │   │   │   ├── accounting-onboarding.ts
 │   │   │   │   │   ├── archive-maintenance.types.ts
+│   │   │   │   │   ├── audit-integrity.ts
 │   │   │   │   │   ├── banking-payments.types.ts
 │   │   │   │   │   ├── brokerage-recovery.ts
 │   │   │   │   │   ├── canonical-symbol.ts
