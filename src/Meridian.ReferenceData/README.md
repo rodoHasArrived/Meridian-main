@@ -28,6 +28,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   provider routing, and readiness workflows.
 - `SecurityMaster/SecurityAssetProfileCatalog.cs` - Security Master profile catalog
   contract plus seeded approved custom/private asset profile templates.
+- `CorporateActions/ClearwaterCorporateActionRuleProfileV1.cs` - the vendor corporate-action
+  methodology profile behind the `ICorporateActionRuleProfile` contract; kept out of the domain
+  and injected into the projector by the composition root.
 
 ## Important workflows
 

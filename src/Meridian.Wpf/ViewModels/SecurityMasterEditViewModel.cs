@@ -378,6 +378,8 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         => JsonSerializer.SerializeToElement(new Dictionary<string, object?>
         {
             ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
+            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion,
             ["classification"] = string.Equals(assetClass, "Equity", StringComparison.OrdinalIgnoreCase) ? "Common" : null
         });
 

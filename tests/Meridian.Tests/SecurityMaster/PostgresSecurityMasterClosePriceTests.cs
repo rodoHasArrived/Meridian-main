@@ -1,5 +1,7 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using FluentAssertions;
+using Meridian.Contracts.Integrity;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
@@ -297,6 +299,106 @@ public sealed class PostgresSecurityMasterClosePriceTests(SecurityMasterDatabase
             .GetClosePriceSetsAsync(account, "book-a", request.ValuationDate);
         history.Should().ContainSingle().Which.Should().BeEquivalentTo(results[0]);
         await forwardingStore.Received(2).RetainClosePriceSnapshotAsync(Arg.Any<SecurityClosePriceSnapshotDto>(), Arg.Any<CancellationToken>());
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task ApprovalGuardRejectsRawSnapshotsMissingBlockersOrCreatedByAndAcceptsWellFormedReview()
+    {
+        // Migration 043: the database guard must fail closed even when a payload bypasses the C# store
+        // and omits the evidence the SQL conditions inspect. A missing "Blockers" array or a missing
+        // "CreatedBy" value used to make the OR chain evaluate NULL, so the approval was accepted.
+        var id = await SeedSecurityAsync();
+        var account = $"account-{Guid.NewGuid():N}";
+        var store = new PostgresSecurityMasterPricingStore(fixture.Options);
+        await SeedPricingAsync(store, id, account, Close.AddHours(-2));
+        var template = (await Service(store, id).CreateClosePriceSetAsync(Request(id, account))).Snapshot;
+        template.Blockers.Should().BeEmpty();
+
+        var missingBlockers = await InsertRawSnapshotAsync(template, node => node.Remove("Blockers"));
+        await AssertRawApprovalRejectedAsync(missingBlockers);
+        var nullBlockers = await InsertRawSnapshotAsync(template, node => node["Blockers"] = null);
+        await AssertRawApprovalRejectedAsync(nullBlockers);
+        var missingCreatedBy = await InsertRawSnapshotAsync(template, node => node.Remove("CreatedBy"));
+        await AssertRawApprovalRejectedAsync(missingCreatedBy);
+        var nullCreatedBy = await InsertRawSnapshotAsync(template, node => node["CreatedBy"] = null);
+        await AssertRawApprovalRejectedAsync(nullCreatedBy);
+        var blankCreatedBy = await InsertRawSnapshotAsync(template, node => node["CreatedBy"] = "  ");
+        await AssertRawApprovalRejectedAsync(blankCreatedBy);
+
+        // The same raw path with complete evidence and an independent reviewer still succeeds, so the
+        // rejections above come from the hardened conditions rather than from the raw insert itself.
+        var wellFormed = await InsertRawSnapshotAsync(template, _ => { });
+        await ExecuteRawApprovalAsync(wellFormed, "checker");
+        (await CountAsync("security_close_price_approvals", wellFormed.SnapshotId)).Should().Be(1);
+        var selfReviewed = await InsertRawSnapshotAsync(template, _ => { });
+        await AssertRawApprovalRejectedAsync(selfReviewed, reviewer: $"  {template.CreatedBy.ToUpperInvariant()} ");
+        foreach (var rejected in new[] { missingBlockers, nullBlockers, missingCreatedBy, nullCreatedBy, blankCreatedBy, selfReviewed })
+            (await CountAsync("security_close_price_approvals", rejected.SnapshotId)).Should().Be(0);
+    }
+
+    private sealed record RawSnapshot(Guid SnapshotId, string PayloadSha256);
+
+    private async Task<RawSnapshot> InsertRawSnapshotAsync(SecurityClosePriceSnapshotDto template, Action<JsonObject> mutate)
+    {
+        var snapshotId = Guid.NewGuid();
+        var account = $"raw-{Guid.NewGuid():N}";
+        var node = JsonNode.Parse(JsonSerializer.Serialize(template, SecurityMasterClosePricesJsonContext.Default.SecurityClosePriceSnapshotDto))!.AsObject();
+        node["SnapshotId"] = snapshotId;
+        node["AccountId"] = account;
+        mutate(node);
+        var payload = node.ToJsonString();
+        var digest = Sha256Digest.ComputeUtf8(payload); // The store hashes the exact UTF-8 payload text.
+        await using var connection = new NpgsqlConnection(fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"""
+            insert into {fixture.Options.Schema}.security_close_price_snapshots
+                (snapshot_id, account_id, book_id, valuation_date, version, corrects_snapshot_id, payload, payload_sha256)
+            values (@id, @account, @book, @date, 1, null, @payload, @digest);
+            """;
+        command.Parameters.AddWithValue("id", snapshotId);
+        command.Parameters.AddWithValue("account", account);
+        command.Parameters.AddWithValue("book", template.BookId);
+        command.Parameters.AddWithValue("date", template.ValuationDate);
+        command.Parameters.AddWithValue("payload", payload);
+        command.Parameters.AddWithValue("digest", digest);
+        await command.ExecuteNonQueryAsync();
+        return new(snapshotId, digest);
+    }
+
+    private async Task AssertRawApprovalRejectedAsync(RawSnapshot snapshot, string reviewer = "checker")
+    {
+        var rejection = await FluentActions.Invoking(() => ExecuteRawApprovalAsync(snapshot, reviewer)).Should().ThrowAsync<PostgresException>();
+        rejection.Which.SqlState.Should().Be("23514");
+        rejection.Which.MessageText.Should().Be("Close approval requires independent review of an unblocked current immutable snapshot");
+    }
+
+    private async Task ExecuteRawApprovalAsync(RawSnapshot snapshot, string reviewer)
+    {
+        var approval = new SecurityClosePriceApprovalDto(snapshot.SnapshotId, snapshot.PayloadSha256, reviewer,
+            "Independently reviewed close source evidence", DateTimeOffset.UtcNow);
+        var payload = JsonSerializer.Serialize(approval, SecurityMasterClosePricesJsonContext.Default.SecurityClosePriceApprovalDto);
+        await using var connection = new NpgsqlConnection(fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"""
+            insert into {fixture.Options.Schema}.security_close_price_approvals (snapshot_id, payload, payload_sha256)
+            values (@id, @payload, @digest);
+            """;
+        command.Parameters.AddWithValue("id", snapshot.SnapshotId);
+        command.Parameters.AddWithValue("payload", payload);
+        command.Parameters.AddWithValue("digest", Sha256Digest.ComputeUtf8(payload));
+        await command.ExecuteNonQueryAsync();
+    }
+
+    private async Task<long> CountAsync(string table, Guid snapshotId)
+    {
+        await using var connection = new NpgsqlConnection(fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"select count(*) from {fixture.Options.Schema}.{table} where snapshot_id = @id";
+        command.Parameters.AddWithValue("id", snapshotId);
+        return (long)(await command.ExecuteScalarAsync())!;
     }
 
     private async Task AssertImmutableAsync(Guid id)

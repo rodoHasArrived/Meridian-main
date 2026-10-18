@@ -390,13 +390,14 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                     security_id, asset_class, status, display_name, currency, country_of_risk, issuer_name,
                     exchange_code, lot_size, tick_size, primary_identifier_kind, primary_identifier_value,
                     normalized_primary_identifier_value,
-                    common_terms, asset_specific_terms, provenance, version, schema_version, effective_from, effective_to)
+                    common_terms, asset_specific_terms, provenance, version, schema_version, terms_format,
+                    effective_from, effective_to)
                 values (
                     @security_id, @asset_class, @status, @display_name, @currency, @country_of_risk, @issuer_name,
                     @exchange_code, @lot_size, @tick_size, @primary_identifier_kind, @primary_identifier_value,
                     @normalized_primary_identifier_value,
                     @common_terms::jsonb, @asset_specific_terms::jsonb, @provenance::jsonb, @version, @schema_version,
-                    @effective_from, @effective_to)
+                    @terms_format, @effective_from, @effective_to)
                 on conflict (security_id) do update set
                     asset_class = excluded.asset_class,
                     status = excluded.status,
@@ -415,6 +416,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                     provenance = excluded.provenance,
                     version = excluded.version,
                     schema_version = excluded.schema_version,
+                    terms_format = excluded.terms_format,
                     effective_from = excluded.effective_from,
                     effective_to = excluded.effective_to
                 where retained.version <= excluded.version;
@@ -430,6 +432,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             // for. Readability stays the mapping guard's decision, which resolves the version from
             // the blob through the upcaster chain and never consults this column.
             var schemaVersion = SecurityAssetSpecificTermsV0ToCurrentUpcaster.ResolveSchemaVersion(record.AssetSpecificTerms);
+            var termsFormat = ResolveStorableTermsFormat(record);
 
             command.Parameters.AddWithValue("security_id", record.SecurityId);
             command.Parameters.AddWithValue("asset_class", record.AssetClass);
@@ -449,6 +452,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             command.Parameters.AddWithValue("provenance", record.Provenance.GetRawText());
             command.Parameters.AddWithValue("version", record.Version);
             command.Parameters.AddWithValue("schema_version", schemaVersion);
+            command.Parameters.AddWithValue("terms_format", termsFormat);
             command.Parameters.AddWithValue("effective_from", record.EffectiveFrom.UtcDateTime);
             command.Parameters.AddWithValue("effective_to", (object?)record.EffectiveTo?.UtcDateTime ?? DBNull.Value);
             // ON CONFLICT locks and rechecks the retained row after a competing writer commits.
@@ -1407,6 +1411,27 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             ? value.GetString()
             : null;
 
+    /// <summary>
+    /// The terms-payload family written to the <c>terms_format</c> column (migration 042). A declared
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/> wins; a payload that predates the tag is
+    /// classified by the same shape rule the migration backfill applied, so the column has one
+    /// definition whether the row was migrated or written. The stored payload is never mutated to add
+    /// the tag — writers own stamping. A declared format this node does not know is refused here with
+    /// a precise reason rather than by the column's check constraint.
+    /// </summary>
+    internal static string ResolveStorableTermsFormat(SecurityProjectionRecord record)
+    {
+        var format = SecurityTermsEnvelope.ResolveFormat(record.AssetSpecificTerms);
+        if (!SecurityTermsFormats.IsKnown(format))
+        {
+            throw new InvalidOperationException(
+                $"Security '{record.SecurityId}' ({record.AssetClass}) declares {SecurityTermsEnvelope.FormatKey} '{format}', " +
+                $"which is not a storable terms format; expected one of {string.Join(", ", SecurityTermsFormats.All)}.");
+        }
+
+        return format;
+    }
+
     private static string NormalizePrimaryIdentifierValue(SecurityProjectionRecord record)
         => Enum.TryParse<SecurityIdentifierKind>(record.PrimaryIdentifierKind, ignoreCase: true, out var kind)
             ? SecurityIdentifierNormalizer.NormalizeValue(kind, record.PrimaryIdentifierValue)
@@ -1485,7 +1510,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         int? SettlementCycleDays,
         string? HolidayCalendarId,
         long Version,
-        // Clearwater extended lifecycle fields.
+        // Extended lifecycle fields (migration 017).
         decimal? Par,
         string? PaymentFrequency,
         DateOnly? LegalFinalMaturity,

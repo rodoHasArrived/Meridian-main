@@ -27,7 +27,7 @@ state requires restoring retained history. Retrying provisioning after an interr
 completes it only when the store holds no retained history. Corrupt or missing history and a store
 lock held for more than 30 seconds return 503. Back up the complete configured data root, including
 `reconciliation/account-cash-continuity`, `asset-operations/account-cash-forecasts` and Evidence Vault.
-Close-price snapshots require the existing PostgreSQL Security Master and migration 037.
+Close-price snapshots require the existing PostgreSQL Security Master and migration 037; migration 043 hardens its approval guard against payloads missing `Blockers` or `CreatedBy`.
 
 Both file stores partition retained history per exact account scope. Each store directory holds the
 `initialized` provisioning marker, a `scope-index.json` registry of retained scopes, and one

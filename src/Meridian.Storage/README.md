@@ -16,7 +16,9 @@ Tier migration decodes compressed input with the production JSONL replay decoder
 `PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
 account/book/date price snapshots and separate independent-review records (Security Master
 migration 037). Source receipts must match exactly; scoped advisory locks fence approvals and
-linked corrections. Database guards refuse replacement, deletion and truncation. The schema
+linked corrections. Database guards refuse replacement, deletion and truncation; migration
+`043_security_master_close_price_approval_null_guards.sql` replaces the approval guard function so a
+snapshot payload lacking `Blockers` or `CreatedBy` is rejected instead of passing a NULL check. The schema
 inventory exception records only the lexical false positive from `BEFORE TRUNCATE` rejection
 triggers and requires independent schema/storage review.
 
@@ -59,6 +61,13 @@ projection batch rebuilds append in the same transaction as the change, and an o
 cannot approve values they staged. The event store and projection store join
 `PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap and
 Commodity projections are now declarative registry plans rather than hand-written writers.
+
+Security Master migration `042_security_master_terms_format_column.sql` promotes the terms-payload
+family to a queryable `securities.terms_format` column (ADR-024). The backfill never rewrites the
+payload: a declared `termsFormat` wins and an untagged row is classified by the same shape rule
+`SecurityTermsEnvelope.ResolveFormat` applies on read. `PostgresSecurityMasterStore` derives the
+column from the stored payload on every upsert and refuses an unknown declared format before the
+column's check constraint does.
 Asset-operations migration `005_asset_operations_write_events.sql` adds an append-only write-event
 log for direct projection writes; migration `006_asset_operations_write_events_truncate_guard.sql`
 rejects TRUNCATE on it as well.
