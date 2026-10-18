@@ -196,6 +196,7 @@ public sealed class FundAccountServiceTests
         var svc = CreateService();
         var accountId = Guid.NewGuid();
         var today = DateOnly.FromDateTime(DateTime.Today);
+        var bankBatchId = Guid.NewGuid();
 
         Func<Task> mutation = operation switch
         {
@@ -205,16 +206,13 @@ public sealed class FundAccountServiceTests
             "custodian statement" => () => svc.IngestCustodianStatementAsync(
                 new IngestCustodianStatementRequest(
                     Guid.NewGuid(), accountId, today, "Custodian", "JSON", null, [], "test")),
-            "bank statement" => () =>
-            {
-                // A bank statement revision needs at least one line to reach the account lookup.
-                var batchId = Guid.NewGuid();
-                return svc.IngestBankStatementAsync(new IngestBankStatementRequest(
-                    batchId, accountId, today, "Bank", null,
-                    [new BankStatementLineDto(Guid.NewGuid(), batchId, accountId, today, today, 10m, "USD",
+            // A bank statement revision needs at least one line to reach the account lookup.
+            "bank statement" => () => svc.IngestBankStatementAsync(
+                new IngestBankStatementRequest(
+                    bankBatchId, accountId, today, "Bank", null,
+                    [new BankStatementLineDto(Guid.NewGuid(), bankBatchId, accountId, today, today, 10m, "USD",
                         "CREDIT", "Wire transfer", null, null)],
-                    "test"));
-            },
+                    "test")),
             "reconciliation" => () => svc.ReconcileAccountAsync(
                 new ReconcileAccountRequest(accountId, today, "test")),
             "sync history" => () => svc.RecordSyncHistoryAsync(
