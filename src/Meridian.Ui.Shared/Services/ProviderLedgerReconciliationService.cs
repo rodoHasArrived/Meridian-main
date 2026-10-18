@@ -727,9 +727,8 @@ public sealed partial class ProviderLedgerReconciliationService
                 CancellationToken.None)
             .ConfigureAwait(false);
         _logger.LogInformation(
-            "Provider-ledger reconciliation {ReconciliationRunId} for account {AccountId} completed with {Status} and verified state {TerminalState}",
+            "Provider-ledger reconciliation {ReconciliationRunId} completed with {Status} and verified state {TerminalState}",
             runId,
-            accountId,
             status,
             detail.Outcome.State);
         return detail;
