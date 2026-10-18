@@ -235,7 +235,7 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
     }
 
     [Fact]
-    public async Task SinkReopenDuringCompression_WaitsAndLandsInAFreshSource_NeverInTheDeletedOne()
+    public async Task SinkReopenDuringCompression_WaitsThenExtendsThePublishedArchive()
     {
         var options = new StorageOptions { RootPath = TestDataRoot };
         var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
@@ -268,14 +268,54 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
         await lateWrite!.WaitAsync(TimeSpan.FromSeconds(10));
 
         result.Success.Should().BeTrue();
-        await using (var archive = new GZipStream(File.OpenRead(dayFile + ".gz"), CompressionMode.Decompress))
-        using (var decompressed = new MemoryStream())
-        {
-            await archive.CopyToAsync(decompressed);
-            decompressed.ToArray().Should().Equal(original, "the archive holds exactly the verified source");
-        }
-        File.ReadAllLines(dayFile).Should().ContainSingle("the late event lands in a fresh source, not the deleted one");
+        File.Exists(dayFile).Should().BeFalse("a late write must not recreate the plain source beside its archive");
+        var archived = await DecompressAsync(dayFile + ".gz");
+        archived.Take(original.Length).Should().Equal(original, "the verified source is the archive's first member");
+        ReadJsonLines(archived).Should().HaveCount(2, "the late event is appended once as a further gzip member");
     }
+
+    [Fact]
+    public async Task WriteAfterCompression_ExtendsArchiveAndReplaysEachEventOnce()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await first.AppendAsync(CreateTestEvent("AAPL", 1));
+            await first.FlushAsync();
+        }
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl").Should().ContainSingle().Subject;
+        await AtomicFileWriter.WriteAsync(dayFile + ".sha256",
+            $"{Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(dayFile))).ToLowerInvariant()}  {Path.GetFileName(dayFile)}");
+        var maintenance = new FileMaintenanceService(options);
+        (await maintenance.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false))).Success.Should().BeTrue();
+
+        await using (var second = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await second.AppendAsync(CreateTestEvent("AAPL", 2));
+            await second.FlushAsync();
+        }
+
+        File.Exists(dayFile).Should().BeFalse();
+        var replayed = new List<MarketEvent>();
+        await foreach (var evt in new Meridian.Storage.Replay.JsonlReplayer(TestDataRoot).ReadEventsAsync())
+            replayed.Add(evt);
+        replayed.Select(evt => evt.Sequence).Should().Equal(1, 2);
+        (await maintenance.RunHealthCheckAsync(new HealthCheckOptions(ValidateChecksums: true)))
+            .Issues.Should().NotContain(issue => issue.Type == IssueType.ChecksumMismatch,
+                "the archive's checksum is refreshed with its new member");
+    }
+
+    private static async Task<byte[]> DecompressAsync(string path)
+    {
+        await using var archive = new GZipStream(File.OpenRead(path), CompressionMode.Decompress);
+        using var decompressed = new MemoryStream();
+        await archive.CopyToAsync(decompressed);
+        return decompressed.ToArray();
+    }
+
+    private static IReadOnlyList<string> ReadJsonLines(byte[] bytes) =>
+        System.Text.Encoding.UTF8.GetString(bytes).Split('\n', StringSplitOptions.RemoveEmptyEntries);
 
     [Fact]
     public async Task WriteFence_ExclusiveHolderRefusedWhileWriterHoldsLease()

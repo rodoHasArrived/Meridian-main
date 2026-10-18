@@ -72,4 +72,22 @@ public sealed class BankStatementCsvImportAuthorityTests
         result.StatementDate.Should().Be(statementDate);
         result.StatementRevision.Should().Be(2);
     }
+
+    [Fact]
+    public void BuildBatchId_CorrectedDeclaredStatementDate_IsADistinctBatch()
+    {
+        var bytes = Encoding.UTF8.GetBytes("""
+            transaction_date,amount,currency,transaction_type,description
+            2026-10-06,10,USD,Deposit,Wire
+            """);
+        var account = Guid.NewGuid();
+        var legacy = BankStatementCsvImportMapper.BuildBatchId(bytes, account, "Bank");
+
+        BankStatementCsvImportMapper.BuildBatchId(bytes, account, "Bank", null).Should().Be(legacy);
+        BankStatementCsvImportMapper.BuildBatchId(bytes, account, "Bank", new DateOnly(2026, 10, 6)).Should().Be(legacy,
+            "a declared date matching the file keeps duplicate detection against earlier imports");
+        var corrected = BankStatementCsvImportMapper.BuildBatchId(bytes, account, "Bank", new DateOnly(2026, 10, 7));
+        corrected.Should().NotBe(legacy, "a corrected statement header must not reuse the original batch");
+        BankStatementCsvImportMapper.BuildBatchId(bytes, account, "Bank", new DateOnly(2026, 10, 7)).Should().Be(corrected);
+    }
 }

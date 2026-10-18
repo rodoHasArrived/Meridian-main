@@ -41,6 +41,9 @@ before publishing a create-only gzip destination and deleting the original. Succ
 changes report compressed files and bytes saved with zero repaired issues. In-process, `JsonlStorageSink` holds a shared
 `JsonlWriteFence` lease while its append stream is open and compression takes the path
 exclusively, so an open file is refused and a reopening sink waits until the source is gone.
+A later write to a compressed plain path appends a gzip member to the published archive (refreshing
+its checksum sidecar) instead of recreating the plain file, so each archive keeps one
+representation. Compression also retires a source checksum orphaned by an interrupted cleanup.
 Scheduled runs also defer files written
 within the last five minutes, and every run refuses to delete a source whose length or timestamp
 changed after verification, withdrawing the new archive instead. A source checksum sidecar is

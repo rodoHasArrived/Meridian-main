@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.IO.Compression;
-using System.Security.Cryptography;
 using Meridian.Contracts.Integrity;
 using Meridian.Storage.Archival;
 
@@ -14,20 +13,49 @@ public sealed partial class FileMaintenanceService
         var errors = new List<string>();
         var recoveryCopies = new List<string>();
         var files = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        var orphanSidecars = new List<string>();
         var paths = options.Paths is { Length: > 0 } && options.Paths[0] != "*"
             ? options.Paths : [_options.RootPath];
         foreach (var path in paths)
         {
             if (Directory.Exists(path))
             {
-                foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories)
-                             .Where(file => file.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase)))
-                    files.Add(Path.GetFullPath(file));
+                foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+                {
+                    if (file.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
+                        files.Add(Path.GetFullPath(file));
+                    else if (file.EndsWith(".jsonl.sha256", StringComparison.OrdinalIgnoreCase))
+                        orphanSidecars.Add(Path.GetFullPath(file));
+                }
             }
             else if (File.Exists(path) && path.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
                 files.Add(Path.GetFullPath(path));
             else
                 errors.Add($"Compression target is not a readable directory or plain .jsonl file: {path}");
+        }
+
+        // A crash between deleting a compressed source and its sidecar leaves x.jsonl.sha256
+        // beside x.jsonl.gz with no x.jsonl. Retire it so it cannot be applied to other bytes.
+        var plannedSidecarRemovals = new List<string>();
+        foreach (var sidecar in orphanSidecars)
+        {
+            var source = sidecar[..^".sha256".Length];
+            if (File.Exists(source) || !File.Exists(source + ".gz"))
+                continue;
+            if (options.DryRun)
+            {
+                plannedSidecarRemovals.Add($"remove orphaned checksum: {sidecar}");
+                continue;
+            }
+            try
+            {
+                File.Delete(sidecar);
+                await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(sidecar)!, CancellationToken.None);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                errors.Add($"Could not remove orphaned checksum {sidecar}: {ex.Message}");
+            }
         }
 
         var healthyFiles = new List<string>();
@@ -61,7 +89,7 @@ public sealed partial class FileMaintenanceService
 
         if (options.DryRun)
             return new FileCompressionResult(files.Count, 0, errors, true,
-                healthyFiles.Select(file => $"gzip: {file}").ToList());
+                plannedSidecarRemovals.Concat(healthyFiles.Select(file => $"gzip: {file}")).ToList());
 
         if (!await CreateRequiredBackupsAsync(healthyFiles, options.BackupBeforeCompression,
                 options.BackupPath, "compression", recoveryCopies, errors, ct))
@@ -273,7 +301,7 @@ public sealed partial class FileMaintenanceService
     private static async Task<string> ComputeChecksumAsync(FileStream stream, CancellationToken ct)
     {
         stream.Position = 0;
-        return Convert.ToHexString(await SHA256.HashDataAsync(stream, ct)).ToLowerInvariant();
+        return await Sha256Digest.ComputeAsync(stream, ct);
     }
 
     private async Task WriteChecksumSidecarAsync(string archivePath, CancellationToken ct)

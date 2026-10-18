@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
+using Meridian.Contracts.Integrity;
 using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage.Archival;
@@ -581,6 +582,8 @@ public sealed class JsonlStorageSink : IStorageSink
                 {
                     EnsureCompressedFileIsReadable();
                     using var fence = await JsonlWriteFence.EnterWriteAsync(_path, ct).ConfigureAwait(false);
+                    if (await TryAppendToPublishedArchiveAsync(stream => WriteEventToTargetStreamAsync(stream, evt, ct), ct).ConfigureAwait(false))
+                        return;
                     await AtomicFileWriter.AppendAsync(
                         _path,
                         stream => WriteSingleEventAsync(stream, evt, ct),
@@ -614,6 +617,8 @@ public sealed class JsonlStorageSink : IStorageSink
                 {
                     EnsureCompressedFileIsReadable();
                     using var fence = await JsonlWriteFence.EnterWriteAsync(_path, ct).ConfigureAwait(false);
+                    if (await TryAppendToPublishedArchiveAsync(stream => WriteEventsToTargetStreamAsync(stream, events, ct), ct).ConfigureAwait(false))
+                        return;
                     await AtomicFileWriter.AppendAsync(
                         _path,
                         stream => WriteEventsAsync(stream, events, ct),
@@ -677,7 +682,7 @@ public sealed class JsonlStorageSink : IStorageSink
         // Caller holds _gate. If a cancellable write fails after reaching the OS, restore the
         // file to its last complete JSONL boundary. The buffer/WAL retry can then append the
         // original events without joining valid JSON to a torn prefix.
-        private async Task WriteAppendStreamAsync(Func<FileStream, Task> write, CancellationToken ct)
+        private async Task WriteAppendStreamAsync(Func<Stream, Task> write, CancellationToken ct)
         {
             FileStream stream;
             if (_stream is null)
@@ -685,11 +690,17 @@ public sealed class JsonlStorageSink : IStorageSink
                 _fenceLease ??= await JsonlWriteFence.EnterWriteAsync(_path, ct).ConfigureAwait(false);
                 try
                 {
+                    if (await TryAppendToPublishedArchiveAsync(write, ct).ConfigureAwait(false))
+                    {
+                        _fenceLease.Dispose();
+                        _fenceLease = null;
+                        return;
+                    }
                     stream = EnsureStream();
                 }
                 catch
                 {
-                    _fenceLease.Dispose();
+                    _fenceLease?.Dispose();
                     _fenceLease = null;
                     throw;
                 }
@@ -754,14 +765,50 @@ public sealed class JsonlStorageSink : IStorageSink
             if (!_compressed || _compressedFileValidated || !File.Exists(_path))
                 return;
 
-            using var file = new FileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            RequireReadableGzip(_path);
+            _compressedFileValidated = true;
+        }
+
+        private static void RequireReadableGzip(string path)
+        {
+            using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
             using var gzip = new GZipStream(file, CompressionMode.Decompress);
             var buffer = new byte[64 * 1024];
             while (gzip.Read(buffer, 0, buffer.Length) > 0)
             {
             }
+        }
 
-            _compressedFileValidated = true;
+        // Caller holds this path's write fence. Maintenance compression publishes x.jsonl.gz and
+        // deletes x.jsonl; a later write to the same plain path must extend that archive with a
+        // gzip member rather than recreate x.jsonl beside it, which replay would reject as two
+        // conflicting representations of one archive. Returns false when no archive applies.
+        private async Task<bool> TryAppendToPublishedArchiveAsync(Func<Stream, Task> writePlain, CancellationToken ct)
+        {
+            var archive = _path + ".gz";
+            if (_compressed || File.Exists(_path) || !File.Exists(archive))
+                return false;
+
+            RequireReadableGzip(archive);
+            // Retire the archive's checksum before changing its bytes and publish a fresh one
+            // after: a crash in between loses coverage rather than reporting false corruption.
+            var sidecar = archive + ".sha256";
+            var hadSidecar = File.Exists(sidecar);
+            if (hadSidecar)
+                File.Delete(sidecar);
+            await AtomicFileWriter.AppendAsync(archive, async stream =>
+            {
+                await using var gzip = new GZipStream(stream, CompressionLevel.Fastest, leaveOpen: true);
+                await writePlain(gzip).ConfigureAwait(false);
+            }, ct).ConfigureAwait(false);
+            if (hadSidecar)
+            {
+                await using var archiveStream = File.OpenRead(archive);
+                var checksum = await Sha256Digest.ComputeAsync(archiveStream, ct).ConfigureAwait(false);
+                await AtomicFileWriter.WriteAsync(sidecar, $"{checksum}  {Path.GetFileName(archive)}", ct).ConfigureAwait(false);
+            }
+            _lastWriteUtc = DateTimeOffset.UtcNow;
+            return true;
         }
 
         private async Task WriteSingleEventAsync(Stream stream, MarketEvent evt, CancellationToken ct)

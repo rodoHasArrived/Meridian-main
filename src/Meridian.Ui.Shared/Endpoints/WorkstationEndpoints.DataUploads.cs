@@ -226,7 +226,7 @@ public static partial class WorkstationEndpoints
                 fileBytes = buffer.ToArray();
             }
 
-            var batchId = BankStatementCsvImportMapper.BuildBatchId(fileBytes, accountId, bankName);
+            var batchId = BankStatementCsvImportMapper.BuildBatchId(fileBytes, accountId, bankName, statementDate);
             var parsed = BankStatementCsvImportMapper.Parse(fileBytes, accountId, batchId, statementDate);
             if (parsed.Issues.Any(static issue => string.Equals(issue.Severity, "Error", StringComparison.OrdinalIgnoreCase)))
             {

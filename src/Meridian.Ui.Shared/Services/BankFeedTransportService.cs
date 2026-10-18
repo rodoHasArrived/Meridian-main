@@ -177,7 +177,7 @@ public sealed class BankFeedTransportService
                 var bankName = string.IsNullOrWhiteSpace(schedule.BankName)
                     ? account.BankDetails?.BankName ?? account.Institution ?? "Bank feed"
                     : schedule.BankName!.Trim();
-                var batchId = BankStatementCsvImportMapper.BuildBatchId(fileBytes, accountId, bankName);
+                var batchId = BankStatementCsvImportMapper.BuildBatchId(fileBytes, accountId, bankName, schedule.StatementDate);
                 var mapped = BankStatementCsvImportMapper.Parse(fileBytes, accountId, batchId, schedule.StatementDate);
                 var errorIssues = mapped.Issues
                     .Where(static issue => string.Equals(issue.Severity, "Error", StringComparison.OrdinalIgnoreCase))
@@ -311,8 +311,26 @@ internal static class BankStatementCsvImportMapper
         // Deliberately NOT routed through Sha256Digest (which lowercases): the hash feeds the
         // deterministic batch GUID, so changing its casing would change every derived batch ID
         // and break duplicate detection against previously imported batches (#2691).
-        var fileHash = Convert.ToHexString(SHA256.HashData(fileBytes));
-        return BuildGuid($"bank-statement-batch|{accountId:N}|{bankName}|{fileHash}");
+        return BuildGuid(LegacyBatchKey(fileBytes, accountId, bankName));
+    }
+
+    private static string LegacyBatchKey(byte[] fileBytes, Guid accountId, string bankName) =>
+        $"bank-statement-batch|{accountId:N}|{bankName}|{Convert.ToHexString(SHA256.HashData(fileBytes))}";
+
+    /// <summary>
+    /// Batch identity for an import whose statement date may be declared outside the file. A
+    /// declared date that differs from the date the file itself implies is a different statement
+    /// authority, so it gets its own batch; otherwise the legacy byte-derived identity is kept so
+    /// duplicate detection against earlier imports still holds.
+    /// </summary>
+    public static Guid BuildBatchId(byte[] fileBytes, Guid accountId, string bankName, DateOnly? declaredStatementDate)
+    {
+        var legacyKey = LegacyBatchKey(fileBytes, accountId, bankName);
+        var legacy = BuildGuid(legacyKey);
+        if (declaredStatementDate is not { } declared)
+            return legacy;
+        var implied = Parse(fileBytes, accountId, legacy).StatementDate;
+        return implied == declared ? legacy : BuildGuid($"{legacyKey}|{declared:yyyyMMdd}");
     }
 
     /// <param name="declaredStatementDate">Statement as-of date from the upload form or schedule;

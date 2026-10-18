@@ -27,7 +27,9 @@ columns. Missing sequences retain source file order; missing revisions use 1. Ea
 unique sequences and one revision, shared by manual uploads and scheduled feeds. Corrected files
 declare a higher revision. A file that declares `statement_revision` must also declare its
 statement date, through a `statement_date` column or the upload or schedule statement date,
-so a re-dated correction still supersedes the original. Provider shadow cash comparisons use the same statement authority as
+so a re-dated correction still supersedes the original. A declared statement date that differs from the date the
+file implies gives the import its own batch identity, so a corrected header can be re-imported
+with the same bytes. Provider shadow cash comparisons use the same statement authority as
 account reconciliation instead of choosing a balance from arrival order.
 
 `ProviderConnectionLifecycleService` verifies retained Xero, NetSuite and QuickBooks

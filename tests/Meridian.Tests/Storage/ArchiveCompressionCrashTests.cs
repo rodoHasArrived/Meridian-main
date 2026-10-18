@@ -75,6 +75,8 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
         resumed.Success.Should().BeTrue();
         File.Exists(path).Should().BeFalse();
         File.Exists(path + ".gz").Should().BeTrue();
+        File.Exists(path + ".sha256").Should().BeFalse(
+            "a source sidecar left by an interrupted cleanup must not outlive its source");
         for (var reader = 0; reader < 4; reader++)
             (await ReadAllAsync(Read(reader))).Should().Equal(expected);
         foreach (var backup in backups)
