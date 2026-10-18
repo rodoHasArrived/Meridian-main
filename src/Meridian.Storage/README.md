@@ -54,6 +54,15 @@ cannot approve values they staged. The event store and projection store join
 `PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap and
 Commodity projections are now declarative registry plans rather than hand-written writers.
 
+Security Master migration `043_security_master_declarative_terms_projections.sql` gives the twelve
+remaining unprojected classes (CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Cfd,
+Warrant, InvestmentFund, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,
+CommitmentGuarantee) a relational projection written by the same declarative
+`SecurityTermsProjectionRegistry` descriptor path, so every catalog class except the
+profile-governed CustomAsset is now projected (25 of 26). Guid-typed terms project as `uuid`
+columns. The tables are created empty; an existing database populates them through
+`SecurityMasterRebuildOrchestrator.RebuildAssetClassAsync` per class.
+
 Security Master migration `042_security_master_terms_format_column.sql` promotes the terms-payload
 family to a queryable `securities.terms_format` column (ADR-024). The backfill never rewrites the
 payload: a declared `termsFormat` wins and an untagged row is classified by the same shape rule

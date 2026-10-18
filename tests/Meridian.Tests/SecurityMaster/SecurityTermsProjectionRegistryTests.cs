@@ -837,6 +837,106 @@ public sealed class SecurityTermsProjectionRegistryTests
         => SecurityTermsProjectionRegistry.Descriptors.Single(descriptor =>
             string.Equals(descriptor.AssetClass, assetClass, StringComparison.Ordinal));
 
+    /// <summary>The classes migration 043 projected for the first time (every catalog class but CustomAsset is now projected).</summary>
+    private static readonly string[] Migration043Classes =
+    [
+        "CommercialPaper", "TreasuryBill", "Repo", "CashSweep", "OtherSecurity", "Cfd", "Warrant",
+        "InvestmentFund", "PrivateFundInterest", "PrivateCompanyEquity", "RealEstateHolding", "CommitmentGuarantee"
+    ];
+
+    [Fact]
+    public void Registry_ProjectsEveryCatalogClassExceptCustomAsset()
+    {
+        var expected = SecurityAssetClassCatalog.AssetClasses
+            .Except(PostgresSecurityMasterStore.SpecializedProjectionAssetClasses, StringComparer.Ordinal)
+            .Except(new[] { "CustomAsset" }, StringComparer.Ordinal);
+
+        SecurityTermsProjectionRegistry.AssetClasses.Should().BeEquivalentTo(expected,
+            "CustomAsset is the one deliberate gap: its fields are governed per profile and have no fixed column set");
+        Migration043Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
+    }
+
+    [Fact]
+    public void EveryMigration043Class_ProjectsItsCanonicalFullPayload()
+    {
+        // The descriptors gate on the terms the schema marks Required, so the canonical full payload
+        // of each class — the one the domain serializer writes — must satisfy every gate. A gate that
+        // the canonical document could not satisfy would unproject every valid record of the class.
+        foreach (var assetClass in Migration043Classes)
+        {
+            var descriptor = SecurityTermsProjectionRegistry.Descriptors.Single(candidate => candidate.AssetClass == assetClass);
+            var record = SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(
+                assetClass,
+                SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+                    assetClass,
+                    SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass]));
+
+            PostgresSecurityMasterStore.TryBuildTermsProjection(descriptor, record, out var plan)
+                .Should().BeTrue($"the canonical {assetClass} document must satisfy every gate of its own projection");
+
+            foreach (var column in descriptor.Columns.Where(static column => column.Gates))
+            {
+                plan.Value(column.ColumnName).Should().NotBe(DBNull.Value, $"{assetClass}.{column.ColumnName} gates the projection");
+            }
+        }
+    }
+
+    [Fact]
+    public void TryBuild_ProjectsAGuidTermAsAUuidValue_AndGatesOnAMalformedOne()
+    {
+        var warrant = SecurityTermsProjectionRegistry.Descriptors.Single(static descriptor => descriptor.AssetClass == "Warrant");
+        var underlyingId = Guid.NewGuid();
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(
+                warrant,
+                Record("Warrant", new { underlyingId, warrantType = "Call", strike = 12.5m }),
+                out var plan)
+            .Should().BeTrue();
+        plan.Value("underlying_id").Should().Be(underlyingId, "a Guid term binds as a uuid, not as its text");
+        plan.Value("expiry_date").Should().Be(DBNull.Value);
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(
+                warrant,
+                Record("Warrant", new { underlyingId = "not-a-guid", warrantType = "Call" }),
+                out _)
+            .Should().BeFalse("a malformed Guid on a gating column suppresses the projection rather than writing a partial row");
+    }
+
+    [Fact]
+    public void TryBuild_FansOutCommitmentGuaranteeCovenants_AndTreatsAnAbsentListAsEmpty()
+    {
+        var guarantee = SecurityTermsProjectionRegistry.Descriptors.Single(static descriptor => descriptor.AssetClass == "CommitmentGuarantee");
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(
+                guarantee,
+                Record("CommitmentGuarantee", new
+                {
+                    counterparty = "Meridian Credit Bank",
+                    committedAmount = 12_000_000m,
+                    effectiveDate = "2026-01-01",
+                    covenants = new object[]
+                    {
+                        new { covenantType = "MinLiquidity", threshold = "$5m", notes = (string?)null },
+                        new { covenantType = "MaxLeverage", threshold = "4.5x", notes = "tested quarterly" }
+                    }
+                }),
+                out var plan)
+            .Should().BeTrue();
+
+        var rows = plan.ChildRows("commitment_guarantee_covenant_projection");
+        rows.Should().HaveCount(2);
+        rows.Select(row => Column(row, "ordinal")).Should().Equal(0, 1);
+        Column(rows[1], "threshold").Should().Be("4.5x", "the covenant threshold stays prose");
+        Column(rows[0], "notes").Should().Be(DBNull.Value);
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(
+                guarantee,
+                Record("CommitmentGuarantee", new { counterparty = "Bank", committedAmount = 1m, effectiveDate = "2026-01-01" }),
+                out var bare)
+            .Should().BeTrue();
+        bare.ChildRows("commitment_guarantee_covenant_projection").Should().BeEmpty();
+    }
+
     private static object? Column(
         IReadOnlyList<PostgresSecurityMasterStore.SecurityTermsProjectionValue> row,
         string columnName)
