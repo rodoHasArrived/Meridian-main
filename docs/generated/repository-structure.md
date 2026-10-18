@@ -6550,7 +6550,8 @@ Meridian-main
 │   │   │   │   ├── 039_security_master_event_payload_version.sql
 │   │   │   │   ├── 040_security_master_governance_events.sql
 │   │   │   │   ├── 041_security_master_governance_events_truncate_guard.sql
-│   │   │   │   └── 042_security_master_terms_format_column.sql
+│   │   │   │   ├── 042_security_master_terms_format_column.sql
+│   │   │   │   └── 043_security_master_close_price_approval_null_guards.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
