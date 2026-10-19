@@ -114,7 +114,7 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
 
     private async Task RequireMarkerAsync(CancellationToken ct)
     {
-        if (!File.Exists(MarkerPath) || await File.ReadAllTextAsync(MarkerPath, ct).ConfigureAwait(false) != Marker)
+        if (!File.Exists(MarkerPath) || System.Text.Encoding.UTF8.GetString(await ReadSharedAsync(MarkerPath, ct).ConfigureAwait(false)) != Marker)
             throw new InvalidOperationException("The durable account forecast initialization marker is unavailable or invalid.");
     }
 
@@ -198,7 +198,7 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
     {
         try
         {
-            var bytes = await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false);
+            var bytes = await ReadSharedAsync(path, ct).ConfigureAwait(false);
             var envelope = JsonSerializer.Deserialize(bytes, AccountCashForecastStoreJsonContext.Default.AccountCashForecastScopeEnvelope)
                 ?? throw new InvalidDataException("The retained account forecast scope document is empty.");
             if (envelope.SchemaVersion != 1 || envelope.Scope != scope || envelope.Snapshots is null || !Sha256Digest.IsCanonical(envelope.ContentHash)
@@ -230,7 +230,7 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
     {
         try
         {
-            var bytes = await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false);
+            var bytes = await ReadSharedAsync(path, ct).ConfigureAwait(false);
             var envelope = JsonSerializer.Deserialize(bytes, AccountCashForecastStoreJsonContext.Default.AccountCashForecastStoreEnvelope)
                 ?? throw new InvalidDataException("The retained account forecast document is empty.");
             if (envelope.SchemaVersion != 1 || envelope.Snapshots is null || !Sha256Digest.IsCanonical(envelope.ContentHash)
@@ -282,10 +282,12 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
 
 
     /// <summary>
-    /// Index readers run under their own scope lock while a first-time registration under the store
-    /// lock replaces the file atomically; sharing delete lets that rename proceed on Windows instead
-    /// of failing the registration with a sharing violation. The rename is atomic, so a reader sees
-    /// either the complete old or the complete new index, and the content hash is verified anyway.
+    /// Every store read opens with delete sharing. Index readers run under their own scope lock while a
+    /// first-time registration under the store lock replaces the index atomically, and provisioning
+    /// validates every scope file under the store lock while a writer holding only that scope's lock may
+    /// replace it; sharing delete lets those renames proceed on Windows instead of failing the writer
+    /// with a sharing violation. Each rename is atomic, so a reader sees either the complete old or the
+    /// complete new file, and the content hash is verified anyway.
     /// </summary>
     private static async Task<byte[]> ReadSharedAsync(string path, CancellationToken ct)
     {
