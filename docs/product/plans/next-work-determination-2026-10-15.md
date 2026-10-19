@@ -373,7 +373,7 @@ today's measurements attached.
 | **P0** | **Sign `ADR-019` and `ADR-020`.** Both still read `Proposed`; ADR-019's status line says signing it *is* the `PRD-000` signed-support-matrix artifact | Step 1 of the tracker's execution order, zero engineering, and the cheapest unblocked item in the program. It has been available throughout the five determinations that ranked a dependency advisory instead |
 | **P0** | **Provision `MDC_SIGNING_CERT_PFX_BASE64`/`MDC_SIGNING_CERT_PASSWORD` in the protected `desktop-release-signing` environment, then run a signed tag build** | The installer lane is mechanically proven end to end, but every receipt so far used a throwaway self-signed certificate and is not release evidence (`PRD-014`, and `PRD-000`'s update/rollback receipts) |
 | **P0** | **Decide the ~1 GB consumer download** (1,043,350,783 bytes: both architectures plus full PostgreSQL) | A product question the evidence chain explicitly refuses to settle, and it shapes what gets signed |
-| **P0** | **Freeze a full-coverage green commit and tag the RC.** `e0ecd952` has all eight workflows green with a retained receipt; the repo has one tag, `eval-v0.1.0-eval.1`, and no `v*` | The lane that blocked this for thirteen days is green. Check *which* workflows ran on the candidate, not only that they passed |
+| **P0** | **Freeze a full-coverage green commit and tag the RC — once every `P0` closes on it, `PRD-002` included.** `e0ecd952` has all eight workflows green with a retained receipt; the repo has one tag, `eval-v0.1.0-eval.1`, and no `v*` | The lane that blocked this for thirteen days is green. Check *which* workflows ran on the candidate, not only that they passed — and that the gate's "every `P0` on the same release commit" rule is satisfied, which it is not while the row below is open |
 | **P0** | **Continue `PRD-002` from #2931's merged residual list** — non-Windows key protection first | The only P0 needing code. The key still sits beside the ciphertext it opens (`FileProviderCredentialStore.cs:1233-1253`), and the file says so itself |
 | **P1** | **Triage #3168 vs #3169 before either merges** | 68 shared files, **47 differing**, both fully green. Whichever lands second becomes a 47-file hand-written conflict across reconciliation, providers, credentials and the ledger |
 | **P1** | **Land #3162 then #3164** | Both clean and fully green today, both in the `W10-LOT-002` lane, which is first in the recorded user-requested queue and the only `critical` row |
@@ -393,10 +393,13 @@ today's measurements attached.
 The predecessors' bar was met, so this one sets a different test: **the next determination is due
 when the RC is tagged, or when a signature it names is refused.**
 
-What stands between `main` and an RC is now **four signatures, one secret and one product decision** —
-listed above with the file and line that each one blocks. None of them is analysis, and no further
-ranking produces them. If a determination is written while ADR-019 still reads `Proposed`, the thing
-to examine is the decision path, not the backlog.
+What stands between `main` and an RC is **four signatures, one secret, one product decision — and
+`PRD-002`**, listed above with the file and line that each one blocks. The release gate
+(`docs/product/implementation-todo-list.md:16-18`) requires **every** `P0` row complete *on the same
+release commit*, and `PRD-002` is still open in code, so a commit frozen before that lands cannot be
+the RC however many signatures it carries. Of the six, only `PRD-002` is engineering; none of the
+other five is analysis, and no further ranking produces them. If a determination is written while
+ADR-019 still reads `Proposed`, the thing to examine is the decision path, not the backlog.
 
 ## On archiving the predecessors
 
