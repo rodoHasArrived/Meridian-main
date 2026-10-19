@@ -985,6 +985,27 @@ let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Ma
     |> should equal None
 
 [<Fact>]
+let ``SecurityMasterLegacyUpgrade keeps a structured note cadence without a coupon rate`` () =
+    let terms = {
+        IssuerName = "Meridian Bank plc"; UnderlyingDescription = "EURO STOXX 50"; Maturity = DateOnly(2031, 12, 15)
+        IssueDate = None; Denomination = Some 1000m; PrincipalProtectionPct = Some 1m; ParticipationRate = None
+        ReturnCap = None; CouponRate = None; PaymentFrequency = Some "Quarterly"; BarrierLevel = Some 0.6m
+    }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.StructuredNote terms }
+
+    let record =
+        match SecurityMaster.create command with
+        | Ok [ SecurityMasterEvent.SecurityCreated snapshot ] -> snapshot
+        | Ok events -> failwithf "Expected SecurityCreated event, got: %A" events
+        | Error errors -> failwithf "Expected create to succeed, got: %A" errors
+
+    let definition = SecurityMasterLegacyUpgrade.toEconomicDefinition record
+    let coupon = definition.Terms.Coupon |> Option.defaultWith (fun () -> failwith "Expected Coupon term module")
+    coupon.PaymentFrequency |> should equal (Some (PaymentFrequency.parse "Quarterly"))
+    coupon.CouponRate |> should equal None
+
+[<Fact>]
 let ``SecurityMasterLegacyUpgrade maps preferred classification into term modules`` () =
     let preferredTerms, _, classification = createConvertiblePreferredClassification ()
     let record = createSecurityRecord (Some classification)

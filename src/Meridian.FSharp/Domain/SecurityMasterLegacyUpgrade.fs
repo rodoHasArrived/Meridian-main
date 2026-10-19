@@ -759,16 +759,18 @@ module SecurityMasterLegacyUpgrade =
                             IssueDate = terms.IssueDate
                             MaturityDate = Some terms.Maturity
                         }
+                    // A cadence without a rate (a contingent coupon) still belongs on the coupon module.
                     Coupon =
-                        terms.CouponRate
-                        |> Option.map (fun couponRate ->
-                            {
+                        if terms.CouponRate.IsNone && terms.PaymentFrequency.IsNone then
+                            None
+                        else
+                            Some {
                                 // The coupon may be contingent on the underlying; the style is not declared.
                                 CouponType = None
-                                CouponRate = Some couponRate
+                                CouponRate = terms.CouponRate
                                 PaymentFrequency = terms.PaymentFrequency |> Option.map PaymentFrequency.parse
                                 DayCount = None
-                            })
+                            }
                     Issuer =
                         Some {
                             IssuerName = Some terms.IssuerName
