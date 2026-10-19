@@ -42,6 +42,12 @@ function utcInput(value: string): string | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
 }
 
+function sameApproval(retained: { reviewer: string; rationale: string }, submitted: { reviewer: string; rationale: string }): boolean {
+  // Exact, trimmed identity: the server records and compares reviewer and rationale case-sensitively,
+  // so a retained approval that differs only by case is another reviewer's decision, not this one.
+  return retained.reviewer.trim() === submitted.reviewer.trim() && retained.rationale.trim() === submitted.rationale.trim();
+}
+
 function belongsTo(set: ClosePriceSet, scope: OversightScope, date: string): boolean {
   return set.snapshot.accountId === scope.accountId && set.snapshot.bookId === scope.ledgerBookId
     && set.snapshot.valuationDate === date;
@@ -76,10 +82,14 @@ function ScopedClosePricesPanel({ scope, context, onDirtyChange }: Props) {
   const [captureRecoveryReady, setCaptureRecoveryReady] = useState(false);
   const [captureFoundInHistory, setCaptureFoundInHistory] = useState(false);
   const capture = useRef<{ fingerprint: string; request: CreateClosePriceSetRequest } | null>(null);
+  /** The approval whose server outcome is unknown; it is verified only on its own valuation date. */
+  const pendingApproval = useRef<{ valuationDate: string; snapshotId: string; reviewer: string; rationale: string } | null>(null);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [notice, setNotice] = useState("");
   const [draftDirty, setDraftDirty] = useState(false);
-  const dirty = draftDirty || reviewRationale.length > 0;
+  // An unverified write is unsaved work: the pending approval or capture needed to verify it lives only
+  // in this panel, so scope navigation must confirm before the remount discards it.
+  const dirty = draftDirty || reviewRationale.length > 0 || uncertainWrite;
   const active = useRef<AbortController | null>(null);
   const contextMatches = context.accountId === scope.accountId && context.bookId === scope.ledgerBookId;
   const canRead = contextMatches && context.canReadPrices;
@@ -155,7 +165,32 @@ function ScopedClosePricesPanel({ scope, context, onDirtyChange }: Props) {
       if (result.some((set) => !belongsTo(set, scope, date))) throw new Error("The returned price history does not match the selected account, book and date.");
       const sorted = [...result].sort((a, b) => b.snapshot.version - a.snapshot.version);
       setSets(sorted); setSelected(sorted[0] ?? null); setHistoryReady(true);
-      if (uncertainWrite && uncertainCapture && capture.current) {
+      if (uncertainWrite && !uncertainCapture && pendingApproval.current) {
+        const approval = pendingApproval.current;
+        if (approval.valuationDate !== date) {
+          setNotice(`Return to valuation date ${approval.valuationDate} and reload its history to verify the pending approval before approving or preparing again.`);
+        } else {
+          const found = sorted.find((set) => set.snapshot.snapshotId === approval.snapshotId);
+          if (found) setSelected(found);
+          if (!found) {
+            // The submitted snapshot existed when the approval was sent, so its absence means this
+            // history read is incomplete, not that the approval failed. The outcome stays unknown.
+            setNotice(`Snapshot ${approval.snapshotId} is not visible in the reloaded history, so the pending approval cannot be verified. Reload again before approving or preparing.`);
+          } else if (found.approval && !sameApproval(found.approval, approval)) {
+            // Another reviewer's approval reached this immutable snapshot first: the submitted decision
+            // was not recorded. Keep the lock so the operator cannot mistake it for their own approval.
+            setNotice("");
+            setError({ summary: "A different approval was retained for this snapshot", details: [`Snapshot ${approval.snapshotId} carries an approval by ${found.approval.reviewer}. Your approval as ${approval.reviewer} was not recorded; review the retained decision before acting on this version.`] });
+          } else {
+            pendingApproval.current = null;
+            setUncertainWrite(false);
+            if (found.approval) setReviewRationale("");
+            setNotice(found.approval
+              ? "The pending approval is retained against the immutable snapshot digest."
+              : "The pending approval was not retained. Review the current version before submitting the approval again.");
+          }
+        }
+      } else if (uncertainWrite && uncertainCapture && capture.current) {
         const original = capture.current.request;
         const found = sorted.find((set) => set.snapshot.snapshotId === original.requestId);
         const sameDate = original.valuationDate === date;
@@ -238,6 +273,7 @@ function ScopedClosePricesPanel({ scope, context, onDirtyChange }: Props) {
     if (active.current || (action === "prepare" ? prepareReason : approvalReason)) return;
     if (action === "approve") {
       capture.current = null;
+      pendingApproval.current = { valuationDate: date, snapshotId: visible!.snapshot.snapshotId, reviewer: context.actor, rationale: reviewRationale.trim() };
       setCaptureRecoveryReady(false); setCaptureFoundInHistory(false); setUncertainCapture(false);
     }
     if (action === "prepare" && !canRecoverCapture) {
@@ -270,6 +306,7 @@ function ScopedClosePricesPanel({ scope, context, onDirtyChange }: Props) {
       if (action === "prepare" && result.snapshot.snapshotId !== capture.current?.request.requestId) throw new Error("The returned snapshot does not match the submitted capture identity. Reload history before verifying the original command.");
       setSets((current) => [result, ...current.filter((item) => item.snapshot.snapshotId !== result.snapshot.snapshotId)].sort((a, b) => b.snapshot.version - a.snapshot.version));
       setSelected(result); setReviewRationale("");
+      if (action === "approve") pendingApproval.current = null;
       if (action === "prepare") {
         capture.current = null;
         setPredecessorId(null); setDraftDirty(false); setUncertainWrite(false); setUncertainCapture(false);
@@ -281,6 +318,8 @@ function ScopedClosePricesPanel({ scope, context, onDirtyChange }: Props) {
       setError(describeApiError(failure, "The close-price action could not be confirmed. Your draft is preserved."));
       if (!isApiError(failure) || failure.status >= 500) {
         setUncertainWrite(true); setUncertainCapture(action === "prepare"); setCaptureRecoveryReady(false);
+      } else if (action === "approve") {
+        pendingApproval.current = null;
       }
     } finally {
       if (!controller.signal.aborted) { active.current = null; setBusy(null); }
@@ -312,7 +351,7 @@ function ScopedClosePricesPanel({ scope, context, onDirtyChange }: Props) {
             {!canManage ? <p className="text-xs text-muted-foreground">Read only · preparing and approving require ledger and pricing management permission.</p> : null}
           </div>
           {error ? <StatusBanner role="alert" tone="danger" title={<span className="text-foreground">{error.summary}</span>} detail={error.details.join(" ")} /> : null}
-          {uncertainWrite ? <StatusBanner tone="warning" title={<span className="text-foreground">Write outcome needs verification</span>} detail={uncertainCapture && capture.current ? `A capture may have reached the server for valuation date ${capture.current.request.valuationDate}. Reload that date's history, then verify or retry the unchanged command with its retained request identity ${capture.current.request.requestId}. New captures and approval remain locked until the server confirms the original command.` : "A request may have reached the server. Reload retained history and inspect its versions and approvals before retrying."} /> : null}
+          {uncertainWrite ? <StatusBanner tone="warning" title={<span className="text-foreground">Write outcome needs verification</span>} detail={uncertainCapture && capture.current ? `A capture may have reached the server for valuation date ${capture.current.request.valuationDate}. Reload that date's history, then verify or retry the unchanged command with its retained request identity ${capture.current.request.requestId}. New captures and approval remain locked until the server confirms the original command.` : pendingApproval.current ? `An approval may have reached the server for valuation date ${pendingApproval.current.valuationDate}. Reload that date's history to verify the retained approval before approving or preparing again.` : "A request may have reached the server. Reload retained history and inspect its versions and approvals before retrying."} /> : null}
           <p role="status" aria-live="polite" className="text-xs text-muted-foreground">{notice || (busy ? "Reading or retaining authoritative close-price evidence…" : historyReady && sets.length === 0 ? "No close-price input is retained for this account, book and date." : "Select a version to inspect its retained source evidence.")}</p>
           <DenseDataTable columns={historyColumns} rows={sets} getRowId={(set) => set.snapshot.snapshotId} getRowSelectAriaLabel={(set) => `Inspect close-price version ${set.snapshot.version}`} selectedRowId={visible?.snapshot.snapshotId} onRowSelect={(set) => void selectSet(set)} ariaLabel="Retained close-price versions" emptyText={busy === "history" ? "Loading retained history…" : historyReady ? "No retained versions for this date." : "History is unavailable. Reload to continue."} />
           {visible ? <RetainedClosePriceDetails set={visible} /> : null}
