@@ -430,7 +430,19 @@ public static class SecurityAssetTermsSchema
                 Opt("factorScheduleEntries", SecurityAssetTermFieldType.Array),
                 // Legal final maturity of the tranche: the anchor date for calculated cash-flow
                 // projection — without it the factor schedule has no production effect.
-                Opt("maturity", SecurityAssetTermFieldType.Date)
+                Opt("maturity", SecurityAssetTermFieldType.Date),
+                // Typed tranche terms (asset-class terms version 2): the securitisation family,
+                // capital-structure position, loss attachment/detachment, collateral-pool statistics
+                // and the CLO period dates. All optional, so a version-1 payload reads unchanged.
+                Opt("structuredCreditKind", SecurityAssetTermFieldType.String),
+                Opt("seniority", SecurityAssetTermFieldType.String),
+                Opt("attachmentPoint", SecurityAssetTermFieldType.Decimal),
+                Opt("detachmentPoint", SecurityAssetTermFieldType.Decimal),
+                Opt("weightedAverageCoupon", SecurityAssetTermFieldType.Decimal),
+                Opt("weightedAverageMaturityMonths", SecurityAssetTermFieldType.Integer),
+                Opt("weightedAverageLoanAgeMonths", SecurityAssetTermFieldType.Integer),
+                Opt("reinvestmentPeriodEnd", SecurityAssetTermFieldType.Date),
+                Opt("nonCallPeriodEnd", SecurityAssetTermFieldType.Date)
             ],
             ["PrivateFundInterest"] =
             [

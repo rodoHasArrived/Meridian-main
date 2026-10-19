@@ -9856,6 +9856,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.IStructuredCashFlowProvider"
     },
     {
@@ -10853,6 +10859,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsResolver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationBlockerDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationDisposition"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationReportDto"
     },
     {
       "kind": "contract-set-member",
@@ -22738,6 +22768,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.IStructuredCashFlowProvider"
     },
     {
@@ -23735,6 +23771,30 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsResolver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationBlockerDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationDisposition"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationReportDto"
     },
     {
       "kind": "contract-set-member",
@@ -35249,6 +35309,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationBlockerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationDisposition"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationReportDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto"
     },
     {
       "kind": "contract-reference",
@@ -50651,7 +50729,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "6c8c62171324b856cc3e7cf9a980117daf7e6b9676eb2a4d04d0cdd4d1726804",
+  "fingerprint": "1719af9ffb43b6efb37124cd6d04981b6920c0c82c10f8db3349d6251a110cfb",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -60558,6 +60636,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.SecurityMaster.IStructuredCashFlowProvider",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.IStructuredCashFlowProvider"
@@ -61557,6 +61641,30 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsResolver",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsResolver"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationBlockerDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationBlockerDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationDisposition",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationDisposition"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationReportDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationReportDto"
     },
     {
       "classification": "record",
@@ -74051,11 +74159,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3317,
-    "contract_set_memberships": 3966,
-    "edges": 8416,
+    "contract_references": 3320,
+    "contract_set_memberships": 3976,
+    "edges": 8429,
     "foreign_keys": 138,
     "logical_references": 6,
-    "nodes": 4053
+    "nodes": 4058
   }
 }

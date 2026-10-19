@@ -1344,6 +1344,15 @@ erDiagram
         date maturity_date
         text primary_identifier_value
         bigint version
+        text structured_credit_kind
+        text seniority
+        numeric_18_10_ attachment_point
+        numeric_18_10_ detachment_point
+        numeric_18_10_ weighted_average_coupon
+        integer weighted_average_maturity_months
+        integer weighted_average_loan_age_months
+        date reinvestment_period_end
+        date non_call_period_end
     }
     security_master_swap_projection {
         uuid security_id PK
