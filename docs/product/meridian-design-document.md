@@ -1782,7 +1782,7 @@ Minimal contract. Every passport carries:
 | --- | --- |
 | Identity | Stable subject identifier and subject kind (ledger amount, report line, capital-account value, position valuation, metric), plus contract version |
 | Amount | Amount, currency, basis (book, tax, statutory), as-of date, and effective date |
-| Scope | Complete declared owner scope: tenant and organization, plus entity, book, period, portfolio, or account as applicable. Fund scope is required only for fund-specific workflows. A passport never infers scope from labels or names |
+| Scope | The complete declared scope: tenant, organization, entity, fund, book, and period. A passport never infers scope from labels or names |
 | Status | Evidence status from Section 11.8 plus freshness (age against the governing policy) |
 | Lineage | Links to journal entries, source records and documents, extracted fields, transformation and allocation rules, and valuation methodology |
 | Control | Reconciliation state, accounting lifecycle stage (Section 11.8), and preparer, reviewer, and approval history |
