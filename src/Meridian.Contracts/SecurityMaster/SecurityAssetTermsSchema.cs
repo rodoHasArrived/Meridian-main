@@ -567,7 +567,7 @@ public static class SecurityAssetTermsSchema
                 Req("underlyingMaturityDate", SecurityAssetTermFieldType.Date),
                 Req("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount"),
                 Opt("floatingIndex", SecurityAssetTermFieldType.String, "index", "referenceIndex"),
-                Opt("fixedLegPaymentFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.PaymentFrequency),
+                Opt("fixedLegPaymentFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.CouponFrequency),
                 Opt("fixedLegDayCount", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.DayCount),
                 Opt("settlementType", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.SettlementMethod)
             ],
@@ -595,7 +595,7 @@ public static class SecurityAssetTermsSchema
                 Opt("participationRate", SecurityAssetTermFieldType.Decimal, "participation"),
                 Opt("returnCap", SecurityAssetTermFieldType.Decimal, "cap"),
                 Opt("couponRate", SecurityAssetTermFieldType.Decimal, "coupon"),
-                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.PaymentFrequency),
+                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.CouponFrequency),
                 Opt("barrierLevel", SecurityAssetTermFieldType.Decimal, "barrier")
             ],
             ["InvestmentFund"] =
