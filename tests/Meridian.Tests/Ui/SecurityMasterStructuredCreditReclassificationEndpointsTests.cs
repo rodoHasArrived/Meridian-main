@@ -47,7 +47,8 @@ public sealed class SecurityMasterStructuredCreditReclassificationEndpointsTests
                         [new StructuredCreditReclassificationBlockerDto("structured_credit_tranche_required", "StructuredCredit requires 'tranche' and the source record does not carry it.")])
                 ])));
 
-        await using var app = await CreateAppAsync(reclassificationService, UserPermission.AdminMaintenance);
+        // The security-master group requires a view permission; the report itself requires AdminMaintenance.
+        await using var app = await CreateAppAsync(reclassificationService, UserPermission.ViewSecurityMaster | UserPermission.AdminMaintenance);
         var client = app.GetTestClient();
 
         using var response = await client.PostAsync(UiApiRoutes.SecurityMasterStructuredCreditReclassificationReport, content: null);
@@ -69,7 +70,8 @@ public sealed class SecurityMasterStructuredCreditReclassificationEndpointsTests
     {
         var reclassificationService = Substitute.For<ISecurityMasterStructuredCreditReclassificationService>();
 
-        await using var app = await CreateAppAsync(reclassificationService, UserPermission.ModifySecurityMaster);
+        // Passes the group's view gate but lacks AdminMaintenance, so the report endpoint refuses.
+        await using var app = await CreateAppAsync(reclassificationService, UserPermission.ViewSecurityMaster | UserPermission.ModifySecurityMaster);
         var client = app.GetTestClient();
 
         using var response = await client.PostAsync(UiApiRoutes.SecurityMasterStructuredCreditReclassificationReport, content: null);
