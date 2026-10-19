@@ -28,6 +28,8 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
     private string LegacyStatePath => Path.Combine(_directory, "snapshots.json");
     private string MigratedLegacyStatePath => LegacyStatePath + ".migrated";
     private string IndexPath => Path.Combine(_directory, "scope-index.json");
+    private string MigrationBaselineDirectory => Path.Combine(_directory, "migration-baselines");
+    private string MigrationBaselinePath(AccountCashForecastScopeDto scope) => Path.Combine(MigrationBaselineDirectory, ScopeFileName(scope) + ".json");
     private string ScopeDirectory => Path.Combine(_directory, "scopes");
     private string StoreLockPath => Path.Combine(_directory, "snapshots.lock");
     private string MarkerPath => Path.Combine(_directory, "initialized");
@@ -143,6 +145,19 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
         if (index.Any(scope => !File.Exists(ScopeStatePath(scope))))
             throw new InvalidDataException("A registered account forecast scope file is missing; restore retained history before retrying.");
         var histories = legacy.GroupBy(static row => row.Inputs.Scope).ToDictionary(group => group.Key, group => group.ToArray());
+        if (Directory.Exists(MigrationBaselineDirectory))
+        {
+            foreach (var file in Directory.EnumerateFiles(MigrationBaselineDirectory, "*.json"))
+            {
+                var scope = await ReadUnregisteredScopeAsync(file, Path.GetFileNameWithoutExtension(file), ct).ConfigureAwait(false);
+                var baseline = await ReadScopeFileAsync(scope, file, ct).ConfigureAwait(false);
+                // Baselines are committed after their active file. They are independent evidence of
+                // retained history even when its index entry was also lost in a partial restore.
+                if ((baseline.Length != 0) && !File.Exists(ScopeStatePath(scope)))
+                    throw new InvalidDataException("A retained migration baseline has no active scope file; restore the complete backup set before retrying.");
+                ValidateMigratedPrefix(baseline, histories.GetValueOrDefault(scope, []));
+            }
+        }
         foreach (var (scope, snapshots) in histories)
         {
             var path = ScopeStatePath(scope);
@@ -154,6 +169,7 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
         {
             if (!File.Exists(ScopeStatePath(scope)))
                 await WriteScopeFileAsync(scope, snapshots, ct).ConfigureAwait(false);
+            await WriteMigrationBaselineAsync(scope, snapshots, ct).ConfigureAwait(false);
             if (!index.Contains(scope))
                 index.Add(scope);
         }
@@ -190,11 +206,37 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
             if (!index.Contains(scope))
                 throw new InvalidDataException("The migrated account forecast history retains a scope that is no longer registered; restore retained history before retrying.");
         }
+        // Per-scope baselines remain retained evidence even if the global migrated file is lost.
+        if (Directory.Exists(MigrationBaselineDirectory))
+        {
+            foreach (var file in Directory.EnumerateFiles(MigrationBaselineDirectory, "*.json"))
+            {
+                var scope = await ReadUnregisteredScopeAsync(file, Path.GetFileNameWithoutExtension(file), ct).ConfigureAwait(false);
+                var baseline = await ReadScopeFileAsync(scope, file, ct).ConfigureAwait(false);
+                if ((baseline.Length != 0) && !index.Contains(scope))
+                    throw new InvalidDataException("Retained migration evidence has no active scope; restore retained history before retrying.");
+            }
+        }
+        var baselines = new Dictionary<AccountCashForecastScopeDto, AccountCashForecastSnapshotDto[]>();
+        var hasMigrated = File.Exists(MigratedLegacyStatePath);
         foreach (var scope in index)
         {
             var retained = await ReadScopeFileAsync(scope, ScopeStatePath(scope), ct).ConfigureAwait(false);
-            ValidateMigratedPrefix(migrated.Where(row => row.Inputs.Scope == scope).ToArray(), retained);
+            var migratedScope = migrated.Where(row => row.Inputs.Scope == scope).ToArray();
+            ValidateMigratedPrefix(migratedScope, retained);
+            var baselinePath = MigrationBaselinePath(scope);
+            if (File.Exists(baselinePath))
+            {
+                var baseline = await ReadScopeFileAsync(scope, baselinePath, ct).ConfigureAwait(false);
+                ValidateMigratedPrefix(baseline, retained);
+                if (hasMigrated)
+                    ValidateMigratedPrefix(baseline, migratedScope);
+            }
+            if (hasMigrated)
+                baselines.Add(scope, migratedScope);
         }
+        foreach (var (scope, baseline) in baselines)
+            await WriteMigrationBaselineAsync(scope, baseline, ct).ConfigureAwait(false);
         if (recovered)
             await WriteIndexAsync([.. index], ct).ConfigureAwait(false);
     }
@@ -207,27 +249,36 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
             throw new InvalidDataException("The retained account forecast history conflicts with its migrated prefix; restore retained history before retrying.");
     }
 
+    /// <summary>
+    /// Scoped requests consult only their frozen migration baseline. Older partitioned layouts lazily
+    /// materialize that evidence under the store lease after checking the active history; provisioning
+    /// still checks the complete migrated artifact against every scope and baseline.
+    /// </summary>
     private async Task ValidateMigratedScopeAsync(AccountCashForecastScopeDto scope, AccountCashForecastSnapshotDto[] retained, CancellationToken ct)
     {
-        if (File.Exists(MigratedLegacyStatePath))
+        var baselinePath = MigrationBaselinePath(scope);
+        if (File.Exists(baselinePath))
         {
-            var migrated = await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false);
-            ValidateMigratedPrefix(migrated.Where(row => row.Inputs.Scope == scope).ToArray(), retained);
+            ValidateMigratedPrefix(await ReadScopeFileAsync(scope, baselinePath, ct).ConfigureAwait(false), retained);
+            return;
         }
+        if (!File.Exists(MigratedLegacyStatePath))
+            return;
+        await using var lease = await AcquireAsync(StoreLockPath, ct).ConfigureAwait(false);
+        if (File.Exists(baselinePath))
+        {
+            ValidateMigratedPrefix(await ReadScopeFileAsync(scope, baselinePath, ct).ConfigureAwait(false), retained);
+            return;
+        }
+        var migrated = await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false);
+        var baseline = migrated.Where(row => row.Inputs.Scope == scope).ToArray();
+        ValidateMigratedPrefix(baseline, retained);
+        await WriteMigrationBaselineAsync(scope, baseline, ct).ConfigureAwait(false);
     }
 
-    /// <summary>The scopes retained in the migrated legacy file; they must stay registered with their files.</summary>
-    private async Task<HashSet<AccountCashForecastScopeDto>> ReadMigratedScopesAsync(CancellationToken ct)
-        => File.Exists(MigratedLegacyStatePath)
-            ? (await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false)).Select(static row => row.Inputs.Scope).ToHashSet()
-            : [];
-
-    /// <summary>A scope retained in the migrated legacy history is never treated as new; its scope file must be restored.</summary>
-    private async Task RequireNotMigratedScopeAsync(AccountCashForecastScopeDto scope, CancellationToken ct)
-    {
-        if ((await ReadMigratedScopesAsync(ct).ConfigureAwait(false)).Contains(scope))
-            throw new InvalidDataException("The migrated account forecast history retains this scope but its scope file is missing; restore retained history before retrying.");
-    }
+    /// <summary>A scope retained in migration evidence cannot restart as new.</summary>
+    private Task RequireNotMigratedScopeAsync(AccountCashForecastScopeDto scope, CancellationToken ct)
+        => ValidateMigratedScopeAsync(scope, [], ct);
 
     /// <summary>An unregistered scope file must name the scope its file name was derived from and validate for it.</summary>
     private static async Task<AccountCashForecastScopeDto> ReadUnregisteredScopeAsync(string path, string name, CancellationToken ct)
@@ -303,11 +354,22 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
     /// </summary>
     private async Task RefuseRetainedMigratedHistoryAsync(CancellationToken ct)
     {
-        if (!File.Exists(MigratedLegacyStatePath))
-            return;
-        var migrated = await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false);
-        if (migrated.Length != 0)
-            throw new InvalidOperationException("Migrated account forecast history exists without its provisioned scope layout; restore the complete retained history before provisioning.");
+        if (File.Exists(MigratedLegacyStatePath))
+        {
+            var migrated = await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false);
+            if (migrated.Length != 0)
+                throw new InvalidOperationException("Unprovisioned migrated history requires explicit recovery.");
+        }
+        if (Directory.Exists(MigrationBaselineDirectory))
+        {
+            foreach (var file in Directory.EnumerateFiles(MigrationBaselineDirectory, "*.json"))
+            {
+                var scope = await ReadUnregisteredScopeAsync(file, Path.GetFileNameWithoutExtension(file), ct).ConfigureAwait(false);
+                var baseline = await ReadScopeFileAsync(scope, file, ct).ConfigureAwait(false);
+                if (baseline.Length != 0)
+                    throw new InvalidOperationException("Unprovisioned migration baseline history requires explicit recovery.");
+            }
+        }
     }
 
     private static async Task<AccountCashForecastSnapshotDto[]> ReadLegacyAsync(string path, CancellationToken ct)
@@ -419,10 +481,24 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
             JsonSerializer.SerializeToUtf8Bytes(index, AccountCashForecastStoreJsonContext.Default.AccountCashForecastScopeIndex), ct);
     }
 
-    private Task WriteScopeFileAsync(AccountCashForecastScopeDto scope, AccountCashForecastSnapshotDto[] snapshots, CancellationToken ct)
+    /// <summary>Caller holds the store lease. Baselines only advance and unchanged evidence is not rewritten.</summary>
+    private async Task WriteMigrationBaselineAsync(AccountCashForecastScopeDto scope, AccountCashForecastSnapshotDto[] baseline, CancellationToken ct)
+    {
+        var path = MigrationBaselinePath(scope);
+        if (File.Exists(path))
+        {
+            var previous = await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false);
+            ValidateMigratedPrefix(previous, baseline);
+            if (Sha256Digest.FixedEquals(Hash(previous), Hash(baseline)))
+                return;
+        }
+        await WriteScopeFileAsync(scope, baseline, ct, path).ConfigureAwait(false);
+    }
+
+    private Task WriteScopeFileAsync(AccountCashForecastScopeDto scope, AccountCashForecastSnapshotDto[] snapshots, CancellationToken ct, string? destinationPath = null)
     {
         var envelope = new AccountCashForecastScopeEnvelope(1, scope, Hash(snapshots), snapshots);
-        return AtomicFileWriter.WriteAsync(ScopeStatePath(scope),
+        return AtomicFileWriter.WriteAsync(destinationPath ?? ScopeStatePath(scope),
             JsonSerializer.SerializeToUtf8Bytes(envelope, AccountCashForecastStoreJsonContext.Default.AccountCashForecastScopeEnvelope), ct);
     }
 

@@ -26,6 +26,8 @@ public sealed class FileAccountCashReconciliationStore
     private string LegacyStatePath => Path.Combine(_directory, "state.json");
     private string MigratedLegacyStatePath => LegacyStatePath + ".migrated";
     private string IndexPath => Path.Combine(_directory, "scope-index.json");
+    private string MigrationBaselineDirectory => Path.Combine(_directory, "migration-baselines");
+    private string MigrationBaselinePath(AccountCashReconciliationScope scope) => Path.Combine(MigrationBaselineDirectory, ScopeFileName(scope) + ".json");
     private string ScopeDirectory => Path.Combine(_directory, "scopes");
     private string StoreLockPath => Path.Combine(_directory, "state.lock");
     private string MarkerPath => Path.Combine(_directory, "initialized");
@@ -142,6 +144,19 @@ public sealed class FileAccountCashReconciliationStore
         if (index.Any(scope => !File.Exists(ScopeStatePath(scope))))
             throw new InvalidDataException("A registered account cash continuity scope file is missing; restore retained state before retrying.");
         var scopes = legacy.Runs.Select(item => item.Input.Scope).Concat(legacy.Cases.Select(item => item.Scope)).Distinct().ToArray();
+        if (Directory.Exists(MigrationBaselineDirectory))
+        {
+            foreach (var file in Directory.EnumerateFiles(MigrationBaselineDirectory, "*.json"))
+            {
+                var scope = await ReadUnregisteredScopeAsync(file, Path.GetFileNameWithoutExtension(file), ct).ConfigureAwait(false);
+                var baseline = await ReadScopeFileAsync(scope, file, ct).ConfigureAwait(false);
+                // Baselines are committed after their active file. They are independent evidence of
+                // retained history even when its index entry was also lost in a partial restore.
+                if ((baseline.Runs.Count != 0 || baseline.Cases.Count != 0) && !File.Exists(ScopeStatePath(scope)))
+                    throw new InvalidDataException("A retained migration baseline has no active scope file; restore the complete backup set before retrying.");
+                ValidateMigratedPrefix(baseline, ForScope(legacy, scope));
+            }
+        }
         foreach (var scope in scopes)
         {
             var path = ScopeStatePath(scope);
@@ -153,6 +168,7 @@ public sealed class FileAccountCashReconciliationStore
         {
             if (!File.Exists(ScopeStatePath(scope)))
                 await WriteScopeFileAsync(scope, ForScope(legacy, scope), ct).ConfigureAwait(false);
+            await WriteMigrationBaselineAsync(scope, ForScope(legacy, scope), ct).ConfigureAwait(false);
             if (!index.Contains(scope))
                 index.Add(scope);
         }
@@ -190,11 +206,37 @@ public sealed class FileAccountCashReconciliationStore
             if (!index.Contains(scope))
                 throw new InvalidDataException("The migrated account cash continuity state retains a scope that is no longer registered; restore retained state before retrying.");
         }
+        // Per-scope baselines remain retained evidence even if the global migrated file is lost.
+        if (Directory.Exists(MigrationBaselineDirectory))
+        {
+            foreach (var file in Directory.EnumerateFiles(MigrationBaselineDirectory, "*.json"))
+            {
+                var scope = await ReadUnregisteredScopeAsync(file, Path.GetFileNameWithoutExtension(file), ct).ConfigureAwait(false);
+                var baseline = await ReadScopeFileAsync(scope, file, ct).ConfigureAwait(false);
+                if ((baseline.Runs.Count != 0 || baseline.Cases.Count != 0) && !index.Contains(scope))
+                    throw new InvalidDataException("Retained migration evidence has no active scope; restore retained history before retrying.");
+            }
+        }
+        var baselines = new Dictionary<AccountCashReconciliationScope, AccountCashReconciliationDocument>();
+        var hasMigrated = File.Exists(MigratedLegacyStatePath);
         foreach (var scope in index)
         {
             var retained = await ReadScopeFileAsync(scope, ScopeStatePath(scope), ct).ConfigureAwait(false);
-            ValidateMigratedPrefix(ForScope(migrated, scope), retained);
+            var migratedScope = ForScope(migrated, scope);
+            ValidateMigratedPrefix(migratedScope, retained);
+            var baselinePath = MigrationBaselinePath(scope);
+            if (File.Exists(baselinePath))
+            {
+                var baseline = await ReadScopeFileAsync(scope, baselinePath, ct).ConfigureAwait(false);
+                ValidateMigratedPrefix(baseline, retained);
+                if (hasMigrated)
+                    ValidateMigratedPrefix(baseline, migratedScope);
+            }
+            if (hasMigrated)
+                baselines.Add(scope, migratedScope);
         }
+        foreach (var (scope, baseline) in baselines)
+            await WriteMigrationBaselineAsync(scope, baseline, ct).ConfigureAwait(false);
         if (recovered)
             await WriteIndexAsync([.. index], ct).ConfigureAwait(false);
     }
@@ -247,30 +289,36 @@ public sealed class FileAccountCashReconciliationStore
         }
     }
 
+    /// <summary>
+    /// Scoped requests consult only their frozen migration baseline. Older partitioned layouts lazily
+    /// materialize that evidence under the store lease after checking the active history; provisioning
+    /// still checks the complete migrated artifact against every scope and baseline.
+    /// </summary>
     private async Task ValidateMigratedScopeAsync(AccountCashReconciliationScope scope, AccountCashReconciliationDocument retained, CancellationToken ct)
     {
-        if (File.Exists(MigratedLegacyStatePath))
+        var baselinePath = MigrationBaselinePath(scope);
+        if (File.Exists(baselinePath))
         {
-            var migrated = await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false);
-            ValidateMigratedPrefix(ForScope(migrated, scope), retained);
+            ValidateMigratedPrefix(await ReadScopeFileAsync(scope, baselinePath, ct).ConfigureAwait(false), retained);
+            return;
         }
-    }
-
-    /// <summary>The scopes retained in the migrated legacy file; they must stay registered with their files.</summary>
-    private async Task<HashSet<AccountCashReconciliationScope>> ReadMigratedScopesAsync(CancellationToken ct)
-    {
         if (!File.Exists(MigratedLegacyStatePath))
-            return [];
+            return;
+        await using var lease = await AcquireAsync(StoreLockPath, ct).ConfigureAwait(false);
+        if (File.Exists(baselinePath))
+        {
+            ValidateMigratedPrefix(await ReadScopeFileAsync(scope, baselinePath, ct).ConfigureAwait(false), retained);
+            return;
+        }
         var migrated = await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false);
-        return migrated.Runs.Select(static item => item.Input.Scope).Concat(migrated.Cases.Select(static item => item.Scope)).ToHashSet();
+        var baseline = ForScope(migrated, scope);
+        ValidateMigratedPrefix(baseline, retained);
+        await WriteMigrationBaselineAsync(scope, baseline, ct).ConfigureAwait(false);
     }
 
-    /// <summary>A scope retained in the migrated legacy state is never treated as new; its scope file must be restored.</summary>
-    private async Task RequireNotMigratedScopeAsync(AccountCashReconciliationScope scope, CancellationToken ct)
-    {
-        if ((await ReadMigratedScopesAsync(ct).ConfigureAwait(false)).Contains(scope))
-            throw new InvalidDataException("The migrated account cash continuity state retains this scope but its scope file is missing; restore retained state before retrying.");
-    }
+    /// <summary>A scope retained in migration evidence cannot restart as new.</summary>
+    private Task RequireNotMigratedScopeAsync(AccountCashReconciliationScope scope, CancellationToken ct)
+        => ValidateMigratedScopeAsync(scope, new AccountCashReconciliationDocument(1, [], []), ct);
 
     /// <summary>An unregistered scope file must name the scope its file name was derived from and validate for it.</summary>
     private static async Task<AccountCashReconciliationScope> ReadUnregisteredScopeAsync(string path, string name, CancellationToken ct)
@@ -345,11 +393,22 @@ public sealed class FileAccountCashReconciliationStore
     /// </summary>
     private async Task RefuseRetainedMigratedHistoryAsync(CancellationToken ct)
     {
-        if (!File.Exists(MigratedLegacyStatePath))
-            return;
-        var migrated = await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false);
-        if (migrated.Runs.Count != 0 || migrated.Cases.Count != 0)
-            throw new InvalidOperationException("Unprovisioned continuity state requires explicit recovery: migrated history exists without its provisioned scope layout.");
+        if (File.Exists(MigratedLegacyStatePath))
+        {
+            var migrated = await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false);
+            if (migrated.Runs.Count != 0 || migrated.Cases.Count != 0)
+                throw new InvalidOperationException("Unprovisioned migrated history requires explicit recovery.");
+        }
+        if (Directory.Exists(MigrationBaselineDirectory))
+        {
+            foreach (var file in Directory.EnumerateFiles(MigrationBaselineDirectory, "*.json"))
+            {
+                var scope = await ReadUnregisteredScopeAsync(file, Path.GetFileNameWithoutExtension(file), ct).ConfigureAwait(false);
+                var baseline = await ReadScopeFileAsync(scope, file, ct).ConfigureAwait(false);
+                if (baseline.Runs.Count != 0 || baseline.Cases.Count != 0)
+                    throw new InvalidOperationException("Unprovisioned migration baseline history requires explicit recovery.");
+            }
+        }
     }
 
     private static async Task<AccountCashReconciliationDocument> ReadLegacyAsync(string path, CancellationToken ct)
@@ -447,8 +506,22 @@ public sealed class FileAccountCashReconciliationStore
             new AccountCashReconciliationScopeIndex(1, Hash(ordered), ordered), AccountCashReconciliationJsonContext.Default.AccountCashReconciliationScopeIndex), ct);
     }
 
-    private Task WriteScopeFileAsync(AccountCashReconciliationScope scope, AccountCashReconciliationDocument document, CancellationToken ct)
-        => AtomicFileWriter.WriteAsync(ScopeStatePath(scope), JsonSerializer.SerializeToUtf8Bytes(
+    /// <summary>Caller holds the store lease. Baselines only advance and unchanged evidence is not rewritten.</summary>
+    private async Task WriteMigrationBaselineAsync(AccountCashReconciliationScope scope, AccountCashReconciliationDocument baseline, CancellationToken ct)
+    {
+        var path = MigrationBaselinePath(scope);
+        if (File.Exists(path))
+        {
+            var previous = await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false);
+            ValidateMigratedPrefix(previous, baseline);
+            if (Sha256Digest.FixedEquals(Hash(previous), Hash(baseline)))
+                return;
+        }
+        await WriteScopeFileAsync(scope, baseline, ct, path).ConfigureAwait(false);
+    }
+
+    private Task WriteScopeFileAsync(AccountCashReconciliationScope scope, AccountCashReconciliationDocument document, CancellationToken ct, string? destinationPath = null)
+        => AtomicFileWriter.WriteAsync(destinationPath ?? ScopeStatePath(scope), JsonSerializer.SerializeToUtf8Bytes(
             new AccountCashReconciliationScopeEnvelope(Hash(document), scope, document), AccountCashReconciliationJsonContext.Default.AccountCashReconciliationScopeEnvelope), ct);
 
     private bool HasScopeFiles() => Directory.Exists(ScopeDirectory) && Directory.EnumerateFiles(ScopeDirectory, "*.json").Any();

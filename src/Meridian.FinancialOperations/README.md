@@ -40,6 +40,16 @@ seconds with `TimeoutException`. The data root remains host-local (PostgreSQL is
 follow-on). Source clearing confers no governed close approval.
 See [account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
 `AccountCashReconciliationContinuityTests` for the first `W10-RECON-001` acceptance slice.
+Migration also retains per-scope baseline envelopes in `migration-baselines/<sha256>.json`.
+Scoped operations compare only their active file and baseline; provisioning cross-checks the full
+`.migrated` artifact and all baselines before writing recovery state. Older partitioned layouts
+materialize these baselines during provisioning, or once per scope under the store lease on first
+access after verifying the active prefix. A corrupt baseline affects its scope; a corrupt global
+artifact refuses provisioning and cold bootstrap while existing scoped baselines remain usable.
+A nonempty baseline proves its active file previously existed: if that file is missing, migration
+refuses reconstruction even if its index entry was also lost. Restore the scope files, baselines,
+index and marker from the complete backup set; retained baseline-only history cannot be provisioned
+as empty, including beside an empty unmarked legacy file.
 Retained migrated runs must remain an exact prefix of the active scope document. Migrated cases
 retain their identity and observation/assignment prefixes; subsequent observations, assignments,
 resolution and reopening may advance the current case metadata. Provisioning, reads and writes

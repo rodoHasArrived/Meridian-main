@@ -237,6 +237,16 @@ recreates an empty layout beside retained evidence. While the marker and index s
 the `.migrated` file retains must stay registered with its scope file; a lost file for such a scope
 answers `503` for that scope and fails provisioning until it is restored, so the migrated history can
 never be restarted as new.
+Migration also retains per-scope baseline envelopes in `migration-baselines/<sha256>.json`.
+Scoped operations compare only their active file and baseline; provisioning cross-checks the full
+`.migrated` artifact and all baselines before writing recovery state. Older partitioned layouts
+materialize these baselines during provisioning, or once per scope under the store lease on first
+access after verifying the active prefix. A corrupt baseline affects its scope; a corrupt global
+artifact refuses provisioning and cold bootstrap while existing scoped baselines remain usable.
+A nonempty baseline proves its active file previously existed: if that file is missing, migration
+refuses reconstruction even if its index entry was also lost. Restore the scope files, baselines,
+index and marker from the complete backup set; retained baseline-only history cannot be provisioned
+as empty, including beside an empty unmarked legacy file.
 Both provisioning and scoped reads/writes compare active history with the retained migrated evidence.
 Forecast snapshots and reconciliation runs must preserve that evidence as an exact ordered prefix;
 case observation and assignment histories must preserve their prefixes and immutable case identity.

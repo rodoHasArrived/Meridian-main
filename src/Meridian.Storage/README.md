@@ -39,6 +39,16 @@ that the next provisioning or scoped use registers, never an indexed scope witho
 succeeds on Windows. The data root remains host-local; multi-host deployments need the PostgreSQL follow-on.
 Financial Operations owns cash-balance case semantics and delegates file replacement to Storage's
 shared writer.
+Migration also retains per-scope baseline envelopes in `migration-baselines/<sha256>.json`.
+Scoped operations compare only their active file and baseline; provisioning cross-checks the full
+`.migrated` artifact and all baselines before writing recovery state. Older partitioned layouts
+materialize these baselines during provisioning, or once per scope under the store lease on first
+access after verifying the active prefix. A corrupt baseline affects its scope; a corrupt global
+artifact refuses provisioning and cold bootstrap while existing scoped baselines remain usable.
+A nonempty baseline proves its active file previously existed: if that file is missing, migration
+refuses reconstruction even if its index entry was also lost. Restore the scope files, baselines,
+index and marker from the complete backup set; retained baseline-only history cannot be provisioned
+as empty, including beside an empty unmarked legacy file.
 Retained migrated snapshots must remain an exact ordered prefix, including their outputs, of each
 active scope history. Provisioning, reads and appends refuse incomplete or contradictory restored
 histories even when the replacement files have valid hashes. Migration refuses any registered scope

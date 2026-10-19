@@ -572,6 +572,8 @@ public sealed class AccountCashForecastTests : IDisposable
         await File.WriteAllBytesAsync(legacyPath, LegacyStateBytes(first));
         await File.WriteAllTextAsync(markerPath, "meridian-account-cash-forecast-v1");
         await new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
+        var backupScope = await File.ReadAllBytesAsync(ScopeStatePath(Scope));
+        var backupIndex = await File.ReadAllBytesAsync(indexPath);
         File.Exists(migratedPath).Should().BeTrue();
 
         // A partial restore keeps the migrated evidence but loses the marker, index and scope files.
@@ -596,8 +598,10 @@ public sealed class AccountCashForecastTests : IDisposable
         if (migrated == "corrupt")
             return;
 
-        // Restoring the legacy file and marker from the same backup set recovers the history without a reset.
-        File.Move(migratedPath, legacyPath);
+        // Restoring the complete scope layout and marker from the same backup set recovers the history without a reset.
+        Directory.CreateDirectory(Path.Combine(StoreDirectory, "scopes"));
+        await File.WriteAllBytesAsync(ScopeStatePath(Scope), backupScope);
+        await File.WriteAllBytesAsync(indexPath, backupIndex);
         await File.WriteAllTextAsync(markerPath, "meridian-account-cash-forecast-v1");
         var restored = new FileAccountCashForecastStore(_dataRoot);
         await restored.InitializeAsync();
@@ -615,6 +619,8 @@ public sealed class AccountCashForecastTests : IDisposable
         await File.WriteAllBytesAsync(legacyPath, LegacyStateBytes(first));
         await File.WriteAllTextAsync(Path.Combine(StoreDirectory, "initialized"), "meridian-account-cash-forecast-v1");
         await new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
+        var backupScope = await File.ReadAllBytesAsync(ScopeStatePath(Scope));
+        var backupIndex = await File.ReadAllBytesAsync(indexPath);
 
         // A partial restore keeps the marker and a valid empty index but loses the scope files.
         var separateRoot = Path.Combine(Path.GetTempPath(), "meridian-account-cash-tests", Guid.NewGuid().ToString("N"));
@@ -633,8 +639,10 @@ public sealed class AccountCashForecastTests : IDisposable
         var otherScope = Scope with { AccountId = "account-b" };
         await new FileAccountCashForecastStore(_dataRoot).AppendAsync(AccountCashForecastEngine.Build(OtherScopeRequest(otherScope, "run-1")));
 
-        // Restoring the legacy file from the backup set recovers the history without a reset.
-        File.Move(migratedPath, legacyPath);
+        // Restoring the complete scope layout from the backup set recovers the history without a reset.
+        Directory.CreateDirectory(Path.Combine(StoreDirectory, "scopes"));
+        await File.WriteAllBytesAsync(ScopeStatePath(Scope), backupScope);
+        await File.WriteAllBytesAsync(indexPath, backupIndex);
         var restored = new FileAccountCashForecastStore(_dataRoot);
         await restored.InitializeAsync();
         (await restored.GetHistoryAsync(Scope)).Should().BeEquivalentTo([first], options => options.WithStrictOrdering());
@@ -763,6 +771,128 @@ public sealed class AccountCashForecastTests : IDisposable
         await store.InitializeAsync();
         (await store.GetHistoryAsync(Scope)).Should().BeEquivalentTo([first, second], options => options.WithStrictOrdering());
         (await File.ReadAllBytesAsync(legacyPath + ".migrated")).Should().Equal(LegacyStateBytes(first));
+    }
+
+    [Theory]
+    [InlineData("global-corrupt")]
+    [InlineData("baseline-corrupt")]
+    [InlineData("bootstrap")]
+    [InlineData("bootstrap-conflict")]
+    [InlineData("baseline-only-loss")]
+    [InlineData("baseline-only-empty-legacy")]
+    [InlineData("lost-index-and-scope")]
+    public async Task Store_PerScopeMigrationEvidencePreservesIsolationAndRecovery(string scenario)
+    {
+        var first = AccountCashForecastEngine.Build(Request([], 100m));
+        var otherScope = Scope with { AccountId = "account-b" };
+        var other = AccountCashForecastEngine.Build(OtherScopeRequest(otherScope, "other-first"));
+        Directory.CreateDirectory(StoreDirectory);
+        var legacyPath = Path.Combine(StoreDirectory, "snapshots.json");
+        await File.WriteAllBytesAsync(legacyPath, LegacyStateBytes(first, other));
+        var markerPath = Path.Combine(StoreDirectory, "initialized");
+        await File.WriteAllTextAsync(markerPath, "meridian-account-cash-forecast-v1");
+        var store = new FileAccountCashForecastStore(_dataRoot);
+        await store.InitializeAsync();
+        var baselineDirectory = Path.Combine(StoreDirectory, "migration-baselines");
+        var baselinePath = Path.Combine(baselineDirectory, FileAccountCashForecastStore.ScopeFileName(Scope) + ".json");
+        var baseline = await File.ReadAllBytesAsync(baselinePath);
+        var indexPath = Path.Combine(StoreDirectory, "scope-index.json");
+        var index = await File.ReadAllBytesAsync(indexPath);
+        var complete = await File.ReadAllBytesAsync(ScopeStatePath(Scope));
+        var otherComplete = await File.ReadAllBytesAsync(ScopeStatePath(otherScope));
+        if (scenario == "lost-index-and-scope")
+        {
+            var second = AccountCashForecastEngine.Build(Request([], 100m) with
+            {
+                RunId = "second",
+                PreviousSnapshotId = first.SnapshotId,
+                CorrectionRationale = "Retained later activity",
+                RecordedAtUtc = Recorded.AddDays(1)
+            });
+            await store.AppendAsync(second);
+            var later = await File.ReadAllBytesAsync(ScopeStatePath(Scope));
+            File.Move(legacyPath + ".migrated", legacyPath);
+            File.Delete(indexPath);
+            File.Delete(ScopeStatePath(Scope));
+            await Assert.ThrowsAsync<InvalidDataException>(() => store.InitializeAsync());
+            File.Exists(indexPath).Should().BeFalse();
+            File.Exists(ScopeStatePath(Scope)).Should().BeFalse();
+            File.Exists(legacyPath).Should().BeTrue();
+            await File.WriteAllBytesAsync(ScopeStatePath(Scope), later);
+            await File.WriteAllBytesAsync(indexPath, index);
+            await store.InitializeAsync();
+            (await store.GetHistoryAsync(Scope)).Should().HaveCount(2);
+            return;
+        }
+        if (scenario.StartsWith("bootstrap", StringComparison.Ordinal))
+        {
+            Directory.Delete(baselineDirectory, recursive: true);
+            if (scenario == "bootstrap-conflict")
+            {
+                var replacementRoot = Path.Combine(_dataRoot, "replacement");
+                var replacement = new FileAccountCashForecastStore(replacementRoot);
+                await replacement.InitializeAsync();
+                await replacement.AppendAsync(AccountCashForecastEngine.Build(Request([], 101m)));
+                File.Copy(Path.Combine(replacementRoot, "asset-operations", "account-cash-forecasts", "scopes",
+                    FileAccountCashForecastStore.ScopeFileName(Scope) + ".json"), ScopeStatePath(Scope), overwrite: true);
+                await Assert.ThrowsAsync<InvalidDataException>(() => store.GetHistoryAsync(Scope));
+                File.Exists(baselinePath).Should().BeFalse();
+                return;
+            }
+            (await store.GetHistoryAsync(Scope)).Should().ContainSingle();
+            (await File.ReadAllBytesAsync(baselinePath)).Should().Equal(baseline);
+        }
+        if (scenario == "baseline-corrupt")
+        {
+            await File.WriteAllTextAsync(baselinePath, "{}");
+            await Assert.ThrowsAsync<InvalidDataException>(() => store.GetHistoryAsync(Scope));
+            (await store.GetHistoryAsync(otherScope)).Should().ContainSingle();
+            await Assert.ThrowsAsync<InvalidDataException>(() => store.InitializeAsync());
+            return;
+        }
+        if (scenario.StartsWith("baseline-only", StringComparison.Ordinal))
+        {
+            File.Delete(legacyPath + ".migrated");
+            File.Delete(markerPath);
+            File.Delete(indexPath);
+            Directory.Delete(Path.Combine(StoreDirectory, "scopes"), recursive: true);
+            if (scenario == "baseline-only-empty-legacy")
+            {
+                await File.WriteAllBytesAsync(legacyPath, LegacyStateBytes());
+                await Assert.ThrowsAsync<InvalidDataException>(() => store.InitializeAsync());
+                File.Delete(legacyPath);
+            }
+            else
+            {
+                await Assert.ThrowsAsync<InvalidOperationException>(() => store.InitializeAsync());
+            }
+            File.Exists(markerPath).Should().BeFalse();
+            File.Exists(indexPath).Should().BeFalse();
+            Directory.CreateDirectory(Path.Combine(StoreDirectory, "scopes"));
+            await File.WriteAllBytesAsync(ScopeStatePath(Scope), complete);
+            await File.WriteAllBytesAsync(ScopeStatePath(otherScope), otherComplete);
+            await File.WriteAllBytesAsync(indexPath, index);
+            await File.WriteAllTextAsync(markerPath, "meridian-account-cash-forecast-v1");
+            await store.InitializeAsync();
+        }
+        else
+        {
+            // A warm scoped read must not open or validate the global migrated artifact.
+            await File.WriteAllTextAsync(legacyPath + ".migrated", "{}");
+        }
+        (await store.GetHistoryAsync(Scope)).Should().ContainSingle().Which.Should().BeEquivalentTo(first);
+        if (scenario != "bootstrap")
+            (await store.GetHistoryAsync(otherScope)).Should().ContainSingle();
+        await store.AppendAsync(AccountCashForecastEngine.Build(Request([], 100m) with
+        {
+            RunId = "later",
+            PreviousSnapshotId = first.SnapshotId,
+            CorrectionRationale = "Post-migration activity",
+            RecordedAtUtc = Recorded.AddDays(1)
+        }));
+        (await store.GetHistoryAsync(Scope)).Should().HaveCount(2);
+        if (!scenario.StartsWith("baseline-only", StringComparison.Ordinal))
+            await Assert.ThrowsAsync<InvalidDataException>(() => store.InitializeAsync());
     }
 
     [Theory]
