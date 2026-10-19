@@ -1,10 +1,11 @@
 /**
  * Presentation logic for the audit-chain integrity check.
  *
- * The server reports each chain as verified, broken, not-configured, or
- * unavailable, and those are four different answers: a chain this deployment
- * does not keep is not evidence of integrity, and a store that could not be
- * read is not evidence of tampering. The view keeps them apart and never rolls
+ * The server reports each chain as verified, broken, not-configured,
+ * unavailable, or not-started, and those are five different answers: a chain
+ * this deployment does not keep, or one with nothing chained yet, is not
+ * evidence of integrity, and a store that could not be read is not evidence of
+ * tampering. The view keeps them apart and never rolls
  * an unchecked chain into a passing verdict.
  */
 
@@ -38,13 +39,16 @@ const STATUS_PRESENTATION: Record<string, { label: string; tone: AuditIntegrityT
   verified: { label: "Verified", tone: "success" },
   broken: { label: "Broken", tone: "danger" },
   unavailable: { label: "Not checked — store unavailable", tone: "warning" },
+  "not-started": { label: "Nothing chained yet", tone: "warning" },
   "not-configured": { label: "Not kept in this deployment", tone: "default" }
 };
 
 export function buildAuditIntegrityViewModel(report: AccountingAuditIntegrityReportDto): AuditIntegrityViewModel {
   const rows = report.chains.map(buildRow);
   const broken = rows.filter((row) => row.tone === "danger");
-  const unavailable = rows.filter((row) => row.tone === "warning");
+  const unavailable = rows.filter((_, index) => report.chains[index].status === "unavailable");
+  const notStarted = rows.filter((_, index) => report.chains[index].status === "not-started");
+  const anyVerified = report.chains.some((chain) => chain.status === "verified");
   const configured = report.chains.filter((chain) => chain.status !== "not-configured");
 
   if (broken.length > 0) {
@@ -58,11 +62,20 @@ export function buildAuditIntegrityViewModel(report: AccountingAuditIntegrityRep
   }
 
   if (unavailable.length > 0) {
-    const anyVerified = report.chains.some((chain) => chain.status === "verified");
     return {
       tone: "warning",
       title: anyVerified ? "Audit chains partly checked" : "No audit chain verified",
       verdict: `${unavailable.map((row) => row.label).join(" and ")} could not be read, so nothing is claimed about ${unavailable.length === 1 ? "it" : "them"}.`,
+      verifiedAtUtc: report.verifiedAtUtc,
+      rows
+    };
+  }
+
+  if (notStarted.length > 0) {
+    return {
+      tone: "warning",
+      title: anyVerified ? "Audit chains partly checked" : "No audit chain verified",
+      verdict: `${notStarted.map((row) => row.label).join(" and ")} ${notStarted.length === 1 ? "has" : "have"} not begun chaining, so none of ${notStarted.length === 1 ? "its" : "their"} records are protected yet.`,
       verifiedAtUtc: report.verifiedAtUtc,
       rows
     };

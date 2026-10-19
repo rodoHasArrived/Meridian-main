@@ -12,7 +12,8 @@ namespace Meridian.Ui.Shared.Services;
 /// <para>Nothing is appended and no chain is repaired: a break is reported with its classification
 /// and position so an operator can investigate, not hidden by a retry.</para>
 /// <para>Each chain is reported independently. A chain the composition does not keep is
-/// <see cref="AuditChainIntegrityStatus.NotConfigured"/> rather than verified, and a store that
+/// <see cref="AuditChainIntegrityStatus.NotConfigured"/> rather than verified, a chain with nothing
+/// chained yet is <see cref="AuditChainIntegrityStatus.NotStarted"/>, and a store that
 /// cannot be read is <see cref="AuditChainIntegrityStatus.Unavailable"/> rather than broken, so the
 /// report never claims integrity it did not check nor tampering it did not find.</para>
 /// </remarks>
@@ -61,7 +62,7 @@ public sealed class AccountingAuditIntegrityService(
             var verification = await verifier.VerifyAuditChainAsync(ct).ConfigureAwait(false);
             if (verification.IsValid)
             {
-                return new(chain, AuditChainIntegrityStatus.Verified, verification.LinksChecked, verification.PreChainEventCount);
+                return Passed(chain, verification.LinksChecked, verification.PreChainEventCount);
             }
 
             // A chain written under hashing rules this build does not implement could not be
@@ -110,7 +111,7 @@ public sealed class AccountingAuditIntegrityService(
         try
         {
             var verification = await ledgerEventAuditVerifier.VerifyLedgerEventAuditAsync(ct).ConfigureAwait(false);
-            return new(chain, AuditChainIntegrityStatus.Verified, verification.ChainedEvents, verification.UnprotectedGenesisFacts);
+            return Passed(chain, verification.ChainedEvents, verification.UnprotectedGenesisFacts);
         }
         catch (LedgerValidationException ex) when (ex.Data[LedgerEventAuditFailureData.UnsupportedSchemaVersion] is true)
         {
@@ -137,6 +138,14 @@ public sealed class AccountingAuditIntegrityService(
             return Unavailable(chain, ex);
         }
     }
+
+    // A chain that verified over no links protects nothing: every retained record predates it.
+    // Reporting that as verified would let the report claim integrity it never checked.
+    private static AuditChainIntegrityResultDto Passed(string chain, long linksChecked, long unprotected)
+        => linksChecked > 0
+            ? new(chain, AuditChainIntegrityStatus.Verified, linksChecked, unprotected)
+            : new(chain, AuditChainIntegrityStatus.NotStarted, 0, unprotected,
+                Detail: "Chaining has not begun in this store, so no record is protected yet.");
 
     private static long? ReadLong(Exception ex, string key)
         => ex.Data.Contains(key) && ex.Data[key] is long value ? value : null;
