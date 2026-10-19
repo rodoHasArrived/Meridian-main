@@ -310,7 +310,7 @@ public static class SecurityAssetTermsSchema
                 Opt("seniority", SecurityAssetTermFieldType.String),
                 Req("subclass", SecurityAssetTermFieldType.String),
                 Opt("par", SecurityAssetTermFieldType.Decimal),
-                Opt("paymentFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.PaymentFrequency),
+                Opt("paymentFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.CouponFrequency),
                 Opt("legalFinalMaturity", SecurityAssetTermFieldType.Date),
                 Opt("preRefundDate", SecurityAssetTermFieldType.Date),
                 Opt("mandatoryPutDate", SecurityAssetTermFieldType.Date),
@@ -549,7 +549,7 @@ public static class SecurityAssetTermsSchema
                 Req("fixedCouponBps", SecurityAssetTermFieldType.Decimal, "couponBps", "runningSpreadBps"),
                 Req("effectiveDate", SecurityAssetTermFieldType.Date),
                 Req("maturityDate", SecurityAssetTermFieldType.Date, "scheduledTerminationDate"),
-                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.PaymentFrequency),
+                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.CouponFrequency),
                 Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention").WithConvention(SecurityTermConventionKind.DayCount),
                 Opt("seniority", SecurityAssetTermFieldType.String),
                 Opt("restructuringClause", SecurityAssetTermFieldType.String, "docClause"),
@@ -623,7 +623,7 @@ public static class SecurityAssetTermsSchema
                 Opt("spreadBps", SecurityAssetTermFieldType.Decimal),
                 Opt("currentIndexRate", SecurityAssetTermFieldType.Decimal, "lastFixing", "currentRate", "indexRate"),
                 Opt("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount", "faceAmount", "principal"),
-                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.PaymentFrequency),
+                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.CouponFrequency),
                 Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention", "dayCountBasis").WithConvention(SecurityTermConventionKind.DayCount),
                 Req("exchangesPrincipal", SecurityAssetTermFieldType.Boolean, "principalExchange", "notionalExchange")
             ]

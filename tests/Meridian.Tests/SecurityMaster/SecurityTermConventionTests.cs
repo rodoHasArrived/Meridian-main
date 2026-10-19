@@ -33,7 +33,13 @@ public sealed class SecurityTermConventionTests
             .Should().Be(SecurityTermConventionKind.SettlementMethod);
 
     [Theory]
-    [InlineData("Bond", "paymentFrequency")]
+    [InlineData("Bond")]
+    [InlineData("CreditDefaultSwap")]
+    public void CouponPaymentFrequency_IsACouponFrequencyConvention(string assetClass)
+        => SecurityAssetTermsSchema.Field(assetClass, "paymentFrequency")!.Convention
+            .Should().Be(SecurityTermConventionKind.CouponFrequency);
+
+    [Theory]
     [InlineData("CashSweep", "sweepFrequency")]
     [InlineData("DirectLoan", "resetFrequency")]
     public void CadenceFields_AreTypedPaymentFrequencyConventions(string assetClass, string key)
@@ -41,10 +47,43 @@ public sealed class SecurityTermConventionTests
             .Should().Be(SecurityTermConventionKind.PaymentFrequency);
 
     [Fact]
-    public void SwapLegPaymentFrequency_IsATypedPaymentFrequencyConvention()
+    public void SwapLegPaymentFrequency_IsAScheduleDrivingCouponFrequency()
         => SecurityAssetTermsSchema.ElementFields("Swap", "legs")
             .Single(static field => field.Key == "paymentFrequency").Convention
-            .Should().Be(SecurityTermConventionKind.PaymentFrequency);
+            .Should().Be(SecurityTermConventionKind.CouponFrequency);
+
+    [Theory]
+    [InlineData("Monthly", true)]
+    [InlineData("BiMonthly", true)]
+    [InlineData("3M", true)]
+    [InlineData("Semi-Annual", true)]
+    [InlineData("Annual", true)]
+    [InlineData("Bullet", true)]
+    [InlineData("Daily", false)]
+    [InlineData("Weekly", false)]
+    [InlineData("fortnightly", false)]
+    [InlineData("52", false)]
+    [InlineData("Irregular", false)]
+    public void CouponFrequency_AdmitsOnlyCadencesTheScheduleEnginesCanStep(string raw, bool recognized)
+        => SecurityTermConventions.IsRecognized(SecurityTermConventionKind.CouponFrequency, raw).Should().Be(recognized);
+
+    [Fact]
+    public void CouponFrequency_CanonicalValues_AreTheSchedulableCadences()
+        => SecurityTermConventions.CanonicalValues(SecurityTermConventionKind.CouponFrequency)
+            .Should().Equal("Monthly", "BiMonthly", "Quarterly", "SemiAnnual", "Annual", "AtMaturity");
+
+    [Theory]
+    [InlineData("Monthly", 12)]
+    [InlineData("2M", 6)]
+    [InlineData("Quarterly", 4)]
+    [InlineData("6M", 2)]
+    [InlineData("annually", 1)]
+    [InlineData("12", 12)]
+    [InlineData("Weekly", null)]
+    [InlineData("Bullet", null)]
+    [InlineData("every other tuesday", null)]
+    public void CouponPaymentsPerYear_ReadsMonthlyOrLongerCadences(string raw, int? expected)
+        => SecurityTermConventions.CouponPaymentsPerYear(raw).Should().Be(expected);
 
     [Theory]
     [InlineData("Daily", SecurityPaymentFrequency.Daily)]
@@ -133,7 +172,13 @@ public sealed class SecurityTermConventionTests
     {
         SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.paymentFrequency", "every other tuesday", out _, out var error)
             .Should().BeFalse();
-        error.Should().Contain("payment frequency");
+        error.Should().Contain("coupon frequency");
+
+        // A recognized cadence the coupon scheduler cannot step is refused on a schedule-driving field.
+        SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.paymentFrequency", "Weekly", out _, out _)
+            .Should().BeFalse();
+        SecurityAssetTermsFieldEditValidator.TryValidate("CashSweep", "assetSpecificTerms.sweepFrequency", "Weekly", out _, out _)
+            .Should().BeTrue();
 
         SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.paymentFrequency", "Semi-Annual", out _, out _)
             .Should().BeTrue();
