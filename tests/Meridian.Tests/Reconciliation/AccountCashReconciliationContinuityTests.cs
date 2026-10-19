@@ -639,6 +639,315 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
     }
 
     [Fact]
+    public async Task Reformatted_copied_json_observation_is_rejected_as_dependent_evidence()
+        => await Copied_json_observation_is_rejected_as_dependent_evidence("whitespace");
+
+    [Theory]
+    [InlineData("property-order")]
+    [InlineData("nested-property-order")]
+    public async Task Reordered_copied_json_observation_is_rejected_as_dependent_evidence(string shape)
+        => await Copied_json_observation_is_rejected_as_dependent_evidence(shape);
+
+    [Theory]
+    [InlineData("number-exponent")]
+    [InlineData("number-fraction")]
+    [InlineData("root-scalar")]
+    [InlineData("wide-number")]
+    [InlineData("wide-exponent")]
+    [InlineData("zero-padded-exponent")]
+    [InlineData("string-escape")]
+    public async Task Respelled_number_in_copied_json_observation_is_rejected_as_dependent_evidence(string shape)
+        => await Copied_json_observation_is_rejected_as_dependent_evidence(shape);
+
+    [Theory]
+    [InlineData("1e30", "1000000000000000000000000000001")]
+    [InlineData("1e2147483648", "1e2147483647")]
+    [InlineData("1e-2147483649", "2e-2147483649")]
+    public async Task Distinct_wide_numbers_beyond_decimal_range_are_independent_observations(string left, string right)
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 1000m);
+        request = request with
+        {
+            Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = left }] },
+            Right = request.Right with { Rows = [request.Right.Rows[0] with { OriginalPayload = right }] }
+        };
+
+        var run = await service.RunAsync(request);
+
+        run.Input.RunId.Should().Be("first");
+    }
+
+    [Theory]
+    [InlineData("""{"amount":0,"amount":100}""", "duplicate JSON property names")]
+    [InlineData("1e1000000000000000000", "exponent wider than 18 digits")]
+    public async Task Ambiguous_or_unbounded_json_observation_is_refused_as_input(string payload, string rejection)
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 1000m);
+        request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = payload }] } };
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(request));
+
+        failure.Message.Should().Contain(rejection);
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Over_depth_json_observation_is_refused_instead_of_compared_as_text()
+    {
+        var service = await ServiceAsync();
+        var deep = new string('[', 65) + "1000" + new string(']', 65);
+        var request = Request("first", 0, 1000m, 1000m);
+        request = request with
+        {
+            Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = deep }] },
+            Right = request.Right with { Rows = [request.Right.Rows[0] with { OriginalPayload = deep.Replace("1000", " 1e3 ") }] }
+        };
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(request));
+
+        failure.Message.Should().Contain("nested deeper than 64");
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
+    }
+
+    private async Task Copied_json_observation_is_rejected_as_dependent_evidence(string shape)
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 1000m);
+        var original = request.Left.Rows[0].OriginalPayload;
+        string reformatted;
+        switch (shape)
+        {
+            case "whitespace":
+                reformatted = original.Replace(",", ",\n  ").Replace(":", ": ");
+                break;
+            case "property-order":
+                reformatted = ReverseProperties(original);
+                break;
+            case "number-exponent":
+                original = """{"balance":{"amount":1000,"currency":"USD"},"source":"ledger"}""";
+                reformatted = """{"balance":{"amount":1e3,"currency":"USD"},"source":"ledger"}""";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+            case "wide-number":
+                original = """{"id":1000000000000000000000000000000,"source":"ledger"}""";
+                reformatted = """{"id":1e30,"source":"ledger"}""";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+            case "wide-exponent":
+                original = "1e2147483648";
+                reformatted = "10e2147483647";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+            case "zero-padded-exponent":
+                original = "1000";
+                reformatted = "1e+000000000000000000000000003";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+            case "string-escape":
+                original = """{"balance":{"amount":1000,"currency":"USD"},"source":"ledger"}""";
+                reformatted = """{"balance":{"amount":1000,"currency":"\u0055SD"},"source":"\u006cedger"}""";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+            case "root-scalar":
+                original = "1000";
+                reformatted = "1e3";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+            case "number-fraction":
+                original = """{"balance":{"amount":1000,"currency":"USD"},"source":"ledger"}""";
+                reformatted = """{"balance":{"amount":1000.00,"currency":"USD"},"source":"ledger"}""";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+            default:
+                original = """{"balance":{"amount":1000,"currency":"USD"},"source":"ledger","tags":["a","b"]}""";
+                reformatted = """{ "tags": ["a", "b"], "source": "ledger", "balance": { "currency": "USD", "amount": 1000 } }""";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+        }
+        reformatted.Should().NotBe(original);
+        var copied = request with { Right = request.Right with { Rows = [request.Right.Rows[0] with { OriginalPayload = reformatted }] } };
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(copied));
+
+        failure.Message.Should().Contain("copied evidence is not independent");
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.ReplayAsync(_scope, "first"));
+    }
+
+    [Fact]
+    public async Task Backdated_business_date_cannot_replace_the_comparison_head()
+    {
+        var service = await ServiceAsync();
+        await service.RunAsync(Request("head", 2, 1000m, 990m));
+        var before = Assert.Single(await service.GetCasesAsync(_scope));
+        var earlierDay = _start;
+        var backdated = new AccountCashReconciliationRequest("backdated", _scope, DateOnly.FromDateTime(earlierDay.UtcDateTime), _start.AddDays(3),
+            Source("accounting-ledger", ReconciliationSourceType.InternalLedger, _scope, earlierDay, ("USD", 1000m)),
+            Source("custodian", ReconciliationSourceType.Custodian, _scope, earlierDay, ("USD", 1000m)),
+            Profile(1, 0.01m), "initial-owner");
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => service.RunAsync(backdated));
+
+        failure.Message.Should().Contain("earlier business date");
+        Assert.Single(await (await ServiceAsync()).GetCasesAsync(_scope)).Should().BeEquivalentTo(before);
+        await Assert.ThrowsAsync<KeyNotFoundException>(() => service.ReplayAsync(_scope, "backdated"));
+    }
+
+    [Fact]
+    public async Task Decimal_overflow_during_comparison_is_rejected_as_invalid_input()
+    {
+        var service = await ServiceAsync();
+        var request = Request("overflow", 0, decimal.MaxValue, decimal.MinValue);
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(request));
+
+        failure.Message.Should().Contain("decimal arithmetic");
+        failure.InnerException.Should().BeOfType<OverflowException>();
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("position")]
+    [InlineData("transaction")]
+    public async Task Null_position_or_transaction_rule_is_rejected_before_history_changes(string collection)
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 990m);
+        request = collection == "position"
+            ? request with { Tolerance = request.Tolerance with { PositionRules = [null!] } }
+            : request with { Tolerance = request.Tolerance with { TransactionRules = [null!] } };
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(request));
+
+        failure.Message.Should().Contain("null entries");
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("day/custodian")]
+    [InlineData("run one")]
+    [InlineData("run%2Fone")]
+    [InlineData("run?replay=1")]
+    [InlineData("run#1")]
+    [InlineData("run\\one")]
+    [InlineData(".")]
+    [InlineData("..")]
+    public async Task Run_identity_that_cannot_round_trip_replay_routes_is_rejected(string runId)
+    {
+        var service = await ServiceAsync();
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(Request(runId, 0, 1000m, 990m)));
+
+        failure.Message.Should().Contain("round-trip");
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("route-unsafe-run-id")]
+    [InlineData("empty-cash-rules")]
+    [InlineData("null-position-rule")]
+    [InlineData("null-transaction-rule")]
+    [InlineData("reformatted-copied-payload")]
+    public async Task Legacy_retained_run_still_replays_and_resubmits_while_the_same_new_run_is_rejected(string legacyShape)
+    {
+        var store = new FileAccountCashReconciliationStore(_root);
+        await store.InitializeAsync();
+        var service = new AccountCashReconciliationService(store);
+        var original = await service.RunAsync(Request("first", 0, 1000m, 990m));
+        var (legacyRequest, expectedRejection) = LegacyRequest(legacyShape, "legacy", 0);
+        // Retained before the admission rule existed: write the durable record directly, bypassing RunAsync.
+        var legacy = service.EvaluateUnretained(legacyRequest);
+        legacy.InputHash.Should().NotBe(original.InputHash);
+        await store.WithStateAsync(_scope, document => (document with { Runs = [legacy] }, 0), true, CancellationToken.None);
+
+        var replay = await (await ServiceAsync()).ReplayAsync(_scope, legacyRequest.RunId);
+        replay.Should().BeEquivalentTo(legacy, options => options.WithStrictOrdering());
+        replay.Comparisons.Should().ContainSingle().Which.ObservationState.Should().Be(legacyShape == "reformatted-copied-payload" ? "SourceCleared" : "Open");
+
+        var resubmitted = await service.RunAsync(legacyRequest);
+        resubmitted.Should().BeEquivalentTo(legacy, options => options.WithStrictOrdering());
+        var rebind = await Assert.ThrowsAsync<InvalidOperationException>(() => service.RunAsync(legacyRequest with { InitialOwner = "someone-else" }));
+        rebind.Message.Should().Contain("cannot be rebound");
+
+        var (fresh, _) = LegacyRequest(legacyShape, "fresh", 1);
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(fresh));
+        failure.Message.Should().Contain(expectedRejection);
+        Assert.Single(await (await ServiceAsync()).GetCasesAsync(_scope)).History.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task Empty_cash_rule_set_cannot_clear_a_comparison()
+    {
+        var service = await ServiceAsync();
+        var request = Request("first", 0, 1000m, 1000m);
+        request = request with { Tolerance = request.Tolerance with { CashRules = [] } };
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.RunAsync(request));
+
+        failure.Message.Should().Contain("At least one executed cash tolerance rule");
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Padded_profile_identity_with_identical_rules_is_the_same_retained_tolerance_version()
+    {
+        var service = await ServiceAsync();
+        await service.RunAsync(Request("first", 0, 1000m, 990m));
+        var padded = Request("padded", 1, 1000m, 990m);
+        padded = padded with { Tolerance = padded.Tolerance with { ProfileId = " " + padded.Tolerance.ProfileId + " " } };
+
+        var run = await service.RunAsync(padded);
+
+        run.Input.RunId.Should().Be("padded");
+        Assert.Single(await service.GetCasesAsync(_scope)).History.Select(item => item.RunId).Should().Equal("first", "padded");
+    }
+
+    [Fact]
+    public async Task Padded_profile_identity_cannot_rebind_a_retained_tolerance_version()
+    {
+        var service = await ServiceAsync();
+        var original = await service.RunAsync(Request("first", 0, 1000m, 990m));
+        var padded = Request("padded", 1, 1000m, 990m);
+        padded = padded with { Tolerance = Profile(1, 20m) with { ProfileId = " " + padded.Tolerance.ProfileId + " " } };
+
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => service.RunAsync(padded));
+
+        failure.Message.Should().Contain("retained tolerance version");
+        Assert.Single(await service.GetCasesAsync(_scope)).History.Select(item => item.RunId).Should().Equal("first");
+        (await service.ReplayAsync(_scope, "first")).Should().BeEquivalentTo(original, options => options.WithStrictOrdering());
+    }
+
+    private (AccountCashReconciliationRequest Request, string Rejection) LegacyRequest(string shape, string runId, int days)
+    {
+        var request = Request(runId, days, 1000m, 990m);
+        switch (shape)
+        {
+            case "route-unsafe-run-id":
+                return (request with { RunId = runId + " run/2026%09" }, "round-trip");
+            case "empty-cash-rules":
+                return (request with { Tolerance = request.Tolerance with { CashRules = [] } }, "At least one executed cash tolerance rule");
+            case "null-position-rule":
+                return (request with { Tolerance = request.Tolerance with { PositionRules = [null!] } }, "null entries");
+            case "null-transaction-rule":
+                return (request with { Tolerance = request.Tolerance with { TransactionRules = [null!] } }, "null entries");
+            default:
+                request = Request(runId, days, 1000m, 1000m);
+                var reformatted = request.Left.Rows[0].OriginalPayload.Replace(",", ",\n  ").Replace(":", ": ");
+                return (request with { Right = request.Right with { Rows = [request.Right.Rows[0] with { OriginalPayload = reformatted }] } }, "copied evidence is not independent");
+        }
+    }
+
+    private static string ReverseProperties(string json)
+    {
+        using var document = System.Text.Json.JsonDocument.Parse(json);
+        var properties = document.RootElement.EnumerateObject().Reverse().ToArray();
+        properties.Length.Should().BeGreaterThan(1);
+        return "{" + string.Join(",", properties.Select(property => System.Text.Json.JsonSerializer.Serialize(property.Name) + ":" + property.Value.GetRawText())) + "}";
+    }
+
+    [Fact]
     public async Task Corrupt_scope_file_blocks_only_its_own_scope()
     {
         var service = await ServiceAsync();
