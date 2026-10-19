@@ -262,14 +262,14 @@
       "path": "src/Meridian.Ui",
       "readme": "src/Meridian.Ui/README.md",
       "readme_hash": "3cd338868062d8c5237ba830ddf550feb53da80c636d900ec42a92912a27b526",
-      "source_hash": "1488ac49e0e81a4f271659fbc757d561e192036b7f8c87bffa3fba91e71ff51b"
+      "source_hash": "db6418637e1d3ed8ec03027cca057cf8f2a10bb3fed682352daf9e1ac05f0398"
     },
     {
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
       "readme_hash": "3cf2b3190b16a3351f396f5fcf0be800464c332ba525c491281cfd1c68076a1e",
-      "source_hash": "1488ac49e0e81a4f271659fbc757d561e192036b7f8c87bffa3fba91e71ff51b"
+      "source_hash": "db6418637e1d3ed8ec03027cca057cf8f2a10bb3fed682352daf9e1ac05f0398"
     },
     {
       "id": "SRC-UI-SERVICES",
@@ -282,8 +282,8 @@
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "5c7dea984130ec6028e6101476ddcad443757f98069d6ada8e2ff8bce07f5bde",
-      "source_hash": "1f1c103c09eed228feb087738ff80132f1cb6cefb48a083c12afcd7b0abbd87c"
+      "readme_hash": "842d343d5b975330897899d9002ef8c3e10dc3e2a201805d32ee7e16de2757e5",
+      "source_hash": "acb536cebea02023784005d98bd48cafafb4349c23f8e126feee22cfa2038542"
     },
     {
       "id": "SRC-WPF",
