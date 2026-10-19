@@ -74,6 +74,13 @@ single statement of a projection table's columns on the write and read sides; on
 Bond and Option stores carry their own select lists. The per-class store interfaces and row
 records are unchanged, so `*ProjectionService` consumers and DI registrations did not move.
 
+Security Master migration `045_structured_credit_typed_tranche_terms.sql` widens
+`structured_credit_projection` with the typed tranche terms StructuredCredit asset-class terms
+version 2 adds (`structured_credit_kind`, `seniority`, `attachment_point`, `detachment_point`,
+`weighted_average_coupon`, `weighted_average_maturity_months`, `weighted_average_loan_age_months`,
+`reinvestment_period_end`, `non_call_period_end`), all nullable and projected by the registry
+descriptor; rows written before the migration keep nulls until their next projection write.
+
 Security Master migration `044_security_master_declarative_terms_projections.sql` gives the twelve
 remaining unprojected classes (CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Cfd,
 Warrant, InvestmentFund, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,
@@ -825,6 +832,11 @@ flow through the existing soft-close adjustment approval guard.
 Ledger tax-lot state is stored as account-scoped policy records plus open-lot records in the ledger
 schema. The storage layer keeps the FIFO/LIFO/HIFO/SpecificId policy inputs and open-lot balances;
 relief projection, approval workflow, and tax-reporting exports remain outside this project.
+Migration `V_ledger_051` keys lot-label and policy uniqueness, the open-lot index, and the store's
+open-lot, label, policy and successor-label lookups on `lower(financial_account_id)` so storage agrees
+with `LedgerAccount`'s case-insensitive `FinancialAccountId` equality; stored casing is preserved, and
+the migration raises with the conflicting group and row counts before any DDL when retained rows
+already collide under the case-insensitive key. Focused proof: `TaxLotAccountCasingPostgresTests`.
 Closed-period trial-balance financials now preserve the dimension envelope available on retained
 journal metadata when building report rows. The ledger book service groups balances by account and
 dimension key, then fills the book fund profile as the default fund dimension, so entity,

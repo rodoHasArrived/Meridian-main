@@ -357,6 +357,7 @@ export const UI_API_ROUTES = {
   DataVendorEntitlementById: "/api/security-master/data-entitlements/{entitlementId:guid}",
   SecurityMasterQualityReportRun: "/api/security-master/quality-report/run",
   SecurityMasterQualityReportLatest: "/api/security-master/quality-report/latest",
+  SecurityMasterStructuredCreditReclassificationReport: "/api/security-master/structured-credit-reclassification/report",
   SecurityMasterExceptionsAging: "/api/security-master/exceptions/aging",
   ReferenceDataEdgarFiler: "/api/reference-data/edgar/filers/{cik}",
   ReferenceDataEdgarFacts: "/api/reference-data/edgar/facts/{cik}",

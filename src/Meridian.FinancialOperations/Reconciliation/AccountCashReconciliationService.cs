@@ -1,3 +1,5 @@
+using System.Buffers;
+using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Domain.Reconciliation;
@@ -24,6 +26,7 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
                     throw new InvalidOperationException("A retained run cannot be rebound to changed sources, scope or tolerance.");
                 return (document, retained);
             }
+            RequireNewRunAdmission(input, nameof(request));
             foreach (var source in new[] { input.Left, input.Right })
             {
                 var history = document.Runs.Where(item => item.Input.Scope == input.Scope)
@@ -41,7 +44,7 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
             var toleranceHash = ToleranceHash(input.Tolerance);
             if (document.Runs.Where(item => item.Input.Scope == input.Scope)
                 .Select(item => item.Input.Tolerance)
-                .Any(prior => prior.ProfileId == input.Tolerance.ProfileId && prior.Version == input.Tolerance.Version
+                .Any(prior => prior.ProfileId.Trim() == input.Tolerance.ProfileId.Trim() && prior.Version == input.Tolerance.Version
                     && !Sha256Digest.FixedEquals(ToleranceHash(prior), toleranceHash)))
                 throw new InvalidOperationException("A retained tolerance version cannot be rebound to changed rules; use a new version.");
             var relevantCases = document.Cases.Where(item => Owns(input, item)).ToArray();
@@ -50,6 +53,8 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
                 .MaxBy(item => item.Input.ObservedAtUtc);
             if (latest is not null && input.ObservedAtUtc <= latest.Input.ObservedAtUtc)
                 throw new InvalidOperationException("A new run must be later than the retained comparison head.");
+            if (latest is not null && input.BusinessDate < latest.Input.BusinessDate)
+                throw new InvalidOperationException("A new run cannot carry an earlier business date than the retained comparison head.");
             var currencies = input.Left.Rows.Concat(input.Right.Rows).Select(item => item.Row.Currency)
                 .Concat(relevantCases.Select(item => item.Currency)).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
             var comparisons = Evaluate(input, currencies);
@@ -137,7 +142,15 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
             };
             var run = new ReconciliationRun(Guid.Empty, input.BusinessDate, input.ObservedAtUtc, false, 1,
                 CaseId(input, currency) + ":" + input.RunId, snapshots);
-            var result = _matcher.Run(run, input.Tolerance);
+            (IReadOnlyList<MatchGroup> matches, IReadOnlyList<BreakRecord> breaks, IReadOnlyList<MatchEvidence> evidence) result;
+            try
+            {
+                result = _matcher.Run(run, input.Tolerance);
+            }
+            catch (OverflowException exception)
+            {
+                throw new ArgumentException("Cash balances or tolerance thresholds exceed supported decimal arithmetic.", nameof(input), exception);
+            }
             var cleared = left.Length == 1 && right.Length == 1 && result.breaks.Count == 0
                 && result.matches.Count == 1 && result.matches[0].Classification is BreakClassification.Matched or BreakClassification.MatchedWithinTolerance;
             return new AccountCashComparison(currency, cleared ? "SourceCleared" : left.Length == 0 || right.Length == 0 ? "MissingEvidence" : "Open",
@@ -201,6 +214,133 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
         return source with { SourceId = source.SourceId.Trim(), Rows = rows, CapturedAtUtc = source.CapturedAtUtc.ToUniversalTime() };
     }
 
+    /// <summary>
+    /// Copied JSON observations stay copies after reformatting or property reordering, so JSON payloads
+    /// compare by a compact canonical form: object properties sorted by ordinal key at every depth, array
+    /// order preserved, numbers reduced to an exact significand and exponent. Root-level JSON scalars
+    /// canonicalize the same way. A payload that is not valid JSON compares as trimmed text; valid JSON
+    /// nested deeper than <see cref="MaxObservationDepth"/> is refused rather than compared as text.
+    /// Retained payloads are untouched.
+    /// </summary>
+    private static string CanonicalObservation(string payload, string parameterName)
+    {
+        var trimmed = payload.Trim();
+        if (trimmed.Length == 0)
+            return trimmed;
+        var bytes = Encoding.UTF8.GetBytes(trimmed);
+        if (!IsJson(bytes, out var depth))
+            return trimmed;
+        if (depth > MaxObservationDepth)
+            throw new ArgumentException($"An original observation nested deeper than {MaxObservationDepth} JSON levels cannot be compared for independence and is refused.", parameterName);
+        JsonDocument document;
+        try
+        {
+            // Duplicate property names are ambiguous (last-wins consumers see one value, this canonical form
+            // would keep both), so they are refused rather than compared.
+            document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = MaxObservationDepth, AllowDuplicateProperties = false });
+        }
+        catch (JsonException exception)
+        {
+            throw new ArgumentException("An original observation with duplicate JSON property names is ambiguous and is refused.", parameterName, exception);
+        }
+        using (document)
+        {
+            var buffer = new ArrayBufferWriter<byte>();
+            using (var writer = new Utf8JsonWriter(buffer))
+                WriteCanonical(document.RootElement, writer, parameterName);
+            return Encoding.UTF8.GetString(buffer.WrittenSpan);
+        }
+    }
+
+    private const int MaxObservationDepth = 64;
+    /// <summary>Exponent digits after leading zeros; 18 keeps the arithmetic in <see cref="long"/> with no parse cost to bound.</summary>
+    private const int MaxObservationExponentDigits = 18;
+
+    /// <summary>Non-recursive validity and depth scan, so over-depth JSON is distinguished from non-JSON text.</summary>
+    private static bool IsJson(ReadOnlySpan<byte> bytes, out int depth)
+    {
+        depth = 0;
+        try
+        {
+            var reader = new Utf8JsonReader(bytes, new JsonReaderOptions { MaxDepth = int.MaxValue });
+            while (reader.Read())
+                depth = Math.Max(depth, reader.CurrentDepth);
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
+
+    private static void WriteCanonical(JsonElement element, Utf8JsonWriter writer, string parameterName)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                writer.WriteStartObject();
+                foreach (var property in element.EnumerateObject().OrderBy(property => property.Name, StringComparer.Ordinal))
+                {
+                    writer.WritePropertyName(property.Name);
+                    WriteCanonical(property.Value, writer, parameterName);
+                }
+                writer.WriteEndObject();
+                break;
+            case JsonValueKind.Array:
+                writer.WriteStartArray();
+                foreach (var item in element.EnumerateArray())
+                    WriteCanonical(item, writer, parameterName);
+                writer.WriteEndArray();
+                break;
+            case JsonValueKind.Number:
+                writer.WriteRawValue(CanonicalNumber(element.GetRawText(), parameterName), skipInputValidation: true);
+                break;
+            case JsonValueKind.String:
+                // Decoded value, so "ledger" and "\u006cedger" canonicalize identically.
+                writer.WriteStringValue(element.GetString());
+                break;
+            default:
+                element.WriteTo(writer);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Exact canonical spelling of a JSON number: 1000, 1000.00 and 1e3 all become "1E3", with no precision
+    /// limit, so distinct wide values never collide and respelled equal values always do. The exponent is
+    /// bounded to <see cref="MaxObservationExponentDigits"/> significant digits so the work is linear in the
+    /// token and the arithmetic cannot overflow; anything wider is refused as input.
+    /// </summary>
+    private static string CanonicalNumber(string raw, string parameterName)
+    {
+        var negative = raw[0] == '-';
+        var body = negative ? raw[1..] : raw;
+        var exponentAt = body.IndexOfAny(['e', 'E']);
+        long exponent = 0;
+        if (exponentAt >= 0)
+        {
+            var exponentText = body[(exponentAt + 1)..];
+            var exponentNegative = exponentText[0] == '-';
+            var exponentDigits = exponentText.TrimStart('+', '-').TrimStart('0');
+            if (exponentDigits.Length > MaxObservationExponentDigits)
+                throw new ArgumentException($"An original observation with a JSON exponent wider than {MaxObservationExponentDigits} digits is refused.", parameterName);
+            if (exponentDigits.Length > 0)
+                exponent = long.Parse(exponentDigits, System.Globalization.CultureInfo.InvariantCulture) * (exponentNegative ? -1 : 1);
+        }
+        var mantissa = exponentAt < 0 ? body : body[..exponentAt];
+        var point = mantissa.IndexOf('.');
+        var digits = point < 0 ? mantissa : mantissa.Remove(point, 1);
+        if (point >= 0)
+            exponent -= mantissa.Length - point - 1;
+        digits = digits.TrimStart('0');
+        var trailing = digits.Length - digits.TrimEnd('0').Length;
+        digits = digits[..^trailing];
+        exponent += trailing;
+        if (digits.Length == 0)
+            return "0";
+        return (negative ? "-" : "") + digits + "E" + exponent.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+
     private static bool Owns(AccountCashReconciliationRequest input, AccountCashReconciliationCase item)
         => item.Scope == input.Scope && item.LeftSourceId == input.Left.SourceId && item.RightSourceId == input.Right.SourceId;
 
@@ -218,12 +358,38 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
         => "cash-balance:" + Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(new[] { input.Scope.TenantId, input.Scope.CompanyId,
             input.Scope.AccountId, input.Scope.LedgerBookId.ToString("D"), input.Left.SourceId, input.Left.SourceType.ToString(),
             input.Right.SourceId, input.Right.SourceType.ToString(), currency }, AccountCashReconciliationJsonContext.Default.StringArray));
+    /// <summary>Evaluates a request exactly as retention would, without consulting or changing the store.</summary>
+    internal AccountCashReconciliationRun EvaluateUnretained(AccountCashReconciliationRequest request)
+    {
+        var input = Normalize(request);
+        var currencies = input.Left.Rows.Concat(input.Right.Rows).Select(item => item.Row.Currency).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+        var comparisons = Evaluate(input, currencies);
+        return new AccountCashReconciliationRun(input, InputHash(input), comparisons, ResultHash(comparisons));
+    }
+    /// <summary>
+    /// Admission rules that apply only when a genuinely new run is accepted. <see cref="Normalize"/> stays
+    /// shape-preserving for retained inputs, so runs retained before these rules, and idempotent
+    /// re-submissions of them, keep replaying under their original identity and tolerance contents.
+    /// </summary>
+    private static void RequireNewRunAdmission(AccountCashReconciliationRequest input, string parameterName)
+    {
+        if (input.RunId is "." or ".." || input.RunId.Any(static ch => char.IsWhiteSpace(ch) || char.IsControl(ch) || ch is '/' or '\\' or '?' or '#' or '%'))
+            throw new ArgumentException("A run identity must round-trip through replay routes; whitespace, control characters, the dot segments '.' and '..', and '/', '\\', '?', '#', '%' are refused.", parameterName);
+        if (input.Tolerance.CashRules.Count == 0)
+            throw new ArgumentException("At least one executed cash tolerance rule is required.", parameterName);
+        if (input.Tolerance.PositionRules.Any(rule => rule is null) || input.Tolerance.TransactionRules.Any(rule => rule is null))
+            throw new ArgumentException("Tolerance rule collections cannot contain null entries.", parameterName);
+        if (input.Left.Rows.Select(item => CanonicalObservation(item.OriginalPayload, parameterName))
+            .Intersect(input.Right.Rows.Select(item => CanonicalObservation(item.OriginalPayload, parameterName)), StringComparer.Ordinal).Any())
+            throw new ArgumentException("The two sources require distinct retained evidence references and original observations; copied evidence is not independent.", parameterName);
+    }
     private static string InputHash(AccountCashReconciliationRequest input)
         => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(input, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationRequest));
     private static string SourceHash(AccountCashBalanceSource source)
         => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(source, AccountCashReconciliationJsonContext.Default.AccountCashBalanceSource));
+    /// <summary>Rules hash over the profile with its identity trimmed, matching the padded-identity comparison.</summary>
     private static string ToleranceHash(StatementToleranceProfile tolerance)
-        => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(tolerance, AccountCashReconciliationJsonContext.Default.StatementToleranceProfile));
+        => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(tolerance with { ProfileId = tolerance.ProfileId.Trim() }, AccountCashReconciliationJsonContext.Default.StatementToleranceProfile));
     private static string ResultHash(AccountCashComparison[] result)
         => Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(result, AccountCashReconciliationJsonContext.Default.AccountCashComparisonArray));
 }
