@@ -64,6 +64,23 @@ public sealed class AuditChainIntegrityViewModelTests
     }
 
     [Fact]
+    public async Task DoesNotCertifyAChainThatHasNotBegunChaining()
+    {
+        var viewModel = new AuditChainIntegrityViewModel(new StubClient(Completed(false,
+            new AuditChainIntegrityResultDto(AuditChainIdentifiers.AccountingActions, AuditChainIntegrityStatus.NotStarted, 0, 4,
+                Detail: "Chaining has not begun in this store, so no record is protected yet."),
+            new AuditChainIntegrityResultDto(AuditChainIdentifiers.LedgerEvents, AuditChainIntegrityStatus.Verified, 9, 0))));
+
+        await viewModel.VerifyAsync();
+
+        viewModel.VerdictTone.Should().Be("warning");
+        viewModel.VerdictTitle.Should().Be("Audit chains partly checked");
+        viewModel.VerdictDetail.Should().Be("Accounting actions has not begun chaining, so none of its records are protected yet.");
+        viewModel.Rows[0].Status.Should().Be("Nothing chained yet");
+        viewModel.Rows[0].Detail.Should().Be("0 chained entries checked; 4 earlier records predate chaining and are not covered");
+    }
+
+    [Fact]
     public async Task ReportsEveryConfiguredChainVerified()
     {
         var viewModel = new AuditChainIntegrityViewModel(new StubClient(Completed(true,

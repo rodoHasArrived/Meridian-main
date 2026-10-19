@@ -9,8 +9,8 @@ namespace Meridian.Wpf.ViewModels.Accounting;
 /// <summary>
 /// Desktop parity for the browser's Accounting → Configuration audit-chain integrity check
 /// (W9-GOV-008 verification tooling). Verification walks every retained chain end to end, so it
-/// runs only on demand. Each chain keeps its own answer: a chain this deployment does not keep is
-/// not evidence of integrity and a store that could not be read is not evidence of tampering, so
+/// runs only on demand. Each chain keeps its own answer: a chain this deployment does not keep, or
+/// one with nothing chained yet, is not evidence of integrity and a store that could not be read is not evidence of tampering, so
 /// an unchecked chain is never rolled into a passing verdict.
 /// </summary>
 public sealed class AuditChainIntegrityViewModel : BindableBase
@@ -160,7 +160,9 @@ public sealed class AuditChainIntegrityViewModel : BindableBase
 
         var broken = report.Chains.Where(chain => chain.Status == AuditChainIntegrityStatus.Broken).Select(chain => ChainLabel(chain.Chain)).ToList();
         var unavailable = report.Chains.Where(chain => chain.Status == AuditChainIntegrityStatus.Unavailable).Select(chain => ChainLabel(chain.Chain)).ToList();
+        var notStarted = report.Chains.Where(chain => chain.Status == AuditChainIntegrityStatus.NotStarted).Select(chain => ChainLabel(chain.Chain)).ToList();
         var configured = report.Chains.Count(chain => chain.Status != AuditChainIntegrityStatus.NotConfigured);
+        var anyVerified = report.Chains.Any(chain => chain.Status == AuditChainIntegrityStatus.Verified);
 
         if (broken.Count > 0)
         {
@@ -169,9 +171,13 @@ public sealed class AuditChainIntegrityViewModel : BindableBase
         }
         else if (unavailable.Count > 0)
         {
-            var anyVerified = report.Chains.Any(chain => chain.Status == AuditChainIntegrityStatus.Verified);
             SetVerdict("warning", anyVerified ? "Audit chains partly checked" : "No audit chain verified",
                 $"{string.Join(" and ", unavailable)} could not be read, so nothing is claimed about {(unavailable.Count == 1 ? "it" : "them")}.");
+        }
+        else if (notStarted.Count > 0)
+        {
+            SetVerdict("warning", anyVerified ? "Audit chains partly checked" : "No audit chain verified",
+                $"{string.Join(" and ", notStarted)} {(notStarted.Count == 1 ? "has" : "have")} not begun chaining, so none of {(notStarted.Count == 1 ? "its" : "their")} records are protected yet.");
         }
         else if (configured == 0 || !report.AllVerified)
         {
@@ -195,6 +201,7 @@ public sealed class AuditChainIntegrityViewModel : BindableBase
             AuditChainIntegrityStatus.Broken => "Broken",
             AuditChainIntegrityStatus.Unavailable => "Not checked — store unavailable",
             AuditChainIntegrityStatus.NotConfigured => "Not kept in this deployment",
+            AuditChainIntegrityStatus.NotStarted => "Nothing chained yet",
             _ => result.Status,
         },
         DescribeCoverage(result),
