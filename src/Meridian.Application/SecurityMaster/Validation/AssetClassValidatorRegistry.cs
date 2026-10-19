@@ -334,7 +334,7 @@ internal static class DefaultAssetClassValidators
                     FieldRule.RequiredDate("effectiveDate", "SM_CDS_EFFECTIVE_DATE_REQUIRED", "CDS effective date is missing", "Credit default swaps must include an effective date."),
                     FieldRule.RequiredDate("maturityDate", "SM_CDS_MATURITY_DATE_REQUIRED", "CDS maturity date is missing", "Credit default swaps must include a scheduled termination date."),
                     DateOrderRule.Required("effectiveDate", "maturityDate", "SM_CDS_DATE_RANGE_INVALID", "CDS date range is invalid", "CDS effective date must be on or before the maturity date."),
-                    FieldRule.OptionalNonNegative("fixedCouponBps", "SM_CDS_FIXED_COUPON_INVALID", "CDS fixed coupon is invalid", "CDS fixed coupon must be zero or greater basis points."),
+                    FieldRule.RequiredNonNegative("fixedCouponBps", "SM_CDS_FIXED_COUPON_INVALID", "CDS fixed coupon is missing or invalid", "Credit default swaps must include a running fixed coupon of zero or more basis points."),
                     FieldRule.OptionalFraction("recoveryRateAssumption", "SM_CDS_RECOVERY_RATE_INVALID", "CDS recovery rate is invalid", "CDS recovery rate assumption must be a fraction between 0 and 1.")
                 ]),
             // ADR-022 canonical-home guidance: MoneyMarketFund is the canonical home for
@@ -825,6 +825,9 @@ internal sealed record FieldRule(
     public static FieldRule RequiredPositive(string fieldPath, string code, string title, string message)
         => new(fieldPath, SecurityFieldRuleKind.RequiredPositiveNumber, SecurityValidationSeverityDto.Error, code, title, message);
 
+    public static FieldRule RequiredNonNegative(string fieldPath, string code, string title, string message)
+        => new(fieldPath, SecurityFieldRuleKind.RequiredNonNegativeNumber, SecurityValidationSeverityDto.Error, code, title, message);
+
     public static FieldRule RequiredArray(string fieldPath, string code, string title, string message)
         => new(fieldPath, SecurityFieldRuleKind.RequiredArrayNotEmpty, SecurityValidationSeverityDto.Error, code, title, message);
 
@@ -874,6 +877,7 @@ internal sealed record FieldRule(
             SecurityFieldRuleKind.RequiredGuid => JsonValidationReader.HasGuid(property),
             SecurityFieldRuleKind.RequiredDate => JsonValidationReader.HasDate(property),
             SecurityFieldRuleKind.RequiredPositiveNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value > 0m,
+            SecurityFieldRuleKind.RequiredNonNegativeNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value >= 0m,
             SecurityFieldRuleKind.RequiredArrayNotEmpty => property.ValueKind == JsonValueKind.Array && property.GetArrayLength() > 0,
             SecurityFieldRuleKind.OptionalPositiveNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value > 0m,
             SecurityFieldRuleKind.OptionalNonNegativeNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value >= 0m,
@@ -902,6 +906,7 @@ internal sealed record FieldRule(
             or SecurityFieldRuleKind.RequiredGuid
             or SecurityFieldRuleKind.RequiredDate
             or SecurityFieldRuleKind.RequiredPositiveNumber
+            or SecurityFieldRuleKind.RequiredNonNegativeNumber
             or SecurityFieldRuleKind.RequiredArrayNotEmpty;
 }
 
@@ -1157,6 +1162,7 @@ internal enum SecurityFieldRuleKind
     RequiredGuid,
     RequiredDate,
     RequiredPositiveNumber,
+    RequiredNonNegativeNumber,
     RequiredArrayNotEmpty,
     OptionalPositiveNumber,
     OptionalNonNegativeNumber,

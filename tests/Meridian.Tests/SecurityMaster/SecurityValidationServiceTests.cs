@@ -943,6 +943,43 @@ public sealed class SecurityValidationServiceTests
             item.Code == "SM_STRUCTURED_CREDIT_NON_CALL_END_NOT_A_DATE" || item.Code == "SM_STRUCTURED_CREDIT_REINVESTMENT_END_INVALID");
     }
 
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(-25.0, true)]
+    [InlineData(0.0, false)]
+    [InlineData(100.0, false)]
+    public void Scenario_CreditDefaultSwapFixedCoupon_IsRequiredAndNonNegative(double? fixedCouponBps, bool expectIssue)
+    {
+        var terms = new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            ["referenceEntity"] = "Meridian Industries Inc",
+            ["protectionSide"] = "Buy",
+            ["notional"] = 10_000_000m,
+            ["effectiveDate"] = "2026-03-20",
+            ["maturityDate"] = "2031-06-20"
+        };
+        if (fixedCouponBps is { } coupon)
+        {
+            terms["fixedCouponBps"] = (decimal)coupon;
+        }
+
+        var cds = CreateProjection(
+            Guid.NewGuid(),
+            "CreditDefaultSwap",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "CDS-1", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(terms));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(cds, [cds], Now);
+
+        var couponIssues = report.Issues.Where(static item => item.Code == "SM_CDS_FIXED_COUPON_INVALID").ToArray();
+        couponIssues.Any().Should().Be(expectIssue);
+        couponIssues.Should().OnlyContain(static item => item.Severity == SecurityValidationSeverityDto.Error);
+    }
+
     [Fact]
     public void Scenario_StructuredCreditFactorSchedulePointerWithoutEntries_WarnsButDoesNotBlock()
     {
