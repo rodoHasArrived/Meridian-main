@@ -1,11 +1,11 @@
 {
   "total_files": 741,
-  "total_lines": 164229,
+  "total_lines": 164298,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 304,
-  "average_lines": 221.6,
+  "average_lines": 221.7,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1638,7 +1638,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 5834,
+      "line_count": 5835,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2790,7 +2790,7 @@
     },
     {
       "path": "docs/generated/database/modules/security_master.md",
-      "line_count": 1649,
+      "line_count": 1705,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2854,7 +2854,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12246,
+      "line_count": 12247,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3766,7 +3766,7 @@
     },
     {
       "path": "docs/reference/ufl-conformance-matrix.md",
-      "line_count": 62,
+      "line_count": 65,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5846,7 +5846,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1841,
+      "line_count": 1846,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6078,7 +6078,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1175,
+      "line_count": 1178,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
