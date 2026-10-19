@@ -6558,7 +6558,8 @@ Meridian-main
 │   │   │   │   ├── 041_security_master_governance_events_truncate_guard.sql
 │   │   │   │   ├── 042_security_master_terms_format_column.sql
 │   │   │   │   ├── 043_security_master_close_price_approval_null_guards.sql
-│   │   │   │   └── 044_security_master_declarative_terms_projections.sql
+│   │   │   │   ├── 044_security_master_declarative_terms_projections.sql
+│   │   │   │   └── 045_structured_credit_typed_tranche_terms.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs

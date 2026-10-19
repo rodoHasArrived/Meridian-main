@@ -1143,7 +1143,13 @@ instead of accepting client-local JSON shapes.
 can distinguish profile-backed alternative assets from generic `OtherSecurity` fallback records.
 Alternative asset operations are represented as first-class Security Master asset classes for
 `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, and
-`CommitmentGuarantee`, while `DirectLoan` remains the private-credit class. The registry keeps
+`CommitmentGuarantee`, while `DirectLoan` remains the private-credit class. `StructuredCredit`
+carries typed tranche terms at asset-class terms version 2 (`structuredCreditKind` from the
+`structured-credit-kind` taxonomy, `seniority`, `attachmentPoint`/`detachmentPoint` as fractions
+of the deal balance, `weightedAverageCoupon`/`weightedAverageMaturityMonths`/
+`weightedAverageLoanAgeMonths`, and the CLO `reinvestmentPeriodEnd`/`nonCallPeriodEnd` dates); all
+are optional, so a version-1 payload reads unchanged, and the pool statistics bridge to the
+`structuredProduct` economic module. The registry keeps
 `CustomAsset` as the governed compatibility and wide-capture fallback for profile-backed records
 that cannot yet be upgraded to one of those minimum first-class classes.
 `SecurityAssetPackRegistry` defines the additive asset-pack registry contract for wide capture and

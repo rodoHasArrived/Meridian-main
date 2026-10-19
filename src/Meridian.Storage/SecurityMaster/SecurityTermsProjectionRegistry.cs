@@ -385,7 +385,17 @@ internal static partial class SecurityTermsProjectionRegistry
                 // The free-text trustee-report pointer, kept distinct from the typed dated schedule
                 // in the child table so a reader cannot mistake prose for factor data.
                 Optional("factor_schedule_reference", "factorSchedule", SecurityAssetTermFieldType.String),
-                Optional("maturity_date", "maturity", SecurityAssetTermFieldType.Date)
+                Optional("maturity_date", "maturity", SecurityAssetTermFieldType.Date),
+                // Typed tranche terms (asset-class terms version 2, migration 045).
+                Optional("structured_credit_kind", "structuredCreditKind", SecurityAssetTermFieldType.String),
+                Optional("seniority", "seniority", SecurityAssetTermFieldType.String),
+                Optional("attachment_point", "attachmentPoint", SecurityAssetTermFieldType.Decimal),
+                Optional("detachment_point", "detachmentPoint", SecurityAssetTermFieldType.Decimal),
+                Optional("weighted_average_coupon", "weightedAverageCoupon", SecurityAssetTermFieldType.Decimal),
+                Optional("weighted_average_maturity_months", "weightedAverageMaturityMonths", SecurityAssetTermFieldType.Integer),
+                Optional("weighted_average_loan_age_months", "weightedAverageLoanAgeMonths", SecurityAssetTermFieldType.Integer),
+                Optional("reinvestment_period_end", "reinvestmentPeriodEnd", SecurityAssetTermFieldType.Date),
+                Optional("non_call_period_end", "nonCallPeriodEnd", SecurityAssetTermFieldType.Date)
             ],
             ChildTables:
             [

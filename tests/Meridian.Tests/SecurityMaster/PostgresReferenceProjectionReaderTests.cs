@@ -237,8 +237,20 @@ public sealed class PostgresReferenceProjectionReaderTests
         var tranche = MapParent("StructuredCredit", PostgresStructuredCreditReferenceProjectionStore.MapTrancheRow, Spine("USD")
             .With("tranche", "A1").With("pool_id", "POOL-1").With("collateral_type", "CLO")
             .With("original_face", 1_000_000m).With("current_factor", 0.85m).With("coupon_or_index", "SOFR+150")
-            .With("factor_schedule_reference", "Trustee report").With("maturity_date", Maturity));
-        tranche.Should().Be(new StructuredCreditProjectionRow(SecurityId, "Display", "USD", "A1", "POOL-1", "CLO", 1_000_000m, 0.85m, "SOFR+150", "Trustee report", DateOnly.FromDateTime(Maturity), "PRIMARY", 3L));
+            .With("factor_schedule_reference", "Trustee report").With("maturity_date", Maturity)
+            .With("structured_credit_kind", "Clo").With("seniority", "Mezzanine").With("attachment_point", 0.12m)
+            .With("detachment_point", 0.20m).With("weighted_average_coupon", 7.85m).With("weighted_average_maturity_months", 58)
+            .With("weighted_average_loan_age_months", 14).With("reinvestment_period_end", Maturity).With("non_call_period_end", Maturity));
+        tranche.Should().Be(new StructuredCreditProjectionRow(
+            SecurityId, "Display", "USD", "A1", "POOL-1", "CLO", 1_000_000m, 0.85m, "SOFR+150", "Trustee report", DateOnly.FromDateTime(Maturity), "PRIMARY", 3L,
+            "Clo", "Mezzanine", 0.12m, 0.20m, 7.85m, 58, 14, DateOnly.FromDateTime(Maturity), DateOnly.FromDateTime(Maturity)));
+
+        // A version-1 row (written before migration 045) reads with the typed terms unset.
+        var legacy = MapParent("StructuredCredit", PostgresStructuredCreditReferenceProjectionStore.MapTrancheRow, Spine("USD")
+            .With("tranche", "A1").With("collateral_type", "CLO").With("original_face", 1_000_000m).With("coupon_or_index", "SOFR+150"));
+        legacy.StructuredCreditKind.Should().BeNull();
+        legacy.AttachmentPoint.Should().BeNull();
+        legacy.NonCallPeriodEnd.Should().BeNull();
 
         var factor = MapChild("StructuredCredit", PostgresStructuredCreditReferenceProjectionStore.FactorScheduleTable,
             PostgresStructuredCreditReferenceProjectionStore.MapFactorScheduleRow,

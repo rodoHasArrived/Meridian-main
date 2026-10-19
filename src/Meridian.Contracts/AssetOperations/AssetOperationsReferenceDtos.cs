@@ -55,7 +55,17 @@ public sealed record StructuredCreditReferenceDto(
     string? FactorScheduleReference,
     DateOnly? Maturity,
     string PrimaryIdentifier,
-    long Version);
+    long Version,
+    // Typed tranche terms (asset-class terms version 2); null for records written before it.
+    string? StructuredCreditKind = null,
+    string? Seniority = null,
+    decimal? AttachmentPoint = null,
+    decimal? DetachmentPoint = null,
+    decimal? WeightedAverageCoupon = null,
+    int? WeightedAverageMaturityMonths = null,
+    int? WeightedAverageLoanAgeMonths = null,
+    DateOnly? ReinvestmentPeriodEnd = null,
+    DateOnly? NonCallPeriodEnd = null);
 
 /// <summary>One dated pool-factor point: the outstanding factor effective on <c>AsOfDate</c>.</summary>
 public sealed record StructuredCreditFactorPointDto(
