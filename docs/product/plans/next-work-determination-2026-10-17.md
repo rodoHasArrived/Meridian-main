@@ -25,7 +25,7 @@ resolver source in current source.
 > remains authoritative for the P0 release gate. Recheck conflict counts and CI results against the
 > live head before acting.
 
-## The bar was met, and that changes the headline
+## The gate is now reliable — but the 2026-10-17 reading of the bar was wrong
 
 The 2026-10-16 determination set its bar as: *"due when `Meridian CI / quality-gate` has been green
 on three consecutive `main` pushes, or when the RC is tagged."* **The gate clause is met.**
@@ -126,7 +126,18 @@ credential/audit commit ambiguity, and legacy migration/rollback/rotation proof 
 `PRD-002` stays explicitly blocking on RC selection rather than being presented as human evidence
 only. What *is* true, and is the point this document was reaching for, is that the ADR signatures,
 the signing secret, the required-check activation and the download decision are not engineering —
-`PRD-002` is the exception, and it is the one that can still move on its own. What is new is that the engineering precondition they were
+`PRD-002` is the exception, and it is the one that can still move on its own.
+
+**Third correction (2026-10-19): re-verifying the head is not sufficient either.** The tracker is
+explicit at `docs/product/implementation-todo-list.md:203-205` that *"any further change to the
+branch invalidates the set and the three lanes must be re-run on whatever commit is finally frozen
+for a release tag"*, and at `:231-235` that *"a release remains blocked until every evidence-gated
+row is proven on the same commit and the required Actions runs are green."* A green
+`Meridian CI / quality-gate` is **not** that evidence. Selecting a head and tagging it requires
+**`Publish Smoke`, `Desktop Installer Release` and `Production Certification` re-run on the frozen
+commit**, plus every evidence-gated row proven there. Without that, a tag can rest on receipts
+minted on an ancestor — which is precisely the sequencing failure the tracker records as having
+blocked all six evidence-gated rows before. What is new is that the engineering precondition they were
 waiting on is, for this commit, satisfied.
 
 ## P1: the remaining teardown race is the thing that will take the gate back
@@ -392,8 +403,8 @@ Two consequences, re-verified against the new head:
 **1. The RC target moved, and the tag was not taken.** `0342643d` was a commit with seven of seven
 lanes green, and it is now two commits behind the head with no `v*` tag pointing at it. `Meridian CI`
 on `30b98549` ([run 39042429968](https://github.com/rodoHasArrived/Meridian-main/actions/runs/39042429968))
-was still **queued** when this update was written, so whether the new head is also certifiable is
-not yet known. **The P0 above is unchanged in substance and its timing claim is now demonstrated:**
+was still **queued** when this update was written, so whether the new head is even green was not
+yet known — and green is not the same as certifiable (see the release-evidence requirement below). **The P0 above is unchanged in substance and its timing claim is now demonstrated:**
 the window is a property of the head, the head moved inside half an hour, and the signatures that
 would have let someone tag `0342643d` are still absent. Re-verify the current head's lanes before
 picking an RC commit; do not inherit `0342643d`'s green from this document.
@@ -419,8 +430,9 @@ The two commits `#3192` brought with it make the point without further comment:
 `b3a7f78b chore: merge main and regenerate generated artifacts` and
 `507a9d0c docs: regenerate doc-health dashboard after merging main`. **Three branches paid the same
 tax on the same file pair inside one hour**, each by hand or by running the resolver, because no
-`merge=` driver exists. The P1 row for `.gitattributes` is the one item on this list whose cost is
-being paid continuously and visibly in commit subjects.
+`merge=` driver exists — **and, per the 2026-10-19 correction below, none should be added**; the
+sanctioned route is the hosted repair flow. What stands is that this cost is being paid
+continuously and visibly in commit subjects.
 
 ### Third round, 15:32 UTC: the `example-validation.md` gap reproduced on demand
 
@@ -446,9 +458,9 @@ one-line entry, and it now has a reproduction rather than an argument.**
 `#3194` also arrived carrying three regeneration commits of its own —
 `482b5dc0` and `933c6c91` (both *"chore: merge main and regenerate generated artifacts"*) and
 `8c820d42` (*"docs: regenerate doc-health dashboard after merging main"*). **One pull request paid
-this tax three times before it merged.** Across four base advances — two inside 68 minutes on 2026-10-17, then again on 2026-10-19 — this document's own branch paid it **four** times, every time on the same file pair, every time resolved by the resolver with nothing requiring review. The two P1 rows — the `merge=` driver and the one-line `GENERATED_FILES`
-addition — are not hygiene items; they are the difference between these merges being automatic and
-being hand-held.
+this tax three times before it merged.** Across four base advances — two inside 68 minutes on 2026-10-17, then again on 2026-10-19 — this document's own branch paid it **four** times, every time on the same file pair, every time resolved by the resolver with nothing requiring review. **Corrected 2026-10-19: the fix is not a `merge=` driver** (see below) — it is the hosted repair
+flow plus the one-line `GENERATED_FILES` addition. Those are not hygiene items; they are the
+difference between these merges being automatic and being hand-held.
 
 ## Re-verification (2026-10-19): every ranked item is still open, 53 commits later
 
@@ -485,6 +497,22 @@ determination in the directory carrying a current ranking: the 2026-10-15 determ
 ([#3170](https://github.com/rodoHasArrived/Meridian-main/pull/3170)) remains unmerged, and no newer
 determination has landed on `main`, whose index still points at 2026-10-16 as latest.
 
+## Maintenance note: withdrawn claims leave copies, and the copies are the hazard
+
+Three review rounds on this document produced corrections; **the dominant finding in rounds two and
+three was not a new error but residue from the previous round's fix.** Each time, the passage under
+review was corrected while copies of the withdrawn claim survived elsewhere — in the summary table,
+in a section heading, in an earlier dated update, in the closing paragraph, and in this directory's
+own index row. Readers who navigate by heading, by summary, or by the index therefore kept being
+told exactly what the body had retracted.
+
+A heading or an index row that asserts a withdrawn claim is worse than a stale paragraph, because it
+is what a hurried reader acts on. **So after any withdrawal here, grep the whole file *and*
+`README.md` for the retracted wording before pushing** — the sweep that produced this round's fixes
+found two residues the review itself had not flagged, including a section heading. The factual
+tabulations stay as written: the data was never wrong in any round. Only the inferences drawn from
+it, and the copies of those inferences, needed correcting.
+
 ## Process finding: the acting is now outpacing the ranking
 
 This is the eighth determination, and for the first time the previous one's findings were **acted
@@ -509,7 +537,7 @@ out precisely enough to apply in minutes, and left to a person.
 
 | Priority | Work | Why now |
 | --- | --- | --- |
-| **P0** | **Re-verify the current `main` head, then tag that commit once the gates are closed** — sign `ADR-019`/`ADR-020` (`PRD-000`), provision the `desktop-release-signing` secrets (`PRD-014`), complete and accept recovery evidence (`PRD-015`), have an administrator activate the required release check (`PRD-016`), decide the ~1 GB consumer download, and **finish `PRD-002`, which is still `Implementation-in-progress` and is a blocking engineering precondition** | **Corrected 2026-10-19: do not tag `0342643d`** — it was the green target on 2026-10-17, is now 53 commits behind, and was never tagged. The gate itself is reliable (eight consecutive green `main` pushes as of 2026-10-19), but a green head does **not** mean the engineering precondition is met while `PRD-002` is open. Gates per `implementation-todo-list.md:177-180` and `:241` |
+| **P0** | **Freeze a commit, re-run the three release lanes on it, then tag** — `Publish Smoke`, `Desktop Installer Release` and `Production Certification` on the frozen commit with every evidence-gated row proven there (`implementation-todo-list.md:203-205`, `:231-235`); plus sign `ADR-019`/`ADR-020` (`PRD-000`), the `desktop-release-signing` secrets (`PRD-014`), recovery evidence (`PRD-015`), administrator activation of the required check (`PRD-016`), the ~1 GB download decision, and **finish `PRD-002`, still `Implementation-in-progress` and a blocking engineering precondition** | **Corrected three times (2026-10-19).** Do **not** tag `0342643d`: it only ever cleared CI, is 53 commits behind, and was never certifiable. The gate itself is reliable (eight consecutive green `main` pushes), but green CI is neither the engineering precondition nor the release evidence — any branch change invalidates the prior evidence set |
 | **P1** | **Make `tests/scripts` teardown deterministic** — terminate/join whatever holds the temporary tree, or use a bounded cleanup retry that **still fails** if the directory cannot be removed; start at `test_merge_reviewed_doc_hashes.py:93` | 98 call sites, zero guarded. The `OSError: [Errno 39]` was raised by `tempfile`, not an assertion. **Corrected 2026-10-19: not blanket `ignore_cleanup_errors=True`** — that passes tests whose cleanup genuinely failed and hides real leaks, which is the same bypass as quarantine. Likeliest cause of the next red, and a red gate invalidates the RC commit |
 | **P1** | **Diagnose why every invocation fails the base-SHA binding check** at `generated_repair.py:213` and correct or requeue the binding; treat normalising the exit code as a cosmetic follow-up, not the fix | **91 of 91 runs failed; zero green ever.** **Corrected twice (2026-10-19):** `inspect()` calls `verify_source_run()` first (`:322-324`), so the error precedes any `ready`/`retry`, the status stays `manual`, and the workflow conditions (`:62,86`) skip publishing — an exit-code change yields a **green no-op**. 91 of 91 failing there means the publisher has **never reached its publish path** |
 | **P1** | **Reduce how often the 43% file is reconciled, via the hosted repair flow** — fix the publisher above, complete the local resolver, then put the tracked-artifact question to the owners | Measured: the doc-health pair changes in **86 of the last 200 commits (43%)** and appears in **14 of the 15** conflicted PRs. **Corrected 2026-10-19: not a `merge=` driver.** `generated-merge-recovery.md` already rejects that — it depends on local Git config, does not configure GitHub's merge environment, and cannot prove a parent's assets match the merged source |
@@ -534,4 +562,8 @@ signatures would be applied to.
 
 If a ninth determination is written while `ADR-019` still reads `Proposed` and `0342643d` has been
 merged past without a tag, the finding to record is not a new backlog item. It is that the program
-produced a certifiable commit and let it expire.
+produced a commit that cleared its **CI gate** and let it expire without selecting a replacement.
+`0342643d` was never *certifiable*: `PRD-002` was and is `Implementation-in-progress`, and the
+tracker requires every evidence-gated row proven on one frozen commit. Green CI was the only thing
+it had, and that is exactly the distinction this document had to be corrected twice to keep
+straight.

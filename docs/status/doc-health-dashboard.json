@@ -1,10 +1,10 @@
 {
   "total_files": 740,
-  "total_lines": 164041,
+  "total_lines": 164073,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
-  "todo_count": 306,
+  "todo_count": 307,
   "average_lines": 221.7,
   "health_score": 82,
   "orphaned_files": [
@@ -3364,9 +3364,9 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-10-17.md",
-      "line_count": 537,
+      "line_count": 569,
       "has_heading": true,
-      "todo_count": 6,
+      "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
