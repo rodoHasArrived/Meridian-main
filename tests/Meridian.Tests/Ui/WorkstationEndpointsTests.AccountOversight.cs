@@ -351,8 +351,8 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Theory]
-    [InlineData("cash", false, HttpStatusCode.Conflict)]
-    [InlineData("cash", true, HttpStatusCode.Conflict)]
+    [InlineData("cash", false, HttpStatusCode.ServiceUnavailable)]
+    [InlineData("cash", true, HttpStatusCode.ServiceUnavailable)]
     [InlineData("forecast", false, HttpStatusCode.ServiceUnavailable)]
     [InlineData("forecast", true, HttpStatusCode.ServiceUnavailable)]
     public async Task AccountOversight_ProvisionNeverResetsMissingOrCorruptInitializedState(

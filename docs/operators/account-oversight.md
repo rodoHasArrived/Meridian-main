@@ -23,7 +23,9 @@ account-owned book.
 The route prefix is `/api/ledger/books/{ledgerBookId}/accounts/{accountId}` using canonical GUIDs.
 An administrator sends `POST oversight/provision` under that prefix to provision the two local
 history stores before capture. Provisioning initializes empty stores only; missing/corrupt initialized
-state requires restoring retained history. Back up the complete configured data root, including
+state requires restoring retained history. Retrying provisioning after an interrupted first attempt
+completes it only when the store holds no retained history. Corrupt or missing history and a store
+lock held for more than 30 seconds return 503. Back up the complete configured data root, including
 `reconciliation/account-cash-continuity`, `asset-operations/account-cash-forecasts` and Evidence Vault.
 Close-price snapshots require the existing PostgreSQL Security Master and migration 037; migration 043 hardens its approval guard against payloads missing `Blockers` or `CreatedBy`.
 
