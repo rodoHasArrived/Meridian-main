@@ -124,6 +124,7 @@ public sealed class AccountingAuditIntegrityServiceTests : IDisposable
         failure.Data[LedgerEventAuditFailureData.FailedSequence] = 8L;
         failure.Data[LedgerEventAuditFailureData.ChainedEventsVerified] = 7L;
         failure.Data[LedgerEventAuditFailureData.UnprotectedGenesisFacts] = 3L;
+        failure.Data[LedgerEventAuditFailureData.FailureKind] = LedgerEventAuditFailureKinds.EventMutated;
 
         var report = await new AccountingAuditIntegrityService(accountingAuditStore: null, new ThrowingLedgerVerifier(failure)).VerifyAsync();
 
@@ -132,6 +133,7 @@ public sealed class AccountingAuditIntegrityServiceTests : IDisposable
         ledger.LinksChecked.Should().Be(7);
         ledger.FailedSequence.Should().Be(8);
         ledger.UnprotectedPreChainCount.Should().Be(3);
+        ledger.FailureKind.Should().Be(LedgerEventAuditFailureKinds.EventMutated);
     }
 
     [Fact]

@@ -42,6 +42,9 @@ public static class LedgerEventAuditFailureData
     /// <summary>Chained events that verified before the failure (<see cref="long"/>).</summary>
     public const string ChainedEventsVerified = "Meridian.LedgerEventAudit.ChainedEventsVerified";
 
+    /// <summary>The specific failure, one of <see cref="LedgerEventAuditFailureKinds"/> (<see cref="string"/>).</summary>
+    public const string FailureKind = "Meridian.LedgerEventAudit.FailureKind";
+
     /// <summary>Genesis facts retained before chaining, once the genesis inventory itself verified (<see cref="long"/>).</summary>
     public const string UnprotectedGenesisFacts = "Meridian.LedgerEventAudit.UnprotectedGenesisFacts";
 
@@ -50,6 +53,28 @@ public static class LedgerEventAuditFailureData
     /// not implement, so it could not be checked; this is not evidence of tampering.
     /// </summary>
     public const string UnsupportedSchemaVersion = "Meridian.LedgerEventAudit.UnsupportedSchemaVersion";
+}
+
+/// <summary>Stable classifications a ledger audit integrity failure carries under <see cref="LedgerEventAuditFailureData.FailureKind"/>.</summary>
+public static class LedgerEventAuditFailureKinds
+{
+    /// <summary>The audit head row is absent.</summary>
+    public const string HeadMissing = "HeadMissing";
+
+    /// <summary>The head was written under hashing rules this build does not implement.</summary>
+    public const string UnsupportedSchemaVersion = "UnsupportedSchemaVersion";
+
+    /// <summary>The genesis inventory no longer matches the digest recorded when chaining began.</summary>
+    public const string GenesisInventoryChanged = "GenesisInventoryChanged";
+
+    /// <summary>A chained event was edited, removed, or reordered.</summary>
+    public const string EventMutated = "EventMutated";
+
+    /// <summary>Every link verified but the retained head disagrees with the suffix.</summary>
+    public const string HeadDisagreement = "HeadDisagreement";
+
+    /// <summary>Retained ledger facts disagree with their audit coverage.</summary>
+    public const string CoverageMismatch = "CoverageMismatch";
 }
 
 /// <summary>Stable status values for <see cref="AuditChainIntegrityResultDto.Status"/>.</summary>

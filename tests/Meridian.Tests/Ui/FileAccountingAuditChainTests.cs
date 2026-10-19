@@ -501,6 +501,7 @@ public sealed class FileAccountingAuditChainTests : IDisposable
 
         verification.IsValid.Should().BeFalse();
         verification.Status.Should().Be(AccountingAuditChainStatus.UnlinkedEvent);
+        verification.FailedSequence.Should().BeNull("the fabricated event has no chain sequence and every link verified");
     }
 
     [Fact]

@@ -729,6 +729,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
 
         var refusal = await appendNext.Should().ThrowAsync<AccountingAuditChainIntegrityException>();
         refusal.Which.Verification.Status.Should().Be(AccountingAuditChainStatus.UnlinkedEvent);
+        refusal.Which.Verification.FailedSequence.Should().BeNull("the unlinked row has no chain sequence");
     }
 
     [LedgerDatabaseFact]

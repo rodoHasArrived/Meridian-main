@@ -7642,6 +7642,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerEventAuditFailureKinds"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerEventAuditVerification"
     },
     {
@@ -21263,6 +21269,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerEventAuditFailureData"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerEventAuditFailureKinds"
     },
     {
       "kind": "contract-set-member",
@@ -50753,7 +50765,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "19311ba9b7ea18fb03e947f887b6be523e2a287cd38411fbff3e3a521b90028d",
+  "fingerprint": "bb754bb846359ceeedee8d02adca20e140b4b40d3e441bffdbe2a6f1cf5185eb",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -58443,6 +58455,12 @@
       "id": "contract:Meridian.Contracts.Ledger.LedgerEventAuditFailureData",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.LedgerEventAuditFailureData"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerEventAuditFailureKinds",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerEventAuditFailureKinds"
     },
     {
       "classification": "record",
@@ -74202,10 +74220,10 @@
   ],
   "summary": {
     "contract_references": 3318,
-    "contract_set_memberships": 3982,
-    "edges": 8433,
+    "contract_set_memberships": 3984,
+    "edges": 8435,
     "foreign_keys": 138,
     "logical_references": 6,
-    "nodes": 4061
+    "nodes": 4062
   }
 }
