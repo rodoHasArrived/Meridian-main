@@ -148,6 +148,14 @@ decisions:
     related_roadmap_items:
       - W9-GOV-008
       - W9-INGEST-009
+  - id: DEC-W9-ACCEPTANCE-007
+    title: Accept W9-CORPACT-011 with reservations
+    status: accepted
+    decided_on: 2026-10-19
+    owner_lane: Core Team
+    summary: "Repository owner rodoHasArrived instructed on 2026-10-19 in the PR 3190 working session to accept W9-CORPACT-011 with the reservations presented. This supersedes the DEC-W9-ACCEPTANCE-002 hold, whose condition is met - the approval and posting lane is reachable since commit 24967688 and exit criterion four is implemented and evidenced by the 2026-09-22 PostgreSQL round trip (CorporateActionAccountingPostgresRoundTripTests), which proves attach, ReadyForApproval, maker-checker refusal of self-approval, independent approval, durable posting and replay with exactly one balanced journal and the lot unchanged. The row moves from ready_for_acceptance to accepted with evidence_posture complete and docs/product/w9-operator-acceptance-2026-10-19.md linked as the acceptance evidence, which records the evidence per exit criterion. Reservations carried - unsupported and policy-dependent corporate-action branches stay deliberate blocked outcomes rather than coerced generic sale or exchange treatments; PostCorporateActionAccounting is granted to no built-in role, so posting requires assignment through a governed custom role profile; the evidence is the automated PostgreSQL round trip and golden-file coverage, not a live-installation run, and none is inferred. DEC-W9-ACCEPTANCE-001 and DEC-W9-ACCEPTANCE-002 remain the historical record. No row moves to done, no release is certified, and the P0 release-certification gate remains open."
+    related_roadmap_items:
+      - W9-CORPACT-011
   - id: DEC-CHARTER-DIRECTION-001
     title: Register the 2026-10 charter direction slate as planned W11 roadmap rows
     status: accepted
