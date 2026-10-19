@@ -78,6 +78,13 @@ public sealed class AccountingAuditIntegrityService(
                 verification.Detail,
                 verification.FailedSequence);
         }
+        catch (AccountingAuditChainAnchorException ex) when (ex.IsUnsupportedSchemaVersion)
+        {
+            // As for the chain itself: a head journal written by a newer build could not be checked,
+            // which is not evidence of tampering. The message names only the line and version.
+            return new(chain, AuditChainIntegrityStatus.Unavailable, 0, 0,
+                nameof(AccountingAuditChainStatus.UnsupportedSchemaVersion), ex.Message);
+        }
         catch (AccountingAuditChainAnchorException ex) when (ex.IsIntegrityFailure)
         {
             // A readable head-journal line that fails its own hash or predecessor binding is proven

@@ -58,9 +58,10 @@ export function buildAuditIntegrityViewModel(report: AccountingAuditIntegrityRep
   }
 
   if (unavailable.length > 0) {
+    const anyVerified = report.chains.some((chain) => chain.status === "verified");
     return {
       tone: "warning",
-      title: "Audit chains partly checked",
+      title: anyVerified ? "Audit chains partly checked" : "No audit chain verified",
       verdict: `${unavailable.map((row) => row.label).join(" and ")} could not be read, so nothing is claimed about ${unavailable.length === 1 ? "it" : "them"}.`,
       verifiedAtUtc: report.verifiedAtUtc,
       rows
