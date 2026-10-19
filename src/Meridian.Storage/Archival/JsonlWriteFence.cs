@@ -14,6 +14,47 @@ internal static class JsonlWriteFence
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
     private static readonly Dictionary<string, Entry> Entries = new(PathComparer);
     private static readonly object Gate = new();
+    private static readonly Dictionary<string, AppendGate> AppendGates = new(PathComparer);
+
+    /// <summary>
+    /// Serializes copy-on-write appends to one published archive across sink instances. Each
+    /// append copies the whole archive and replaces it, so two concurrent appenders would each
+    /// copy the same bytes and the last replace would drop the other's member. Waiting honours
+    /// <paramref name="ct"/>; once acquired the lease is held through commit and checksum
+    /// republication and is released only by disposal.
+    /// </summary>
+    public static async ValueTask<IDisposable> EnterArchiveAppendAsync(string archivePath, CancellationToken ct)
+    {
+        var key = Path.GetFullPath(archivePath);
+        AppendGate gate;
+        lock (Gate)
+        {
+            if (!AppendGates.TryGetValue(key, out gate!))
+                AppendGates[key] = gate = new AppendGate();
+            gate.References++;
+        }
+        try
+        {
+            await gate.Semaphore.WaitAsync(ct).ConfigureAwait(false);
+        }
+        catch
+        {
+            ReleaseAppendGate(key, gate, entered: false);
+            throw;
+        }
+        return new AppendLease(key, gate);
+    }
+
+    private static void ReleaseAppendGate(string key, AppendGate gate, bool entered)
+    {
+        if (entered)
+            gate.Semaphore.Release();
+        lock (Gate)
+        {
+            if (--gate.References == 0)
+                AppendGates.Remove(key);
+        }
+    }
 
     public static async ValueTask<IDisposable> EnterWriteAsync(string path, CancellationToken ct)
     {
@@ -95,6 +136,23 @@ internal static class JsonlWriteFence
         {
             if (Interlocked.Exchange(ref _disposed, 1) == 0)
                 Release(key, exclusive);
+        }
+    }
+
+    private sealed class AppendGate
+    {
+        public readonly SemaphoreSlim Semaphore = new(1, 1);
+        public int References;
+    }
+
+    private sealed class AppendLease(string key, AppendGate gate) : IDisposable
+    {
+        private int _disposed;
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) == 0)
+                ReleaseAppendGate(key, gate, entered: true);
         }
     }
 }

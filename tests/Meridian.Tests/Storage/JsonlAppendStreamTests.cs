@@ -307,6 +307,48 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
     }
 
     [Fact]
+    public async Task ConcurrentSinksAppendingToACompressedArchive_KeepEveryBatchExactlyOnce()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        await using (var seed = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await seed.AppendAsync(CreateTestEvent("AAPL", 1, ClosedDay));
+            await seed.FlushAsync();
+        }
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl").Should().ContainSingle().Subject;
+        await AtomicFileWriter.WriteAsync(dayFile + ".sha256",
+            $"{Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(dayFile))).ToLowerInvariant()}  {Path.GetFileName(dayFile)}");
+        var maintenance = new FileMaintenanceService(options);
+        (await maintenance.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false))).Success.Should().BeTrue();
+
+        // Two independent sinks, as with the ingestion singleton and a backfill coordinator's sink.
+        await using var ingestion = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions);
+        await using var backfill = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions);
+        var expected = new List<long> { 1 };
+        for (var round = 0; round < 8; round++)
+        {
+            var a = 100 + round * 2;
+            var b = a + 1;
+            expected.AddRange([a, b]);
+            await ingestion.AppendAsync(CreateTestEvent("AAPL", a, ClosedDay));
+            await backfill.AppendAsync(CreateTestEvent("AAPL", b, ClosedDay));
+            using var start = new Barrier(2);
+            await Task.WhenAll(
+                Task.Run(async () => { start.SignalAndWait(); await ingestion.FlushAsync(); }),
+                Task.Run(async () => { start.SignalAndWait(); await backfill.FlushAsync(); }));
+        }
+
+        File.Exists(dayFile).Should().BeFalse();
+        var replayed = new List<long>();
+        await foreach (var evt in new Meridian.Storage.Replay.JsonlReplayer(TestDataRoot).ReadEventsAsync())
+            replayed.Add(evt.Sequence);
+        replayed.Should().BeEquivalentTo(expected, "each sink's batch is appended once and no replace drops the other's member");
+        (await maintenance.RunHealthCheckAsync(new HealthCheckOptions(ValidateChecksums: true)))
+            .Issues.Should().NotContain(issue => issue.Type == IssueType.ChecksumMismatch);
+    }
+
+    [Fact]
     public async Task ChecksumRepublishFailureAfterCommittedAppend_ReportsSuccessAndWritesOnce()
     {
         var options = new StorageOptions { RootPath = TestDataRoot };

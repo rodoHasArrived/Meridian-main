@@ -801,6 +801,12 @@ public sealed class JsonlStorageSink : IStorageSink
             if (_compressed || File.Exists(_path) || !File.Exists(archive))
                 return false;
 
+            // Another sink instance may be appending to the same archive; serialize the whole
+            // read-copy-replace and re-check, since that appender may have changed the state.
+            using var appendLease = await JsonlWriteFence.EnterArchiveAppendAsync(archive, ct).ConfigureAwait(false);
+            if (File.Exists(_path) || !File.Exists(archive))
+                return false;
+
             RequireReadableGzip(archive);
             // Retire the archive's checksum before changing its bytes and publish a fresh one
             // after: a crash in between loses coverage rather than reporting false corruption.

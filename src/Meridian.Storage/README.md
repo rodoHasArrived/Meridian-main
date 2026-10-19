@@ -46,7 +46,9 @@ closed, so the live append target stays plain. Open-period and quiet-period file
 as informational entries, not errors, so a live day does not fail the run. A late write to a compressed closed period appends
 a gzip member to the published archive instead of recreating the plain file, so each archive keeps
 one representation; that copy-on-write append costs a full archive copy, which is acceptable only
-because such writes are rare. Its checksum sidecar is republished best-effort after the append
+because such writes are rare. Each copy-on-write append to an archive holds a per-path exclusive append lease
+(`JsonlWriteFence.EnterArchiveAppendAsync`) shared by every sink instance in the process, across
+copy, replace and checksum republication, so concurrent sinks never drop each other's members. Its checksum sidecar is republished best-effort after the append
 commits: a failure leaves the archive without a sidecar and never reports the committed write as
 failed. Compression also retires a source checksum orphaned by an interrupted cleanup.
 Scheduled runs also defer files written
