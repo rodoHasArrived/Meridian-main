@@ -149,7 +149,7 @@ public sealed class SecurityMasterStructuredCreditReclassificationServiceTests
 
         report.SecuritiesScanned.Should().Be(2);
         report.UnreadableCount.Should().Be(1, "a bond without a maturity cannot be mapped into the domain");
-        report.Candidates.Should().ContainSingle(static item => item.SecurityId == candidate.SecurityId);
+        report.Candidates.Should().ContainSingle(item => item.SecurityId == candidate.SecurityId);
     }
 
     private static SecurityProjectionRecord MakeSecurity(
