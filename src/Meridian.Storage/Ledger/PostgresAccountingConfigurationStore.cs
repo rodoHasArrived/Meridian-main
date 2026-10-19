@@ -9,7 +9,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Storage.Ledger;
 
-public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurationStore, IAccountingActionAuditStore
+public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurationStore, IAccountingActionAuditStore, IAccountingAuditChainVerifier
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
     private readonly LedgerJournalStoreOptions _options;
@@ -278,6 +278,35 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         long GenesisSequence,
         long PreChainEventCount);
 
+    /// <summary>
+    /// Verifies the whole retained chain without appending: the same every-link scan an append
+    /// runs first, under the same head row lock so a concurrent append cannot be observed half
+    /// written, then released without committing. A break is returned, not thrown.
+    /// </summary>
+    public async Task<AccountingAuditChainVerification> VerifyAuditChainAsync(CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection
+            .BeginTransactionAsync(IsolationLevel.ReadCommitted, ct)
+            .ConfigureAwait(false);
+        try
+        {
+            var head = await LockAndReadChainHeadAsync(connection, transaction, ct).ConfigureAwait(false);
+            await VerifyChainHeadAsync(connection, transaction, head, ct).ConfigureAwait(false);
+            return new AccountingAuditChainVerification(
+                AccountingAuditChainStatus.Valid,
+                LinksChecked: (int)Math.Min(int.MaxValue, Math.Max(0, head.NextSequence - head.GenesisSequence)),
+                PreChainEventCount: (int)Math.Min(int.MaxValue, head.PreChainEventCount));
+        }
+        catch (AccountingAuditChainIntegrityException ex)
+        {
+            return ex.Verification;
+        }
+
+        // Nothing is committed: disposing the transaction rolls it back and releases the head lock.
+    }
+
     private async Task<AccountingAuditChainHead> LockAndReadChainHeadAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
@@ -350,7 +379,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         // again. Refusing is the whole purpose of the column.
         if (head.SchemaVersion != AccountingAuditChainState.CurrentSchemaVersion)
         {
-            throw ChainFailure(
+            throw ChainFailure(0,
                 AccountingAuditChainStatus.UnsupportedSchemaVersion,
                 head,
                 $"Chain schema version {head.SchemaVersion.ToString(CultureInfo.InvariantCulture)} "
@@ -397,7 +426,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                         linkPayloadHash,
                         StringComparison.Ordinal))
                 {
-                    throw ChainFailure(
+                    throw ChainFailure(linksVerified,
                         AccountingAuditChainStatus.EventMutated, head,
                         $"The chained accounting audit event at sequence "
                         + $"{linkSequence.ToString(CultureInfo.InvariantCulture)} no longer matches "
@@ -413,7 +442,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                     : head.GenesisSequence;
                 if (linkSequence != expectedSequence)
                 {
-                    throw ChainFailure(
+                    throw ChainFailure(linksVerified,
                         AccountingAuditChainStatus.BrokenSequence, head,
                         $"The chained accounting audit events jump from sequence "
                         + $"{(sequence?.ToString(CultureInfo.InvariantCulture) ?? "the genesis boundary")} "
@@ -428,7 +457,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                             linkSequence, linkPreviousHash, linkPayloadHash),
                         StringComparison.Ordinal))
                 {
-                    throw ChainFailure(
+                    throw ChainFailure(linksVerified,
                         AccountingAuditChainStatus.BrokenLink, head,
                         $"The chained accounting audit event at sequence "
                         + $"{linkSequence.ToString(CultureInfo.InvariantCulture)} does not bind to "
@@ -456,7 +485,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         var accountedFor = head.PreChainEventCount + linksVerified;
         if (retainedEventCount != accountedFor)
         {
-            throw ChainFailure(
+            throw ChainFailure(linksVerified,
                 AccountingAuditChainStatus.UnlinkedEvent, head,
                 $"{retainedEventCount.ToString(CultureInfo.InvariantCulture)} accounting audit "
                 + "events are retained but the chain and its genesis boundary account for "
@@ -467,16 +496,17 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         {
             if (head.LastHash is not null)
             {
-                throw ChainFailure(
+                throw ChainFailure(linksVerified,
                     AccountingAuditChainStatus.BrokenLink, head,
                     "An empty accounting audit chain carries a predecessor hash.");
             }
 
             if (hasChainedEvent)
             {
-                throw ChainFailure(
+                throw ChainFailure(linksVerified,
                     AccountingAuditChainStatus.AnchorMismatch, head,
-                    "Chained accounting audit events exist while the chain head records none.");
+                    "Chained accounting audit events exist while the chain head records none.",
+                    head.GenesisSequence);
             }
 
             return;
@@ -484,9 +514,10 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
 
         if (!hasChainedEvent)
         {
-            throw ChainFailure(
+            throw ChainFailure(linksVerified,
                 AccountingAuditChainStatus.MissingEvent, head,
-                "The accounting audit chain head points past every retained chained event.");
+                "The accounting audit chain head points past every retained chained event.",
+                head.GenesisSequence);
         }
 
         // The chain itself verified above, link by link. What is left is the head retained outside
@@ -494,24 +525,28 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         // but shorter than the head recorded is a truncated tail, not a valid chain.
         if (sequence != head.NextSequence - 1)
         {
-            throw ChainFailure(
+            // Name the link the head disagrees with: the first missing one when the tail was
+            // truncated, or the first one beyond the head when the head was rewound.
+            throw ChainFailure(linksVerified,
                 AccountingAuditChainStatus.AnchorMismatch, head,
                 $"The chain head expects sequence {(head.NextSequence - 1).ToString(CultureInfo.InvariantCulture)} "
-                + $"but the final retained event is {sequence?.ToString(CultureInfo.InvariantCulture)}.");
+                + $"but the final retained event is {sequence?.ToString(CultureInfo.InvariantCulture)}.",
+                sequence < head.NextSequence - 1 ? sequence + 1 : head.NextSequence);
         }
 
         if (head.LastHash is null)
         {
-            throw ChainFailure(
+            throw ChainFailure(linksVerified,
                 AccountingAuditChainStatus.BrokenLink, head,
                 "A non-empty accounting audit chain is missing its predecessor hash.");
         }
 
         if (!string.Equals(retainedHash, head.LastHash, StringComparison.Ordinal))
         {
-            throw ChainFailure(
+            throw ChainFailure(linksVerified,
                 AccountingAuditChainStatus.AnchorMismatch, head,
-                "The accounting audit chain head does not name the final retained event.");
+                "The accounting audit chain head does not name the final retained event.",
+                sequence);
         }
     }
 
@@ -566,22 +601,28 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         }
     }
 
+    /// <param name="linksChecked">
+    /// Links verified before the failure. A break stops the scan, so reporting the head's full
+    /// length would claim coverage the scan never reached.
+    /// </param>
     /// <param name="sequence">
-    /// The sequence the break was found at. Defaults to the head's next slot, which is right for a
-    /// failure about the head itself; a per-link failure passes the link's own sequence so an
-    /// operator is pointed at the row that broke rather than at the end of the chain.
+    /// The link the failure is about, when there is one: a per-link failure passes the link's own
+    /// sequence and a head disagreement passes the link the head disagrees with. Failures that no
+    /// single link explains (an unlinked event, an unsupported schema) name no position rather
+    /// than the slot past the end of the chain.
     /// </param>
     private static AccountingAuditChainIntegrityException ChainFailure(
+        int linksChecked,
         AccountingAuditChainStatus status,
         AccountingAuditChainHead head,
         string detail,
         long? sequence = null)
         => new(new AccountingAuditChainVerification(
             status,
-            LinksChecked: (int)Math.Min(int.MaxValue, Math.Max(0, head.NextSequence - head.GenesisSequence)),
+            linksChecked,
             PreChainEventCount: (int)Math.Min(int.MaxValue, head.PreChainEventCount),
             detail,
-            sequence ?? head.NextSequence));
+            sequence));
 
     public async Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
         string? fundProfileId = null,
