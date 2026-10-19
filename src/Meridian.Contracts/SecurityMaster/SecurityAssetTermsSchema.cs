@@ -423,10 +423,12 @@ public static class SecurityAssetTermsSchema
                 Req("originalFace", SecurityAssetTermFieldType.Decimal),
                 Opt("currentFactor", SecurityAssetTermFieldType.Decimal),
                 Req("couponOrIndex", SecurityAssetTermFieldType.String),
-                Opt("factorSchedule", SecurityAssetTermFieldType.String),
+                // Free-text trustee or servicer report pointer: the evidence lineage the paydown
+                // projector requires for typed factor rows. Operational, not economic: no cash-flow
+                // or accounting math reads it. The dated schedule is factorScheduleEntries.
+                Opt("factorSchedule", SecurityAssetTermFieldType.String).AsOperational(),
                 // Typed, dated factor points ({asOfDate, factor}) consumed by the structured
-                // cash-flow resolver's FactorAsOf lookup; factorSchedule stays the free-text
-                // legacy reference.
+                // cash-flow resolver's FactorAsOf lookup.
                 Opt("factorScheduleEntries", SecurityAssetTermFieldType.Array),
                 // Legal final maturity of the tranche: the anchor date for calculated cash-flow
                 // projection — without it the factor schedule has no production effect.

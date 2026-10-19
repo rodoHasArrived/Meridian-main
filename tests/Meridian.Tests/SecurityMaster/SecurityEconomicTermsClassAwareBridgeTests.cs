@@ -88,6 +88,7 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [InlineData("StructuredCredit", "weightedAverageCoupon")]
     [InlineData("StructuredCredit", "weightedAverageMaturityMonths")]
     [InlineData("StructuredCredit", "weightedAverageLoanAgeMonths")]
+    [InlineData("StructuredCredit", "factorSchedule")]
     [InlineData("Repo", "counterparty")]
     [InlineData("Repo", "haircut")]
     [InlineData("CashSweep", "programName")]
