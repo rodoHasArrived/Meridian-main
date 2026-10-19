@@ -136,7 +136,7 @@ export function AuditChainIntegrityPanel() {
                 ))}
               </tbody>
             </table>
-            <p className="text-xs text-muted-foreground">Checked {formatDateTimeLabel(view.verifiedAtUtc)}.</p>
+            <p className="text-xs text-muted-foreground">Verification ran {formatDateTimeLabel(view.verifiedAtUtc)}.</p>
           </>
         ) : null}
       </CardContent>

@@ -84,7 +84,15 @@ public sealed class AccountingAuditIntegrityServiceTests : IDisposable
         var unreadable = (await new AccountingAuditIntegrityService(store, ledgerEventAuditVerifier: null).VerifyAsync())
             .Chains.Single(chain => chain.Chain == AuditChainIdentifiers.AccountingActions);
 
+        var newer = JsonNode.Parse(lines[0])!.AsObject();
+        newer["schemaVersion"] = 99;
+        File.WriteAllLines(store.AuditChainAnchorPath, [newer.ToJsonString(), .. lines[1..]]);
+        var unsupported = (await new AccountingAuditIntegrityService(store, ledgerEventAuditVerifier: null).VerifyAsync())
+            .Chains.Single(chain => chain.Chain == AuditChainIdentifiers.AccountingActions);
+
         tampered.Status.Should().Be(AuditChainIntegrityStatus.Broken, "a readable line failed its own hash");
+        unsupported.Status.Should().Be(AuditChainIntegrityStatus.Unavailable, "a newer build's journal could not be checked");
+        unsupported.FailureKind.Should().Be(nameof(AccountingAuditChainStatus.UnsupportedSchemaVersion));
         tampered.FailureKind.Should().Be("AnchorJournalTampered");
         unreadable.Status.Should().Be(AuditChainIntegrityStatus.Unavailable, "a line this build cannot read proves nothing");
     }

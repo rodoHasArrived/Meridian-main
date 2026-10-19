@@ -10,11 +10,21 @@ namespace Meridian.Ui.Shared.Services;
 /// <summary>Raised when the external head journal is unreadable or internally inconsistent.</summary>
 public sealed class AccountingAuditChainAnchorException : Exception
 {
-    public AccountingAuditChainAnchorException(string message, bool isIntegrityFailure = false)
+    public AccountingAuditChainAnchorException(
+        string message,
+        bool isIntegrityFailure = false,
+        bool isUnsupportedSchemaVersion = false)
         : base(message)
     {
         IsIntegrityFailure = isIntegrityFailure;
+        IsUnsupportedSchemaVersion = isUnsupportedSchemaVersion;
     }
+
+    /// <summary>
+    /// True when a journal line was written under a schema version this build does not implement,
+    /// the expected state during a rolling upgrade or downgrade rather than evidence of tampering.
+    /// </summary>
+    public bool IsUnsupportedSchemaVersion { get; }
 
     /// <summary>
     /// True when a readable journal line failed its own hash or predecessor binding: proven
@@ -271,7 +281,8 @@ public sealed class FileAccountingAuditChainAnchor
             {
                 throw new AccountingAuditChainAnchorException(
                     $"Accounting audit head journal line {lineNumber.ToString(CultureInfo.InvariantCulture)} "
-                    + $"declares unsupported schema version {record.SchemaVersion.ToString(CultureInfo.InvariantCulture)}.");
+                    + $"declares unsupported schema version {record.SchemaVersion.ToString(CultureInfo.InvariantCulture)}.",
+                    isUnsupportedSchemaVersion: true);
             }
 
             if (!string.Equals(record.PreviousAnchorHash, previousAnchorHash, StringComparison.Ordinal))

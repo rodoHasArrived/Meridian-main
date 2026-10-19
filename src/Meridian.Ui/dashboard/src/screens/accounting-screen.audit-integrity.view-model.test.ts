@@ -54,6 +54,17 @@ describe("buildAuditIntegrityViewModel", () => {
     expect(view.rows[1].failure).toBeNull();
   });
 
+  it("does not call a run partly checked when no chain verified", () => {
+    const view = buildAuditIntegrityViewModel(report([
+      chain({ status: "unavailable", linksChecked: 0, failureKind: "IOException", detail: "The audit store could not be read; its chain was not verified." }),
+      chain({ chain: "ledger-events", status: "not-configured", linksChecked: 0 })
+    ], false));
+
+    expect(view.tone).toBe("warning");
+    expect(view.title).toBe("No audit chain verified");
+    expect(view.verdict).toContain("could not be read");
+  });
+
   it("does not claim integrity when no chain is configured", () => {
     const view = buildAuditIntegrityViewModel(report([
       chain({ status: "not-configured", linksChecked: 0 }),
