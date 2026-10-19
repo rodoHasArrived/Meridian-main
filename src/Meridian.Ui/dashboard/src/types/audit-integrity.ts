@@ -8,7 +8,7 @@
 export type AuditChainIdentifier = "accounting-actions" | "ledger-events";
 
 /** Stable status values (`AuditChainIntegrityStatus`). */
-export type AuditChainIntegrityStatus = "verified" | "broken" | "not-configured" | "unavailable";
+export type AuditChainIntegrityStatus = "verified" | "broken" | "not-configured" | "unavailable" | "not-started";
 
 export interface AuditChainIntegrityResultDto {
   chain: string;

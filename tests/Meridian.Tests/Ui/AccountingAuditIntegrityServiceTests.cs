@@ -9,7 +9,7 @@ namespace Meridian.Tests.Ui;
 /// <summary>
 /// W9-GOV-008 criterion three verification tooling. The report must say exactly what it checked:
 /// verified chains, broken chains with their classification, chains this composition does not keep,
-/// and stores it could not read are four different answers.
+/// chains with nothing chained yet, and stores it could not read are five different answers.
 /// </summary>
 public sealed class AccountingAuditIntegrityServiceTests : IDisposable
 {
@@ -170,6 +170,31 @@ public sealed class AccountingAuditIntegrityServiceTests : IDisposable
         var accounting = report.Chains.Single(chain => chain.Chain == AuditChainIdentifiers.AccountingActions);
         accounting.Status.Should().Be(AuditChainIntegrityStatus.Unavailable);
         accounting.FailureKind.Should().Be(nameof(AccountingAuditChainStatus.UnsupportedSchemaVersion));
+    }
+
+    [Fact]
+    public async Task VerifyAsync_DoesNotCertifyAChainBeforeChainingBegins()
+    {
+        // An upgraded snapshot holding only pre-chain history: the links verify trivially because
+        // there are none, and every retained record is unprotected.
+        var preChainOnly = await new AccountingAuditIntegrityService(
+            new FixedAccountingVerifier(new AccountingAuditChainVerification(AccountingAuditChainStatus.Valid, 0, 4)),
+            new FixedLedgerVerifier(new LedgerEventAuditVerification(0, 2, DateTimeOffset.UnixEpoch))).VerifyAsync();
+
+        preChainOnly.AllVerified.Should().BeFalse();
+        preChainOnly.Chains.Should().OnlyContain(chain => chain.Status == AuditChainIntegrityStatus.NotStarted);
+        preChainOnly.Chains.Single(chain => chain.Chain == AuditChainIdentifiers.AccountingActions)
+            .UnprotectedPreChainCount.Should().Be(4);
+        preChainOnly.Chains.Single(chain => chain.Chain == AuditChainIdentifiers.LedgerEvents)
+            .UnprotectedPreChainCount.Should().Be(2);
+
+        // A fresh file store has no chain state at all and is reported the same way.
+        var fresh = await new AccountingAuditIntegrityService(new FileAccountingConfigurationStore(SnapshotPath), ledgerEventAuditVerifier: null)
+            .VerifyAsync();
+
+        fresh.AllVerified.Should().BeFalse();
+        fresh.Chains.Single(chain => chain.Chain == AuditChainIdentifiers.AccountingActions)
+            .Status.Should().Be(AuditChainIntegrityStatus.NotStarted);
     }
 
     [Fact]

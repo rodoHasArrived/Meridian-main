@@ -65,6 +65,19 @@ describe("buildAuditIntegrityViewModel", () => {
     expect(view.verdict).toContain("could not be read");
   });
 
+  it("does not certify a chain that has not begun chaining", () => {
+    const view = buildAuditIntegrityViewModel(report([
+      chain({ status: "not-started", linksChecked: 0, unprotectedPreChainCount: 4, detail: "Chaining has not begun in this store, so no record is protected yet." }),
+      chain({ chain: "ledger-events", status: "verified", linksChecked: 9 })
+    ], false));
+
+    expect(view.tone).toBe("warning");
+    expect(view.title).toBe("Audit chains partly checked");
+    expect(view.verdict).toBe("Accounting actions has not begun chaining, so none of its records are protected yet.");
+    expect(view.rows[0].statusLabel).toBe("Nothing chained yet");
+    expect(view.rows[0].coverage).toBe("0 chained entries checked; 4 earlier records predate chaining and are not covered");
+  });
+
   it("does not claim integrity when no chain is configured", () => {
     const view = buildAuditIntegrityViewModel(report([
       chain({ status: "not-configured", linksChecked: 0 }),

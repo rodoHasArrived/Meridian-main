@@ -91,6 +91,13 @@ public static class AuditChainIntegrityStatus
 
     /// <summary>The store exists but could not be read; nothing is claimed about the chain.</summary>
     public const string Unavailable = "unavailable";
+
+    /// <summary>
+    /// The store keeps this chain but nothing has been chained yet (a fresh store, or one upgraded
+    /// from pre-chain history with no append since), so no record is protected and nothing is
+    /// claimed about integrity.
+    /// </summary>
+    public const string NotStarted = "not-started";
 }
 
 /// <summary>Stable chain identifiers for <see cref="AuditChainIntegrityResultDto.Chain"/>.</summary>
