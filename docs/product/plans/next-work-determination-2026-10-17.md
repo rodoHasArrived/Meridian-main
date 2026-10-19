@@ -76,9 +76,17 @@ says roughly one in four has not been.
 - `docs/adr/020-lifecycle-control-plane.md:3` still reads **`Proposed`**.
 - `git ls-remote --tags origin` returns **exactly one tag**, `eval-v0.1.0-eval.1`. No `v*` exists.
 
-So the P0 path is unchanged in content and newly urgent in timing: **four signatures, one signing
-secret, one product decision (the ~1 GB consumer download), and `PRD-002` continued from #2931's
-residual list.** None of it is analysis. What is new is that the engineering precondition they were
+So the P0 path is unchanged in content and newly urgent in timing. **Corrected 2026-10-19 — an
+earlier revision of this list was incomplete.** The readiness tracker, which is the authority here,
+states at `docs/product/implementation-todo-list.md:177-180` that what "genuinely still requires a
+person" is: the `MDC_SIGNING_CERT_PFX_BASE64` and `MDC_SIGNING_CERT_PASSWORD` secrets in the
+protected `desktop-release-signing` environment (`PRD-014`), core-team sign-off on
+`ADR-019`/`ADR-020` (`PRD-000`), **operator completion and acceptance of recovery evidence
+(`PRD-015`, shared with `PRD-111`)**, and **required-check activation by a repository administrator
+(`PRD-016`)**. The last two were omitted here and are not optional: an operator who completed only
+the signatures, the secret, the download decision and `PRD-002` could reach a tag with two
+production gates still open. Add both, with their release-commit evidence, to the checklist. None of
+it is analysis. What is new is that the engineering precondition they were
 waiting on is, for this commit, satisfied.
 
 ## P1: the remaining teardown race is the thing that will take the gate back
@@ -105,10 +113,24 @@ The test `git init`s a live repository inside the temporary directory and then l
 an assertion.** Nothing about the code under test failed; the harness could not delete a directory
 git was still touching.
 
-`ignore_cleanup_errors=True` on the sites that host a live `.git` removes this class of failure
-outright. **This is P1 rather than P0 because the gate is currently green** — but it is the single
-most likely cause of the next red, and a red gate is what invalidates an RC commit. Fix it before,
-not after, the tag.
+**Corrected recommendation (2026-10-19).** An earlier revision said to set
+`ignore_cleanup_errors=True` across these sites. **That is the wrong instrument, and it contradicts
+this document's own next paragraph.** Suppressing cleanup errors makes a test pass even when
+cleanup genuinely failed — when a writer, child process or `git` subprocess is still live under the
+temporary tree — and can silently leave directories behind. That is a bypass of the same kind as
+quarantine, just quieter, and it destroys the signal that would identify a real leak.
+
+**What to do instead:** make teardown deterministic rather than silent. Terminate or join whatever
+still holds the tree before cleanup (the `git` invocations here are synchronous
+`subprocess.check_output` calls, so the residue is filesystem state, not a live writer), or wrap
+cleanup in a bounded retry that **still fails** if the directory cannot be removed. Either keeps a
+genuine leak loud while removing the race. `ignore_cleanup_errors` is acceptable only where the
+residue is provably irrelevant to the assertion, and that case should be argued per site, not
+applied across 98 of them.
+
+**This is P1 rather than P0 because the gate is currently green** — but it is the single most likely
+cause of the next red, and a red gate is what invalidates an RC commit. Fix it before, not after,
+the tag.
 
 **Do not quarantine the module.** `build/scripts/ci/script-test-quarantine.json` now reads
 `"quarantined_modules": {}` — #3180 drained it — and the repository's own rules forbid skipping
@@ -149,8 +171,27 @@ The workflow's own conditions prove `manual` was meant to finish green: `inspect
 `status == 'ready' || status == 'retry'`. A `manual` disposition is **designed** to skip the rest
 and succeed.
 
-Return 0 for a `manual` disposition, reserving non-zero for genuine faults, and add the regression
-test to the existing `tests/scripts/test_generated_repair.py`.
+**Corrected recommendation (2026-10-19).** An earlier revision of this document said to "return 0
+for a `manual` disposition." **That was wrong and would have been unsafe.** The handler catches
+`RepairError` broadly, and `RepairError` is the repository's carrier for genuine trust-boundary
+violations, not just benign dispositions — among them `"Handwritten content changed"` (`:144`),
+`"Path is outside the trusted generation policy"` (`:97`), `"Unsafe candidate path"` (`:135`),
+`"Cannot add or delete a hybrid/protected file"` (`:146`),
+`"Source run identity/event/path/attempt is not authorized"` (`:210`), and
+`"Expected a signed artifact download redirect"` (`:262`). The same `except` also catches `OSError`,
+`ValueError`, `KeyError` and `zipfile.BadZipFile`. A blanket `return 0` would report success when a
+repair tried to rewrite handwritten content, escape the policy root, or run unauthorized — exactly
+the conditions the exit code exists to surface.
+
+**The fix must be narrow:** make only the specifically expected *unbound-run* condition
+(`RepairError("Target run is not bound to its base SHA")`, `:213`) exit zero as a normal
+disposition — ideally by raising a distinct exception type for it rather than matching on the
+message — and keep a non-zero exit for every trust-boundary and operational failure. The regression
+test in `tests/scripts/test_generated_repair.py` should assert **both** halves: the expected
+condition exits 0, and an authorization or handwritten-content violation still exits non-zero.
+
+The 91-of-91 failure count and the `manual`-should-be-green reading of the workflow's step
+conditions both stand; only the prescribed fix changes.
 
 **Read the workflow file, not the check name.** Two sibling workflows share the prefix and only one
 is broken: `generated-repair.yml` (`pull_request_target`, surfaces `Prepare generated repair patch`)
@@ -173,10 +214,10 @@ some are now genuine:
 | #3170 | 4 | 7 | **`docs/product/plans/README.md`** |
 | #3169 | 5 | 134 | none — generated only |
 | #3176 | 3 | 60 | **`tests/scripts/test_schema_control_disposable.py`** |
-| #3175 | 6 | 178 | `database/manifest/{contracts,dependencies}.json` (generator manifests) |
+| #3175 | 6 | 178 | **`database/manifest/{contracts,dependencies}.json`** — generator manifests, but **not in the resolver's allowlist** |
 | #3105 | **118** | 138 | **many** — see below |
 
-Three of these need a person, not a resolver:
+**Four** of these need a person, not a resolver (corrected 2026-10-19 — an earlier revision said three):
 
 1. **#3176 conflicts on `tests/scripts/test_schema_control_disposable.py`** — the exact file `main`
    just fixed in `4213b943`. Two parties edited the same race. This is the first genuine code
@@ -195,6 +236,12 @@ Three of these need a person, not a resolver:
    and the merged 2026-10-16 document repoint the same pointer. **This document touches that file
    too**, so whoever merges second resolves it; the resolution is mechanical (keep both rows, point
    "latest" at the newest date) but it is hand-written and no resolver covers it.
+4. **#3175's two `database/manifest/{contracts,dependencies}.json` conflicts are not automatable
+   either** (added 2026-10-19). Although both are generator output, **neither path appears in
+   `resolve-generated-merge-conflicts.py`** — confirmed by a zero-match search for
+   `database/manifest` in that file — and these are canonical schema-control artifacts whose
+   refresh goes through a reviewed hosted-snapshot promotion, not a local regenerate. So the
+   resolver cannot clear #3175, and the earlier count of three manual cases understated the queue.
 
 **`docs/status/example-validation.md` is still absent from the resolver.** Confirmed today:
 `build/scripts/resolve-generated-merge-conflicts.py` has no occurrence of `example-validation`, so
@@ -223,16 +270,34 @@ commit to touch it is `f1772b3a`, titled *"docs: regenerate doc-health dashboard
 main"* — the repository is already paying this tax by hand, one merge at a time, and naming it in
 commit subjects.
 
-**The structural fix does not exist yet.** `.gitattributes` is 488 bytes and contains **no `merge=`
-driver at all** — only `text=auto` and `eol=lf` entries. #3170's `.gitattributes` /
-regenerate-on-merge item is wholly unimplemented, and these numbers are the argument for it:
-declare the whole-file generator outputs `merge=ours` (or a regenerate driver) and the 43% file
-stops producing conflicts for every branch in the queue simultaneously.
+**Corrected recommendation (2026-10-19).** An earlier revision of this document proposed declaring
+the generator outputs `merge=ours` in `.gitattributes` and claimed that would "end the tax for
+every branch in the queue at once." **The repository has already considered and rejected that, with
+reasons this document should have read first.**
+`docs/engineering/generated-merge-recovery.md` has a section titled *"Merge queues and custom merge
+drivers"* stating that a custom `.gitattributes` merge driver **"depends on local Git configuration
+and does not configure GitHub's merge environment,"** and **"cannot prove that a parent's assets
+match the merged source."** It also records that merge-group freshness checks run against synthetic
+trees that cannot be patched in place, so a stale combination must keep failing and be rebuilt.
+
+A driver would therefore help only contributors who configured it locally, would do nothing for
+GitHub-hosted merges or merge groups, and would weaken the trust boundary rather than close it.
+**`.gitattributes` is still factually driver-free** (488 bytes, only `text=auto` and `eol=lf`), but
+that absence is a decision, not an oversight.
+
+**What the measurements above actually argue for**, then, is not a driver but **reducing how often
+the 43% file has to be reconciled at all** — and the repo's own hosted repair/regeneration flow is
+the sanctioned path. Concretely, in descending confidence: make the `Generated Repair Publisher`
+work (the P1 above), which is the automation built for exactly this; add
+`docs/status/example-validation.md` to `GENERATED_FILES` so the local resolver is complete over the
+colliding set; and then put the open question to the owners — **whether the doc-health dashboard
+needs to be a tracked artifact at all**, given it is rewritten in 43% of commits, declares itself
+auto-generated, and is reproducible from `generate-health-dashboard` on demand. That last one is a
+governance decision, not a patch, and this document does not presume it.
 
 Worth noting the generator was already made deterministic in one dimension — the dashboard's own
 header reads `_Generated: 1970-01-01T00:00:00+00:00_`, a normalized epoch stamp — so the remaining
-churn is real content, and a timestamp fix will not help. The choice is a merge driver, or not
-tracking the file.
+churn is real content, and a timestamp fix will not help.
 
 ## Doc-alignment finding: the readiness tracker's roadmap inventory is stale
 
@@ -377,16 +442,16 @@ out precisely enough to apply in minutes, and left to a person.
 
 | Priority | Work | Why now |
 | --- | --- | --- |
-| **P0** | **Tag the RC on `0342643d` once the signatures exist** — sign `ADR-019`/`ADR-020`, provision the signing secret, decide the ~1 GB consumer download, continue `PRD-002` from #2931's residual list | For the first time the "freeze a full-coverage green commit" instruction has a target: seven of seven lanes green, zero red in the five pushes since `e5c20ca7`. The window closes on the next merge, and about one merge in four has not been green. Both ADRs still read `Proposed`; the repo has one tag and no `v*`. None of this is engineering |
-| **P1** | **Add `ignore_cleanup_errors=True`** to the `tests/scripts` `TemporaryDirectory` sites that host a live `.git`, starting at `test_merge_reviewed_doc_hashes.py:93` | 98 call sites, zero guarded. This is harness teardown, not a defect — `OSError: [Errno 39]` was raised by `tempfile` itself. It is the most likely cause of the next red, and a red gate invalidates the RC commit. Do not quarantine: the quarantine file is now empty and skipping tests to reach green is forbidden |
-| **P1** | **Return 0 for a `manual` disposition** at `generated_repair.py:544-546`, with a regression test | **91 of 91 runs failed; still zero green ever**, four of them on the current head. Confirmed verbatim in today's job log. The workflow's own step conditions (`:62,86`) prove `manual` was meant to finish green |
-| **P1** | **Add a `merge=` driver to `.gitattributes`** for the whole-file generator outputs, or stop tracking them | Measured: the doc-health pair changes in **86 of the last 200 commits (43%)** and appears in **14 of the 15** conflicted PRs. `.gitattributes` has no `merge=` entry at all. One change ends the tax for every branch in the queue at once |
+| **P0** | **Re-verify the current `main` head, then tag that commit once the gates are closed** — sign `ADR-019`/`ADR-020` (`PRD-000`), provision the `desktop-release-signing` secrets (`PRD-014`), complete and accept recovery evidence (`PRD-015`), have an administrator activate the required release check (`PRD-016`), decide the ~1 GB consumer download, and continue `PRD-002` from #2931's residual list | **Corrected 2026-10-19: do not tag `0342643d`.** It was the green target on 2026-10-17 and is now 37+ commits behind, never tagged; its green result must not be inherited. Pick and verify a current head instead. The gates listed here are the tracker's own (`implementation-todo-list.md:177-180`) and none of them is engineering |
+| **P1** | **Make `tests/scripts` teardown deterministic** — terminate/join whatever holds the temporary tree, or use a bounded cleanup retry that **still fails** if the directory cannot be removed; start at `test_merge_reviewed_doc_hashes.py:93` | 98 call sites, zero guarded. The `OSError: [Errno 39]` was raised by `tempfile`, not an assertion. **Corrected 2026-10-19: not blanket `ignore_cleanup_errors=True`** — that passes tests whose cleanup genuinely failed and hides real leaks, which is the same bypass as quarantine. Likeliest cause of the next red, and a red gate invalidates the RC commit |
+| **P1** | **Make only the expected unbound-run condition exit zero** at `generated_repair.py:544-546` — ideally via a distinct exception type — keeping non-zero for every trust-boundary and operational failure, with a regression test asserting both halves | **91 of 91 runs failed; still zero green ever.** **Corrected 2026-10-19:** a blanket `return 0` would also green-light `"Handwritten content changed"`, `"Path is outside the trusted generation policy"`, `"...is not authorized"` and `"Expected a signed artifact download redirect"`, which the same `except` catches |
+| **P1** | **Reduce how often the 43% file is reconciled, via the hosted repair flow** — fix the publisher above, complete the local resolver, then put the tracked-artifact question to the owners | Measured: the doc-health pair changes in **86 of the last 200 commits (43%)** and appears in **14 of the 15** conflicted PRs. **Corrected 2026-10-19: not a `merge=` driver.** `generated-merge-recovery.md` already rejects that — it depends on local Git config, does not configure GitHub's merge environment, and cannot prove a parent's assets match the merged source |
 | **P1** | **Add `docs/status/example-validation.md` to `GENERATED_FILES`** in `resolve-generated-merge-conflicts.py:20-39` | Still absent today. The resolver reports `REVIEW` and stops on the four PRs where it collides. One line, and the file's own comment rules out a wildcard |
 | **P2** | **Resolve #3176's conflict in `test_schema_control_disposable.py` deliberately** | The first genuine code disagreement in the queue in days, and it is on the race `main` just fixed. `main`'s version carries a 40/40 reproduction; #3176's should have to match it |
 | **P2** | **Close or rebase #3105** | Stale ten days with 118 conflicts, 98 of them `modify/delete` and `rename/delete` against a workstation bundle `main` has deleted, plus real collisions in shared services, `package.json` and tests. Reconstruction costs less than resolution |
-| **P2** | **Merge or close #3170** | Still open, still draft, and now conflicting on the determination index. It is the only document carrying the current product ranking, and its dangling-anchor fix is written and reviewed |
+| **P2** | **Close #3170, keeping only its independent dangling-anchor fix** | Corrected 2026-10-19: this document now supersedes it as the pointer and carries its product ranking and queue/registry figures forward, so #3170 is **no longer** the only carrier of that ranking and should not be merged just to preserve it. What is still uniquely its own is the one-line retarget of the dangling `known-vulnerabilities.md` anchor; land that and close the draft rather than resolving its now-stale index conflict |
 | **P2** | **Correct the 42-row inventory** at `implementation-todo-list.md:97` to 48 rows / 15 `planned` | Stale since #3185, in the document that is authoritative for the P0 release gate. Only the `planned` and total counts are wrong |
-| **P2** | **Take or decline `W9-CORPACT-011`** (now 25 days at `ready_for_acceptance`) | Carried from #3170. Zero engineering; declining is a result |
+| **P2** | **Take or decline `W9-CORPACT-011`** (25 days at the baseline; **27 as of 2026-10-19**) | Carried from #3170. Zero engineering; declining is a result |
 
 ## The bar for the next determination
 
