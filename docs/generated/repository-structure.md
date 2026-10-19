@@ -8679,6 +8679,7 @@ Meridian-main
 │   │   │   ├── WorkstationNavigationDefaults.cs
 │   │   │   └── WorkstationOperatingContextModels.cs
 │   │   ├── Services
+│   │   │   ├── AccountingAuditIntegrityApiClient.cs
 │   │   │   ├── AccountingWorkspacePresentationService.cs
 │   │   │   ├── ApiStatusService.cs
 │   │   │   ├── AppConfigDefaults.cs
@@ -8842,6 +8843,7 @@ Meridian-main
 │   │   │   │   ├── AccountingCloseViewModel.MutationAuthority.cs
 │   │   │   │   ├── AccountingCloseViewModel.WorkflowSelection.cs
 │   │   │   │   ├── AccountingConfigureViewModel.cs
+│   │   │   │   ├── AuditChainIntegrityViewModel.cs
 │   │   │   │   └── RecurringJournalQueueViewModel.cs
 │   │   │   ├── AccountPortfolioViewModel.cs
 │   │   │   ├── ActivityLogViewModel.cs
@@ -11753,6 +11755,7 @@ Meridian-main
 │   │   │   ├── ShellNavigationCatalogTests.cs
 │   │   │   └── WorkspaceShellChromeContributionTests.cs
 │   │   ├── Services
+│   │   │   ├── AccountingAuditIntegrityApiClientTests.cs
 │   │   │   ├── AdminMaintenanceServiceTests.cs
 │   │   │   ├── AppLifecycleDataRootTests.cs
 │   │   │   ├── AppServiceRegistrationTests.cs
@@ -11835,6 +11838,7 @@ Meridian-main
 │   │   │   ├── AggregatePortfolioViewModelTests.cs
 │   │   │   ├── AnalysisExportViewModelTests.cs
 │   │   │   ├── AnalysisExportWizardViewModelTests.cs
+│   │   │   ├── AuditChainIntegrityViewModelTests.cs
 │   │   │   ├── BackfillViewModelTests.cs
 │   │   │   ├── BacktestViewModelTests.cs
 │   │   │   ├── BatchBacktestViewModelTests.cs
