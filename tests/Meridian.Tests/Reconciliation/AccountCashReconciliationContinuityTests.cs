@@ -1216,6 +1216,143 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         (await restored.ReplayAsync(otherScope, "other-first")).Input.RunId.Should().Be("other-first");
     }
 
+
+    [Theory]
+    [InlineData("provision")]
+    [InlineData("read")]
+    [InlineData("write")]
+    public async Task Migration_refuses_missing_registered_file_instead_of_rolling_back_appends(string use)
+    {
+        var service = await ServiceAsync();
+        await service.RunAsync(Request("first", 0, 1000m, 990m));
+        var legacy = await LegacyStateBytesAsync(_scope);
+        var legacyPath = Path.Combine(StoreDirectory, "state.json");
+        await File.WriteAllBytesAsync(legacyPath, legacy);
+        await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+        var second = await service.RunAsync(Request("second", 1, 1000m, 980m));
+        var complete = await File.ReadAllBytesAsync(ScopeStatePath(_scope));
+        var index = await File.ReadAllBytesAsync(Path.Combine(StoreDirectory, "scope-index.json"));
+        File.Move(legacyPath + ".migrated", legacyPath);
+        File.Delete(ScopeStatePath(_scope));
+
+        var error = await Record.ExceptionAsync(async () =>
+        {
+            if (use == "provision")
+                await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+            else if (use == "read")
+                await service.GetCasesAsync(_scope);
+            else
+                await service.RunAsync(Request("third", 2, 1000m, 970m));
+        });
+        error.Should().BeOfType<InvalidDataException>();
+        File.Exists(ScopeStatePath(_scope)).Should().BeFalse();
+        (await File.ReadAllBytesAsync(legacyPath)).Should().Equal(legacy);
+        (await File.ReadAllBytesAsync(Path.Combine(StoreDirectory, "scope-index.json"))).Should().Equal(index);
+
+        await File.WriteAllBytesAsync(ScopeStatePath(_scope), complete);
+        await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+        (await service.ReplayAsync(_scope, "second")).Should().BeEquivalentTo(second, options => options.WithStrictOrdering());
+    }
+
+    [Theory]
+    [InlineData("missing-run")]
+    [InlineData("conflicting-run")]
+    [InlineData("missing-case")]
+    [InlineData("observation")]
+    [InlineData("assignment")]
+    [InlineData("case-metadata")]
+    [InlineData("unregistered")]
+    public async Task Migrated_history_must_remain_a_prefix_of_valid_replacement(string defect)
+    {
+        var service = await ServiceAsync();
+        await service.RunAsync(Request("first", 0, 1000m, 990m));
+        var item = Assert.Single(await service.GetCasesAsync(_scope));
+        await service.AssignAsync(_scope, item.CaseId, item.Version, "reviewer", "operator", "Review discrepancy", _start.AddHours(1));
+        await service.RunAsync(Request("second", 1, 1000m, 980m));
+        var legacy = await LegacyStateBytesAsync(_scope);
+        var legacyPath = Path.Combine(StoreDirectory, "state.json");
+        await File.WriteAllBytesAsync(legacyPath, legacy);
+        await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+        var complete = await File.ReadAllBytesAsync(ScopeStatePath(_scope));
+        var envelope = JsonSerializer.Deserialize(complete, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationScopeEnvelope)!;
+        var document = envelope.Document;
+        var originalCase = document.Cases.Single();
+        document = defect switch
+        {
+            "missing-run" or "unregistered" => document with { Runs = document.Runs.Take(1).ToArray() },
+            "conflicting-run" => document with
+            {
+                Runs = document.Runs.Select(run =>
+                {
+                    var input = run.Input with { InitialOwner = "different-owner" };
+                    return run with
+                    {
+                        Input = input,
+                        InputHash = Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(input,
+                            AccountCashReconciliationJsonContext.Default.AccountCashReconciliationRequest))
+                    };
+                }).ToArray()
+            },
+            "missing-case" => document with { Cases = [] },
+            "observation" => document with { Cases = [originalCase with { History = originalCase.History.Skip(1).ToArray() }] },
+            "assignment" => document with { Cases = [originalCase with { Assignments = [originalCase.Assignments[0] with { Reason = "Changed history" }] }] },
+            _ => document with { Cases = [originalCase with { FirstObservedAtUtc = originalCase.FirstObservedAtUtc.AddMinutes(1) }] }
+        };
+        var hash = Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(document, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationDocument));
+        var invalid = JsonSerializer.SerializeToUtf8Bytes(envelope with { Document = document, ContentHash = hash },
+            AccountCashReconciliationJsonContext.Default.AccountCashReconciliationScopeEnvelope);
+        await File.WriteAllBytesAsync(ScopeStatePath(_scope), invalid);
+        if (defect == "unregistered")
+        {
+            var emptyRoot = Path.Combine(_root, "empty-layout");
+            await new FileAccountCashReconciliationStore(emptyRoot).InitializeAsync();
+            File.Copy(Path.Combine(emptyRoot, "reconciliation", "account-cash-continuity", "scope-index.json"),
+                Path.Combine(StoreDirectory, "scope-index.json"), overwrite: true);
+        }
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => new FileAccountCashReconciliationStore(_root).InitializeAsync());
+        await Assert.ThrowsAsync<InvalidDataException>(() => service.GetCasesAsync(_scope));
+        await Assert.ThrowsAsync<InvalidDataException>(() => service.RunAsync(Request("third", 2, 1000m, 970m)));
+        (await File.ReadAllBytesAsync(ScopeStatePath(_scope))).Should().Equal(invalid);
+        (await File.ReadAllBytesAsync(legacyPath + ".migrated")).Should().Equal(legacy);
+        (await service.GetCasesAsync(_scope with { TenantId = "unrelated-tenant" })).Should().BeEmpty();
+
+        await File.WriteAllBytesAsync(ScopeStatePath(_scope), complete);
+        await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+        (await service.GetCasesAsync(_scope)).Should().ContainSingle();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Migrated_prefix_allows_later_observations_assignments_resolution_and_reopening(bool restoreLegacy)
+    {
+        var service = await ServiceAsync();
+        var first = await service.RunAsync(Request("first", 0, 1000m, 990m));
+        var item = Assert.Single(await service.GetCasesAsync(_scope));
+        await service.AssignAsync(_scope, item.CaseId, item.Version, "reviewer", "operator", "Review discrepancy", _start.AddHours(1));
+        var legacy = await LegacyStateBytesAsync(_scope);
+        var legacyPath = Path.Combine(StoreDirectory, "state.json");
+        await File.WriteAllBytesAsync(legacyPath, legacy);
+        await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+        await service.RunAsync(Request("cleared", 1, 1000m, 1000m));
+        item = Assert.Single(await service.GetCasesAsync(_scope));
+        await service.AssignAsync(_scope, item.CaseId, item.Version, "next-owner", "operator", "Follow-up", _start.AddDays(1).AddHours(1));
+        await service.RunAsync(Request("reopened", 2, 1000m, 980m));
+        var before = await File.ReadAllBytesAsync(ScopeStatePath(_scope));
+        if (restoreLegacy)
+            File.Move(legacyPath + ".migrated", legacyPath);
+        await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+        (await service.ReplayAsync(_scope, "first")).Should().BeEquivalentTo(first, options => options.WithStrictOrdering());
+        item = Assert.Single(await service.GetCasesAsync(_scope));
+        item.History.Should().HaveCount(3);
+        item.Assignments.Should().HaveCount(2);
+        item.Owner.Should().Be("next-owner");
+        item.State.Should().Be("Open");
+        (await File.ReadAllBytesAsync(ScopeStatePath(_scope))).Should().Equal(before);
+        (await File.ReadAllBytesAsync(legacyPath + ".migrated")).Should().Equal(legacy);
+    }
+
     [Theory]
     [InlineData("read")]
     [InlineData("provision")]

@@ -40,6 +40,12 @@ seconds with `TimeoutException`. The data root remains host-local (PostgreSQL is
 follow-on). Source clearing confers no governed close approval.
 See [account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
 `AccountCashReconciliationContinuityTests` for the first `W10-RECON-001` acceptance slice.
+Retained migrated runs must remain an exact prefix of the active scope document. Migrated cases
+retain their identity and observation/assignment prefixes; subsequent observations, assignments,
+resolution and reopening may advance the current case metadata. Provisioning, reads and writes
+refuse contradictory or incomplete restored histories, even when each file has a valid hash.
+Migration refuses any registered scope whose file is missing before writing recovery state;
+a stale legacy snapshot cannot reconstruct post-migration activity.
 Tolerance profile IDs and versions also bind immutable complete rules across the scoped history.
 Owner assignment timestamps cannot precede the latest case observation or assignment.
 New runs also require at least one cash rule, no null position/transaction rules, a run ID that round-trips replay routes, a business date no earlier than the retained head, and JSON payloads that stay distinct after reformatting or property reordering; these admission rules apply only when a new run is accepted, so runs retained before them still replay and re-submit idempotently. Decimal overflow during comparison is rejected as invalid input.

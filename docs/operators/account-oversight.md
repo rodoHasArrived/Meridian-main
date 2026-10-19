@@ -237,6 +237,14 @@ recreates an empty layout beside retained evidence. While the marker and index s
 the `.migrated` file retains must stay registered with its scope file; a lost file for such a scope
 answers `503` for that scope and fails provisioning until it is restored, so the migrated history can
 never be restarted as new.
+Both provisioning and scoped reads/writes compare active history with the retained migrated evidence.
+Forecast snapshots and reconciliation runs must preserve that evidence as an exact ordered prefix;
+case observation and assignment histories must preserve their prefixes and immutable case identity.
+Later appends, owner assignments, source resolution and reopening remain valid. A separately valid
+replacement file with missing or conflicting migrated records answers `503` until restored.
+Moving the migrated file back to its legacy name cannot repair a registered scope whose file is
+missing: migration refuses before writing files or changing the index, because the old snapshot
+cannot establish whether post-migration records were lost. Restore the complete backup set instead.
 Restore the affected `scopes/<sha256>.json` file together with `scope-index.json` and `initialized`
 from the same backup; never delete a scope file to clear a failure, because a registered scope
 without its file also fails closed. A scope file without its index entry is an interrupted first

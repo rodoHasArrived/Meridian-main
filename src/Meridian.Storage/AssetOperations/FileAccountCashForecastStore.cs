@@ -138,23 +138,24 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
             throw new InvalidDataException("Both the legacy account forecast history and its migrated copy exist; restore one retained history before retrying.");
         var legacy = await ReadLegacyAsync(LegacyStatePath, ct).ConfigureAwait(false);
         var index = File.Exists(IndexPath) ? (await ReadIndexAsync(ct).ConfigureAwait(false)).ToList() : [];
-        Directory.CreateDirectory(ScopeDirectory);
-        foreach (var group in legacy.GroupBy(static row => row.Inputs.Scope))
+        // File-first commits cannot leave a registered scope without its file. A legacy snapshot
+        // cannot prove that no later appends were lost, so refuse before writing any recovery state.
+        if (index.Any(scope => !File.Exists(ScopeStatePath(scope))))
+            throw new InvalidDataException("A registered account forecast scope file is missing; restore retained history before retrying.");
+        var histories = legacy.GroupBy(static row => row.Inputs.Scope).ToDictionary(group => group.Key, group => group.ToArray());
+        foreach (var (scope, snapshots) in histories)
         {
-            var snapshots = group.ToArray();
-            var path = ScopeStatePath(group.Key);
+            var path = ScopeStatePath(scope);
             if (File.Exists(path))
-            {
-                var retained = await ReadScopeFileAsync(group.Key, path, ct).ConfigureAwait(false);
-                if (!Sha256Digest.FixedEquals(Hash(retained), Hash(snapshots)))
-                    throw new InvalidDataException("A partially split legacy account forecast history conflicts with a retained scope file; restore retained history before retrying.");
-            }
-            else
-            {
-                await WriteScopeFileAsync(group.Key, snapshots, ct).ConfigureAwait(false);
-            }
-            if (!index.Contains(group.Key))
-                index.Add(group.Key);
+                ValidateMigratedPrefix(snapshots, await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false));
+        }
+        Directory.CreateDirectory(ScopeDirectory);
+        foreach (var (scope, snapshots) in histories)
+        {
+            if (!File.Exists(ScopeStatePath(scope)))
+                await WriteScopeFileAsync(scope, snapshots, ct).ConfigureAwait(false);
+            if (!index.Contains(scope))
+                index.Add(scope);
         }
         await WriteIndexAsync([.. index], ct).ConfigureAwait(false);
         File.Move(LegacyStatePath, MigratedLegacyStatePath);
@@ -182,15 +183,37 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
                 recovered = true;
             }
         }
-        foreach (var scope in await ReadMigratedScopesAsync(ct).ConfigureAwait(false))
+        var migrated = File.Exists(MigratedLegacyStatePath)
+            ? await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false) : [];
+        foreach (var scope in migrated.Select(static row => row.Inputs.Scope).Distinct())
         {
             if (!index.Contains(scope))
                 throw new InvalidDataException("The migrated account forecast history retains a scope that is no longer registered; restore retained history before retrying.");
         }
         foreach (var scope in index)
-            _ = await ReadScopeFileAsync(scope, ScopeStatePath(scope), ct).ConfigureAwait(false);
+        {
+            var retained = await ReadScopeFileAsync(scope, ScopeStatePath(scope), ct).ConfigureAwait(false);
+            ValidateMigratedPrefix(migrated.Where(row => row.Inputs.Scope == scope).ToArray(), retained);
+        }
         if (recovered)
             await WriteIndexAsync([.. index], ct).ConfigureAwait(false);
+    }
+
+    /// <summary>Retained migration evidence is an immutable prefix, including snapshot outputs.</summary>
+    private static void ValidateMigratedPrefix(AccountCashForecastSnapshotDto[] migrated, AccountCashForecastSnapshotDto[] retained)
+    {
+        if (retained.Length < migrated.Length
+            || !Sha256Digest.FixedEquals(Hash(migrated), Hash(retained.Take(migrated.Length).ToArray())))
+            throw new InvalidDataException("The retained account forecast history conflicts with its migrated prefix; restore retained history before retrying.");
+    }
+
+    private async Task ValidateMigratedScopeAsync(AccountCashForecastScopeDto scope, AccountCashForecastSnapshotDto[] retained, CancellationToken ct)
+    {
+        if (File.Exists(MigratedLegacyStatePath))
+        {
+            var migrated = await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false);
+            ValidateMigratedPrefix(migrated.Where(row => row.Inputs.Scope == scope).ToArray(), retained);
+        }
     }
 
     /// <summary>The scopes retained in the migrated legacy file; they must stay registered with their files.</summary>
@@ -240,7 +263,9 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
         {
             if (!File.Exists(path))
                 throw new InvalidDataException("The durable account forecast state is unavailable or invalid; restore retained history before retrying.");
-            return (true, await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false));
+            var retained = await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false);
+            await ValidateMigratedScopeAsync(scope, retained, ct).ConfigureAwait(false);
+            return (true, retained);
         }
         if (!File.Exists(path))
         {
@@ -248,6 +273,7 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
             return (false, []);
         }
         var history = await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false);
+        await ValidateMigratedScopeAsync(scope, history, ct).ConfigureAwait(false);
         await RegisterScopeAsync(scope).ConfigureAwait(false);
         return (true, history);
     }

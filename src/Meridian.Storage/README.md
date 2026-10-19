@@ -39,6 +39,11 @@ that the next provisioning or scoped use registers, never an indexed scope witho
 succeeds on Windows. The data root remains host-local; multi-host deployments need the PostgreSQL follow-on.
 Financial Operations owns cash-balance case semantics and delegates file replacement to Storage's
 shared writer.
+Retained migrated snapshots must remain an exact ordered prefix, including their outputs, of each
+active scope history. Provisioning, reads and appends refuse incomplete or contradictory restored
+histories even when the replacement files have valid hashes. Migration refuses any registered scope
+whose file is missing before writing recovery state; a stale legacy snapshot cannot replace
+post-migration appends. Existing files with a consistent migrated prefix retain their later records.
 Forecast corrections resolve a flow's last retained revision across temporarily omitted runs,
 separately for expected and actual cash, while retaining the latest snapshot predecessor.
 Close-price history uses one exact account/book/date query ordered by version and shares the

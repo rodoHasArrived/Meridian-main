@@ -641,6 +641,124 @@ public sealed class AccountCashForecastTests : IDisposable
         (await restored.GetHistoryAsync(otherScope)).Should().ContainSingle();
     }
 
+
+    [Theory]
+    [InlineData("provision")]
+    [InlineData("read")]
+    [InlineData("append")]
+    public async Task Store_MigrationRefusesMissingRegisteredFileInsteadOfRollingBackAppends(string use)
+    {
+        var first = AccountCashForecastEngine.Build(Request([], 100m));
+        var legacyPath = Path.Combine(StoreDirectory, "snapshots.json");
+        Directory.CreateDirectory(StoreDirectory);
+        await File.WriteAllBytesAsync(legacyPath, LegacyStateBytes(first));
+        await File.WriteAllTextAsync(Path.Combine(StoreDirectory, "initialized"), "meridian-account-cash-forecast-v1");
+        var store = new FileAccountCashForecastStore(_dataRoot);
+        await store.InitializeAsync();
+        var second = AccountCashForecastEngine.Build(Request([], 100m) with
+        {
+            RunId = "second", PreviousSnapshotId = first.SnapshotId,
+            CorrectionRationale = "Post-migration append", RecordedAtUtc = Recorded.AddDays(1)
+        });
+        await store.AppendAsync(second);
+        var complete = await File.ReadAllBytesAsync(ScopeStatePath(Scope));
+        var index = await File.ReadAllBytesAsync(Path.Combine(StoreDirectory, "scope-index.json"));
+        File.Move(legacyPath + ".migrated", legacyPath);
+        File.Delete(ScopeStatePath(Scope));
+
+        var error = await Record.ExceptionAsync(async () =>
+        {
+            if (use == "provision")
+                await new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
+            else if (use == "read")
+                await store.GetHistoryAsync(Scope);
+            else
+                await store.AppendAsync(second);
+        });
+        error.Should().BeOfType<InvalidDataException>();
+        File.Exists(ScopeStatePath(Scope)).Should().BeFalse();
+        (await File.ReadAllBytesAsync(legacyPath)).Should().Equal(LegacyStateBytes(first));
+        (await File.ReadAllBytesAsync(Path.Combine(StoreDirectory, "scope-index.json"))).Should().Equal(index);
+
+        await File.WriteAllBytesAsync(ScopeStatePath(Scope), complete);
+        await store.InitializeAsync();
+        (await store.GetHistoryAsync(Scope)).Should().BeEquivalentTo([first, second], options => options.WithStrictOrdering());
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("conflicting")]
+    [InlineData("altered-output")]
+    [InlineData("unregistered")]
+    public async Task Store_MigratedHistoryMustRemainAnExactPrefixOfValidReplacement(string defect)
+    {
+        var first = AccountCashForecastEngine.Build(Request([], 100m));
+        var second = AccountCashForecastEngine.Build(Request([], 100m) with
+        {
+            RunId = "second", PreviousSnapshotId = first.SnapshotId,
+            CorrectionRationale = "Retained correction", RecordedAtUtc = Recorded.AddDays(1)
+        });
+        var legacyPath = Path.Combine(StoreDirectory, "snapshots.json");
+        Directory.CreateDirectory(StoreDirectory);
+        var legacy = LegacyStateBytes(first, second);
+        await File.WriteAllBytesAsync(legacyPath, legacy);
+        await File.WriteAllTextAsync(Path.Combine(StoreDirectory, "initialized"), "meridian-account-cash-forecast-v1");
+        var store = new FileAccountCashForecastStore(_dataRoot);
+        await store.InitializeAsync();
+        var complete = await File.ReadAllBytesAsync(ScopeStatePath(Scope));
+        var replacementRoot = Path.Combine(_dataRoot, "replacement");
+        var replacement = new FileAccountCashForecastStore(replacementRoot);
+        await replacement.InitializeAsync();
+        var emptyIndex = await File.ReadAllBytesAsync(Path.Combine(replacementRoot, "asset-operations", "account-cash-forecasts", "scope-index.json"));
+        var substitute = defect == "conflicting"
+            ? AccountCashForecastEngine.Build(Request([], 101m))
+            : defect == "altered-output" ? first with { IsCertified = !first.IsCertified } : first;
+        await replacement.AppendAsync(substitute);
+        if (defect is not ("missing" or "unregistered"))
+            await replacement.AppendAsync(AccountCashForecastEngine.Build(second.Inputs with { PreviousSnapshotId = substitute.SnapshotId }));
+        File.Copy(Path.Combine(replacementRoot, "asset-operations", "account-cash-forecasts", "scopes",
+            FileAccountCashForecastStore.ScopeFileName(Scope) + ".json"), ScopeStatePath(Scope), overwrite: true);
+        if (defect == "unregistered")
+            await File.WriteAllBytesAsync(Path.Combine(StoreDirectory, "scope-index.json"), emptyIndex);
+        var invalid = await File.ReadAllBytesAsync(ScopeStatePath(Scope));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => store.InitializeAsync());
+        await Assert.ThrowsAsync<InvalidDataException>(() => store.GetHistoryAsync(Scope));
+        await Assert.ThrowsAsync<InvalidDataException>(() => store.AppendAsync(second));
+        (await File.ReadAllBytesAsync(ScopeStatePath(Scope))).Should().Equal(invalid);
+        (await File.ReadAllBytesAsync(legacyPath + ".migrated")).Should().Equal(legacy);
+        (await store.GetHistoryAsync(Scope with { TenantId = "unrelated-tenant" })).Should().BeEmpty();
+
+        await File.WriteAllBytesAsync(ScopeStatePath(Scope), complete);
+        await store.InitializeAsync();
+        (await store.GetHistoryAsync(Scope)).Should().HaveCount(2);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Store_MigratedPrefixAllowsAppendsAndInterruptedSplitRecovery(bool restoreLegacy)
+    {
+        var first = AccountCashForecastEngine.Build(Request([], 100m));
+        var legacyPath = Path.Combine(StoreDirectory, "snapshots.json");
+        Directory.CreateDirectory(StoreDirectory);
+        await File.WriteAllBytesAsync(legacyPath, LegacyStateBytes(first));
+        await File.WriteAllTextAsync(Path.Combine(StoreDirectory, "initialized"), "meridian-account-cash-forecast-v1");
+        var store = new FileAccountCashForecastStore(_dataRoot);
+        await store.InitializeAsync();
+        var second = AccountCashForecastEngine.Build(Request([], 100m) with
+        {
+            RunId = "second", PreviousSnapshotId = first.SnapshotId,
+            CorrectionRationale = "Post-migration append", RecordedAtUtc = Recorded.AddDays(1)
+        });
+        await store.AppendAsync(second);
+        if (restoreLegacy)
+            File.Move(legacyPath + ".migrated", legacyPath);
+        await store.InitializeAsync();
+        (await store.GetHistoryAsync(Scope)).Should().BeEquivalentTo([first, second], options => options.WithStrictOrdering());
+        (await File.ReadAllBytesAsync(legacyPath + ".migrated")).Should().Equal(LegacyStateBytes(first));
+    }
+
     [Theory]
     [InlineData("read")]
     [InlineData("provision")]

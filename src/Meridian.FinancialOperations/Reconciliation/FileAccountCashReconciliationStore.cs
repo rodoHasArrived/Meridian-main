@@ -137,24 +137,22 @@ public sealed class FileAccountCashReconciliationStore
             throw new InvalidDataException("Both the legacy account cash continuity state and its migrated copy exist; restore one retained state before retrying.");
         var legacy = await ReadLegacyAsync(LegacyStatePath, ct).ConfigureAwait(false);
         var index = File.Exists(IndexPath) ? (await ReadIndexAsync(ct).ConfigureAwait(false)).ToList() : [];
-        Directory.CreateDirectory(ScopeDirectory);
+        // The file-first protocol never registers a missing file. Reconstructing it from an older
+        // legacy snapshot would silently discard any post-migration activity.
+        if (index.Any(scope => !File.Exists(ScopeStatePath(scope))))
+            throw new InvalidDataException("A registered account cash continuity scope file is missing; restore retained state before retrying.");
         var scopes = legacy.Runs.Select(item => item.Input.Scope).Concat(legacy.Cases.Select(item => item.Scope)).Distinct().ToArray();
         foreach (var scope in scopes)
         {
-            var document = new AccountCashReconciliationDocument(1,
-                legacy.Runs.Where(item => item.Input.Scope == scope).ToArray(),
-                legacy.Cases.Where(item => item.Scope == scope).ToArray());
             var path = ScopeStatePath(scope);
             if (File.Exists(path))
-            {
-                var retained = await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false);
-                if (!Sha256Digest.FixedEquals(Hash(retained), Hash(document)))
-                    throw new InvalidDataException("A partially split legacy account cash continuity state conflicts with a retained scope file; restore retained state before retrying.");
-            }
-            else
-            {
-                await WriteScopeFileAsync(scope, document, ct).ConfigureAwait(false);
-            }
+                ValidateMigratedPrefix(ForScope(legacy, scope), await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false));
+        }
+        Directory.CreateDirectory(ScopeDirectory);
+        foreach (var scope in scopes)
+        {
+            if (!File.Exists(ScopeStatePath(scope)))
+                await WriteScopeFileAsync(scope, ForScope(legacy, scope), ct).ConfigureAwait(false);
             if (!index.Contains(scope))
                 index.Add(scope);
         }
@@ -184,15 +182,78 @@ public sealed class FileAccountCashReconciliationStore
                 recovered = true;
             }
         }
-        foreach (var scope in await ReadMigratedScopesAsync(ct).ConfigureAwait(false))
+        var migrated = File.Exists(MigratedLegacyStatePath)
+            ? await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false)
+            : new AccountCashReconciliationDocument(1, [], []);
+        foreach (var scope in migrated.Runs.Select(item => item.Input.Scope).Concat(migrated.Cases.Select(item => item.Scope)).Distinct())
         {
             if (!index.Contains(scope))
                 throw new InvalidDataException("The migrated account cash continuity state retains a scope that is no longer registered; restore retained state before retrying.");
         }
         foreach (var scope in index)
-            _ = await ReadScopeFileAsync(scope, ScopeStatePath(scope), ct).ConfigureAwait(false);
+        {
+            var retained = await ReadScopeFileAsync(scope, ScopeStatePath(scope), ct).ConfigureAwait(false);
+            ValidateMigratedPrefix(ForScope(migrated, scope), retained);
+        }
         if (recovered)
             await WriteIndexAsync([.. index], ct).ConfigureAwait(false);
+    }
+
+    private static AccountCashReconciliationDocument ForScope(AccountCashReconciliationDocument document, AccountCashReconciliationScope scope)
+        => new(1, document.Runs.Where(item => item.Input.Scope == scope).ToArray(),
+            document.Cases.Where(item => item.Scope == scope).ToArray());
+
+    /// <summary>
+    /// Runs are immutable prefixes. Cases retain immutable identity and prefixes of observations and
+    /// assignments, while their current owner, version and resolution advance with appended events.
+    /// </summary>
+    private static void ValidateMigratedPrefix(AccountCashReconciliationDocument migrated, AccountCashReconciliationDocument retained)
+    {
+        if (retained.Runs.Count < migrated.Runs.Count
+            || !Sha256Digest.FixedEquals(Hash(new AccountCashReconciliationDocument(1, migrated.Runs, [])),
+                Hash(new AccountCashReconciliationDocument(1, retained.Runs.Take(migrated.Runs.Count).ToArray(), []))))
+            throw new InvalidDataException("The retained account cash continuity runs conflict with their migrated prefix; restore retained state before retrying.");
+
+        foreach (var prior in migrated.Cases)
+        {
+            var current = retained.Cases.SingleOrDefault(item => item.CaseId == prior.CaseId);
+            if (current is null || current.History is null || current.Assignments is null
+                || current.History.Count < prior.History.Count || current.Assignments.Count < prior.Assignments.Count
+                || !current.History.Take(prior.History.Count).SequenceEqual(prior.History)
+                || !current.Assignments.Take(prior.Assignments.Count).SequenceEqual(prior.Assignments))
+                throw new InvalidDataException("The retained account cash continuity case conflicts with its migrated history; restore retained state before retrying.");
+
+            var expected = prior;
+            foreach (var observation in current.History.Skip(prior.History.Count))
+            {
+                var cleared = observation.State == "SourceCleared";
+                expected = expected with
+                {
+                    LastObservedAtUtc = observation.ObservedAtUtc,
+                    State = observation.State,
+                    ResolvedAtUtc = cleared ? expected.ResolvedAtUtc ?? observation.ObservedAtUtc : null,
+                    ResolutionRunId = cleared ? expected.ResolutionRunId ?? observation.RunId : null
+                };
+            }
+            expected = expected with
+            {
+                Owner = current.Assignments.Count > prior.Assignments.Count ? current.Assignments[^1].Owner : prior.Owner,
+                Version = prior.Version + (current.History.Count - prior.History.Count) + (current.Assignments.Count - prior.Assignments.Count),
+                History = current.History,
+                Assignments = current.Assignments
+            };
+            if (!Sha256Digest.FixedEquals(Hash(new AccountCashReconciliationDocument(1, [], [expected])), Hash(new AccountCashReconciliationDocument(1, [], [current]))))
+                throw new InvalidDataException("The retained account cash continuity case metadata conflicts with its migrated history; restore retained state before retrying.");
+        }
+    }
+
+    private async Task ValidateMigratedScopeAsync(AccountCashReconciliationScope scope, AccountCashReconciliationDocument retained, CancellationToken ct)
+    {
+        if (File.Exists(MigratedLegacyStatePath))
+        {
+            var migrated = await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false);
+            ValidateMigratedPrefix(ForScope(migrated, scope), retained);
+        }
     }
 
     /// <summary>The scopes retained in the migrated legacy file; they must stay registered with their files.</summary>
@@ -243,7 +304,9 @@ public sealed class FileAccountCashReconciliationStore
         {
             if (!File.Exists(path))
                 throw new InvalidDataException("Retained account cash continuity state is unavailable or corrupt; restore it before retrying.");
-            return (true, await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false));
+            var retained = await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false);
+            await ValidateMigratedScopeAsync(scope, retained, ct).ConfigureAwait(false);
+            return (true, retained);
         }
         if (!File.Exists(path))
         {
@@ -251,6 +314,7 @@ public sealed class FileAccountCashReconciliationStore
             return (false, new AccountCashReconciliationDocument(1, [], []));
         }
         var document = await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false);
+        await ValidateMigratedScopeAsync(scope, document, ct).ConfigureAwait(false);
         await RegisterScopeAsync(scope).ConfigureAwait(false);
         return (true, document);
     }
