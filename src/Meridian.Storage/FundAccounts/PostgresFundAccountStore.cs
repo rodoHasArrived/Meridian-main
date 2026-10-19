@@ -642,7 +642,8 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 VALUES
                     (@statement_line_id, @batch_id, @account_id, @statement_date, @value_date,
                      @amount, @currency, @transaction_type, @description, @external_reference, @running_balance, @line_sequence)
-                ON CONFLICT (statement_line_id) DO UPDATE SET statement_line_id = EXCLUDED.statement_line_id
+                ON CONFLICT (statement_line_id) DO UPDATE SET
+                    line_sequence = COALESCE(bank_statement_line.line_sequence, EXCLUDED.line_sequence)
                 WHERE bank_statement_line.batch_id = EXCLUDED.batch_id
                   AND bank_statement_line.account_id = EXCLUDED.account_id
                   AND bank_statement_line.statement_date = EXCLUDED.statement_date

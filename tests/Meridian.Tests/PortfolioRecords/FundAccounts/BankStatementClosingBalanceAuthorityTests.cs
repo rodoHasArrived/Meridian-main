@@ -75,6 +75,63 @@ public sealed class BankStatementClosingBalanceAuthorityTests
     }
 
     [Fact]
+    public async Task LegacyLinesWithoutSequence_AdoptSourceOrderOnExactReimport()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"meridian-legacy-sequence-{Guid.NewGuid():N}.json");
+        try
+        {
+            var service = new InMemoryFundAccountService(path);
+            var accountId = Guid.NewGuid();
+            var batchId = Guid.NewGuid();
+            var date = new DateOnly(2026, 10, 7);
+            await service.CreateAccountAsync(new(accountId, AccountTypeDto.Bank, $"BANK-{accountId:N}", "Bank", "USD", DateTimeOffset.UtcNow, "ops"));
+            var earlier = Line(90m) with { AccountId = accountId, BatchId = batchId, LineSequence = 1 };
+            // The final source row is backdated, so value-date fallback would pick the wrong balance.
+            var final = Line(100m) with { AccountId = accountId, BatchId = batchId, LineSequence = 2, ValueDate = date.AddDays(-1) };
+            var request = new IngestBankStatementRequest(batchId, accountId, date, "Bank", null, [earlier, final], "ops");
+            await service.IngestBankStatementAsync(request);
+
+            // Simulate rows retained before source order was recorded.
+            var snapshot = System.Text.Json.Nodes.JsonNode.Parse(await File.ReadAllTextAsync(path))!;
+            StripLineSequence(snapshot);
+            await File.WriteAllTextAsync(path, snapshot.ToJsonString());
+            var legacy = new InMemoryFundAccountService(path);
+            (await legacy.GetBankStatementLinesAsync(accountId)).Should().OnlyContain(line => line.LineSequence == null);
+
+            await legacy.IngestBankStatementAsync(request);
+
+            var retained = await new InMemoryFundAccountService(path).GetBankStatementLinesAsync(accountId);
+            retained.Single(line => line.LineId == earlier.LineId).LineSequence.Should().Be(1);
+            retained.Single(line => line.LineId == final.LineId).LineSequence.Should().Be(2);
+            BankStatementClosingBalanceAuthority.SelectClosingBalance(retained).Should().Be(100m);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+
+        static void StripLineSequence(System.Text.Json.Nodes.JsonNode? node)
+        {
+            switch (node)
+            {
+                case System.Text.Json.Nodes.JsonObject obj:
+                    foreach (var key in obj.Select(static pair => pair.Key).ToList())
+                    {
+                        if (string.Equals(key, "lineSequence", StringComparison.OrdinalIgnoreCase))
+                            obj.Remove(key);
+                        else
+                            StripLineSequence(obj[key]);
+                    }
+                    break;
+                case System.Text.Json.Nodes.JsonArray array:
+                    foreach (var item in array)
+                        StripLineSequence(item);
+                    break;
+            }
+        }
+    }
+
+    [Fact]
     public void SelectClosingBalance_ConflictingLegacyRowsWithoutSequence_RemainsUnavailable()
     {
         var line = Line(90m);

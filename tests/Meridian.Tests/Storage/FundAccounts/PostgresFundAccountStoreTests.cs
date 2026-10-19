@@ -214,6 +214,25 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
     }
 
     [FundAccountDatabaseFact]
+    public async Task InsertBankStatementBatchAsync_LegacyLineWithoutSequence_AdoptsReimportedSourceOrder()
+    {
+        var store = CreateStore();
+        var account = MakeAccount();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await store.UpsertAccountAsync(account, cts.Token);
+        var date = DateOnly.FromDateTime(DateTime.UtcNow);
+        var bank = new BankStatementBatchDto(Guid.NewGuid(), account.AccountId, date, "Bank", 1, DateTimeOffset.UtcNow, "operator");
+        var line = new BankStatementLineDto(Guid.NewGuid(), bank.BatchId, account.AccountId, date, date, 125m, "USD", "deposit", "test", null, 125m);
+
+        // A row retained before source order was recorded carries no sequence.
+        await store.InsertBankStatementBatchAsync(bank, [line with { LineSequence = null }], cts.Token);
+        await store.InsertBankStatementBatchAsync(bank, [line with { LineSequence = 7 }], cts.Token);
+
+        (await store.GetBankStatementLinesAsync(account.AccountId, null, null, cts.Token))
+            .Should().ContainSingle().Which.LineSequence.Should().Be(7);
+    }
+
+    [FundAccountDatabaseFact]
     public async Task InsertSyncHistoryAsync_SameSyncHistoryId_UpdatesStatusFreshnessAndWarnings()
     {
         var store = CreateStore();

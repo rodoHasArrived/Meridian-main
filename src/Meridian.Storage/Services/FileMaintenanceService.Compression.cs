@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using System.Globalization;
 using System.IO.Compression;
+using System.Text.RegularExpressions;
 using Meridian.Contracts.Integrity;
 using Meridian.Storage.Archival;
 
@@ -64,6 +66,11 @@ public sealed partial class FileMaintenanceService
             ct.ThrowIfCancellationRequested();
             try
             {
+                if (options.OnlyClosedPeriods && PartitionPeriodEnd(file) is { } periodEnd && periodEnd > DateTimeOffset.UtcNow)
+                {
+                    errors.Add($"Compression deferred for {file}; its partition period is still open for appends.");
+                    continue;
+                }
                 if (DateTime.UtcNow - File.GetLastWriteTimeUtc(file) < options.MinimumQuietPeriod)
                 {
                     errors.Add($"Compression deferred for recently written file {file}; it may still be open for appends.");
@@ -166,6 +173,43 @@ public sealed partial class FileMaintenanceService
             }
         }
         return errors.Count == errorCount;
+    }
+
+    // Sinks partition by the event date encoded in the path (JsonlStoragePolicy.FormatDate): an
+    // open period is still the live append target, so compressing it would force every later
+    // batch through a whole-archive copy. Returns the period's exclusive end, or null when the
+    // path carries no recognisable period (the quiet-period rule then applies alone).
+    internal DateTimeOffset? PartitionPeriodEnd(string file)
+    {
+        var relative = Path.GetRelativePath(_options.RootPath, file);
+        if (relative.StartsWith("..", StringComparison.Ordinal) || Path.IsPathRooted(relative))
+            relative = Path.GetFileName(file);
+        relative = relative.Replace('\\', '/');
+
+        static DateTimeOffset? Last(string text, string pattern, Func<Match, DateTimeOffset?> end)
+        {
+            var matches = Regex.Matches(text, pattern);
+            for (var i = matches.Count - 1; i >= 0; i--)
+                if (end(matches[i]) is { } value)
+                    return value;
+            return null;
+        }
+
+        static DateTimeOffset? Day(string y, string m, string d) =>
+            DateTime.TryParseExact($"{y}-{m}-{d}", "yyyy-MM-dd", CultureInfo.InvariantCulture,
+                DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var date)
+                ? new DateTimeOffset(date, TimeSpan.Zero) : null;
+
+        return Last(relative, @"(?<!\d)(\d{4})-(\d{2})-(\d{2})[_/](\d{2})(?!\d)",
+                   m => int.Parse(m.Groups[4].Value, CultureInfo.InvariantCulture) is var hour && hour < 24
+                       ? Day(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value)?.AddHours(hour + 1)
+                       : null)
+            ?? Last(relative, @"(?<!\d)(\d{4})-(\d{2})-(\d{2})(?!\d)",
+                   m => Day(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value)?.AddDays(1))
+            ?? Last(relative, @"(?<!\d)(\d{4})(\d{2})(\d{2})(?!\d)",
+                   m => Day(m.Groups[1].Value, m.Groups[2].Value, m.Groups[3].Value)?.AddDays(1))
+            ?? Last(relative, @"(?<!\d)(\d{4})-(\d{2})(?![-\d])",
+                   m => Day(m.Groups[1].Value, m.Groups[2].Value, "01")?.AddMonths(1));
     }
 
     // Per-instance test seam; never shared across maintenance operations or configured by input.
@@ -346,7 +390,8 @@ public sealed record FileCompressionOptions(
     bool BackupBeforeCompression = true,
     string? BackupPath = null,
     string[]? Paths = null,
-    TimeSpan MinimumQuietPeriod = default);
+    TimeSpan MinimumQuietPeriod = default,
+    bool OnlyClosedPeriods = true);
 
 public sealed record FileCompressionResult(
     int FilesProcessed,

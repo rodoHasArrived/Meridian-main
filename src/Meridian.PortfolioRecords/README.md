@@ -82,7 +82,8 @@ restore the same lifecycle from retained observations.
 
 Bank closing balances use statement date, explicit revision and source row sequence. Corrected
 revisions and original rows remain retained; ingestion time and GUID ordering cannot choose financial
-authority. Ambiguous legacy rows remain unverified. Read cancellation is not uniform across all ports.
+authority. Ambiguous legacy rows remain unverified until an exact reimport supplies their
+source sequence, which both stores then retain. Read cancellation is not uniform across all ports.
 Both stores refuse a bank statement revision with no lines: authority is selected from retained
 lines, so an empty higher revision would otherwise leave the lower revision authoritative.
 

@@ -220,7 +220,7 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
         var options = new StorageOptions { RootPath = TestDataRoot };
         var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
         await using var sink = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions);
-        await sink.AppendAsync(CreateTestEvent("AAPL", 1));
+        await sink.AppendAsync(CreateTestEvent("AAPL", 1, ClosedDay));
         await sink.FlushAsync();
         var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl").Should().ContainSingle().Subject;
         var before = await File.ReadAllBytesAsync(dayFile);
@@ -241,7 +241,7 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
         var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
         await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
         {
-            await first.AppendAsync(CreateTestEvent("AAPL", 1));
+            await first.AppendAsync(CreateTestEvent("AAPL", 1, ClosedDay));
             await first.FlushAsync();
         }
         var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl").Should().ContainSingle().Subject;
@@ -256,7 +256,7 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
                     return;
                 lateWrite = Task.Run(async () =>
                 {
-                    await second.AppendAsync(CreateTestEvent("AAPL", 2));
+                    await second.AppendAsync(CreateTestEvent("AAPL", 2, ClosedDay));
                     await second.FlushAsync();
                 });
                 // The reopen must wait on the fence rather than append to the doomed source.
@@ -281,7 +281,7 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
         var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
         await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
         {
-            await first.AppendAsync(CreateTestEvent("AAPL", 1));
+            await first.AppendAsync(CreateTestEvent("AAPL", 1, ClosedDay));
             await first.FlushAsync();
         }
         var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl").Should().ContainSingle().Subject;
@@ -292,7 +292,7 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
 
         await using (var second = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
         {
-            await second.AppendAsync(CreateTestEvent("AAPL", 2));
+            await second.AppendAsync(CreateTestEvent("AAPL", 2, ClosedDay));
             await second.FlushAsync();
         }
 
@@ -304,6 +304,43 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
         (await maintenance.RunHealthCheckAsync(new HealthCheckOptions(ValidateChecksums: true)))
             .Issues.Should().NotContain(issue => issue.Type == IssueType.ChecksumMismatch,
                 "the archive's checksum is refreshed with its new member");
+    }
+
+    [Fact]
+    public async Task ChecksumRepublishFailureAfterCommittedAppend_ReportsSuccessAndWritesOnce()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await first.AppendAsync(CreateTestEvent("AAPL", 1, ClosedDay));
+            await first.FlushAsync();
+        }
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl").Should().ContainSingle().Subject;
+        await AtomicFileWriter.WriteAsync(dayFile + ".sha256",
+            $"{Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(dayFile))).ToLowerInvariant()}  {Path.GetFileName(dayFile)}");
+        var maintenance = new FileMaintenanceService(options);
+        (await maintenance.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false))).Success.Should().BeTrue();
+        File.Exists(dayFile + ".gz.sha256").Should().BeTrue();
+
+        await using (var second = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions)
+        {
+            ArchiveChecksumFault = () => throw new IOException("injected checksum failure after commit")
+        })
+        {
+            await second.AppendAsync(CreateTestEvent("AAPL", 2, ClosedDay));
+            Func<Task> flush = () => second.FlushAsync();
+            await flush.Should().NotThrowAsync("the gzip member was already committed");
+            await second.FlushAsync();
+        }
+
+        var replayed = new List<MarketEvent>();
+        await foreach (var evt in new Meridian.Storage.Replay.JsonlReplayer(TestDataRoot).ReadEventsAsync())
+            replayed.Add(evt);
+        replayed.Select(evt => evt.Sequence).Should().Equal(new long[] { 1, 2 }, "a committed append is never retried");
+        File.Exists(dayFile + ".gz.sha256").Should().BeFalse("the stale checksum stays retired rather than misreporting corruption");
+        (await maintenance.RunHealthCheckAsync(new HealthCheckOptions(ValidateChecksums: true)))
+            .Issues.Should().NotContain(issue => issue.Type == IssueType.ChecksumMismatch);
     }
 
     private static async Task<byte[]> DecompressAsync(string path)
@@ -332,17 +369,22 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
         (await waiting.WaitAsync(TimeSpan.FromSeconds(5))).Dispose();
     }
 
-    private static MarketEvent CreateTestEvent(string symbol, int sequence)
+    // Scheduled compression only selects closed partition periods, so tests that compress a
+    // sink's output write events on a past day (TestStoragePolicy names files by event date).
+    private static readonly DateTimeOffset ClosedDay = new(2026, 1, 2, 15, 0, 0, TimeSpan.Zero);
+
+    private static MarketEvent CreateTestEvent(string symbol, int sequence, DateTimeOffset? at = null)
     {
+        var timestamp = at ?? DateTimeOffset.UtcNow;
         var trade = new Trade(
-            DateTimeOffset.UtcNow,
+            timestamp,
             symbol,
             100m + sequence,
             100,
             AggressorSide.Buy,
             sequence);
 
-        return MarketEvent.Trade(DateTimeOffset.UtcNow, symbol, trade, "TEST", sequence);
+        return MarketEvent.Trade(timestamp, symbol, trade, "TEST", sequence);
     }
 
     private sealed class TestStoragePolicy : IStoragePolicy

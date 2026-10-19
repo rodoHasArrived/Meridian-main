@@ -585,7 +585,11 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             {
                 throw new InvalidOperationException("A retained bank statement line cannot change; use a new statement revision.");
             }
-            index.TryAdd(line.LineId, line);
+            // A legacy line retained before source order was recorded adopts the reimport's
+            // sequence, so authority selection stops falling back to value dates.
+            index[line.LineId] = retained is null
+                ? line
+                : retained with { LineSequence = retained.LineSequence ?? line.LineSequence };
         }
 
         existing.Clear();

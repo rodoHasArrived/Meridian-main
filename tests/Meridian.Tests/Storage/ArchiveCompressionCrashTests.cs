@@ -278,6 +278,39 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
+    public async Task OpenPartitionPeriod_IsDeferredWhilePriorPeriodCompresses()
+    {
+        var prior = await CreateSourceAsync();
+        var current = Path.Combine(TestDataRoot, $"SPY_trade_{DateTime.UtcNow:yyyyMMdd}.jsonl");
+        await AtomicFileWriter.WriteAsync(current, string.Join("\n", ExpectedLines()) + "\n");
+        var currentBytes = await File.ReadAllBytesAsync(current);
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        var result = await service.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false));
+
+        File.Exists(prior + ".gz").Should().BeTrue("a closed day is compressed");
+        File.Exists(prior).Should().BeFalse();
+        File.Exists(current + ".gz").Should().BeFalse("the live day stays the sink's plain append target");
+        (await File.ReadAllBytesAsync(current)).Should().Equal(currentBytes);
+        result.Errors.Should().ContainSingle(error => error.Contains("partition period is still open"));
+    }
+
+    [Theory]
+    [InlineData("SPY/2026-01-02/trades.jsonl", "2026-01-03T00:00:00Z")]
+    [InlineData("SPY_trade_20260102.jsonl", "2026-01-03T00:00:00Z")]
+    [InlineData("SPY/2026-01-02_14/trades.jsonl", "2026-01-02T15:00:00Z")]
+    [InlineData("SPY/2026-01/trades.jsonl", "2026-02-01T00:00:00Z")]
+    [InlineData("SPY/trades.jsonl", null)]
+    public void PartitionPeriodEnd_ReadsThePeriodEncodedInThePath(string relative, string? expectedEnd)
+    {
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        var end = service.PartitionPeriodEnd(Path.Combine(TestDataRoot, relative));
+
+        end.Should().Be(expectedEnd is null ? null : DateTimeOffset.Parse(expectedEnd, System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    [Fact]
     public async Task OpenWriter_RecentlyWrittenSource_IsDeferredAndPreserved()
     {
         var path = await CreateSourceAsync();

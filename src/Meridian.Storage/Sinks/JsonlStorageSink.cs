@@ -122,6 +122,9 @@ public sealed class JsonlStorageSink : IStorageSink
     // Cached factory delegate — the Lazy<> wrapper ensures WriterState.Create is called at most once
     // per unique path even under concurrent access, while the cached delegate avoids closure allocation.
     private readonly Func<string, Lazy<WriterState>> _writerFactory;
+
+    // Per-instance test seam: throws during checksum republication after a committed archive append.
+    internal Action? ArchiveChecksumFault { get; init; }
     private readonly Func<string, MarketEventBuffer> _bufferFactory;
 
     // Test seam mirroring ParquetStorageSink's injectable atomic-write delegate: when set,
@@ -205,7 +208,9 @@ public sealed class JsonlStorageSink : IStorageSink
         // Keep compressed day files behind the atomic replacement boundary so a crash cannot
         // strand later WAL replay members behind an unreadable member.
         var copyOnWrite = _batchOptions.WriteMode == JsonlWriteMode.CopyOnWrite || compress;
-        _writerFactory = p => new Lazy<WriterState>(() => WriterState.Create(p, compress, copyOnWrite), LazyThreadSafetyMode.ExecutionAndPublication);
+        _writerFactory = p => new Lazy<WriterState>(
+            () => WriterState.Create(p, compress, copyOnWrite, _logger, ArchiveChecksumFault),
+            LazyThreadSafetyMode.ExecutionAndPublication);
         _bufferFactory = _ => new MarketEventBuffer(batchSize);
 
         if (_batchOptions.Enabled)
@@ -519,17 +524,22 @@ public sealed class JsonlStorageSink : IStorageSink
         private long _fsyncCount;
         private DateTimeOffset _lastWriteUtc;
 
-        private WriterState(string path, bool compressed, bool copyOnWrite)
+        private readonly ILogger _logger;
+        private readonly Action? _archiveChecksumFault;
+
+        private WriterState(string path, bool compressed, bool copyOnWrite, ILogger logger, Action? archiveChecksumFault)
         {
             _path = path;
             _compressed = compressed;
             _copyOnWrite = copyOnWrite;
+            _logger = logger;
+            _archiveChecksumFault = archiveChecksumFault;
         }
 
-        public static WriterState Create(string path, bool compress, bool copyOnWrite)
+        public static WriterState Create(string path, bool compress, bool copyOnWrite, ILogger logger, Action? archiveChecksumFault)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            return new WriterState(path, compress, copyOnWrite);
+            return new WriterState(path, compress, copyOnWrite, logger, archiveChecksumFault);
         }
 
         public long FsyncCount => Interlocked.Read(ref _fsyncCount);
@@ -783,6 +793,8 @@ public sealed class JsonlStorageSink : IStorageSink
         // deletes x.jsonl; a later write to the same plain path must extend that archive with a
         // gzip member rather than recreate x.jsonl beside it, which replay would reject as two
         // conflicting representations of one archive. Returns false when no archive applies.
+        // Copy-on-write costs O(archive size) per call; that is acceptable only because scheduled
+        // compression selects closed partition periods, so this path serves rare late writes.
         private async Task<bool> TryAppendToPublishedArchiveAsync(Func<Stream, Task> writePlain, CancellationToken ct)
         {
             var archive = _path + ".gz";
@@ -801,14 +813,31 @@ public sealed class JsonlStorageSink : IStorageSink
                 await using var gzip = new GZipStream(stream, CompressionLevel.Fastest, leaveOpen: true);
                 await writePlain(gzip).ConfigureAwait(false);
             }, ct).ConfigureAwait(false);
-            if (hadSidecar)
-            {
-                await using var archiveStream = File.OpenRead(archive);
-                var checksum = await Sha256Digest.ComputeAsync(archiveStream, ct).ConfigureAwait(false);
-                await AtomicFileWriter.WriteAsync(sidecar, $"{checksum}  {Path.GetFileName(archive)}", ct).ConfigureAwait(false);
-            }
             _lastWriteUtc = DateTimeOffset.UtcNow;
+            // The member is committed: from here nothing may report failure, or the caller would
+            // retry (or the WAL would replay) and append the same events again.
+            if (hadSidecar)
+                await RepublishArchiveChecksumAsync(archive, sidecar).ConfigureAwait(false);
             return true;
+        }
+
+        // Best effort and uncancellable. On failure the sidecar stays retired, so health checks
+        // report a missing checksum rather than corruption of committed bytes.
+        private async Task RepublishArchiveChecksumAsync(string archive, string sidecar)
+        {
+            try
+            {
+                _archiveChecksumFault?.Invoke();
+                await using var archiveStream = File.OpenRead(archive);
+                var checksum = await Sha256Digest.ComputeAsync(archiveStream, CancellationToken.None).ConfigureAwait(false);
+                await AtomicFileWriter.WriteAsync(sidecar, $"{checksum}  {Path.GetFileName(archive)}", CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Appended to compressed archive {ArchivePath} but could not republish its checksum; it is left without a checksum sidecar",
+                    archive);
+            }
         }
 
         private async Task WriteSingleEventAsync(Stream stream, MarketEvent evt, CancellationToken ct)
