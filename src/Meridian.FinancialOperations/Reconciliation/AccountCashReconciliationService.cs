@@ -295,6 +295,10 @@ public sealed class AccountCashReconciliationService(FileAccountCashReconciliati
             case JsonValueKind.Number:
                 writer.WriteRawValue(CanonicalNumber(element.GetRawText(), parameterName), skipInputValidation: true);
                 break;
+            case JsonValueKind.String:
+                // Decoded value, so "ledger" and "\u006cedger" canonicalize identically.
+                writer.WriteStringValue(element.GetString());
+                break;
             default:
                 element.WriteTo(writer);
                 break;

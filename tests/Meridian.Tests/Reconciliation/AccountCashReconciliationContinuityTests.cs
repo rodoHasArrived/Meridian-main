@@ -653,6 +653,7 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
     [InlineData("wide-number")]
     [InlineData("wide-exponent")]
     [InlineData("zero-padded-exponent")]
+    [InlineData("string-escape")]
     public async Task Respelled_number_in_copied_json_observation_is_rejected_as_dependent_evidence(string shape)
         => await Copied_json_observation_is_rejected_as_dependent_evidence(shape);
 
@@ -740,6 +741,11 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
             case "zero-padded-exponent":
                 original = "1000";
                 reformatted = "1e+000000000000000000000000003";
+                request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
+                break;
+            case "string-escape":
+                original = """{"balance":{"amount":1000,"currency":"USD"},"source":"ledger"}""";
+                reformatted = """{"balance":{"amount":1000,"currency":"\u0055SD"},"source":"\u006cedger"}""";
                 request = request with { Left = request.Left with { Rows = [request.Left.Rows[0] with { OriginalPayload = original }] } };
                 break;
             case "root-scalar":
