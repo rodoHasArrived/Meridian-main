@@ -1,6 +1,4 @@
-using System.Text.Json;
 using FluentAssertions;
-using Meridian.Contracts.Integrity;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 
@@ -123,7 +121,7 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         };
         var original = await service.RunAsync(request);
         var before = Assert.Single(await service.GetCasesAsync(_scope));
-        var statePath = ScopeStatePath(_scope);
+        var statePath = Path.Combine(_root, "reconciliation", "account-cash-continuity", "state.json");
         var bytes = await File.ReadAllBytesAsync(statePath);
         var tolerance = request.Tolerance;
         var rule = tolerance.CashRules[0];
@@ -175,7 +173,7 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         await service.RunAsync(request);
         await service.RunAsync(request with { RunId = "version-two", ObservedAtUtc = _start.AddHours(1), Tolerance = Profile(2, 0.005m) });
         var before = await service.GetCasesAsync(_scope);
-        var statePath = ScopeStatePath(_scope);
+        var statePath = Path.Combine(_root, "reconciliation", "account-cash-continuity", "state.json");
         var bytes = await File.ReadAllBytesAsync(statePath);
         var rebound = request with
         {
@@ -386,7 +384,7 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         var service = await ServiceAsync();
         var original = await service.RunAsync(Request("first", 0, 1000m, 990m));
         var before = Assert.Single(await service.GetCasesAsync(_scope));
-        var statePath = ScopeStatePath(_scope);
+        var statePath = Path.Combine(_root, "reconciliation", "account-cash-continuity", "state.json");
         var bytes = await File.ReadAllBytesAsync(statePath);
         var invalid = Request("copied", 1, 1000m, 1000m);
         invalid = scenario switch
@@ -422,7 +420,7 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         var request = Request("first", 0, 1000m, 990m);
         var original = await service.RunAsync(request);
         var before = Assert.Single(await service.GetCasesAsync(_scope));
-        var statePath = ScopeStatePath(_scope);
+        var statePath = Path.Combine(_root, "reconciliation", "account-cash-continuity", "state.json");
         var bytes = await File.ReadAllBytesAsync(statePath);
         var source = request.Right;
         var row = source.Rows[0];
@@ -572,7 +570,7 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
             "before-latest-observation" => _start.AddDays(1).AddMinutes(-1),
             _ => _start.AddDays(1).AddMinutes(30)
         };
-        var statePath = ScopeStatePath(_scope);
+        var statePath = Path.Combine(_root, "reconciliation", "account-cash-continuity", "state.json");
         var bytes = await File.ReadAllBytesAsync(statePath);
         service = await ServiceAsync();
 
@@ -608,7 +606,7 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
     {
         var service = await ServiceAsync();
         await service.RunAsync(Request("first", 0, 1000m, 990m));
-        var statePath = ScopeStatePath(_scope);
+        var statePath = Path.Combine(_root, "reconciliation", "account-cash-continuity", "state.json");
         await File.WriteAllTextAsync(statePath, "{}");
 
         // Corrupt or missing retained state is a restore-from-backup condition (503), not a command conflict.
@@ -637,150 +635,6 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(() => new FileAccountCashReconciliationStore(_root).InitializeAsync());
         File.Exists(markerPath).Should().BeFalse();
     }
-
-    [Fact]
-    public async Task Corrupt_scope_file_blocks_only_its_own_scope()
-    {
-        var service = await ServiceAsync();
-        var otherScope = _scope with { AccountId = "account-b" };
-        await service.RunAsync(Request("first", 0, 1000m, 990m));
-        var otherRun = await service.RunAsync(Request("other-first", 0, 500m, 500m, otherScope));
-        await File.WriteAllTextAsync(ScopeStatePath(_scope), "{}");
-
-        await Assert.ThrowsAsync<InvalidDataException>(() => service.GetCasesAsync(_scope));
-        await Assert.ThrowsAsync<InvalidDataException>(() => service.RunAsync(Request("second", 1, 1000m, 1000m)));
-        (await service.GetCasesAsync(otherScope)).Should().BeEmpty();
-        (await service.ReplayAsync(otherScope, "other-first")).Should().BeEquivalentTo(otherRun, options => options.WithStrictOrdering());
-        var appended = await service.RunAsync(Request("other-second", 1, 500m, 480m, otherScope));
-        Assert.Single(await (await ServiceAsyncWithoutProvisioning()).GetCasesAsync(otherScope)).History.Should().ContainSingle()
-            .Which.RunId.Should().Be(appended.Input.RunId);
-        File.Exists(ScopeLockPath(_scope)).Should().BeTrue();
-        File.Exists(ScopeLockPath(otherScope)).Should().BeTrue();
-        File.Exists(Path.Combine(StoreDirectory, "state.json")).Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task Legacy_single_file_state_is_split_per_scope_losslessly_and_renamed_not_deleted()
-    {
-        var otherScope = _scope with { AccountId = "account-b" };
-        var service = await ServiceAsync();
-        var firstRun = await service.RunAsync(Request("first", 0, 1000m, 990m));
-        var firstCase = Assert.Single(await service.GetCasesAsync(_scope));
-        var assigned = await service.AssignAsync(_scope, firstCase.CaseId, firstCase.Version, "cash-ops", "supervisor", "Investigate", _start.AddMinutes(30));
-        var otherRun = await service.RunAsync(Request("other-first", 1, 500m, 480m, otherScope));
-        var otherCase = Assert.Single(await service.GetCasesAsync(otherScope));
-        var legacyBytes = await LegacyStateBytesAsync(_scope, otherScope);
-        var legacyRoot = Path.Combine(_root, "legacy-root");
-        var legacyDirectory = Path.Combine(legacyRoot, "reconciliation", "account-cash-continuity");
-        Directory.CreateDirectory(legacyDirectory);
-        await File.WriteAllBytesAsync(Path.Combine(legacyDirectory, "state.json"), legacyBytes);
-        await File.WriteAllTextAsync(Path.Combine(legacyDirectory, "initialized"), "meridian-account-cash-reconciliation-v1");
-
-        var store = new FileAccountCashReconciliationStore(legacyRoot);
-        await store.InitializeAsync();
-        var migrated = new AccountCashReconciliationService(store);
-
-        File.Exists(Path.Combine(legacyDirectory, "state.json")).Should().BeFalse();
-        (await File.ReadAllBytesAsync(Path.Combine(legacyDirectory, "state.json.migrated"))).Should().Equal(legacyBytes);
-        Directory.EnumerateFiles(Path.Combine(legacyDirectory, "scopes"), "*.json").Should().HaveCount(2);
-        Assert.Single(await migrated.GetCasesAsync(_scope)).Should().BeEquivalentTo(assigned);
-        Assert.Single(await migrated.GetCasesAsync(otherScope)).Should().BeEquivalentTo(otherCase);
-        (await migrated.ReplayAsync(_scope, "first")).Should().BeEquivalentTo(firstRun, options => options.WithStrictOrdering());
-        (await migrated.ReplayAsync(otherScope, "other-first")).Should().BeEquivalentTo(otherRun, options => options.WithStrictOrdering());
-        await Assert.ThrowsAsync<KeyNotFoundException>(() => migrated.ReplayAsync(otherScope, "first"));
-        // Re-initializing after the split neither re-splits nor disturbs the migrated copy.
-        await new FileAccountCashReconciliationStore(legacyRoot).InitializeAsync();
-        (await File.ReadAllBytesAsync(Path.Combine(legacyDirectory, "state.json.migrated"))).Should().Equal(legacyBytes);
-    }
-
-    [Fact]
-    public async Task Legacy_single_file_state_is_split_on_first_scoped_use_without_reprovisioning()
-    {
-        var service = await ServiceAsync();
-        var firstRun = await service.RunAsync(Request("first", 0, 1000m, 990m));
-        var legacyBytes = await LegacyStateBytesAsync(_scope);
-        var legacyRoot = Path.Combine(_root, "legacy-root");
-        var legacyDirectory = Path.Combine(legacyRoot, "reconciliation", "account-cash-continuity");
-        Directory.CreateDirectory(legacyDirectory);
-        await File.WriteAllBytesAsync(Path.Combine(legacyDirectory, "state.json"), legacyBytes);
-        await File.WriteAllTextAsync(Path.Combine(legacyDirectory, "initialized"), "meridian-account-cash-reconciliation-v1");
-
-        var migrated = new AccountCashReconciliationService(new FileAccountCashReconciliationStore(legacyRoot));
-        (await migrated.ReplayAsync(_scope, "first")).Should().BeEquivalentTo(firstRun, options => options.WithStrictOrdering());
-
-        File.Exists(Path.Combine(legacyDirectory, "state.json.migrated")).Should().BeTrue();
-        File.Exists(Path.Combine(legacyDirectory, "state.json")).Should().BeFalse();
-    }
-
-    [Theory]
-    [InlineData("corrupt")]
-    [InlineData("unprovisioned")]
-    public async Task Corrupt_or_unprovisioned_legacy_state_fails_closed_without_splitting(string scenario)
-    {
-        var legacyDirectory = Path.Combine(_root, "reconciliation", "account-cash-continuity");
-        Directory.CreateDirectory(legacyDirectory);
-        var legacyPath = Path.Combine(legacyDirectory, "state.json");
-        var legacyBytes = scenario == "corrupt" ? "{}"u8.ToArray() : await LegacyBytesFromSeparateRootAsync();
-        await File.WriteAllBytesAsync(legacyPath, legacyBytes);
-        if (scenario == "corrupt")
-            await File.WriteAllTextAsync(Path.Combine(legacyDirectory, "initialized"), "meridian-account-cash-reconciliation-v1");
-        var service = new AccountCashReconciliationService(new FileAccountCashReconciliationStore(_root));
-
-        // A corrupt legacy file is a restore condition (InvalidDataException -> 503); unprovisioned retained
-        // history is a provisioning conflict (InvalidOperationException -> 409). Neither is split or adopted.
-        var corrupt = scenario == "corrupt";
-        var caught = new[]
-        {
-            await Record.ExceptionAsync(() => service.GetCasesAsync(_scope)),
-            await Record.ExceptionAsync(() => service.RunAsync(Request("new-run", 1, 1000m, 1000m))),
-            await Record.ExceptionAsync(() => new FileAccountCashReconciliationStore(_root).InitializeAsync()),
-        };
-        if (corrupt)
-            caught.Should().AllBeOfType<InvalidDataException>();
-        else
-            caught.Should().AllBeOfType<InvalidOperationException>();
-        (await File.ReadAllBytesAsync(legacyPath)).Should().Equal(legacyBytes);
-        File.Exists(legacyPath + ".migrated").Should().BeFalse();
-        File.Exists(Path.Combine(legacyDirectory, "scope-index.json")).Should().BeFalse();
-        Directory.Exists(Path.Combine(legacyDirectory, "scopes")).Should().BeFalse();
-    }
-
-    private async Task<byte[]> LegacyBytesFromSeparateRootAsync()
-    {
-        var separateRoot = Path.Combine(_root, "separate-root");
-        var store = new FileAccountCashReconciliationStore(separateRoot);
-        await store.InitializeAsync();
-        await new AccountCashReconciliationService(store).RunAsync(Request("first", 0, 1000m, 990m));
-        return await LegacyStateBytesAsync(separateRoot, _scope);
-    }
-
-    private Task<byte[]> LegacyStateBytesAsync(params AccountCashReconciliationScope[] scopes) => LegacyStateBytesAsync(_root, scopes);
-
-    /// <summary>Recomposes the pre-partition single-file envelope from retained scope files.</summary>
-    private static async Task<byte[]> LegacyStateBytesAsync(string root, params AccountCashReconciliationScope[] scopes)
-    {
-        var runs = new List<AccountCashReconciliationRun>();
-        var cases = new List<AccountCashReconciliationCase>();
-        foreach (var scope in scopes)
-        {
-            var path = Path.Combine(root, "reconciliation", "account-cash-continuity", "scopes", FileAccountCashReconciliationStore.ScopeFileName(scope) + ".json");
-            var envelope = JsonSerializer.Deserialize(await File.ReadAllBytesAsync(path), AccountCashReconciliationJsonContext.Default.AccountCashReconciliationScopeEnvelope)!;
-            runs.AddRange(envelope.Document.Runs);
-            cases.AddRange(envelope.Document.Cases);
-        }
-        var document = new AccountCashReconciliationDocument(1, runs, cases.OrderBy(item => item.CaseId, StringComparer.Ordinal).ToArray());
-        var hash = Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(document, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationDocument));
-        return JsonSerializer.SerializeToUtf8Bytes(new AccountCashReconciliationEnvelope(hash, document), AccountCashReconciliationJsonContext.Default.AccountCashReconciliationEnvelope);
-    }
-
-    private string StoreDirectory => Path.Combine(_root, "reconciliation", "account-cash-continuity");
-    private string ScopeStatePath(AccountCashReconciliationScope scope)
-        => Path.Combine(StoreDirectory, "scopes", FileAccountCashReconciliationStore.ScopeFileName(scope) + ".json");
-    private string ScopeLockPath(AccountCashReconciliationScope scope)
-        => Path.Combine(StoreDirectory, "scopes", FileAccountCashReconciliationStore.ScopeFileName(scope) + ".lock");
-
-    private Task<AccountCashReconciliationService> ServiceAsyncWithoutProvisioning()
-        => Task.FromResult(new AccountCashReconciliationService(new FileAccountCashReconciliationStore(_root)));
 
     private async Task<AccountCashReconciliationService> ServiceAsync()
     {
