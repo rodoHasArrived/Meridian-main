@@ -1769,3 +1769,23 @@ let ``Legacy upgrade carries the OtherSecurity sub-type from instrument terms`` 
             Category = "Widget"; SubType = Some "Gizmo"; Maturity = None; IssuerName = None; SettlementType = None })
     other.Classification.AssetClass |> should equal AssetClass.Other
     other.Classification.SubType |> should equal (SecuritySubType.OtherSubType "Gizmo")
+
+[<Fact>]
+let ``Legacy upgrade reads IO and PO strips from the tranche label as whole tokens only`` () =
+    let structuredProductFor tranche =
+        let definition =
+            economicDefinitionFor (SecurityKind.StructuredCredit {
+                Tranche = tranche; PoolId = None; CollateralType = "AgencyPool"; OriginalFace = 1_000_000m
+                CurrentFactor = None; CouponOrIndex = "5.5"; FactorSchedule = None; FactorScheduleEntries = []
+                Maturity = None; Kind = None; Seniority = None; AttachmentPoint = None; DetachmentPoint = None
+                WeightedAverageCoupon = None; WeightedAverageMaturityMonths = None; WeightedAverageLoanAgeMonths = None
+                ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None })
+        definition.Terms.StructuredProduct |> Option.defaultWith (fun () -> failwith "Expected StructuredProduct term module")
+
+    // "Senior" contains the letters "io"; it is not an interest-only strip.
+    (structuredProductFor "Senior").IsInterestOnly |> should equal false
+    (structuredProductFor "Senior").IsPrincipalOnly |> should equal false
+    (structuredProductFor "IO-1").IsInterestOnly |> should equal true
+    (structuredProductFor "A/PO").IsPrincipalOnly |> should equal true
+    (structuredProductFor "io").IsInterestOnly |> should equal true
+    (structuredProductFor "Portfolio").IsPrincipalOnly |> should equal false
