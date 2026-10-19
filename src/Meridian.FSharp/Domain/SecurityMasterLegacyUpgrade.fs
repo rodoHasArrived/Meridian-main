@@ -55,6 +55,12 @@ module SecurityMasterLegacyUpgrade =
                 SubType = SecuritySubType.OtherSubType (terms.SubType |> Option.defaultValue terms.Category) }
         | _ -> classification
 
+    /// Whether a tranche label names the strip <paramref name="token"/> as a whole token ("IO",
+    /// "IO-1", "A/PO"), not as a substring: "Senior" contains the letters "io" and is not an IO strip.
+    let private trancheLabelHasToken (token: string) (tranche: string) =
+        tranche.Split([| ' '; '-'; '_'; '/'; '.'; ','; ':'; '('; ')' |], StringSplitOptions.RemoveEmptyEntries)
+        |> Array.exists (fun part -> String.Equals(part, token, StringComparison.OrdinalIgnoreCase))
+
     let private termsFromKind (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity terms ->
@@ -478,16 +484,26 @@ module SecurityMasterLegacyUpgrade =
                         Some {
                             Factor = terms.CurrentFactor
                             FactorDate = None
-                            WeightedAvgCoupon = None
-                            WeightedAvgMaturityMonths = None
-                            WeightedAvgLoanAgeMos = None
+                            WeightedAvgCoupon = terms.WeightedAverageCoupon
+                            WeightedAvgMaturityMonths = terms.WeightedAverageMaturityMonths
+                            WeightedAvgLoanAgeMos = terms.WeightedAverageLoanAgeMonths
                             CollateralType = Some terms.CollateralType
                             PoolIdentifier = terms.PoolId
                             TrancheClass = Some terms.Tranche
                             PrepaymentAssumption = None
                             AverageLifeYears = None
-                            IsInterestOnly = terms.Tranche.Contains("IO", StringComparison.OrdinalIgnoreCase)
-                            IsPrincipalOnly = terms.Tranche.Contains("PO", StringComparison.OrdinalIgnoreCase)
+                            // The typed kind decides the strip flags when it is present; the tranche
+                            // label heuristic stays for records that predate the typed term.
+                            IsInterestOnly =
+                                match terms.Kind with
+                                | Some StructuredCreditKind.InterestOnly -> true
+                                | Some _ -> false
+                                | None -> trancheLabelHasToken "IO" terms.Tranche
+                            IsPrincipalOnly =
+                                match terms.Kind with
+                                | Some StructuredCreditKind.PrincipalOnly -> true
+                                | Some _ -> false
+                                | None -> trancheLabelHasToken "PO" terms.Tranche
                             NotionalBalance = Some terms.OriginalFace
                             Originator = None
                             CreditEnhancementPct = None

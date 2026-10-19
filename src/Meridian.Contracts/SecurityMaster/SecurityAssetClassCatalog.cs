@@ -333,6 +333,10 @@ public static class SecurityAssetClassCatalog
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
             AmortizesTowardPar: true,
+            // Version 2 added the typed tranche terms (structuredCreditKind, seniority, attachment and
+            // detachment points, WAC/WAM/WALA, CLO period dates); every addition is optional, so a
+            // version-1 payload reads unchanged and needs no field transformation (ADR-024).
+            TermsVersion: 2,
             SupportsProfileBackedTerms: true,
             Aliases: ["MortgageBacked", "MortgageBackedSecurity", "MBS", "AssetBacked", "AssetBackedSecurity", "ABS"],
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity),

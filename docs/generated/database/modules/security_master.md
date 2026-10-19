@@ -1356,6 +1356,15 @@ erDiagram
         date maturity_date
         text primary_identifier_value
         bigint version
+        text structured_credit_kind
+        text seniority
+        numeric_18_10_ attachment_point
+        numeric_18_10_ detachment_point
+        numeric_18_10_ weighted_average_coupon
+        integer weighted_average_maturity_months
+        integer weighted_average_loan_age_months
+        date reinvestment_period_end
+        date non_call_period_end
     }
     security_master_swap_projection {
         uuid security_id PK
@@ -1581,7 +1590,7 @@ erDiagram
 | `servicing_revision_projection` | table | 6 | `loan_id`, `revision_number` | 0 | 2 | - |
 | `servicing_revision_source` | table | 4 | `loan_id`, `servicing_revision`, `servicer_report_batch_id` | 1 | 1 | - |
 | `structured_credit_factor_schedule_projection` | table | 4 | `security_id`, `ordinal` | 1 | 2 | Dated pool-factor points of a projected structured-credit tranche, in terms-document order (ordinal). Serves the factor-as-of lookup used by amortization. |
-| `structured_credit_projection` | table | 13 | `security_id` | 0 | 3 | Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data. |
+| `structured_credit_projection` | table | 22 | `security_id` | 0 | 4 | Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data. |
 | `swap_projection` | table | 9 | `security_id` | 0 | 3 | - |
 | `treasury_bill_projection` | table | 9 | `security_id` | 0 | 2 | Relational projection of TreasuryBill asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `warrant_projection` | table | 10 | `security_id` | 0 | 3 | Relational projection of Warrant asset-specific terms, keyed by security_id. underlying_id is the underlying security identity, deliberately not a foreign key. |

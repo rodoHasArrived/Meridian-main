@@ -397,6 +397,15 @@
       "sha256": "7867f1b439cdd565b1d985b919e33298a35e3354d43118c91f7cbab35100ecda"
     },
     {
+      "filename": "045_structured_credit_typed_tranche_terms.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 45,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/045_structured_credit_typed_tranche_terms.sql",
+      "schema": "security_master",
+      "sha256": "1fb66821530cfe45f4f3fb1e758afda590a1f441a821e4356e8dfaff58a1e47a"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1217,7 +1226,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "8f686438157e46b0af56a2012e9085c3cc3985e0c8dc20ac31ae2c80eeaab66a",
+  "fingerprint": "e7c4436aaee921447df0a7e594bc96e483ff192f9b7e81dc32bda1b9a6da96ec",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1455,7 +1464,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 135,
+    "files": 136,
     "migration_sets": 10,
     "waivers": 20,
     "warnings": 0
