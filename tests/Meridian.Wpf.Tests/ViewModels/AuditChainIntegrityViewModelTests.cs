@@ -50,6 +50,20 @@ public sealed class AuditChainIntegrityViewModelTests
     }
 
     [Fact]
+    public async Task DoesNotCallARunPartlyCheckedWhenNoChainVerified()
+    {
+        var viewModel = new AuditChainIntegrityViewModel(new StubClient(Completed(false,
+            new AuditChainIntegrityResultDto(AuditChainIdentifiers.AccountingActions, AuditChainIntegrityStatus.Unavailable, 0, 0, "IOException"),
+            new AuditChainIntegrityResultDto(AuditChainIdentifiers.LedgerEvents, AuditChainIntegrityStatus.NotConfigured, 0, 0))));
+
+        await viewModel.VerifyAsync();
+
+        viewModel.VerdictTone.Should().Be("warning");
+        viewModel.VerdictTitle.Should().Be("No audit chain verified");
+        viewModel.StatusText.Should().StartWith("Verification ran");
+    }
+
+    [Fact]
     public async Task ReportsEveryConfiguredChainVerified()
     {
         var viewModel = new AuditChainIntegrityViewModel(new StubClient(Completed(true,

@@ -169,7 +169,8 @@ public sealed class AuditChainIntegrityViewModel : BindableBase
         }
         else if (unavailable.Count > 0)
         {
-            SetVerdict("warning", "Audit chains partly checked",
+            var anyVerified = report.Chains.Any(chain => chain.Status == AuditChainIntegrityStatus.Verified);
+            SetVerdict("warning", anyVerified ? "Audit chains partly checked" : "No audit chain verified",
                 $"{string.Join(" and ", unavailable)} could not be read, so nothing is claimed about {(unavailable.Count == 1 ? "it" : "them")}.");
         }
         else if (configured == 0 || !report.AllVerified)
@@ -183,7 +184,7 @@ public sealed class AuditChainIntegrityViewModel : BindableBase
                 $"Every configured audit chain verified ({configured} of {report.Chains.Count}).");
         }
 
-        StatusText = $"Checked {report.VerifiedAtUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)}.";
+        StatusText = $"Verification ran {report.VerifiedAtUtc.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)}.";
     }
 
     private static AccountingWorkbenchRow BuildRow(AuditChainIntegrityResultDto result) => new(
