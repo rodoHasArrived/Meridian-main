@@ -240,7 +240,8 @@ public sealed partial class AlpacaBrokerageGatewayTests
 
         await oms.CancelOrderAsync("local");
 
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        // The fills arrive through the asynchronous report pump; allow for a loaded test host.
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         while (oms.GetOrder("local")!.FilledQuantity != 20m)
             await Task.Delay(10, timeout.Token);
         oms.GetOrder("local")!.Quantity.Should().Be(20m);

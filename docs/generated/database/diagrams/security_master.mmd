@@ -71,6 +71,18 @@ erDiagram
         numeric floating_spread_bps
         bigint version
     }
+    security_master_cash_sweep_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text program_name
+        text sweep_vehicle_type
+        text sweep_frequency
+        text target_account_type
+        numeric_18_8_ yield_rate
+        text primary_identifier_value
+        bigint version
+    }
     security_master_cash_transaction {
         uuid cash_transaction_id PK
         uuid loan_id FK
@@ -95,6 +107,50 @@ erDiagram
         numeric_12_6_ coupon_rate
         date callable_date
         text day_count
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_cfd_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text underlying_asset_class
+        text underlying_description
+        numeric_18_8_ leverage
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_commercial_paper_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text issuer_name
+        date maturity_date
+        numeric_18_8_ discount_rate
+        text day_count
+        boolean is_asset_backed
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_commitment_guarantee_covenant_projection {
+        uuid security_id PK,FK
+        integer ordinal PK
+        text covenant_type
+        text threshold
+        text notes
+    }
+    security_master_commitment_guarantee_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text counterparty
+        text beneficiary
+        numeric_28_10_ committed_amount
+        numeric_28_10_ unfunded_amount
+        date effective_date
+        date expiry_date
+        numeric_18_8_ fee_rate
+        text collateral
         text primary_identifier_value
         bigint version
     }
@@ -480,6 +536,19 @@ erDiagram
         text primary_identifier_value
         bigint version
     }
+    security_master_investment_fund_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text fund_type
+        text fund_family
+        text nav_currency
+        text distribution_policy
+        boolean is_stable_nav
+        text pricing_source
+        text primary_identifier_value
+        bigint version
+    }
     security_master_journal_entry {
         uuid journal_entry_id PK
         uuid loan_id FK
@@ -684,6 +753,18 @@ erDiagram
         numeric strike
         text put_call
     }
+    security_master_other_security_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text category
+        text sub_type
+        date maturity_date
+        text issuer_name
+        text settlement_type
+        text primary_identifier_value
+        bigint version
+    }
     security_master_outbox_message {
         uuid outbox_message_id PK
         text topic
@@ -707,6 +788,35 @@ erDiagram
         text allocation_rule
         uuid source_event_id FK
         timestamp_with_time_zone created_at
+    }
+    security_master_private_company_equity_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text issuer
+        text share_class
+        text round
+        numeric_18_8_ ownership_percent
+        numeric_28_10_ cost_basis
+        numeric_28_10_ latest_valuation
+        text transfer_restrictions
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_private_fund_interest_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text gp_sponsor
+        text strategy
+        integer vintage
+        numeric_28_10_ commitment
+        numeric_28_10_ funded_amount
+        numeric_28_10_ unfunded_amount
+        date nav_date
+        text lockup
+        text primary_identifier_value
+        bigint version
     }
     security_master_projected_cash_flow {
         uuid projected_flow_id PK
@@ -753,6 +863,20 @@ erDiagram
         text status
         text details
     }
+    security_master_real_estate_holding_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text property_type
+        text address_or_market
+        numeric_18_8_ ownership_percent
+        numeric_28_10_ appraisal_value
+        date valuation_date
+        text debt_stack
+        text sponsor
+        text primary_identifier_value
+        bigint version
+    }
     security_master_reconciliation_exception {
         uuid exception_id PK
         uuid reconciliation_result_id FK
@@ -789,6 +913,19 @@ erDiagram
         timestamp_with_time_zone requested_at
         timestamp_with_time_zone completed_at
         text status
+    }
+    security_master_repo_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text counterparty
+        date start_date
+        date end_date
+        numeric_18_8_ repo_rate
+        text collateral_type
+        numeric_18_8_ haircut
+        text primary_identifier_value
+        bigint version
     }
     security_master_schema_migrations {
         integer ordinal
@@ -1219,8 +1356,32 @@ erDiagram
         text primary_identifier_value
         bigint version
     }
+    security_master_treasury_bill_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        date maturity_date
+        date auction_date
+        text cusip
+        numeric_18_8_ discount_rate
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_warrant_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        uuid underlying_id
+        text warrant_type
+        numeric_28_10_ strike
+        date expiry_date
+        numeric_18_8_ multiplier
+        text primary_identifier_value
+        bigint version
+    }
     security_master_cash_transaction ||--o{ security_master_payment_allocation : "payment_allocation_cash_transaction_id_fkey"
     security_master_cash_transaction ||--o{ security_master_reconciliation_result : "reconciliation_result_cash_transaction_id_fkey"
+    security_master_commitment_guarantee_projection ||--o{ security_master_commitment_guarantee_covenant_projection : "commitment_guarantee_covenant_projection_security_id_fkey"
     security_master_corporate_action_case_accounting_approvals ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_approval_id_fkey"
     security_master_corporate_action_case_accounting_projections ||--o{ security_master_corporate_action_case_accounting_approvals : "corporate_action_case_accounting_approvals_projection_id_fkey"
     security_master_corporate_action_case_accounting_projections ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_projection_id_fkey"

@@ -22,7 +22,7 @@ public sealed partial class OrderManagementSystem
                 RoutedNotional = ResolveAmendedRoutedNotional(original, modification)
             };
             _orderBrokerIds.TryGetValue(orderId, out var brokerId);
-            var pending = new PendingOrderAmendment(original, proposed, brokerId);
+            var pending = new PendingOrderAmendment(original, proposed, brokerId) { ProposedTrail = modification.NewTrail };
             if (!_pendingModificationOrderIds.TryAdd(orderId, pending))
                 throw new InvalidOperationException("An earlier amendment requires broker reconciliation.");
             var current = _orders[orderId];
@@ -87,6 +87,10 @@ public sealed partial class OrderManagementSystem
                 }
             }
 
+            // Report the outcome the broker actually established. Comparing terms cannot tell a
+            // trail-only amendment's acceptance from its rejection: both snapshots are identical.
+            if (_amendmentOutcomes.TryGetValue(amendment.Proposed, out var outcome))
+                return outcome.Value;
             var resolved = _orders[orderId];
             return resolved.LimitPrice == amendment.Proposed.LimitPrice
                 && resolved.StopPrice == amendment.Proposed.StopPrice
@@ -158,6 +162,9 @@ public sealed partial class OrderManagementSystem
             return pending.Proposed;
         var original = MatchesAmendmentTerms(report, pending.Original);
         var proposed = MatchesAmendmentTerms(report, pending.Proposed);
+        if (original && proposed)
+            // Indistinguishable terms (a trail-only amendment): the report type is the evidence.
+            return report.ReportType is ExecutionReportType.Modified ? pending.Proposed : pending.Original;
         if (original)
             return pending.Original;
         if (proposed)
@@ -228,8 +235,15 @@ public sealed partial class OrderManagementSystem
             return null;
         }
         _orders[orderId] = ApplyAmendmentTerms(current, terms);
+        RecordAmendmentOutcome(pending, ReferenceEquals(terms, pending.Proposed));
         return pending;
     }
+
+    // Keyed by the proposed snapshot's identity, which every `with` copy of the amendment shares.
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<OrderState, System.Runtime.CompilerServices.StrongBox<bool>> _amendmentOutcomes = new();
+
+    private void RecordAmendmentOutcome(PendingOrderAmendment pending, bool accepted) =>
+        _amendmentOutcomes.AddOrUpdate(pending.Proposed, new System.Runtime.CompilerServices.StrongBox<bool>(accepted));
 
     private IReadOnlyList<OrderState> GetAmendmentExposureReservations()
     {
