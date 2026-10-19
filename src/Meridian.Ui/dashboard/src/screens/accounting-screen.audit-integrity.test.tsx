@@ -96,12 +96,23 @@ describe("AuditChainIntegrityPanel", () => {
   });
 
   it("reports a concurrent run as busy rather than failed", async () => {
-    api.getAuditIntegrityReport.mockRejectedValue(new ApiError({ path: "/api/ledger/audit-integrity", status: 429 }));
+    api.getAuditIntegrityReport.mockRejectedValue(new ApiError({ path: "/api/ledger/audit-integrity", status: 409 }));
     render(<AuditChainIntegrityPanel />);
 
     await userEvent.click(screen.getByRole("button", { name: /Verify the accounting and ledger audit chains/ }));
 
     expect(await screen.findByText("Verification already running")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("reports the shared rate limit as such, not as a run in progress", async () => {
+    api.getAuditIntegrityReport.mockRejectedValue(new ApiError({ path: "/api/ledger/audit-integrity", status: 429 }));
+    render(<AuditChainIntegrityPanel />);
+
+    await userEvent.click(screen.getByRole("button", { name: /Verify the accounting and ledger audit chains/ }));
+
+    expect(await screen.findByText("Rate limited")).toBeInTheDocument();
+    expect(screen.queryByText("Verification already running")).not.toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });

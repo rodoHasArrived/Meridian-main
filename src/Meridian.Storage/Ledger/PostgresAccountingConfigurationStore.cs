@@ -515,7 +515,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         {
             throw ChainFailure(linksVerified,
                 AccountingAuditChainStatus.MissingEvent, head,
-                "The accounting audit chain head points past every retained chained event.");
+                "The accounting audit chain head points past every retained chained event.",
+                head.GenesisSequence);
         }
 
         // The chain itself verified above, link by link. What is left is the head retained outside
@@ -523,10 +524,13 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         // but shorter than the head recorded is a truncated tail, not a valid chain.
         if (sequence != head.NextSequence - 1)
         {
+            // Name the link the head disagrees with: the first missing one when the tail was
+            // truncated, or the first one beyond the head when the head was rewound.
             throw ChainFailure(linksVerified,
                 AccountingAuditChainStatus.AnchorMismatch, head,
                 $"The chain head expects sequence {(head.NextSequence - 1).ToString(CultureInfo.InvariantCulture)} "
-                + $"but the final retained event is {sequence?.ToString(CultureInfo.InvariantCulture)}.");
+                + $"but the final retained event is {sequence?.ToString(CultureInfo.InvariantCulture)}.",
+                sequence < head.NextSequence - 1 ? sequence + 1 : head.NextSequence);
         }
 
         if (head.LastHash is null)
@@ -540,7 +544,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         {
             throw ChainFailure(linksVerified,
                 AccountingAuditChainStatus.AnchorMismatch, head,
-                "The accounting audit chain head does not name the final retained event.");
+                "The accounting audit chain head does not name the final retained event.",
+                sequence);
         }
     }
 

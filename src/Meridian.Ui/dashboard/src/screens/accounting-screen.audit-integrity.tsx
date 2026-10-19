@@ -54,10 +54,15 @@ export function AuditChainIntegrityPanel() {
           title: "Requires maintenance authority",
           detail: "Audit chain verification spans every tenant's records, so it is limited to operators with AdminMaintenance."
         });
-      } else if (isApiError(reason) && reason.status === 429) {
+      } else if (isApiError(reason) && reason.status === 409) {
         setNotice({
           title: "Verification already running",
           detail: "Another audit chain verification is in progress. Retry when it completes."
+        });
+      } else if (isApiError(reason) && reason.status === 429) {
+        setNotice({
+          title: "Rate limited",
+          detail: "The workstation's shared request budget is exhausted. Retry in a moment."
         });
       } else {
         setError(reason instanceof Error ? reason.message : "Audit integrity check failed.");

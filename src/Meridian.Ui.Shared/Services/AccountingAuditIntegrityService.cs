@@ -78,6 +78,13 @@ public sealed class AccountingAuditIntegrityService(
                 verification.Detail,
                 verification.FailedSequence);
         }
+        catch (AccountingAuditChainAnchorException ex) when (ex.IsIntegrityFailure)
+        {
+            // A readable head-journal line that fails its own hash or predecessor binding is proven
+            // tampering with the head retained outside the snapshot, not an unreadable store. The
+            // message names only the journal line.
+            return new(chain, AuditChainIntegrityStatus.Broken, 0, 0, "AnchorJournalTampered", ex.Message);
+        }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             return Unavailable(chain, ex);

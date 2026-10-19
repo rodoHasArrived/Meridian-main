@@ -149,7 +149,7 @@ public sealed class LedgerEventAuditPostgresTests
     }
 
     [LedgerDatabaseFact]
-    public async Task HeadDisagreement_ReportsTheLinkTheHeadDisagreesWith()
+    public async Task HeadDisagreement_ReportsTheLinkTheHeadDisagreesWithAndTheFullScan()
     {
         // (corruption, expected failed sequence relative to the final retained link N)
         (string Sql, Func<long, long> Expected)[] cases =
@@ -173,7 +173,7 @@ public sealed class LedgerEventAuditPostgresTests
 
             var failure = (await verify.Should().ThrowAsync<LedgerValidationException>().WithMessage("*disagree*")).Which;
             failure.Data[LedgerEventAuditFailureData.FailedSequence].Should().Be(expected(finalLink));
-            failure.Data[LedgerEventAuditFailureData.ChainedEventsVerified].Should().Be(expected(finalLink) - 1);
+            failure.Data[LedgerEventAuditFailureData.ChainedEventsVerified].Should().Be(finalLink, "every retained link verified before the head was compared");
         }
     }
 
