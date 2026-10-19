@@ -106,7 +106,8 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
   }
 
   async function capture() {
-    if (!preview || !context.canWrite || mutation.current || readingFile) return;
+    // A capture refreshes case versions and remounts the selected case, so an unsaved owner assignment would be lost.
+    if (!preview || !context.canWrite || mutation.current || readingFile || assignmentDirty) return;
     mutation.current = true;
     const signal = active.current!.signal;
     setBusy(true); setError(""); setMessage("");
@@ -188,7 +189,7 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
           } }
         ]}
       />
-      {assignmentDirty ? <p role="status" className="text-sm text-warning">Save or discard the owner assignment before selecting another case.</p> : null}
+      {assignmentDirty ? <p role="status" className="text-sm text-warning">Save or discard the owner assignment before selecting another case or capturing a comparison.</p> : null}
       {selected ? <CashCaseDetail key={`${selected.caseId}:${selected.version}`} item={selected} runs={runs} runErrors={runErrors} busy={busy} canWrite={context.canWrite} conflict={assignmentConflict} onAssign={(owner, reason) => void assign(selected, owner, reason)} onReplay={runId => void replay(runId)} onDirtyChange={setAssignmentDirty} /> : null}
       <TechnicalDetails label="Import next cash comparison" open={preview !== null}>
         <div className="space-y-4">
@@ -205,7 +206,7 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
             </dl>
             <CashSource source={preview.left} side="Left" /><CashSource source={preview.right} side="Right" />
             <Tolerance run={preview} />
-            <div className="flex flex-wrap gap-2"><Button disabled={!context.canWrite || busy || readingFile || loading} onClick={() => void capture()}>{busy ? "Capturing comparison…" : "Capture cash comparison"}</Button><Button variant="outline" disabled={busy} onClick={() => { setPreview(null); setFileName(""); }}>Discard handoff</Button></div>
+            <div className="flex flex-wrap gap-2"><Button disabled={!context.canWrite || busy || readingFile || loading || assignmentDirty} onClick={() => void capture()}>{busy ? "Capturing comparison…" : "Capture cash comparison"}</Button><Button variant="outline" disabled={busy} onClick={() => { setPreview(null); setFileName(""); }}>Discard handoff</Button></div>
           </section> : null}
         </div>
       </TechnicalDetails>

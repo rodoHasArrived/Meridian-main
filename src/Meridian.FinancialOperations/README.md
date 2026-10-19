@@ -36,6 +36,7 @@ See [account oversight evidence](../../docs/domain/account-oversight-evidence.md
 `AccountCashReconciliationContinuityTests` for the first `W10-RECON-001` acceptance slice.
 Tolerance profile IDs and versions also bind immutable complete rules across the scoped history.
 Owner assignment timestamps cannot precede the latest case observation or assignment.
+New runs also require at least one cash rule, no null position/transaction rules, a run ID that round-trips replay routes, a business date no earlier than the retained head, and JSON payloads that stay distinct after reformatting or property reordering; these admission rules apply only when a new run is accepted, so runs retained before them still replay and re-submit idempotently. Decimal overflow during comparison is rejected as invalid input.
 
 `AccountingPostingCandidatePostService` passes the retained approved Security Master and position
 versions into new atomic acquisitions/disposals. Storage revalidates and holds that authority in

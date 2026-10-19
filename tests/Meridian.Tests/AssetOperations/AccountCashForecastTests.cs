@@ -437,6 +437,25 @@ public sealed class AccountCashForecastTests : IDisposable
             .TermsHash.Should().Be("security-master:1");
     }
 
+    [Theory]
+    [InlineData("offset")]
+    [InlineData("default")]
+    public async Task Capture_NonUtcRecordingTimeIsRejectedAsInputBeforeRetention(string variant)
+    {
+        var store = new FileAccountCashForecastStore(_dataRoot);
+        await store.InitializeAsync();
+        var service = new AccountCashForecastService(store);
+        var request = Request([], 100m) with
+        {
+            RecordedAtUtc = variant == "offset" ? Recorded.ToOffset(TimeSpan.FromHours(2)) : default
+        };
+
+        var failure = await Assert.ThrowsAsync<ArgumentException>(() => service.CaptureAsync(request));
+
+        failure.Message.Should().Contain("UTC");
+        (await service.GetHistoryAsync(Scope)).Should().BeEmpty();
+    }
+
     [Fact]
     public async Task Store_MissingInitializedStateCannotResetHistory()
     {

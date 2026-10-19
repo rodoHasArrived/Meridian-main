@@ -2093,13 +2093,13 @@
     {
       "method": "GET",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:189",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:192",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts/{snapshotId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:200",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:203",
       "documented": true
     },
     {
