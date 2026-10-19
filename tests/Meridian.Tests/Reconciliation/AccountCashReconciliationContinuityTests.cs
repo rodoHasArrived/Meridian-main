@@ -609,10 +609,31 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         var statePath = Path.Combine(_root, "reconciliation", "account-cash-continuity", "state.json");
         await File.WriteAllTextAsync(statePath, "{}");
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => service.GetCasesAsync(_scope));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => new FileAccountCashReconciliationStore(_root).InitializeAsync());
+        // Corrupt or missing retained state is a restore-from-backup condition (503), not a command conflict.
+        await Assert.ThrowsAsync<InvalidDataException>(() => service.GetCasesAsync(_scope));
+        await Assert.ThrowsAsync<InvalidDataException>(() => new FileAccountCashReconciliationStore(_root).InitializeAsync());
         File.Delete(statePath);
-        await Assert.ThrowsAsync<InvalidOperationException>(() => service.RunAsync(Request("new-run", 1, 1000m, 1000m)));
+        await Assert.ThrowsAsync<InvalidDataException>(() => service.RunAsync(Request("new-run", 1, 1000m, 1000m)));
+    }
+
+    [Fact]
+    public async Task Interrupted_provisioning_adopts_only_an_empty_unmarked_state()
+    {
+        var directory = Path.Combine(_root, "reconciliation", "account-cash-continuity");
+        var markerPath = Path.Combine(directory, "initialized");
+        var service = await ServiceAsync();
+
+        // Simulate a crash between writing the empty state and its marker: provisioning recovers.
+        File.Delete(markerPath);
+        await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+        File.Exists(markerPath).Should().BeTrue();
+        (await service.GetCasesAsync(_scope)).Should().BeEmpty();
+
+        // Retained history without its marker is never adopted by provisioning.
+        await service.RunAsync(Request("first", 0, 1000m, 990m));
+        File.Delete(markerPath);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => new FileAccountCashReconciliationStore(_root).InitializeAsync());
+        File.Exists(markerPath).Should().BeFalse();
     }
 
     private async Task<AccountCashReconciliationService> ServiceAsync()
