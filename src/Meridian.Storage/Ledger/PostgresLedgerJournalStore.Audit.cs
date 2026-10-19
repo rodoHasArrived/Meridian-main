@@ -9,12 +9,9 @@ using NpgsqlTypes;
 
 namespace Meridian.Storage.Ledger;
 
-/// <summary>The verified suffix is protected; genesis facts were retained before this guarantee.</summary>
-public sealed record LedgerEventAuditVerification(long ChainedEvents, long UnprotectedGenesisFacts, DateTimeOffset GenesisAtUtc);
-
-public sealed partial class PostgresLedgerJournalStore
+public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifier
 {
-    private sealed record LedgerAuditHead(long NextSequence, string? LastHash, DateTimeOffset GenesisAtUtc);
+    private sealed record LedgerAuditHead(long NextSequence, string? LastHash, DateTimeOffset GenesisAtUtc, long GenesisFacts);
 
     private sealed record LedgerAuditFact(
         string Kind, Guid Id, long Version, string Action, string? Actor,
@@ -29,12 +26,8 @@ public sealed partial class PostgresLedgerJournalStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct).ConfigureAwait(false);
         var head = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
-        await using var count = connection.CreateCommand();
-        count.Transaction = transaction;
-        count.CommandText = $"select count(*) from {Qualified("ledger_event_audit_genesis")};";
-        var genesisCount = (long)(await count.ExecuteScalarAsync(ct).ConfigureAwait(false))!;
         await transaction.CommitAsync(ct).ConfigureAwait(false);
-        return new(head.NextSequence - 1, genesisCount, head.GenesisAtUtc);
+        return new(head.NextSequence - 1, head.GenesisFacts, head.GenesisAtUtc);
     }
 
     private async Task<LedgerAuditHead> LockAndVerifyLedgerAuditAsync(
@@ -48,24 +41,47 @@ public sealed partial class PostgresLedgerJournalStore
             select schema_version, next_sequence, last_hash, genesis_at_utc, genesis_hash
             from {Qualified("ledger_event_audit_head")} where chain_id = 1 for update;
             """;
-        LedgerAuditHead head;
+        long nextSequence;
+        string? lastHash;
+        DateTimeOffset genesisAtUtc;
         string genesisHash;
         await using (var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false))
         {
-            if (!await reader.ReadAsync(ct).ConfigureAwait(false) || reader.GetInt32(0) != 1)
-                throw AuditIntegrityFailure("The retained ledger audit head is missing or has an unsupported version.");
-            head = new(reader.GetInt64(1), reader.IsDBNull(2) ? null : reader.GetString(2), reader.GetFieldValue<DateTimeOffset>(3));
+            if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+                throw AuditIntegrityFailure("The retained ledger audit head is missing.", kind: LedgerEventAuditFailureKinds.HeadMissing);
+            if (reader.GetInt32(0) != 1)
+            {
+                // Hashing rules this build does not implement (a rolling upgrade or downgrade) are
+                // unverifiable, not evidence of tampering; readers distinguish the two by this key.
+                var unsupported = AuditIntegrityFailure("The retained ledger audit head has an unsupported version.",
+                    kind: LedgerEventAuditFailureKinds.UnsupportedSchemaVersion);
+                unsupported.Data[LedgerEventAuditFailureData.UnsupportedSchemaVersion] = true;
+                throw unsupported;
+            }
+            nextSequence = reader.GetInt64(1);
+            lastHash = reader.IsDBNull(2) ? null : reader.GetString(2);
+            genesisAtUtc = reader.GetFieldValue<DateTimeOffset>(3);
             genesisHash = reader.GetString(4);
         }
 
         command.CommandText = $"""
             select encode(sha256(convert_to(coalesce(string_agg(
                 subject_kind || ':' || subject_id::text || ':' || subject_version::text || E'\n',
-                '' order by subject_kind collate "C", subject_id), ''), 'UTF8')), 'hex')
+                '' order by subject_kind collate "C", subject_id), ''), 'UTF8')), 'hex'), count(*)
             from {Qualified("ledger_event_audit_genesis")};
             """;
-        if (!string.Equals(genesisHash, await command.ExecuteScalarAsync(ct).ConfigureAwait(false) as string, StringComparison.Ordinal))
-            throw AuditIntegrityFailure("The retained ledger audit genesis inventory has changed.");
+        string? retainedGenesisHash;
+        long genesisFacts;
+        await using (var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false))
+        {
+            await reader.ReadAsync(ct).ConfigureAwait(false);
+            retainedGenesisHash = reader.IsDBNull(0) ? null : reader.GetString(0);
+            genesisFacts = reader.GetInt64(1);
+        }
+        if (!string.Equals(genesisHash, retainedGenesisHash, StringComparison.Ordinal))
+            throw AuditIntegrityFailure("The retained ledger audit genesis inventory has changed.", chainedEventsVerified: 0,
+                kind: LedgerEventAuditFailureKinds.GenesisInventoryChanged);
+        var head = new LedgerAuditHead(nextSequence, lastHash, genesisAtUtc, genesisFacts);
 
         command.CommandText = $"""
             select chain_sequence, subject_kind, subject_id, subject_version, action, actor,
@@ -90,14 +106,36 @@ public sealed partial class PostgresLedgerJournalStore
                 if (retainedSequence != sequence || retainedPrevious != previous
                     || ComputeLedgerAuditPayloadHash(fact) != payloadHash
                     || AccountingAuditChain.ComputeEntryHash(sequence, previous, payloadHash) != entryHash)
-                    throw AuditIntegrityFailure($"Ledger audit event {sequence} has been mutated, removed, or reordered.");
+                    throw AuditIntegrityFailure($"Ledger audit event {sequence} has been mutated, removed, or reordered.", sequence, sequence - 1, genesisFacts,
+                        LedgerEventAuditFailureKinds.EventMutated);
                 sequence++;
                 previous = entryHash;
             }
         }
         if (head.NextSequence != sequence || head.LastHash != previous)
-            throw AuditIntegrityFailure("The ledger audit suffix and retained head disagree.");
-        await VerifyLedgerAuditCoverageAsync(connection, transaction, ct).ConfigureAwait(false);
+        {
+            // Every retained link verified, so `sequence` is one past the final one and all
+            // `sequence - 1` links count as checked. Name the link the head disagrees with: the
+            // first missing one when the suffix is short, the first one beyond a rewound head, or
+            // the final one when only the head hash differs.
+            var failedAt = head.NextSequence > sequence ? sequence
+                : head.NextSequence < sequence ? head.NextSequence
+                : sequence - 1;
+            throw AuditIntegrityFailure("The ledger audit suffix and retained head disagree.",
+                failedAt >= 1 ? failedAt : null, sequence - 1, genesisFacts, LedgerEventAuditFailureKinds.HeadDisagreement);
+        }
+        try
+        {
+            await VerifyLedgerAuditCoverageAsync(connection, transaction, ct).ConfigureAwait(false);
+        }
+        catch (LedgerValidationException ex) when (!ex.Data.Contains(LedgerEventAuditFailureData.ChainedEventsVerified))
+        {
+            // Every link verified; the coverage check failed after the scan completed.
+            ex.Data[LedgerEventAuditFailureData.ChainedEventsVerified] = sequence - 1;
+            ex.Data[LedgerEventAuditFailureData.UnprotectedGenesisFacts] = genesisFacts;
+            throw;
+        }
+
         return head;
     }
 
@@ -239,7 +277,8 @@ public sealed partial class PostgresLedgerJournalStore
             );
             """;
         if ((bool)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false))!)
-            throw AuditIntegrityFailure("Retained ledger facts disagree with their audit coverage or include uncovered post-genesis writes.");
+            throw AuditIntegrityFailure("Retained ledger facts disagree with their audit coverage or include uncovered post-genesis writes.",
+                kind: LedgerEventAuditFailureKinds.CoverageMismatch);
     }
 
     private static string ComputeLedgerAuditPayloadHash(LedgerAuditFact fact)
@@ -258,5 +297,19 @@ public sealed partial class PostgresLedgerJournalStore
         return Convert.ToHexStringLower(hash.GetHashAndReset());
     }
 
-    private static LedgerValidationException AuditIntegrityFailure(string message) => new("Ledger audit integrity failure: " + message);
+    private static LedgerValidationException AuditIntegrityFailure(
+        string message, long? failedSequence = null, long? chainedEventsVerified = null, long? unprotectedGenesisFacts = null,
+        string? kind = null)
+    {
+        var failure = new LedgerValidationException("Ledger audit integrity failure: " + message);
+        if (failedSequence is { } at)
+            failure.Data[LedgerEventAuditFailureData.FailedSequence] = at;
+        if (chainedEventsVerified is { } verified)
+            failure.Data[LedgerEventAuditFailureData.ChainedEventsVerified] = verified;
+        if (unprotectedGenesisFacts is { } genesis)
+            failure.Data[LedgerEventAuditFailureData.UnprotectedGenesisFacts] = genesis;
+        if (kind is not null)
+            failure.Data[LedgerEventAuditFailureData.FailureKind] = kind;
+        return failure;
+    }
 }

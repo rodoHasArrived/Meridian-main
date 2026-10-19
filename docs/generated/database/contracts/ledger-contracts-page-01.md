@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 1 of 5
 
-Objects 1-80 of 329. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 338. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -622,6 +622,11 @@ classDiagram
         +int PreChainEventCount
         +AccountingAuditChainStatus Status
     }
+    class Meridian_Contracts_Ledger_AccountingAuditIntegrityReportDto["AccountingAuditIntegrityReportDto"] {
+        +bool AllVerified
+        +IReadOnlyList~AuditChainIntegrityResultDto~ Chains
+        +DateTimeOffset VerifiedAtUtc
+    }
     class Meridian_Contracts_Ledger_AccountingAuditPendingMarker["AccountingAuditPendingMarker"] {
         +AccountingActionAuditEventDto AuditEvent
         +bool BeforeStateRetained
@@ -634,11 +639,6 @@ classDiagram
         +Guid AuditEventId
     }
     class Meridian_Contracts_Ledger_AccountingAuditRecoveryOutcome["AccountingAuditRecoveryOutcome"] {
-    }
-    class Meridian_Contracts_Ledger_AccountingAuditRecoveryResult["AccountingAuditRecoveryResult"] {
-        +Guid? AuditEventId
-        +string? Detail
-        +AccountingAuditRecoveryOutcome Outcome
     }
     Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationArtifactDto --> Meridian_Contracts_AccountingSystem_AccountingCertificationArtifactIssueDto
     Meridian_Contracts_AccountingSystem_AccountingDimensionalCertificationArtifactDto --> Meridian_Contracts_AccountingSystem_AccountingCertificationArtifactStatusDto
@@ -727,5 +727,4 @@ classDiagram
     Meridian_Contracts_Ledger_AccountingAuditChainVerification --> Meridian_Contracts_Ledger_AccountingAuditChainStatus
     Meridian_Contracts_Ledger_AccountingAuditPendingMarker --> Meridian_Contracts_Ledger_AccountingActionAuditEventDto
     Meridian_Contracts_Ledger_AccountingAuditPendingMarker --> Meridian_Contracts_Ledger_AccountingAuditPendingMarkerPhase
-    Meridian_Contracts_Ledger_AccountingAuditRecoveryResult --> Meridian_Contracts_Ledger_AccountingAuditRecoveryOutcome
 ```

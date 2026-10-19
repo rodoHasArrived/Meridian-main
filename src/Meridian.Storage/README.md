@@ -363,6 +363,10 @@ The same limitation applies to coordinated rewriting of facts, their event hashe
 head; a locally recomputed chain is not independent authentication of its history.
 Coverage permits new SQL columns but compares retained column values, including nested JSON, exactly.
 `LedgerEventAuditPostgresTests` exercises these boundaries; hosted PostgreSQL proof is required.
+`PostgresLedgerJournalStore` (`ILedgerEventAuditVerifier`) and `PostgresAccountingConfigurationStore`
+(`IAccountingAuditChainVerifier`) also expose read-only verification that runs the same full scan
+under the head lock and commits nothing; a break is reported, never repaired. It is subject to the
+same limits as the append-time scan above.
 
 Audit actors come from validated posting commands or period transitions. Missing legacy attribution
 remains null. The period-creation endpoint stamps the authenticated creator; generated candidate
