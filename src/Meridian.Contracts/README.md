@@ -1767,7 +1767,11 @@ enum maps onto it through `ToSecurityPaymentFrequency`) as canonical conventions
 stays verbatim, writes must name a recognized spelling, and the reference DTOs (future
 `SettlementMethod`, deposit and CD `DayCountConvention`, option `Right`, bond `PaymentCadence`
 and `DayCount`, swap-leg `PaymentCadence` and `DayCountConvention`) expose the typed value
-beside the raw text. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
+beside the raw text. Schedule-driving coupon cadences (bond `paymentFrequency`, swap-leg
+`paymentFrequency`) carry the narrower `CouponFrequency` convention: only cadences the cash-flow
+engines step in whole months, or `AtMaturity`, are accepted on write, and
+`SecurityTermConventions.CouponPaymentsPerYear` is the shared reader both schedulers use.
+Conventions declared on array elements (the swap legs) are enforced on write like top-level ones. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
 one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `CommitmentLot` (commitment,
 funded and unfunded amounts, recallable distributions, `Draw`) and `FundUnitLot` (units at an
 acquisition NAV) are the `Commitment` and `Units` cases the registry assigns to private fund

@@ -560,6 +560,58 @@ internal static class SecurityMasterMapping
                     SecurityTermConventions.DescribeUnrecognized(field.Convention, assetClass, field.Key, raw));
             }
         }
+
+        EnsureElementConventionsOnWrite(assetClass, json);
+    }
+
+    /// <summary>
+    /// Typed conventions declared on the elements of an array term (the swap legs' payment
+    /// frequency and day count) are enforced on write exactly like top-level ones; otherwise a leg
+    /// could persist a cadence every typed reader and schedule would then misread. Every present
+    /// alias is checked, since readers differ in which spelling they prefer.
+    /// </summary>
+    private static void EnsureElementConventionsOnWrite(string assetClass, JsonElement json)
+    {
+        foreach (var arrayField in SecurityAssetTermsSchema.Fields(assetClass)
+                     .Where(static field => field.Type == SecurityAssetTermFieldType.Array))
+        {
+            var conventionFields = SecurityAssetTermsSchema.ElementFields(assetClass, arrayField.Key)
+                .Where(static field => field.Convention != SecurityTermConventionKind.None)
+                .ToArray();
+            if (conventionFields.Length == 0)
+            {
+                continue;
+            }
+
+            foreach (var arrayKey in new[] { arrayField.Key }.Concat(arrayField.Aliases))
+            {
+                if (!json.TryGetProperty(arrayKey, out var array) || array.ValueKind != JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                foreach (var element in array.EnumerateArray().Where(static item => item.ValueKind == JsonValueKind.Object))
+                {
+                    foreach (var field in conventionFields)
+                    {
+                        foreach (var key in new[] { field.Key }.Concat(field.Aliases))
+                        {
+                            if (!element.TryGetProperty(key, out var token) || token.ValueKind == JsonValueKind.Null)
+                            {
+                                continue;
+                            }
+
+                            var raw = token.ValueKind == JsonValueKind.String ? token.GetString() : token.GetRawText();
+                            if (token.ValueKind != JsonValueKind.String || !field.SatisfiesConvention(raw))
+                            {
+                                throw new InvalidOperationException(
+                                    SecurityTermConventions.DescribeUnrecognized(field.Convention, assetClass, $"{arrayField.Key}[].{key}", raw));
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /// <summary>
