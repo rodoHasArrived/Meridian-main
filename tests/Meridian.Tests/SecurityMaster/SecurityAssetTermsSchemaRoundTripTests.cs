@@ -572,6 +572,49 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
         }
     }
 
+    [Theory]
+    [InlineData("paymentFrequency", "every other tuesday", "coupon frequency")]
+    [InlineData("paymentFrequency", "Weekly", "coupon frequency")]
+    [InlineData("frequency", "every other tuesday", "coupon frequency")]
+    [InlineData("dayCount", "lunar", "day-count convention")]
+    [InlineData("dayCountConvention", "lunar", "day-count convention")]
+    public void Swap_UnrecognizedLegConvention_IsRejectedOnWrite(string key, string value, string expectedConvention)
+    {
+        // Conventions declared on the swap-leg elements are enforced on write like top-level ones:
+        // otherwise a leg could persist a cadence or basis every typed reader then reads as unknown.
+        var leg = new Dictionary<string, object?>
+        {
+            ["legType"] = "Fixed",
+            ["currency"] = "USD",
+            ["fixedRate"] = 0.04m,
+            ["exchangesPrincipal"] = false,
+            [key] = value
+        };
+
+        FluentActions.Invoking(() => CreateSnapshot("Swap", new
+        {
+            effectiveDate = "2026-01-15",
+            maturityDate = "2031-01-15",
+            legs = new object[] { leg }
+        }))
+            .Should().Throw<InvalidOperationException>()
+            .WithMessage($"*'{value}' is not a recognized {expectedConvention}*legs[].{key}*");
+    }
+
+    [Fact]
+    public void Swap_RecognizedLegConventions_AreAcceptedOnWrite()
+        => FluentActions.Invoking(() => CreateSnapshot("Swap", new
+        {
+            effectiveDate = "2026-01-15",
+            maturityDate = "2031-01-15",
+            legs = new object[]
+            {
+                new { legType = "Fixed", currency = "USD", fixedRate = 0.04m, paymentFrequency = "Semi-Annual", dayCount = "30/360", exchangesPrincipal = false },
+                new { legType = "Floating", currency = "USD", index = "SOFR", frequency = "3M", dayCountConvention = "ACT/360", exchangesPrincipal = false }
+            }
+        }))
+            .Should().NotThrow();
+
     [Fact]
     public void Bond_UndeclaredCouponType_IsRejectedOnWrite()
     {

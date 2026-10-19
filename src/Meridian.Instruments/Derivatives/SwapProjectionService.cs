@@ -117,14 +117,14 @@ public sealed class SwapProjectionService : ISwapReferenceService
                 index,
                 fixedRate,
                 ReadLegString(leg, "paymentFrequency", "frequency"),
-                ReadLegString(leg, "dayCount", "dayCountConvention", "dayCountBasis")));
+                ReadLegString(leg, "dayCountConvention", "dayCount", "dayCountBasis")));
         }
 
         return result;
     }
 
-    // Same alias order as the terms schema's swap-leg element fields, so the DTO shows the text the
-    // cash-flow resolver and the F# mapping read.
+    // Same alias precedence as SecurityMasterMapping.ToSwapLeg and StructuredCashFlowTermsResolver
+    // (dayCountConvention before dayCount), so the DTO shows the text the economics are built from.
     private static string? ReadLegString(JsonElement leg, params string[] keys)
     {
         foreach (var key in keys)
