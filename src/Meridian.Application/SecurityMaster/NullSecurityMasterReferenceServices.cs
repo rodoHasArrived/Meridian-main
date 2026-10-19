@@ -107,3 +107,10 @@ public sealed class NullSecurityMasterDataQualityService : ISecurityMasterDataQu
     public Task<SecurityMasterQualityReportDto?> GetLatestReportAsync(CancellationToken ct = default)
         => Task.FromResult<SecurityMasterQualityReportDto?>(null);
 }
+
+public sealed class NullSecurityMasterStructuredCreditReclassificationService : ISecurityMasterStructuredCreditReclassificationService
+{
+    public Task<StructuredCreditReclassificationReportDto> BuildReportAsync(CancellationToken ct = default)
+        => throw new InvalidOperationException(
+            "Security Master is not configured. Set MERIDIAN_SECURITY_MASTER_CONNECTION_STRING to enable the structured-credit reclassification report.");
+}

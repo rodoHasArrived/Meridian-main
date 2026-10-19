@@ -261,6 +261,28 @@ module SecurityMaster =
                 (error
                     "structured_credit_factor_after_maturity"
                     "StructuredCredit factor schedule observations must fall on or before the retained maturity — a factor decline after the legal final date would emit principal paydowns for a tranche that has already reached term.")
+            @ require (terms.AttachmentPoint |> Option.forall (fun point -> point >= 0m && point <= 1m))
+                (error "structured_credit_attachment_point_invalid" "StructuredCredit AttachmentPoint must be between zero and one when present — it is a fraction of the deal balance, not a percentage.")
+            @ require (terms.DetachmentPoint |> Option.forall (fun point -> point >= 0m && point <= 1m))
+                (error "structured_credit_detachment_point_invalid" "StructuredCredit DetachmentPoint must be between zero and one when present — it is a fraction of the deal balance, not a percentage.")
+            @ require
+                (match terms.AttachmentPoint, terms.DetachmentPoint with
+                 | Some attachment, Some detachment -> attachment <= detachment
+                 | _ -> true)
+                (error "structured_credit_attachment_above_detachment" "StructuredCredit AttachmentPoint must not exceed DetachmentPoint — the tranche absorbs losses from attachment up to detachment.")
+            @ require (terms.WeightedAverageCoupon |> Option.forall (fun coupon -> coupon >= 0m))
+                (error "structured_credit_weighted_average_coupon_invalid" "StructuredCredit WeightedAverageCoupon must be zero or greater when present.")
+            @ require (terms.WeightedAverageMaturityMonths |> Option.forall (fun months -> months >= 0))
+                (error "structured_credit_weighted_average_maturity_invalid" "StructuredCredit WeightedAverageMaturityMonths must be zero or greater when present.")
+            @ require (terms.WeightedAverageLoanAgeMonths |> Option.forall (fun months -> months >= 0))
+                (error "structured_credit_weighted_average_loan_age_invalid" "StructuredCredit WeightedAverageLoanAgeMonths must be zero or greater when present.")
+            @ require
+                (match terms.Maturity with
+                 | Some maturity ->
+                    (terms.ReinvestmentPeriodEnd |> Option.forall (fun date -> date <= maturity))
+                    && (terms.NonCallPeriodEnd |> Option.forall (fun date -> date <= maturity))
+                 | None -> true)
+                (error "structured_credit_period_after_maturity" "StructuredCredit reinvestment and non-call period ends must fall on or before the retained maturity.")
         | SecurityKind.PrivateFundInterest terms ->
             []
             @ requireNotBlank "private_fund_gp_required" "GpSponsor" terms.GpSponsor

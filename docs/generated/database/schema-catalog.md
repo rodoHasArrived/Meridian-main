@@ -11,11 +11,11 @@ This catalog is extracted from a disposable PostgreSQL database after every regi
 | [`fund_accounts`](modules/fund_accounts.md) | `fund-accounts` | 12 | 0 | 0 | 0 | `c11c69e353f5` |
 | [`fund_structure`](modules/fund_structure.md) | `fund-structure` | 15 | 1 | 2 | 0 | `c33e160866af` |
 | [`identity_access`](modules/identity_access.md) | `identity-access` | 2 | 0 | 0 | 0 | `bef1840f1d59` |
-| [`ledger`](modules/ledger.md) | `ledger` | 34 | 16 | 22 | 0 | `df3248cd8b97` |
+| [`ledger`](modules/ledger.md) | `ledger` | 34 | 16 | 22 | 0 | `aa594f4046e7` |
 | [`money_market`](modules/money_market.md) | `money-market` | 4 | 0 | 0 | 0 | `4c336b5362a4` |
 | [`public`](modules/public.md) | - | 0 | 0 | 0 | 0 | `d50d95b1e1f1` |
 | [`reporting`](modules/reporting.md) | `reporting` | 20 | 18 | 21 | 0 | `33a0abf15576` |
-| [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 109 | 7 | 15 | 0 | `e6d40d8eca06` |
+| [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 109 | 7 | 15 | 0 | `44072383ce45` |
 
 ## Default topology
 

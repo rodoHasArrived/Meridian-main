@@ -847,6 +847,138 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
+    public void Scenario_StructuredCreditTypedTrancheTerms_OutOfRangeValuesBlockReadiness_AndNullsPass()
+    {
+        // Terms version 2: the typed tranche terms are optional, but when supplied they are
+        // governed — the kind against its taxonomy, the attachment/detachment points as fractions.
+        var invalid = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                structuredCreditKind = "SyntheticWidget",
+                attachmentPoint = 12m,
+                detachmentPoint = 0.2m,
+                weightedAverageCoupon = -1m
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(invalid, [invalid], Now);
+
+        report.HasBlockingIssues.Should().BeTrue();
+        report.Issues.Select(static issue => issue.Code).Should().Contain(new[]
+        {
+            "SM_STRUCTURED_CREDIT_KIND_INVALID",
+            "SM_STRUCTURED_CREDIT_ATTACHMENT_INVALID",
+            "SM_STRUCTURED_CREDIT_WAC_INVALID"
+        });
+        report.Issues.Should().NotContain(static issue => issue.Code == "SM_STRUCTURED_CREDIT_DETACHMENT_INVALID");
+
+        // The canonical serializer writes null for an unset optional term; that is "not supplied".
+        var canonicalNulls = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                currentFactor = (decimal?)null,
+                structuredCreditKind = (string?)null,
+                attachmentPoint = (decimal?)null,
+                detachmentPoint = (decimal?)null,
+                weightedAverageCoupon = (decimal?)null,
+                weightedAverageMaturityMonths = (int?)null,
+                weightedAverageLoanAgeMonths = (int?)null,
+                reinvestmentPeriodEnd = (string?)null,
+                nonCallPeriodEnd = (string?)null
+            }));
+
+        service.ValidateRecord(canonicalNulls, [canonicalNulls], Now).Issues
+            .Should().NotContain(static issue => issue.Code.StartsWith("SM_STRUCTURED_CREDIT_", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Scenario_StructuredCreditMalformedPeriodEndAndSeniority_BlockReadiness()
+    {
+        // The ordering rule reads an unparseable date as "not supplied", so a malformed period end
+        // on an imported or restored row needs its own rule to be reported.
+        var malformed = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                maturity = "2036-01-15",
+                seniority = 42,
+                reinvestmentPeriodEnd = "someday",
+                nonCallPeriodEnd = "2028-01-15"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(malformed, [malformed], Now);
+
+        report.HasBlockingIssues.Should().BeTrue();
+        report.Issues.Should().ContainSingle(static item => item.Code == "SM_STRUCTURED_CREDIT_REINVESTMENT_END_NOT_A_DATE");
+        report.Issues.Should().ContainSingle(static item => item.Code == "SM_STRUCTURED_CREDIT_SENIORITY_INVALID");
+        report.Issues.Should().NotContain(static item =>
+            item.Code == "SM_STRUCTURED_CREDIT_NON_CALL_END_NOT_A_DATE" || item.Code == "SM_STRUCTURED_CREDIT_REINVESTMENT_END_INVALID");
+    }
+
+    [Fact]
+    public void Scenario_StructuredCreditAttachmentAboveDetachment_BlocksReadiness()
+    {
+        // Both points are valid fractions on their own; the loss interval they describe is not. The
+        // domain command validator already refuses this on write, and readiness validation of
+        // imported or restored rows must agree rather than certify an impossible tranche.
+        var inverted = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                attachmentPoint = 0.8m,
+                detachmentPoint = 0.2m
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(inverted, [inverted], Now);
+
+        report.HasBlockingIssues.Should().BeTrue();
+        var issue = report.Issues.Should().ContainSingle(static item =>
+            item.Code == "SM_STRUCTURED_CREDIT_ATTACHMENT_ABOVE_DETACHMENT").Subject;
+        issue.Severity.Should().Be(SecurityValidationSeverityDto.Error);
+        issue.AffectedFields.Should().BeEquivalentTo(new[] { "assetSpecificTerms.attachmentPoint", "assetSpecificTerms.detachmentPoint" });
+        report.Issues.Should().NotContain(static item =>
+            item.Code == "SM_STRUCTURED_CREDIT_ATTACHMENT_INVALID" || item.Code == "SM_STRUCTURED_CREDIT_DETACHMENT_INVALID");
+    }
+
+    [Fact]
     public void Scenario_ProfileBackedPrivateFundInterest_AsFirstClass_UsesProfileFieldsForValidation()
     {
         var record = CreateProjection(
