@@ -43,6 +43,10 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   from economic terms alone keeps a callable bond callable.
 - `assetSpecificTermsJson` stamps flat terms with the shared terms-format envelope for every kind
   except `CustomAsset`, whose profile owns its own document shape.
+- `StructuredProductTerms.FactorScheduleReference` carries the StructuredCredit record's free-text
+  `factorSchedule` pointer as evidence lineage. The legacy upgrade no longer writes that pointer into
+  the coupon payment frequency or the floating-rate reset frequency; both read `None` for
+  structured credit until a typed term supplies them.
 - `SecurityMasterLegacyUpgrade.proposeStructuredCreditReclassification` builds the report-first
   StructuredCredit proposal for a legacy securitised row (ADR-022): a Bond in a securitised
   subclass, a CustomAsset whose `category` names a securitised product, or an envelope-less legacy

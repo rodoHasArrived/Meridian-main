@@ -976,6 +976,14 @@ let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Ma
     structuredProduct.IsInterestOnly |> should equal true
     structuredProduct.IsPrincipalOnly |> should equal false
 
+    // The free-text factorSchedule is a trustee-report pointer: it rides along as evidence lineage
+    // on the StructuredProduct module and no longer poses as a payment or reset frequency.
+    structuredProduct.FactorScheduleReference |> should equal (Some "monthly-trustee")
+    (definition.Terms.Coupon |> Option.defaultWith (fun () -> failwith "Expected Coupon term module")).PaymentFrequency
+    |> should equal None
+    (definition.Terms.FloatingRate |> Option.defaultWith (fun () -> failwith "Expected FloatingRate term module")).ResetFrequency
+    |> should equal None
+
 [<Fact>]
 let ``SecurityMasterLegacyUpgrade maps preferred classification into term modules`` () =
     let preferredTerms, _, classification = createConvertiblePreferredClassification ()
@@ -1084,6 +1092,7 @@ let ``IO strip StructuredProductTerms sets IsInterestOnly true`` () =
         NotionalBalance = Some 10_000_000m
         Originator = None
         CreditEnhancementPct = None
+        FactorScheduleReference = None
     }
 
     sp.IsInterestOnly |> should equal true
