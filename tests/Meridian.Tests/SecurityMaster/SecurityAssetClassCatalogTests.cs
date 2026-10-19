@@ -87,7 +87,7 @@ public sealed class SecurityAssetClassCatalogTests
             .Where(descriptor => descriptor.RequiresMaturity)
             .Select(descriptor => descriptor.AssetClass)
             .Should().BeEquivalentTo(
-                "Bond", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Swap");
+                "Bond", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Swap", "CreditDefaultSwap");
     }
 
     [Fact]

@@ -476,8 +476,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Ric
-            ],
-            RequiresMaturity: true),
+            ]),
         new(
             AssetClass: "NonDeliverableForward",
             AssetPackIds: ["derivatives-fx"],
@@ -490,8 +489,7 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Ric
-            ],
-            RequiresMaturity: true),
+            ]),
         new(
             AssetClass: "CreditDefaultSwap",
             AssetPackIds: ["derivatives-fx"],
