@@ -754,6 +754,31 @@
                                     </DataGrid>
                                 </StackPanel>
                             </Border>
+                            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16" DataContext="{Binding AuditChainIntegrity}">
+                                <StackPanel>
+                                    <TextBlock Text="Audit Chain Integrity" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="Re-verifies the hash-chained accounting and ledger audit logs end to end. Nothing is appended or repaired."
+                                               Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                    <Button Content="Verify audit chains"
+                                            Command="{Binding VerifyCommand}"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            HorizontalAlignment="Left"
+                                            Margin="0,12,0,0"
+                                            AutomationProperties.Name="Verify the accounting and ledger audit chains"
+                                            AutomationProperties.AutomationId="AccountingAuditIntegrityVerifyButton" />
+                                    <TextBlock Text="{Binding VerdictTitle}" Style="{StaticResource CardHeaderStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingAuditIntegrityVerdictTitle" />
+                                    <TextBlock Text="{Binding VerdictDetail}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding StatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" AutomationProperties.AutomationId="AccountingAuditIntegrityStatusText" />
+                                    <DataGrid ItemsSource="{Binding Rows}" IsReadOnly="True" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingAuditIntegrityGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Chain" Binding="{Binding Name}" Width="150" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="190" />
+                                            <DataGridTextColumn Header="Coverage" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Failure" Binding="{Binding Evidence}" Width="*" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
                             <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
                                 <StackPanel>
                                     <TextBlock Text="Rules Studio" Style="{StaticResource CardHeaderStyle}" />

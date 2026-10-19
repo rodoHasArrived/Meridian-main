@@ -2,11 +2,19 @@
 
 # `security-master-contracts` data objects - page 5 of 5
 
-Objects 321-328 of 328. References crossing pages remain available in the dependency manifest.
+Objects 321-330 of 330. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry["StructuredFactorScheduleEntry"] {
+        +DateOnly AsOfDate
+        +decimal Factor
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry["StructuredPrincipalScheduleEntry"] {
+        +decimal Amount
+        +DateOnly PaymentDate
+    }
     class Meridian_Contracts_SecurityMaster_StructuredStepCouponEntry["StructuredStepCouponEntry"] {
         +DateOnly EffectiveDate
         +decimal Rate
