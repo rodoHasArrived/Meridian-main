@@ -918,7 +918,7 @@ public sealed partial class PostgresLedgerJournalStore
               and account_name = @account_name
               and account_type = @account_type
               and symbol is not distinct from @symbol
-              and financial_account_id is not distinct from @financial_account_id
+              and lower(financial_account_id) is not distinct from lower(@financial_account_id)
               and effective_date <= @effective_date
             order by effective_date desc, updated_at desc, policy_id desc, policy_record_id desc
             limit 1
@@ -978,7 +978,7 @@ public sealed partial class PostgresLedgerJournalStore
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
               and account_type = @account_type
-              and financial_account_id is not distinct from @financial_account_id
+              and lower(financial_account_id) is not distinct from lower(@financial_account_id)
               and ((security_id = @security_id and book_position_id = @book_position_id)
                    or security_id is null or security_id = '00000000-0000-0000-0000-000000000000'::uuid
                    or book_position_id is null or book_position_id = '00000000-0000-0000-0000-000000000000'::uuid)
