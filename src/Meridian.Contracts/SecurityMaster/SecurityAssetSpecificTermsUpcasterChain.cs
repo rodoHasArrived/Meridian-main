@@ -447,7 +447,9 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("originalFace", ("structuredProduct", "notionalBalance")),
             Map("currentFactor", ("structuredProduct", "factor")),
             Map("couponOrIndex", ("coupon", "couponType")),
-            Map("factorSchedule", ("coupon", "paymentFrequency")),
+            // The trustee-report pointer is evidence lineage on the structured-product module, not a
+            // coupon frequency.
+            Map("factorSchedule", ("structuredProduct", "factorScheduleReference")),
             Map("maturity", MaturityDate),
             Map("weightedAverageCoupon", ("structuredProduct", "weightedAvgCoupon")),
             Map("weightedAverageMaturityMonths", ("structuredProduct", "weightedAvgMaturityMonths")),

@@ -280,7 +280,8 @@ internal static class SecurityEconomicDefinitionAdapter
                 isPrincipalOnly = definition.Terms.StructuredProduct.Value.IsPrincipalOnly,
                 notionalBalance = definition.Terms.StructuredProduct.Value.NotionalBalance,
                 originator = definition.Terms.StructuredProduct.Value.Originator is null ? null : definition.Terms.StructuredProduct.Value.Originator.Value,
-                creditEnhancementPct = definition.Terms.StructuredProduct.Value.CreditEnhancementPct
+                creditEnhancementPct = definition.Terms.StructuredProduct.Value.CreditEnhancementPct,
+                factorScheduleReference = definition.Terms.StructuredProduct.Value.FactorScheduleReference is null ? null : definition.Terms.StructuredProduct.Value.FactorScheduleReference.Value
             }
         });
 
