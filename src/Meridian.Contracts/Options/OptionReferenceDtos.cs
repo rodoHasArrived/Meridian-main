@@ -1,3 +1,5 @@
+using Meridian.Contracts.SecurityMaster;
+
 namespace Meridian.Contracts.Options;
 
 public sealed record OptionContractReferenceDto(
@@ -12,7 +14,15 @@ public sealed record OptionContractReferenceDto(
     decimal Multiplier,
     bool IsAdjusted,
     DateOnly? LastTradingDate,
-    long Version);
+    long Version)
+{
+    /// <summary>
+    /// <see cref="PutCall"/> as a typed right, or null when the stored text names neither. The raw
+    /// text stays on <see cref="PutCall"/>.
+    /// </summary>
+    public SecurityOptionRight? Right
+        => SecurityTermConventions.TryParseOptionRight(PutCall, out var right) ? right : null;
+}
 
 public sealed record OptionSeriesDto(
     string OptionChainId,
