@@ -398,6 +398,27 @@ erDiagram
         integer payload_schema_version
         character_64_ economic_fingerprint
     }
+    security_master_credit_default_swap_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text reference_entity
+        text reference_obligation
+        text protection_side
+        numeric_28_10_ notional
+        numeric_18_8_ fixed_coupon_bps
+        date effective_date
+        date maturity_date
+        text payment_frequency
+        text day_count
+        text seniority
+        text restructuring_clause
+        numeric_18_8_ upfront_points
+        numeric_18_10_ recovery_rate_assumption
+        text index_name
+        text primary_identifier_value
+        bigint version
+    }
     security_master_crypto_projection {
         uuid security_id PK
         text display_name
@@ -524,6 +545,20 @@ erDiagram
         date delivery_month_dt
         text delivery_location_code
         text lifecycle_stat
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_fx_forward_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text base_currency
+        text quote_currency
+        numeric_28_10_ notional
+        numeric_28_10_ forward_rate
+        date trade_date
+        date value_date
+        text settlement_type
         text primary_identifier_value
         bigint version
     }
@@ -681,6 +716,21 @@ erDiagram
         boolean sweep_eligible
         integer weighted_average_maturity_days
         boolean liquidity_fee_eligible
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_ndf_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text base_currency
+        text quote_currency
+        text settlement_currency
+        numeric_28_10_ notional
+        numeric_28_10_ forward_rate
+        date fixing_date
+        date value_date
+        text fixing_source
         text primary_identifier_value
         bigint version
     }

@@ -50359,6 +50359,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.credit_default_swap_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.crypto_projection"
     },
     {
@@ -50420,6 +50426,12 @@
       "label": "",
       "source": "schema:security_master",
       "target": "database:security_master.future_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.fx_forward_projection"
     },
     {
       "kind": "contains",
@@ -50498,6 +50510,12 @@
       "label": "",
       "source": "schema:security_master",
       "target": "database:security_master.money_market_fund_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.ndf_projection"
     },
     {
       "kind": "contains",
@@ -50867,7 +50885,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "22628b47b0e6160043f0bfed7435fec1ce8d024ace36ba114ce16592ea784bf3",
+  "fingerprint": "4aa956c254c888f4429a4478c2f757d54c7ad34dab16e9b2d6550afca595e520",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -73240,6 +73258,12 @@
       "label": "security_master.corporate_actions_security_id_fkey on security_master.corporate_actions"
     },
     {
+      "id": "database:security_master.credit_default_swap_projection",
+      "kind": "database-table",
+      "label": "security_master.credit_default_swap_projection",
+      "schema": "security_master"
+    },
+    {
       "id": "database:security_master.crypto_projection",
       "kind": "database-table",
       "label": "security_master.crypto_projection",
@@ -73354,6 +73378,12 @@
       "id": "database:security_master.future_projection_security_id_fkey on security_master.future_projection",
       "kind": "database-object",
       "label": "security_master.future_projection_security_id_fkey on security_master.future_projection"
+    },
+    {
+      "id": "database:security_master.fx_forward_projection",
+      "kind": "database-table",
+      "label": "security_master.fx_forward_projection",
+      "schema": "security_master"
     },
     {
       "id": "database:security_master.fxspot_projection",
@@ -73481,6 +73511,12 @@
       "id": "database:security_master.money_market_fund_projection",
       "kind": "database-table",
       "label": "security_master.money_market_fund_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.ndf_projection",
+      "kind": "database-table",
+      "label": "security_master.ndf_projection",
       "schema": "security_master"
     },
     {
@@ -74365,9 +74401,9 @@
   "summary": {
     "contract_references": 3321,
     "contract_set_memberships": 3998,
-    "edges": 8452,
+    "edges": 8455,
     "foreign_keys": 138,
     "logical_references": 6,
-    "nodes": 4069
+    "nodes": 4072
   }
 }
