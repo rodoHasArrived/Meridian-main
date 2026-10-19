@@ -236,7 +236,7 @@ public sealed partial class PostgresLedgerJournalStore
               and account_name = @account_name
               and account_type = @account_type
               and symbol is not distinct from @symbol
-              and financial_account_id is not distinct from @financial_account_id
+              and lower(financial_account_id) is not distinct from lower(@financial_account_id)
               and open_quantity > 0
             order by acquired_date, lot_id;
             """;
@@ -380,7 +380,7 @@ public sealed partial class PostgresLedgerJournalStore
               and account_name = @account_name
               and account_type = @account_type
               and coalesce(symbol, '') = coalesce(@symbol, '')
-              and coalesce(financial_account_id, '') = coalesce(@financial_account_id, '')
+              and lower(coalesce(financial_account_id, '')) = lower(coalesce(@financial_account_id, ''))
               and lot_id = any(@lot_ids)
             order by tax_lot_record_id;
             """;

@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 5
 
-Objects 81-160 of 323. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 328. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -392,6 +392,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterService["ISecurityMasterService"] {
     }
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterStructuredCreditReclassificationService["ISecurityMasterStructuredCreditReclassificationService"] {
+    }
     class Meridian_Contracts_SecurityMaster_IStructuredCashFlowProvider["IStructuredCashFlowProvider"] {
     }
     class Meridian_Contracts_SecurityMaster_IUnitizedLot["IUnitizedLot"] {
@@ -477,20 +479,6 @@ classDiagram
         +string Reason
         +CorporateActionCaseScopeDto? ScopeAssertion
         +string TenantId
-    }
-    class Meridian_Contracts_SecurityMaster_PreferredEquityTermsDto["PreferredEquityTermsDto"] {
-        +decimal? AdditionalDividendThreshold
-        +DateOnly? CallableDate
-        +string? Classification
-        +decimal? DividendRate
-        +string? DividendType
-        +bool? IsCumulative
-        +string? LiquidationPreferenceKind
-        +decimal? LiquidationPreferenceMultiple
-        +bool? ParticipatesInCommonDividends
-        +DateOnly? RedemptionDate
-        +decimal? RedemptionPrice
-        +Guid SecurityId
     }
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto

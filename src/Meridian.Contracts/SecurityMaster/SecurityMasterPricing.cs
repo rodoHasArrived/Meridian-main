@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>
-/// Categories of price per the Clearwater pricing taxonomy.
+/// Categories of price in the Security Master pricing taxonomy.
 /// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter<SecurityPriceKind>))]
 public enum SecurityPriceKind

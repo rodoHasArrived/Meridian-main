@@ -423,14 +423,28 @@ public static class SecurityAssetTermsSchema
                 Req("originalFace", SecurityAssetTermFieldType.Decimal),
                 Opt("currentFactor", SecurityAssetTermFieldType.Decimal),
                 Req("couponOrIndex", SecurityAssetTermFieldType.String),
-                Opt("factorSchedule", SecurityAssetTermFieldType.String),
+                // Free-text trustee or servicer report pointer: the evidence lineage the paydown
+                // projector requires for typed factor rows. Operational, not economic: no cash-flow
+                // or accounting math reads it. The dated schedule is factorScheduleEntries.
+                Opt("factorSchedule", SecurityAssetTermFieldType.String).AsOperational(),
                 // Typed, dated factor points ({asOfDate, factor}) consumed by the structured
-                // cash-flow resolver's FactorAsOf lookup; factorSchedule stays the free-text
-                // legacy reference.
+                // cash-flow resolver's FactorAsOf lookup.
                 Opt("factorScheduleEntries", SecurityAssetTermFieldType.Array),
                 // Legal final maturity of the tranche: the anchor date for calculated cash-flow
                 // projection — without it the factor schedule has no production effect.
-                Opt("maturity", SecurityAssetTermFieldType.Date)
+                Opt("maturity", SecurityAssetTermFieldType.Date),
+                // Typed tranche terms (asset-class terms version 2): the securitisation family,
+                // capital-structure position, loss attachment/detachment, collateral-pool statistics
+                // and the CLO period dates. All optional, so a version-1 payload reads unchanged.
+                Opt("structuredCreditKind", SecurityAssetTermFieldType.String),
+                Opt("seniority", SecurityAssetTermFieldType.String),
+                Opt("attachmentPoint", SecurityAssetTermFieldType.Decimal),
+                Opt("detachmentPoint", SecurityAssetTermFieldType.Decimal),
+                Opt("weightedAverageCoupon", SecurityAssetTermFieldType.Decimal),
+                Opt("weightedAverageMaturityMonths", SecurityAssetTermFieldType.Integer),
+                Opt("weightedAverageLoanAgeMonths", SecurityAssetTermFieldType.Integer),
+                Opt("reinvestmentPeriodEnd", SecurityAssetTermFieldType.Date),
+                Opt("nonCallPeriodEnd", SecurityAssetTermFieldType.Date)
             ],
             ["PrivateFundInterest"] =
             [

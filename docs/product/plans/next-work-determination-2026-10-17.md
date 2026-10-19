@@ -318,6 +318,41 @@ branch paid it twice. The two P1 rows — the `merge=` driver and the one-line `
 addition — are not hygiene items; they are the difference between these merges being automatic and
 being hand-held.
 
+## Re-verification (2026-10-19): every ranked item is still open, 37 commits later
+
+This document was marked ready for review on 2026-10-19, two days after its baseline, with `main`
+advanced **37 commits** to `bb4a0899`. Every claim that drives the ranking was re-checked against
+that tree rather than assumed to hold. **Nothing in the ranking changed.**
+
+| Item | Re-verified on `bb4a0899` | State |
+| --- | --- | --- |
+| RC tagged? | `git ls-remote --tags origin` → still only `eval-v0.1.0-eval.1` | **no `v*`** |
+| `ADR-019` | `**Status:** Proposed (awaiting core-team sign-off...)` | unchanged |
+| `ADR-020` | `**Status:** Proposed` | unchanged |
+| `generated_repair.py:544-546` | still `return 1` on the `manual` disposition | unchanged |
+| `GENERATED_FILES` | zero occurrences of `example-validation` | unchanged |
+| `ignore_cleanup_errors` | zero files in `tests/scripts` use it | unchanged |
+| `.gitattributes` | zero `merge=` entries | unchanged |
+| Registry | 48 rows: 17 `done`, 15 `planned`, 9 `in_progress`, 6 `accepted`, 1 `ready_for_acceptance` | unchanged |
+
+Two consequences worth stating plainly:
+
+**The P0's central prediction is now settled, not pending.** This document said the window "closes
+on the next merge" and that `0342643d` was the target. `0342643d` was never tagged and is now 37+
+commits behind the head. The commit that had seven of seven lanes green on 2026-10-17 cannot be the
+release candidate any more, and no commit has taken its place. **That is the failure mode the last
+section of this document names**, and it has now happened once with a recorded target.
+
+**Every P1 is still a one-line change that nobody owns.** Two days of active development — 37
+commits, including the three pull requests that paid the generated-file tax in their own subjects —
+moved none of them. That is the argument for treating them as delivery-system work with an owner
+rather than as findings in a document.
+
+`W9-CORPACT-011` is now **27 days** at `ready_for_acceptance`, and this is still the only
+determination in the directory carrying a current ranking: the 2026-10-15 determination
+([#3170](https://github.com/rodoHasArrived/Meridian-main/pull/3170)) remains unmerged, and no newer
+determination has landed on `main`, whose index still points at 2026-10-16 as latest.
+
 ## Process finding: the acting is now outpacing the ranking
 
 This is the eighth determination, and for the first time the previous one's findings were **acted

@@ -368,6 +368,10 @@ type StructuredProductTerms = {
     Originator: string option
     /// Credit-enhancement level as a percentage of deal balance (subordination, OC, etc.).
     CreditEnhancementPct: decimal option
+    /// Trustee or servicer report reference the factor schedule was taken from (the record's
+    /// free-text <c>factorSchedule</c> term). Evidence lineage, not an economic input: no cash-flow,
+    /// accrual or accounting math reads it.
+    FactorScheduleReference: string option
 }
 
 /// Calendar reference for instruments subject to multiple holiday calendars.

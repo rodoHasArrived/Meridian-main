@@ -1,9 +1,58 @@
 namespace Meridian.FSharp.Domain
 
 open System
+open System.Globalization
+open System.Text.Json
 
 [<RequireQualifiedAccess>]
 module SecurityMasterLegacyUpgrade =
+    /// Where a legacy securitised row the structured-credit reclassification report considers came
+    /// from (ADR-022). Each case corresponds to the asset-class validator rule that flags the row.
+    [<RequireQualifiedAccess>]
+    type StructuredCreditReclassificationSource =
+        /// A Bond whose <c>subclass</c> names a securitised product
+        /// (<c>SM_BOND_SECURITIZED_SUBCLASS_NONCANONICAL</c>).
+        | SecuritizedBondSubclass of BondSubclass
+        /// A CustomAsset, or an envelope-less legacy custom row read back as OtherSecurity, whose
+        /// <c>category</c> names a securitised product (<c>SM_CUSTOM_ASSET_SECURITIZED_NONCANONICAL</c>).
+        | SecuritizedCustomCategory of string
+
+    /// One reason the report cannot re-model a row as StructuredCredit without operator input. The
+    /// report never guesses: a missing required term or an ambiguous label is a blocker, not a default.
+    type StructuredCreditReclassificationBlocker = {
+        Code: string
+        Message: string
+    }
+
+    /// The StructuredCredit terms the report could carry over from the source record. Required
+    /// StructuredCredit fields are optional here so a blocked proposal still shows what was derived
+    /// and what the operator has to supply.
+    type StructuredCreditReclassificationDraft = {
+        Tranche: string option
+        PoolId: string option
+        CollateralType: string option
+        OriginalFace: decimal option
+        CurrentFactor: decimal option
+        CouponOrIndex: string option
+        Maturity: DateOnly option
+        Kind: StructuredCreditKind option
+        Seniority: string option
+    }
+
+    /// Report-first reclassification proposal for one legacy securitised row (ADR-022).
+    /// <see cref="ProposedTerms"/> is present only when <see cref="Blockers"/> is empty; applying a
+    /// proposal is a separate governed amendment, never a side effect of building the report.
+    type StructuredCreditReclassificationProposal = {
+        SecurityId: SecurityId
+        Source: StructuredCreditReclassificationSource
+        /// The wire label of <see cref="Source"/> (the bond subclass or the custom category), for callers
+        /// that do not pattern-match the union.
+        SourceLabel: string
+        Draft: StructuredCreditReclassificationDraft
+        Blockers: StructuredCreditReclassificationBlocker list
+        ProposedTerms: StructuredCreditTerms option
+    }
+
     let private preferredTermsFromClassification classification =
         match classification with
         | Some (EquityClassification.Preferred preferred)
@@ -54,6 +103,12 @@ module SecurityMasterLegacyUpgrade =
             { classification with
                 SubType = SecuritySubType.OtherSubType (terms.SubType |> Option.defaultValue terms.Category) }
         | _ -> classification
+
+    /// Whether a tranche label names the strip <paramref name="token"/> as a whole token ("IO",
+    /// "IO-1", "A/PO"), not as a substring: "Senior" contains the letters "io" and is not an IO strip.
+    let private trancheLabelHasToken (token: string) (tranche: string) =
+        tranche.Split([| ' '; '-'; '_'; '/'; '.'; ','; ':'; '('; ')' |], StringSplitOptions.RemoveEmptyEntries)
+        |> Array.exists (fun part -> String.Equals(part, token, StringComparison.OrdinalIgnoreCase))
 
     let private termsFromKind (kind: SecurityKind) =
         match kind with
@@ -141,6 +196,7 @@ module SecurityMasterLegacyUpgrade =
                         NotionalBalance = None
                         Originator = None
                         CreditEnhancementPct = None
+                        FactorScheduleReference = None
                     }
                 else None
             {
@@ -463,14 +519,14 @@ module SecurityMasterLegacyUpgrade =
                         Some {
                             CouponType = Some (CouponKind.OtherCoupon terms.CouponOrIndex)
                             CouponRate = None
-                            PaymentFrequency = terms.FactorSchedule |> Option.map PaymentFrequency.OtherFrequency
+                            PaymentFrequency = None
                             DayCount = None
                         }
                     FloatingRate =
                         Some {
                             ReferenceIndex = Some terms.CouponOrIndex
                             SpreadBps = None
-                            ResetFrequency = terms.FactorSchedule
+                            ResetFrequency = None
                             FloorRate = None
                             CapRate = None
                         }
@@ -478,19 +534,32 @@ module SecurityMasterLegacyUpgrade =
                         Some {
                             Factor = terms.CurrentFactor
                             FactorDate = None
-                            WeightedAvgCoupon = None
-                            WeightedAvgMaturityMonths = None
-                            WeightedAvgLoanAgeMos = None
+                            WeightedAvgCoupon = terms.WeightedAverageCoupon
+                            WeightedAvgMaturityMonths = terms.WeightedAverageMaturityMonths
+                            WeightedAvgLoanAgeMos = terms.WeightedAverageLoanAgeMonths
                             CollateralType = Some terms.CollateralType
                             PoolIdentifier = terms.PoolId
                             TrancheClass = Some terms.Tranche
                             PrepaymentAssumption = None
                             AverageLifeYears = None
-                            IsInterestOnly = terms.Tranche.Contains("IO", StringComparison.OrdinalIgnoreCase)
-                            IsPrincipalOnly = terms.Tranche.Contains("PO", StringComparison.OrdinalIgnoreCase)
+                            // The typed kind decides the strip flags when it is present; the tranche
+                            // label heuristic stays for records that predate the typed term.
+                            IsInterestOnly =
+                                match terms.Kind with
+                                | Some StructuredCreditKind.InterestOnly -> true
+                                | Some _ -> false
+                                | None -> trancheLabelHasToken "IO" terms.Tranche
+                            IsPrincipalOnly =
+                                match terms.Kind with
+                                | Some StructuredCreditKind.PrincipalOnly -> true
+                                | Some _ -> false
+                                | None -> trancheLabelHasToken "PO" terms.Tranche
                             NotionalBalance = Some terms.OriginalFace
                             Originator = None
                             CreditEnhancementPct = None
+                            // The trustee-report pointer travels as evidence lineage, not as a
+                            // payment or reset frequency.
+                            FactorScheduleReference = terms.FactorSchedule
                         }
             }
         | SecurityKind.PrivateFundInterest terms ->
@@ -645,3 +714,241 @@ module SecurityMasterLegacyUpgrade =
             Provenance = record.Provenance
         }
         |> SecurityEconomicDefinition.normalize
+
+    // ── Structured-credit reclassification (ADR-022, report first) ──────────────────────────────
+
+    /// Category labels the CustomAsset validator treats as naming a securitised product.
+    let private securitizedCustomCategories =
+        [ "MBS"; "ABS"; "CLO"; "CMBS"; "StructuredCredit" ]
+
+    let private blocker code message : StructuredCreditReclassificationBlocker =
+        { Code = code; Message = message }
+
+    let private kindAmbiguous label alternatives =
+        blocker
+            "structured_credit_kind_ambiguous"
+            (sprintf "Label '%s' does not identify one securitisation family; choose %s." label alternatives)
+
+    let private kindUnrepresentable label =
+        blocker
+            "structured_credit_kind_unrepresentable"
+            (sprintf "Label '%s' has no StructuredCreditKind case; extend the structured-credit-kind taxonomy or supply the kind." label)
+
+    /// Maps a securitised Bond subclass onto the structured-credit family it names. Residential
+    /// MBS without an agency/non-agency qualifier and inverse IO strips are reported as blockers:
+    /// the former is ambiguous, the latter has no typed kind.
+    let private kindFromBondSubclass subclass =
+        match subclass with
+        | BondSubclass.AssetBacked -> Ok StructuredCreditKind.AssetBacked
+        | BondSubclass.AgencyMbs -> Ok StructuredCreditKind.AgencyMbs
+        | BondSubclass.CommercialMbs -> Ok StructuredCreditKind.CommercialMbs
+        | BondSubclass.Cmo -> Ok StructuredCreditKind.Cmo
+        | BondSubclass.Clo -> Ok StructuredCreditKind.Clo
+        | BondSubclass.Cdo -> Ok StructuredCreditKind.Cdo
+        | BondSubclass.PrincipalOnly -> Ok StructuredCreditKind.PrincipalOnly
+        | BondSubclass.InterestOnly -> Ok StructuredCreditKind.InterestOnly
+        | BondSubclass.MortgageBacked -> Error (kindAmbiguous "MortgageBacked" "AgencyMbs or NonAgencyMbs")
+        | BondSubclass.InverseInterestOnly -> Error (kindUnrepresentable "InverseInterestOnly")
+        | other -> Error (kindUnrepresentable (BondSubclass.label other))
+
+    let private isSecuritizedBondSubclass subclass =
+        match subclass with
+        | BondSubclass.AssetBacked | BondSubclass.MortgageBacked | BondSubclass.AgencyMbs
+        | BondSubclass.CommercialMbs | BondSubclass.Cmo | BondSubclass.Clo | BondSubclass.Cdo
+        | BondSubclass.PrincipalOnly | BondSubclass.InterestOnly | BondSubclass.InverseInterestOnly -> true
+        | _ -> false
+
+    let private kindFromCustomCategory (category: string) =
+        match category.Trim().ToUpperInvariant() with
+        | "ABS" -> Ok StructuredCreditKind.AssetBacked
+        | "CLO" -> Ok StructuredCreditKind.Clo
+        | "CMBS" -> Ok StructuredCreditKind.CommercialMbs
+        | "MBS" -> Error (kindAmbiguous category "AgencyMbs or NonAgencyMbs")
+        | _ -> Error (kindAmbiguous category "one structured-credit-kind taxonomy value")
+
+    /// A typed kind supplied by the source record wins over the kind implied by its label, but only
+    /// when the label is one of the named taxonomy cases; a free-text label stays a blocker.
+    let private typedKind (label: string option) =
+        label
+        |> Option.map StructuredCreditKind.parse
+        |> Option.filter (fun kind ->
+            match kind with
+            | StructuredCreditKind.OtherStructuredCreditKind _ -> false
+            | _ -> true)
+
+    let private couponOrIndexFromBond (coupon: BondCouponStructure) =
+        match coupon with
+        | BondCouponStructure.Fixed(rate, _) -> Ok (rate.ToString(CultureInfo.InvariantCulture))
+        | BondCouponStructure.Floating(index, _, _, _, _) -> Ok index
+        | BondCouponStructure.ZeroCoupon -> Ok "ZeroCoupon"
+        | BondCouponStructure.Step _ ->
+            Error (blocker "structured_credit_coupon_structure_unrepresentable" "A step coupon schedule has no single couponOrIndex; supply the tranche coupon or index.")
+        | BondCouponStructure.InflationLinked _ ->
+            Error (blocker "structured_credit_coupon_structure_unrepresentable" "An inflation-linked coupon has no single couponOrIndex; supply the tranche coupon or index.")
+
+    let private requiredBlocker fieldName value =
+        match value with
+        | Some _ -> None
+        | None ->
+            Some (
+                blocker
+                    (sprintf "structured_credit_%s_required" fieldName)
+                    (sprintf "StructuredCredit requires '%s' and the source record does not carry it." fieldName))
+
+    let private emptyDraft : StructuredCreditReclassificationDraft =
+        { Tranche = None; PoolId = None; CollateralType = None; OriginalFace = None; CurrentFactor = None
+          CouponOrIndex = None; Maturity = None; Kind = None; Seniority = None }
+
+    let private finish securityId source (draft: StructuredCreditReclassificationDraft) blockers =
+        let blockers =
+            blockers
+            @ ([ requiredBlocker "tranche" draft.Tranche
+                 requiredBlocker "collateral_type" draft.CollateralType
+                 requiredBlocker "original_face" draft.OriginalFace
+                 requiredBlocker "coupon_or_index" draft.CouponOrIndex ]
+               |> List.choose id)
+        let proposedTerms =
+            match blockers, draft.Tranche, draft.CollateralType, draft.OriginalFace, draft.CouponOrIndex with
+            | [], Some tranche, Some collateralType, Some originalFace, Some couponOrIndex ->
+                Some ({
+                    Tranche = tranche
+                    PoolId = draft.PoolId
+                    CollateralType = collateralType
+                    OriginalFace = originalFace
+                    CurrentFactor = draft.CurrentFactor
+                    CouponOrIndex = couponOrIndex
+                    FactorSchedule = None
+                    FactorScheduleEntries = []
+                    Maturity = draft.Maturity
+                    Kind = draft.Kind
+                    Seniority = draft.Seniority
+                    AttachmentPoint = None
+                    DetachmentPoint = None
+                    WeightedAverageCoupon = None
+                    WeightedAverageMaturityMonths = None
+                    WeightedAverageLoanAgeMonths = None
+                    ReinvestmentPeriodEnd = None
+                    NonCallPeriodEnd = None
+                } : StructuredCreditTerms)
+            | _ -> None
+        let sourceLabel =
+            match source with
+            | StructuredCreditReclassificationSource.SecuritizedBondSubclass subclass -> BondSubclass.label subclass
+            | StructuredCreditReclassificationSource.SecuritizedCustomCategory category -> category
+        { SecurityId = securityId; Source = source; SourceLabel = sourceLabel; Draft = draft; Blockers = blockers; ProposedTerms = proposedTerms }
+
+    let private splitResult result =
+        match result with
+        | Ok value -> Some value, []
+        | Error reason -> None, [ reason ]
+
+    let private proposeFromBond securityId (terms: BondTerms) =
+        let kind, kindBlockers = splitResult (kindFromBondSubclass terms.Subclass)
+        let couponOrIndex, couponBlockers = splitResult (couponOrIndexFromBond terms.Coupon)
+        let draft =
+            { emptyDraft with
+                OriginalFace = terms.Par
+                CouponOrIndex = couponOrIndex
+                Maturity = Some terms.Maturity
+                Kind = kind
+                Seniority = terms.Seniority }
+        finish securityId (StructuredCreditReclassificationSource.SecuritizedBondSubclass terms.Subclass) draft (kindBlockers @ couponBlockers)
+
+    let private tryProperty (name: string) (element: JsonElement) =
+        if element.ValueKind = JsonValueKind.Object then
+            match element.TryGetProperty(name) with
+            | true, value when value.ValueKind <> JsonValueKind.Null -> Some value
+            | _ -> None
+        else
+            None
+
+    let private readString name element =
+        tryProperty name element
+        |> Option.bind (fun value ->
+            if value.ValueKind = JsonValueKind.String then
+                match value.GetString() with
+                | null -> None
+                | text when String.IsNullOrWhiteSpace text -> None
+                | text -> Some text
+            else
+                None)
+
+    let private readDecimal name element =
+        tryProperty name element
+        |> Option.bind (fun value ->
+            if value.ValueKind = JsonValueKind.Number then
+                match value.TryGetDecimal() with
+                | true, number -> Some number
+                | _ -> None
+            else
+                None)
+
+    let private readDate name element =
+        readString name element
+        |> Option.bind (fun text ->
+            match DateOnly.TryParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None) with
+            | true, date -> Some date
+            | _ -> None)
+
+    /// Reads a term from the profile-governed <c>profileFields</c> object first and the envelope
+    /// root second, which is where envelope-less legacy custom rows kept their fields.
+    let private readCustomField read name (document: JsonElement) =
+        match tryProperty "profileFields" document |> Option.bind (read name) with
+        | Some value -> Some value
+        | None -> read name document
+
+    let private isSecuritizedCategory (category: string) =
+        securitizedCustomCategories
+        |> List.exists (fun known -> String.Equals(known, category.Trim(), StringComparison.OrdinalIgnoreCase))
+
+    let private proposeFromCustomDocument securityId (category: string) (document: JsonElement) =
+        let kind, kindBlockers =
+            match typedKind (readCustomField readString "structuredCreditKind" document) with
+            | Some kind -> Some kind, []
+            | None -> splitResult (kindFromCustomCategory category)
+        let draft =
+            { emptyDraft with
+                Tranche = readCustomField readString "tranche" document
+                PoolId = readCustomField readString "poolId" document
+                CollateralType = readCustomField readString "collateralType" document
+                OriginalFace = readCustomField readDecimal "originalFace" document
+                CurrentFactor = readCustomField readDecimal "currentFactor" document
+                CouponOrIndex = readCustomField readString "couponOrIndex" document
+                Maturity = readCustomField readDate "maturity" document
+                Kind = kind
+                Seniority = readCustomField readString "seniority" document }
+        finish securityId (StructuredCreditReclassificationSource.SecuritizedCustomCategory category) draft kindBlockers
+
+    let private proposeFromCustomAsset securityId (terms: CustomAssetTerms) =
+        let parsed =
+            try
+                use document = JsonDocument.Parse(terms.TermsJson)
+                Some (document.RootElement.Clone())
+            with :? JsonException -> None
+        parsed
+        |> Option.bind (fun root ->
+            readString "category" root
+            |> Option.filter isSecuritizedCategory
+            |> Option.map (fun category -> proposeFromCustomDocument securityId category root))
+
+    let private proposeFromOtherSecurity securityId (terms: OtherSecurityTerms) =
+        if isSecuritizedCategory terms.Category then
+            let kind, kindBlockers = splitResult (kindFromCustomCategory terms.Category)
+            let draft = { emptyDraft with Maturity = terms.Maturity; Kind = kind }
+            Some (finish securityId (StructuredCreditReclassificationSource.SecuritizedCustomCategory terms.Category) draft kindBlockers)
+        else
+            None
+
+    /// Builds the report-first StructuredCredit reclassification proposal for a legacy securitised
+    /// row (ADR-022): a Bond in a securitised subclass, a CustomAsset whose category names a
+    /// securitised product, or an envelope-less legacy custom row read back as OtherSecurity.
+    /// Returns None for every other record. Every required StructuredCredit term the source does
+    /// not carry, and every label that does not identify one securitisation family, is a blocker;
+    /// the proposal never fills a gap with a default.
+    let proposeStructuredCreditReclassification (record: SecurityMasterRecord) =
+        match record.Kind with
+        | SecurityKind.Bond terms when isSecuritizedBondSubclass terms.Subclass ->
+            Some (proposeFromBond record.SecurityId terms)
+        | SecurityKind.CustomAsset terms -> proposeFromCustomAsset record.SecurityId terms
+        | SecurityKind.OtherSecurity terms -> proposeFromOtherSecurity record.SecurityId terms
+        | _ -> None
