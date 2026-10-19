@@ -132,7 +132,10 @@ public sealed partial class OrderManagementSystem
             if (retained.RequiresRecovery || state.Status is not (OrderStatus.Filled or OrderStatus.Rejected))
                 _recoveryOrderIds[state.OrderId] = 0;
             if (retained.PendingAmendment is { } pending)
+            {
                 _pendingModificationOrderIds[state.OrderId] = pending;
+                _restoredPendingAmendments[state.OrderId] = pending;
+            }
             else if (retained.RequiresAmendmentRecovery)
                 _pendingModificationOrderIds[state.OrderId] = new PendingOrderAmendment(state, state, retained.BrokerOrderId);
             if (!string.IsNullOrWhiteSpace(retained.BrokerOrderId))

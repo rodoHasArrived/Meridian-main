@@ -252,8 +252,21 @@ public sealed class IBBrokerageGateway :
         EnsureConnected();
         ct.ThrowIfCancellationRequested();
 
-        var (gatewayOrderId, context) = ResolveOrder(orderId);
-        var updatedRequest = context.ToModifiedRequest(modification);
+        // Resolution and request shaping are process-local; a failure here proves nothing was
+        // sent to IB, so the caller may treat the amendment as never dispatched.
+        int gatewayOrderId;
+        SubmittedOrderContext context;
+        OrderRequest updatedRequest;
+        try
+        {
+            (gatewayOrderId, context) = ResolveOrder(orderId);
+            updatedRequest = context.ToModifiedRequest(modification);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+        {
+            throw new BrokerageRequestNotSentException(ex.Message, ex);
+        }
+
         var updatedContext = context with
         {
             Quantity = updatedRequest.Quantity,

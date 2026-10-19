@@ -135,13 +135,20 @@ public sealed partial class OrderManagementSystem
         };
     }
 
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, PendingOrderAmendment> _restoredPendingAmendments = new(StringComparer.Ordinal);
+
     /// <returns>null when there is no retained candidate or it is proven inactive without fills;
     /// otherwise why the cancellation cannot complete yet.</returns>
     private async Task<string?> CancelRetainedReplacementCandidateAsync(
         string orderId, string? predecessorBrokerId, CancellationToken ct)
     {
+        // Only an amendment restored from the recovery store needs this: in-process, the gateway
+        // still holds the replacement attempt and cancels and books the candidate itself, and a
+        // second, racing cancellation here would only obscure that authoritative path.
         if (_gateway is not IExplicitOrderCancellationGateway
-            || GetPendingAmendmentForRecovery(orderId) is not { CandidateBrokerOrderId: { Length: > 0 } candidateId }
+            || GetPendingAmendmentForRecovery(orderId) is not { CandidateBrokerOrderId: { Length: > 0 } candidateId } pending
+            || !_restoredPendingAmendments.TryGetValue(orderId, out var restored)
+            || !ReferenceEquals(restored.Original, pending.Original)
             || string.Equals(candidateId, predecessorBrokerId, StringComparison.Ordinal))
             return null;
         ExecutionReport candidate;

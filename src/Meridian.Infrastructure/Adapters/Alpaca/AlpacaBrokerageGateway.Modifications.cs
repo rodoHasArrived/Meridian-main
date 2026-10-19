@@ -33,8 +33,16 @@ public sealed partial class AlpacaBrokerageGateway
 
         using var client = CreateHttpClient();
         var existing = await ResolveOrderForCancellationAsync(client, identifier, ct).ConfigureAwait(false)
-            ?? throw new InvalidOperationException("Alpaca could not resolve the broker identity required for amendment.");
-        ValidateReplacementSnapshot(existing);
+            ?? throw new BrokerageRequestNotSentException("Alpaca could not resolve the broker identity required for amendment.");
+        // Snapshot validation runs before the PATCH; failing it proves nothing was sent.
+        try
+        {
+            ValidateReplacementSnapshot(existing);
+        }
+        catch (InvalidDataException ex)
+        {
+            throw new BrokerageRequestNotSentException(ex.Message, ex);
+        }
         var brokerOrderId = existing.Id!;
         ct.ThrowIfCancellationRequested();
         var attempt = new ReplacementAttempt(existing);
