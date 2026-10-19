@@ -241,7 +241,7 @@ function CashCaseDetail({ item, runs, runErrors, busy, canWrite, conflict, onAss
         <FormRow label="Case owner" labelFor={`${id}-owner`}><Input id={`${id}-owner`} value={owner} onChange={event => setOwner(event.target.value)} required disabled={!canWrite || busy || conflict} /></FormRow>
         <FormRow label="Assignment rationale" labelFor={`${id}-reason`} hint={`Assignment requires retained case version ${item.version}.`}><Input id={`${id}-reason`} value={reason} onChange={event => setReason(event.target.value)} required disabled={!canWrite || busy || conflict} /></FormRow>
       </FormGrid>
-      <div className="flex flex-wrap gap-2"><Button type="submit" disabled={!canWrite || busy || conflict || !owner.trim() || !reason.trim()}>Retain owner assignment</Button>{dirty ? <Button variant="outline" disabled={busy} onClick={() => { setOwner(item.owner); setReason(""); }}>Discard assignment</Button> : null}</div>
+      <div className="flex flex-wrap gap-2"><Button type="submit" disabled={!canWrite || busy || conflict || !owner.trim() || !reason.trim()}>Retain owner assignment</Button>{dirty ? <Button type="button" variant="outline" disabled={busy} onClick={() => { setOwner(item.owner); setReason(""); }}>Discard assignment</Button> : null}</div>
     </form>
     <Tabs tabs={[{ id: `${id}-observations`, label: "Observation history" }, { id: `${id}-assignments`, label: "Owner history" }]}>
       <div className="space-y-4">
