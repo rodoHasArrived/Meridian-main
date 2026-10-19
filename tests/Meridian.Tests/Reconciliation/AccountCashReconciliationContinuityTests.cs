@@ -1178,6 +1178,44 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         await new FileAccountCashReconciliationStore(_root).InitializeAsync();
     }
 
+    [Fact]
+    public async Task Migrated_history_scope_cannot_be_treated_as_new_when_its_file_is_lost()
+    {
+        var service = await ServiceAsync();
+        var original = await service.RunAsync(Request("first", 0, 1000m, 990m));
+        var legacyBytes = await LegacyStateBytesAsync(_scope);
+        var legacyPath = Path.Combine(StoreDirectory, "state.json");
+        var migratedPath = legacyPath + ".migrated";
+        var indexPath = Path.Combine(StoreDirectory, "scope-index.json");
+        Directory.Delete(Path.Combine(StoreDirectory, "scopes"), recursive: true);
+        File.Delete(indexPath);
+        await File.WriteAllBytesAsync(legacyPath, legacyBytes);
+        await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+        (await File.ReadAllBytesAsync(migratedPath)).Should().Equal(legacyBytes);
+
+        // A partial restore keeps the marker and a valid empty index but loses the scope files.
+        var separateRoot = Path.Combine(Path.GetTempPath(), $"meridian-account-cash-{Guid.NewGuid():N}");
+        await new FileAccountCashReconciliationStore(separateRoot).InitializeAsync();
+        File.Copy(Path.Combine(separateRoot, "reconciliation", "account-cash-continuity", "scope-index.json"), indexPath, overwrite: true);
+        Directory.Delete(separateRoot, recursive: true);
+        Directory.Delete(Path.Combine(StoreDirectory, "scopes"), recursive: true);
+
+        // The migrated scope is retained evidence: it is never treated as new, and provisioning fails closed.
+        await Assert.ThrowsAsync<InvalidDataException>(() => new FileAccountCashReconciliationStore(_root).InitializeAsync());
+        var reopened = await ServiceAsyncWithoutProvisioning();
+        await Assert.ThrowsAsync<InvalidDataException>(() => reopened.GetCasesAsync(_scope));
+        await Assert.ThrowsAsync<InvalidDataException>(() => reopened.RunAsync(Request("second", 1, 1000m, 1000m)));
+        (await File.ReadAllBytesAsync(migratedPath)).Should().Equal(legacyBytes);
+        var otherScope = _scope with { AccountId = "account-b" };
+        await reopened.RunAsync(Request("other-first", 0, 500m, 500m, otherScope));
+
+        // Restoring the legacy file from the backup set recovers the history without a reset.
+        File.Move(migratedPath, legacyPath);
+        var restored = await ServiceAsync();
+        (await restored.ReplayAsync(_scope, "first")).Should().BeEquivalentTo(original, options => options.WithStrictOrdering());
+        (await restored.ReplayAsync(otherScope, "other-first")).Input.RunId.Should().Be("other-first");
+    }
+
     [Theory]
     [InlineData("read")]
     [InlineData("provision")]

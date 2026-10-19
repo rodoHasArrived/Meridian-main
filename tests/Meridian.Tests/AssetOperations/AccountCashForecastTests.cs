@@ -604,6 +604,43 @@ public sealed class AccountCashForecastTests : IDisposable
         (await restored.GetHistoryAsync(Scope)).Should().BeEquivalentTo([first], options => options.WithStrictOrdering());
     }
 
+    [Fact]
+    public async Task Store_MigratedHistoryScopeCannotBeTreatedAsNewWhenItsFileIsLost()
+    {
+        var first = AccountCashForecastEngine.Build(Request([], 100m));
+        Directory.CreateDirectory(StoreDirectory);
+        var legacyPath = Path.Combine(StoreDirectory, "snapshots.json");
+        var migratedPath = legacyPath + ".migrated";
+        var indexPath = Path.Combine(StoreDirectory, "scope-index.json");
+        await File.WriteAllBytesAsync(legacyPath, LegacyStateBytes(first));
+        await File.WriteAllTextAsync(Path.Combine(StoreDirectory, "initialized"), "meridian-account-cash-forecast-v1");
+        await new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
+
+        // A partial restore keeps the marker and a valid empty index but loses the scope files.
+        var separateRoot = Path.Combine(Path.GetTempPath(), "meridian-account-cash-tests", Guid.NewGuid().ToString("N"));
+        await new FileAccountCashForecastStore(separateRoot).InitializeAsync();
+        File.Copy(Path.Combine(separateRoot, "asset-operations", "account-cash-forecasts", "scope-index.json"), indexPath, overwrite: true);
+        Directory.Delete(separateRoot, recursive: true);
+        Directory.Delete(Path.Combine(StoreDirectory, "scopes"), recursive: true);
+
+        // The migrated scope is retained evidence: it is never treated as new, and provisioning fails closed.
+        var reinitialize = () => new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
+        await reinitialize.Should().ThrowAsync<InvalidDataException>();
+        var read = () => new FileAccountCashForecastStore(_dataRoot).GetHistoryAsync(Scope);
+        await read.Should().ThrowAsync<InvalidDataException>();
+        var append = () => new FileAccountCashForecastStore(_dataRoot).AppendAsync(first);
+        await append.Should().ThrowAsync<InvalidDataException>();
+        var otherScope = Scope with { AccountId = "account-b" };
+        await new FileAccountCashForecastStore(_dataRoot).AppendAsync(AccountCashForecastEngine.Build(OtherScopeRequest(otherScope, "run-1")));
+
+        // Restoring the legacy file from the backup set recovers the history without a reset.
+        File.Move(migratedPath, legacyPath);
+        var restored = new FileAccountCashForecastStore(_dataRoot);
+        await restored.InitializeAsync();
+        (await restored.GetHistoryAsync(Scope)).Should().BeEquivalentTo([first], options => options.WithStrictOrdering());
+        (await restored.GetHistoryAsync(otherScope)).Should().ContainSingle();
+    }
+
     [Theory]
     [InlineData("read")]
     [InlineData("provision")]

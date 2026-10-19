@@ -30,7 +30,8 @@ and cases per exact tenant/company/account/ledger-book scope into content-hashed
 `reconciliation/account-cash-continuity`, so one scope's corruption or size never blocks another (a
 corrupt or missing index or marker blocks the whole store); a legacy single-file `state.json` is split
 losslessly and renamed `state.json.migrated`, and a `.migrated` file left beside a lost layout refuses
-provisioning rather than restarting history. A validated mutation commits its first scope file and then its
+provisioning rather than restarting history (a scope it retains is never treated as new while its scope
+file is missing). A validated mutation commits its first scope file and then its
 registration under one store lease regardless of request cancellation, and an interrupted first commit
 is completed by the next provisioning or scoped use, and every store read shares delete
 so concurrent atomic replacements succeed on Windows. Corrupt or

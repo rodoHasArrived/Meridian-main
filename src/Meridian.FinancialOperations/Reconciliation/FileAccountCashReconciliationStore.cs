@@ -184,10 +184,31 @@ public sealed class FileAccountCashReconciliationStore
                 recovered = true;
             }
         }
+        foreach (var scope in await ReadMigratedScopesAsync(ct).ConfigureAwait(false))
+        {
+            if (!index.Contains(scope))
+                throw new InvalidDataException("The migrated account cash continuity state retains a scope that is no longer registered; restore retained state before retrying.");
+        }
         foreach (var scope in index)
             _ = await ReadScopeFileAsync(scope, ScopeStatePath(scope), ct).ConfigureAwait(false);
         if (recovered)
             await WriteIndexAsync([.. index], ct).ConfigureAwait(false);
+    }
+
+    /// <summary>The scopes retained in the migrated legacy file; they must stay registered with their files.</summary>
+    private async Task<HashSet<AccountCashReconciliationScope>> ReadMigratedScopesAsync(CancellationToken ct)
+    {
+        if (!File.Exists(MigratedLegacyStatePath))
+            return [];
+        var migrated = await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false);
+        return migrated.Runs.Select(static item => item.Input.Scope).Concat(migrated.Cases.Select(static item => item.Scope)).ToHashSet();
+    }
+
+    /// <summary>A scope retained in the migrated legacy state is never treated as new; its scope file must be restored.</summary>
+    private async Task RequireNotMigratedScopeAsync(AccountCashReconciliationScope scope, CancellationToken ct)
+    {
+        if ((await ReadMigratedScopesAsync(ct).ConfigureAwait(false)).Contains(scope))
+            throw new InvalidDataException("The migrated account cash continuity state retains this scope but its scope file is missing; restore retained state before retrying.");
     }
 
     /// <summary>An unregistered scope file must name the scope its file name was derived from and validate for it.</summary>
@@ -225,7 +246,10 @@ public sealed class FileAccountCashReconciliationStore
             return (true, await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false));
         }
         if (!File.Exists(path))
+        {
+            await RequireNotMigratedScopeAsync(scope, ct).ConfigureAwait(false);
             return (false, new AccountCashReconciliationDocument(1, [], []));
+        }
         var document = await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false);
         await RegisterScopeAsync(scope).ConfigureAwait(false);
         return (true, document);

@@ -182,10 +182,28 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
                 recovered = true;
             }
         }
+        foreach (var scope in await ReadMigratedScopesAsync(ct).ConfigureAwait(false))
+        {
+            if (!index.Contains(scope))
+                throw new InvalidDataException("The migrated account forecast history retains a scope that is no longer registered; restore retained history before retrying.");
+        }
         foreach (var scope in index)
             _ = await ReadScopeFileAsync(scope, ScopeStatePath(scope), ct).ConfigureAwait(false);
         if (recovered)
             await WriteIndexAsync([.. index], ct).ConfigureAwait(false);
+    }
+
+    /// <summary>The scopes retained in the migrated legacy file; they must stay registered with their files.</summary>
+    private async Task<HashSet<AccountCashForecastScopeDto>> ReadMigratedScopesAsync(CancellationToken ct)
+        => File.Exists(MigratedLegacyStatePath)
+            ? (await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false)).Select(static row => row.Inputs.Scope).ToHashSet()
+            : [];
+
+    /// <summary>A scope retained in the migrated legacy history is never treated as new; its scope file must be restored.</summary>
+    private async Task RequireNotMigratedScopeAsync(AccountCashForecastScopeDto scope, CancellationToken ct)
+    {
+        if ((await ReadMigratedScopesAsync(ct).ConfigureAwait(false)).Contains(scope))
+            throw new InvalidDataException("The migrated account forecast history retains this scope but its scope file is missing; restore retained history before retrying.");
     }
 
     /// <summary>An unregistered scope file must name the scope its file name was derived from and validate for it.</summary>
@@ -225,7 +243,10 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
             return (true, await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false));
         }
         if (!File.Exists(path))
+        {
+            await RequireNotMigratedScopeAsync(scope, ct).ConfigureAwait(false);
             return (false, []);
+        }
         var history = await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false);
         await RegisterScopeAsync(scope).ConfigureAwait(false);
         return (true, history);

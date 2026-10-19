@@ -30,7 +30,8 @@ Explicit `InitializeAsync` provisioning is required; a missing or corrupt scope 
 that scope without blocking other scopes, a missing or corrupt index or marker fails closed for the
 whole store, and neither can silently restart history. A legacy single-file `snapshots.json` is
 validated, split losslessly and renamed `snapshots.json.migrated`, never deleted; a `.migrated` file
-left beside a lost layout refuses provisioning rather than restarting history. Once an append is
+left beside a lost layout refuses provisioning rather than restarting history, and a scope it retains
+is never treated as new while its scope file is missing. Once an append is
 validated, the first scope-file write and its registration run under one store lease, file first, and
 ignore request cancellation: an interruption between the two leaves a valid unregistered scope file
 that the next provisioning or scoped use registers, never an indexed scope without its file; every store read shares delete so a concurrent atomic replacement

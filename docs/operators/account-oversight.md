@@ -233,7 +233,10 @@ A corrupt or missing scope file answers `503` for both forecasts and cash contin
 account only. A corrupt or missing `scope-index.json` answers `503` for every account in that store,
 because the index is read before any scope is selected. Unprovisioned retained history answers `409`,
 including a `.migrated` legacy file left without its marker, index and scope files: provisioning never
-recreates an empty layout beside retained evidence.
+recreates an empty layout beside retained evidence. While the marker and index survive, every scope
+the `.migrated` file retains must stay registered with its scope file; a lost file for such a scope
+answers `503` for that scope and fails provisioning until it is restored, so the migrated history can
+never be restarted as new.
 Restore the affected `scopes/<sha256>.json` file together with `scope-index.json` and `initialized`
 from the same backup; never delete a scope file to clear a failure, because a registered scope
 without its file also fails closed. A scope file without its index entry is an interrupted first
