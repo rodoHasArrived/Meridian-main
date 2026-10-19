@@ -80,7 +80,7 @@ public sealed partial class AlpacaBrokerageGateway
                 return Current(attempt.Resolution = BuildReplacementSnapshotReport(original, clientOrderId,
                     ExecutionReportType.ModificationRejected, "Alpaca rejected the proposed replacement."));
             }
-            if (original.Status != "replaced" || replacement.Status is "pending_new" or "pending_replace")
+            if (original.Status != "replaced" || replacement.Status is "pending_new" or "pending_replace" or "accepted_for_bidding")
                 return Current(CreatePendingModification(attempt,
                     "Alpaca recovery has not confirmed the proposed replacement.") with
                 { ClientOrderId = clientOrderId });

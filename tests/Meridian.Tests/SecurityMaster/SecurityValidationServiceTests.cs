@@ -944,6 +944,57 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
+    public void Scenario_StructuredCreditFactorSchedulePointerWithoutEntries_WarnsButDoesNotBlock()
+    {
+        // The free-text factorSchedule is a trustee-report pointer; only dated factorScheduleEntries
+        // drive paydown and cash-flow math. A pointer with no entries is steered, not blocked.
+        var pointerOnly = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                maturity = "2036-01-15",
+                factorSchedule = "monthly-trustee"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(pointerOnly, [pointerOnly], Now);
+
+        var issue = report.Issues.Should().ContainSingle(static item =>
+            item.Code == "SM_STRUCTURED_CREDIT_FACTOR_ENTRIES_MISSING").Subject;
+        issue.Severity.Should().Be(SecurityValidationSeverityDto.Warning);
+        issue.AffectedFields.Should().BeEquivalentTo(new[] { "assetSpecificTerms.factorSchedule", "assetSpecificTerms.factorScheduleEntries" });
+        report.HasBlockingIssues.Should().BeFalse();
+
+        var backed = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                maturity = "2036-01-15",
+                factorSchedule = "monthly-trustee",
+                factorScheduleEntries = new[] { new { asOfDate = "2026-07-01", factor = 0.9825m } }
+            }));
+
+        service.ValidateRecord(backed, [backed], Now).Issues
+            .Should().NotContain(static item => item.Code == "SM_STRUCTURED_CREDIT_FACTOR_ENTRIES_MISSING");
+    }
+
+    [Fact]
     public void Scenario_StructuredCreditAttachmentAboveDetachment_BlocksReadiness()
     {
         // Both points are valid fractions on their own; the loss interval they describe is not. The

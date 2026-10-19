@@ -163,6 +163,20 @@ public sealed class SecurityAssetTermRoleTests
     }
 
     [Fact]
+    public void StructuredCreditFactorSchedule_IsAnOperationalEvidencePointer()
+    {
+        // The free-text trustee-report pointer is evidence lineage; the dated factorScheduleEntries
+        // array is the economic schedule.
+        var dto = SecurityAssetClassRegistry.ToDto(SecurityAssetClassRegistry.Get("StructuredCredit"));
+
+        var pointer = dto.Fields.Should().ContainSingle(static field => field.Key == "factorSchedule").Subject;
+        pointer.Role.Should().Be(SecurityAssetTermRole.Operational);
+        pointer.Group.Should().Be("Operations");
+        dto.Fields.Should().ContainSingle(static field => field.Key == "factorScheduleEntries")
+            .Which.Role.Should().Be(SecurityAssetTermRole.Economic);
+    }
+
+    [Fact]
     public void DirectLoanEconomics_KeepRateTermsAsEconomic()
     {
         var fields = SecurityAssetClassRegistry.Get("DirectLoan").Fields;

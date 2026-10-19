@@ -1814,3 +1814,15 @@ a pending transaction can become visible later with an earlier recorded timestam
 exact evaluation using `receiptId` on the golden-copy endpoint, retaining the security/account
 scope. Unknown or differently scoped receipts return no result and never silently recompute.
 Mixed quote units have no percentage comparison.
+
+StructuredCredit's free-text `factorSchedule` is the trustee or servicer report pointer and is
+declared `Operational`: the paydown projector keeps it as evidence lineage, the economic bridge
+carries it as `structuredProduct.factorScheduleReference`, and no cash-flow or accounting math reads
+it. The dated `factorScheduleEntries` array is the schedule; a pointer with no entries raises the
+`SM_STRUCTURED_CREDIT_FACTOR_ENTRIES_MISSING` warning.
+
+`ISecurityMasterStructuredCreditReclassificationService` returns the ADR-022
+`StructuredCreditReclassificationReportDto`: one candidate per active securitised `Bond` or
+`CustomAsset` row with a `Ready` or `Blocked` disposition, the proposed `structuredCreditKind`, the
+derived asset-specific terms and the blocker codes the operator must clear. The report never applies
+a proposal.
