@@ -1814,3 +1814,9 @@ a pending transaction can become visible later with an earlier recorded timestam
 exact evaluation using `receiptId` on the golden-copy endpoint, retaining the security/account
 scope. Unknown or differently scoped receipts return no result and never silently recompute.
 Mixed quote units have no percentage comparison.
+
+`ISecurityMasterStructuredCreditReclassificationService` returns the ADR-022
+`StructuredCreditReclassificationReportDto`: one candidate per active securitised `Bond` or
+`CustomAsset` row with a `Ready` or `Blocked` disposition, the proposed `structuredCreditKind`, the
+derived asset-specific terms and the blocker codes the operator must clear. The report never applies
+a proposal.
