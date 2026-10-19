@@ -96,9 +96,10 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
         // atomic writes; honouring a request cancellation between them would retain an indexed scope
         // without its file, which then fails closed on every later read. The commit therefore ignores
         // the request token, and the lock timeout still bounds it.
-        if (!indexed)
-            await RegisterScopeAsync(scope, CancellationToken.None).ConfigureAwait(false);
-        await WriteScopeFileAsync(scope, [.. history, copy], CancellationToken.None).ConfigureAwait(false);
+        if (indexed)
+            await WriteScopeFileAsync(scope, [.. history, copy], CancellationToken.None).ConfigureAwait(false);
+        else
+            await RegisterAndWriteScopeAsync(scope, [.. history, copy]).ConfigureAwait(false);
         return Copy(copy);
     }
 
@@ -294,14 +295,18 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
         return buffer.ToArray();
     }
 
-    /// <summary>Caller holds the scope lock; registration takes the store lock so scopes only serialize on first appearance.</summary>
-    private async Task RegisterScopeAsync(AccountCashForecastScopeDto scope, CancellationToken ct)
+    /// <summary>
+    /// Caller holds the scope lock. The store lease spans registration and the first scope-file write, so
+    /// scopes serialize only on first appearance and an initializer validating every registered scope
+    /// under the same lease never observes an indexed scope whose file is not yet written.
+    /// </summary>
+    private async Task RegisterAndWriteScopeAsync(AccountCashForecastScopeDto scope, AccountCashForecastSnapshotDto[] snapshots)
     {
-        await using var lease = await AcquireAsync(StoreLockPath, ct).ConfigureAwait(false);
-        var index = await ReadIndexAsync(ct).ConfigureAwait(false);
-        if (index.Contains(scope))
-            return;
-        await WriteIndexAsync([.. index, scope], ct).ConfigureAwait(false);
+        await using var lease = await AcquireAsync(StoreLockPath, CancellationToken.None).ConfigureAwait(false);
+        var index = await ReadIndexAsync(CancellationToken.None).ConfigureAwait(false);
+        if (!index.Contains(scope))
+            await WriteIndexAsync([.. index, scope], CancellationToken.None).ConfigureAwait(false);
+        await WriteScopeFileAsync(scope, snapshots, CancellationToken.None).ConfigureAwait(false);
     }
 
     private Task WriteIndexAsync(AccountCashForecastScopeDto[] scopes, CancellationToken ct)

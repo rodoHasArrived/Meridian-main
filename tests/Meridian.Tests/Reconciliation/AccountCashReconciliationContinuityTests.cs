@@ -1159,6 +1159,25 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         await new FileAccountCashReconciliationStore(_root).InitializeAsync();
     }
 
+    [Fact]
+    public async Task Provisioning_concurrent_with_first_scope_writes_never_misreads_a_registered_scope()
+    {
+        var store = new FileAccountCashReconciliationStore(_root);
+        await store.InitializeAsync();
+        var service = new AccountCashReconciliationService(store);
+        var scopes = Enumerable.Range(0, 12).Select(index => _scope with { AccountId = $"account-{index}" }).ToArray();
+
+        // Each first write registers its scope and writes its file under one store lease, so a concurrent
+        // provisioning pass validating every registered scope never sees an indexed scope without its file.
+        var writes = scopes.Select(scope => (Task)service.RunAsync(Request($"first-{scope.AccountId}", 0, 1000m, 990m, scope)));
+        var provisions = scopes.Select(_ => new FileAccountCashReconciliationStore(_root).InitializeAsync());
+        await Task.WhenAll(writes.Concat(provisions));
+
+        foreach (var scope in scopes)
+            (await service.GetCasesAsync(scope)).Should().ContainSingle();
+        await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+    }
+
     private string StoreDirectory => Path.Combine(_root, "reconciliation", "account-cash-continuity");
     private string ScopeStatePath(AccountCashReconciliationScope scope)
         => Path.Combine(StoreDirectory, "scopes", FileAccountCashReconciliationStore.ScopeFileName(scope) + ".json");

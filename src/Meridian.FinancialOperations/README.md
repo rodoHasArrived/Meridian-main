@@ -31,7 +31,8 @@ and cases per exact tenant/company/account/ledger-book scope into content-hashed
 corrupt or missing index or marker blocks the whole store); a legacy single-file `state.json` is split
 losslessly and renamed `state.json.migrated`, and a `.migrated` file left beside a lost layout refuses
 provisioning rather than restarting history. A validated mutation commits its scope registration and
-scope file regardless of request cancellation, and index reads share delete for Windows. Corrupt or
+first scope file under one store lease regardless of request cancellation, and index reads share delete
+for Windows. Corrupt or
 missing initialized state raises `InvalidDataException`, and each writer lease times out after 30
 seconds with `TimeoutException`. The data root remains host-local (PostgreSQL is the multi-host
 follow-on). Source clearing confers no governed close approval.
