@@ -30,8 +30,9 @@ and cases per exact tenant/company/account/ledger-book scope into content-hashed
 `reconciliation/account-cash-continuity`, so one scope's corruption or size never blocks another (a
 corrupt or missing index or marker blocks the whole store); a legacy single-file `state.json` is split
 losslessly and renamed `state.json.migrated`, and a `.migrated` file left beside a lost layout refuses
-provisioning rather than restarting history. A validated mutation commits its scope registration and
-first scope file under one store lease regardless of request cancellation, and every store read shares delete
+provisioning rather than restarting history. A validated mutation commits its first scope file and then its
+registration under one store lease regardless of request cancellation, and an interrupted first commit
+is completed by the next provisioning or scoped use, and every store read shares delete
 so concurrent atomic replacements succeed on Windows. Corrupt or
 missing initialized state raises `InvalidDataException`, and each writer lease times out after 30
 seconds with `TimeoutException`. The data root remains host-local (PostgreSQL is the multi-host

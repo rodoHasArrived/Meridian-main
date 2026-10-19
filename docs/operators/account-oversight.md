@@ -236,7 +236,9 @@ including a `.migrated` legacy file left without its marker, index and scope fil
 recreates an empty layout beside retained evidence.
 Restore the affected `scopes/<sha256>.json` file together with `scope-index.json` and `initialized`
 from the same backup; never delete a scope file to clear a failure, because a registered scope
-without its file also fails closed. On first use after upgrading from the single-file layout, each
+without its file also fails closed. A scope file without its index entry is an interrupted first
+write (the file is committed before its registration): the next provisioning or scoped use registers
+it, so no manual recovery is needed, while a file whose content does not name its own scope is refused. On first use after upgrading from the single-file layout, each
 store validates its legacy `state.json` or `snapshots.json`, writes the per-scope files, and renames
 the legacy file to `state.json.migrated` or `snapshots.json.migrated`. Keep the `.migrated` file with
 the backup set. A corrupt legacy file is never split or renamed; restore it before retrying. Do not

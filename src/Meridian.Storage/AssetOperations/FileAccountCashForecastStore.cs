@@ -160,38 +160,75 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
         File.Move(LegacyStatePath, MigratedLegacyStatePath);
     }
 
-    /// <summary>Caller holds the store lock. Every registered scope and every scope file must validate.</summary>
+    /// <summary>
+    /// Caller holds the store lock. Every registered scope and every scope file must validate. A scope file
+    /// without its index entry is an interrupted first commit (the file is committed before its
+    /// registration): it must name its own scope and validate for it, and is then registered.
+    /// </summary>
     private async Task ValidateAllScopesAsync(CancellationToken ct)
     {
-        var index = await ReadIndexAsync(ct).ConfigureAwait(false);
+        var index = (await ReadIndexAsync(ct).ConfigureAwait(false)).ToList();
         var registered = index.Select(ScopeFileName).ToHashSet(StringComparer.Ordinal);
+        var recovered = false;
         if (Directory.Exists(ScopeDirectory))
         {
             foreach (var file in Directory.EnumerateFiles(ScopeDirectory, "*.json"))
             {
-                if (!registered.Contains(Path.GetFileNameWithoutExtension(file)))
-                    throw new InvalidDataException("An unregistered account forecast scope file exists; restore retained history before retrying.");
+                var name = Path.GetFileNameWithoutExtension(file);
+                if (registered.Contains(name))
+                    continue;
+                index.Add(await ReadUnregisteredScopeAsync(file, name, ct).ConfigureAwait(false));
+                registered.Add(name);
+                recovered = true;
             }
         }
         foreach (var scope in index)
             _ = await ReadScopeFileAsync(scope, ScopeStatePath(scope), ct).ConfigureAwait(false);
+        if (recovered)
+            await WriteIndexAsync([.. index], ct).ConfigureAwait(false);
     }
 
-    /// <summary>Caller holds the scope lock. Registered scopes must have their file; unregistered files are refused.</summary>
+    /// <summary>An unregistered scope file must name the scope its file name was derived from and validate for it.</summary>
+    private static async Task<AccountCashForecastScopeDto> ReadUnregisteredScopeAsync(string path, string name, CancellationToken ct)
+    {
+        AccountCashForecastScopeDto? scope;
+        try
+        {
+            scope = JsonSerializer.Deserialize(await ReadSharedAsync(path, ct).ConfigureAwait(false), AccountCashForecastStoreJsonContext.Default.AccountCashForecastScopeEnvelope)?.Scope;
+            if (scope is not null)
+                ValidateScope(scope);
+        }
+        catch (Exception exception) when (exception is JsonException or IOException or ArgumentException)
+        {
+            throw new InvalidDataException("An unregistered account forecast scope file is unreadable; restore retained history before retrying.", exception);
+        }
+        if (scope is null || ScopeFileName(scope) != name)
+            throw new InvalidDataException("An unregistered account forecast scope file does not name its own scope; restore retained history before retrying.");
+        _ = await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false);
+        return scope;
+    }
+
+    /// <summary>
+    /// Caller holds the scope lock. Registered scopes must have their file. A file for this exact scope
+    /// without its index entry is an interrupted first commit and is registered here; any other
+    /// unregistered file fails closed.
+    /// </summary>
     private async Task<(bool Indexed, AccountCashForecastSnapshotDto[] History)> ReadScopeAsync(AccountCashForecastScopeDto scope, CancellationToken ct)
     {
         await RequireMarkerAsync(ct).ConfigureAwait(false);
         var index = await ReadIndexAsync(ct).ConfigureAwait(false);
         var path = ScopeStatePath(scope);
-        if (!index.Contains(scope))
+        if (index.Contains(scope))
         {
-            if (File.Exists(path))
+            if (!File.Exists(path))
                 throw new InvalidDataException("The durable account forecast state is unavailable or invalid; restore retained history before retrying.");
-            return (false, []);
+            return (true, await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false));
         }
         if (!File.Exists(path))
-            throw new InvalidDataException("The durable account forecast state is unavailable or invalid; restore retained history before retrying.");
-        return (true, await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false));
+            return (false, []);
+        var history = await ReadScopeFileAsync(scope, path, ct).ConfigureAwait(false);
+        await RegisterScopeAsync(scope).ConfigureAwait(false);
+        return (true, history);
     }
 
     private static async Task<AccountCashForecastSnapshotDto[]> ReadScopeFileAsync(AccountCashForecastScopeDto scope, string path, CancellationToken ct)
@@ -298,17 +335,33 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
     }
 
     /// <summary>
-    /// Caller holds the scope lock. The store lease spans registration and the first scope-file write, so
-    /// scopes serialize only on first appearance and an initializer validating every registered scope
-    /// under the same lease never observes an indexed scope whose file is not yet written.
+    /// Caller holds the scope lock. The store lease spans the first scope-file write and its registration,
+    /// so scopes serialize only on first appearance and an initializer validating every scope under the
+    /// same lease sees either nothing or the complete commit.
     /// </summary>
     private async Task RegisterAndWriteScopeAsync(AccountCashForecastScopeDto scope, AccountCashForecastSnapshotDto[] snapshots)
     {
         await using var lease = await AcquireAsync(StoreLockPath, CancellationToken.None).ConfigureAwait(false);
+        // The scope file is committed first: a crash or I/O failure between the two writes leaves a valid
+        // unregistered file that the next provisioning or scoped use registers, never an indexed scope
+        // without its file.
+        await WriteScopeFileAsync(scope, snapshots, CancellationToken.None).ConfigureAwait(false);
+        await RegisterLockedAsync(scope).ConfigureAwait(false);
+    }
+
+    /// <summary>Caller holds the scope lock. Completes an interrupted first commit by registering its scope file.</summary>
+    private async Task RegisterScopeAsync(AccountCashForecastScopeDto scope)
+    {
+        await using var lease = await AcquireAsync(StoreLockPath, CancellationToken.None).ConfigureAwait(false);
+        await RegisterLockedAsync(scope).ConfigureAwait(false);
+    }
+
+    /// <summary>Caller holds the store lock.</summary>
+    private async Task RegisterLockedAsync(AccountCashForecastScopeDto scope)
+    {
         var index = await ReadIndexAsync(CancellationToken.None).ConfigureAwait(false);
         if (!index.Contains(scope))
             await WriteIndexAsync([.. index, scope], CancellationToken.None).ConfigureAwait(false);
-        await WriteScopeFileAsync(scope, snapshots, CancellationToken.None).ConfigureAwait(false);
     }
 
     private Task WriteIndexAsync(AccountCashForecastScopeDto[] scopes, CancellationToken ct)

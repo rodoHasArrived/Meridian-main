@@ -1178,6 +1178,70 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         await new FileAccountCashReconciliationStore(_root).InitializeAsync();
     }
 
+    [Theory]
+    [InlineData("read")]
+    [InlineData("provision")]
+    [InlineData("write")]
+    public async Task Interrupted_first_registration_is_completed_on_next_use(string use)
+    {
+        var service = await ServiceAsync();
+        await service.RunAsync(Request("first", 0, 1000m, 990m));
+        var otherScope = _scope with { AccountId = "account-b" };
+
+        // A first commit writes the scope file before registering it. Simulate a crash in between by
+        // retaining the other scope's committed file without its index entry.
+        var separateRoot = Path.Combine(Path.GetTempPath(), $"meridian-account-cash-{Guid.NewGuid():N}");
+        var separate = new FileAccountCashReconciliationStore(separateRoot);
+        await separate.InitializeAsync();
+        var otherRun = await new AccountCashReconciliationService(separate).RunAsync(Request("other-first", 0, 500m, 500m, otherScope));
+        Directory.CreateDirectory(Path.Combine(StoreDirectory, "scopes"));
+        File.Copy(Path.Combine(separateRoot, "reconciliation", "account-cash-continuity", "scopes", FileAccountCashReconciliationStore.ScopeFileName(otherScope) + ".json"), ScopeStatePath(otherScope));
+        Directory.Delete(separateRoot, recursive: true);
+
+        switch (use)
+        {
+            case "read":
+                (await service.ReplayAsync(otherScope, "other-first")).Should().BeEquivalentTo(otherRun, options => options.WithStrictOrdering());
+                break;
+            case "provision":
+                await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+                break;
+            default:
+                await service.RunAsync(Request("other-second", 1, 500m, 480m, otherScope));
+                break;
+        }
+
+        // The scope is registered: a fresh store replays it, provisioning validates it, and the retained
+        // file is now protected like any other registered scope.
+        var reopened = await ServiceAsyncWithoutProvisioning();
+        (await reopened.ReplayAsync(otherScope, "other-first")).Should().BeEquivalentTo(otherRun, options => options.WithStrictOrdering());
+        // The matched first run opens no case; only the later mismatch does.
+        var cases = await reopened.GetCasesAsync(otherScope);
+        if (use == "write")
+            Assert.Single(cases).History.Should().ContainSingle();
+        else
+            cases.Should().BeEmpty();
+        (await reopened.GetCasesAsync(_scope)).Should().ContainSingle();
+        await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+        File.Delete(ScopeStatePath(otherScope));
+        await Assert.ThrowsAsync<InvalidDataException>(() => reopened.GetCasesAsync(otherScope));
+    }
+
+    [Fact]
+    public async Task Unregistered_scope_file_that_does_not_name_its_own_scope_is_refused()
+    {
+        var service = await ServiceAsync();
+        await service.RunAsync(Request("first", 0, 1000m, 990m));
+        var otherScope = _scope with { AccountId = "account-b" };
+        File.Copy(ScopeStatePath(_scope), ScopeStatePath(otherScope));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => service.GetCasesAsync(otherScope));
+        await Assert.ThrowsAsync<InvalidDataException>(() => service.RunAsync(Request("other-first", 0, 500m, 500m, otherScope)));
+        await Assert.ThrowsAsync<InvalidDataException>(() => new FileAccountCashReconciliationStore(_root).InitializeAsync());
+        (await service.GetCasesAsync(_scope)).Should().ContainSingle();
+        Assert.Single(await (await ServiceAsyncWithoutProvisioning()).GetCasesAsync(_scope));
+    }
+
     private string StoreDirectory => Path.Combine(_root, "reconciliation", "account-cash-continuity");
     private string ScopeStatePath(AccountCashReconciliationScope scope)
         => Path.Combine(StoreDirectory, "scopes", FileAccountCashReconciliationStore.ScopeFileName(scope) + ".json");

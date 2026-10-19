@@ -605,6 +605,67 @@ public sealed class AccountCashForecastTests : IDisposable
     }
 
     [Theory]
+    [InlineData("read")]
+    [InlineData("provision")]
+    [InlineData("append")]
+    public async Task Store_InterruptedFirstRegistrationIsCompletedOnNextUse(string use)
+    {
+        var store = new FileAccountCashForecastStore(_dataRoot);
+        await store.InitializeAsync();
+        await store.AppendAsync(AccountCashForecastEngine.Build(Request([], 100m)));
+        var otherScope = Scope with { AccountId = "account-b" };
+        var otherRequest = OtherScopeRequest(otherScope, "run-1");
+
+        // A first commit writes the scope file before registering it. Simulate a crash in between by
+        // retaining the other scope's committed file without its index entry.
+        var separateRoot = Path.Combine(Path.GetTempPath(), "meridian-account-cash-tests", Guid.NewGuid().ToString("N"));
+        var separate = new FileAccountCashForecastStore(separateRoot);
+        await separate.InitializeAsync();
+        var retainedOther = await separate.AppendAsync(AccountCashForecastEngine.Build(otherRequest));
+        File.Copy(Path.Combine(separateRoot, "asset-operations", "account-cash-forecasts", "scopes", FileAccountCashForecastStore.ScopeFileName(otherScope) + ".json"), ScopeStatePath(otherScope));
+        Directory.Delete(separateRoot, recursive: true);
+
+        switch (use)
+        {
+            case "read":
+                (await store.GetHistoryAsync(otherScope)).Should().ContainSingle().Which.Should().BeEquivalentTo(retainedOther);
+                break;
+            case "provision":
+                await new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
+                break;
+            default:
+                await store.AppendAsync(AccountCashForecastEngine.Build(otherRequest with { RunId = "run-2", PreviousSnapshotId = retainedOther.SnapshotId, CorrectionRationale = "Restated closing", RecordedAtUtc = Recorded.AddHours(1) }));
+                break;
+        }
+
+        var reopened = new FileAccountCashForecastStore(_dataRoot);
+        (await reopened.GetHistoryAsync(otherScope)).Should().HaveCount(use == "append" ? 2 : 1).And.Subject.First().Should().BeEquivalentTo(retainedOther);
+        (await reopened.GetHistoryAsync(Scope)).Should().ContainSingle();
+        await new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
+        File.Delete(ScopeStatePath(otherScope));
+        var deleted = () => reopened.GetHistoryAsync(otherScope);
+        await deleted.Should().ThrowAsync<InvalidDataException>();
+    }
+
+    [Fact]
+    public async Task Store_UnregisteredScopeFileThatDoesNotNameItsOwnScopeIsRefused()
+    {
+        var store = new FileAccountCashForecastStore(_dataRoot);
+        await store.InitializeAsync();
+        await store.AppendAsync(AccountCashForecastEngine.Build(Request([], 100m)));
+        var otherScope = Scope with { AccountId = "account-b" };
+        File.Copy(ScopeStatePath(Scope), ScopeStatePath(otherScope));
+
+        var read = () => store.GetHistoryAsync(otherScope);
+        await read.Should().ThrowAsync<InvalidDataException>();
+        var append = () => store.AppendAsync(AccountCashForecastEngine.Build(OtherScopeRequest(otherScope, "run-1")));
+        await append.Should().ThrowAsync<InvalidDataException>();
+        var reinitialize = () => new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
+        await reinitialize.Should().ThrowAsync<InvalidDataException>();
+        (await store.GetHistoryAsync(Scope)).Should().ContainSingle();
+    }
+
+    [Theory]
     [InlineData("reused-boundary")]
     [InlineData("missing-security")]
     public async Task Store_LegacyInvalidCertificationFailsReplayWithoutRewritingRetainedEvidence(string defect)

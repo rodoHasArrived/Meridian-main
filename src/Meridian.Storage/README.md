@@ -31,9 +31,9 @@ that scope without blocking other scopes, a missing or corrupt index or marker f
 whole store, and neither can silently restart history. A legacy single-file `snapshots.json` is
 validated, split losslessly and renamed `snapshots.json.migrated`, never deleted; a `.migrated` file
 left beside a lost layout refuses provisioning rather than restarting history. Once an append is
-validated, scope registration and the first scope-file write run under one store lease and ignore
-request cancellation, so neither a concurrent provisioning pass nor an abandoned request can observe
-an indexed scope without its file; every store read shares delete so a concurrent atomic replacement
+validated, the first scope-file write and its registration run under one store lease, file first, and
+ignore request cancellation: an interruption between the two leaves a valid unregistered scope file
+that the next provisioning or scoped use registers, never an indexed scope without its file; every store read shares delete so a concurrent atomic replacement
 (a first registration rewriting the index, or a scope write overlapping provisioning's validation)
 succeeds on Windows. The data root remains host-local; multi-host deployments need the PostgreSQL follow-on.
 Financial Operations owns cash-balance case semantics and delegates file replacement to Storage's
