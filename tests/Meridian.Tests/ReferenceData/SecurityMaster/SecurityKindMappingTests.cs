@@ -64,6 +64,9 @@ public sealed class SecurityKindMappingTests
             ["FxForward"] = [],
             ["NonDeliverableForward"] = [],
             ["CreditDefaultSwap"] = [],
+            ["Swaption"] = [],
+            ["CapFloor"] = [],
+            ["StructuredNote"] = [],
             ["InvestmentFund"] = [],
         };
 

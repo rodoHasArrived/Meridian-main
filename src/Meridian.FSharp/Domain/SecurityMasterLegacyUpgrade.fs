@@ -722,6 +722,64 @@ module SecurityMasterLegacyUpgrade =
                             DayCount = terms.DayCount |> mapDayCount
                         }
             }
+        | SecurityKind.Swaption terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = terms.UnderlyingEffectiveDate
+                            IssueDate = None
+                            MaturityDate = Some terms.Expiry
+                        }
+            }
+        | SecurityKind.CapFloor terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = Some terms.EffectiveDate
+                            IssueDate = None
+                            MaturityDate = Some terms.MaturityDate
+                        }
+                    FloatingRate =
+                        Some {
+                            ReferenceIndex = Some terms.ReferenceIndex
+                            SpreadBps = None
+                            ResetFrequency = terms.ResetFrequency
+                            FloorRate = terms.FloorStrike
+                            CapRate = terms.CapStrike
+                        }
+            }
+        | SecurityKind.StructuredNote terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = None
+                            IssueDate = terms.IssueDate
+                            MaturityDate = Some terms.Maturity
+                        }
+                    Coupon =
+                        terms.CouponRate
+                        |> Option.map (fun couponRate ->
+                            {
+                                // The coupon may be contingent on the underlying; the style is not declared.
+                                CouponType = None
+                                CouponRate = Some couponRate
+                                PaymentFrequency = terms.PaymentFrequency |> Option.map PaymentFrequency.parse
+                                DayCount = None
+                            })
+                    Issuer =
+                        Some {
+                            IssuerName = Some terms.IssuerName
+                            InstitutionName = None
+                            IssuerProgram = None
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
+                        }
+            }
         | SecurityKind.InvestmentFund terms ->
             {
                 SecurityTermModules.empty with

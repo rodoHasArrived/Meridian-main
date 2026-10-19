@@ -484,6 +484,16 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("paymentFrequency", ("coupon", "paymentFrequency")),
             Map("dayCount", ("coupon", "dayCount"))
         ]),
+        ("Swaption", [Map("expiry", MaturityDate), Map("underlyingEffectiveDate", ("maturity", "effectiveDate"))]),
+        ("CapFloor", [Map("effectiveDate", ("maturity", "effectiveDate")), Map("maturityDate", MaturityDate)]),
+        ("StructuredNote",
+        [
+            Map("maturity", MaturityDate),
+            Map("issueDate", ("maturity", "issueDate")),
+            Map("issuerName", ("issuer", "issuerName")),
+            Map("couponRate", ("coupon", "couponRate")),
+            Map("paymentFrequency", ("coupon", "paymentFrequency"))
+        ]),
         ("InvestmentFund", [Map("fundFamily", ("fund", "fundFamily"))])
     ];
 

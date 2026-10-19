@@ -463,6 +463,47 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    upfrontPoints = terms.UpfrontPoints
                    recoveryRateAssumption = terms.RecoveryRateAssumption
                    indexName = terms.IndexName |})
+        | SecurityKind.Swaption terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   payerReceiver = terms.PayerReceiver
+                   exerciseStyle = terms.ExerciseStyle
+                   strikeRate = terms.StrikeRate
+                   expiry = terms.Expiry
+                   underlyingEffectiveDate = terms.UnderlyingEffectiveDate
+                   underlyingMaturityDate = terms.UnderlyingMaturityDate
+                   notional = terms.Notional
+                   floatingIndex = terms.FloatingIndex
+                   fixedLegPaymentFrequency = terms.FixedLegPaymentFrequency
+                   fixedLegDayCount = terms.FixedLegDayCount
+                   settlementType = terms.SettlementType |})
+        | SecurityKind.CapFloor terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   capFloorType = terms.CapFloorType
+                   referenceIndex = terms.ReferenceIndex
+                   capStrike = terms.CapStrike
+                   floorStrike = terms.FloorStrike
+                   notional = terms.Notional
+                   effectiveDate = terms.EffectiveDate
+                   maturityDate = terms.MaturityDate
+                   resetFrequency = terms.ResetFrequency
+                   dayCount = terms.DayCount
+                   premiumAmount = terms.PremiumAmount |})
+        | SecurityKind.StructuredNote terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   issuerName = terms.IssuerName
+                   underlyingDescription = terms.UnderlyingDescription
+                   maturity = terms.Maturity
+                   issueDate = terms.IssueDate
+                   denomination = terms.Denomination
+                   principalProtectionPct = terms.PrincipalProtectionPct
+                   participationRate = terms.ParticipationRate
+                   returnCap = terms.ReturnCap
+                   couponRate = terms.CouponRate
+                   paymentFrequency = terms.PaymentFrequency
+                   barrierLevel = terms.BarrierLevel |})
         | SecurityKind.InvestmentFund terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion

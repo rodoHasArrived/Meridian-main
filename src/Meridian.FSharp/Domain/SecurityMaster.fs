@@ -719,6 +719,65 @@ type CreditDefaultSwapTerms = {
     IndexName: string option
 }
 
+/// Option to enter an interest-rate swap: the holder may pay ("Payer") or receive ("Receiver") the
+/// strike fixed rate against the floating index on the underlying swap dates.
+type SwaptionTerms = {
+    /// "Payer" (right to pay fixed) or "Receiver" (right to receive fixed).
+    PayerReceiver: string
+    /// "European", "American" or "Bermudan"; None leaves the style undeclared.
+    ExerciseStyle: string option
+    /// Fixed rate of the underlying swap, as a decimal rate; may be negative.
+    StrikeRate: decimal
+    Expiry: DateOnly
+    UnderlyingEffectiveDate: DateOnly option
+    UnderlyingMaturityDate: DateOnly
+    Notional: decimal
+    FloatingIndex: string option
+    FixedLegPaymentFrequency: string option
+    FixedLegDayCount: string option
+    /// Settlement method label ("Physical" enters the swap, "Cash" pays its value).
+    SettlementType: string option
+}
+
+/// Interest-rate cap, floor or collar on a floating reference index over the protection period.
+type CapFloorTerms = {
+    /// "Cap", "Floor" or "Collar" (a long cap with a short floor).
+    CapFloorType: string
+    ReferenceIndex: string
+    /// Cap strike as a decimal rate; required for Cap and Collar.
+    CapStrike: decimal option
+    /// Floor strike as a decimal rate; required for Floor and Collar.
+    FloorStrike: decimal option
+    Notional: decimal
+    EffectiveDate: DateOnly
+    MaturityDate: DateOnly
+    ResetFrequency: string option
+    DayCount: string option
+    PremiumAmount: decimal option
+}
+
+/// Issuer note whose return is linked to a reference asset or basket (principal-protected notes,
+/// participation notes, reverse convertibles, autocallables). Held and priced by face like debt.
+type StructuredNoteTerms = {
+    IssuerName: string
+    /// Reference asset, index or basket the payoff is linked to.
+    UnderlyingDescription: string
+    Maturity: DateOnly
+    IssueDate: DateOnly option
+    /// Face amount of one note.
+    Denomination: decimal option
+    /// Share of principal repaid at maturity regardless of the underlying, as a fraction (1 = 100%).
+    PrincipalProtectionPct: decimal option
+    /// Share of the underlying's return the holder receives, as a fraction (1 = 100%).
+    ParticipationRate: decimal option
+    /// Maximum return paid, as a fraction of face.
+    ReturnCap: decimal option
+    CouponRate: decimal option
+    PaymentFrequency: string option
+    /// Knock-in or knock-out barrier as a fraction of the underlying's initial level.
+    BarrierLevel: decimal option
+}
+
 type SecurityKind =
     | Equity of EquityTerms
     | Option of OptionTerms
@@ -750,6 +809,12 @@ type SecurityKind =
     | NonDeliverableForward of NonDeliverableForwardTerms
     /// Single-name or index credit default swap.
     | CreditDefaultSwap of CreditDefaultSwapTerms
+    /// Option to enter an interest-rate swap.
+    | Swaption of SwaptionTerms
+    /// Interest-rate cap, floor or collar.
+    | CapFloor of CapFloorTerms
+    /// Issuer note with a payoff linked to a reference asset or basket.
+    | StructuredNote of StructuredNoteTerms
     /// Mutual fund, ETF, hedge fund, REIT, or closed-end fund.
     /// Market value = units × NAV (or market price); no amortization in general.
     | InvestmentFund of InvestmentFundTerms
@@ -843,6 +908,12 @@ module AssetClassRegistry =
             SubType = SecuritySubType.OtherSubType "NonDeliverableForward"; IssuerType = None; RiskCountry = None; IsDerivative = true }
           { AssetClassName = "CreditDefaultSwap"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
             SubType = SecuritySubType.OtherSubType "CreditDefaultSwap"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "Swaption"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+            SubType = SecuritySubType.OtherSubType "Swaption"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "CapFloor"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+            SubType = SecuritySubType.OtherSubType "CapFloor"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "StructuredNote"; AssetClass = AssetClass.FixedIncome; Family = Some AssetFamily.CorporateDebt
+            SubType = SecuritySubType.OtherSubType "StructuredNote"; IssuerType = Some "Corporate"; RiskCountry = None; IsDerivative = false }
           { AssetClassName = "InvestmentFund"; AssetClass = AssetClass.Fund; Family = None
             SubType = SecuritySubType.OtherSubType "InvestmentFund"; IssuerType = None; RiskCountry = None; IsDerivative = false }
           { AssetClassName = "CustomAsset"; AssetClass = AssetClass.Other; Family = Some (AssetFamily.OtherFamily "CustomAsset")
@@ -883,6 +954,9 @@ module AssetClassRegistry =
         | SecurityKind.FxForward _ -> "FxForward"
         | SecurityKind.NonDeliverableForward _ -> "NonDeliverableForward"
         | SecurityKind.CreditDefaultSwap _ -> "CreditDefaultSwap"
+        | SecurityKind.Swaption _ -> "Swaption"
+        | SecurityKind.CapFloor _ -> "CapFloor"
+        | SecurityKind.StructuredNote _ -> "StructuredNote"
         | SecurityKind.InvestmentFund _ -> "InvestmentFund"
         | SecurityKind.CustomAsset _ -> "CustomAsset"
 

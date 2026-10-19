@@ -371,6 +371,47 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
             recoveryRateAssumption = 0.4m,
             indexName = "CDX.NA.IG.46"
         },
+        ["Swaption"] = new
+        {
+            payerReceiver = "Payer",
+            exerciseStyle = "European",
+            strikeRate = 0.0375m,
+            expiry = "2027-03-15",
+            underlyingEffectiveDate = "2027-03-17",
+            underlyingMaturityDate = "2037-03-17",
+            notional = 25_000_000m,
+            floatingIndex = "SOFR",
+            fixedLegPaymentFrequency = "SemiAnnual",
+            fixedLegDayCount = "30/360",
+            settlementType = "Physical"
+        },
+        ["CapFloor"] = new
+        {
+            capFloorType = "Collar",
+            referenceIndex = "SOFR",
+            capStrike = 0.05m,
+            floorStrike = 0.02m,
+            notional = 50_000_000m,
+            effectiveDate = "2026-04-01",
+            maturityDate = "2031-04-01",
+            resetFrequency = "Quarterly",
+            dayCount = "ACT/360",
+            premiumAmount = 125_000m
+        },
+        ["StructuredNote"] = new
+        {
+            issuerName = "Meridian Bank plc",
+            underlyingDescription = "S&P 500 Index",
+            maturity = "2031-12-15",
+            issueDate = "2026-12-15",
+            denomination = 1000m,
+            principalProtectionPct = 1m,
+            participationRate = 0.85m,
+            returnCap = 0.4m,
+            couponRate = 0.01m,
+            paymentFrequency = "Annual",
+            barrierLevel = 0.6m
+        },
         ["InvestmentFund"] = new
         {
             fundType = "ETF",

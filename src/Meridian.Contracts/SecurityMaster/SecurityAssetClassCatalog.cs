@@ -506,6 +506,47 @@ public static class SecurityAssetClassCatalog
             ],
             RequiresMaturity: true),
         new(
+            AssetClass: "Swaption",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.Notional,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.PermId,
+                SecurityIdentifierKind.ProviderSymbol
+            ]),
+        new(
+            AssetClass: "CapFloor",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.Notional,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.PermId,
+                SecurityIdentifierKind.ProviderSymbol
+            ],
+            RequiresMaturity: true),
+        new(
+            AssetClass: "StructuredNote",
+            AssetPackIds: ["fixed-income"],
+            LotUnit: SecurityLotUnitKind.FaceValue,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.Isin,
+                SecurityIdentifierKind.Cusip,
+                SecurityIdentifierKind.InternalCode
+            ],
+            RequiresMaturity: true),
+        new(
             AssetClass: "InvestmentFund",
             AssetPackIds: ["public-equity-etf"],
             LotUnit: SecurityLotUnitKind.Units,

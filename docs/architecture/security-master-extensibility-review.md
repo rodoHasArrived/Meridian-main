@@ -415,7 +415,8 @@ and optionally a projection interface + Postgres store + migration + DI registra
 
 > **2026-10-19 update.** The OTC derivative classes `FxForward`, `NonDeliverableForward` and
 > `CreditDefaultSwap` were added as declarative classes (catalog, schema, validators, codec arms,
-> registry-written projections via migration 046). Every surface below now reads 29; the
+> registry-written projections via migration 046), followed by `Swaption`, `CapFloor` and
+> `StructuredNote` (migration 047). Every surface below now reads 32; the
 > coverage, parity, round-trip and projection-DDL tests enumerate the classes by reflection and
 > held the addition to the hand-listed sites named in this section.
 
