@@ -94,6 +94,8 @@ public sealed class AuditChainIntegrityViewModel : BindableBase
         using var cts = new CancellationTokenSource();
         _inFlight = cts;
         IsBusy = true;
+        // A fresh check was asked for, so the previous verdict no longer stands while it runs.
+        ClearVerdict();
         StatusText = "Verifying the accounting and ledger audit chains…";
         try
         {

@@ -81,6 +81,24 @@ public sealed class AuditChainIntegrityViewModelTests
     }
 
     [Fact]
+    public async Task WithdrawsThePreviousVerdictWhileAFreshVerificationRuns()
+    {
+        var client = new SequenceClient(Completed(true,
+            new AuditChainIntegrityResultDto(AuditChainIdentifiers.AccountingActions, AuditChainIntegrityStatus.Verified, 4, 0)));
+        var viewModel = new AuditChainIntegrityViewModel(client);
+        await viewModel.VerifyAsync();
+        viewModel.VerdictTitle.Should().Be("Audit chains verified");
+
+        var rerun = viewModel.VerifyAsync();
+
+        viewModel.IsBusy.Should().BeTrue();
+        viewModel.VerdictTitle.Should().BeEmpty();
+        viewModel.Rows.Should().BeEmpty();
+        viewModel.Cancel();
+        await rerun;
+    }
+
+    [Fact]
     public async Task CancelAbandonsARunningVerification()
     {
         var client = new BlockingClient();
@@ -117,6 +135,23 @@ public sealed class AuditChainIntegrityViewModelTests
         {
             Calls++;
             return Task.FromResult(result);
+        }
+    }
+
+    /// <summary>Answers the first request, then blocks until cancelled.</summary>
+    private sealed class SequenceClient(AuditIntegrityCheckResult first) : IAccountingAuditIntegrityApiClient
+    {
+        private int _calls;
+
+        public async Task<AuditIntegrityCheckResult> VerifyAsync(CancellationToken ct = default)
+        {
+            if (_calls++ == 0)
+            {
+                return first;
+            }
+
+            await Task.Delay(Timeout.Infinite, ct);
+            return first;
         }
     }
 
