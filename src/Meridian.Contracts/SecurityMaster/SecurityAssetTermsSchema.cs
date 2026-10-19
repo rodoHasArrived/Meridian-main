@@ -549,7 +549,7 @@ public static class SecurityAssetTermsSchema
                 Req("fixedCouponBps", SecurityAssetTermFieldType.Decimal, "couponBps", "runningSpreadBps"),
                 Req("effectiveDate", SecurityAssetTermFieldType.Date),
                 Req("maturityDate", SecurityAssetTermFieldType.Date, "scheduledTerminationDate"),
-                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.PaymentFrequency),
+                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.CouponFrequency),
                 Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention").WithConvention(SecurityTermConventionKind.DayCount),
                 Opt("seniority", SecurityAssetTermFieldType.String),
                 Opt("restructuringClause", SecurityAssetTermFieldType.String, "docClause"),

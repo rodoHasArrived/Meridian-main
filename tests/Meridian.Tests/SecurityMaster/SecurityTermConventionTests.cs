@@ -32,9 +32,11 @@ public sealed class SecurityTermConventionTests
         => SecurityAssetTermsSchema.Field(assetClass, "settlementType")!.Convention
             .Should().Be(SecurityTermConventionKind.SettlementMethod);
 
-    [Fact]
-    public void BondPaymentFrequency_IsAScheduleDrivingCouponFrequency()
-        => SecurityAssetTermsSchema.Field("Bond", "paymentFrequency")!.Convention
+    [Theory]
+    [InlineData("Bond")]
+    [InlineData("CreditDefaultSwap")]
+    public void CouponPaymentFrequency_IsACouponFrequencyConvention(string assetClass)
+        => SecurityAssetTermsSchema.Field(assetClass, "paymentFrequency")!.Convention
             .Should().Be(SecurityTermConventionKind.CouponFrequency);
 
     [Theory]
