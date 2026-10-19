@@ -485,8 +485,11 @@ public sealed class AccountCashForecastTests : IDisposable
         var first = AccountCashForecastEngine.Build(Request([], 100m));
         var second = AccountCashForecastEngine.Build(Request([], 100m) with
         {
-            RunId = "run-2", ClosingCash = Request([], 101m).ClosingCash, PreviousSnapshotId = first.SnapshotId,
-            CorrectionRationale = "Restated closing", RecordedAtUtc = Recorded.AddHours(1)
+            RunId = "run-2",
+            ClosingCash = Request([], 101m).ClosingCash,
+            PreviousSnapshotId = first.SnapshotId,
+            CorrectionRationale = "Restated closing",
+            RecordedAtUtc = Recorded.AddHours(1)
         });
         var other = AccountCashForecastEngine.Build(OtherScopeRequest(otherScope, "run-1"));
         var legacyBytes = LegacyStateBytes(first, other, second);
