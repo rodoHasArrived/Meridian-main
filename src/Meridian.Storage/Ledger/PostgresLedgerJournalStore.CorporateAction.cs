@@ -245,7 +245,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
     private async Task LockSuccessorLotLabelsAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
         AtomicTaxLotJournalCommand command, LedgerAccount account, CancellationToken ct)
     {
-        // Match the durable unique key, including closed lots and normalized labels. Serializable
+        // Match the durable unique key, including closed lots, normalized labels and case-insensitive
+        // financial account ids (V_ledger_051 agrees with LedgerAccount equality). Serializable
         // predicate reads protect absent keys; retained matches are locked before any journal write.
         await using var guard = connection.CreateCommand();
         guard.Transaction = transaction;
@@ -253,7 +254,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
             select tax_lot_record_id from {Qualified("tax_lots")}
             where ledger_book_id = @book and account_name = @account_name and account_type = @account_type
               and coalesce(symbol, '') = coalesce(@symbol, '')
-              and coalesce(financial_account_id, '') = coalesce(@financial_account_id, '')
+              and lower(coalesce(financial_account_id, '')) = lower(coalesce(@financial_account_id, ''))
               and lot_id = any(@labels)
             order by tax_lot_record_id
             for update;
