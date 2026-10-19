@@ -61,6 +61,29 @@ public sealed class SwapProjectionServiceTests
     }
 
     [Fact]
+    public async Task GetReferenceAsync_CarriesLegFrequencyAndDayCount_WithTypedCompanions()
+    {
+        var id = Guid.NewGuid();
+        var termsJson = System.Text.Json.JsonDocument.Parse(
+            """{"legs":[{"legType":"Fixed","currency":"USD","fixedRate":0.0350,"paymentFrequency":"Semi-Annual","dayCount":"30/360"},{"legType":"Float","currency":"USD","index":"SOFR","frequency":"Quarterly","dayCountConvention":"ACT/360"}]}""")
+            .RootElement;
+
+        _smStore.GetProjectionAsync(id, Arg.Any<CancellationToken>())
+            .Returns(MakeProjection(id, "Swap", termsJson));
+        _projStore.GetSwapAsync(id, Arg.Any<CancellationToken>())
+            .Returns(BuildRow(id));
+
+        var result = await CreateSut().GetReferenceAsync(id);
+
+        result!.Legs[0].PaymentFrequency.Should().Be("Semi-Annual");
+        result.Legs[0].PaymentCadence.Should().Be(SecurityPaymentFrequency.SemiAnnual);
+        result.Legs[0].DayCountConvention.Should().Be(DayCountConvention.Thirty360);
+        result.Legs[1].PaymentFrequency.Should().Be("Quarterly");
+        result.Legs[1].DayCount.Should().Be("ACT/360");
+        result.Legs[1].DayCountConvention.Should().Be(DayCountConvention.Actual360);
+    }
+
+    [Fact]
     public async Task GetBySwapTypeAsync_ReturnsEmpty_ForBlankInput()
     {
         var results = await CreateSut().GetBySwapTypeAsync("   ");
