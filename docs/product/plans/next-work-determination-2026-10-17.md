@@ -446,8 +446,7 @@ one-line entry, and it now has a reproduction rather than an argument.**
 `#3194` also arrived carrying three regeneration commits of its own —
 `482b5dc0` and `933c6c91` (both *"chore: merge main and regenerate generated artifacts"*) and
 `8c820d42` (*"docs: regenerate doc-health dashboard after merging main"*). **One pull request paid
-this tax three times before it merged.** Across two base advances in 68 minutes, this document's own
-branch paid it twice. The two P1 rows — the `merge=` driver and the one-line `GENERATED_FILES`
+this tax three times before it merged.** Across four base advances — two inside 68 minutes on 2026-10-17, then again on 2026-10-19 — this document's own branch paid it **four** times, every time on the same file pair, every time resolved by the resolver with nothing requiring review. The two P1 rows — the `merge=` driver and the one-line `GENERATED_FILES`
 addition — are not hygiene items; they are the difference between these merges being automatic and
 being hand-held.
 

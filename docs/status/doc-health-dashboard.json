@@ -1,6 +1,6 @@
 {
   "total_files": 740,
-  "total_lines": 164026,
+  "total_lines": 164041,
   "orphaned_count": 248,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2684,7 +2684,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-04.md",
-      "line_count": 518,
+      "line_count": 511,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2692,7 +2692,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-05.md",
-      "line_count": 98,
+      "line_count": 106,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3364,7 +3364,7 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-10-17.md",
-      "line_count": 528,
+      "line_count": 537,
       "has_heading": true,
       "todo_count": 6,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5836,7 +5836,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1828,
+      "line_count": 1833,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
