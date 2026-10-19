@@ -62,6 +62,24 @@ describe("AuditChainIntegrityPanel", () => {
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 
+  it("withdraws the previous verdict while a fresh verification runs", async () => {
+    api.getAuditIntegrityReport.mockResolvedValueOnce({
+      verifiedAtUtc: "2026-10-18T09:00:00Z",
+      allVerified: true,
+      chains: [{ chain: "accounting-actions", status: "verified", linksChecked: 4, unprotectedPreChainCount: 0, failureKind: null, failedSequence: null, detail: null }]
+    });
+    api.getAuditIntegrityReport.mockReturnValueOnce(new Promise(() => {}));
+    render(<AuditChainIntegrityPanel />);
+    const button = screen.getByRole("button", { name: /Verify the accounting and ledger audit chains/ });
+
+    await userEvent.click(button);
+    expect(await screen.findByText("Audit chains verified")).toBeInTheDocument();
+    await userEvent.click(button);
+
+    expect(screen.queryByText("Audit chains verified")).not.toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
   it("aborts a running verification when the panel unmounts", async () => {
     let signal: AbortSignal | undefined;
     api.getAuditIntegrityReport.mockImplementation((options) => {

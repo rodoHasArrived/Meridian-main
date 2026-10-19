@@ -149,6 +149,35 @@ public sealed class LedgerEventAuditPostgresTests
     }
 
     [LedgerDatabaseFact]
+    public async Task HeadDisagreement_ReportsTheLinkTheHeadDisagreesWith()
+    {
+        // (corruption, expected failed sequence relative to the final retained link N)
+        (string Sql, Func<long, long> Expected)[] cases =
+        [
+            ("update {schema}.ledger_event_audit_head set last_hash = repeat('0', 64)", n => n),
+            ("update {schema}.ledger_event_audit_head set next_sequence = 2, last_hash = (select entry_hash from {schema}.ledger_event_audit_events where chain_sequence = 1)", _ => 2),
+            ("update {schema}.ledger_event_audit_head set next_sequence = next_sequence + 1", n => n + 1),
+        ];
+        foreach (var (sql, expected) in cases)
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            var ct = timeout.Token;
+            await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
+            var (book, period) = await CreatePeriodAsync(database, ct);
+            await GovernedStore(database).AppendAsync(Write(book, period, "poster"), ct);
+            var finalLink = (long)(await SqlScalarAsync(database, "select max(chain_sequence) from {schema}.ledger_event_audit_events", ct))!;
+            finalLink.Should().BeGreaterThan(1);
+            await SqlAsync(database, sql, ct);
+
+            var verify = () => database.JournalStore.VerifyLedgerEventAuditAsync(ct);
+
+            var failure = (await verify.Should().ThrowAsync<LedgerValidationException>().WithMessage("*disagree*")).Which;
+            failure.Data[LedgerEventAuditFailureData.FailedSequence].Should().Be(expected(finalLink));
+            failure.Data[LedgerEventAuditFailureData.ChainedEventsVerified].Should().Be(expected(finalLink) - 1);
+        }
+    }
+
+    [LedgerDatabaseFact]
     public async Task UnauditedPeriodMutation_IsDetected()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));

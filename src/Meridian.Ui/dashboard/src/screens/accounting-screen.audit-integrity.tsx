@@ -39,6 +39,8 @@ export function AuditChainIntegrityPanel() {
     setBusy(true);
     setError(null);
     setNotice(null);
+    // A fresh check was asked for, so the previous verdict no longer stands while it runs.
+    setView(null);
     try {
       setView(buildAuditIntegrityViewModel(await getAuditIntegrityReport({ signal: controller.signal })));
     } catch (reason) {
