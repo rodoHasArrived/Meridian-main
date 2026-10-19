@@ -910,7 +910,7 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
-    public void Scenario_StructuredCreditPeriodEndThatIsNotADate_BlocksReadiness()
+    public void Scenario_StructuredCreditMalformedPeriodEndAndSeniority_BlockReadiness()
     {
         // The ordering rule reads an unparseable date as "not supplied", so a malformed period end
         // on an imported or restored row needs its own rule to be reported.
@@ -926,6 +926,7 @@ public sealed class SecurityValidationServiceTests
                 originalFace = 1000000m,
                 couponOrIndex = "SOFR+250",
                 maturity = "2036-01-15",
+                seniority = 42,
                 reinvestmentPeriodEnd = "someday",
                 nonCallPeriodEnd = "2028-01-15"
             }));
@@ -937,6 +938,7 @@ public sealed class SecurityValidationServiceTests
 
         report.HasBlockingIssues.Should().BeTrue();
         report.Issues.Should().ContainSingle(static item => item.Code == "SM_STRUCTURED_CREDIT_REINVESTMENT_END_NOT_A_DATE");
+        report.Issues.Should().ContainSingle(static item => item.Code == "SM_STRUCTURED_CREDIT_SENIORITY_INVALID");
         report.Issues.Should().NotContain(static item =>
             item.Code == "SM_STRUCTURED_CREDIT_NON_CALL_END_NOT_A_DATE" || item.Code == "SM_STRUCTURED_CREDIT_REINVESTMENT_END_INVALID");
     }

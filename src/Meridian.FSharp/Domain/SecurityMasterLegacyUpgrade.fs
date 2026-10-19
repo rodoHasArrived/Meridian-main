@@ -104,6 +104,12 @@ module SecurityMasterLegacyUpgrade =
                 SubType = SecuritySubType.OtherSubType (terms.SubType |> Option.defaultValue terms.Category) }
         | _ -> classification
 
+    /// Whether a tranche label names the strip <paramref name="token"/> as a whole token ("IO",
+    /// "IO-1", "A/PO"), not as a substring: "Senior" contains the letters "io" and is not an IO strip.
+    let private trancheLabelHasToken (token: string) (tranche: string) =
+        tranche.Split([| ' '; '-'; '_'; '/'; '.'; ','; ':'; '('; ')' |], StringSplitOptions.RemoveEmptyEntries)
+        |> Array.exists (fun part -> String.Equals(part, token, StringComparison.OrdinalIgnoreCase))
+
     let private termsFromKind (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity terms ->
@@ -541,12 +547,12 @@ module SecurityMasterLegacyUpgrade =
                                 match terms.Kind with
                                 | Some StructuredCreditKind.InterestOnly -> true
                                 | Some _ -> false
-                                | None -> terms.Tranche.Contains("IO", StringComparison.OrdinalIgnoreCase)
+                                | None -> trancheLabelHasToken "IO" terms.Tranche
                             IsPrincipalOnly =
                                 match terms.Kind with
                                 | Some StructuredCreditKind.PrincipalOnly -> true
                                 | Some _ -> false
-                                | None -> terms.Tranche.Contains("PO", StringComparison.OrdinalIgnoreCase)
+                                | None -> trancheLabelHasToken "PO" terms.Tranche
                             NotionalBalance = Some terms.OriginalFace
                             Originator = None
                             CreditEnhancementPct = None

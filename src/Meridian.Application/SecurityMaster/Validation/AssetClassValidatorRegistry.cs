@@ -210,6 +210,7 @@ internal static class DefaultAssetClassValidators
                     FieldRule.OptionalNonNegative("currentFactor", "SM_STRUCTURED_CREDIT_CURRENT_FACTOR_INVALID", "Structured credit current factor is invalid", "Structured credit current factor must be zero or greater when supplied."),
                     FieldRule.RequiredString("couponOrIndex", "SM_STRUCTURED_CREDIT_COUPON_INDEX_REQUIRED", "Structured credit coupon/index is missing", "Structured credit records must include a coupon or index reference."),
                     FieldRule.OptionalAllowedString("structuredCreditKind", SecurityReferenceTaxonomyCatalog.Default.GetValues(SecurityReferenceTaxonomyKeys.StructuredCreditKind), "SM_STRUCTURED_CREDIT_KIND_INVALID", "Structured credit kind is not a governed value", "Structured credit kind must be one of the structured-credit-kind taxonomy values when supplied."),
+                    FieldRule.OptionalString("seniority", "SM_STRUCTURED_CREDIT_SENIORITY_INVALID", "Structured credit seniority is not a string", "Structured credit seniority must be a non-blank string when supplied."),
                     FieldRule.OptionalFraction("attachmentPoint", "SM_STRUCTURED_CREDIT_ATTACHMENT_INVALID", "Structured credit attachment point is invalid", "Structured credit attachment point must be a fraction between zero and one when supplied."),
                     FieldRule.OptionalFraction("detachmentPoint", "SM_STRUCTURED_CREDIT_DETACHMENT_INVALID", "Structured credit detachment point is invalid", "Structured credit detachment point must be a fraction between zero and one when supplied."),
                     NumericOrderRule.Optional("attachmentPoint", "detachmentPoint", "SM_STRUCTURED_CREDIT_ATTACHMENT_ABOVE_DETACHMENT", "Structured credit attachment point exceeds detachment point", "Structured credit attachment point must be at or below the detachment point when both are supplied."),
@@ -799,6 +800,10 @@ internal sealed record FieldRule(
     public static FieldRule OptionalDate(string fieldPath, string code, string title, string message)
         => new(fieldPath, SecurityFieldRuleKind.OptionalDate, SecurityValidationSeverityDto.Error, code, title, message);
 
+    /// <summary>A value that, when supplied, must be a non-blank JSON string; absent or null passes.</summary>
+    public static FieldRule OptionalString(string fieldPath, string code, string title, string message)
+        => new(fieldPath, SecurityFieldRuleKind.OptionalString, SecurityValidationSeverityDto.Error, code, title, message);
+
     public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
     {
         var field = $"assetSpecificTerms.{FieldPath}";
@@ -829,6 +834,7 @@ internal sealed record FieldRule(
             SecurityFieldRuleKind.OptionalAllowedString => JsonValidationReader.HasAllowedString(property, AllowedValues ?? Array.Empty<string>()),
             SecurityFieldRuleKind.OptionalFraction => JsonValidationReader.TryGetDecimal(property, out var value) && value >= 0m && value <= 1m,
             SecurityFieldRuleKind.OptionalDate => JsonValidationReader.HasDate(property),
+            SecurityFieldRuleKind.OptionalString => JsonValidationReader.HasNonBlankString(property),
             _ => true
         };
 
@@ -1062,7 +1068,8 @@ internal enum SecurityFieldRuleKind
     OptionalNonNegativeNumber,
     OptionalAllowedString,
     OptionalFraction,
-    OptionalDate
+    OptionalDate,
+    OptionalString
 }
 
 internal static class JsonValidationReader
