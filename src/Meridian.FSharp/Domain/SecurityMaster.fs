@@ -660,7 +660,6 @@ type CustomAssetTerms = {
     TermsJson: string
 }
 
-[<RequireQualifiedAccess>]
 /// Outright FX forward: an agreed exchange of the base and quote currencies at a forward rate on
 /// the value date. Deliverable unless SettlementType says otherwise.
 type FxForwardTerms = {
@@ -778,6 +777,7 @@ type StructuredNoteTerms = {
     BarrierLevel: decimal option
 }
 
+[<RequireQualifiedAccess>]
 type SecurityKind =
     | Equity of EquityTerms
     | Option of OptionTerms

@@ -334,7 +334,7 @@ internal static class DefaultAssetClassValidators
                     FieldRule.RequiredDate("effectiveDate", "SM_CDS_EFFECTIVE_DATE_REQUIRED", "CDS effective date is missing", "Credit default swaps must include an effective date."),
                     FieldRule.RequiredDate("maturityDate", "SM_CDS_MATURITY_DATE_REQUIRED", "CDS maturity date is missing", "Credit default swaps must include a scheduled termination date."),
                     DateOrderRule.Required("effectiveDate", "maturityDate", "SM_CDS_DATE_RANGE_INVALID", "CDS date range is invalid", "CDS effective date must be on or before the maturity date."),
-                    FieldRule.OptionalNonNegative("fixedCouponBps", "SM_CDS_FIXED_COUPON_INVALID", "CDS fixed coupon is invalid", "CDS fixed coupon must be zero or greater basis points."),
+                    FieldRule.RequiredNonNegative("fixedCouponBps", "SM_CDS_FIXED_COUPON_INVALID", "CDS fixed coupon is missing or invalid", "Credit default swaps must include a running fixed coupon of zero or more basis points."),
                     FieldRule.OptionalFraction("recoveryRateAssumption", "SM_CDS_RECOVERY_RATE_INVALID", "CDS recovery rate is invalid", "CDS recovery rate assumption must be a fraction between 0 and 1.")
                 ]),
             new JsonAssetClassValidator(
@@ -342,6 +342,7 @@ internal static class DefaultAssetClassValidators
                 [
                     FieldRule.RequiredAllowedString("payerReceiver", ["Payer", "Receiver"], "SM_SWAPTION_PAYER_RECEIVER_INVALID", "Swaption payer/receiver is invalid", "Swaptions must be 'Payer' or 'Receiver'."),
                     FieldRule.OptionalAllowedString("exerciseStyle", ["European", "American", "Bermudan"], "SM_SWAPTION_EXERCISE_STYLE_INVALID", "Swaption exercise style is invalid", "Swaption exercise style must be European, American or Bermudan when present."),
+                    FieldRule.RequiredNumber("strikeRate", "SM_SWAPTION_STRIKE_REQUIRED", "Swaption strike is missing", "Swaptions must include the strike fixed rate of the underlying swap (it may be negative)."),
                     FieldRule.RequiredDate("expiry", "SM_SWAPTION_EXPIRY_REQUIRED", "Swaption expiry is missing", "Swaptions must include an expiry date."),
                     FieldRule.RequiredDate("underlyingMaturityDate", "SM_SWAPTION_UNDERLYING_MATURITY_REQUIRED", "Swaption underlying maturity is missing", "Swaptions must include the underlying swap's maturity date."),
                     DateOrderRule.Required("expiry", "underlyingMaturityDate", "SM_SWAPTION_EXPIRY_AFTER_MATURITY", "Swaption expiry is after the underlying maturity", "Swaption expiry must be on or before the underlying swap's maturity date."),
@@ -862,6 +863,13 @@ internal sealed record FieldRule(
     public static FieldRule RequiredPositive(string fieldPath, string code, string title, string message)
         => new(fieldPath, SecurityFieldRuleKind.RequiredPositiveNumber, SecurityValidationSeverityDto.Error, code, title, message);
 
+    /// <summary>A required number of any sign (rates and strikes may be negative).</summary>
+    public static FieldRule RequiredNumber(string fieldPath, string code, string title, string message)
+        => new(fieldPath, SecurityFieldRuleKind.RequiredNumber, SecurityValidationSeverityDto.Error, code, title, message);
+
+    public static FieldRule RequiredNonNegative(string fieldPath, string code, string title, string message)
+        => new(fieldPath, SecurityFieldRuleKind.RequiredNonNegativeNumber, SecurityValidationSeverityDto.Error, code, title, message);
+
     public static FieldRule RequiredArray(string fieldPath, string code, string title, string message)
         => new(fieldPath, SecurityFieldRuleKind.RequiredArrayNotEmpty, SecurityValidationSeverityDto.Error, code, title, message);
 
@@ -911,6 +919,8 @@ internal sealed record FieldRule(
             SecurityFieldRuleKind.RequiredGuid => JsonValidationReader.HasGuid(property),
             SecurityFieldRuleKind.RequiredDate => JsonValidationReader.HasDate(property),
             SecurityFieldRuleKind.RequiredPositiveNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value > 0m,
+            SecurityFieldRuleKind.RequiredNonNegativeNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value >= 0m,
+            SecurityFieldRuleKind.RequiredNumber => JsonValidationReader.TryGetDecimal(property, out _),
             SecurityFieldRuleKind.RequiredArrayNotEmpty => property.ValueKind == JsonValueKind.Array && property.GetArrayLength() > 0,
             SecurityFieldRuleKind.OptionalPositiveNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value > 0m,
             SecurityFieldRuleKind.OptionalNonNegativeNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value >= 0m,
@@ -939,6 +949,8 @@ internal sealed record FieldRule(
             or SecurityFieldRuleKind.RequiredGuid
             or SecurityFieldRuleKind.RequiredDate
             or SecurityFieldRuleKind.RequiredPositiveNumber
+            or SecurityFieldRuleKind.RequiredNonNegativeNumber
+            or SecurityFieldRuleKind.RequiredNumber
             or SecurityFieldRuleKind.RequiredArrayNotEmpty;
 }
 
@@ -1194,6 +1206,8 @@ internal enum SecurityFieldRuleKind
     RequiredGuid,
     RequiredDate,
     RequiredPositiveNumber,
+    RequiredNonNegativeNumber,
+    RequiredNumber,
     RequiredArrayNotEmpty,
     OptionalPositiveNumber,
     OptionalNonNegativeNumber,

@@ -975,6 +975,39 @@ public sealed class SecurityValidationServiceTests
         strikeIssues.Should().OnlyContain(static item => item.Severity == SecurityValidationSeverityDto.Error);
     }
 
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(-0.0025, false)]
+    [InlineData(0.0375, false)]
+    public void Scenario_SwaptionStrike_IsRequiredButMayBeNegative(double? strikeRate, bool expectIssue)
+    {
+        var terms = new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            ["payerReceiver"] = "Receiver",
+            ["expiry"] = "2027-03-15",
+            ["underlyingMaturityDate"] = "2037-03-17",
+            ["notional"] = 25_000_000m
+        };
+        if (strikeRate is { } strike)
+        {
+            terms["strikeRate"] = (decimal)strike;
+        }
+
+        var swaption = CreateProjection(
+            Guid.NewGuid(),
+            "Swaption",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "SWPN-2", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(terms));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(swaption, [swaption], Now);
+
+        report.Issues.Any(static item => item.Code == "SM_SWAPTION_STRIKE_REQUIRED").Should().Be(expectIssue);
+    }
+
     [Fact]
     public void Scenario_SwaptionUnderlyingStartingBeforeExpiry_IsBlocking()
     {
@@ -1000,6 +1033,43 @@ public sealed class SecurityValidationServiceTests
 
         report.Issues.Should().Contain(static item => item.Code == "SM_SWAPTION_EFFECTIVE_BEFORE_EXPIRY");
         report.HasBlockingIssues.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(-25.0, true)]
+    [InlineData(0.0, false)]
+    [InlineData(100.0, false)]
+    public void Scenario_CreditDefaultSwapFixedCoupon_IsRequiredAndNonNegative(double? fixedCouponBps, bool expectIssue)
+    {
+        var terms = new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            ["referenceEntity"] = "Meridian Industries Inc",
+            ["protectionSide"] = "Buy",
+            ["notional"] = 10_000_000m,
+            ["effectiveDate"] = "2026-03-20",
+            ["maturityDate"] = "2031-06-20"
+        };
+        if (fixedCouponBps is { } coupon)
+        {
+            terms["fixedCouponBps"] = (decimal)coupon;
+        }
+
+        var cds = CreateProjection(
+            Guid.NewGuid(),
+            "CreditDefaultSwap",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "CDS-1", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(terms));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(cds, [cds], Now);
+
+        var couponIssues = report.Issues.Where(static item => item.Code == "SM_CDS_FIXED_COUPON_INVALID").ToArray();
+        couponIssues.Any().Should().Be(expectIssue);
+        couponIssues.Should().OnlyContain(static item => item.Severity == SecurityValidationSeverityDto.Error);
     }
 
     [Fact]
