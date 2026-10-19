@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 4 of 5
 
-Objects 241-320 of 328. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 330. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -202,6 +202,10 @@ classDiagram
         +string? ReasonCode
         +DateTimeOffset? ReviewedAt
         +string? Reviewer
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityPaymentFrequency["SecurityPaymentFrequency"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityPaymentFrequencyExtensions["SecurityPaymentFrequencyExtensions"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto["SecurityPriceGoldenCopyDto"] {
         +IReadOnlyList~SecurityComparisonPriceDto~ ComparisonPrices
@@ -466,14 +470,6 @@ classDiagram
         +int SecuritiesScanned
         +int UnreadableCount
     }
-    class Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry["StructuredFactorScheduleEntry"] {
-        +DateOnly AsOfDate
-        +decimal Factor
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry["StructuredPrincipalScheduleEntry"] {
-        +decimal Amount
-        +DateOnly PaymentDate
-    }
     Meridian_Contracts_SecurityMaster_SecurityForwardCurve --> Meridian_Contracts_SecurityMaster_SecurityForwardCurvePoint
     Meridian_Contracts_SecurityMaster_SecurityIdentifierDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlow --> Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowKind
@@ -508,10 +504,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationBlockerDto
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationDisposition
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationReportDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto
