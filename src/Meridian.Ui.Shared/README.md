@@ -26,6 +26,7 @@ tenant assertions cannot establish authority. `AccountCashForecastEvidenceAdapte
 balance/flow/FX JSON from independently reviewed account Evidence Vault documents. It verifies
 original bytes, hashes, review provenance, version and every economic field before capture;
 unsupported inputs fail closed. File histories require explicit administrative provisioning.
+Corrupt or missing retained history and writer-lock timeouts in either file store return HTTP 503.
 See [bounded account oversight](../../docs/operators/account-oversight.md) for route and source
 format contracts. These seams do not grant accounting-close or payment authority.
 The browser receives exact decimal text through this HTTP transport without changing retained
@@ -33,7 +34,8 @@ domain digests. Scoped access context supplies current session capabilities; clo
 loads all exact account/book/date versions after durable evidence validation.
 Close-price capture accepts an optional stable request identity. Identical retries recover the
 retained snapshot before price evaluation; changing its immutable command conflicts. The HTTP
-actor remains session-derived on both initial capture and recovery.
+actor remains session-derived on both initial capture and recovery. When only the unconfigured
+`NullSecurityMasterPricingService` fallback is registered, close-price routes answer 503 instead of empty history.
 
 Security Master override PATCH and decision endpoints return HTTP 409 when another instance
 advances the durable workbench generation. The governed workbench endpoints use their existing
