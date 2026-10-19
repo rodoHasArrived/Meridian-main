@@ -10,10 +10,27 @@ namespace Meridian.Ui.Shared.Services;
 /// <summary>Raised when the external head journal is unreadable or internally inconsistent.</summary>
 public sealed class AccountingAuditChainAnchorException : Exception
 {
-    public AccountingAuditChainAnchorException(string message)
+    public AccountingAuditChainAnchorException(
+        string message,
+        bool isIntegrityFailure = false,
+        bool isUnsupportedSchemaVersion = false)
         : base(message)
     {
+        IsIntegrityFailure = isIntegrityFailure;
+        IsUnsupportedSchemaVersion = isUnsupportedSchemaVersion;
     }
+
+    /// <summary>
+    /// True when a journal line was written under a schema version this build does not implement,
+    /// the expected state during a rolling upgrade or downgrade rather than evidence of tampering.
+    /// </summary>
+    public bool IsUnsupportedSchemaVersion { get; }
+
+    /// <summary>
+    /// True when a readable journal line failed its own hash or predecessor binding: proven
+    /// tampering with the head journal, as opposed to a line this build cannot read.
+    /// </summary>
+    public bool IsIntegrityFailure { get; }
 }
 
 /// <summary>
@@ -264,14 +281,16 @@ public sealed class FileAccountingAuditChainAnchor
             {
                 throw new AccountingAuditChainAnchorException(
                     $"Accounting audit head journal line {lineNumber.ToString(CultureInfo.InvariantCulture)} "
-                    + $"declares unsupported schema version {record.SchemaVersion.ToString(CultureInfo.InvariantCulture)}.");
+                    + $"declares unsupported schema version {record.SchemaVersion.ToString(CultureInfo.InvariantCulture)}.",
+                    isUnsupportedSchemaVersion: true);
             }
 
             if (!string.Equals(record.PreviousAnchorHash, previousAnchorHash, StringComparison.Ordinal))
             {
                 throw new AccountingAuditChainAnchorException(
                     $"Accounting audit head journal line {lineNumber.ToString(CultureInfo.InvariantCulture)} "
-                    + "does not follow its predecessor.");
+                    + "does not follow its predecessor.",
+                    isIntegrityFailure: true);
             }
 
             var expected = ComputeAnchorHash(
@@ -281,7 +300,8 @@ public sealed class FileAccountingAuditChainAnchor
             {
                 throw new AccountingAuditChainAnchorException(
                     $"Accounting audit head journal line {lineNumber.ToString(CultureInfo.InvariantCulture)} "
-                    + "failed hash verification.");
+                    + "failed hash verification.",
+                    isIntegrityFailure: true);
             }
 
             records.Add(record);
