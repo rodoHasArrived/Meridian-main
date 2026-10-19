@@ -657,8 +657,10 @@ public sealed class AccountCashForecastTests : IDisposable
         await store.InitializeAsync();
         var second = AccountCashForecastEngine.Build(Request([], 100m) with
         {
-            RunId = "second", PreviousSnapshotId = first.SnapshotId,
-            CorrectionRationale = "Post-migration append", RecordedAtUtc = Recorded.AddDays(1)
+            RunId = "second",
+            PreviousSnapshotId = first.SnapshotId,
+            CorrectionRationale = "Post-migration append",
+            RecordedAtUtc = Recorded.AddDays(1)
         });
         await store.AppendAsync(second);
         var complete = await File.ReadAllBytesAsync(ScopeStatePath(Scope));
@@ -695,8 +697,10 @@ public sealed class AccountCashForecastTests : IDisposable
         var first = AccountCashForecastEngine.Build(Request([], 100m));
         var second = AccountCashForecastEngine.Build(Request([], 100m) with
         {
-            RunId = "second", PreviousSnapshotId = first.SnapshotId,
-            CorrectionRationale = "Retained correction", RecordedAtUtc = Recorded.AddDays(1)
+            RunId = "second",
+            PreviousSnapshotId = first.SnapshotId,
+            CorrectionRationale = "Retained correction",
+            RecordedAtUtc = Recorded.AddDays(1)
         });
         var legacyPath = Path.Combine(StoreDirectory, "snapshots.json");
         Directory.CreateDirectory(StoreDirectory);
@@ -748,8 +752,10 @@ public sealed class AccountCashForecastTests : IDisposable
         await store.InitializeAsync();
         var second = AccountCashForecastEngine.Build(Request([], 100m) with
         {
-            RunId = "second", PreviousSnapshotId = first.SnapshotId,
-            CorrectionRationale = "Post-migration append", RecordedAtUtc = Recorded.AddDays(1)
+            RunId = "second",
+            PreviousSnapshotId = first.SnapshotId,
+            CorrectionRationale = "Post-migration append",
+            RecordedAtUtc = Recorded.AddDays(1)
         });
         await store.AppendAsync(second);
         if (restoreLegacy)
