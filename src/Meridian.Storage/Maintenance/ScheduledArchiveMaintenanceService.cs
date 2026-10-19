@@ -486,7 +486,10 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
             execution.BytesProcessed = result.TotalBytesScanned;
             execution.BytesSaved = result.BytesSaved;
 
-            execution.Status = result.IssuesFound > result.IssuesResolved
+            // Honour the task's own verdict as well as the issue counts: a blocked task (for
+            // example a repair with no enabled strategy) reports Success=false with no issues
+            // counted, and must not be recorded as a clean completion.
+            execution.Status = !result.Success || result.IssuesFound > result.IssuesResolved
                 ? MaintenanceExecutionStatus.CompletedWithWarnings
                 : MaintenanceExecutionStatus.Completed;
 

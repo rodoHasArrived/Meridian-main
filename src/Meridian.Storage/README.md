@@ -705,7 +705,9 @@ fails the operation. Scheduled, running, and terminal maintenance transitions ar
 retained through the same case-history spine when a durable history store is configured. Quality
 maintenance distinguishes complete success, partial `CompletedWithWarnings`, total failure, and
 no-input blocking from attempted/succeeded/failed input counts; cancelled work is not converted to
-a false terminal failure.
+a false terminal failure. Scheduled archive maintenance also honours the task result's own
+`Success` verdict, so a blocked task that counts no issues (for example a repair schedule with no
+enabled strategy) is recorded as `CompletedWithWarnings`, never as a clean completion.
 
 Archive-maintenance schedule mutations persist a validated candidate snapshot before publishing it
 to readers under an in-process gate and a cross-process file lease; revision-aware replacements

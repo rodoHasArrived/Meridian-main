@@ -683,6 +683,34 @@ public sealed partial class ScheduledArchiveMaintenanceServiceTests : IDisposabl
     }
 
     [Fact]
+    public async Task StartAsync_ScheduledRepairWithoutEnabledStrategy_IsNotRecordedAsACleanCompletion()
+    {
+        var schedule = await CreateScheduleAsync(MaintenanceTaskType.Repair,
+            s => s.Options = new MaintenanceTaskOptions { TruncateCorrupted = false });
+        var sut = CreateSut();
+        var completedTcs = new TaskCompletionSource<MaintenanceExecution>(TaskCreationOptions.RunContinuationsAsynchronously);
+        sut.ExecutionCompleted += (_, e) => completedTcs.TrySetResult(e);
+        sut.ExecutionFailed += (_, e) => completedTcs.TrySetResult(e);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        await sut.StartAsync(cts.Token);
+        var queued = await sut.TriggerScheduleAsync(schedule.ScheduleId, cts.Token);
+        var execution = await completedTcs.Task.WaitAsync(cts.Token);
+        await sut.StopAsync(cts.Token);
+
+        execution.ExecutionId.Should().Be(queued.ExecutionId);
+        execution.Status.Should().Be(MaintenanceExecutionStatus.CompletedWithWarnings,
+            "a blocked repair reports Success=false without issue counts and must not read as a clean completion");
+        execution.Result!.Success.Should().BeFalse();
+        execution.Result.Summary.Should().Contain("no supported repair strategy");
+        _scheduleManager.ExecutionHistory.GetExecution(execution.ExecutionId)!.Status
+            .Should().Be(MaintenanceExecutionStatus.CompletedWithWarnings);
+        _scheduleManager.GetSchedule(schedule.ScheduleId)!.LastExecutionStatus
+            .Should().Be(MaintenanceExecutionStatus.CompletedWithWarnings);
+        _fileMaintenance.Verify(service => service.RepairAsync(It.IsAny<RepairOptions>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
     public async Task StartAsync_TriggeredSchedule_ExecutesAndUpdatesScheduleCounters()
     {
         _fileMaintenance
