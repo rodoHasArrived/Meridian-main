@@ -11,6 +11,11 @@ public sealed class AccountCashForecastService(IAccountCashForecastStore store) 
     public Task<AccountCashForecastSnapshotDto> CaptureAsync(AccountCashForecastRequestDto request, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(request);
+        // The engine records a non-UTC recording time as a blocker; the durable store refuses to retain it.
+        // Reject it here as caller input so it surfaces as validation rather than unavailable evidence.
+        if (request.RecordedAtUtc == default || request.RecordedAtUtc.Offset != TimeSpan.Zero)
+            throw new ArgumentException("Forecast recording time must be an explicit UTC instant.", nameof(request));
         return _store.AppendAsync(AccountCashForecastEngine.Build(request), ct);
     }
 
