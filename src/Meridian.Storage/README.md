@@ -122,6 +122,13 @@ single statement of a projection table's columns on the write and read sides; on
 Bond and Option stores carry their own select lists. The per-class store interfaces and row
 records are unchanged, so `*ProjectionService` consumers and DI registrations did not move.
 
+Security Master migration `045_structured_credit_typed_tranche_terms.sql` widens
+`structured_credit_projection` with the typed tranche terms StructuredCredit asset-class terms
+version 2 adds (`structured_credit_kind`, `seniority`, `attachment_point`, `detachment_point`,
+`weighted_average_coupon`, `weighted_average_maturity_months`, `weighted_average_loan_age_months`,
+`reinvestment_period_end`, `non_call_period_end`), all nullable and projected by the registry
+descriptor; rows written before the migration keep nulls until their next projection write.
+
 Security Master migration `044_security_master_declarative_terms_projections.sql` gives the twelve
 remaining unprojected classes (CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Cfd,
 Warrant, InvestmentFund, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,

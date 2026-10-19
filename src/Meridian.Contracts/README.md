@@ -1151,7 +1151,13 @@ instead of accepting client-local JSON shapes.
 can distinguish profile-backed alternative assets from generic `OtherSecurity` fallback records.
 Alternative asset operations are represented as first-class Security Master asset classes for
 `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, and
-`CommitmentGuarantee`, while `DirectLoan` remains the private-credit class. The registry keeps
+`CommitmentGuarantee`, while `DirectLoan` remains the private-credit class. `StructuredCredit`
+carries typed tranche terms at asset-class terms version 2 (`structuredCreditKind` from the
+`structured-credit-kind` taxonomy, `seniority`, `attachmentPoint`/`detachmentPoint` as fractions
+of the deal balance, `weightedAverageCoupon`/`weightedAverageMaturityMonths`/
+`weightedAverageLoanAgeMonths`, and the CLO `reinvestmentPeriodEnd`/`nonCallPeriodEnd` dates); all
+are optional, so a version-1 payload reads unchanged, and the pool statistics bridge to the
+`structuredProduct` economic module. The registry keeps
 `CustomAsset` as the governed compatibility and wide-capture fallback for profile-backed records
 that cannot yet be upgraded to one of those minimum first-class classes.
 `SecurityAssetPackRegistry` defines the additive asset-pack registry contract for wide capture and
@@ -1820,3 +1826,9 @@ a pending transaction can become visible later with an earlier recorded timestam
 exact evaluation using `receiptId` on the golden-copy endpoint, retaining the security/account
 scope. Unknown or differently scoped receipts return no result and never silently recompute.
 Mixed quote units have no percentage comparison.
+
+`ISecurityMasterStructuredCreditReclassificationService` returns the ADR-022
+`StructuredCreditReclassificationReportDto`: one candidate per active securitised `Bond` or
+`CustomAsset` row with a `Ready` or `Blocked` disposition, the proposed `structuredCreditKind`, the
+derived asset-specific terms and the blocker codes the operator must clear. The report never applies
+a proposal.

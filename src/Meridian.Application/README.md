@@ -99,6 +99,13 @@ which refuses payload types or versions newer than this build understands. Amend
 carry the stored economic terms that a flat rebuild cannot express (`retainedEconomicTerms`), so a
 newer-to-older terms conversion keeps the data rather than silently dropping it.
 
+`SecurityMasterStructuredCreditReclassificationService` builds the ADR-022 reclassification report:
+it maps every active record through the read-tolerant mapper, asks the F# domain for a
+StructuredCredit proposal, and returns ready proposals (the exact stamped terms document the write
+path would persist) ahead of blocked ones (the terms carried over plus the blockers). Records whose
+stored terms cannot be mapped are counted as unreadable and logged, never guessed. The service
+writes nothing; applying a proposal is a governed amendment.
+
 Security Master event replay that lacks retained flat terms flattens the economic-terms document onto
 the record's asset class, so carried values land at that class's declared keys. The Postgres
 composition registers `SecurityMasterProjectionChangeListener` (disable with

@@ -2755,6 +2755,11 @@ Security Master also serves `GET /api/security-master/{securityId}/income-cash-f
 `PUT /api/security-master/{securityId}/terms/{blockKey}` (governed like the generic amend route;
 400 for an undeclared block or JSON kind).
 
+`POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance) builds the
+ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their proposed
+`StructuredCredit` terms and blockers. It is mapped only when the Postgres-backed service is
+registered and it never writes; applying a proposal is a governed amendment.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.

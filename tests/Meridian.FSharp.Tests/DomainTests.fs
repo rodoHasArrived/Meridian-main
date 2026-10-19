@@ -871,6 +871,15 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
         FactorSchedule = Some "monthly-trustee"
         FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 0.9825m } ]
         Maturity = Some (DateOnly(2031, 6, 15))
+        Kind = Some StructuredCreditKind.Clo
+        Seniority = Some "Mezzanine"
+        AttachmentPoint = Some 0.12m
+        DetachmentPoint = Some 0.20m
+        WeightedAverageCoupon = Some 7.85m
+        WeightedAverageMaturityMonths = Some 58
+        WeightedAverageLoanAgeMonths = Some 14
+        ReinvestmentPeriodEnd = Some (DateOnly(2028, 6, 15))
+        NonCallPeriodEnd = Some (DateOnly(2027, 6, 15))
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -892,6 +901,31 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
     payload.GetProperty("originalFace").GetDecimal() |> should equal 1_000_000m
     payload.GetProperty("currentFactor").GetDecimal() |> should equal 0.9825m
     payload.GetProperty("maturity").GetString() |> should equal "2031-06-15"
+    // Typed tranche terms (asset-class terms version 2) travel as flat keys beside the version-1 terms.
+    payload.GetProperty("structuredCreditKind").GetString() |> should equal "Clo"
+    payload.GetProperty("seniority").GetString() |> should equal "Mezzanine"
+    payload.GetProperty("attachmentPoint").GetDecimal() |> should equal 0.12m
+    payload.GetProperty("detachmentPoint").GetDecimal() |> should equal 0.20m
+    payload.GetProperty("weightedAverageCoupon").GetDecimal() |> should equal 7.85m
+    payload.GetProperty("weightedAverageMaturityMonths").GetInt32() |> should equal 58
+    payload.GetProperty("weightedAverageLoanAgeMonths").GetInt32() |> should equal 14
+    payload.GetProperty("reinvestmentPeriodEnd").GetString() |> should equal "2028-06-15"
+    payload.GetProperty("nonCallPeriodEnd").GetString() |> should equal "2027-06-15"
+
+[<Fact>]
+let ``StructuredCreditKind labels round-trip and keep an unknown label verbatim`` () =
+    for kind in [ StructuredCreditKind.AgencyMbs; StructuredCreditKind.NonAgencyMbs; StructuredCreditKind.CommercialMbs
+                  StructuredCreditKind.AssetBacked; StructuredCreditKind.Clo; StructuredCreditKind.Cdo; StructuredCreditKind.Cmo
+                  StructuredCreditKind.InterestOnly; StructuredCreditKind.PrincipalOnly ] do
+        kind |> StructuredCreditKind.asString |> StructuredCreditKind.parse |> should equal kind
+
+    StructuredCreditKind.parse " Clo " |> should equal StructuredCreditKind.Clo
+    // Governed labels match case-insensitively (the taxonomy validator accepts them that way) and
+    // canonicalise, so a provider's "interestonly" still drives the typed IO semantics.
+    StructuredCreditKind.parse "interestonly" |> should equal StructuredCreditKind.InterestOnly
+    StructuredCreditKind.parse "AGENCYMBS" |> should equal StructuredCreditKind.AgencyMbs
+    StructuredCreditKind.parse "SyntheticWidget" |> should equal (StructuredCreditKind.OtherStructuredCreditKind "SyntheticWidget")
+    StructuredCreditKind.OtherStructuredCreditKind "SyntheticWidget" |> StructuredCreditKind.asString |> should equal "SyntheticWidget"
 
 [<Fact>]
 let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Maturity module`` () =
@@ -908,6 +942,15 @@ let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Ma
         FactorSchedule = Some "monthly-trustee"
         FactorScheduleEntries = []
         Maturity = Some (DateOnly(2031, 6, 15))
+        Kind = Some StructuredCreditKind.InterestOnly
+        Seniority = None
+        AttachmentPoint = None
+        DetachmentPoint = None
+        WeightedAverageCoupon = Some 6.5m
+        WeightedAverageMaturityMonths = Some 240
+        WeightedAverageLoanAgeMonths = Some 36
+        ReinvestmentPeriodEnd = None
+        NonCallPeriodEnd = None
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -922,6 +965,16 @@ let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Ma
     let maturityModule =
         definition.Terms.Maturity |> Option.defaultWith (fun () -> failwith "Expected Maturity term module")
     maturityModule.MaturityDate |> should equal (Some (DateOnly(2031, 6, 15)))
+
+    // The typed pool statistics reach the StructuredProduct module, and the typed kind decides the
+    // strip flags instead of the tranche-label heuristic.
+    let structuredProduct =
+        definition.Terms.StructuredProduct |> Option.defaultWith (fun () -> failwith "Expected StructuredProduct term module")
+    structuredProduct.WeightedAvgCoupon |> should equal (Some 6.5m)
+    structuredProduct.WeightedAvgMaturityMonths |> should equal (Some 240)
+    structuredProduct.WeightedAvgLoanAgeMos |> should equal (Some 36)
+    structuredProduct.IsInterestOnly |> should equal true
+    structuredProduct.IsPrincipalOnly |> should equal false
 
 [<Fact>]
 let ``SecurityMasterLegacyUpgrade maps preferred classification into term modules`` () =
@@ -1519,10 +1572,41 @@ let ``Structured credit factors above one are rejected`` () =
         FactorSchedule = None
         FactorScheduleEntries = []
         Maturity = None
+        Kind = None
+        Seniority = None
+        AttachmentPoint = None
+        DetachmentPoint = None
+        WeightedAverageCoupon = None
+        WeightedAverageMaturityMonths = None
+        WeightedAverageLoanAgeMonths = None
+        ReinvestmentPeriodEnd = None
+        NonCallPeriodEnd = None
     }
 
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with CurrentFactor = Some 1.5m })
     |> should contain "structured_credit_current_factor_invalid"
+
+    // Typed tranche terms: the attachment and detachment points are fractions of the deal balance,
+    // ordered attachment <= detachment; the pool statistics cannot be negative; the CLO period
+    // dates cannot run past the legal final maturity.
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with AttachmentPoint = Some 12m })
+    |> should contain "structured_credit_attachment_point_invalid"
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with DetachmentPoint = Some -0.1m })
+    |> should contain "structured_credit_detachment_point_invalid"
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with AttachmentPoint = Some 0.3m; DetachmentPoint = Some 0.2m })
+    |> should contain "structured_credit_attachment_above_detachment"
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with AttachmentPoint = Some 0.2m; DetachmentPoint = Some 0.2m })
+    |> should not' (contain "structured_credit_attachment_above_detachment")
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with WeightedAverageCoupon = Some -1m })
+    |> should contain "structured_credit_weighted_average_coupon_invalid"
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with WeightedAverageMaturityMonths = Some -1 })
+    |> should contain "structured_credit_weighted_average_maturity_invalid"
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with WeightedAverageLoanAgeMonths = Some -1 })
+    |> should contain "structured_credit_weighted_average_loan_age_invalid"
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with Maturity = Some (DateOnly(2031, 6, 15)); ReinvestmentPeriodEnd = Some (DateOnly(2032, 1, 1)) })
+    |> should contain "structured_credit_period_after_maturity"
+    validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with Maturity = Some (DateOnly(2031, 6, 15)); NonCallPeriodEnd = Some (DateOnly(2027, 6, 15)) })
+    |> should not' (contain "structured_credit_period_after_maturity")
 
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with FactorScheduleEntries = [ { AsOfDate = DateOnly(2026, 7, 1); Factor = 1.2m } ] })
     |> should contain "structured_credit_factor_schedule_invalid"
@@ -1685,3 +1769,174 @@ let ``Legacy upgrade carries the OtherSecurity sub-type from instrument terms`` 
             Category = "Widget"; SubType = Some "Gizmo"; Maturity = None; IssuerName = None; SettlementType = None })
     other.Classification.AssetClass |> should equal AssetClass.Other
     other.Classification.SubType |> should equal (SecuritySubType.OtherSubType "Gizmo")
+
+[<Fact>]
+let ``Legacy upgrade reads IO and PO strips from the tranche label as whole tokens only`` () =
+    let structuredProductFor tranche =
+        let definition =
+            economicDefinitionFor (SecurityKind.StructuredCredit {
+                Tranche = tranche; PoolId = None; CollateralType = "AgencyPool"; OriginalFace = 1_000_000m
+                CurrentFactor = None; CouponOrIndex = "5.5"; FactorSchedule = None; FactorScheduleEntries = []
+                Maturity = None; Kind = None; Seniority = None; AttachmentPoint = None; DetachmentPoint = None
+                WeightedAverageCoupon = None; WeightedAverageMaturityMonths = None; WeightedAverageLoanAgeMonths = None
+                ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None })
+        definition.Terms.StructuredProduct |> Option.defaultWith (fun () -> failwith "Expected StructuredProduct term module")
+
+    // "Senior" contains the letters "io"; it is not an interest-only strip.
+    (structuredProductFor "Senior").IsInterestOnly |> should equal false
+    (structuredProductFor "Senior").IsPrincipalOnly |> should equal false
+    (structuredProductFor "IO-1").IsInterestOnly |> should equal true
+    (structuredProductFor "A/PO").IsPrincipalOnly |> should equal true
+    (structuredProductFor "io").IsInterestOnly |> should equal true
+    (structuredProductFor "Portfolio").IsPrincipalOnly |> should equal false
+
+// ── Structured-credit reclassification proposals (ADR-022, report first) ───────────────────────
+
+let private reclassificationFor (kind: SecurityKind) =
+    let record = createSecurityRecord None
+    SecurityMasterLegacyUpgrade.proposeStructuredCreditReclassification { record with Kind = kind }
+
+let private securitizedBond subclass coupon par =
+    SecurityKind.Bond {
+        Maturity = DateOnly(2040, 3, 25)
+        IssueDate = None
+        Coupon = coupon
+        IsCallable = false
+        CallDate = None
+        IssuerName = Some "Trust 2026-1"
+        Seniority = Some "Senior"
+        Subclass = subclass
+        Par = par
+        PaymentFrequency = None
+        LegalFinalMaturity = None
+        PreRefundDate = None
+        MandatoryPutDate = None
+        PrincipalSchedule = []
+    }
+
+let private blockerCodes (proposal: SecurityMasterLegacyUpgrade.StructuredCreditReclassificationProposal) =
+    proposal.Blockers |> List.map (fun blocker -> blocker.Code)
+
+[<Fact>]
+let ``Reclassification proposal carries bond par, coupon, maturity and kind but blocks on tranche and collateral`` () =
+    let proposal =
+        reclassificationFor (securitizedBond BondSubclass.AgencyMbs (BondCouponStructure.Fixed(5.5m, None)) (Some 1000m))
+        |> Option.defaultWith (fun () -> failwith "Expected a securitised bond to be a reclassification candidate")
+
+    proposal.SourceLabel |> should equal "AgencyMbs"
+    proposal.Draft.Kind |> should equal (Some StructuredCreditKind.AgencyMbs)
+    proposal.Draft.OriginalFace |> should equal (Some 1000m)
+    proposal.Draft.CouponOrIndex |> should equal (Some "5.5")
+    proposal.Draft.Maturity |> should equal (Some (DateOnly(2040, 3, 25)))
+    proposal.Draft.Seniority |> should equal (Some "Senior")
+    blockerCodes proposal |> should equal [ "structured_credit_tranche_required"; "structured_credit_collateral_type_required" ]
+    proposal.ProposedTerms |> should equal None
+
+[<Fact>]
+let ``Reclassification proposal takes the floating index as couponOrIndex`` () =
+    let proposal =
+        reclassificationFor (securitizedBond BondSubclass.Clo (BondCouponStructure.Floating("SOFR", Some 250m, None, None, None)) None)
+        |> Option.defaultWith (fun () -> failwith "Expected a CLO bond to be a reclassification candidate")
+
+    proposal.Draft.CouponOrIndex |> should equal (Some "SOFR")
+    proposal.Draft.Kind |> should equal (Some StructuredCreditKind.Clo)
+    blockerCodes proposal |> should contain "structured_credit_original_face_required"
+
+[<Fact>]
+let ``Reclassification proposal never guesses between agency and non-agency MBS`` () =
+    let proposal =
+        reclassificationFor (securitizedBond BondSubclass.MortgageBacked BondCouponStructure.ZeroCoupon (Some 500m))
+        |> Option.defaultWith (fun () -> failwith "Expected a mortgage-backed bond to be a reclassification candidate")
+
+    proposal.Draft.Kind |> should equal None
+    blockerCodes proposal |> should contain "structured_credit_kind_ambiguous"
+    proposal.ProposedTerms |> should equal None
+
+[<Fact>]
+let ``Reclassification proposal blocks on kinds and coupon structures StructuredCredit cannot represent`` () =
+    let inverseIo =
+        reclassificationFor (securitizedBond BondSubclass.InverseInterestOnly BondCouponStructure.ZeroCoupon None)
+        |> Option.defaultWith (fun () -> failwith "Expected an inverse IO bond to be a reclassification candidate")
+    blockerCodes inverseIo |> should contain "structured_credit_kind_unrepresentable"
+
+    let stepCoupon =
+        BondCouponStructure.Step([ ({ EffectiveDate = DateOnly(2027, 1, 1); Rate = 4m } : StepCouponEntry) ], None)
+    let step =
+        reclassificationFor (securitizedBond BondSubclass.Cdo stepCoupon None)
+        |> Option.defaultWith (fun () -> failwith "Expected a CDO bond to be a reclassification candidate")
+    step.Draft.CouponOrIndex |> should equal None
+    blockerCodes step |> should contain "structured_credit_coupon_structure_unrepresentable"
+
+[<Fact>]
+let ``Reclassification proposal ignores bonds outside the securitised subclasses and non-securitised custom rows`` () =
+    reclassificationFor (securitizedBond BondSubclass.Corporate (BondCouponStructure.Fixed(4m, None)) (Some 1000m))
+    |> should equal None
+
+    reclassificationFor (SecurityKind.CustomAsset {
+        CustomProfileId = "private-fund"; ProfileVersion = 1
+        TermsJson = """{"customProfileId":"private-fund","profileVersion":1,"category":"PrivateFund","profileFields":{}}""" })
+    |> should equal None
+
+    reclassificationFor (SecurityKind.OtherSecurity {
+        Category = "Widget"; SubType = None; Maturity = None; IssuerName = None; SettlementType = None })
+    |> should equal None
+
+    reclassificationFor (SecurityKind.Equity { ShareClass = None; VotingRightsCat = None; Classification = None })
+    |> should equal None
+
+[<Fact>]
+let ``Reclassification proposal is ready when a custom profile carries every required StructuredCredit term`` () =
+    let termsJson =
+        """{"customProfileId":"legacy-abs","profileVersion":2,"category":"CLO",
+            "profileFields":{"tranche":"B","poolId":"CLO-2026-1","collateralType":"Leveraged loans",
+                             "originalFace":2500000,"currentFactor":0.91,"couponOrIndex":"SOFR+325",
+                             "maturity":"2037-10-20","seniority":"Mezzanine"}}"""
+    let proposal =
+        reclassificationFor (SecurityKind.CustomAsset { CustomProfileId = "legacy-abs"; ProfileVersion = 2; TermsJson = termsJson })
+        |> Option.defaultWith (fun () -> failwith "Expected a CLO custom asset to be a reclassification candidate")
+
+    proposal.SourceLabel |> should equal "CLO"
+    proposal.Blockers |> should be Empty
+    let terms = proposal.ProposedTerms |> Option.defaultWith (fun () -> failwith "Expected proposed StructuredCredit terms")
+    terms.Tranche |> should equal "B"
+    terms.PoolId |> should equal (Some "CLO-2026-1")
+    terms.CollateralType |> should equal "Leveraged loans"
+    terms.OriginalFace |> should equal 2500000m
+    terms.CurrentFactor |> should equal (Some 0.91m)
+    terms.CouponOrIndex |> should equal "SOFR+325"
+    terms.Maturity |> should equal (Some (DateOnly(2037, 10, 20)))
+    terms.Kind |> should equal (Some StructuredCreditKind.Clo)
+    terms.Seniority |> should equal (Some "Mezzanine")
+    terms.FactorScheduleEntries |> should be Empty
+    terms.AttachmentPoint |> should equal None
+
+[<Fact>]
+let ``Reclassification proposal lets a typed kind on the custom profile resolve an ambiguous category`` () =
+    let termsJson =
+        """{"customProfileId":"legacy-mbs","profileVersion":1,"category":"MBS",
+            "profileFields":{"structuredCreditKind":"NonAgencyMbs","tranche":"M1"}}"""
+    let proposal =
+        reclassificationFor (SecurityKind.CustomAsset { CustomProfileId = "legacy-mbs"; ProfileVersion = 1; TermsJson = termsJson })
+        |> Option.defaultWith (fun () -> failwith "Expected an MBS custom asset to be a reclassification candidate")
+
+    proposal.Draft.Kind |> should equal (Some StructuredCreditKind.NonAgencyMbs)
+    proposal.Draft.Tranche |> should equal (Some "M1")
+    blockerCodes proposal |> should not' (contain "structured_credit_kind_ambiguous")
+    blockerCodes proposal |> should contain "structured_credit_collateral_type_required"
+
+[<Fact>]
+let ``Reclassification proposal reads envelope-less legacy custom rows read back as OtherSecurity`` () =
+    let proposal =
+        reclassificationFor (SecurityKind.OtherSecurity {
+            Category = "ABS"; SubType = None; Maturity = Some (DateOnly(2030, 1, 15)); IssuerName = None; SettlementType = None })
+        |> Option.defaultWith (fun () -> failwith "Expected an ABS legacy row to be a reclassification candidate")
+
+    proposal.SourceLabel |> should equal "ABS"
+    proposal.Draft.Kind |> should equal (Some StructuredCreditKind.AssetBacked)
+    proposal.Draft.Maturity |> should equal (Some (DateOnly(2030, 1, 15)))
+    blockerCodes proposal
+    |> should equal [
+        "structured_credit_tranche_required"
+        "structured_credit_collateral_type_required"
+        "structured_credit_original_face_required"
+        "structured_credit_coupon_or_index_required" ]
