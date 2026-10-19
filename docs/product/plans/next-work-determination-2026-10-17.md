@@ -42,7 +42,7 @@ Every `Meridian CI` `main` push since the last red, in order:
 | 2026-10-17 14:24 | `0342643d` | **success** | **current head** |
 
 Four green, one cancelled by supersede, **zero red** in the five pushes since `e5c20ca7`. On the
-current head all **seven** jobs are green individually — `verify-dotnet`, `verify-browser`,
+2026-10-17 head all **seven** jobs are green individually — `verify-dotnet`, `verify-browser`,
 `verify-docs`, `verify-workflows`, the PostgreSQL `service-backed-integrations` leg,
 `integration-gate`, and `quality-gate`
 ([run 39040596751](https://github.com/rodoHasArrived/Meridian-main/actions/runs/39040596751)).
@@ -76,6 +76,36 @@ says roughly one in four has not been.
 - `docs/adr/020-lifecycle-control-plane.md:3` still reads **`Proposed`**.
 - `git ls-remote --tags origin` returns **exactly one tag**, `eval-v0.1.0-eval.1`. No `v*` exists.
 
+### Correction (2026-10-19): the bar was not literally met on this evidence — but it is met now
+
+On the 2026-10-17 data above, **"green on three consecutive `main` pushes" was not satisfied.** The
+sequence was two green (`162df384`, `e447587e`), then the cancelled `34a02682`, then two green
+(`1f33f090`, `0342643d`). A superseded cancellation is not red, but it is also **not a green
+result**, so the longest consecutive-green run was two, not three. Treating the cancellation as
+simply "not red" silently relaxed the criterion, and that is exactly the reasoning this document
+criticises elsewhere — more so now that a supersede has been observed surfacing as an outright
+`failure` (see the method note below). The claim was premature and is withdrawn as stated.
+
+**The bar is now met, on stronger evidence than the original claim rested on.** Re-measured on
+2026-10-19, `Meridian CI` push runs on `main` show **eight consecutive successes with no
+cancellation or failure between them**:
+
+| # | Head | Pushed | `Meridian CI` |
+| --- | --- | --- | --- |
+| 1 | `a4b156a2` | 2026-10-18 09:13 | success |
+| 2 | `75950a39` | 2026-10-18 17:38 | success |
+| 3 | `213a4db3` | 2026-10-19 01:37 | success |
+| 4 | `97ec959d` | 2026-10-19 01:58 | success |
+| 5 | `7c902128` | 2026-10-19 02:24 | success |
+| 6 | `ed9ba7a3` | 2026-10-19 03:23 | success |
+| 7 | `a2a30e56` | 2026-10-19 03:53 | success |
+| 8 | `1f171816` | 2026-10-19 04:24 | success |
+
+Eight consecutive, against a bar of three. So the conclusion the document draws — that the gate is
+reliable enough for an RC to be selected against it — **holds, and holds more strongly than on
+2026-10-17**; only the 10-17 arithmetic was wrong. (The most recent push, `b0abdef9`, is itself
+`cancelled` by supersede and so is neither green nor red.)
+
 So the P0 path is unchanged in content and newly urgent in timing. **Corrected 2026-10-19 — an
 earlier revision of this list was incomplete.** The readiness tracker, which is the authority here,
 states at `docs/product/implementation-todo-list.md:177-180` that what "genuinely still requires a
@@ -85,8 +115,18 @@ protected `desktop-release-signing` environment (`PRD-014`), core-team sign-off 
 (`PRD-015`, shared with `PRD-111`)**, and **required-check activation by a repository administrator
 (`PRD-016`)**. The last two were omitted here and are not optional: an operator who completed only
 the signatures, the secret, the download decision and `PRD-002` could reach a tag with two
-production gates still open. Add both, with their release-commit evidence, to the checklist. None of
-it is analysis. What is new is that the engineering precondition they were
+production gates still open. Add both, with their release-commit evidence, to the checklist.
+
+**And a second correction (2026-10-19): `PRD-002` is engineering, so "none of this is engineering"
+was false and is withdrawn.** `implementation-todo-list.md:241` classifies it
+**`Implementation-in-progress`**, with browser and remaining WPF/setup/default-runtime ownership,
+non-Windows key protection via an OS keyring or KMS, concurrent configuration writes,
+credential/audit commit ambiguity, and legacy migration/rollback/rotation proof all still open.
+**A green CI head therefore does not mean the engineering precondition for an RC is satisfied**, and
+`PRD-002` stays explicitly blocking on RC selection rather than being presented as human evidence
+only. What *is* true, and is the point this document was reaching for, is that the ADR signatures,
+the signing secret, the required-check activation and the download decision are not engineering —
+`PRD-002` is the exception, and it is the one that can still move on its own. What is new is that the engineering precondition they were
 waiting on is, for this commit, satisfied.
 
 ## P1: the remaining teardown race is the thing that will take the gate back
@@ -190,8 +230,26 @@ message — and keep a non-zero exit for every trust-boundary and operational fa
 test in `tests/scripts/test_generated_repair.py` should assert **both** halves: the expected
 condition exits 0, and an authorization or handwritten-content violation still exits non-zero.
 
-The 91-of-91 failure count and the `manual`-should-be-green reading of the workflow's step
-conditions both stand; only the prescribed fix changes.
+**Second correction (2026-10-19): the narrowed exit-code fix is still not sufficient, and on its
+own it buys nothing.** `inspect()` calls `verify_source_run()` as its first action (`:322-324`), and
+the unbound-run error is raised *inside* that call (`:213`) — before `inspect` can validate an
+artifact or return `ready`/`retry`. So the status written is `manual` either way, and the workflow's
+own conditions (`.github/workflows/generated-repair-publish.yml:62,86`) then skip token creation and
+publishing. Making that exception exit zero converts **a red no-op into a green no-op**: the check
+stops complaining and the hosted repair flow remains just as unusable.
+
+That reframes the finding, and makes it larger rather than smaller. **91 of 91 runs failing at
+`:213` means this workflow has never once reached its publish path** — every invocation is rejected
+at the binding check, so the automation the repository built for generated-file repair has never
+actually repaired anything. The real work is to diagnose why
+`run.head_sha != request["base_sha"]` holds on every invocation and correct or requeue the binding;
+normalising the exit code is at most a cosmetic follow-up, and doing it *first* would destroy the
+only signal that the flow is broken.
+
+The 91-of-91 count and the reading that `manual` is a by-design disposition both stand. What
+changed, twice now, is the prescribed fix — which is itself worth noting: the first revision
+proposed a blanket `return 0`, the second a narrowed one, and only tracing the call order showed
+that neither makes the publisher work.
 
 **Read the workflow file, not the check name.** Two sibling workflows share the prefix and only one
 is broken: `generated-repair.yml` (`pull_request_target`, surfaces `Prepare generated repair patch`)
@@ -249,7 +307,7 @@ some are now genuine:
 three PRs where it collides (#3175, #3169, #3168, #3004). The one-line addition from yesterday is
 unapplied.
 
-## The measured root cause of the conflict tax, and why a merge driver is the fix
+## The measured root cause of the conflict tax, and why the fix is the hosted repair flow
 
 Yesterday's document inferred this from file names. It is now measured. **Share of the last 200
 commits that touch each generated path:**
@@ -347,6 +405,16 @@ above at 43% of the last 200 commits. The resolution required no decisions:
 `build/scripts/resolve-generated-merge-conflicts.py` reported
 `2 generated conflict(s); 0 conflict(s) require review` and resolved both.
 
+**Method note (2026-10-19): a superseded run does not always surface as `cancelled`.** When this
+PR was pushed again, the in-flight run on the prior head had already started its PostgreSQL lane;
+the supersede cancelled that lane mid-test, and the lane's *"Reject missing, failed, skipped or
+empty deterministic test evidence"* guard then **failed closed**, because a cancelled test run
+leaves no evidence to accept. `quality-gate` and `integration-gate` aggregated that into
+**`failure`** on a commit that was no longer the head. So a `failure` conclusion alone does not
+distinguish a real defect from having been pushed over, and the guard that produced it behaved
+exactly as designed. Any reading of the red/green history in this document — including the table
+above — should check whether a `failure` belongs to a superseded run before counting it.
+
 The two commits `#3192` brought with it make the point without further comment:
 `b3a7f78b chore: merge main and regenerate generated artifacts` and
 `507a9d0c docs: regenerate doc-health dashboard after merging main`. **Three branches paid the same
@@ -383,10 +451,10 @@ branch paid it twice. The two P1 rows — the `merge=` driver and the one-line `
 addition — are not hygiene items; they are the difference between these merges being automatic and
 being hand-held.
 
-## Re-verification (2026-10-19): every ranked item is still open, 37 commits later
+## Re-verification (2026-10-19): every ranked item is still open, 53 commits later
 
 This document was marked ready for review on 2026-10-19, two days after its baseline, with `main`
-advanced **37 commits** to `bb4a0899`. Every claim that drives the ranking was re-checked against
+advanced **53 commits** to `bb4a0899` (`git rev-list --count 0342643d..bb4a0899`; the 37 figure an earlier revision carried was measured from `5bba87d7`, not from the declared baseline — corrected 2026-10-19). Every claim that drives the ranking was re-checked against
 that tree rather than assumed to hold. **Nothing in the ranking changed.**
 
 | Item | Re-verified on `bb4a0899` | State |
@@ -403,7 +471,7 @@ that tree rather than assumed to hold. **Nothing in the ranking changed.**
 Two consequences worth stating plainly:
 
 **The P0's central prediction is now settled, not pending.** This document said the window "closes
-on the next merge" and that `0342643d` was the target. `0342643d` was never tagged and is now 37+
+on the next merge" and that `0342643d` was the target. `0342643d` was never tagged and is now 53
 commits behind the head. The commit that had seven of seven lanes green on 2026-10-17 cannot be the
 release candidate any more, and no commit has taken its place. **That is the failure mode the last
 section of this document names**, and it has now happened once with a recorded target.
@@ -442,9 +510,9 @@ out precisely enough to apply in minutes, and left to a person.
 
 | Priority | Work | Why now |
 | --- | --- | --- |
-| **P0** | **Re-verify the current `main` head, then tag that commit once the gates are closed** — sign `ADR-019`/`ADR-020` (`PRD-000`), provision the `desktop-release-signing` secrets (`PRD-014`), complete and accept recovery evidence (`PRD-015`), have an administrator activate the required release check (`PRD-016`), decide the ~1 GB consumer download, and continue `PRD-002` from #2931's residual list | **Corrected 2026-10-19: do not tag `0342643d`.** It was the green target on 2026-10-17 and is now 37+ commits behind, never tagged; its green result must not be inherited. Pick and verify a current head instead. The gates listed here are the tracker's own (`implementation-todo-list.md:177-180`) and none of them is engineering |
+| **P0** | **Re-verify the current `main` head, then tag that commit once the gates are closed** — sign `ADR-019`/`ADR-020` (`PRD-000`), provision the `desktop-release-signing` secrets (`PRD-014`), complete and accept recovery evidence (`PRD-015`), have an administrator activate the required release check (`PRD-016`), decide the ~1 GB consumer download, and **finish `PRD-002`, which is still `Implementation-in-progress` and is a blocking engineering precondition** | **Corrected 2026-10-19: do not tag `0342643d`** — it was the green target on 2026-10-17, is now 53 commits behind, and was never tagged. The gate itself is reliable (eight consecutive green `main` pushes as of 2026-10-19), but a green head does **not** mean the engineering precondition is met while `PRD-002` is open. Gates per `implementation-todo-list.md:177-180` and `:241` |
 | **P1** | **Make `tests/scripts` teardown deterministic** — terminate/join whatever holds the temporary tree, or use a bounded cleanup retry that **still fails** if the directory cannot be removed; start at `test_merge_reviewed_doc_hashes.py:93` | 98 call sites, zero guarded. The `OSError: [Errno 39]` was raised by `tempfile`, not an assertion. **Corrected 2026-10-19: not blanket `ignore_cleanup_errors=True`** — that passes tests whose cleanup genuinely failed and hides real leaks, which is the same bypass as quarantine. Likeliest cause of the next red, and a red gate invalidates the RC commit |
-| **P1** | **Make only the expected unbound-run condition exit zero** at `generated_repair.py:544-546` — ideally via a distinct exception type — keeping non-zero for every trust-boundary and operational failure, with a regression test asserting both halves | **91 of 91 runs failed; still zero green ever.** **Corrected 2026-10-19:** a blanket `return 0` would also green-light `"Handwritten content changed"`, `"Path is outside the trusted generation policy"`, `"...is not authorized"` and `"Expected a signed artifact download redirect"`, which the same `except` catches |
+| **P1** | **Diagnose why every invocation fails the base-SHA binding check** at `generated_repair.py:213` and correct or requeue the binding; treat normalising the exit code as a cosmetic follow-up, not the fix | **91 of 91 runs failed; zero green ever.** **Corrected twice (2026-10-19):** `inspect()` calls `verify_source_run()` first (`:322-324`), so the error precedes any `ready`/`retry`, the status stays `manual`, and the workflow conditions (`:62,86`) skip publishing — an exit-code change yields a **green no-op**. 91 of 91 failing there means the publisher has **never reached its publish path** |
 | **P1** | **Reduce how often the 43% file is reconciled, via the hosted repair flow** — fix the publisher above, complete the local resolver, then put the tracked-artifact question to the owners | Measured: the doc-health pair changes in **86 of the last 200 commits (43%)** and appears in **14 of the 15** conflicted PRs. **Corrected 2026-10-19: not a `merge=` driver.** `generated-merge-recovery.md` already rejects that — it depends on local Git config, does not configure GitHub's merge environment, and cannot prove a parent's assets match the merged source |
 | **P1** | **Add `docs/status/example-validation.md` to `GENERATED_FILES`** in `resolve-generated-merge-conflicts.py:20-39` | Still absent today. The resolver reports `REVIEW` and stops on the four PRs where it collides. One line, and the file's own comment rules out a wildcard |
 | **P2** | **Resolve #3176's conflict in `test_schema_control_disposable.py` deliberately** | The first genuine code disagreement in the queue in days, and it is on the race `main` just fixed. `main`'s version carries a 40/40 reproduction; #3176's should have to match it |
