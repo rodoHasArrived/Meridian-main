@@ -197,12 +197,40 @@ internal static partial class Program
             "durable-import", "fixture", new DateOnly(2026, 6, 30), DateTimeOffset.UnixEpoch,
             "source.csv", "source-hash", 256, 256)
         { DuplicateKey = "durable-import" };
-        var store = new Meridian.Infrastructure.Reconciliation.JsonCanonicalStatementStore(root, new AtomicFileWriterAdapter());
+        Meridian.Core.IO.IAtomicFileWriter writer = stage == "publication-sync"
+            ? new PausedStatementPublicationWriter(ready)
+            : new AtomicFileWriterAdapter();
+        var store = new Meridian.Infrastructure.Reconciliation.JsonCanonicalStatementStore(root, writer);
         var created = await store.TrySaveImportAsync(import, new StatementStageRows(stage == "mid-write" ? ready : null));
         await File.WriteAllTextAsync(ready, created ? "created" : "duplicate");
         if (stage != "race")
             await Task.Delay(Timeout.InfiniteTimeSpan);
         return 0;
+    }
+
+    private sealed class PausedStatementPublicationWriter(string ready) : Meridian.Core.IO.IAtomicFileWriter
+    {
+        private readonly AtomicFileWriterAdapter _inner = new();
+
+        public void Write(string path, string content, CancellationToken ct = default) =>
+            _inner.Write(path, content, ct);
+
+        public Task WriteAsync(string path, string content, CancellationToken ct = default) =>
+            _inner.WriteAsync(path, content, ct);
+
+        public Task WriteAsync(string path, byte[] content, CancellationToken ct = default) =>
+            _inner.WriteAsync(path, content, ct);
+
+        public Task AppendLinesAsync(string path, IEnumerable<string> lines, CancellationToken ct = default) =>
+            _inner.AppendLinesAsync(path, lines, ct);
+
+        public async Task SyncDirectoryAsync(string directory, CancellationToken ct = default)
+        {
+            // Publication has moved the complete envelope, but still owns its exclusive claim.
+            // The parent terminates this process before directory sync can acknowledge it.
+            await File.WriteAllTextAsync(ready, "publication-sync", ct);
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+        }
     }
 
     private sealed class StatementStageRows(string? ready) : IReadOnlyList<Meridian.Domain.Reconciliation.CanonicalStatementRow>
