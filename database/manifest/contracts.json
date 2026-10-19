@@ -4160,7 +4160,7 @@
       ]
     }
   ],
-  "fingerprint": "51d4156b70f7ccffb5d97ef17251d2306fcc9fb9b08740f0581ff9dc26a932e4",
+  "fingerprint": "024b1942572a0c53b6e9069c45a42d66035f5dd2088b7a1ad00f9483384adbaf",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6162,7 +6162,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "fab7e83a70a028d4371e34ffbb6298a1046bf16a395402677c0ac704c0411743",
+      "fingerprint": "3a20ac2deaa07b853019ca600f0fccddca2173dceacb5e52b000e5da1b875ad5",
       "mapped_schemas": [
         "security_master"
       ],
@@ -247860,9 +247860,15 @@
           "name": "PaymentFrequency",
           "source_line": 124,
           "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "CouponFrequency",
+          "source_line": 132,
+          "value": null
         }
       ],
-      "fingerprint": "e9898b5eafd795749a97a54fd7ad2de233ecc51a821dea42429e26f616ba5b33",
+      "fingerprint": "af60acb47f6be1813538f56b7fa3b7a9efc25e01687b0b06e52add0310ff497e",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityTermConventionKind",
       "id": "Meridian.Contracts.SecurityMaster.SecurityTermConventionKind",
       "kind": "enum",
@@ -247900,7 +247906,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "c05f8c2202070ed79b59a07f2939b56f6ae0a5c16945796a9554b42310a43d1d",
+      "fingerprint": "205f5f5b7a7aac806835d12775951da8133b2c3b3a4203be8b7c09ccba1be020",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityTermConventions",
       "id": "Meridian.Contracts.SecurityMaster.SecurityTermConventions",
       "kind": "class",
@@ -247914,12 +247920,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityTermConventions",
       "references": [],
       "source": {
-        "line": 128,
+        "line": 136,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs"
       },
       "sources": [
         {
-          "line": 128,
+          "line": 136,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs"
         }
       ],
