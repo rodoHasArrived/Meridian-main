@@ -9,6 +9,7 @@ using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
+using Meridian.Storage.Replay;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -384,7 +385,8 @@ public sealed class JsonlStorageSink : IStorageSink
         }
     }
 
-    private void RunRetentionCleanup()
+    // Internal so tests can run one sweep without waiting for the 15-second timer.
+    internal void RunRetentionCleanup()
     {
         try
         {
@@ -798,13 +800,18 @@ public sealed class JsonlStorageSink : IStorageSink
         private async Task<bool> TryAppendToPublishedArchiveAsync(Func<Stream, Task> writePlain, CancellationToken ct)
         {
             var archive = _path + ".gz";
-            if (_compressed || File.Exists(_path) || !File.Exists(archive))
+            if (_compressed || !File.Exists(archive))
                 return false;
 
             // Another sink instance may be appending to the same archive; serialize the whole
             // read-copy-replace and re-check, since that appender may have changed the state.
             using var appendLease = await JsonlWriteFence.EnterArchiveAppendAsync(archive, ct).ConfigureAwait(false);
-            if (File.Exists(_path) || !File.Exists(archive))
+            if (!File.Exists(archive))
+                return false;
+            // A crash between gzip publication and source deletion leaves both complete, equal
+            // representations. Appending to the plain one would make the pair unequal and block
+            // replay, so finish that interrupted cleanup first and extend the archive instead.
+            if (File.Exists(_path) && !await JsonlArchiveFiles.TryRetireEqualSourceAsync(_path, ct).ConfigureAwait(false))
                 return false;
 
             RequireReadableGzip(archive);
@@ -1009,13 +1016,13 @@ public sealed class JsonlStorageSink : IStorageSink
                     var ordered = files
                         .OrderBy(f => f.LastWriteTimeUtc)
                         .ToList();
-                    long total = ordered.Sum(f => f.Exists ? f.Length : 0);
+                    long total = ordered.Sum(RetainedBytes);
 
                     var idx = 0;
                     while (total > _maxBytes && idx < ordered.Count)
                     {
                         var target = ordered[idx++];
-                        total -= target.Length;
+                        total -= RetainedBytes(target);
                         TryDelete(target);
                     }
                 }
@@ -1032,10 +1039,20 @@ public sealed class JsonlStorageSink : IStorageSink
             }
         }
 
+        // A data file and its checksum sidecar share one retention lifecycle.
+        private static long RetainedBytes(FileInfo file)
+        {
+            var sidecar = new FileInfo(file.FullName + ".sha256");
+            return (file.Exists ? file.Length : 0) + (sidecar.Exists ? sidecar.Length : 0);
+        }
+
         private void TryDelete(FileInfo file)
         {
             try
             {
+                // Remove the sidecar first: an interruption then leaves a file without a
+                // checksum, never a stale checksum that a later recreated file would fail.
+                File.Delete(file.FullName + ".sha256");
                 file.Delete();
             }
             catch (Exception ex)

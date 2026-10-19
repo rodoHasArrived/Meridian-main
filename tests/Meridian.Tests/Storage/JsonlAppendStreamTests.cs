@@ -348,6 +348,106 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
             .Issues.Should().NotContain(issue => issue.Type == IssueType.ChecksumMismatch);
     }
 
+    [Theory]
+    [InlineData("Published")]
+    [InlineData("PublicationSynced")]
+    public async Task WriteAfterInterruptedCompressionCleanup_ExtendsTheArchiveAndReplaysEachEventOnce(string stageName)
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await first.AppendAsync(CreateTestEvent("AAPL", 1, ClosedDay));
+            await first.FlushAsync();
+        }
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl").Should().ContainSingle().Subject;
+        await AtomicFileWriter.WriteAsync(dayFile + ".sha256",
+            $"{Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(dayFile))).ToLowerInvariant()}  {Path.GetFileName(dayFile)}");
+        var stage = Enum.Parse<CompressionPublicationStage>(stageName);
+        var interrupted = new FileMaintenanceService(options)
+        {
+            CompressionCheckpoint = checkpoint =>
+            {
+                if (checkpoint == stage)
+                    throw new IOException($"Injected interruption at {checkpoint}");
+            }
+        };
+        (await interrupted.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false))).Success.Should().BeFalse();
+        File.Exists(dayFile).Should().BeTrue("the crash left both equal representations");
+        File.Exists(dayFile + ".gz").Should().BeTrue();
+
+        await using (var second = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await second.AppendAsync(CreateTestEvent("AAPL", 2, ClosedDay));
+            await second.FlushAsync();
+        }
+
+        File.Exists(dayFile).Should().BeFalse("the interrupted cleanup completes before the archive is extended");
+        File.Exists(dayFile + ".sha256").Should().BeFalse();
+        var replayed = new List<MarketEvent>();
+        await foreach (var evt in new Meridian.Storage.Replay.JsonlReplayer(TestDataRoot).ReadEventsAsync())
+            replayed.Add(evt);
+        replayed.Select(evt => evt.Sequence).Should().Equal(1, 2);
+        var maintenance = new FileMaintenanceService(options);
+        var resumed = await maintenance.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false));
+        resumed.Errors.Should().BeEmpty("no retained destination is left for compression to refuse");
+        (await maintenance.RunHealthCheckAsync(new HealthCheckOptions(ValidateChecksums: true)))
+            .Issues.Should().NotContain(issue => issue.Type == IssueType.ChecksumMismatch);
+    }
+
+    [Fact]
+    public async Task RetentionSweep_RemovesAnExpiredArchiveWithItsChecksumSoTheDayCanBeRecompressed()
+    {
+        var archive = Path.Combine(TestDataRoot, "SPY_trade_20260102.jsonl.gz");
+        await WriteArchiveWithChecksumAsync(archive, DateTime.UtcNow.AddDays(-30));
+        var options = new StorageOptions { RootPath = TestDataRoot, RetentionDays = 7 };
+        await using (var sink = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot)))
+            sink.RunRetentionCleanup();
+
+        File.Exists(archive).Should().BeFalse();
+        File.Exists(archive + ".sha256").Should().BeFalse("a checksum must not outlive the archive it covers");
+
+        var source = archive[..^3];
+        await File.WriteAllTextAsync(source, "{\"late\":1}\n");
+        File.SetLastWriteTimeUtc(source, DateTime.UtcNow.AddHours(-1));
+        var recompressed = await new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot })
+            .CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false));
+        recompressed.Errors.Should().BeEmpty();
+        recompressed.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task RetentionByteBudget_CountsChecksumSidecars()
+    {
+        var older = Path.Combine(TestDataRoot, "SPY_trade_20260102.jsonl.gz");
+        var newer = Path.Combine(TestDataRoot, "SPY_trade_20260105.jsonl.gz");
+        await WriteArchiveWithChecksumAsync(older, DateTime.UtcNow.AddDays(-3));
+        await WriteArchiveWithChecksumAsync(newer, DateTime.UtcNow.AddDays(-1));
+        var dataBytes = new FileInfo(older).Length + new FileInfo(newer).Length;
+        var sidecarBytes = new FileInfo(older + ".sha256").Length;
+        // The data alone fits the budget; data plus both sidecars does not.
+        var options = new StorageOptions { RootPath = TestDataRoot, MaxTotalBytes = dataBytes + sidecarBytes };
+        await using (var sink = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot)))
+            sink.RunRetentionCleanup();
+
+        File.Exists(older).Should().BeFalse();
+        File.Exists(older + ".sha256").Should().BeFalse();
+        File.Exists(newer).Should().BeTrue();
+        File.Exists(newer + ".sha256").Should().BeTrue();
+    }
+
+    private static async Task WriteArchiveWithChecksumAsync(string archive, DateTime lastWriteUtc)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(archive)!);
+        await using (var file = File.Create(archive))
+        await using (var gzip = new GZipStream(file, CompressionLevel.Optimal))
+            await gzip.WriteAsync(System.Text.Encoding.UTF8.GetBytes("{\"seq\":1}\n"));
+        await File.WriteAllTextAsync(archive + ".sha256",
+            $"{Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(archive))).ToLowerInvariant()}  {Path.GetFileName(archive)}");
+        File.SetLastWriteTimeUtc(archive, lastWriteUtc);
+        File.SetLastWriteTimeUtc(archive + ".sha256", lastWriteUtc);
+    }
+
     [Fact]
     public async Task ChecksumRepublishFailureAfterCommittedAppend_ReportsSuccessAndWritesOnce()
     {

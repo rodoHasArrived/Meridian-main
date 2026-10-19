@@ -1,12 +1,15 @@
 using System.IO.Compression;
 using Meridian.Contracts.Integrity;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Storage.Replay;
 
 /// <summary>
-/// Read-only discovery for lossless plain-JSONL to gzip publication. The source and its
-/// create-only gzip destination may both survive a crash; they are one logical archive.
-/// Recovery copies, checksum sidecars and staging files are never directory candidates.
+/// Discovery for lossless plain-JSONL to gzip publication. The source and its create-only
+/// gzip destination may both survive a crash; they are one logical archive. Readers never
+/// change files; only <see cref="TryRetireEqualSourceAsync"/>, used by fenced writers, completes
+/// an interrupted cleanup. Recovery copies, checksum sidecars and staging files are never
+/// directory candidates.
 /// </summary>
 internal static class JsonlArchiveFiles
 {
@@ -94,6 +97,52 @@ internal static class JsonlArchiveFiles
             source?.Dispose();
             compressed?.Dispose();
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Completes cleanup interrupted after gzip publication: when <paramref name="sourcePath"/>
+    /// and its <c>.gz</c> hold equal payloads, makes the archive durable and removes the source
+    /// and its checksum sidecar. Returns false when no archive exists. Unequal representations
+    /// fail closed and neither copy is changed. Callers hold the path's write fence.
+    /// </summary>
+    internal static async Task<bool> TryRetireEqualSourceAsync(string sourcePath, CancellationToken ct)
+    {
+        var gzipPath = sourcePath + ".gz";
+        await using (var source = TryOpen(sourcePath))
+        await using (var compressed = TryOpenForSync(gzipPath))
+        {
+            if (compressed is null)
+                return false;
+            if (source is not null)
+            {
+                var sourceDigest = await Sha256Digest.ComputeAsync(source, ct).ConfigureAwait(false);
+                await using var gzip = new GZipStream(compressed, CompressionMode.Decompress, leaveOpen: true);
+                var compressedDigest = await Sha256Digest.ComputeAsync(gzip, ct).ConfigureAwait(false);
+                if (!Sha256Digest.FixedEquals(sourceDigest, compressedDigest))
+                    throw new IOException($"Conflicting JSONL archive representations: {sourcePath}");
+            }
+            compressed.Flush(flushToDisk: true);
+        }
+
+        var directory = Path.GetDirectoryName(Path.GetFullPath(sourcePath))!;
+        await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
+        File.Delete(sourcePath);
+        File.Delete(sourcePath + ".sha256");
+        await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
+        return true;
+    }
+
+    private static FileStream? TryOpenForSync(string path)
+    {
+        try
+        {
+            return new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.Read | FileShare.Delete,
+                64 * 1024, useAsync: true);
+        }
+        catch (FileNotFoundException)
+        {
+            return null;
         }
     }
 

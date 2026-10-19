@@ -362,6 +362,30 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
+    public async Task CompressedArchive_WithoutSourceChecksum_StillGetsChecksumAndDetectsTruncation()
+    {
+        var path = Path.Combine(TestDataRoot, "SPY_trade_20260102.jsonl");
+        Directory.CreateDirectory(TestDataRoot);
+        // Ordinary sink partitions carry no .sha256 of their own.
+        await File.WriteAllTextAsync(path, string.Join("\n", ExpectedLines()) + "\n");
+        File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddHours(-1));
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+
+        (await service.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false))).Success.Should().BeTrue();
+
+        File.Exists(path + ".gz.sha256").Should().BeTrue("every published archive gets integrity evidence");
+        (await service.RunHealthCheckAsync(new HealthCheckOptions(ValidateChecksums: true)))
+            .Issues.Should().NotContain(issue => issue.Type == IssueType.ChecksumMismatch);
+
+        await using (var archive = new FileStream(path + ".gz", FileMode.Open, FileAccess.Write))
+            archive.SetLength(archive.Length / 2);
+
+        (await service.RunHealthCheckAsync(new HealthCheckOptions(ValidateChecksums: true)))
+            .Issues.Should().Contain(issue => issue.Type == IssueType.ChecksumMismatch,
+                "a truncated archive must not read as healthy");
+    }
+
+    [Fact]
     public async Task CompressedArchive_RetainsChecksumCoverageAndDetectsLaterCorruption()
     {
         var path = await CreateSourceAsync();

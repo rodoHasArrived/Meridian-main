@@ -53,8 +53,14 @@ commits: a failure leaves the archive without a sidecar and never reports the co
 failed. Compression also retires a source checksum orphaned by an interrupted cleanup.
 Scheduled runs also defer files written
 within the last five minutes, and every run refuses to delete a source whose length or timestamp
-changed after verification, withdrawing the new archive instead. A source checksum sidecar is
-carried to the gzip archive before the original sidecar is removed. Unhealthy sources,
+changed after verification, withdrawing the new archive instead. Every published gzip archive
+gets its own checksum sidecar before the source (and any source sidecar) is removed, whether or not
+the source had one, so health checks detect a later truncated or corrupted archive. A sink write
+that finds both equal representations left by a crash between publication and source deletion
+first completes that cleanup (`JsonlArchiveFiles.TryRetireEqualSourceAsync`, under the write fence
+and archive append lease) and then extends the archive; unequal representations fail closed.
+Sink retention removes a data file's checksum sidecar with it (sidecar first) and counts sidecar
+bytes in the `MaxTotalBytes` budget, so no checksum outlives the archive it covers. Unhealthy sources,
 failed backups, destination collisions and incomplete transformations remain explicit failures;
 their recovery copies are retained in execution history. `FileMaintenanceService.Compression.cs`
 owns this operation and the backup helper shared with repair.

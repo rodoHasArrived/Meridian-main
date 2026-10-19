@@ -253,7 +253,6 @@ public sealed partial class FileMaintenanceService
         {
             var sourceChecksum = await ComputeChecksumAsync(source, ct);
             var sourceStamp = SourceStamp(filePath);
-            var retainSidecar = File.Exists(filePath + ".sha256");
             if (File.Exists(outputPath))
             {
                 // A crash after create-only publication can leave both complete representations.
@@ -277,7 +276,7 @@ public sealed partial class FileMaintenanceService
                     throw new IOException($"Refusing to replace existing compression destination; recovery verification failed: {outputPath}", ex);
                 }
                 CompressionCheckpoint?.Invoke(CompressionPublicationStage.PublicationSynced);
-                if (retainSidecar && !File.Exists(outputSidecar))
+                if (!File.Exists(outputSidecar))
                     await WriteChecksumSidecarAsync(outputPath, ct);
                 RequireUnchangedSource(filePath, sourceStamp);
                 await CompleteCompressionCleanupAsync(filePath);
@@ -307,10 +306,10 @@ public sealed partial class FileMaintenanceService
             {
                 File.Delete(stagedPath);
             }
-            // Carry integrity evidence to the archive before the source's sidecar is removed;
-            // health checks verify a file only against its own sidecar.
-            if (retainSidecar)
-                await WriteChecksumSidecarAsync(outputPath, ct);
+            // Every archive gets integrity evidence before the source (and any sidecar of its
+            // own) is removed; health checks verify a file only against its own sidecar, so an
+            // archive without one would pass a later truncation as healthy.
+            await WriteChecksumSidecarAsync(outputPath, ct);
             if (SourceStamp(filePath) != sourceStamp)
             {
                 // Appended after verification: the archive we just published is incomplete.
