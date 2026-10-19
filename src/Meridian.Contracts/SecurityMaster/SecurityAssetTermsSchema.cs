@@ -515,6 +515,44 @@ public static class SecurityAssetTermsSchema
                 Opt("expiry", SecurityAssetTermFieldType.Date),
                 Opt("multiplier", SecurityAssetTermFieldType.Decimal)
             ],
+            ["FxForward"] =
+            [
+                Req("baseCurrency", SecurityAssetTermFieldType.String),
+                Req("quoteCurrency", SecurityAssetTermFieldType.String),
+                Opt("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount"),
+                Opt("forwardRate", SecurityAssetTermFieldType.Decimal, "rate"),
+                Opt("tradeDate", SecurityAssetTermFieldType.Date),
+                Req("valueDate", SecurityAssetTermFieldType.Date, "settlementDate", "maturityDate"),
+                Opt("settlementType", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.SettlementMethod)
+            ],
+            ["NonDeliverableForward"] =
+            [
+                Req("baseCurrency", SecurityAssetTermFieldType.String),
+                Req("quoteCurrency", SecurityAssetTermFieldType.String),
+                Req("settlementCurrency", SecurityAssetTermFieldType.String),
+                Opt("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount"),
+                Opt("forwardRate", SecurityAssetTermFieldType.Decimal, "rate"),
+                Req("fixingDate", SecurityAssetTermFieldType.Date),
+                Req("valueDate", SecurityAssetTermFieldType.Date, "settlementDate", "maturityDate"),
+                Opt("fixingSource", SecurityAssetTermFieldType.String).AsOperational()
+            ],
+            ["CreditDefaultSwap"] =
+            [
+                Req("referenceEntity", SecurityAssetTermFieldType.String),
+                Opt("referenceObligation", SecurityAssetTermFieldType.String),
+                ReqOneOf("protectionSide", "Buy", "Sell").WithVerbatimUndeclaredValue(),
+                Req("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount"),
+                Req("fixedCouponBps", SecurityAssetTermFieldType.Decimal, "couponBps", "runningSpreadBps"),
+                Req("effectiveDate", SecurityAssetTermFieldType.Date),
+                Req("maturityDate", SecurityAssetTermFieldType.Date, "scheduledTerminationDate"),
+                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.PaymentFrequency),
+                Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention").WithConvention(SecurityTermConventionKind.DayCount),
+                Opt("seniority", SecurityAssetTermFieldType.String),
+                Opt("restructuringClause", SecurityAssetTermFieldType.String, "docClause"),
+                Opt("upfrontPoints", SecurityAssetTermFieldType.Decimal),
+                Opt("recoveryRateAssumption", SecurityAssetTermFieldType.Decimal, "recoveryRate"),
+                Opt("indexName", SecurityAssetTermFieldType.String)
+            ],
             ["InvestmentFund"] =
             [
                 Opt("fundType", SecurityAssetTermFieldType.String),

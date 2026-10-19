@@ -351,6 +351,46 @@ module SecurityMaster =
                 (error "warrant_strike_invalid" "Warrant Strike must be greater than zero when present.")
             @ require (terms.Multiplier |> Option.forall (fun m -> m > 0m))
                 (error "warrant_multiplier_invalid" "Warrant Multiplier must be greater than zero when present.")
+        | SecurityKind.FxForward terms ->
+            []
+            @ requireNotBlank "fx_forward_base_currency_required" "BaseCurrency" terms.BaseCurrency
+            @ requireNotBlank "fx_forward_quote_currency_required" "QuoteCurrency" terms.QuoteCurrency
+            @ require (not (String.Equals(terms.BaseCurrency, terms.QuoteCurrency, StringComparison.OrdinalIgnoreCase)))
+                (error "fx_forward_currency_pair_invalid" "FxForward BaseCurrency and QuoteCurrency must differ.")
+            @ require (terms.Notional |> Option.forall (fun n -> n > 0m))
+                (error "fx_forward_notional_invalid" "FxForward Notional must be greater than zero when present.")
+            @ require (terms.ForwardRate |> Option.forall (fun r -> r > 0m))
+                (error "fx_forward_rate_invalid" "FxForward ForwardRate must be greater than zero when present.")
+            @ require (terms.TradeDate |> Option.forall (fun tradeDate -> tradeDate <= terms.ValueDate))
+                (error "fx_forward_trade_date_invalid" "FxForward TradeDate must be on or before ValueDate when present.")
+        | SecurityKind.NonDeliverableForward terms ->
+            []
+            @ requireNotBlank "ndf_base_currency_required" "BaseCurrency" terms.BaseCurrency
+            @ requireNotBlank "ndf_quote_currency_required" "QuoteCurrency" terms.QuoteCurrency
+            @ requireNotBlank "ndf_settlement_currency_required" "SettlementCurrency" terms.SettlementCurrency
+            @ require (not (String.Equals(terms.BaseCurrency, terms.QuoteCurrency, StringComparison.OrdinalIgnoreCase)))
+                (error "ndf_currency_pair_invalid" "NonDeliverableForward BaseCurrency and QuoteCurrency must differ.")
+            @ require (terms.Notional |> Option.forall (fun n -> n > 0m))
+                (error "ndf_notional_invalid" "NonDeliverableForward Notional must be greater than zero when present.")
+            @ require (terms.ForwardRate |> Option.forall (fun r -> r > 0m))
+                (error "ndf_rate_invalid" "NonDeliverableForward ForwardRate must be greater than zero when present.")
+            @ require (terms.FixingDate <= terms.ValueDate)
+                (error "ndf_fixing_date_invalid" "NonDeliverableForward FixingDate must be on or before ValueDate.")
+        | SecurityKind.CreditDefaultSwap terms ->
+            []
+            @ requireNotBlank "cds_reference_entity_required" "ReferenceEntity" terms.ReferenceEntity
+            @ require
+                (String.Equals(terms.ProtectionSide, "Buy", StringComparison.OrdinalIgnoreCase)
+                 || String.Equals(terms.ProtectionSide, "Sell", StringComparison.OrdinalIgnoreCase))
+                (error "cds_protection_side_invalid" "CreditDefaultSwap ProtectionSide must be either 'Buy' or 'Sell'.")
+            @ require (terms.Notional > 0m)
+                (error "cds_notional_invalid" "CreditDefaultSwap Notional must be greater than zero.")
+            @ require (terms.FixedCouponBps >= 0m)
+                (error "cds_fixed_coupon_invalid" "CreditDefaultSwap FixedCouponBps must be zero or greater.")
+            @ require (terms.EffectiveDate <= terms.MaturityDate)
+                (error "cds_date_range_invalid" "CreditDefaultSwap EffectiveDate must be on or before MaturityDate.")
+            @ require (terms.RecoveryRateAssumption |> Option.forall (fun r -> r >= 0m && r <= 1m))
+                (error "cds_recovery_rate_invalid" "CreditDefaultSwap RecoveryRateAssumption must be between 0 and 1 when present.")
         | SecurityKind.InvestmentFund _ ->
             []
         | SecurityKind.CustomAsset terms ->

@@ -23,6 +23,9 @@ public sealed class SecurityMasterAssetClassSupportTests
     [InlineData("CryptoCurrency")]
     [InlineData("Cfd")]
     [InlineData("Warrant")]
+    [InlineData("FxForward")]
+    [InlineData("NonDeliverableForward")]
+    [InlineData("CreditDefaultSwap")]
     [InlineData("StructuredCredit")]
     [InlineData("PrivateFundInterest")]
     [InlineData("PrivateCompanyEquity")]
@@ -389,6 +392,40 @@ public sealed class SecurityMasterAssetClassSupportTests
                 strike = 150m,
                 expiry = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(12)),
                 multiplier = 1m
+            }),
+            "FxForward" => JsonSerializer.SerializeToElement(new
+            {
+                baseCurrency = "EUR",
+                quoteCurrency = "USD",
+                notional = 1_000_000m,
+                forwardRate = 1.09m,
+                tradeDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                valueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(3)),
+                settlementType = "Physical"
+            }),
+            "NonDeliverableForward" => JsonSerializer.SerializeToElement(new
+            {
+                baseCurrency = "USD",
+                quoteCurrency = "INR",
+                settlementCurrency = "USD",
+                notional = 1_000_000m,
+                forwardRate = 84.5m,
+                fixingDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(3).AddDays(-2)),
+                valueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(3)),
+                fixingSource = "RBI"
+            }),
+            "CreditDefaultSwap" => JsonSerializer.SerializeToElement(new
+            {
+                referenceEntity = "Meridian Industries Inc",
+                protectionSide = "Sell",
+                notional = 5_000_000m,
+                fixedCouponBps = 500m,
+                effectiveDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                maturityDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(5)),
+                paymentFrequency = "Quarterly",
+                dayCount = "ACT/360",
+                seniority = "SeniorUnsecured",
+                restructuringClause = "XR"
             }),
             "StructuredCredit" => JsonSerializer.SerializeToElement(new
             {

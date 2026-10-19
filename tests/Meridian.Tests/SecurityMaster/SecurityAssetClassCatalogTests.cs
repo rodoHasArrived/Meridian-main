@@ -154,6 +154,9 @@ public sealed class SecurityAssetClassCatalogTests
             "CryptoCurrency",
             "Cfd",
             "Warrant",
+            "FxForward",
+            "NonDeliverableForward",
+            "CreditDefaultSwap",
             "InvestmentFund",
             "OtherSecurity"
         });

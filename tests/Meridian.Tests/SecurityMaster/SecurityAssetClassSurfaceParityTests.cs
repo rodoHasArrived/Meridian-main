@@ -35,7 +35,7 @@ public sealed class SecurityAssetClassSurfaceParityTests
             ["private-fund-partnership"] = ["PrivateFundInterest", "PrivateCompanyEquity"],
             ["private-loan-credit"] = ["DirectLoan"],
             ["real-estate"] = ["RealEstateHolding"],
-            ["derivatives-fx"] = ["Option", "Future", "Swap", "FxSpot", "Cfd", "Warrant"],
+            ["derivatives-fx"] = ["Option", "Future", "Swap", "FxSpot", "Cfd", "Warrant", "FxForward", "NonDeliverableForward", "CreditDefaultSwap"],
             ["mortgage-facility-intercompany"] = ["DirectLoan"],
             ["commitment-guarantee"] = ["CommitmentGuarantee"],
             ["controlled-other-asset"] = ["OtherSecurity", "CustomAsset", "Commodity", "CryptoCurrency"],

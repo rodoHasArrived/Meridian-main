@@ -475,6 +475,15 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("expiryDate", MaturityDate)
         ]),
         ("Warrant", [Map("expiry", MaturityDate)]),
+        ("FxForward", [Map("tradeDate", ("maturity", "effectiveDate")), Map("valueDate", MaturityDate)]),
+        ("NonDeliverableForward", [Map("fixingDate", ("maturity", "effectiveDate")), Map("valueDate", MaturityDate)]),
+        ("CreditDefaultSwap",
+        [
+            Map("effectiveDate", ("maturity", "effectiveDate")),
+            Map("maturityDate", MaturityDate),
+            Map("paymentFrequency", ("coupon", "paymentFrequency")),
+            Map("dayCount", ("coupon", "dayCount"))
+        ]),
         ("InvestmentFund", [Map("fundFamily", ("fund", "fundFamily"))])
     ];
 

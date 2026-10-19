@@ -1508,6 +1508,17 @@ let private registrySampleKinds : (SecurityKind * string) list =
       SecurityKind.Cfd { UnderlyingAssetClass = "Equity"; UnderlyingDescription = None; Leverage = None }, "Cfd"
       SecurityKind.Warrant {
           UnderlyingId = secId (); WarrantType = "Call"; Strike = None; Expiry = None; Multiplier = None }, "Warrant"
+      SecurityKind.FxForward {
+          BaseCurrency = "EUR"; QuoteCurrency = "USD"; Notional = None; ForwardRate = None; TradeDate = None
+          ValueDate = DateOnly(2026, 9, 2); SettlementType = None }, "FxForward"
+      SecurityKind.NonDeliverableForward {
+          BaseCurrency = "USD"; QuoteCurrency = "BRL"; SettlementCurrency = "USD"; Notional = None; ForwardRate = None
+          FixingDate = DateOnly(2026, 6, 29); ValueDate = DateOnly(2026, 7, 1); FixingSource = None }, "NonDeliverableForward"
+      SecurityKind.CreditDefaultSwap {
+          ReferenceEntity = "Meridian Industries Inc"; ReferenceObligation = None; ProtectionSide = "Buy"; Notional = 10_000_000m
+          FixedCouponBps = 100m; EffectiveDate = DateOnly(2026, 3, 20); MaturityDate = DateOnly(2031, 6, 20)
+          PaymentFrequency = None; DayCount = None; Seniority = None; RestructuringClause = None; UpfrontPoints = None
+          RecoveryRateAssumption = None; IndexName = None }, "CreditDefaultSwap"
       SecurityKind.InvestmentFund {
           FundType = None; FundFamily = None; NavCurrency = None; DistributionPolicy = None
           IsStableNav = None; PricingSource = None }, "InvestmentFund"
@@ -1729,7 +1740,7 @@ let ``AssetClassRegistry assetClassName agrees with SecurityKind.assetClass`` ()
 
 [<Fact>]
 let ``AssetClassRegistry isDerivative agrees with SecurityKind.isDerivative`` () =
-    let expectedDerivatives = set [ "Option"; "Future"; "Swap"; "Cfd"; "Warrant" ]
+    let expectedDerivatives = set [ "Option"; "Future"; "Swap"; "Cfd"; "Warrant"; "FxForward"; "NonDeliverableForward"; "CreditDefaultSwap" ]
     for kind, name in registrySampleKinds do
         let expected = Set.contains name expectedDerivatives
         AssetClassRegistry.isDerivative kind |> should equal expected
