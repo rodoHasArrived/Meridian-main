@@ -137,7 +137,17 @@ row is proven on the same commit and the required Actions runs are green."* A gr
 **`Publish Smoke`, `Desktop Installer Release` and `Production Certification` re-run on the frozen
 commit**, plus every evidence-gated row proven there. Without that, a tag can rest on receipts
 minted on an ancestor — which is precisely the sequencing failure the tracker records as having
-blocked all six evidence-gated rows before. What is new is that the engineering precondition they were
+blocked all six evidence-gated rows before.
+
+**Fourth correction (2026-10-19): and the tag is not the last step.** `PRD-014`'s evidence cannot
+exist before the tag, because a manual `Desktop Installer Release` run **never publishes** —
+`desktop-installer-packaging.yml:17-19` describes manual runs as a signed *rehearsal*, and the
+publication step is gated at `:701` on `github.event_name == 'push' && startsWith(github.ref,
+'refs/tags/v')`. So "re-run the three lanes, then tag" was still wrong in sequence: it reads as
+though tagging is the finish line, when for `PRD-014` the only qualifying run begins *after* the tag
+exists. The order is: **run the non-tag gates on the frozen commit → push the `v*` tag → keep
+promotion blocked until the tag-triggered installer workflow is green.** A tag with a red or absent
+tag-triggered installer run is not a release candidate; it is an unreleased tag. What is new is that the engineering precondition they were
 waiting on is, for this commit, satisfied.
 
 ## P1: the remaining teardown race is the thing that will take the gate back
@@ -187,7 +197,7 @@ the tag.
 `"quarantined_modules": {}` — #3180 drained it — and the repository's own rules forbid skipping
 tests to reach green. A release cannot be certified on a gate that was silenced to pass.
 
-## P1: the `Generated Repair Publisher` has now failed 91 times out of 91
+## P1: the `Generated Repair Publisher` has never produced a green run in 91
 
 Yesterday this was 31 of 31. **Today it is worse by 53 failures in a single day**, and it is still
 the same one line. Of the 20 most recent runs, 19 are `workflow_run` failures and one `push` run
@@ -249,10 +259,27 @@ own conditions (`.github/workflows/generated-repair-publish.yml:62,86`) then ski
 publishing. Making that exception exit zero converts **a red no-op into a green no-op**: the check
 stops complaining and the hosted repair flow remains just as unusable.
 
-That reframes the finding, and makes it larger rather than smaller. **91 of 91 runs failing at
-`:213` means this workflow has never once reached its publish path** — every invocation is rejected
-at the binding check, so the automation the repository built for generated-file repair has never
-actually repaired anything. The real work is to diagnose why
+That reframes the finding, and makes it larger rather than smaller — **with the sampling scope
+stated honestly (corrected 2026-10-19).** Two separate claims need separating:
+
+- **Counts (complete):** the workflow has **91 runs and zero successes**. In the 20 most recent,
+  19 `workflow_run` invocations failed and one `push` run was `skipped`; in the 38-run history read
+  on 2026-10-17, 31 `workflow_run` invocations failed and 7 `push`/`schedule` runs were skipped.
+  **An earlier revision said "91 of 91 failed", which was wrong** — the `push`/`schedule` runs are
+  skipped by design, not failures. What is true across every sample is that **no run has ever
+  succeeded** and no sampled `workflow_run` invocation has passed.
+- **Cause (sampled, not exhaustive):** failed job logs were pulled for **two** runs, chosen from
+  different times and different source runs — `39042015558` (2026-10-17 14:44) and `39020937825`
+  (09:35, source run `39019499318`). **Both** end with the identical two lines:
+  `Generated repair: manual. Target run is not bound to its base SHA` then
+  `##[error]Process completed with exit code 1.` That is consistent with a single cause at `:213`
+  across the history, and it is **evidence from two samples, not proof over all 91 runs.**
+
+So the load-bearing inference — that the binding check, not the exit code, is what to fix — rests on
+two matching samples plus the call-order argument above. If a maintainer finds older failures dying
+*later* than `:213`, the diagnosis widens rather than collapses: the exit-code change would still be
+the wrong first move. Confirming the failing step across the full history is cheap and should be the
+first step of the fix. The real work is to diagnose why
 `run.head_sha != request["base_sha"]` holds on every invocation and correct or requeue the binding;
 normalising the exit code is at most a cosmetic follow-up, and doing it *first* would destroy the
 only signal that the flow is broken.
@@ -322,6 +349,12 @@ unapplied.
 
 Yesterday's document inferred this from file names. It is now measured. **Share of the last 200
 commits that touch each generated path:**
+
+**Measured at the `0342643d` baseline.** Re-measured at the `bb4a0899` re-verification revision,
+the dashboard pair is **65 of the last 200 commits (32.5%)** rather than 86/200 (43%) — the churn is
+real and dominant at both revisions, but it is **trending down**, and the 43% figure is baseline
+evidence, not a re-verified current reading (corrected 2026-10-19). Treat 32.5–43% as the range; the
+ranking does not turn on which end.
 
 | Path | Commits / 200 | Share | In conflicted PRs |
 | --- | --- | --- | --- |
@@ -509,9 +542,15 @@ told exactly what the body had retracted.
 A heading or an index row that asserts a withdrawn claim is worse than a stale paragraph, because it
 is what a hurried reader acts on. **So after any withdrawal here, grep the whole file *and*
 `README.md` for the retracted wording before pushing** — the sweep that produced this round's fixes
-found two residues the review itself had not flagged, including a section heading. The factual
-tabulations stay as written: the data was never wrong in any round. Only the inferences drawn from
-it, and the copies of those inferences, needed correcting.
+found two residues the review itself had not flagged, including a section heading. **One claim in an earlier version of this very note has
+itself been withdrawn (2026-10-19).** It said the factual tabulations never needed correcting and
+only the inferences did. Round four disproved that: the publisher's "91 of 91 failed" conflated
+by-design skipped `push` runs into the failure count, and the 43% churn figure sat inside a section
+asserting every claim had been re-verified at `bb4a0899`, where the same measurement yields 32.5%.
+The honest version is narrower: **the raw counts that were gathered correctly survived every round,
+but a count can be mis-framed and a correct measurement can be mislabelled as current** — and both
+produce a true number that misleads. Check the framing and the as-of revision, not just the
+arithmetic.
 
 ## Process finding: the acting is now outpacing the ranking
 
@@ -537,9 +576,9 @@ out precisely enough to apply in minutes, and left to a person.
 
 | Priority | Work | Why now |
 | --- | --- | --- |
-| **P0** | **Freeze a commit, re-run the three release lanes on it, then tag** — `Publish Smoke`, `Desktop Installer Release` and `Production Certification` on the frozen commit with every evidence-gated row proven there (`implementation-todo-list.md:203-205`, `:231-235`); plus sign `ADR-019`/`ADR-020` (`PRD-000`), the `desktop-release-signing` secrets (`PRD-014`), recovery evidence (`PRD-015`), administrator activation of the required check (`PRD-016`), the ~1 GB download decision, and **finish `PRD-002`, still `Implementation-in-progress` and a blocking engineering precondition** | **Corrected three times (2026-10-19).** Do **not** tag `0342643d`: it only ever cleared CI, is 53 commits behind, and was never certifiable. The gate itself is reliable (eight consecutive green `main` pushes), but green CI is neither the engineering precondition nor the release evidence — any branch change invalidates the prior evidence set |
+| **P0** | **Freeze a commit, run the non-tag gates on it, push the `v*` tag, then keep promotion blocked until the tag-triggered installer run is green** — `Publish Smoke`, `Production Certification` and every evidence-gated row proven on the frozen commit (`implementation-todo-list.md:203-205`, `:231-235`); **`PRD-014` evidence can only come from the tag push**, since manual `Desktop Installer Release` runs never publish (`desktop-installer-packaging.yml:17-19`, publication gated at `:701` on `refs/tags/v`); plus `ADR-019`/`ADR-020` (`PRD-000`), the `desktop-release-signing` secrets (`PRD-014`), recovery evidence (`PRD-015`), administrator activation of the required check (`PRD-016`), the ~1 GB download decision, and **finish `PRD-002`, still `Implementation-in-progress`** | **Corrected four times (2026-10-19).** Do **not** tag `0342643d`: it only ever cleared CI, is 53 commits behind, and was never certifiable. The gate is reliable (eight consecutive green `main` pushes), but green CI is neither the engineering precondition nor the release evidence — and **the tag is not the last step** |
 | **P1** | **Make `tests/scripts` teardown deterministic** — terminate/join whatever holds the temporary tree, or use a bounded cleanup retry that **still fails** if the directory cannot be removed; start at `test_merge_reviewed_doc_hashes.py:93` | 98 call sites, zero guarded. The `OSError: [Errno 39]` was raised by `tempfile`, not an assertion. **Corrected 2026-10-19: not blanket `ignore_cleanup_errors=True`** — that passes tests whose cleanup genuinely failed and hides real leaks, which is the same bypass as quarantine. Likeliest cause of the next red, and a red gate invalidates the RC commit |
-| **P1** | **Diagnose why every invocation fails the base-SHA binding check** at `generated_repair.py:213` and correct or requeue the binding; treat normalising the exit code as a cosmetic follow-up, not the fix | **91 of 91 runs failed; zero green ever.** **Corrected twice (2026-10-19):** `inspect()` calls `verify_source_run()` first (`:322-324`), so the error precedes any `ready`/`retry`, the status stays `manual`, and the workflow conditions (`:62,86`) skip publishing — an exit-code change yields a **green no-op**. 91 of 91 failing there means the publisher has **never reached its publish path** |
+| **P1** | **Confirm the failing step across the publisher's history, then correct or requeue the base-SHA binding** at `generated_repair.py:213`; treat normalising the exit code as a cosmetic follow-up, not the fix | **91 runs, zero successes ever.** **Corrected 2026-10-19:** not "91 of 91 failed" — `push`/`schedule` runs are skipped by design. Two sampled failed logs from different source runs both end at `:213`, and `inspect()` calls `verify_source_run()` first (`:322-324`), so the status stays `manual` and the workflow conditions (`:62,86`) skip publishing — an exit-code change yields a **green no-op**. The single-cause reading is two samples, not proof over 91 |
 | **P1** | **Reduce how often the 43% file is reconciled, via the hosted repair flow** — fix the publisher above, complete the local resolver, then put the tracked-artifact question to the owners | Measured: the doc-health pair changes in **86 of the last 200 commits (43%)** and appears in **14 of the 15** conflicted PRs. **Corrected 2026-10-19: not a `merge=` driver.** `generated-merge-recovery.md` already rejects that — it depends on local Git config, does not configure GitHub's merge environment, and cannot prove a parent's assets match the merged source |
 | **P1** | **Add `docs/status/example-validation.md` to `GENERATED_FILES`** in `resolve-generated-merge-conflicts.py:20-39` | Still absent today. The resolver reports `REVIEW` and stops on the four PRs where it collides. One line, and the file's own comment rules out a wildcard |
 | **P2** | **Resolve #3176's conflict in `test_schema_control_disposable.py` deliberately** | The first genuine code disagreement in the queue in days, and it is on the race `main` just fixed. `main`'s version carries a 40/40 reproduction; #3176's should have to match it |
