@@ -32,6 +32,7 @@ public sealed partial class WorkstationEndpointsTests
             using var response = await app.GetTestClient().GetAsync(UiApiRoutes.LedgerAuditIntegrity);
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Headers.CacheControl!.NoStore.Should().BeTrue("a stored report must never stand in for a fresh verification");
             var report = await response.Content.ReadFromJsonAsync<AccountingAuditIntegrityReportDto>(ServerJsonOptions);
             report!.AllVerified.Should().BeTrue();
             report.Chains.Single(chain => chain.Chain == AuditChainIdentifiers.AccountingActions)

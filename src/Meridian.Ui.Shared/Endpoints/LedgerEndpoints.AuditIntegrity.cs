@@ -30,6 +30,10 @@ public static partial class LedgerEndpoints
     {
         app.MapGet(UiApiRoutes.LedgerAuditIntegrity, async (HttpContext context) =>
         {
+            // Each request is a fresh verification; no browser or intermediary may answer it from
+            // a stored earlier report.
+            context.Response.Headers.CacheControl = "no-store";
+
             if (!await AuditIntegrityGate.WaitAsync(0, context.RequestAborted).ConfigureAwait(false))
             {
                 return Results.Problem(

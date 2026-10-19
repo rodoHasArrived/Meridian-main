@@ -630,6 +630,8 @@ public sealed class AccountingConfigurationPostgresStoreTests
                 AccountingAuditChainStatus.AnchorMismatch, first + 2),
             ("update {0}.accounting_action_audit_chain_head set next_sequence = next_sequence + 1 where chain_id = 1;",
                 AccountingAuditChainStatus.AnchorMismatch, first + 3),
+            ("update {0}.accounting_action_audit_chain_head set next_sequence = genesis_sequence, last_hash = null where chain_id = 1;",
+                AccountingAuditChainStatus.AnchorMismatch, first),
         ];
         foreach (var (sql, status, failedSequence) in cases)
         {
