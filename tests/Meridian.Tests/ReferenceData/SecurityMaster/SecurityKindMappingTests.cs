@@ -28,6 +28,84 @@ public sealed class SecurityKindMappingTests
         canonicalAssetClass.Should().BeEmpty();
     }
 
+    /// <summary>
+    /// The asset-class to market-data instrument-type table as it stood when the mapping moved onto
+    /// <see cref="SecurityAssetClassDescriptor.InstrumentTypes"/>. Pinned so the move is provably
+    /// behavior-preserving; changing a mapping now means changing this table deliberately.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, InstrumentType[]> ExpectedInstrumentTypesByAssetClass =
+        new Dictionary<string, InstrumentType[]>(StringComparer.Ordinal)
+        {
+            ["Equity"] = [InstrumentType.Equity],
+            ["Option"] = [InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.FuturesOption],
+            ["Future"] = [InstrumentType.Future, InstrumentType.SingleStockFuture],
+            ["Bond"] = [InstrumentType.Bond],
+            ["FxSpot"] = [InstrumentType.Forex],
+            ["Deposit"] = [InstrumentType.Deposit],
+            ["MoneyMarketFund"] = [InstrumentType.Equity],
+            ["CertificateOfDeposit"] = [InstrumentType.Deposit],
+            ["CommercialPaper"] = [InstrumentType.Bond],
+            ["TreasuryBill"] = [InstrumentType.Bond],
+            ["Repo"] = [InstrumentType.Repo],
+            ["CashSweep"] = [InstrumentType.Deposit],
+            ["OtherSecurity"] = [],
+            ["CustomAsset"] = [],
+            ["Swap"] = [InstrumentType.Swap],
+            ["DirectLoan"] = [InstrumentType.DirectLoan],
+            ["StructuredCredit"] = [],
+            ["PrivateFundInterest"] = [],
+            ["PrivateCompanyEquity"] = [],
+            ["RealEstateHolding"] = [],
+            ["CommitmentGuarantee"] = [],
+            ["Commodity"] = [InstrumentType.Commodity],
+            ["CryptoCurrency"] = [InstrumentType.Crypto],
+            ["Cfd"] = [InstrumentType.CFD],
+            ["Warrant"] = [InstrumentType.Warrant],
+            ["InvestmentFund"] = [],
+        };
+
+    [Fact]
+    public void ExpectedInstrumentTypeTable_CoversExactlyTheCatalogAssetClasses()
+    {
+        ExpectedInstrumentTypesByAssetClass.Keys
+            .Should().BeEquivalentTo(SecurityAssetClassCatalog.AssetClasses);
+    }
+
+    [Fact]
+    public void ToInstrumentTypes_MatchesPinnedTable_ForEveryAssetClass()
+    {
+        foreach (var (assetClass, expected) in ExpectedInstrumentTypesByAssetClass)
+        {
+            SecurityKindMapping.ToInstrumentTypes(assetClass)
+                .Should().Equal(expected, $"'{assetClass}' must keep its pre-catalog instrument-type mapping");
+        }
+    }
+
+    [Fact]
+    public void ToInstrumentTypes_IsCaseInsensitive_AndEmptyForUnknownAssetClass()
+    {
+        SecurityKindMapping.ToInstrumentTypes("equity").Should().Equal(InstrumentType.Equity);
+        SecurityKindMapping.ToInstrumentTypes("UnknownAssetClass").Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ToAssetClass_RoundTripsThroughToInstrumentTypes_ExceptDocumentedOneWayMappings()
+    {
+        // Index is the one InstrumentType that maps to an asset class (OtherSecurity) whose own
+        // instrument-type list is empty, so it does not round-trip.
+        foreach (var instrumentType in Enum.GetValues<InstrumentType>().Where(static type => type != InstrumentType.Index))
+        {
+            var assetClass = SecurityKindMapping.ToAssetClass(instrumentType);
+            if (assetClass is null)
+            {
+                continue;
+            }
+
+            SecurityKindMapping.ToInstrumentTypes(assetClass)
+                .Should().Contain(instrumentType, $"{instrumentType} maps to '{assetClass}', which must list it back");
+        }
+    }
+
     [Fact]
     public void InstrumentTypeDescriptorCatalog_ReturnsOperationalMetadata_ForIndexOptions()
     {

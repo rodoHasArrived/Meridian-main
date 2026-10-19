@@ -1143,7 +1143,13 @@ instead of accepting client-local JSON shapes.
 can distinguish profile-backed alternative assets from generic `OtherSecurity` fallback records.
 Alternative asset operations are represented as first-class Security Master asset classes for
 `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, and
-`CommitmentGuarantee`, while `DirectLoan` remains the private-credit class. The registry keeps
+`CommitmentGuarantee`, while `DirectLoan` remains the private-credit class. `StructuredCredit`
+carries typed tranche terms at asset-class terms version 2 (`structuredCreditKind` from the
+`structured-credit-kind` taxonomy, `seniority`, `attachmentPoint`/`detachmentPoint` as fractions
+of the deal balance, `weightedAverageCoupon`/`weightedAverageMaturityMonths`/
+`weightedAverageLoanAgeMonths`, and the CLO `reinvestmentPeriodEnd`/`nonCallPeriodEnd` dates); all
+are optional, so a version-1 payload reads unchanged, and the pool statistics bridge to the
+`structuredProduct` economic module. The registry keeps
 `CustomAsset` as the governed compatibility and wide-capture fallback for profile-backed records
 that cannot yet be upgraded to one of those minimum first-class classes.
 `SecurityAssetPackRegistry` defines the additive asset-pack registry contract for wide capture and
@@ -1749,7 +1755,10 @@ schema, validators and editor hints. `SecurityAssetClassRegistryCoverageTests` f
 `SecurityKind` case has no definition. The registry backs `/api/security-master/asset-classes`.
 `SecurityTermConventions` types day count, settlement method and option right as canonical
 vocabularies. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
-one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `SecurityIdentifierKind` adds
+one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `CommitmentLot` (commitment,
+funded and unfunded amounts, recallable distributions, `Draw`) and `FundUnitLot` (units at an
+acquisition NAV) are the `Commitment` and `Units` cases the registry assigns to private fund
+interests, guarantees and funds. `SecurityIdentifierKind` adds
 `LoanX` (`LX` plus six digits) and `Clip` (nine alphanumerics).
 
 ### Security Master income, curves, factors and corporate-action terms
@@ -1805,3 +1814,15 @@ a pending transaction can become visible later with an earlier recorded timestam
 exact evaluation using `receiptId` on the golden-copy endpoint, retaining the security/account
 scope. Unknown or differently scoped receipts return no result and never silently recompute.
 Mixed quote units have no percentage comparison.
+
+StructuredCredit's free-text `factorSchedule` is the trustee or servicer report pointer and is
+declared `Operational`: the paydown projector keeps it as evidence lineage, the economic bridge
+carries it as `structuredProduct.factorScheduleReference`, and no cash-flow or accounting math reads
+it. The dated `factorScheduleEntries` array is the schedule; a pointer with no entries raises the
+`SM_STRUCTURED_CREDIT_FACTOR_ENTRIES_MISSING` warning.
+
+`ISecurityMasterStructuredCreditReclassificationService` returns the ADR-022
+`StructuredCreditReclassificationReportDto`: one candidate per active securitised `Bond` or
+`CustomAsset` row with a `Ready` or `Blocked` disposition, the proposed `structuredCreditKind`, the
+derived asset-specific terms and the blocker codes the operator must clear. The report never applies
+a proposal.

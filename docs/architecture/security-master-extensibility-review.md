@@ -575,6 +575,15 @@ half-landed.
 > `SecurityFactorObservation` with a docstring stating exactly that relationship, so the canonical
 > dated factor point exists in one shape (`FactorScheduleEntry` / `StructuredFactorScheduleEntry`)
 > and the observation type no longer reads as a competing schedule term.
+>
+> **Status (2026-10-19): closed.** The free-text `factorSchedule` term is not a schedule shape at
+> all: it is the trustee or servicer report pointer the paydown projector retains as evidence for
+> typed factor rows. It is now declared `Operational` in the terms schema, travels in the economic
+> document as `structuredProduct.factorScheduleReference` (the legacy upgrade had been writing it
+> into the coupon payment frequency and the floating-rate reset frequency), and a
+> `SM_STRUCTURED_CREDIT_FACTOR_ENTRIES_MISSING` warning steers records that carry the pointer
+> without dated `factorScheduleEntries`. It stays readable and writable; the
+> `structured-credit-io-po` profile still requires it as evidence.
 
 ### 9. Equity has bespoke amendment endpoints no other class has
 
@@ -744,7 +753,7 @@ original assessment. No code was changed by this pass; no tests were run.
 | 1 | Taxonomy outruns term model | `BondTerms.PrincipalSchedule` landed; `BondCouponStructure` is still 3 cases — step-rate and inflation-linked remain classifiable but not computable |
 | 4 | ~7 registries per asset class | Drift is now test-caught, not prevented; both codec arms are still hand-written |
 | 5 | Governed edits do not reach the golden record | Field paths and types are now schema-validated; **no merge path exists** — no publish handler writes an approved override into canonical terms |
-| 8 | Factor schedules exist in incompatible shapes | Typed `FactorScheduleEntries` landed and is consumed; the third shape (`SecurityFactorScheduleEntry` in `Meridian.Strategies`) is still duplicated |
+| 8 | Factor schedules exist in incompatible shapes | Closed: typed `FactorScheduleEntries` is the schedule; the free-text `factorSchedule` is declared an Operational evidence pointer and no longer feeds economic frequencies |
 
 ### Unchanged and open
 
@@ -1046,6 +1055,16 @@ promote them to structured, per-pack, checkable values, or restate *them* as des
 and not to the registry type, which would discard working enforcement.
 
 ### N6 — Projection fan-out writes to every asset class on every upsert
+
+> **Superseded 2026-10-18.** `UpsertProjectionCoreAsync` now reads the security's stored
+> `asset_class` under the row lock the upsert takes anyway (`select … for update`, one statement)
+> and visits only the writers `PostgresSecurityMasterStore.ProjectionWritersFor` names: the current
+> class's writer, which publishes or clears its own rows, and the prior class's writer when the
+> class changed, which clears the rows it left behind. A projection row for class X can only exist
+> while the stored class is X, so no other writer has anything to delete. With 25 registered
+> writers after migration 044 the per-record cost had grown to ~28 fan-out deletes; it is now at
+> most two writer visits plus the one read. `ProjectionFanOutTests` pins the selection and
+> `ProjectionFanOutPostgresTests` proves the invariant across a class change against PostgreSQL.
 
 `UpsertProjectionCoreAsync` runs all 11 registered writers for every record
 (`PostgresSecurityMasterStore.cs:386-389`), and each writer whose class does not match issues a
@@ -2750,7 +2769,7 @@ field definition (A4).
 | N4 | `ValidateAll()` cannot fire its own overlap rule | `ValidateAll()` still calls `ValidateCandidateSet([])` (`SecurityAssetPackRegistry.cs:258-261`) and the overlap check still filters to groups containing a candidate pack (`:289`), so `candidateIds` is empty and no group survives. `DirectLoan` is still claimed by both `private-loan-credit` (`:198`) and `mortgage-facility-intercompany` (`:223`). |
 | N5 | Per-pack contract schema is one shared prose object | All ten packs still receive the same three static instances — `ContractSchema` (`:37`), `StandardValidationRules` (`:117`), `StandardReportingTaxonomy` (`:153`) — through `Pack(...)` (`:401, 413, 414`), and `ValidateDescriptor` still checks them only for non-emptiness. `InferLifecycleEvent` (`:482-518`) still derives lifecycle routing by substring-matching English journal-template names. |
 | N6 | Projection fan-out writes to every asset class on every upsert | `ProjectionWriters` is still fanned out unconditionally per record; the registry shape is right, the per-record amplification is unchanged. |
-| — | Relational projections for private/alternative classes | Still 11 projected classes (`PostgresSecurityMasterStore.ProjectedAssetClasses`) against 26 catalog classes, with the 15-class gap enumerated and partition-locked in `SecurityAssetTermsSchemaTests`. Governed, not drifting. **(Superseded 2026-09-02: `DirectLoan` and `StructuredCredit` are now projected — 13 of 26 — and the four remaining Asset Operations classes moved from the declared-gap list to a shrink-only `OpsCapableProjectionBacklog`.)** |
+| — | Relational projections for private/alternative classes | Still 11 projected classes (`PostgresSecurityMasterStore.ProjectedAssetClasses`) against 26 catalog classes, with the 15-class gap enumerated and partition-locked in `SecurityAssetTermsSchemaTests`. Governed, not drifting. **(Superseded 2026-09-02: `DirectLoan` and `StructuredCredit` are now projected — 13 of 26 — and the four remaining Asset Operations classes moved from the declared-gap list to a shrink-only `OpsCapableProjectionBacklog`.)** | **(Superseded 2026-10-18: migration `044_security_master_declarative_terms_projections.sql` plus twelve `SecurityTermsProjectionRegistry` descriptors project every remaining class except the profile-governed `CustomAsset` — 25 of 26; `OpsCapableProjectionBacklog` is empty and `IntentionallyUnprojectedAssetClasses` is `{CustomAsset}`.)**
 | — | Valid-time term history | `securities` still holds one current row per security; `effective_to` is written only by `DeactivateProjectionAsync` (`PostgresSecurityMasterStore.cs:100-117`), so it is a lifecycle window, not a version key. Term as-of remains per-security event replay via `RebuildAsOfAsync` — correct for one security, with no bulk point-in-time universe read behind it. |
 | — | Codec generation from `SecurityAssetTermsSchema` | Both arms still hand-written behind `SecurityAssetTermsSchemaRoundTripTests`. |
 
@@ -5270,6 +5289,14 @@ in both writers, and let the guard stay the only authority on readability. What 
 present arrangement, where the same column means two things and the migration comment documents
 only one of them.
 
+*Resolution (2026-10-17, ADR-024).* The store now takes the second option for `schema_version` (the
+version of the stored blob, one definition shared with the migration 024 backfill), and migration
+`042_security_master_terms_format_column.sql` adds the family alongside it as `terms_format`,
+backfilled from the declared `termsFormat` tag or, for untagged rows, the same shape rule
+`SecurityTermsEnvelope.ResolveFormat` applies. Every flat writer (CSV import, EDGAR ingest, the F#
+interop snapshot, the desktop template) stamps the envelope, so the shape rule now serves only the
+pre-tag backlog that the column makes countable; its retirement is gated in ADR-024.
+
 ### Smaller notes, not filed as findings
 
 - **`SecurityAssetSpecificTermsUpcasterPipeline.ToSchemaVersion` is wrong for profile payloads.** It
@@ -5766,7 +5793,7 @@ reads it per security.
 
 | Finding | What landed |
 | --- | --- |
-| Most asset classes write their typed tables through hand-written code | `SecurityTermsProjectionColumn.Derived` lets a descriptor column compute its value from the whole record (common terms, fallback chains, derived states) while the registry owns the gate, delete branch, identity spine and generated upsert. Equity, FxSpot, Future, Swap and Commodity moved onto descriptors. Their derived columns call the same readers the writers used. Nine of the eleven original writers are now declarative, and the catalog's `ProjectionKind` says so (locked by `SecurityAssetClassRegistryCoverageTests`). |
+| Most asset classes write their typed tables through hand-written code | `SecurityTermsProjectionColumn.Derived` lets a descriptor column compute its value from the whole record (common terms, fallback chains, derived states) while the registry owns the gate, delete branch, identity spine and generated upsert. Equity, FxSpot, Future, Swap and Commodity moved onto descriptors. Their derived columns call the same readers the writers used. Nine of the eleven original writers are now declarative, and the catalog's `ProjectionKind` says so (locked by `SecurityAssetClassRegistryCoverageTests`). Migration 044 added declarative descriptors for the twelve classes that had no projection at all, so 25 of 26 classes project (CustomAsset excepted). |
 | Each move needs a regression test | `SpecializedProjectionGoldenTests` is a PostgreSQL golden-row matrix covering gate hits and misses, stale rows cleared on a gate miss or class change, verbatim and normalized strings, common-terms columns, derived columns and wrong JSON kinds. It passed against the hand-written writers before they were deleted, and the descriptors are held to the same rows. |
 | Still specialized | Bond and Option. Option's tables are keyed by contract symbol and option chain, not by security; three of Bond's four tables carry no identity spine, and Bond keeps a legacy nested-coupon fallback. Both keep their existing writer tests. |
 
@@ -5777,6 +5804,7 @@ reads it per security.
 | The lot model does not record units | `IUnitizedLot` (decimal `Quantity`, `UnitKind`, `Multiplier`) is the shared lot shape, and `LotQuantity` is its value form (`EconomicUnits = Quantity × Multiplier`). `LotQuantity.UnitFor`/`For` read the unit and the multiplier term (an option's or future's `multiplier`, a commodity's `contractSize`) from the asset-class registry. |
 | The face-value lot is bond-only and separate | `FaceValueLot` implements `IUnitizedLot` as the `FaceValue` case. `ToLedgerTaxLot` states the ledger's hundred-of-face unit (`UnitKind = FaceValue`, `Multiplier = 100`), so ledger quantity × multiplier is the face amount. The basis adjuster carries unit and multiplier through adjustments. |
 | Execution and backtesting lots use whole-number quantities | `Execution.Sdk.TaxLot`, `Backtesting.Sdk.OpenLot` and `ClosedLot` now carry decimal quantities and implement `IUnitizedLot` (shares and multiplier 1 by default). `LedgerTaxLot` implements it too. Cost-basis and P&L formulas are unchanged; the backtest fill engine still trades whole units, and its lots can now represent fractional and contract-scaled holdings without a type change. |
+| The `Commitment` and `Units` lot units had no lot type, and the paper-trading lot sat outside the shared shape | `CommitmentLot` (commitment, funded and unfunded amounts, recallable distributions, `Draw`, `RecordRecallableDistribution`) and `FundUnitLot` (units at an acquisition NAV, `WithReducedUnits`) implement `IUnitizedLot` as the `Commitment` and `Units` cases; `AlternativeAssetLotExtensions.ToLedgerTaxLot` carries contributed capital as a `CurrencyAmount` ledger lot and fund units as a `Units` ledger lot. The paper-trading `PositionLot` implements `IUnitizedLot`, reading its unit and multiplier live from the owning `PaperPosition`, and `PaperPosition.UnitizedLots` exposes the book in the shared shape. |
 
 ### Follow-ons — conventions and loan identifiers
 

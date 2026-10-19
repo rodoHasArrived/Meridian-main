@@ -1,3 +1,5 @@
+using Meridian.Contracts.Domain.Enums;
+
 namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>
@@ -26,6 +28,8 @@ public static class SecurityAssetClassCatalog
     [
         new(
             AssetClass: "Equity",
+            AssetPackIds: ["public-equity-etf"],
+            InstrumentTypes: [InstrumentType.Equity],
             LotUnit: SecurityLotUnitKind.Shares,
             CashFlowBehavior: SecurityCashFlowBehavior.Dividends,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
@@ -48,6 +52,8 @@ public static class SecurityAssetClassCatalog
             SupportsIdentifierOnlyImport: true),
         new(
             AssetClass: "Option",
+            AssetPackIds: ["derivatives-fx"],
+            InstrumentTypes: [InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.FuturesOption],
             LotUnit: SecurityLotUnitKind.Contracts,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
             ProjectionKind: SecurityTermsProjectionKind.Specialized,
@@ -63,6 +69,8 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "Future",
+            AssetPackIds: ["derivatives-fx"],
+            InstrumentTypes: [InstrumentType.Future, InstrumentType.SingleStockFuture],
             LotUnit: SecurityLotUnitKind.Contracts,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
@@ -78,6 +86,9 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "Bond",
+            AssetPackIds: ["fixed-income"],
+            SupportsCanonicalBulletAmortization: true,
+            InstrumentTypes: [InstrumentType.Bond],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.ContractualSchedule,
             ProjectionKind: SecurityTermsProjectionKind.Specialized,
@@ -100,6 +111,8 @@ public static class SecurityAssetClassCatalog
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond),
         new(
             AssetClass: "FxSpot",
+            AssetPackIds: ["derivatives-fx"],
+            InstrumentTypes: [InstrumentType.Forex],
             LotUnit: SecurityLotUnitKind.CurrencyAmount,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
@@ -113,6 +126,8 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "Deposit",
+            AssetPackIds: ["cash-bank"],
+            InstrumentTypes: [InstrumentType.Deposit],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.ContractualSchedule,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
@@ -126,6 +141,8 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "MoneyMarketFund",
+            AssetPackIds: ["cash-bank"],
+            InstrumentTypes: [InstrumentType.Equity],
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.FundDistributions,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
@@ -141,6 +158,8 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "CertificateOfDeposit",
+            AssetPackIds: ["fixed-income"],
+            InstrumentTypes: [InstrumentType.Deposit],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.ContractualSchedule,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
@@ -158,9 +177,12 @@ public static class SecurityAssetClassCatalog
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond),
         new(
             AssetClass: "CommercialPaper",
+            AssetPackIds: ["fixed-income"],
+            SupportsCanonicalBulletAmortization: true,
+            InstrumentTypes: [InstrumentType.Bond],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.ContractualSchedule,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -175,9 +197,12 @@ public static class SecurityAssetClassCatalog
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond),
         new(
             AssetClass: "TreasuryBill",
+            AssetPackIds: ["fixed-income"],
+            SupportsCanonicalBulletAmortization: true,
+            InstrumentTypes: [InstrumentType.Bond],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.ContractualSchedule,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -193,9 +218,11 @@ public static class SecurityAssetClassCatalog
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond),
         new(
             AssetClass: "Repo",
+            AssetPackIds: ["fixed-income"],
+            InstrumentTypes: [InstrumentType.Repo],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.FinancingInterest,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -206,9 +233,11 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "CashSweep",
+            AssetPackIds: ["cash-bank"],
+            InstrumentTypes: [InstrumentType.Deposit],
             LotUnit: SecurityLotUnitKind.CurrencyAmount,
             CashFlowBehavior: SecurityCashFlowBehavior.ProviderSupplied,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -218,9 +247,11 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "OtherSecurity",
+            AssetPackIds: ["controlled-other-asset"],
+            RequiresGovernedProfile: true,
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -232,6 +263,8 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true),
         new(
             AssetClass: "CustomAsset",
+            AssetPackIds: ["controlled-other-asset"],
+            RequiresGovernedProfile: true,
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
             ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
@@ -248,6 +281,8 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true),
         new(
             AssetClass: "Swap",
+            AssetPackIds: ["derivatives-fx"],
+            InstrumentTypes: [InstrumentType.Swap],
             LotUnit: SecurityLotUnitKind.Notional,
             CashFlowBehavior: SecurityCashFlowBehavior.SwapLegs,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
@@ -262,6 +297,8 @@ public static class SecurityAssetClassCatalog
             RequiresMaturity: true),
         new(
             AssetClass: "DirectLoan",
+            AssetPackIds: ["private-loan-credit", "mortgage-facility-intercompany"],
+            InstrumentTypes: [InstrumentType.DirectLoan],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.ContractualSchedule,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
@@ -280,6 +317,7 @@ public static class SecurityAssetClassCatalog
             Aliases: ["Loan", "AmortizingLoan"]),
         new(
             AssetClass: "StructuredCredit",
+            AssetPackIds: ["fixed-income"],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.FactorAmortizing,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
@@ -295,14 +333,19 @@ public static class SecurityAssetClassCatalog
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
             AmortizesTowardPar: true,
+            // Version 2 added the typed tranche terms (structuredCreditKind, seniority, attachment and
+            // detachment points, WAC/WAM/WALA, CLO period dates); every addition is optional, so a
+            // version-1 payload reads unchanged and needs no field transformation (ADR-024).
+            TermsVersion: 2,
             SupportsProfileBackedTerms: true,
             Aliases: ["MortgageBacked", "MortgageBackedSecurity", "MBS", "AssetBacked", "AssetBackedSecurity", "ABS"],
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity),
         new(
             AssetClass: "PrivateFundInterest",
+            AssetPackIds: ["private-fund-partnership"],
             LotUnit: SecurityLotUnitKind.Commitment,
             CashFlowBehavior: SecurityCashFlowBehavior.ProviderSupplied,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -314,9 +357,10 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true),
         new(
             AssetClass: "PrivateCompanyEquity",
+            AssetPackIds: ["private-fund-partnership"],
             LotUnit: SecurityLotUnitKind.Shares,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -329,9 +373,10 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true),
         new(
             AssetClass: "RealEstateHolding",
+            AssetPackIds: ["real-estate"],
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.ProviderSupplied,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -343,9 +388,10 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true),
         new(
             AssetClass: "CommitmentGuarantee",
+            AssetPackIds: ["commitment-guarantee"],
             LotUnit: SecurityLotUnitKind.Commitment,
             CashFlowBehavior: SecurityCashFlowBehavior.ProviderSupplied,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -357,6 +403,8 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true),
         new(
             AssetClass: "Commodity",
+            AssetPackIds: ["controlled-other-asset"],
+            InstrumentTypes: [InstrumentType.Commodity],
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
@@ -371,6 +419,8 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "CryptoCurrency",
+            AssetPackIds: ["controlled-other-asset"],
+            InstrumentTypes: [InstrumentType.Crypto],
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
@@ -384,9 +434,11 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "Cfd",
+            AssetPackIds: ["derivatives-fx"],
+            InstrumentTypes: [InstrumentType.CFD],
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -396,9 +448,11 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "Warrant",
+            AssetPackIds: ["derivatives-fx"],
+            InstrumentTypes: [InstrumentType.Warrant],
             LotUnit: SecurityLotUnitKind.Contracts,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             LotMultiplierTermKey: "multiplier",
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
@@ -412,9 +466,10 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "InvestmentFund",
+            AssetPackIds: ["public-equity-etf"],
             LotUnit: SecurityLotUnitKind.Units,
             CashFlowBehavior: SecurityCashFlowBehavior.FundDistributions,
-            ProjectionKind: SecurityTermsProjectionKind.TermsJsonOnly,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -545,6 +600,18 @@ public static class SecurityAssetClassCatalog
     }
 
     /// <summary>
+    /// The asset classes the named asset pack covers today, in catalog order. Pack membership is a
+    /// fact about the class (<see cref="SecurityAssetClassDescriptor.AssetPackIds"/>), so
+    /// <c>SecurityAssetPackRegistry</c> reads it from here rather than keeping a second list.
+    /// </summary>
+    public static IReadOnlyList<string> AssetClassesInPack(string packId)
+        => Descriptors
+            .Where(descriptor => descriptor.AssetPackIds is not null
+                && descriptor.AssetPackIds.Contains(packId, StringComparer.OrdinalIgnoreCase))
+            .Select(static descriptor => descriptor.AssetClass)
+            .ToArray();
+
+    /// <summary>
     /// The asset classes a bulk import carrying only identity columns may create. See
     /// <see cref="SecurityAssetClassDescriptor.SupportsIdentifierOnlyImport"/>.
     /// </summary>
@@ -622,6 +689,30 @@ public static class SecurityAssetClassCatalog
 /// (an option's or future's <c>multiplier</c>, a commodity's <c>contractSize</c>), or
 /// <see langword="null"/> when one lot unit is one economic unit.
 /// </param>
+/// <param name="InstrumentTypes">
+/// The market-data <see cref="InstrumentType"/> values that map to this asset class, or
+/// <see langword="null"/> when the class has no direct market-data instrument type. The reverse
+/// direction (instrument type to asset class) stays in <c>SecurityKindMapping</c> because it is
+/// not one-to-one.
+/// </param>
+/// <param name="AssetPackIds">
+/// The <c>SecurityAssetPackRegistry</c> pack ids that cover this class today. Declared here so the
+/// registry derives each pack's claimed classes from the catalog instead of keeping its own list;
+/// a class may belong to more than one pack (DirectLoan sits in private credit and in mortgages,
+/// facilities and intercompany loans).
+/// </param>
+/// <param name="SupportsCanonicalBulletAmortization">
+/// Whether canonical lot amortization (<c>OpenLotAmortization</c>) accepts face lots of this class:
+/// bullet structures whose premium or discount accretes on a fixed schedule. Narrower than
+/// <paramref name="AmortizesTowardPar"/>, which also covers factor-amortizing and drawn structures
+/// the canonical bullet kernel does not model.
+/// </param>
+/// <param name="RequiresGovernedProfile">
+/// Whether a record of this class must carry an approved custom profile before readiness and
+/// accounting workflows may rely on it. Narrower than <paramref name="SupportsProfileBackedTerms"/>:
+/// the first-class alternative asset kinds MAY be profile-backed; CustomAsset and OtherSecurity have
+/// no terms contract of their own and so MUST be.
+/// </param>
 public sealed record SecurityAssetClassDescriptor(
     string AssetClass,
     SecurityLotUnitKind LotUnit,
@@ -637,7 +728,11 @@ public sealed record SecurityAssetClassDescriptor(
     string? AccountingInstrumentClass = null,
     bool SupportsIdentifierOnlyImport = false,
     int TermsVersion = SecurityTermsEnvelope.DefaultAssetClassTermsVersion,
-    string? LotMultiplierTermKey = null)
+    string? LotMultiplierTermKey = null,
+    IReadOnlyList<InstrumentType>? InstrumentTypes = null,
+    IReadOnlyList<string>? AssetPackIds = null,
+    bool SupportsCanonicalBulletAmortization = false,
+    bool RequiresGovernedProfile = false)
 {
     /// <summary>
     /// Whether positions are held as face-value lots (par-denominated quantity). Derived from

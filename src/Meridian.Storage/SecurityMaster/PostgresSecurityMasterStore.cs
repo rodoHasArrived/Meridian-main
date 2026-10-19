@@ -70,6 +70,35 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     internal static IReadOnlyList<string> ProjectedAssetClasses { get; } =
         ProjectionWriters.Select(static writer => writer.AssetClass).ToArray();
 
+    /// <summary>
+    /// The writers an upsert runs, by the asset class the <c>securities</c> row held before the
+    /// write and the class it holds now. A projection row for class X can only exist while the
+    /// security's stored class is X (every write path goes through <see cref="UpsertProjectionCoreAsync"/>,
+    /// which clears X's rows the moment the class moves on), so a write has to visit at most two
+    /// writers: the current class's, which upserts or clears its own rows depending on the gates,
+    /// and the prior class's when the class changed, which clears the rows it left behind. Every
+    /// other writer would delete rows that cannot be there. Returned in registry order, so a class
+    /// change clears the old projection before the new one is published when the old writer is
+    /// registered first.
+    /// </summary>
+    internal static IReadOnlyList<string> ProjectionWritersFor(string? priorAssetClass, string currentAssetClass)
+    {
+        ArgumentNullException.ThrowIfNull(currentAssetClass);
+
+        var classChanged = priorAssetClass is not null
+            && !string.Equals(priorAssetClass, currentAssetClass, StringComparison.OrdinalIgnoreCase);
+
+        return ProjectionWriters
+            .Where(writer =>
+                string.Equals(writer.AssetClass, currentAssetClass, StringComparison.OrdinalIgnoreCase)
+                || (classChanged && string.Equals(writer.AssetClass, priorAssetClass, StringComparison.OrdinalIgnoreCase)))
+            .Select(static writer => writer.AssetClass)
+            .ToArray();
+    }
+
+    private static readonly IReadOnlyDictionary<string, AssetProjectionWriter> ProjectionWritersByAssetClass =
+        ProjectionWriters.ToDictionary(static writer => writer.AssetClass, StringComparer.OrdinalIgnoreCase);
+
     private readonly SecurityMasterOptions _options;
     private readonly SecurityMasterNodeIdentity _nodeIdentity;
 
@@ -381,6 +410,12 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         SecurityProjectionRecord record,
         CancellationToken ct)
     {
+        // The class the row held before this write decides which stale projection, if any, has to
+        // be cleared below. Read under a per-security advisory lock plus the row lock the upsert is
+        // about to take anyway, so a competing writer cannot change the class — or create the row
+        // — between this read and the upsert's own ON CONFLICT recheck.
+        var priorAssetClass = await ReadAssetClassForUpdateAsync(connection, transaction, record.SecurityId, ct).ConfigureAwait(false);
+
         await using (var command = connection.CreateCommand())
         {
             command.Transaction = transaction;
@@ -390,13 +425,14 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                     security_id, asset_class, status, display_name, currency, country_of_risk, issuer_name,
                     exchange_code, lot_size, tick_size, primary_identifier_kind, primary_identifier_value,
                     normalized_primary_identifier_value,
-                    common_terms, asset_specific_terms, provenance, version, schema_version, effective_from, effective_to)
+                    common_terms, asset_specific_terms, provenance, version, schema_version, terms_format,
+                    effective_from, effective_to)
                 values (
                     @security_id, @asset_class, @status, @display_name, @currency, @country_of_risk, @issuer_name,
                     @exchange_code, @lot_size, @tick_size, @primary_identifier_kind, @primary_identifier_value,
                     @normalized_primary_identifier_value,
                     @common_terms::jsonb, @asset_specific_terms::jsonb, @provenance::jsonb, @version, @schema_version,
-                    @effective_from, @effective_to)
+                    @terms_format, @effective_from, @effective_to)
                 on conflict (security_id) do update set
                     asset_class = excluded.asset_class,
                     status = excluded.status,
@@ -415,6 +451,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                     provenance = excluded.provenance,
                     version = excluded.version,
                     schema_version = excluded.schema_version,
+                    terms_format = excluded.terms_format,
                     effective_from = excluded.effective_from,
                     effective_to = excluded.effective_to
                 where retained.version <= excluded.version;
@@ -430,6 +467,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             // for. Readability stays the mapping guard's decision, which resolves the version from
             // the blob through the upcaster chain and never consults this column.
             var schemaVersion = SecurityAssetSpecificTermsV0ToCurrentUpcaster.ResolveSchemaVersion(record.AssetSpecificTerms);
+            var termsFormat = ResolveStorableTermsFormat(record);
 
             command.Parameters.AddWithValue("security_id", record.SecurityId);
             command.Parameters.AddWithValue("asset_class", record.AssetClass);
@@ -449,6 +487,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             command.Parameters.AddWithValue("provenance", record.Provenance.GetRawText());
             command.Parameters.AddWithValue("version", record.Version);
             command.Parameters.AddWithValue("schema_version", schemaVersion);
+            command.Parameters.AddWithValue("terms_format", termsFormat);
             command.Parameters.AddWithValue("effective_from", record.EffectiveFrom.UtcDateTime);
             command.Parameters.AddWithValue("effective_to", (object?)record.EffectiveTo?.UtcDateTime ?? DBNull.Value);
             // ON CONFLICT locks and rechecks the retained row after a competing writer commits.
@@ -476,16 +515,53 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             await ReplaceAliasesAsync(connection, transaction, record.SecurityId, record.Aliases, ct).ConfigureAwait(false);
         }
 
-        // Fan out to every registered per-asset-class projection writer. Each writer upserts its own
-        // projection when the record matches its asset class and deletes any stale row otherwise, so
-        // every writer runs for every record (class changes clean up the previous projection). Adding a
-        // projected asset class is a single additive registration in ProjectionWriters plus its writer.
-        foreach (var writer in ProjectionWriters)
+        // Fan out to the per-asset-class projection writers this write can affect: the current
+        // class's writer upserts its projection (or clears it when a gate fails), and when the class
+        // changed, the prior class's writer runs against the non-matching record and clears the rows
+        // it left behind. Running every registered writer here used to cost one delete per table
+        // for rows that cannot exist (N6 in the extensibility review); ProjectionWritersFor states
+        // the invariant that makes the narrower visit sufficient. Adding a projected asset class is
+        // still a single additive registration in ProjectionWriters.
+        foreach (var assetClass in ProjectionWritersFor(priorAssetClass, record.AssetClass))
         {
-            await writer.WriteAsync(this, connection, transaction, record, ct).ConfigureAwait(false);
+            await ProjectionWritersByAssetClass[assetClass].WriteAsync(this, connection, transaction, record, ct).ConfigureAwait(false);
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// The asset class the <c>securities</c> row currently holds, locked for the rest of the
+    /// transaction, or <see langword="null"/> when the security has never been projected.
+    /// <para>
+    /// A row lock cannot serialize an absent key: two transactions creating the same security for
+    /// the first time would both read "no row", both skip the prior-class cleanup, and the one that
+    /// loses the ON CONFLICT race would leave its projection beside the winner's. The per-security
+    /// advisory lock taken first serializes those first writes too, so a null here means the row
+    /// did not exist and no concurrent writer can create it before this transaction's upsert.
+    /// The lock is transaction-scoped and released at commit.
+    /// </para>
+    /// </summary>
+    private async Task<string?> ReadAssetClassForUpdateAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid securityId,
+        CancellationToken ct)
+    {
+        await using (var lockCommand = connection.CreateCommand())
+        {
+            lockCommand.Transaction = transaction;
+            lockCommand.CommandText = "select pg_advisory_xact_lock(hashtextextended(@lock_scope, 0));";
+            lockCommand.Parameters.AddWithValue("lock_scope", $"{_options.Schema}.securities:{securityId:N}");
+            await lockCommand.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"select asset_class from {Qualified("securities")} where security_id = @security_id for update;";
+        command.Parameters.AddWithValue("security_id", securityId);
+        var result = await command.ExecuteScalarAsync(ct).ConfigureAwait(false);
+        return result is string assetClass ? assetClass : null;
     }
 
     private async Task UpsertBondProjectionTablesAsync(
@@ -1407,6 +1483,27 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             ? value.GetString()
             : null;
 
+    /// <summary>
+    /// The terms-payload family written to the <c>terms_format</c> column (migration 042). A declared
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/> wins; a payload that predates the tag is
+    /// classified by the same shape rule the migration backfill applied, so the column has one
+    /// definition whether the row was migrated or written. The stored payload is never mutated to add
+    /// the tag — writers own stamping. A declared format this node does not know is refused here with
+    /// a precise reason rather than by the column's check constraint.
+    /// </summary>
+    internal static string ResolveStorableTermsFormat(SecurityProjectionRecord record)
+    {
+        var format = SecurityTermsEnvelope.ResolveFormat(record.AssetSpecificTerms);
+        if (!SecurityTermsFormats.IsKnown(format))
+        {
+            throw new InvalidOperationException(
+                $"Security '{record.SecurityId}' ({record.AssetClass}) declares {SecurityTermsEnvelope.FormatKey} '{format}', " +
+                $"which is not a storable terms format; expected one of {string.Join(", ", SecurityTermsFormats.All)}.");
+        }
+
+        return format;
+    }
+
     private static string NormalizePrimaryIdentifierValue(SecurityProjectionRecord record)
         => Enum.TryParse<SecurityIdentifierKind>(record.PrimaryIdentifierKind, ignoreCase: true, out var kind)
             ? SecurityIdentifierNormalizer.NormalizeValue(kind, record.PrimaryIdentifierValue)
@@ -1485,7 +1582,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         int? SettlementCycleDays,
         string? HolidayCalendarId,
         long Version,
-        // Clearwater extended lifecycle fields.
+        // Extended lifecycle fields (migration 017).
         decimal? Par,
         string? PaymentFrequency,
         DateOnly? LegalFinalMaturity,

@@ -16,7 +16,9 @@ Tier migration decodes compressed input with the production JSONL replay decoder
 `PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
 account/book/date price snapshots and separate independent-review records (Security Master
 migration 037). Source receipts must match exactly; scoped advisory locks fence approvals and
-linked corrections. Database guards refuse replacement, deletion and truncation. The schema
+linked corrections. Database guards refuse replacement, deletion and truncation; migration
+`043_security_master_close_price_approval_null_guards.sql` replaces the approval guard function so a
+snapshot payload lacking `Blockers` or `CreatedBy` is rejected instead of passing a NULL check. The schema
 inventory exception records only the lexical false positive from `BEFORE TRUNCATE` rejection
 triggers and requires independent schema/storage review.
 
@@ -53,6 +55,47 @@ projection batch rebuilds append in the same transaction as the change, and an o
 cannot approve values they staged. The event store and projection store join
 `PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap and
 Commodity projections are now declarative registry plans rather than hand-written writers.
+
+Projection fan-out is keyed by asset class. `UpsertProjectionCoreAsync` reads the security's stored
+`asset_class` under the row lock the upsert takes anyway and runs only the writers that write can
+affect: the current class's writer (which publishes, or clears its own rows when a gate fails) and,
+when the class changed, the prior class's writer (which clears the rows it left behind). A
+projection row for class X exists only while the stored class is X, so the other writers have
+nothing to delete; running all of them cost ~28 no-op deletes per record once migration 044 brought
+the registry to 25 writers.
+
+The reference-projection read side is shared as well. Every `Postgres*ReferenceProjectionStore`
+composes `PostgresReferenceProjectionReader` for its connection, command and row plumbing, and a
+store whose table is a `SecurityTermsProjectionRegistry` descriptor (Equity, Future, FxSpot, Swap,
+Commodity, CryptoCurrency, Deposit, MoneyMarketFund, CertificateOfDeposit, DirectLoan,
+StructuredCredit and their child tables) selects the descriptor's column list rather than
+restating it, mapping rows by column name through `ProjectionRow`. The registry is therefore the
+single statement of a projection table's columns on the write and read sides; only the specialized
+Bond and Option stores carry their own select lists. The per-class store interfaces and row
+records are unchanged, so `*ProjectionService` consumers and DI registrations did not move.
+
+Security Master migration `045_structured_credit_typed_tranche_terms.sql` widens
+`structured_credit_projection` with the typed tranche terms StructuredCredit asset-class terms
+version 2 adds (`structured_credit_kind`, `seniority`, `attachment_point`, `detachment_point`,
+`weighted_average_coupon`, `weighted_average_maturity_months`, `weighted_average_loan_age_months`,
+`reinvestment_period_end`, `non_call_period_end`), all nullable and projected by the registry
+descriptor; rows written before the migration keep nulls until their next projection write.
+
+Security Master migration `044_security_master_declarative_terms_projections.sql` gives the twelve
+remaining unprojected classes (CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Cfd,
+Warrant, InvestmentFund, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,
+CommitmentGuarantee) a relational projection written by the same declarative
+`SecurityTermsProjectionRegistry` descriptor path, so every catalog class except the
+profile-governed CustomAsset is now projected (25 of 26). Guid-typed terms project as `uuid`
+columns. The tables are created empty; an existing database populates them through
+`SecurityMasterRebuildOrchestrator.RebuildAssetClassAsync` per class.
+
+Security Master migration `042_security_master_terms_format_column.sql` promotes the terms-payload
+family to a queryable `securities.terms_format` column (ADR-024). The backfill never rewrites the
+payload: a declared `termsFormat` wins and an untagged row is classified by the same shape rule
+`SecurityTermsEnvelope.ResolveFormat` applies on read. `PostgresSecurityMasterStore` derives the
+column from the stored payload on every upsert and refuses an unknown declared format before the
+column's check constraint does.
 Asset-operations migration `005_asset_operations_write_events.sql` adds an append-only write-event
 log for direct projection writes; migration `006_asset_operations_write_events_truncate_guard.sql`
 rejects TRUNCATE on it as well.
@@ -781,6 +824,11 @@ flow through the existing soft-close adjustment approval guard.
 Ledger tax-lot state is stored as account-scoped policy records plus open-lot records in the ledger
 schema. The storage layer keeps the FIFO/LIFO/HIFO/SpecificId policy inputs and open-lot balances;
 relief projection, approval workflow, and tax-reporting exports remain outside this project.
+Migration `V_ledger_051` keys lot-label and policy uniqueness, the open-lot index, and the store's
+open-lot, label, policy and successor-label lookups on `lower(financial_account_id)` so storage agrees
+with `LedgerAccount`'s case-insensitive `FinancialAccountId` equality; stored casing is preserved, and
+the migration raises with the conflicting group and row counts before any DDL when retained rows
+already collide under the case-insensitive key. Focused proof: `TaxLotAccountCasingPostgresTests`.
 Closed-period trial-balance financials now preserve the dimension envelope available on retained
 journal metadata when building report rows. The ledger book service groups balances by account and
 dimension key, then fills the book fund profile as the default fund dimension, so entity,

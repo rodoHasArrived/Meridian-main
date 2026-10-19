@@ -3,6 +3,7 @@ using FluentAssertions;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 using Meridian.Instruments.AssetOperations;
+using Meridian.ReferenceData.CorporateActions;
 
 namespace Meridian.Tests.AssetOperations;
 
@@ -23,7 +24,7 @@ public sealed class CorporateActionAccountingProjectionServiceTests
     private static readonly Guid TargetLotId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
     private static readonly Guid SecondSourceLotId = Guid.Parse("ffffffff-ffff-ffff-ffff-ffffffffffff");
 
-    private readonly CorporateActionAccountingProjectionService _sut = new();
+    private readonly CorporateActionAccountingProjectionService _sut = new(ClearwaterCorporateActionRuleProfileV1.Instance);
 
     [Fact]
     public void Project_CA01_ShouldCarryBookValueAndHoldingPeriodWithoutGainLoss()

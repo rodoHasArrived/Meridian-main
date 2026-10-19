@@ -2458,6 +2458,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.IPortfolioCapitalScheduleProvider"
     },
     {
@@ -9118,6 +9124,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto"
     },
     {
@@ -9748,6 +9760,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.FundUnitLot"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService"
     },
     {
@@ -9833,6 +9851,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService"
     },
     {
       "kind": "contract-set-member",
@@ -10835,6 +10859,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsResolver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationBlockerDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationDisposition"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationReportDto"
     },
     {
       "kind": "contract-set-member",
@@ -17716,6 +17764,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:asset-operations-contracts",
+      "target": "contract:Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:asset-operations-contracts",
       "target": "contract:Meridian.Contracts.AssetOperations.IPortfolioCapitalScheduleProvider"
     },
     {
@@ -21982,6 +22036,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto"
     },
     {
@@ -22612,6 +22672,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.FundUnitLot"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService"
     },
     {
@@ -22697,6 +22763,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService"
     },
     {
       "kind": "contract-set-member",
@@ -23699,6 +23771,30 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsResolver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationBlockerDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationDisposition"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationReportDto"
     },
     {
       "kind": "contract-set-member",
@@ -33789,6 +33885,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot",
+      "target": "contract:Meridian.Contracts.SecurityMaster.IUnitizedLot"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.CorporateActionAccountingApprovalResultDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.CorporateActionCaseAccountingApprovalDto"
     },
@@ -34263,6 +34365,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.FundUnitLot",
+      "target": "contract:Meridian.Contracts.SecurityMaster.IUnitizedLot"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.InMemorySecurityForwardCurveProvider",
       "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityForwardCurveProvider"
     },
@@ -34439,6 +34547,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDefinitionDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
+      "target": "contract:Meridian.Contracts.Domain.Enums.InstrumentType"
     },
     {
       "kind": "contract-reference",
@@ -35195,6 +35309,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationBlockerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationDisposition"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationReportDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto"
     },
     {
       "kind": "contract-reference",
@@ -47610,6 +47742,31 @@
       "target": "database:security_master.operations_workflow_audit.event_type"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_securities_terms_format on security_master.securities",
+      "target": "database:security_master.securities.terms_format"
+    },
+    {
+      "constraint": "commitment_guarantee_covenant_projection_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.commitment_guarantee_covenant_projection",
+      "target": "database:security_master.commitment_guarantee_projection"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.commitment_guarantee_covenant_projection_security_id_fkey on security_master.commitment_guarantee_covenant_projection",
+      "target": "database:security_master.commitment_guarantee_projection.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.commitment_guarantee_covenant_projection_security_id_fkey on security_master.commitment_guarantee_covenant_projection",
+      "target": "database:security_master.commitment_guarantee_projection_pkey"
+    },
+    {
       "constraint": "corporate_action_canonical_sources_proposal_id_fkey",
       "kind": "foreign-key",
       "label": "proposal_id",
@@ -49938,6 +50095,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.cash_sweep_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.cash_transaction"
     },
     {
@@ -49945,6 +50108,30 @@
       "label": "",
       "source": "schema:security_master",
       "target": "database:security_master.certificate_of_deposit_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.cfd_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.commercial_paper_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.commitment_guarantee_covenant_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.commitment_guarantee_projection"
     },
     {
       "kind": "contains",
@@ -50106,6 +50293,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.investment_fund_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.journal_entry"
     },
     {
@@ -50202,6 +50395,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.other_security_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.outbox_message"
     },
     {
@@ -50209,6 +50408,18 @@
       "label": "",
       "source": "schema:security_master",
       "target": "database:security_master.payment_allocation"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.private_company_equity_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.private_fund_interest_projection"
     },
     {
       "kind": "contains",
@@ -50238,6 +50449,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.real_estate_holding_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.reconciliation_exception"
     },
     {
@@ -50251,6 +50468,12 @@
       "label": "",
       "source": "schema:security_master",
       "target": "database:security_master.reconciliation_run"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.repo_projection"
     },
     {
       "kind": "contains",
@@ -50475,6 +50698,18 @@
       "target": "database:security_master.swap_projection"
     },
     {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.treasury_bill_projection"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.warrant_projection"
+    },
+    {
       "kind": "hosts-migration-module",
       "label": "",
       "source": "schema:security_master",
@@ -50494,7 +50729,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "625e214a6224ec54f6183f57e80e63d270728bff981094999529ba886cde5d16",
+  "fingerprint": "1719af9ffb43b6efb37124cd6d04981b6920c0c82c10f8db3349d6251a110cfb",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -53000,6 +53235,12 @@
       "id": "contract:Meridian.Contracts.AssetOperations.IAssetOperationsQueryService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.AssetOperations.IAssetOperationsQueryService"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.AssetOperations.ICorporateActionRuleProfile"
     },
     {
       "classification": "service_contract",
@@ -59662,6 +59903,12 @@
       "label": "Meridian.Contracts.SecurityMaster.CashFlowLegRateKind"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.CommitmentLot",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.CommitmentLot"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto",
       "kind": "contract-type",
@@ -60292,6 +60539,12 @@
       "label": "Meridian.Contracts.SecurityMaster.FaceValueLot"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.FundUnitLot",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.FundUnitLot"
+    },
+    {
       "classification": "service_contract",
       "id": "contract:Meridian.Contracts.SecurityMaster.ICorporateActionCaseAccountingService",
       "kind": "contract-type",
@@ -60380,6 +60633,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.ISecurityMasterService"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService"
     },
     {
       "classification": "service_contract",
@@ -61382,6 +61641,30 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsResolver",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsResolver"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationBlockerDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationBlockerDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationDisposition",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationDisposition"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationReportDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationReportDto"
     },
     {
       "classification": "record",
@@ -71947,6 +72230,12 @@
       "label": "security_master.bond_projection_security_id_fkey on security_master.bond_projection"
     },
     {
+      "id": "database:security_master.cash_sweep_projection",
+      "kind": "database-table",
+      "label": "security_master.cash_sweep_projection",
+      "schema": "security_master"
+    },
+    {
       "id": "database:security_master.cash_transaction",
       "kind": "database-table",
       "label": "security_master.cash_transaction",
@@ -71976,6 +72265,12 @@
       "id": "database:security_master.certificate_of_deposit_projection",
       "kind": "database-table",
       "label": "security_master.certificate_of_deposit_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.cfd_projection",
+      "kind": "database-table",
+      "label": "security_master.cfd_projection",
       "schema": "security_master"
     },
     {
@@ -72147,6 +72442,44 @@
       "id": "database:security_master.ck_operations_workflow_audit_event_type on security_master.operations_workflow_audit",
       "kind": "database-object",
       "label": "security_master.ck_operations_workflow_audit_event_type on security_master.operations_workflow_audit"
+    },
+    {
+      "id": "database:security_master.ck_securities_terms_format on security_master.securities",
+      "kind": "database-object",
+      "label": "security_master.ck_securities_terms_format on security_master.securities"
+    },
+    {
+      "id": "database:security_master.commercial_paper_projection",
+      "kind": "database-table",
+      "label": "security_master.commercial_paper_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.commitment_guarantee_covenant_projection",
+      "kind": "database-table",
+      "label": "security_master.commitment_guarantee_covenant_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.commitment_guarantee_covenant_projection_security_id_fkey on security_master.commitment_guarantee_covenant_projection",
+      "kind": "database-object",
+      "label": "security_master.commitment_guarantee_covenant_projection_security_id_fkey on security_master.commitment_guarantee_covenant_projection"
+    },
+    {
+      "id": "database:security_master.commitment_guarantee_projection",
+      "kind": "database-table",
+      "label": "security_master.commitment_guarantee_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.commitment_guarantee_projection.security_id",
+      "kind": "database-object",
+      "label": "security_master.commitment_guarantee_projection.security_id"
+    },
+    {
+      "id": "database:security_master.commitment_guarantee_projection_pkey",
+      "kind": "database-object",
+      "label": "security_master.commitment_guarantee_projection_pkey"
     },
     {
       "id": "database:security_master.commodity_projection",
@@ -72830,6 +73163,12 @@
       "label": "security_master.fxspot_projection_security_id_fkey on security_master.fxspot_projection"
     },
     {
+      "id": "database:security_master.investment_fund_projection",
+      "kind": "database-table",
+      "label": "security_master.investment_fund_projection",
+      "schema": "security_master"
+    },
+    {
       "id": "database:security_master.journal_entry",
       "kind": "database-table",
       "label": "security_master.journal_entry",
@@ -73011,6 +73350,12 @@
       "label": "security_master.option_series_projection_contract_symbol_fkey on security_master.option_series_projection"
     },
     {
+      "id": "database:security_master.other_security_projection",
+      "kind": "database-table",
+      "label": "security_master.other_security_projection",
+      "schema": "security_master"
+    },
+    {
       "id": "database:security_master.outbox_message",
       "kind": "database-table",
       "label": "security_master.outbox_message",
@@ -73036,6 +73381,18 @@
       "id": "database:security_master.payment_allocation_source_event_id_fkey on security_master.payment_allocation",
       "kind": "database-object",
       "label": "security_master.payment_allocation_source_event_id_fkey on security_master.payment_allocation"
+    },
+    {
+      "id": "database:security_master.private_company_equity_projection",
+      "kind": "database-table",
+      "label": "security_master.private_company_equity_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.private_fund_interest_projection",
+      "kind": "database-table",
+      "label": "security_master.private_fund_interest_projection",
+      "schema": "security_master"
     },
     {
       "id": "database:security_master.projected_cash_flow",
@@ -73104,6 +73461,12 @@
       "id": "database:security_master.read_model_checkpoint",
       "kind": "database-table",
       "label": "security_master.read_model_checkpoint",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.real_estate_holding_projection",
+      "kind": "database-table",
+      "label": "security_master.real_estate_holding_projection",
       "schema": "security_master"
     },
     {
@@ -73180,6 +73543,12 @@
       "label": "security_master.reconciliation_run_projection_run_id_fkey on security_master.reconciliation_run"
     },
     {
+      "id": "database:security_master.repo_projection",
+      "kind": "database-table",
+      "label": "security_master.repo_projection",
+      "schema": "security_master"
+    },
+    {
       "id": "database:security_master.schema_migrations",
       "kind": "database-table",
       "label": "security_master.schema_migrations",
@@ -73195,6 +73564,11 @@
       "id": "database:security_master.securities.security_id",
       "kind": "database-object",
       "label": "security_master.securities.security_id"
+    },
+    {
+      "id": "database:security_master.securities.terms_format",
+      "kind": "database-object",
+      "label": "security_master.securities.terms_format"
     },
     {
       "id": "database:security_master.securities_pkey",
@@ -73672,6 +74046,18 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.treasury_bill_projection",
+      "kind": "database-table",
+      "label": "security_master.treasury_bill_projection",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.warrant_projection",
+      "kind": "database-table",
+      "label": "security_master.warrant_projection",
+      "schema": "security_master"
+    },
+    {
       "id": "migration-module:asset-operations",
       "kind": "migration-module",
       "label": "asset-operations"
@@ -73773,11 +74159,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3314,
-    "contract_set_memberships": 3960,
-    "edges": 8390,
-    "foreign_keys": 137,
+    "contract_references": 3320,
+    "contract_set_memberships": 3976,
+    "edges": 8429,
+    "foreign_keys": 138,
     "logical_references": 6,
-    "nodes": 4032
+    "nodes": 4058
   }
 }

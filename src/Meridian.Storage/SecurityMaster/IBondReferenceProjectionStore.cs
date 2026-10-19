@@ -29,7 +29,7 @@ public sealed record BondProjectionRow(
     string? FloatingRateIndex,
     decimal? FloatingSpreadBps,
     long Version,
-    // Clearwater extended lifecycle fields.
+    // Extended lifecycle fields (migration 017).
     string? Subclass = null,
     decimal? Par = null,
     string? PaymentFrequency = null,
@@ -45,7 +45,7 @@ public sealed record BondLifecycleProjectionRow(
     DateOnly MaturityDate,
     bool IsCallable,
     long Version,
-    // Clearwater extended lifecycle fields.
+    // Extended lifecycle fields (migration 017).
     string? Subclass = null,
     decimal? Par = null,
     string? PaymentFrequency = null,

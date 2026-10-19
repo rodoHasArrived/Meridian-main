@@ -1262,7 +1262,7 @@ public static partial class SecurityMasterEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
-        // Clearwater-model extensions. These map only when a real (non-null) implementation is
+        // Reference-data governance extensions. These map only when a real (non-null) implementation is
         // registered: when Security Master is unconfigured the NullSecurityMaster* fallbacks are
         // still present in DI, and their write/run paths throw, so mapping against them would turn
         // requests into 500s instead of leaving the routes unavailable.
@@ -1281,6 +1281,10 @@ public static partial class SecurityMasterEndpoints
         if (app.Services.GetService<ISecurityMasterDataQualityService>()
             is not (null or AppSecurityMaster.NullSecurityMasterDataQualityService))
             MapQualityReportEndpoints(group, jsonOptions);
+
+        if (app.Services.GetService<ISecurityMasterStructuredCreditReclassificationService>()
+            is not (null or AppSecurityMaster.NullSecurityMasterStructuredCreditReclassificationService))
+            MapStructuredCreditReclassificationEndpoints(group, jsonOptions);
 
         if (app.Services.GetService<SecurityMasterExceptionCaseworkService>() is not null)
             MapExceptionAgingEndpoints(group, jsonOptions);
@@ -1771,6 +1775,28 @@ public static partial class SecurityMasterEndpoints
         .WithName("GetSecurityMasterQualityReportLatest")
         .Produces<SecurityMasterQualityReportDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
+    }
+
+    // ── Structured-credit reclassification report (ADR-022) ─────────────────
+
+    private static void MapStructuredCreditReclassificationEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        // Report only: the scan proposes StructuredCredit terms for legacy securitised Bond and
+        // CustomAsset rows and never writes. Applying a proposal is a governed amendment.
+        group.MapPost(UiApiRoutes.SecurityMasterStructuredCreditReclassificationReport, async (
+            HttpContext context,
+            [FromServices] ISecurityMasterStructuredCreditReclassificationService reclassificationService,
+            CancellationToken ct) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+                return EndpointHelpers.Forbidden();
+
+            var report = await reclassificationService.BuildReportAsync(ct).ConfigureAwait(false);
+            return Results.Json(report, jsonOptions);
+        })
+        .WithName("BuildSecurityMasterStructuredCreditReclassificationReport")
+        .Produces<StructuredCreditReclassificationReportDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden);
     }
 
     // ── Exception Aging / SLA ────────────────────────────────────────────────

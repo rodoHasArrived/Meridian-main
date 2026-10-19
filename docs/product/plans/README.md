@@ -20,9 +20,10 @@ with retained evidence and carries no ranking.
 
 | Plan | Purpose |
 |---|---|
-| [What To Work On Next (2026-10-15)](next-work-determination-2026-10-15.md) | **Latest prioritization input.** First determination written with the certification lane green; re-ranks the program around the release freeze, the remaining signature/secret blockers, and `PRD-002` |
+| [What To Work On Next (2026-10-16)](next-work-determination-2026-10-16.md) | Latest prioritization input. Does not re-rank: it carries the 2026-10-15 determination forward intact and adds three delivery-system findings — a red `Meridian CI / quality-gate` on `main`, a `Generated Repair Publisher` with no green run in its history, and an open-queue conflict load that is entirely generated files |
+| [What To Work On Next (2026-10-15)](next-work-determination-2026-10-15.md) | The ranking the 2026-10-16 determination carries forward: first determination written with the certification lane green, re-ranking the program around the release freeze, the remaining signature/secret blockers, and `PRD-002`. Carries a 2026-10-17 addendum recording which of its items were executed and which measurements went stale |
 | [Certification Unblock Verification (2026-10-12)](certification-unblock-verification-2026-10-12.md) | Verifies that #3133 clears the `GHSA-vfj7-8cjw-p6xm` certification blocker and states the merge order; carries no ranking of its own |
-| [What To Work On Next (2026-10-05)](next-work-determination-2026-10-05.md) | Superseded by the 2026-10-15 determination |
+| [What To Work On Next (2026-10-05)](next-work-determination-2026-10-05.md) | Newest determination merged to `main` before 2026-10-15; its ranking was carried forward by the 2026-10-15 determination. The 2026-10-10 determination (#3132) was closed unmerged on 2026-10-16 |
 | [What To Work On Next (2026-10-04)](next-work-determination-2026-10-04.md) | Superseded by the 2026-10-05 determination |
 | [What To Work On Next (2026-10-02)](next-work-determination-2026-10-02.md) | Superseded by the 2026-10-05 determination |
 | [What To Work On Next (2026-09-27)](next-work-determination-2026-09-27.md) | Superseded by the 2026-10-05 determination; retained in place because `docs/roadmap/data/program-state.yml` and the readiness tracker cite it as the recorded operator-session plan |

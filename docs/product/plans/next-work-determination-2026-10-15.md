@@ -28,6 +28,12 @@ row ages from it; ran `repair-links.py --summary` and read both reported targets
 > remains authoritative for the P0 release gate. Recheck conflict counts and CI results against the
 > live head before acting.
 
+> **Superseded as the latest pointer, not as the ranking.** The
+> [2026-10-16 determination](next-work-determination-2026-10-16.md) merged to `main` on 2026-10-16
+> and is now the latest prioritization input. It explicitly does not re-rank: it carries this
+> document's ranking forward intact, re-verified its P0 items against current source, and adds three
+> delivery-system findings of its own. Read it first; read this one for the ranking it carries.
+
 ## Addendum — 2026-10-17: what this document got to, and what went stale
 
 This determination sat unmerged for two days while `main` moved heavily. Re-verified against branch

@@ -404,7 +404,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterConflictService, PostgresSecurityMasterConflictService>();
             services.AddSingleton<ISecurityMasterRevisionStore, PostgresSecurityMasterRevisionStore>();
 
-            // Clearwater-model extensions: pricing hierarchy, cash flow, entitlements, data quality
+            // Reference-data governance extensions: pricing hierarchy, cash flow, entitlements, data quality
             services.AddSingleton<ISecurityMasterPricingStore, PostgresSecurityMasterPricingStore>();
             services.AddSingleton<ISecurityMasterCashFlowStore, PostgresSecurityMasterCashFlowStore>();
             services.AddSingleton<IDataVendorEntitlementStore, PostgresDataVendorEntitlementStore>();
@@ -417,6 +417,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterCashFlowService, SecurityMasterCashFlowService>();
             services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
             services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();
+            services.AddSingleton<ISecurityMasterStructuredCreditReclassificationService, SecurityMasterStructuredCreditReclassificationService>();
 
             // Coverage sweep: symbols active in platform surfaces but missing from the master
             // feed RC001 RefreshControl violations, which the exception-casework loop cases.
@@ -489,6 +490,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterCashFlowService, NullSecurityMasterCashFlowService>();
         services.TryAddSingleton<IDataVendorEntitlementService, NullDataVendorEntitlementService>();
         services.TryAddSingleton<ISecurityMasterDataQualityService, NullSecurityMasterDataQualityService>();
+        services.TryAddSingleton<ISecurityMasterStructuredCreditReclassificationService, NullSecurityMasterStructuredCreditReclassificationService>();
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();
         // Passport Workbench conflict-authority policy is storage-independent (pure precedence logic).
         services.TryAddSingleton<ISecurityMasterConflictAuthorityPolicy, SecurityMasterConflictAuthorityPolicy>();

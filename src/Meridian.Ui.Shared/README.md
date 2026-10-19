@@ -26,6 +26,7 @@ tenant assertions cannot establish authority. `AccountCashForecastEvidenceAdapte
 balance/flow/FX JSON from independently reviewed account Evidence Vault documents. It verifies
 original bytes, hashes, review provenance, version and every economic field before capture;
 unsupported inputs fail closed. File histories require explicit administrative provisioning.
+Corrupt or missing retained history and writer-lock timeouts in either file store return HTTP 503.
 See [bounded account oversight](../../docs/operators/account-oversight.md) for route and source
 format contracts. These seams do not grant accounting-close or payment authority.
 The browser receives exact decimal text through this HTTP transport without changing retained
@@ -33,7 +34,8 @@ domain digests. Scoped access context supplies current session capabilities; clo
 loads all exact account/book/date versions after durable evidence validation.
 Close-price capture accepts an optional stable request identity. Identical retries recover the
 retained snapshot before price evaluation; changing its immutable command conflicts. The HTTP
-actor remains session-derived on both initial capture and recovery.
+actor remains session-derived on both initial capture and recovery. When only the unconfigured
+`NullSecurityMasterPricingService` fallback is registered, close-price routes answer 503 instead of empty history.
 
 Security Master override PATCH and decision endpoints return HTTP 409 when another instance
 advances the durable workbench generation. The governed workbench endpoints use their existing
@@ -2322,7 +2324,7 @@ Security Master operator override store is registered, the passport also carries
 audit-history entries for the resolved instrument so controller review can see provider mapping
 confidence and governed override context in the same retained reconciliation record.
 The Security Master instrument passport reference-data workbench also consumes registered
-Clearwater pricing, cash-flow, vendor-entitlement, and data-quality services. Shared clients receive
+pricing, cash-flow, vendor-entitlement, and data-quality reference-data services. Shared clients receive
 sections for pricing hierarchy and stale fallback, cash-flow source governance, direct-client vendor
 contract evidence, retained quality-rule results, and independent review of manual creation,
 remapping, override, or critical-attribute changes instead of reconstructing those controls locally.
@@ -2718,6 +2720,11 @@ Security Master also serves `GET /api/security-master/{securityId}/income-cash-f
 `GET /api/security-master/{securityId}/factor-history`, and
 `PUT /api/security-master/{securityId}/terms/{blockKey}` (governed like the generic amend route;
 400 for an undeclared block or JSON kind).
+
+`POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance) builds the
+ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their proposed
+`StructuredCredit` terms and blockers. It is mapped only when the Postgres-backed service is
+registered and it never writes; applying a proposal is a governed amendment.
 
 ## Diagrams
 
