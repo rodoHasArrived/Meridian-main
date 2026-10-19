@@ -196,6 +196,7 @@ module SecurityMasterLegacyUpgrade =
                         NotionalBalance = None
                         Originator = None
                         CreditEnhancementPct = None
+                        FactorScheduleReference = None
                     }
                 else None
             {
@@ -518,14 +519,14 @@ module SecurityMasterLegacyUpgrade =
                         Some {
                             CouponType = Some (CouponKind.OtherCoupon terms.CouponOrIndex)
                             CouponRate = None
-                            PaymentFrequency = terms.FactorSchedule |> Option.map PaymentFrequency.OtherFrequency
+                            PaymentFrequency = None
                             DayCount = None
                         }
                     FloatingRate =
                         Some {
                             ReferenceIndex = Some terms.CouponOrIndex
                             SpreadBps = None
-                            ResetFrequency = terms.FactorSchedule
+                            ResetFrequency = None
                             FloorRate = None
                             CapRate = None
                         }
@@ -556,6 +557,9 @@ module SecurityMasterLegacyUpgrade =
                             NotionalBalance = Some terms.OriginalFace
                             Originator = None
                             CreditEnhancementPct = None
+                            // The trustee-report pointer travels as evidence lineage, not as a
+                            // payment or reset frequency.
+                            FactorScheduleReference = terms.FactorSchedule
                         }
             }
         | SecurityKind.PrivateFundInterest terms ->

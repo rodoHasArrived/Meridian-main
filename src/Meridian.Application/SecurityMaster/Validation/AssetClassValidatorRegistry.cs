@@ -209,6 +209,16 @@ internal static class DefaultAssetClassValidators
                     FieldRule.RequiredPositive("originalFace", "SM_STRUCTURED_CREDIT_ORIGINAL_FACE_INVALID", "Structured credit original face is invalid", "Structured credit original face must be greater than zero."),
                     FieldRule.OptionalNonNegative("currentFactor", "SM_STRUCTURED_CREDIT_CURRENT_FACTOR_INVALID", "Structured credit current factor is invalid", "Structured credit current factor must be zero or greater when supplied."),
                     FieldRule.RequiredString("couponOrIndex", "SM_STRUCTURED_CREDIT_COUPON_INDEX_REQUIRED", "Structured credit coupon/index is missing", "Structured credit records must include a coupon or index reference."),
+                    // The free-text factorSchedule is a trustee-report pointer, not a schedule: pool
+                    // amortization and cash-flow projection read the dated factorScheduleEntries.
+                    TypedScheduleBackingRule.Create(
+                        "factorSchedule",
+                        "factorScheduleEntries",
+                        SecurityValidationSeverityDto.Warning,
+                        "SM_STRUCTURED_CREDIT_FACTOR_ENTRIES_MISSING",
+                        "Structured credit factor schedule has no dated entries",
+                        "factorSchedule names a trustee or servicer report but the record carries no dated factorScheduleEntries; calculated paydown and cash-flow projection cannot use a report reference.",
+                        "Add dated factorScheduleEntries ({asOfDate, factor}) taken from the referenced report."),
                     FieldRule.OptionalAllowedString("structuredCreditKind", SecurityReferenceTaxonomyCatalog.Default.GetValues(SecurityReferenceTaxonomyKeys.StructuredCreditKind), "SM_STRUCTURED_CREDIT_KIND_INVALID", "Structured credit kind is not a governed value", "Structured credit kind must be one of the structured-credit-kind taxonomy values when supplied."),
                     FieldRule.OptionalString("seniority", "SM_STRUCTURED_CREDIT_SENIORITY_INVALID", "Structured credit seniority is not a string", "Structured credit seniority must be a non-blank string when supplied."),
                     FieldRule.OptionalFraction("attachmentPoint", "SM_STRUCTURED_CREDIT_ATTACHMENT_INVALID", "Structured credit attachment point is invalid", "Structured credit attachment point must be a fraction between zero and one when supplied."),
@@ -1021,6 +1031,54 @@ internal sealed record DisallowedStringValuesRule(
 /// belongs in a different canonical asset class (e.g. an InvestmentFund flagged stable-NAV, whose
 /// canonical home is MoneyMarketFund). Absent or <c>false</c> values pass.
 /// </summary>
+/// <summary>
+/// A free-text pointer field that, when supplied, must be backed by a non-empty typed array: the
+/// pointer is evidence lineage, the array is what computation reads. Absent or null pointer passes.
+/// </summary>
+internal sealed record TypedScheduleBackingRule(
+    string PointerFieldPath,
+    string ScheduleFieldPath,
+    SecurityValidationSeverityDto Severity,
+    string Code,
+    string Title,
+    string Message,
+    string SuggestedAction) : ISecurityValidationRule
+{
+    public static TypedScheduleBackingRule Create(
+        string pointerFieldPath,
+        string scheduleFieldPath,
+        SecurityValidationSeverityDto severity,
+        string code,
+        string title,
+        string message,
+        string suggestedAction)
+        => new(pointerFieldPath, scheduleFieldPath, severity, code, title, message, suggestedAction);
+
+    public SecurityValidationIssueDto? Validate(SecurityValidationContext context)
+    {
+        if (!JsonValidationReader.TryGetAssetTermProperty(context.Record.AssetSpecificTerms, PointerFieldPath, context.Record.AssetClass, out var pointer)
+            || !JsonValidationReader.HasNonBlankString(pointer))
+        {
+            return null;
+        }
+
+        if (JsonValidationReader.TryGetAssetTermProperty(context.Record.AssetSpecificTerms, ScheduleFieldPath, context.Record.AssetClass, out var schedule)
+            && schedule.ValueKind == JsonValueKind.Array
+            && schedule.GetArrayLength() > 0)
+        {
+            return null;
+        }
+
+        return SecurityValidationIssueFactory.Create(
+            Severity,
+            Code,
+            Title,
+            Message,
+            [$"assetSpecificTerms.{PointerFieldPath}", $"assetSpecificTerms.{ScheduleFieldPath}"],
+            SuggestedAction);
+    }
+}
+
 internal sealed record DiscouragedTrueBooleanRule(
     string FieldPath,
     SecurityValidationSeverityDto Severity,
