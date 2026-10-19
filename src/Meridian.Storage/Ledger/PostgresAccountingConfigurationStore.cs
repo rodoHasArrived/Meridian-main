@@ -505,7 +505,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             {
                 throw ChainFailure(linksVerified,
                     AccountingAuditChainStatus.AnchorMismatch, head,
-                    "Chained accounting audit events exist while the chain head records none.");
+                    "Chained accounting audit events exist while the chain head records none.",
+                    head.GenesisSequence);
             }
 
             return;
