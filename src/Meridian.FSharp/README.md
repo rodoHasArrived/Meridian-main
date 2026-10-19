@@ -43,6 +43,12 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   from economic terms alone keeps a callable bond callable.
 - `assetSpecificTermsJson` stamps flat terms with the shared terms-format envelope for every kind
   except `CustomAsset`, whose profile owns its own document shape.
+- `SecurityMasterLegacyUpgrade.proposeStructuredCreditReclassification` builds the report-first
+  StructuredCredit proposal for a legacy securitised row (ADR-022): a Bond in a securitised
+  subclass, a CustomAsset whose `category` names a securitised product, or an envelope-less legacy
+  custom row read back as OtherSecurity. It carries over par, coupon or index, maturity, seniority
+  and the family the label implies; every required term the source lacks and every ambiguous label
+  (`MortgageBacked`, `MBS`) is a blocker, so `ProposedTerms` exists only when nothing blocks.
 - `IdentifierKind` includes `LoanX` and `Clip` for syndicated-loan identifiers; interop maps
   them to the matching C# `SecurityIdentifierKind` values.
 - `SecurityTermModules` no longer carries `AccountingElections` or `Pci`. Amortization method,

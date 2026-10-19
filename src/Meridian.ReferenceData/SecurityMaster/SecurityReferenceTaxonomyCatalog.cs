@@ -24,6 +24,7 @@ public static class SecurityReferenceTaxonomyKeys
     public const string ReportingCadence = "reporting-cadence";
     public const string OptionPutCall = "option-put-call";
     public const string WarrantType = "warrant-type";
+    public const string StructuredCreditKind = "structured-credit-kind";
 }
 
 /// <summary>
@@ -184,6 +185,11 @@ internal static class SecurityReferenceTaxonomyFallback
             "Option put/call",
             "Listed option contract right.",
             ["Put", "Call"]),
+        new(
+            SecurityReferenceTaxonomyKeys.StructuredCreditKind,
+            "Structured credit kind",
+            "Securitisation family of a structured-credit tranche.",
+            ["AgencyMbs", "NonAgencyMbs", "CommercialMbs", "AssetBacked", "Clo", "Cdo", "Cmo", "InterestOnly", "PrincipalOnly", "Other"]),
         new(
             SecurityReferenceTaxonomyKeys.WarrantType,
             "Warrant type",

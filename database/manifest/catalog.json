@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "a39827fa44adc250f671d0e79fe3158b250044fb1bb8c7d27c0caa1fb09ec322",
+  "database_fingerprint": "c71a8d72ca501b1bd868a6b9802c1ca721b184b6019ea368408288c4b8ae364f",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -18237,6 +18237,10 @@
       "object": "column:security_master.structured_credit_factor_schedule_projection.security_id"
     },
     {
+      "fingerprint": "1eb223e061b05786b37022dd64b9073f5f9728a52087ee42eff21622abe1e87e",
+      "object": "column:security_master.structured_credit_projection.attachment_point"
+    },
+    {
       "fingerprint": "18f2fa4dca0a98e1be04a16c2de28a1c253b607b883c97121b4924c52c0fe6dc",
       "object": "column:security_master.structured_credit_projection.collateral_type"
     },
@@ -18253,6 +18257,10 @@
       "object": "column:security_master.structured_credit_projection.current_factor"
     },
     {
+      "fingerprint": "099d41e704408997bf55383246d480b873d497b593312699340a9a12e5554227",
+      "object": "column:security_master.structured_credit_projection.detachment_point"
+    },
+    {
       "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
       "object": "column:security_master.structured_credit_projection.display_name"
     },
@@ -18263,6 +18271,10 @@
     {
       "fingerprint": "badf5659aa8eadff03ce53a5fa786c4effcb775ffc10ab4f354e65afbaa73019",
       "object": "column:security_master.structured_credit_projection.maturity_date"
+    },
+    {
+      "fingerprint": "142e7dde1b42a79fa7ac72e5708f73c24d4a902644edb0f3a63e6669d72cf58a",
+      "object": "column:security_master.structured_credit_projection.non_call_period_end"
     },
     {
       "fingerprint": "e7bf64dee0c4279cad8635ce096aa42bf94570f35be1d4c7ca5209bbd0fc6570",
@@ -18277,8 +18289,20 @@
       "object": "column:security_master.structured_credit_projection.primary_identifier_value"
     },
     {
+      "fingerprint": "c831b1e2857b35f6ef86f4d177ec2069c433b958d689847a34eca554253b43ce",
+      "object": "column:security_master.structured_credit_projection.reinvestment_period_end"
+    },
+    {
       "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
       "object": "column:security_master.structured_credit_projection.security_id"
+    },
+    {
+      "fingerprint": "6eca3dabc69abe29ee13d032390e262c016333d6091c3e7a84694865639b99b5",
+      "object": "column:security_master.structured_credit_projection.seniority"
+    },
+    {
+      "fingerprint": "117886a7ba51d1b9015c2a55583021dc941d8e6138411c5592d27e330206c6b2",
+      "object": "column:security_master.structured_credit_projection.structured_credit_kind"
     },
     {
       "fingerprint": "a8bc6dd5d9920f16381e7d37fc1cc060ac53178aad99e2f644d4b4e035897452",
@@ -18287,6 +18311,18 @@
     {
       "fingerprint": "a89e2a3c8ecabf80120518f414aeb5e374d0f195950f2b19bb36f05d15d0265b",
       "object": "column:security_master.structured_credit_projection.version"
+    },
+    {
+      "fingerprint": "583a5370843f12da9af0ce8d11bbb207957d4ba52fdd7c90ad03a374d30dabaa",
+      "object": "column:security_master.structured_credit_projection.weighted_average_coupon"
+    },
+    {
+      "fingerprint": "2934bc565c24dc687097091e7b475846bad763f3c6fa5b7105778fc3c146e401",
+      "object": "column:security_master.structured_credit_projection.weighted_average_loan_age_months"
+    },
+    {
+      "fingerprint": "571006525a7f108b475e4b8cea2ce390683ac40b2fd6039567091ffa935f89ed",
+      "object": "column:security_master.structured_credit_projection.weighted_average_maturity_months"
     },
     {
       "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
@@ -18415,6 +18451,18 @@
     {
       "fingerprint": "c2f4004315b7be99f33afd159f365894723c460a5f5a94347a15875dfd155034",
       "object": "comment:column:security_master.security_governance_events.security_id"
+    },
+    {
+      "fingerprint": "9af3a9c01d3e7201b7b8f1bded226afb864952fa26ac93e83eb83a6d100e473d",
+      "object": "comment:column:security_master.structured_credit_projection.attachment_point"
+    },
+    {
+      "fingerprint": "40e7d219ce8e2730e320bf526ce8347a1c0a7ecdceffe372b3a6089721134b6a",
+      "object": "comment:column:security_master.structured_credit_projection.detachment_point"
+    },
+    {
+      "fingerprint": "22c0a5918d4ad74ec7687f7ce2feb0f2c4a8c0bbd76168336a7825464f996441",
+      "object": "comment:column:security_master.structured_credit_projection.structured_credit_kind"
     },
     {
       "fingerprint": "e353fc2489a851eee521dc0eb5642400b10e4d0ea8ff9333be6e179093ac6bef",
@@ -25061,7 +25109,7 @@
       "object": "index:ledger.ix_tax_lots_asset_scope_open"
     },
     {
-      "fingerprint": "367b5f39fd9c73d079bb61ffb4ba8e12e23250bdbfca14b1a2a1c85cf99d3902",
+      "fingerprint": "4bd3c7c2cc8f99b8dabe74a4d37a6e3721c71f8a17ee41b41ab053c0ba0812ff",
       "object": "index:ledger.ix_tax_lots_book_account_open"
     },
     {
@@ -25253,11 +25301,11 @@
       "object": "index:ledger.ux_tax_lot_mutations_batch_ordinal"
     },
     {
-      "fingerprint": "b51a4d21c2ef445ab31165dcb15dc27390de93f37cbcafb9b1f5e1a2ce024f8e",
+      "fingerprint": "04270fc7b289c6d288903a0ff7a442bd2e51208f41d1caa7a12e49fc531b386d",
       "object": "index:ledger.ux_tax_lot_policies_book_account_effective"
     },
     {
-      "fingerprint": "d64da56cd9e2d87407e6b78191454b2a69925ee4ea4293846de9b51625c0b398",
+      "fingerprint": "ca85da81e39fe9170cb771bb2c496d2ee5d315fd070074e736264cd0b4e2b895",
       "object": "index:ledger.ux_tax_lots_book_account_lot"
     },
     {
@@ -26039,6 +26087,10 @@
     {
       "fingerprint": "0b696dcb0897ef126d917363ff4cb3552aba6fdc9d193f8188065a1f5a600189",
       "object": "index:security_master.ix_servicing_revision_projection_loan"
+    },
+    {
+      "fingerprint": "fef559a799679d17fb366327407afe790b5e14b0ab8403ae25f0680f89b43913",
+      "object": "index:security_master.ix_structured_credit_projection_kind"
     },
     {
       "fingerprint": "bf01815b25efecec928ebc17273e906c3c34d013cc79dc9f31aeff8b22064dbc",
@@ -27357,7 +27409,7 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "df3248cd8b97d5d19f688de5461ddfc622b7f3d8015de00cd733bad2d4ea6d09",
+      "fingerprint": "aa594f4046e7fc3191005a86905b4eea9faa9c26bb2770a6e151f3204683e112",
       "object": "schema:ledger"
     },
     {
@@ -27373,7 +27425,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "e6d40d8eca069bcac675da804dd9d811e8784af02cbe1705c6fa39e99df117bf",
+      "fingerprint": "44072383ce45d4f281fc616f6baefdff5595e4073e8dc019740302e74955d526",
       "object": "schema:security_master"
     },
     {
@@ -27721,11 +27773,11 @@
       "object": "table:ledger.tax_lot_mutations"
     },
     {
-      "fingerprint": "57ce658dbf9d7c2f3929e8acd367c7b9c5ef6c84cd7a6fdb133b04e7c83d259f",
+      "fingerprint": "4d492accdc3cb6948f54503fb4b616e56cbd0b79f5d4c936a40b292a88af1c03",
       "object": "table:ledger.tax_lot_policies"
     },
     {
-      "fingerprint": "e1636021fdf7fc12b7ab81d34ed4e252c771bfaea9919288e6d32502eaf24870",
+      "fingerprint": "2fbab82b0fbf344a864891f90fa2f7ffa718fdcd1ace088ab87879991d8be4b4",
       "object": "table:ledger.tax_lots"
     },
     {
@@ -28225,7 +28277,7 @@
       "object": "table:security_master.structured_credit_factor_schedule_projection"
     },
     {
-      "fingerprint": "2e64307c948acdb3698a2a88c0e320fd682ed01c36d95c7d562657877ca43c7b",
+      "fingerprint": "b6a5c95911277a5ec163deafc92f99e50171edbb22887b97ad7b375bbda3d1d9",
       "object": "table:security_master.structured_credit_projection"
     },
     {
@@ -65986,7 +66038,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "df3248cd8b97d5d19f688de5461ddfc622b7f3d8015de00cd733bad2d4ea6d09",
+      "fingerprint": "aa594f4046e7fc3191005a86905b4eea9faa9c26bb2770a6e151f3204683e112",
       "foreign_tables": [],
       "functions": [
         {
@@ -79672,7 +79724,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "57ce658dbf9d7c2f3929e8acd367c7b9c5ef6c84cd7a6fdb133b04e7c83d259f",
+          "fingerprint": "4d492accdc3cb6948f54503fb4b616e56cbd0b79f5d4c936a40b292a88af1c03",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -79724,9 +79776,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_tax_lot_policies_book_account_effective ON ledger.tax_lot_policies USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text), effective_date)",
-              "expression": "COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text)",
-              "fingerprint": "b51a4d21c2ef445ab31165dcb15dc27390de93f37cbcafb9b1f5e1a2ce024f8e",
+              "definition": "CREATE UNIQUE INDEX ux_tax_lot_policies_book_account_effective ON ledger.tax_lot_policies USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), effective_date)",
+              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "04270fc7b289c6d288903a0ff7a442bd2e51208f41d1caa7a12e49fc531b386d",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -79734,7 +79786,7 @@
                 "account_name",
                 "account_type",
                 "COALESCE(symbol, ''::text)",
-                "COALESCE(financial_account_id, ''::text)",
+                "lower(COALESCE(financial_account_id, ''::text))",
                 "effective_date"
               ],
               "live": true,
@@ -80530,7 +80582,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "e1636021fdf7fc12b7ab81d34ed4e252c771bfaea9919288e6d32502eaf24870",
+          "fingerprint": "2fbab82b0fbf344a864891f90fa2f7ffa718fdcd1ace088ab87879991d8be4b4",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -80562,9 +80614,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE INDEX ix_tax_lots_book_account_open ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text), acquired_date, lot_id) WHERE (open_quantity > (0)::numeric)",
-              "expression": "COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text)",
-              "fingerprint": "367b5f39fd9c73d079bb61ffb4ba8e12e23250bdbfca14b1a2a1c85cf99d3902",
+              "definition": "CREATE INDEX ix_tax_lots_book_account_open ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), acquired_date, lot_id) WHERE (open_quantity > (0)::numeric)",
+              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "4bd3c7c2cc8f99b8dabe74a4d37a6e3721c71f8a17ee41b41ab053c0ba0812ff",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -80572,7 +80624,7 @@
                 "account_name",
                 "account_type",
                 "COALESCE(symbol, ''::text)",
-                "COALESCE(financial_account_id, ''::text)",
+                "lower(COALESCE(financial_account_id, ''::text))",
                 "acquired_date",
                 "lot_id"
               ],
@@ -80703,9 +80755,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_tax_lots_book_account_lot ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text), lot_id)",
-              "expression": "COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text)",
-              "fingerprint": "d64da56cd9e2d87407e6b78191454b2a69925ee4ea4293846de9b51625c0b398",
+              "definition": "CREATE UNIQUE INDEX ux_tax_lots_book_account_lot ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), lot_id)",
+              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "ca85da81e39fe9170cb771bb2c496d2ee5d315fd070074e736264cd0b4e2b895",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -80713,7 +80765,7 @@
                 "account_name",
                 "account_type",
                 "COALESCE(symbol, ''::text)",
-                "COALESCE(financial_account_id, ''::text)",
+                "lower(COALESCE(financial_account_id, ''::text))",
                 "lot_id"
               ],
               "live": true,
@@ -94677,7 +94729,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "57ce658dbf9d7c2f3929e8acd367c7b9c5ef6c84cd7a6fdb133b04e7c83d259f",
+          "fingerprint": "4d492accdc3cb6948f54503fb4b616e56cbd0b79f5d4c936a40b292a88af1c03",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -94729,9 +94781,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_tax_lot_policies_book_account_effective ON ledger.tax_lot_policies USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text), effective_date)",
-              "expression": "COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text)",
-              "fingerprint": "b51a4d21c2ef445ab31165dcb15dc27390de93f37cbcafb9b1f5e1a2ce024f8e",
+              "definition": "CREATE UNIQUE INDEX ux_tax_lot_policies_book_account_effective ON ledger.tax_lot_policies USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), effective_date)",
+              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "04270fc7b289c6d288903a0ff7a442bd2e51208f41d1caa7a12e49fc531b386d",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -94739,7 +94791,7 @@
                 "account_name",
                 "account_type",
                 "COALESCE(symbol, ''::text)",
-                "COALESCE(financial_account_id, ''::text)",
+                "lower(COALESCE(financial_account_id, ''::text))",
                 "effective_date"
               ],
               "live": true,
@@ -95535,7 +95587,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "e1636021fdf7fc12b7ab81d34ed4e252c771bfaea9919288e6d32502eaf24870",
+          "fingerprint": "2fbab82b0fbf344a864891f90fa2f7ffa718fdcd1ace088ab87879991d8be4b4",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -95567,9 +95619,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE INDEX ix_tax_lots_book_account_open ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text), acquired_date, lot_id) WHERE (open_quantity > (0)::numeric)",
-              "expression": "COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text)",
-              "fingerprint": "367b5f39fd9c73d079bb61ffb4ba8e12e23250bdbfca14b1a2a1c85cf99d3902",
+              "definition": "CREATE INDEX ix_tax_lots_book_account_open ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), acquired_date, lot_id) WHERE (open_quantity > (0)::numeric)",
+              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "4bd3c7c2cc8f99b8dabe74a4d37a6e3721c71f8a17ee41b41ab053c0ba0812ff",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -95577,7 +95629,7 @@
                 "account_name",
                 "account_type",
                 "COALESCE(symbol, ''::text)",
-                "COALESCE(financial_account_id, ''::text)",
+                "lower(COALESCE(financial_account_id, ''::text))",
                 "acquired_date",
                 "lot_id"
               ],
@@ -95708,9 +95760,9 @@
             },
             {
               "comment": null,
-              "definition": "CREATE UNIQUE INDEX ux_tax_lots_book_account_lot ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text), lot_id)",
-              "expression": "COALESCE(symbol, ''::text), COALESCE(financial_account_id, ''::text)",
-              "fingerprint": "d64da56cd9e2d87407e6b78191454b2a69925ee4ea4293846de9b51625c0b398",
+              "definition": "CREATE UNIQUE INDEX ux_tax_lots_book_account_lot ON ledger.tax_lots USING btree (ledger_book_id, account_name, account_type, COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text)), lot_id)",
+              "expression": "COALESCE(symbol, ''::text), lower(COALESCE(financial_account_id, ''::text))",
+              "fingerprint": "ca85da81e39fe9170cb771bb2c496d2ee5d315fd070074e736264cd0b4e2b895",
               "included_columns": [],
               "is_replica_identity": false,
               "key_columns": [
@@ -95718,7 +95770,7 @@
                 "account_name",
                 "account_type",
                 "COALESCE(symbol, ''::text)",
-                "COALESCE(financial_account_id, ''::text)",
+                "lower(COALESCE(financial_account_id, ''::text))",
                 "lot_id"
               ],
               "live": true,
@@ -122701,6 +122753,24 @@
           "object_type": "column"
         },
         {
+          "comment": "Loss attachment point as a fraction of the deal balance (0..1).",
+          "fingerprint": "9af3a9c01d3e7201b7b8f1bded226afb864952fa26ac93e83eb83a6d100e473d",
+          "object": "security_master.structured_credit_projection.attachment_point",
+          "object_type": "column"
+        },
+        {
+          "comment": "Loss detachment point as a fraction of the deal balance (0..1), at or above attachment_point.",
+          "fingerprint": "40e7d219ce8e2730e320bf526ce8347a1c0a7ecdceffe372b3a6089721134b6a",
+          "object": "security_master.structured_credit_projection.detachment_point",
+          "object_type": "column"
+        },
+        {
+          "comment": "Securitisation family (structured-credit-kind taxonomy); null for records written before terms version 2.",
+          "fingerprint": "22c0a5918d4ad74ec7687f7ce2feb0f2c4a8c0bbd76168336a7825464f996441",
+          "object": "security_master.structured_credit_projection.structured_credit_kind",
+          "object_type": "column"
+        },
+        {
           "comment": "Relational projection of CashSweep asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms.",
           "fingerprint": "93dc7d40b10cd6dc54209bcbb181d253e7518595f9f6649998d6b0f9847ebaa6",
           "object": "security_master.cash_sweep_projection",
@@ -125924,7 +125994,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "e6d40d8eca069bcac675da804dd9d811e8784af02cbe1705c6fa39e99df117bf",
+      "fingerprint": "44072383ce45d4f281fc616f6baefdff5595e4073e8dc019740302e74955d526",
       "foreign_tables": [],
       "functions": [
         {
@@ -162584,6 +162654,150 @@
               "security_labels": [],
               "type_name": "int8",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": "Securitisation family (structured-credit-kind taxonomy); null for records written before terms version 2.",
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "117886a7ba51d1b9015c2a55583021dc941d8e6138411c5592d27e330206c6b2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "structured_credit_kind",
+              "nullable": true,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6eca3dabc69abe29ee13d032390e262c016333d6091c3e7a84694865639b99b5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "seniority",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Loss attachment point as a fraction of the deal balance (0..1).",
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "1eb223e061b05786b37022dd64b9073f5f9728a52087ee42eff21622abe1e87e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "attachment_point",
+              "nullable": true,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Loss detachment point as a fraction of the deal balance (0..1), at or above attachment_point.",
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "099d41e704408997bf55383246d480b873d497b593312699340a9a12e5554227",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "detachment_point",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "583a5370843f12da9af0ce8d11bbb207957d4ba52fdd7c90ad03a374d30dabaa",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "weighted_average_coupon",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "571006525a7f108b475e4b8cea2ce390683ac40b2fd6039567091ffa935f89ed",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "weighted_average_maturity_months",
+              "nullable": true,
+              "ordinal_position": 19,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "2934bc565c24dc687097091e7b475846bad763f3c6fa5b7105778fc3c146e401",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "weighted_average_loan_age_months",
+              "nullable": true,
+              "ordinal_position": 20,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "c831b1e2857b35f6ef86f4d177ec2069c433b958d689847a34eca554253b43ce",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reinvestment_period_end",
+              "nullable": true,
+              "ordinal_position": 21,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "142e7dde1b42a79fa7ac72e5708f73c24d4a902644edb0f3a63e6669d72cf58a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "non_call_period_end",
+              "nullable": true,
+              "ordinal_position": 22,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": "Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data.",
@@ -162611,10 +162825,32 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "2e64307c948acdb3698a2a88c0e320fd682ed01c36d95c7d562657877ca43c7b",
+          "fingerprint": "b6a5c95911277a5ec163deafc92f99e50171edbb22887b97ad7b375bbda3d1d9",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_structured_credit_projection_kind ON security_master.structured_credit_projection USING btree (structured_credit_kind)",
+              "expression": null,
+              "fingerprint": "fef559a799679d17fb366327407afe790b5e14b0ab8403ae25f0680f89b43913",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "structured_credit_kind"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_structured_credit_projection_kind",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE INDEX structured_credit_projection_collateral_type_idx ON security_master.structured_credit_projection USING btree (lower(collateral_type))",
@@ -200864,6 +201100,150 @@
               "security_labels": [],
               "type_name": "int8",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": "Securitisation family (structured-credit-kind taxonomy); null for records written before terms version 2.",
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "117886a7ba51d1b9015c2a55583021dc941d8e6138411c5592d27e330206c6b2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "structured_credit_kind",
+              "nullable": true,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6eca3dabc69abe29ee13d032390e262c016333d6091c3e7a84694865639b99b5",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "seniority",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Loss attachment point as a fraction of the deal balance (0..1).",
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "1eb223e061b05786b37022dd64b9073f5f9728a52087ee42eff21622abe1e87e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "attachment_point",
+              "nullable": true,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Loss detachment point as a fraction of the deal balance (0..1), at or above attachment_point.",
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "099d41e704408997bf55383246d480b873d497b593312699340a9a12e5554227",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "detachment_point",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "583a5370843f12da9af0ce8d11bbb207957d4ba52fdd7c90ad03a374d30dabaa",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "weighted_average_coupon",
+              "nullable": true,
+              "ordinal_position": 18,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "571006525a7f108b475e4b8cea2ce390683ac40b2fd6039567091ffa935f89ed",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "weighted_average_maturity_months",
+              "nullable": true,
+              "ordinal_position": 19,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "integer",
+              "default": null,
+              "fingerprint": "2934bc565c24dc687097091e7b475846bad763f3c6fa5b7105778fc3c146e401",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "weighted_average_loan_age_months",
+              "nullable": true,
+              "ordinal_position": 20,
+              "security_labels": [],
+              "type_name": "int4",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "c831b1e2857b35f6ef86f4d177ec2069c433b958d689847a34eca554253b43ce",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reinvestment_period_end",
+              "nullable": true,
+              "ordinal_position": 21,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "142e7dde1b42a79fa7ac72e5708f73c24d4a902644edb0f3a63e6669d72cf58a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "non_call_period_end",
+              "nullable": true,
+              "ordinal_position": 22,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": "Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data.",
@@ -200891,10 +201271,32 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "2e64307c948acdb3698a2a88c0e320fd682ed01c36d95c7d562657877ca43c7b",
+          "fingerprint": "b6a5c95911277a5ec163deafc92f99e50171edbb22887b97ad7b375bbda3d1d9",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_structured_credit_projection_kind ON security_master.structured_credit_projection USING btree (structured_credit_kind)",
+              "expression": null,
+              "fingerprint": "fef559a799679d17fb366327407afe790b5e14b0ab8403ae25f0680f89b43913",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "structured_credit_kind"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_structured_credit_projection_kind",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE INDEX structured_credit_projection_collateral_type_idx ON security_master.structured_credit_projection USING btree (lower(collateral_type))",

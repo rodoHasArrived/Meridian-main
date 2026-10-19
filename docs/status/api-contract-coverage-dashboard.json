@@ -6,9 +6,9 @@
   "endpoint_coverage_percent": 31.8,
   "contract_coverage_percent": 3.7,
   "summary": {
-    "endpoint_count": 695,
+    "endpoint_count": 696,
     "documented_endpoint_count": 221,
-    "undocumented_endpoint_count": 474,
+    "undocumented_endpoint_count": 475,
     "workstation_contract_count": 961,
     "documented_workstation_contract_count": 36,
     "undocumented_workstation_contract_count": 925
@@ -2093,13 +2093,13 @@
     {
       "method": "GET",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:189",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:192",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/ledger/books/{ledgerBookId:guid}/accounts/{accountId:guid}/cash-forecasts/{snapshotId}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:200",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.AccountOversight.cs:203",
       "documented": true
     },
     {
@@ -3677,91 +3677,97 @@
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/pricing-hierarchy",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1469",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1473",
       "documented": false
     },
     {
       "method": "PUT",
       "path": "/api/security-master/{securityId:guid}/pricing-hierarchy",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1483",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1487",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/{securityId:guid}/raw-price",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1524",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1528",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/price-golden-copy",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1565",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1569",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/price-comparison",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1586",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1590",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/cashflow-source",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1603",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1607",
       "documented": false
     },
     {
       "method": "PUT",
       "path": "/api/security-master/{securityId:guid}/cashflow-source",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1616",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1620",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/cashflow-projections",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1644",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1648",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/data-entitlements",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1667",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1671",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/data-entitlements/expiring",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1677",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1681",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/data-entitlements",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1689",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1693",
       "documented": false
     },
     {
       "method": "DELETE",
       "path": "/api/security-master/data-entitlements/{entitlementId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1717",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1721",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/quality-report/run",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1749",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1753",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/quality-report/latest",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1764",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1768",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/security-master/structured-credit-reclassification/report",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1786",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/exceptions/aging",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1780",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1806",
       "documented": false
     },
     {

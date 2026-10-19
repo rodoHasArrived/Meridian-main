@@ -340,7 +340,16 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                         |> List.map (fun entry ->
                             {| asOfDate = entry.AsOfDate
                                factor = entry.Factor |})
-                   maturity = terms.Maturity |})
+                   maturity = terms.Maturity
+                   structuredCreditKind = terms.Kind |> Option.map StructuredCreditKind.asString
+                   seniority = terms.Seniority
+                   attachmentPoint = terms.AttachmentPoint
+                   detachmentPoint = terms.DetachmentPoint
+                   weightedAverageCoupon = terms.WeightedAverageCoupon
+                   weightedAverageMaturityMonths = terms.WeightedAverageMaturityMonths
+                   weightedAverageLoanAgeMonths = terms.WeightedAverageLoanAgeMonths
+                   reinvestmentPeriodEnd = terms.ReinvestmentPeriodEnd
+                   nonCallPeriodEnd = terms.NonCallPeriodEnd |})
         | SecurityKind.PrivateFundInterest terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
