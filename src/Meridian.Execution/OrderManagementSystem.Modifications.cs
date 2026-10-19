@@ -7,6 +7,15 @@ public sealed partial class OrderManagementSystem
 {
     private readonly System.Collections.Concurrent.ConcurrentDictionary<string, PendingOrderAmendment> _pendingModificationOrderIds = new(StringComparer.Ordinal);
 
+    private static string? DescribeInvalidModification(OrderState state, OrderModification modification) =>
+        modification.NewQuantity is <= 0m ? "Amended quantity must be positive."
+        : modification.NewQuantity is { } quantity && quantity < state.FilledQuantity
+            ? "Amended quantity cannot be below the quantity already filled."
+        : modification.NewLimitPrice is <= 0m ? "Amended limit price must be positive."
+        : modification.NewStopPrice is <= 0m ? "Amended stop price must be positive."
+        : modification.NewTrail is <= 0m ? "Amended trail must be positive."
+        : null;
+
     /// <inheritdoc />
     public async Task<OrderResult> ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default)
     {
@@ -33,6 +42,21 @@ public sealed partial class OrderManagementSystem
                 OrderState = state,
                 ErrorMessage = "The order is terminal or an earlier amendment requires broker reconciliation."
             };
+
+        // Malformed terms must be refused before a pending amendment is created and persisted:
+        // a retained zero quantity would poison the recovery store and every later restart.
+        if (DescribeInvalidModification(state, modification) is { } invalid)
+        {
+            await RecordOrderLifecycleAuditAsync(
+                action: "OrderModifyRejected",
+                outcome: "Rejected",
+                orderId: orderId,
+                state: state,
+                report: null,
+                message: invalid,
+                ct: ct).ConfigureAwait(false);
+            return new OrderResult { Success = false, OrderId = orderId, OrderState = state, ErrorMessage = invalid };
+        }
 
         // Persisted with the pending amendment before dispatch; see BeginOrderAmendmentAsync.
         if (_gateway is IPreassignedReplacementReferenceGateway && string.IsNullOrWhiteSpace(modification.ReplacementClientOrderId))
@@ -93,6 +117,34 @@ public sealed partial class OrderManagementSystem
                 : await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
             // The operation itself proves which local order this replacement belongs to.
             report = report with { ClientOrderId = orderId };
+        }
+        catch (BrokerageRequestNotSentException notSent)
+        {
+            // The gateway proved it failed before sending anything to the venue, so the
+            // amendment was never dispatched: release every reservation and reject normally.
+            SettleRiskReservations(amendmentDecision, commit: false, orderId);
+            if (amendment is not null)
+                await AbandonOrderAmendmentAsync(orderId, amendment).ConfigureAwait(false);
+            RollBackSpeculativeReservation(orderId, speculativeReservation, state);
+            var rejectedState = _orders.TryGetValue(orderId, out var currentOrder) ? currentOrder : state;
+            await RecordOrderLifecycleAuditAsync(
+                action: "OrderModifyRejected",
+                outcome: "Rejected",
+                orderId: orderId,
+                state: rejectedState,
+                report: null,
+                message: notSent.Message,
+                metadata: BuildOrderModificationAuditMetadata(modification, rejectedState, report: null, amendmentWarnings, amendmentDecision),
+                ct: CancellationToken.None).ConfigureAwait(false);
+
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                OrderState = rejectedState,
+                ErrorMessage = notSent.Message,
+                RiskWarnings = amendmentWarnings
+            };
         }
         catch
         {

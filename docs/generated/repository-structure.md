@@ -5153,6 +5153,7 @@ Meridian-main
 │   │   ├── BracketOrderMetadata.cs
 │   │   ├── BrokerageConfiguration.cs
 │   │   ├── BrokerageOrderPlacementGate.cs
+│   │   ├── BrokerageRequestNotSentException.cs
 │   │   ├── BrokerageValidationEvaluator.cs
 │   │   ├── BrokerNotionalMetadata.cs
 │   │   ├── CanonicalTaxLotAdapter.cs
@@ -6382,7 +6383,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_041__current_basis_disposal.sql
 │   │   │   │   ├── V_ledger_042__atomic_lot_successors.sql
 │   │   │   │   ├── V_ledger_043__amortization_reversal_basis_restoration.sql
-│   │   │   │   └── V_ledger_050__atomic_lot_capital_return.sql
+│   │   │   │   ├── V_ledger_050__atomic_lot_capital_return.sql
+│   │   │   │   └── V_ledger_051__tax_lot_account_case_insensitive_keys.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -6557,7 +6559,8 @@ Meridian-main
 │   │   │   │   ├── 041_security_master_governance_events_truncate_guard.sql
 │   │   │   │   ├── 042_security_master_terms_format_column.sql
 │   │   │   │   ├── 043_security_master_close_price_approval_null_guards.sql
-│   │   │   │   └── 044_security_master_declarative_terms_projections.sql
+│   │   │   │   ├── 044_security_master_declarative_terms_projections.sql
+│   │   │   │   └── 045_structured_credit_typed_tranche_terms.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -10467,6 +10470,7 @@ Meridian-main
 │   │   │   ├── OmsGovernedBrokerageOrderGatewayTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.Outcomes.cs
+│   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.Validation.cs
 │   │   │   ├── OrderManagementSystemDurableHandoffOrderingTests.cs
 │   │   │   ├── OrderManagementSystemGovernanceTests.cs
 │   │   │   ├── OrderManagementSystemReportStreamTests.cs
@@ -10611,6 +10615,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.Amendments.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PortfolioRecovery.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.PreDispatch.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementConfirmation.cs
 │   │   │   │   ├── AlpacaConnectionReadinessTests.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
@@ -10647,6 +10652,7 @@ Meridian-main
 │   │   │   │   ├── IBBrokerageGatewayTests.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.Operations.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.PositionIdentity.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.PreDispatch.cs
 │   │   │   │   ├── IBDataServicesTests.cs
 │   │   │   │   ├── IBHistoricalProviderContractTests.cs
 │   │   │   │   ├── IBMarketDataClientContractTests.cs
@@ -11271,6 +11277,7 @@ Meridian-main
 │   │   │   ├── StrictTenantMutationPostgresTests.cs
 │   │   │   ├── SymbolAliasRepresentativeTests.cs
 │   │   │   ├── SymbolRegistryServiceTests.cs
+│   │   │   ├── TaxLotAccountCasingPostgresTests.cs
 │   │   │   ├── TenantCutoverInspectorTests.cs
 │   │   │   ├── TenantLowerIndexMigrationTests.cs
 │   │   │   ├── TenantReadPredicateTests.cs

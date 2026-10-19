@@ -285,16 +285,24 @@ public sealed partial class OrderManagementSystem
 
     private static OrderState SelectLargerAmendmentOutcome(PendingOrderAmendment pending, OrderState current)
     {
-        var original = MeasureOrderValue(pending.Original.Quantity, pending.Original.LimitPrice, pending.Original.StopPrice,
-            pending.Original.RoutedNotional, current.ContractMultiplier, current.UsesFaceValuePercentageOfPar);
-        var proposed = MeasureOrderValue(pending.Proposed.Quantity, pending.Proposed.LimitPrice, pending.Proposed.StopPrice,
-            pending.Proposed.RoutedNotional, current.ContractMultiplier, current.UsesFaceValuePercentageOfPar);
+        // Compare what each outcome can still execute: both share the fills already booked, so
+        // total order value misranks them (90 filled: 100@$100 leaves $1,000, 200@$40 leaves $4,400).
+        decimal? Remaining(OrderState outcome)
+        {
+            var remaining = Math.Max(0m, outcome.Quantity - current.FilledQuantity);
+            var routed = outcome.RoutedNotional is { } notional && notional > 0m && outcome.Quantity > 0m
+                ? notional * remaining / outcome.Quantity
+                : (decimal?)null;
+            return MeasureOrderValue(remaining, outcome.LimitPrice, outcome.StopPrice, routed,
+                current.ContractMultiplier, current.UsesFaceValuePercentageOfPar);
+        }
+
+        var original = Remaining(pending.Original);
+        var proposed = Remaining(pending.Proposed);
         // Unpriced outcomes (market orders) are valued at the mark by the exposure provider, so
-        // the larger quantity is the larger exposure.
-        if (original is null || proposed is null)
+        // the larger remaining quantity is the larger exposure.
+        if (original is null || proposed is null || proposed.Value == original.Value)
             return pending.Proposed.Quantity > pending.Original.Quantity ? pending.Proposed : pending.Original;
-        if (proposed.Value != original.Value)
-            return proposed.Value > original.Value ? pending.Proposed : pending.Original;
-        return pending.Proposed.Quantity > pending.Original.Quantity ? pending.Proposed : pending.Original;
+        return proposed.Value > original.Value ? pending.Proposed : pending.Original;
     }
 }
