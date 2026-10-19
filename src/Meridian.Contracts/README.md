@@ -1761,8 +1761,13 @@ payment-frequency and day-count conventions, seniority, restructuring clause, up
 recovery assumption, index name) are declarative classes in the `derivatives-fx` pack with
 registry-written projections from the day they were modeled; `Forward` left the pack's planned
 vocabulary.
-`SecurityTermConventions` types day count, settlement method and option right as canonical
-vocabularies. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
+`SecurityTermConventions` types day count, settlement method, option right and payment frequency
+(`SecurityPaymentFrequency`, the one cadence vocabulary; the direct-lending `PaymentFrequency`
+enum maps onto it through `ToSecurityPaymentFrequency`) as canonical conventions: stored text
+stays verbatim, writes must name a recognized spelling, and the reference DTOs (future
+`SettlementMethod`, deposit and CD `DayCountConvention`, option `Right`, bond `PaymentCadence`
+and `DayCount`, swap-leg `PaymentCadence` and `DayCountConvention`) expose the typed value
+beside the raw text. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
 one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `CommitmentLot` (commitment,
 funded and unfunded amounts, recallable distributions, `Draw`) and `FundUnitLot` (units at an
 acquisition NAV) are the `Commitment` and `Units` cases the registry assigns to private fund

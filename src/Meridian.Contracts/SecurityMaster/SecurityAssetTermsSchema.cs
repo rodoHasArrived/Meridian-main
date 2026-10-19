@@ -210,9 +210,13 @@ public sealed record SecurityAssetTermField(
 /// domain type has an open "other" case that preserves the raw string — <c>votingRightsCat</c>
 /// (<c>OtherVotingRights</c>), <c>subclass</c> (<c>BondSubclass.Other</c>), <c>paymentFrequency</c>
 /// (<c>OtherFrequency</c>), and <c>distributionPolicy</c> (<c>OtherDistribution</c>) — plus the
-/// free-text labels the domain carries verbatim (<c>dayCount</c>, <c>settlementType</c>,
-/// <c>seniority</c>, <c>depositType</c>, and the rest). Constraining those would reject values that
-/// persist and read back losslessly today.</para>
+/// free-text labels the domain carries verbatim (<c>seniority</c>, <c>depositType</c>, and the
+/// rest). Constraining those would reject values that persist and read back losslessly today.
+/// Between the two sit the typed CONVENTIONS (<c>dayCount</c>, <c>settlementType</c>,
+/// <c>paymentFrequency</c>, <c>resetFrequency</c>, <c>sweepFrequency</c>): the text is still stored
+/// verbatim and every stored value still reads, but a write must name a spelling the convention's
+/// parser (<see cref="SecurityTermConventions"/>) can type, so no value is accepted that every
+/// cash-flow and accrual consumer would then read as an unknown cadence or basis.</para>
 /// </remarks>
 public static class SecurityAssetTermsSchema
 {
@@ -306,7 +310,7 @@ public static class SecurityAssetTermsSchema
                 Opt("seniority", SecurityAssetTermFieldType.String),
                 Req("subclass", SecurityAssetTermFieldType.String),
                 Opt("par", SecurityAssetTermFieldType.Decimal),
-                Opt("paymentFrequency", SecurityAssetTermFieldType.String),
+                Opt("paymentFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.PaymentFrequency),
                 Opt("legalFinalMaturity", SecurityAssetTermFieldType.Date),
                 Opt("preRefundDate", SecurityAssetTermFieldType.Date),
                 Opt("mandatoryPutDate", SecurityAssetTermFieldType.Date),
@@ -371,7 +375,7 @@ public static class SecurityAssetTermsSchema
             [
                 Req("programName", SecurityAssetTermFieldType.String),
                 Req("sweepVehicleType", SecurityAssetTermFieldType.String),
-                Opt("sweepFrequency", SecurityAssetTermFieldType.String),
+                Opt("sweepFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.PaymentFrequency),
                 Opt("targetAccountType", SecurityAssetTermFieldType.String),
                 Opt("yieldRate", SecurityAssetTermFieldType.Decimal)
             ],
@@ -410,7 +414,7 @@ public static class SecurityAssetTermsSchema
                 Opt("referenceIndex", SecurityAssetTermFieldType.String),
                 Opt("spreadBps", SecurityAssetTermFieldType.Decimal),
                 Opt("currentCouponRate", SecurityAssetTermFieldType.Decimal),
-                Opt("resetFrequency", SecurityAssetTermFieldType.String),
+                Opt("resetFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.PaymentFrequency),
                 Opt("pricingSource", SecurityAssetTermFieldType.String).AsOperational(),
                 Req("covenants", SecurityAssetTermFieldType.Array),
                 Req("principalSchedule", SecurityAssetTermFieldType.Array)
@@ -578,7 +582,7 @@ public static class SecurityAssetTermsSchema
                 Opt("spreadBps", SecurityAssetTermFieldType.Decimal),
                 Opt("currentIndexRate", SecurityAssetTermFieldType.Decimal, "lastFixing", "currentRate", "indexRate"),
                 Opt("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount", "faceAmount", "principal"),
-                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency"),
+                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.PaymentFrequency),
                 Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention", "dayCountBasis").WithConvention(SecurityTermConventionKind.DayCount),
                 Req("exchangesPrincipal", SecurityAssetTermFieldType.Boolean, "principalExchange", "notionalExchange")
             ]
