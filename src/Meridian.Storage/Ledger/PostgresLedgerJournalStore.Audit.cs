@@ -110,7 +110,16 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifi
             }
         }
         if (head.NextSequence != sequence || head.LastHash != previous)
-            throw AuditIntegrityFailure("The ledger audit suffix and retained head disagree.", sequence, sequence - 1, genesisFacts);
+        {
+            // Every retained link verified, so `sequence` is one past the final one. Name the link
+            // the head disagrees with: the first missing one when the suffix is short, the first
+            // one beyond a rewound head, or the final one when only the head hash differs.
+            var failedAt = head.NextSequence > sequence ? sequence
+                : head.NextSequence < sequence ? head.NextSequence
+                : sequence - 1;
+            throw AuditIntegrityFailure("The ledger audit suffix and retained head disagree.",
+                failedAt >= 1 ? failedAt : null, Math.Max(0, failedAt - 1), genesisFacts);
+        }
         try
         {
             await VerifyLedgerAuditCoverageAsync(connection, transaction, ct).ConfigureAwait(false);
