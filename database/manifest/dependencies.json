@@ -10684,6 +10684,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPaymentFrequency"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPaymentFrequencyExtensions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPriceGoldenCopyDto"
     },
     {
@@ -23645,6 +23657,18 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityOverrideAuditEntryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPaymentFrequency"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityPaymentFrequencyExtensions"
     },
     {
       "kind": "contract-set-member",
@@ -50843,7 +50867,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "8d8ecb78aa915b0344468d9c9a32226e0a3d11a6450b1205a53dca67a94898a0",
+  "fingerprint": "22628b47b0e6160043f0bfed7435fec1ce8d024ace36ba114ce16592ea784bf3",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -61575,6 +61599,18 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityOverrideAuditEntryDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityOverrideAuditEntryDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityPaymentFrequency",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityPaymentFrequency"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityPaymentFrequencyExtensions",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityPaymentFrequencyExtensions"
     },
     {
       "classification": "dto",
@@ -74328,10 +74364,10 @@
   ],
   "summary": {
     "contract_references": 3321,
-    "contract_set_memberships": 3994,
-    "edges": 8448,
+    "contract_set_memberships": 3998,
+    "edges": 8452,
     "foreign_keys": 138,
     "logical_references": 6,
-    "nodes": 4067
+    "nodes": 4069
   }
 }
