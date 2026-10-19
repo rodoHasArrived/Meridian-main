@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 4 of 5
 
-Objects 241-320 of 337. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 338. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -52,6 +52,8 @@ classDiagram
         +bool ReEvaluationRequired
     }
     class Meridian_Contracts_Ledger_LedgerEventAuditFailureData["LedgerEventAuditFailureData"] {
+    }
+    class Meridian_Contracts_Ledger_LedgerEventAuditFailureKinds["LedgerEventAuditFailureKinds"] {
     }
     class Meridian_Contracts_Ledger_LedgerEventAuditVerification["LedgerEventAuditVerification"] {
         +long ChainedEvents
@@ -770,20 +772,6 @@ classDiagram
         +Guid? LedgerBookId
         +string Route
     }
-    class Meridian_Contracts_Ledger_ReportExportArtifactManifestDto["ReportExportArtifactManifestDto"] {
-        +string ArtifactId
-        +string ArtifactKind
-        +AccountingCertificationStateDto CertificationState
-        +string ContentHash
-        +string ContentType
-        +LedgerDimensionSetDto Dimensions
-        +ReportDimensionScopeDto? DimensionScope
-        +string DisplayName
-        +IReadOnlyList~string~ EvidenceLinks
-        +bool ExternalPostingAllowed
-        +string FileName
-        +string Format
-    }
     Meridian_Contracts_Ledger_LedgerDisposalTaxResultDto --> Meridian_Contracts_Ledger_LedgerDisposalTaxParcelDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerJournalEntryLineDto
     Meridian_Contracts_Ledger_LedgerJournalEntryDto --> Meridian_Contracts_Ledger_LedgerPostingKindDto
@@ -875,6 +863,4 @@ classDiagram
     Meridian_Contracts_Ledger_ReportDimensionScopeDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_ReportExportArtifactDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
     Meridian_Contracts_Ledger_ReportExportArtifactDto --> Meridian_Contracts_Ledger_ReportDimensionScopeDto
-    Meridian_Contracts_Ledger_ReportExportArtifactManifestDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
-    Meridian_Contracts_Ledger_ReportExportArtifactManifestDto --> Meridian_Contracts_Ledger_ReportDimensionScopeDto
 ```

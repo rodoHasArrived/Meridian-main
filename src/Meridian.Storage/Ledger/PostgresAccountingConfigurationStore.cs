@@ -605,9 +605,10 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
     /// length would claim coverage the scan never reached.
     /// </param>
     /// <param name="sequence">
-    /// The sequence the break was found at. Defaults to the head's next slot, which is right for a
-    /// failure about the head itself; a per-link failure passes the link's own sequence so an
-    /// operator is pointed at the row that broke rather than at the end of the chain.
+    /// The link the failure is about, when there is one: a per-link failure passes the link's own
+    /// sequence and a head disagreement passes the link the head disagrees with. Failures that no
+    /// single link explains (an unlinked event, an unsupported schema) name no position rather
+    /// than the slot past the end of the chain.
     /// </param>
     private static AccountingAuditChainIntegrityException ChainFailure(
         int linksChecked,
@@ -620,7 +621,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             linksChecked,
             PreChainEventCount: (int)Math.Min(int.MaxValue, head.PreChainEventCount),
             detail,
-            sequence ?? head.NextSequence));
+            sequence));
 
     public async Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
         string? fundProfileId = null,

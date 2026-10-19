@@ -48,12 +48,13 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifi
         await using (var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false))
         {
             if (!await reader.ReadAsync(ct).ConfigureAwait(false))
-                throw AuditIntegrityFailure("The retained ledger audit head is missing.");
+                throw AuditIntegrityFailure("The retained ledger audit head is missing.", kind: LedgerEventAuditFailureKinds.HeadMissing);
             if (reader.GetInt32(0) != 1)
             {
                 // Hashing rules this build does not implement (a rolling upgrade or downgrade) are
                 // unverifiable, not evidence of tampering; readers distinguish the two by this key.
-                var unsupported = AuditIntegrityFailure("The retained ledger audit head has an unsupported version.");
+                var unsupported = AuditIntegrityFailure("The retained ledger audit head has an unsupported version.",
+                    kind: LedgerEventAuditFailureKinds.UnsupportedSchemaVersion);
                 unsupported.Data[LedgerEventAuditFailureData.UnsupportedSchemaVersion] = true;
                 throw unsupported;
             }
@@ -78,7 +79,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifi
             genesisFacts = reader.GetInt64(1);
         }
         if (!string.Equals(genesisHash, retainedGenesisHash, StringComparison.Ordinal))
-            throw AuditIntegrityFailure("The retained ledger audit genesis inventory has changed.", chainedEventsVerified: 0);
+            throw AuditIntegrityFailure("The retained ledger audit genesis inventory has changed.", chainedEventsVerified: 0,
+                kind: LedgerEventAuditFailureKinds.GenesisInventoryChanged);
         var head = new LedgerAuditHead(nextSequence, lastHash, genesisAtUtc, genesisFacts);
 
         command.CommandText = $"""
@@ -104,7 +106,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifi
                 if (retainedSequence != sequence || retainedPrevious != previous
                     || ComputeLedgerAuditPayloadHash(fact) != payloadHash
                     || AccountingAuditChain.ComputeEntryHash(sequence, previous, payloadHash) != entryHash)
-                    throw AuditIntegrityFailure($"Ledger audit event {sequence} has been mutated, removed, or reordered.", sequence, sequence - 1, genesisFacts);
+                    throw AuditIntegrityFailure($"Ledger audit event {sequence} has been mutated, removed, or reordered.", sequence, sequence - 1, genesisFacts,
+                        LedgerEventAuditFailureKinds.EventMutated);
                 sequence++;
                 previous = entryHash;
             }
@@ -119,7 +122,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifi
                 : head.NextSequence < sequence ? head.NextSequence
                 : sequence - 1;
             throw AuditIntegrityFailure("The ledger audit suffix and retained head disagree.",
-                failedAt >= 1 ? failedAt : null, sequence - 1, genesisFacts);
+                failedAt >= 1 ? failedAt : null, sequence - 1, genesisFacts, LedgerEventAuditFailureKinds.HeadDisagreement);
         }
         try
         {
@@ -274,7 +277,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifi
             );
             """;
         if ((bool)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false))!)
-            throw AuditIntegrityFailure("Retained ledger facts disagree with their audit coverage or include uncovered post-genesis writes.");
+            throw AuditIntegrityFailure("Retained ledger facts disagree with their audit coverage or include uncovered post-genesis writes.",
+                kind: LedgerEventAuditFailureKinds.CoverageMismatch);
     }
 
     private static string ComputeLedgerAuditPayloadHash(LedgerAuditFact fact)
@@ -294,7 +298,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifi
     }
 
     private static LedgerValidationException AuditIntegrityFailure(
-        string message, long? failedSequence = null, long? chainedEventsVerified = null, long? unprotectedGenesisFacts = null)
+        string message, long? failedSequence = null, long? chainedEventsVerified = null, long? unprotectedGenesisFacts = null,
+        string? kind = null)
     {
         var failure = new LedgerValidationException("Ledger audit integrity failure: " + message);
         if (failedSequence is { } at)
@@ -303,6 +308,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerEventAuditVerifi
             failure.Data[LedgerEventAuditFailureData.ChainedEventsVerified] = verified;
         if (unprotectedGenesisFacts is { } genesis)
             failure.Data[LedgerEventAuditFailureData.UnprotectedGenesisFacts] = genesis;
+        if (kind is not null)
+            failure.Data[LedgerEventAuditFailureData.FailureKind] = kind;
         return failure;
     }
 }

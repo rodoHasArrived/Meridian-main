@@ -109,7 +109,7 @@ public sealed class AccountingAuditIntegrityService(
         {
             // As for the accounting chain: hashing rules this build does not implement leave the
             // chain unverified, which is not evidence of tampering.
-            return new(chain, AuditChainIntegrityStatus.Unavailable, 0, 0, "UnsupportedSchemaVersion", ex.Message);
+            return new(chain, AuditChainIntegrityStatus.Unavailable, 0, 0, LedgerEventAuditFailureKinds.UnsupportedSchemaVersion, ex.Message);
         }
         catch (LedgerValidationException ex)
         {
@@ -121,7 +121,7 @@ public sealed class AccountingAuditIntegrityService(
                 AuditChainIntegrityStatus.Broken,
                 ReadLong(ex, LedgerEventAuditFailureData.ChainedEventsVerified) ?? 0,
                 ReadLong(ex, LedgerEventAuditFailureData.UnprotectedGenesisFacts) ?? 0,
-                "IntegrityFailure",
+                ex.Data[LedgerEventAuditFailureData.FailureKind] as string ?? "IntegrityFailure",
                 ex.Message,
                 ReadLong(ex, LedgerEventAuditFailureData.FailedSequence));
         }

@@ -417,7 +417,9 @@ public static class AccountingAuditChain
                 AccountingAuditChainStatus.UnlinkedEvent,
                 state,
                 linksVerified,
-                state.Head?.Sequence ?? state.GenesisSequence,
+                // An unlinked event has no chain sequence, and every link verified, so no position
+                // is named rather than pointing at a link that is intact.
+                null,
                 $"{auditEvents.Count.ToString(CultureInfo.InvariantCulture)} events are retained but "
                 + $"{expectedEventCount.ToString(CultureInfo.InvariantCulture)} are accounted for "
                 + $"({state.PreChainEventCount.ToString(CultureInfo.InvariantCulture)} before the genesis "
@@ -547,7 +549,7 @@ public static class AccountingAuditChain
         AccountingAuditChainStatus status,
         AccountingAuditChainState state,
         int linksVerified,
-        long sequence,
+        long? sequence,
         string detail)
         => new(status, linksVerified, state.PreChainEventCount, detail, sequence);
 

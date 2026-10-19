@@ -174,6 +174,7 @@ public sealed class LedgerEventAuditPostgresTests
             var failure = (await verify.Should().ThrowAsync<LedgerValidationException>().WithMessage("*disagree*")).Which;
             failure.Data[LedgerEventAuditFailureData.FailedSequence].Should().Be(expected(finalLink));
             failure.Data[LedgerEventAuditFailureData.ChainedEventsVerified].Should().Be(finalLink, "every retained link verified before the head was compared");
+            failure.Data[LedgerEventAuditFailureData.FailureKind].Should().Be(LedgerEventAuditFailureKinds.HeadDisagreement);
         }
     }
 
