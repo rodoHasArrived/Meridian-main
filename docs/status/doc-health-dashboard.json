@@ -1,6 +1,6 @@
 {
   "total_files": 740,
-  "total_lines": 163768,
+  "total_lines": 163787,
   "orphaned_count": 249,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -1637,7 +1637,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 5819,
+      "line_count": 5828,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5837,7 +5837,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1834,
+      "line_count": 1840,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5933,7 +5933,7 @@
     },
     {
       "path": "src/Meridian.FSharp/README.md",
-      "line_count": 106,
+      "line_count": 110,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
