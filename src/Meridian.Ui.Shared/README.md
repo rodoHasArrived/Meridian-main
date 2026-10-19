@@ -57,6 +57,7 @@ tenant assertions cannot establish authority. `AccountCashForecastEvidenceAdapte
 balance/flow/FX JSON from independently reviewed account Evidence Vault documents. It verifies
 original bytes, hashes, review provenance, version and every economic field before capture;
 unsupported inputs fail closed. File histories require explicit administrative provisioning.
+Corrupt or missing retained history and writer-lock timeouts in either file store return HTTP 503.
 See [bounded account oversight](../../docs/operators/account-oversight.md) for route and source
 format contracts. These seams do not grant accounting-close or payment authority.
 The browser receives exact decimal text through this HTTP transport without changing retained
