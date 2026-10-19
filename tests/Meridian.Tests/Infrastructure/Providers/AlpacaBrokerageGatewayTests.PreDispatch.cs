@@ -52,6 +52,46 @@ public sealed partial class AlpacaBrokerageGatewayTests
 
 public sealed partial class AlpacaBrokerageGatewayTests
 {
+    [Theory]
+    [InlineData("new", ExecutionReportType.Modified)]
+    [InlineData("pending_new", ExecutionReportType.ModificationPending)]
+    public async Task Amendment_RefusedPatchAgainstALinkedReplacement_ReconcilesInsteadOfRejecting(
+        string successorStatus, ExecutionReportType expected)
+    {
+        var replaced = false;
+        using var handler = new Meridian.Tests.TestHelpers.StubHttpMessageHandler(request =>
+        {
+            if (request.RequestUri!.AbsolutePath == "/v2/account")
+                return new(HttpStatusCode.OK) { Content = BuildAccountResponse() };
+            if (request.Method == HttpMethod.Patch)
+            {
+                replaced = true; // another replacement won the race
+                return new((HttpStatusCode)422) { Content = new StringContent("{\"message\":\"order already replaced\"}") };
+            }
+            if (request.RequestUri.AbsolutePath == "/v2/orders/candidate")
+                return new(HttpStatusCode.OK)
+                {
+                    Content = BuildOrderResponse("candidate", successorStatus,
+                        clientOrderId: "candidate-client", qty: "20", replaces: "original", limitPrice: "149")
+                };
+            return new(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse("original", replaced ? "replaced" : "accepted",
+                    clientOrderId: "local", qty: "10", replacedBy: replaced ? "candidate" : null, limitPrice: "150")
+            };
+        });
+        await using var gateway = CreateSut(handler);
+        await gateway.ConnectAsync();
+
+        var report = await gateway.ModifyOrderAsync(
+            new OrderCancellationIdentifier("original", OrderCancellationIdentifierKind.BrokerOrderId),
+            new OrderModification { NewQuantity = 20m, NewLimitPrice = 149m });
+
+        report.ReportType.Should().Be(expected, "a predecessor that names its successor was not refused");
+        if (expected == ExecutionReportType.Modified)
+            report.GatewayOrderId.Should().Be("candidate");
+    }
+
     [Fact]
     public async Task Recovery_ReplacedPredecessorWithAcceptedForBiddingSuccessor_StaysPending()
     {

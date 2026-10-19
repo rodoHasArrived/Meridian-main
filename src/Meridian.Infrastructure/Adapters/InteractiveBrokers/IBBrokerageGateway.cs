@@ -273,8 +273,18 @@ public sealed class IBBrokerageGateway :
             LimitPrice = updatedRequest.LimitPrice,
             StopPrice = updatedRequest.StopPrice
         };
-        var pendingOperation = RegisterPendingOrderOperation(
-            gatewayOrderId, PendingOrderOperationKind.Modify, updatedContext);
+        // A concurrent cancel or amendment already owns the order's operation slot. The
+        // conflict is detected before PlaceOrderAsync, so this amendment never reached IB.
+        PendingOrderOperation pendingOperation;
+        try
+        {
+            pendingOperation = RegisterPendingOrderOperation(
+                gatewayOrderId, PendingOrderOperationKind.Modify, updatedContext);
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new BrokerageRequestNotSentException(ex.Message, ex);
+        }
 
         try
         {

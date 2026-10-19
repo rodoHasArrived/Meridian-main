@@ -52,7 +52,7 @@ public sealed partial class IBBrokerageGatewayTests
             cancellation.Cancel();
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => amendment);
         }
-        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ModifyOrderAsync("working-order",
+        await Assert.ThrowsAsync<BrokerageRequestNotSentException>(() => sut.ModifyOrderAsync("working-order",
             new OrderModification { NewQuantity = 13m }));
 
         client.RaiseExecution(AmendmentExecution(10m, 10m, 100d, 100d, "late-execution"));

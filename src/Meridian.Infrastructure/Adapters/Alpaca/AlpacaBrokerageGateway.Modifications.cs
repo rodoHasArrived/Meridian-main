@@ -82,6 +82,21 @@ public sealed partial class AlpacaBrokerageGateway
         if (!response.IsSuccessStatusCode)
         {
             var observed = await ReadReplacementSnapshotAsync(client, brokerOrderId, ct).ConfigureAwait(false);
+            // A 422 such as "order already replaced" or "order chain not fully replaced" does not
+            // prove the order kept its terms: a predecessor that links or awaits a successor is
+            // reconciled like any other replacement rather than reported as refused.
+            if (observed is { ReplacedBy.Length: > 0 } || observed?.Status is "replaced" or "pending_replace")
+            {
+                attempt.Original = observed;
+                var reconciled = await ObserveReplacementAsync(client, attempt, ct).ConfigureAwait(false);
+                if (reconciled is not null)
+                {
+                    await _reportChannel.Writer.WriteAsync(reconciled, ct).ConfigureAwait(false);
+                    return reconciled;
+                }
+                return PublishPendingModification(attempt,
+                    $"Alpaca refused the amendment with HTTP {(int)response.StatusCode} while the order is mid-replacement; reconcile before retrying.");
+            }
             var refusal = BuildReplacementSnapshotReport(observed ?? existing, existing.ClientOrderId,
                 ExecutionReportType.ModificationRejected,
                 $"Alpaca amendment failed with HTTP {(int)response.StatusCode}.");
