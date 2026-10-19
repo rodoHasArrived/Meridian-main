@@ -559,6 +559,52 @@ public sealed class AccountCashForecastTests : IDisposable
     }
 
     [Theory]
+    [InlineData("retained")]
+    [InlineData("corrupt")]
+    public async Task Store_MigratedLegacyHistoryIsNeverReprovisionedAsEmpty(string migrated)
+    {
+        var first = AccountCashForecastEngine.Build(Request([], 100m));
+        Directory.CreateDirectory(StoreDirectory);
+        var legacyPath = Path.Combine(StoreDirectory, "snapshots.json");
+        var migratedPath = legacyPath + ".migrated";
+        var markerPath = Path.Combine(StoreDirectory, "initialized");
+        var indexPath = Path.Combine(StoreDirectory, "scope-index.json");
+        await File.WriteAllBytesAsync(legacyPath, LegacyStateBytes(first));
+        await File.WriteAllTextAsync(markerPath, "meridian-account-cash-forecast-v1");
+        await new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
+        File.Exists(migratedPath).Should().BeTrue();
+
+        // A partial restore keeps the migrated evidence but loses the marker, index and scope files.
+        File.Delete(markerPath);
+        File.Delete(indexPath);
+        Directory.Delete(Path.Combine(StoreDirectory, "scopes"), recursive: true);
+        if (migrated == "corrupt")
+            await File.WriteAllTextAsync(migratedPath, "{}");
+        var migratedBytes = await File.ReadAllBytesAsync(migratedPath);
+
+        // Retained evidence is a recovery condition (409), a corrupt file a restore condition (503); neither restarts history.
+        var reprovision = () => new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
+        if (migrated == "corrupt")
+            await reprovision.Should().ThrowAsync<InvalidDataException>();
+        else
+            await reprovision.Should().ThrowAsync<InvalidOperationException>();
+        File.Exists(markerPath).Should().BeFalse();
+        File.Exists(indexPath).Should().BeFalse();
+        (await File.ReadAllBytesAsync(migratedPath)).Should().Equal(migratedBytes);
+        var read = () => new FileAccountCashForecastStore(_dataRoot).GetHistoryAsync(Scope);
+        await read.Should().ThrowAsync<InvalidOperationException>();
+        if (migrated == "corrupt")
+            return;
+
+        // Restoring the legacy file and marker from the same backup set recovers the history without a reset.
+        File.Move(migratedPath, legacyPath);
+        await File.WriteAllTextAsync(markerPath, "meridian-account-cash-forecast-v1");
+        var restored = new FileAccountCashForecastStore(_dataRoot);
+        await restored.InitializeAsync();
+        (await restored.GetHistoryAsync(Scope)).Should().BeEquivalentTo([first], options => options.WithStrictOrdering());
+    }
+
+    [Theory]
     [InlineData("reused-boundary")]
     [InlineData("missing-security")]
     public async Task Store_LegacyInvalidCertificationFailsReplayWithoutRewritingRetainedEvidence(string defect)

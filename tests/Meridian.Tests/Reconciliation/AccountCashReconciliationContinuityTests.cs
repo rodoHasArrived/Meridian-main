@@ -1082,6 +1082,83 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         return JsonSerializer.SerializeToUtf8Bytes(new AccountCashReconciliationEnvelope(hash, document), AccountCashReconciliationJsonContext.Default.AccountCashReconciliationEnvelope);
     }
 
+    [Theory]
+    [InlineData("layout-lost")]
+    [InlineData("empty-index-left")]
+    [InlineData("corrupt-migrated")]
+    public async Task Migrated_legacy_state_is_never_reprovisioned_as_empty(string remains)
+    {
+        // Upgrade path: retained single-file state is split and renamed on provisioning.
+        var service = await ServiceAsync();
+        var original = await service.RunAsync(Request("first", 0, 1000m, 990m));
+        var legacyBytes = await LegacyStateBytesAsync(_scope);
+        var legacyPath = Path.Combine(StoreDirectory, "state.json");
+        var migratedPath = legacyPath + ".migrated";
+        var markerPath = Path.Combine(StoreDirectory, "initialized");
+        var indexPath = Path.Combine(StoreDirectory, "scope-index.json");
+        Directory.Delete(Path.Combine(StoreDirectory, "scopes"), recursive: true);
+        File.Delete(indexPath);
+        await File.WriteAllBytesAsync(legacyPath, legacyBytes);
+        await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+        (await File.ReadAllBytesAsync(migratedPath)).Should().Equal(legacyBytes);
+
+        // A partial restore keeps the migrated evidence but loses the marker, the scope files and,
+        // except for an empty index copied from a fresh store, the index.
+        File.Delete(markerPath);
+        Directory.Delete(Path.Combine(StoreDirectory, "scopes"), recursive: true);
+        File.Delete(indexPath);
+        if (remains == "empty-index-left")
+        {
+            var separateRoot = Path.Combine(Path.GetTempPath(), $"meridian-account-cash-{Guid.NewGuid():N}");
+            await new FileAccountCashReconciliationStore(separateRoot).InitializeAsync();
+            File.Copy(Path.Combine(separateRoot, "reconciliation", "account-cash-continuity", "scope-index.json"), indexPath);
+            Directory.Delete(separateRoot, recursive: true);
+        }
+        if (remains == "corrupt-migrated")
+            await File.WriteAllTextAsync(migratedPath, "{}");
+        var migratedBytes = await File.ReadAllBytesAsync(migratedPath);
+
+        // Retained evidence is a recovery condition (409), a corrupt file a restore condition (503); neither restarts history.
+        var reprovision = await Record.ExceptionAsync(() => new FileAccountCashReconciliationStore(_root).InitializeAsync());
+        reprovision.Should().BeOfType(remains == "corrupt-migrated" ? typeof(InvalidDataException) : typeof(InvalidOperationException));
+        File.Exists(markerPath).Should().BeFalse();
+        File.Exists(indexPath).Should().Be(remains == "empty-index-left");
+        (await File.ReadAllBytesAsync(migratedPath)).Should().Equal(migratedBytes);
+        var unprovisioned = await ServiceAsyncWithoutProvisioning();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => unprovisioned.GetCasesAsync(_scope));
+        if (remains == "corrupt-migrated")
+            return;
+
+        // Restoring the legacy file and marker from the same backup set recovers the history without a reset.
+        File.Move(migratedPath, legacyPath);
+        await File.WriteAllTextAsync(markerPath, "meridian-account-cash-reconciliation-v1");
+        var restored = await ServiceAsync();
+        (await restored.ReplayAsync(_scope, "first")).Should().BeEquivalentTo(original, options => options.WithStrictOrdering());
+    }
+
+    [Fact]
+    public async Task Cancellation_after_the_commit_decision_still_registers_the_scope_with_its_file()
+    {
+        var store = new FileAccountCashReconciliationStore(_root);
+        await store.InitializeAsync();
+        var service = new AccountCashReconciliationService(store);
+        var run = service.EvaluateUnretained(Request("first", 0, 1000m, 990m));
+        using var cts = new CancellationTokenSource();
+
+        // The request is abandoned once the mutation has been decided: the first scope-file write must
+        // still follow its registration, or the indexed scope would fail closed on every later read.
+        await store.WithStateAsync(_scope, document =>
+        {
+            cts.Cancel();
+            return (document with { Runs = [run] }, 0);
+        }, true, cts.Token);
+
+        File.Exists(ScopeStatePath(_scope)).Should().BeTrue();
+        var reopened = await ServiceAsyncWithoutProvisioning();
+        (await reopened.ReplayAsync(_scope, "first")).Should().BeEquivalentTo(run, options => options.WithStrictOrdering());
+        await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+    }
+
     private string StoreDirectory => Path.Combine(_root, "reconciliation", "account-cash-continuity");
     private string ScopeStatePath(AccountCashReconciliationScope scope)
         => Path.Combine(StoreDirectory, "scopes", FileAccountCashReconciliationStore.ScopeFileName(scope) + ".json");

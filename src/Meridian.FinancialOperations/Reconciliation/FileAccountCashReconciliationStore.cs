@@ -59,7 +59,7 @@ public sealed class FileAccountCashReconciliationStore
         // explicit recovery, and corrupt unmarked state is refused as corrupt rather than adopted.
         if (File.Exists(LegacyStatePath))
         {
-            var unmarked = await ReadLegacyAsync(ct).ConfigureAwait(false);
+            var unmarked = await ReadLegacyAsync(LegacyStatePath, ct).ConfigureAwait(false);
             if (unmarked.Runs.Count != 0 || unmarked.Cases.Count != 0 || File.Exists(IndexPath) || HasScopeFiles())
                 throw new InvalidOperationException("Unprovisioned continuity state requires explicit recovery.");
             await SplitLegacyAsync(ct).ConfigureAwait(false);
@@ -69,6 +69,7 @@ public sealed class FileAccountCashReconciliationStore
             var unmarked = await ReadIndexAsync(ct).ConfigureAwait(false);
             if (unmarked.Length != 0 || HasScopeFiles())
                 throw new InvalidOperationException("Unprovisioned continuity state requires explicit recovery.");
+            await RefuseRetainedMigratedHistoryAsync(ct).ConfigureAwait(false);
         }
         else if (HasScopeFiles())
         {
@@ -76,6 +77,7 @@ public sealed class FileAccountCashReconciliationStore
         }
         else
         {
+            await RefuseRetainedMigratedHistoryAsync(ct).ConfigureAwait(false);
             Directory.CreateDirectory(ScopeDirectory);
             await WriteIndexAsync([], ct).ConfigureAwait(false);
         }
@@ -97,9 +99,13 @@ public sealed class FileAccountCashReconciliationStore
         var (updated, result) = action(original);
         if (write && !ReferenceEquals(original, updated))
         {
+            // Past this point the mutation is committed. Registration and the first scope-file write are
+            // two atomic writes; honouring a request cancellation between them would retain an indexed
+            // scope without its file, which then fails closed on every later read. The commit therefore
+            // ignores the request token, and the lock timeout still bounds it.
             if (!indexed)
-                await RegisterScopeAsync(scope, ct).ConfigureAwait(false);
-            await WriteScopeFileAsync(scope, updated, ct).ConfigureAwait(false);
+                await RegisterScopeAsync(scope, CancellationToken.None).ConfigureAwait(false);
+            await WriteScopeFileAsync(scope, updated, CancellationToken.None).ConfigureAwait(false);
         }
         return result;
     }
@@ -128,7 +134,7 @@ public sealed class FileAccountCashReconciliationStore
             return;
         if (File.Exists(MigratedLegacyStatePath))
             throw new InvalidDataException("Both the legacy account cash continuity state and its migrated copy exist; restore one retained state before retrying.");
-        var legacy = await ReadLegacyAsync(ct).ConfigureAwait(false);
+        var legacy = await ReadLegacyAsync(LegacyStatePath, ct).ConfigureAwait(false);
         var index = File.Exists(IndexPath) ? (await ReadIndexAsync(ct).ConfigureAwait(false)).ToList() : [];
         Directory.CreateDirectory(ScopeDirectory);
         var scopes = legacy.Runs.Select(item => item.Input.Scope).Concat(legacy.Cases.Select(item => item.Scope)).Distinct().ToArray();
@@ -209,11 +215,24 @@ public sealed class FileAccountCashReconciliationStore
         }
     }
 
-    private async Task<AccountCashReconciliationDocument> ReadLegacyAsync(CancellationToken ct)
+    /// <summary>
+    /// Caller holds the store lock. A migrated legacy file is retained evidence: when the marker, index
+    /// and scope files are lost beside it, provisioning fails closed instead of restarting history.
+    /// </summary>
+    private async Task RefuseRetainedMigratedHistoryAsync(CancellationToken ct)
+    {
+        if (!File.Exists(MigratedLegacyStatePath))
+            return;
+        var migrated = await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false);
+        if (migrated.Runs.Count != 0 || migrated.Cases.Count != 0)
+            throw new InvalidOperationException("Unprovisioned continuity state requires explicit recovery: migrated history exists without its provisioned scope layout.");
+    }
+
+    private static async Task<AccountCashReconciliationDocument> ReadLegacyAsync(string path, CancellationToken ct)
     {
         try
         {
-            var bytes = await File.ReadAllBytesAsync(LegacyStatePath, ct).ConfigureAwait(false);
+            var bytes = await File.ReadAllBytesAsync(path, ct).ConfigureAwait(false);
             var envelope = JsonSerializer.Deserialize(bytes, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationEnvelope)
                 ?? throw new InvalidDataException("Account cash continuity state is empty.");
             var document = envelope.Document;
@@ -235,7 +254,7 @@ public sealed class FileAccountCashReconciliationStore
     {
         try
         {
-            var bytes = await File.ReadAllBytesAsync(IndexPath, ct).ConfigureAwait(false);
+            var bytes = await ReadSharedAsync(IndexPath, ct).ConfigureAwait(false);
             var index = JsonSerializer.Deserialize(bytes, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationScopeIndex)
                 ?? throw new InvalidDataException("Account cash continuity scope index is empty.");
             if (index.SchemaVersion != 1 || index.Scopes is null || index.Scopes.Any(static scope => scope is null)
@@ -248,6 +267,21 @@ public sealed class FileAccountCashReconciliationStore
         {
             throw new InvalidDataException("Retained account cash continuity scope index is unavailable or corrupt; restore it before retrying.", ex);
         }
+    }
+
+
+    /// <summary>
+    /// Index readers run under their own scope lock while a first-time registration under the store
+    /// lock replaces the file atomically; sharing delete lets that rename proceed on Windows instead
+    /// of failing the registration with a sharing violation. The rename is atomic, so a reader sees
+    /// either the complete old or the complete new index, and the content hash is verified anyway.
+    /// </summary>
+    private static async Task<byte[]> ReadSharedAsync(string path, CancellationToken ct)
+    {
+        await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 4096, FileOptions.Asynchronous | FileOptions.SequentialScan);
+        using var buffer = new MemoryStream();
+        await stream.CopyToAsync(buffer, ct).ConfigureAwait(false);
+        return buffer.ToArray();
     }
 
     /// <summary>Caller holds the scope lock; registration takes the store lock so scopes only serialize on first appearance.</summary>

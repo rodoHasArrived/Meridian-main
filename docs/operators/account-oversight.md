@@ -34,6 +34,8 @@ Both file stores partition retained history per exact account scope. Each store 
 `scopes/<sha256>.json` history file plus `scopes/<sha256>.lock` per scope, where the hash is the
 canonical scope identity (tenant, company, account and ledger book, plus base currency for forecasts).
 A corrupt or missing scope file blocks only that scope; other accounts continue to read and capture.
+The `scope-index.json` registry and the `initialized` marker are read before any scope is selected,
+so a corrupt or missing index or marker blocks every account in that store until it is restored.
 These stores live on the host's local data root and are not shared between hosts: run the account
 oversight API on a single host against one data root. Multi-host deployments are a known constraint
 and the planned follow-on is a PostgreSQL-backed store.
@@ -227,8 +229,11 @@ account/book/period. Reintroducing an unchanged revision preserves its original 
 Preserve the original run/snapshot ID and response. Conflicting input under an existing run ID
 requires a new correction, rather than replacement. On missing/corrupt durable state, stop capture
 and restore the complete history from backup; provisioning is not a history-reset operation.
-A corrupt or missing scope file, or a corrupt scope index, answers `503` for both forecasts and cash
-continuity on the affected account only; unprovisioned retained history answers `409`.
+A corrupt or missing scope file answers `503` for both forecasts and cash continuity on the affected
+account only. A corrupt or missing `scope-index.json` answers `503` for every account in that store,
+because the index is read before any scope is selected. Unprovisioned retained history answers `409`,
+including a `.migrated` legacy file left without its marker, index and scope files: provisioning never
+recreates an empty layout beside retained evidence.
 Restore the affected `scopes/<sha256>.json` file together with `scope-index.json` and `initialized`
 from the same backup; never delete a scope file to clear a failure, because a registered scope
 without its file also fails closed. On first use after upgrading from the single-file layout, each

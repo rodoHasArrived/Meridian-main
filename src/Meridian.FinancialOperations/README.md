@@ -27,8 +27,11 @@ cannot silently restart history. A retry adopts only a valid empty state left by
 provisioning; unmarked retained history still requires recovery. The store partitions retained runs
 and cases per exact tenant/company/account/ledger-book scope into content-hashed
 `scopes/<sha256>.json` files with per-scope locks and a `scope-index.json` registry under
-`reconciliation/account-cash-continuity`, so one scope's corruption or size never blocks another; a
-legacy single-file `state.json` is split losslessly and renamed `state.json.migrated`. Corrupt or
+`reconciliation/account-cash-continuity`, so one scope's corruption or size never blocks another (a
+corrupt or missing index or marker blocks the whole store); a legacy single-file `state.json` is split
+losslessly and renamed `state.json.migrated`, and a `.migrated` file left beside a lost layout refuses
+provisioning rather than restarting history. A validated mutation commits its scope registration and
+scope file regardless of request cancellation, and index reads share delete for Windows. Corrupt or
 missing initialized state raises `InvalidDataException`, and each writer lease times out after 30
 seconds with `TimeoutException`. The data root remains host-local (PostgreSQL is the multi-host
 follow-on). Source clearing confers no governed close approval.
