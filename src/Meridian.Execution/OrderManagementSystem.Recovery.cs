@@ -305,6 +305,8 @@ public sealed partial class OrderManagementSystem
                             && report.GatewayOrderId == pending?.OriginalBrokerOrderId))
                         confirmed = confirmed with { Status = report.OrderStatus };
                     _orders[orderId] = confirmed;
+                    if (pending is not null)
+                        RecordAmendmentOutcome(pending, ReferenceEquals(selectedTerms, pending.Proposed));
                 }
                 if (report.GatewayOrderId is { Length: > 0 } confirmedBrokerId)
                 {

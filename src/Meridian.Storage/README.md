@@ -56,6 +56,33 @@ cannot approve values they staged. The event store and projection store join
 `PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap and
 Commodity projections are now declarative registry plans rather than hand-written writers.
 
+Projection fan-out is keyed by asset class. `UpsertProjectionCoreAsync` reads the security's stored
+`asset_class` under the row lock the upsert takes anyway and runs only the writers that write can
+affect: the current class's writer (which publishes, or clears its own rows when a gate fails) and,
+when the class changed, the prior class's writer (which clears the rows it left behind). A
+projection row for class X exists only while the stored class is X, so the other writers have
+nothing to delete; running all of them cost ~28 no-op deletes per record once migration 044 brought
+the registry to 25 writers.
+
+The reference-projection read side is shared as well. Every `Postgres*ReferenceProjectionStore`
+composes `PostgresReferenceProjectionReader` for its connection, command and row plumbing, and a
+store whose table is a `SecurityTermsProjectionRegistry` descriptor (Equity, Future, FxSpot, Swap,
+Commodity, CryptoCurrency, Deposit, MoneyMarketFund, CertificateOfDeposit, DirectLoan,
+StructuredCredit and their child tables) selects the descriptor's column list rather than
+restating it, mapping rows by column name through `ProjectionRow`. The registry is therefore the
+single statement of a projection table's columns on the write and read sides; only the specialized
+Bond and Option stores carry their own select lists. The per-class store interfaces and row
+records are unchanged, so `*ProjectionService` consumers and DI registrations did not move.
+
+Security Master migration `044_security_master_declarative_terms_projections.sql` gives the twelve
+remaining unprojected classes (CommercialPaper, TreasuryBill, Repo, CashSweep, OtherSecurity, Cfd,
+Warrant, InvestmentFund, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding,
+CommitmentGuarantee) a relational projection written by the same declarative
+`SecurityTermsProjectionRegistry` descriptor path, so every catalog class except the
+profile-governed CustomAsset is now projected (25 of 26). Guid-typed terms project as `uuid`
+columns. The tables are created empty; an existing database populates them through
+`SecurityMasterRebuildOrchestrator.RebuildAssetClassAsync` per class.
+
 Security Master migration `042_security_master_terms_format_column.sql` promotes the terms-payload
 family to a queryable `securities.terms_format` column (ADR-024). The backfill never rewrites the
 payload: a declared `termsFormat` wins and an untagged row is classified by the same shape rule

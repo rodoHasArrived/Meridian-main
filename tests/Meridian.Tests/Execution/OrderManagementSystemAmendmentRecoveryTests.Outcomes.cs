@@ -250,6 +250,81 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
         }
     }
 
+    [Theory]
+    [InlineData(OrderStatus.Cancelled, true)]
+    [InlineData(OrderStatus.Accepted, false)]
+    public async Task CancelAfterRestart_CancelsTheRetainedReplacementCandidate_BeforeThePredecessor(
+        OrderStatus candidateStatus, bool expectComplete)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"amendment-cancel-restart-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var path = Path.Combine(directory, "orders.json");
+            await using (var oms = CreateRecoveryOms(new RecoverableAmendmentGateway(), path))
+            {
+                (await oms.PlaceOrderAsync(RecoveryRequest())).Success.Should().BeTrue();
+                (await oms.ModifyOrderAsync("local", new OrderModification { NewQuantity = 20m })).Success.Should().BeFalse();
+            }
+
+            // A fresh gateway has no memory of the replacement attempt; only the OMS retains it.
+            var restartedGateway = new RecoverableAmendmentGateway { CandidateCancelStatus = candidateStatus };
+            await using var restarted = CreateRecoveryOms(restartedGateway, path);
+
+            var result = await restarted.CancelOrderAsync("local");
+
+            restartedGateway.CancelledBrokerIds.Should().Equal("candidate-broker", "original-broker");
+            result.Success.Should().Be(expectComplete,
+                "a successor that is not proven inactive keeps the order in cancellation sweeps");
+            if (!expectComplete)
+                restarted.GetOrder("local")!.Status.Should().NotBe(OrderStatus.Cancelled);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task TrailOnlyAmendment_RacedByStreamOutcome_ReportsTheBrokerOutcome(bool accepted)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"amendment-trail-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var path = Path.Combine(directory, "orders.json");
+            var gateway = new RecoverableAmendmentGateway { HoldModification = true };
+            await using var oms = CreateRecoveryOms(gateway, path);
+            (await oms.PlaceOrderAsync(RecoveryRequest())).Success.Should().BeTrue();
+            var amendment = oms.ModifyOrderAsync("local", new OrderModification { NewTrail = 5m });
+            await gateway.ModificationEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            new FileBrokerageOrderRecoveryStore(path, "alpaca").Load().Single()
+                .PendingAmendment!.ProposedTrail.Should().Be(5m, "the trail term survives a restart");
+
+            await gateway.Reports.Writer.WriteAsync(RecoverableAmendmentGateway.Report(
+                accepted ? ExecutionReportType.Modified : ExecutionReportType.ModificationRejected,
+                OrderStatus.PartiallyFilled, 2m, 10m, 100m) with
+            {
+                GatewayOrderId = accepted ? "candidate-broker" : "original-broker",
+                ReplacesOrderId = accepted ? "original-broker" : null
+            });
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            while (new FileBrokerageOrderRecoveryStore(path, "alpaca").Load().Single().PendingAmendment is not null)
+                await Task.Delay(10, timeout.Token);
+            gateway.ReleaseModification.TrySetResult();
+
+            // Original and proposed snapshots are identical for a trail-only change, so comparing
+            // terms would always say "accepted"; the result must follow the broker's outcome.
+            (await amendment).Success.Should().Be(accepted);
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     [Fact]
     public async Task RecoveryService_DispatchesAmendmentOnlyCapability_AndLeavesUnsupportedOrdinaryRecoveryUnresolved()
     {
@@ -342,8 +417,20 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
     };
 
     private sealed class RecoverableAmendmentGateway : IBrokerageGateway, IExecutionGatewayModeProvider,
-        IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway, IBrokerageConnectionState
+        IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway, IBrokerageConnectionState,
+        IExplicitOrderCancellationGateway
     {
+        public List<string> CancelledBrokerIds { get; } = [];
+        public OrderStatus CandidateCancelStatus { get; init; } = OrderStatus.Cancelled;
+        public Task<ExecutionReport> CancelOrderAsync(OrderCancellationIdentifier identifier, CancellationToken ct = default)
+        {
+            CancelledBrokerIds.Add(identifier.Value);
+            var candidate = identifier.Value == "candidate-broker";
+            var status = candidate ? CandidateCancelStatus : OrderStatus.Cancelled;
+            return Task.FromResult(Report(candidate ? ExecutionReportType.Cancelled : ExecutionReportType.Cancelled,
+                status, candidate ? 0m : 2m, 10m, 100m) with
+            { GatewayOrderId = identifier.Value, OrderId = identifier.Value });
+        }
         public Channel<ExecutionReport> Reports { get; } = Channel.CreateUnbounded<ExecutionReport>();
         public TaskCompletionSource ModificationEntered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource ReleaseModification { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);

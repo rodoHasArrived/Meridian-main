@@ -14,7 +14,8 @@ last_reviewed: 2026-10-15
 Broker amendment and cancellation failures retain the broker-observed order status and use
 operation-specific reports. Alpaca amendments resolve explicit client/broker identifier namespaces
 and retain replacement aliases. Successful PATCH responses remain provisional until independent
-replacement evidence confirms the successor. While a replacement is unconfirmed, cancellation also
+replacement evidence confirms the successor. Reconnect FILL-activity reports carry the broker's `replaces` link so a
+successor's fill stays bound to its original order after a restart. While a replacement is unconfirmed, cancellation also
 cancels the candidate successor and stays pending until it is proven inactive. A candidate that executed before
 that cancellation publishes its cumulative fills through the replacement chain first. Order and
 amendment recovery refuse evidence read across a connection change, rechecked before every report, and `accepted_for_bidding` is a valid provisional

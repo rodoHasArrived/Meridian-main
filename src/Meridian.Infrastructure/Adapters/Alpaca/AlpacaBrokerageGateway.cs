@@ -788,6 +788,9 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
                     OrderId = orderId,
                     GatewayOrderId = orderId,
                     ClientOrderId = order?.ClientOrderId,
+                    // After a restart the gateway no longer remembers its replacement attempts;
+                    // the broker's own link keeps a successor's fill bound to the original order.
+                    ReplacesOrderId = order?.Replaces,
                     Symbol = symbol,
                     Side = string.Equals(activity.Side ?? order?.Side, "sell", StringComparison.OrdinalIgnoreCase)
                         ? OrderSide.Sell

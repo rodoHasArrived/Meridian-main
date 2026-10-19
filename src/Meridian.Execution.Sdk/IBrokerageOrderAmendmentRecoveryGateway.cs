@@ -25,4 +25,8 @@ public sealed record PendingOrderAmendment(OrderState Original, OrderState Propo
     /// </summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string[]? PriorChainBrokerOrderIds { get; init; }
+    /// <summary>Requested trail amount. Order state carries no trail terms, so a trail-only
+    /// amendment has identical original and proposed snapshots and is told apart by this.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? ProposedTrail { get; init; }
 }

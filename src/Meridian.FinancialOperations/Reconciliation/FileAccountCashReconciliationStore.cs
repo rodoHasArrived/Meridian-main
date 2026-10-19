@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Storage.Archival;
@@ -28,8 +29,17 @@ public sealed class FileAccountCashReconciliationStore
             return;
         }
         if (File.Exists(StatePath))
-            throw new InvalidOperationException("Unprovisioned continuity state requires explicit recovery.");
-        await WriteAsync(new(1, [], []), ct).ConfigureAwait(false);
+        {
+            // An interrupted provisioning leaves a valid empty document without its marker. Adopt only
+            // that; any retained history without a marker still requires explicit recovery.
+            var unmarked = await ReadStateAsync(ct).ConfigureAwait(false);
+            if (unmarked.Runs.Count != 0 || unmarked.Cases.Count != 0)
+                throw new InvalidOperationException("Unprovisioned continuity state requires explicit recovery.");
+        }
+        else
+        {
+            await WriteAsync(new(1, [], []), ct).ConfigureAwait(false);
+        }
         await AtomicFileWriter.WriteAsync(MarkerPath, Marker, ct).ConfigureAwait(false);
     }
 
@@ -50,6 +60,7 @@ public sealed class FileAccountCashReconciliationStore
 
     private async Task<FileStream> AcquireAsync(CancellationToken ct)
     {
+        var timer = Stopwatch.StartNew();
         while (true)
         {
             ct.ThrowIfCancellationRequested();
@@ -59,6 +70,8 @@ public sealed class FileAccountCashReconciliationStore
             }
             catch (IOException ex) when ((ex.HResult & 0xffff) is 11 or 32 or 33)
             {
+                if (timer.Elapsed > TimeSpan.FromSeconds(30))
+                    throw new TimeoutException("Timed out acquiring the account cash continuity writer lock.", ex);
                 await Task.Delay(25, ct).ConfigureAwait(false);
             }
         }
@@ -68,21 +81,26 @@ public sealed class FileAccountCashReconciliationStore
     {
         if (!File.Exists(MarkerPath) || await File.ReadAllTextAsync(MarkerPath, ct).ConfigureAwait(false) != Marker)
             throw new InvalidOperationException("Account cash continuity initialization is missing or invalid.");
+        return await ReadStateAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task<AccountCashReconciliationDocument> ReadStateAsync(CancellationToken ct)
+    {
         try
         {
             var bytes = await File.ReadAllBytesAsync(StatePath, ct).ConfigureAwait(false);
             var envelope = JsonSerializer.Deserialize(bytes, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationEnvelope)
-                ?? throw new InvalidOperationException("Account cash continuity state is empty.");
+                ?? throw new InvalidDataException("Account cash continuity state is empty.");
             var document = envelope.Document;
             if (document is null || document.SchemaVersion != 1 || document.Runs is null || document.Cases is null
                 || !Sha256Digest.IsCanonical(envelope.ContentHash) || !Sha256Digest.FixedEquals(envelope.ContentHash, Hash(document))
                 || document.Cases.Select(item => item.CaseId).Distinct(StringComparer.Ordinal).Count() != document.Cases.Count)
-                throw new InvalidOperationException("Account cash continuity state failed integrity validation.");
+                throw new InvalidDataException("Account cash continuity state failed integrity validation.");
             return document;
         }
         catch (Exception ex) when (ex is IOException or JsonException)
         {
-            throw new InvalidOperationException("Retained account cash continuity state is unavailable or corrupt; restore it before retrying.", ex);
+            throw new InvalidDataException("Retained account cash continuity state is unavailable or corrupt; restore it before retrying.", ex);
         }
     }
 
