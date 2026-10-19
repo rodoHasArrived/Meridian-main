@@ -2003,6 +2003,7 @@ Meridian-main
 │   │   ├── w9-demo-002-closure-2026-09-16.md
 │   │   ├── w9-operator-acceptance-2026-08-29.md
 │   │   ├── w9-operator-acceptance-2026-10-18.md
+│   │   ├── w9-operator-acceptance-2026-10-19.md
 │   │   └── web-ui-improvements-brainstorm-2026-07.md
 │   ├── prompts
 │   │   ├── automation-prompts.md
