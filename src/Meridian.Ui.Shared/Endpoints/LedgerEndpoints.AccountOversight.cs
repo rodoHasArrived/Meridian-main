@@ -119,7 +119,7 @@ public static partial class LedgerEndpoints
             {
                 if (request.AccountId != scope.AccountId || request.BookId != scope.BookId || request.ValuationDate != valuationDate)
                     return OversightScopeDenied();
-                var service = context.RequestServices.GetService<ISecurityMasterPricingService>();
+                var service = ResolveClosePriceService(context);
                 if (service is null)
                     return OversightUnavailable("Close-price snapshots are not configured.");
                 return Results.Json(await service.CreateClosePriceSetAsync(request with { CreatedBy = scope.Actor }, context.RequestAborted)
@@ -131,7 +131,7 @@ public static partial class LedgerEndpoints
             Guid ledgerBookId, Guid accountId, DateOnly valuationDate, HttpContext context) =>
             await ExecuteAccountOversightAsync(context, ledgerBookId, accountId, false, async scope =>
             {
-                var service = context.RequestServices.GetService<ISecurityMasterPricingService>();
+                var service = ResolveClosePriceService(context);
                 if (service is null)
                     return OversightUnavailable("Close-price snapshots are not configured.");
                 return Results.Json(await service.GetClosePriceSetsAsync(scope.AccountId, scope.BookId,
@@ -143,7 +143,7 @@ public static partial class LedgerEndpoints
             Guid ledgerBookId, Guid accountId, DateOnly valuationDate, Guid snapshotId, HttpContext context) =>
             await ExecuteAccountOversightAsync(context, ledgerBookId, accountId, false, async scope =>
             {
-                var service = context.RequestServices.GetService<ISecurityMasterPricingService>();
+                var service = ResolveClosePriceService(context);
                 if (service is null)
                     return OversightUnavailable("Close-price snapshots are not configured.");
                 var retained = await service.GetClosePriceSetAsync(scope.AccountId, scope.BookId, valuationDate,
@@ -160,7 +160,7 @@ public static partial class LedgerEndpoints
                 if (request.AccountId != scope.AccountId || request.BookId != scope.BookId
                     || request.ValuationDate != valuationDate || request.SnapshotId != snapshotId)
                     return OversightScopeDenied();
-                var service = context.RequestServices.GetService<ISecurityMasterPricingService>();
+                var service = ResolveClosePriceService(context);
                 if (service is null)
                     return OversightUnavailable("Close-price snapshots are not configured.");
                 return Results.Json(await service.ApproveClosePriceSetAsync(request with { Reviewer = scope.Actor }, context.RequestAborted)
@@ -175,6 +175,9 @@ public static partial class LedgerEndpoints
                 if (request.Scope is null || request.Scope.AccountId != scope.AccountId
                     || request.Scope.BookId != scope.BookId || request.Scope.BaseCurrency != scope.Book.BaseCurrency)
                     return OversightScopeDenied();
+                // Caller-input checks run before any retained-evidence verification or vault I/O.
+                if (request.RecordedAtUtc == default || request.RecordedAtUtc.Offset != TimeSpan.Zero)
+                    throw new ArgumentException("Forecast recording time must be an explicit UTC instant.", nameof(request));
                 if (request.RecordedAtUtc > DateTimeOffset.UtcNow)
                     throw new ArgumentException("Forecast recording time cannot be later than the authenticated capture time.", nameof(request));
                 var service = context.RequestServices.GetService<IAccountCashForecastService>();
@@ -252,6 +255,14 @@ public static partial class LedgerEndpoints
         catch (TimeoutException) { return OversightUnavailable("Retained oversight history is locked by another writer; retry shortly."); }
         catch (LedgerBookServiceException ex) { return MapServiceException(ex); }
     }
+
+    /// <summary>
+    /// The unconfigured Security Master fallback answers reads with empty history and refuses writes
+    /// with a conflict; retained close prices are unavailable, not absent, so treat it as missing.
+    /// </summary>
+    private static ISecurityMasterPricingService? ResolveClosePriceService(HttpContext context)
+        => context.RequestServices.GetService<ISecurityMasterPricingService>()
+            is { } service and not Meridian.Application.SecurityMaster.NullSecurityMasterPricingService ? service : null;
 
     private static IResult OversightScopeDenied() => Results.Problem(
         "The exact account ledger book is not accessible to the authenticated tenant and company.",
