@@ -49,3 +49,33 @@ public sealed partial class AlpacaBrokerageGatewayTests
         oms.GetExposureReservingOrders().Single().Quantity.Should().Be(10m);
     }
 }
+
+public sealed partial class AlpacaBrokerageGatewayTests
+{
+    [Fact]
+    public async Task Recovery_ReplacedPredecessorWithAcceptedForBiddingSuccessor_StaysPending()
+    {
+        using var handler = new Meridian.Tests.TestHelpers.StubHttpMessageHandler(request =>
+        {
+            if (request.RequestUri!.AbsolutePath == "/v2/account")
+                return new(HttpStatusCode.OK) { Content = BuildAccountResponse() };
+            if (request.RequestUri.AbsolutePath == "/v2/orders/candidate")
+                return new(HttpStatusCode.OK)
+                {
+                    Content = BuildOrderResponse("candidate", "accepted_for_bidding",
+                        clientOrderId: "candidate-client", qty: "20", replaces: "original", limitPrice: "149")
+                };
+            return new(HttpStatusCode.OK)
+            {
+                Content = BuildOrderResponse("original", "replaced",
+                    clientOrderId: "local", qty: "10", replacedBy: "candidate", limitPrice: "150")
+            };
+        });
+        await using var gateway = CreateSut(handler);
+        await gateway.ConnectAsync();
+
+        var recovered = await gateway.GetOrderForRecoveryAsync("local");
+
+        recovered!.ReportType.Should().Be(ExecutionReportType.ModificationPending);
+    }
+}
