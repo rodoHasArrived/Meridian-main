@@ -254,6 +254,11 @@ public sealed class ProviderConnectionLifecycleService
         if (accountingVerification is not null)
         {
             var result = await accountingVerification.VerifyConnectionAsync(ct).ConfigureAwait(false);
+            // A verifier that rejects a malformed credential before reading its generation reports
+            // none. Record that failure against the credential already read here, so it is not
+            // mistaken for a concurrent replacement and reported as "credentials changed".
+            if (string.IsNullOrEmpty(result.ExpectedCredentialGeneration))
+                result = result with { ExpectedCredentialGeneration = read.CredentialGeneration };
             if (result.Success && _ownershipScope is not null)
                 result = SameExternalAccount(descriptor.ProviderId, result.ExternalCompanyId, _ownershipScope.ExternalAccountId)
                     // Preserve the retained identity and vault key after proving provider-specific

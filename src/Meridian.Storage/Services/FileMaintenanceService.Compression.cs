@@ -60,6 +60,9 @@ public sealed partial class FileMaintenanceService
             }
         }
 
+        // Deferral is the expected outcome for a live period, not a failure: it is reported
+        // separately and excluded from the processed count that success is judged against.
+        var deferred = new List<string>();
         var healthyFiles = new List<string>();
         foreach (var file in files.Order(StringComparer.Ordinal))
         {
@@ -68,12 +71,12 @@ public sealed partial class FileMaintenanceService
             {
                 if (options.OnlyClosedPeriods && PartitionPeriodEnd(file) is { } periodEnd && periodEnd > DateTimeOffset.UtcNow)
                 {
-                    errors.Add($"Compression deferred for {file}; its partition period is still open for appends.");
+                    deferred.Add($"{file}: partition period is still open for appends");
                     continue;
                 }
                 if (DateTime.UtcNow - File.GetLastWriteTimeUtc(file) < options.MinimumQuietPeriod)
                 {
-                    errors.Add($"Compression deferred for recently written file {file}; it may still be open for appends.");
+                    deferred.Add($"{file}: written within the quiet period and may still be open for appends");
                     continue;
                 }
                 var issues = new ConcurrentBag<HealthIssue>();
@@ -95,12 +98,14 @@ public sealed partial class FileMaintenanceService
         }
 
         if (options.DryRun)
-            return new FileCompressionResult(files.Count, 0, errors, true,
-                plannedSidecarRemovals.Concat(healthyFiles.Select(file => $"gzip: {file}")).ToList());
+            return new FileCompressionResult(files.Count - deferred.Count, 0, errors, true,
+                plannedSidecarRemovals.Concat(healthyFiles.Select(file => $"gzip: {file}")).ToList())
+            { Deferred = deferred };
 
         if (!await CreateRequiredBackupsAsync(healthyFiles, options.BackupBeforeCompression,
                 options.BackupPath, "compression", recoveryCopies, errors, ct))
-            return new FileCompressionResult(files.Count, 0, errors, false) { RecoveryCopies = recoveryCopies };
+            return new FileCompressionResult(files.Count - deferred.Count, 0, errors, false)
+            { RecoveryCopies = recoveryCopies, Deferred = deferred };
 
         var compressed = 0;
         long bytesBefore = 0;
@@ -129,8 +134,8 @@ public sealed partial class FileMaintenanceService
                 errors.Add($"Compression failed for {file}: {ex.Message}");
             }
         }
-        return new FileCompressionResult(files.Count, compressed, errors, false)
-        { RecoveryCopies = recoveryCopies, BytesBefore = bytesBefore, BytesAfter = bytesAfter };
+        return new FileCompressionResult(files.Count - deferred.Count, compressed, errors, false)
+        { RecoveryCopies = recoveryCopies, BytesBefore = bytesBefore, BytesAfter = bytesAfter, Deferred = deferred };
     }
 
     private static async Task<bool> CreateRequiredBackupsAsync(
@@ -401,6 +406,8 @@ public sealed record FileCompressionResult(
     IReadOnlyList<string>? PlannedActions = null)
 {
     public IReadOnlyList<string> RecoveryCopies { get; init; } = [];
+    /// <summary>Files left plain because they may still receive appends; informational, never a failure.</summary>
+    public IReadOnlyList<string> Deferred { get; init; } = [];
     public long BytesBefore { get; init; }
     public long BytesAfter { get; init; }
     public int FilesUncompressed => Math.Max(0, FilesProcessed - FilesCompressed);

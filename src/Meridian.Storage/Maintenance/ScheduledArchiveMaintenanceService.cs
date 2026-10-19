@@ -968,6 +968,7 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         var result = await _fileMaintenanceService.CompressAsync(compressionOptions, ct);
         execution.LogMessages.AddRange(result.Errors.Take(10).Select(error => $"Error: {error}"));
         execution.LogMessages.AddRange(result.RecoveryCopies.Select(path => $"Recovery copy: {path}"));
+        execution.LogMessages.AddRange(result.Deferred.Select(file => $"Deferred: {file}"));
         if (result.DryRun && result.PlannedActions is not null)
             execution.LogMessages.AddRange(result.PlannedActions.Select(action => $"[DRY RUN] {action}"));
 
@@ -976,10 +977,10 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
             Success = result.Success,
             Summary = result.DryRun
                 ? $"Compression dry run: planned {result.PlannedActions?.Count ?? 0} files; no files changed"
-                : $"Compression: compressed {result.FilesCompressed}/{result.FilesProcessed} files; {result.FilesUncompressed} uncompressed",
-            TotalFiles = result.FilesProcessed,
+                : $"Compression: compressed {result.FilesCompressed}/{result.FilesProcessed} files; {result.FilesUncompressed} uncompressed; {result.Deferred.Count} deferred",
+            TotalFiles = result.FilesProcessed + result.Deferred.Count,
             FilesProcessed = result.FilesProcessed,
-            FilesSkipped = result.DryRun ? result.FilesProcessed : 0,
+            FilesSkipped = (result.DryRun ? result.FilesProcessed : 0) + result.Deferred.Count,
             FilesFailed = result.DryRun ? result.Errors.Count : Math.Max(result.FilesUncompressed, result.Errors.Count),
             TotalBytesScanned = result.BytesBefore,
             BytesSaved = result.BytesBefore - result.BytesAfter,

@@ -42,7 +42,8 @@ changes report compressed files and bytes saved with zero repaired issues. In-pr
 `JsonlWriteFence` lease while its append stream is open and compression takes the path
 exclusively, so an open file is refused and a reopening sink waits until the source is gone.
 Compression selects only files whose partition period (the date or hour encoded in the path) has
-closed, so the live append target stays plain. A late write to a compressed closed period appends
+closed, so the live append target stays plain. Open-period and quiet-period files are reported in `FileCompressionResult.Deferred`
+as informational entries, not errors, so a live day does not fail the run. A late write to a compressed closed period appends
 a gzip member to the published archive instead of recreating the plain file, so each archive keeps
 one representation; that copy-on-write append costs a full archive copy, which is acceptable only
 because such writes are rare. Its checksum sidecar is republished best-effort after the append

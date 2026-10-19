@@ -252,6 +252,9 @@ with the requesting actor. Concurrent replacements reject stale results and retu
 a blocked verification response without changing the replacement's status. Alpaca applies the same
 generation check to both successful and failed tests, including scoped connections, deletion and
 recreation. A stale test cannot verify or attach an old error to the replacement credentials.
+When a scoped verifier rejects a malformed credential before reporting a generation, the lifecycle
+uses the generation it already read, so the validation failure is recorded instead of a
+spurious credential-change conflict.
 
 Strict tenant read posture also enables the fund-scoped write tenant gate. A multi-company
 deployment with permissive reads refuses startup even when PostgreSQL is configured; login and

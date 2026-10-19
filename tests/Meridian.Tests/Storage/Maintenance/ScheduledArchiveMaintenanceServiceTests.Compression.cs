@@ -53,6 +53,28 @@ public sealed partial class ScheduledArchiveMaintenanceServiceTests
     }
 
     [Fact]
+    public async Task ExecuteMaintenanceAsync_CompressionLiveDay_IsDeferredWithoutFailingTheRun()
+    {
+        var closed = WriteQuietFile("SPY_trade_20260102.jsonl", "{\"seq\":1}\n");
+        var live = WriteQuietFile($"SPY_trade_{DateTime.UtcNow:yyyyMMdd}.jsonl", "{\"seq\":2}\n");
+        var sut = CreateSut(fileMaintenance: RealFileMaintenance());
+
+        var execution = await sut.ExecuteMaintenanceAsync(MaintenanceTaskType.Compression,
+            new MaintenanceTaskOptions { BackupPath = Path.Combine(_tempRoot, "backups") },
+            targetPaths: [_storageRoot]);
+
+        execution.Status.Should().Be(MaintenanceExecutionStatus.Completed);
+        execution.Result!.Success.Should().BeTrue("a live period is deferred, not failed");
+        execution.Result.Summary.Should().Contain("compressed 1/1").And.Contain("1 deferred");
+        execution.Result.FilesFailed.Should().Be(0);
+        execution.Result.IssuesFound.Should().Be(0);
+        execution.LogMessages.Should().Contain(message => message.StartsWith("Deferred: " + live));
+        File.Exists(closed + ".gz").Should().BeTrue();
+        File.Exists(live).Should().BeTrue();
+        File.Exists(live + ".gz").Should().BeFalse();
+    }
+
+    [Fact]
     public async Task ExecuteMaintenanceAsync_CompressionBackupFailure_PreventsEverySourceMutation()
     {
         var paths = new[] { WriteQuietFile("a.jsonl", "{\"seq\":1}\n"), WriteQuietFile("b.jsonl", "{\"seq\":2}\n") };

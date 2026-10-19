@@ -292,7 +292,10 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
         File.Exists(prior).Should().BeFalse();
         File.Exists(current + ".gz").Should().BeFalse("the live day stays the sink's plain append target");
         (await File.ReadAllBytesAsync(current)).Should().Equal(currentBytes);
-        result.Errors.Should().ContainSingle(error => error.Contains("partition period is still open"));
+        result.Success.Should().BeTrue("deferring a live period is not a compression failure");
+        result.Errors.Should().BeEmpty();
+        result.FilesProcessed.Should().Be(1);
+        result.Deferred.Should().ContainSingle(entry => entry.StartsWith(current) && entry.Contains("partition period is still open"));
     }
 
     [Theory]
@@ -323,8 +326,9 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
             result = await service.CompressAsync(new FileCompressionOptions(
                 BackupBeforeCompression: false, MinimumQuietPeriod: TimeSpan.FromMinutes(5)));
 
-        result.Success.Should().BeFalse();
-        result.Errors.Should().ContainSingle();
+        result.Success.Should().BeTrue("a recently written file is deferred, not failed");
+        result.Errors.Should().BeEmpty();
+        result.Deferred.Should().ContainSingle(entry => entry.StartsWith(path));
         File.Exists(path + ".gz").Should().BeFalse();
         foreach (var file in before)
             File.ReadAllBytes(file.Key).Should().Equal(file.Value);

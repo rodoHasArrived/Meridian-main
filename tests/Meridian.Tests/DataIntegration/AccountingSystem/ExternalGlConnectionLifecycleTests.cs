@@ -60,4 +60,41 @@ public sealed class ExternalGlConnectionLifecycleTests
                 Directory.Delete(root, recursive: true);
         }
     }
+
+    [Theory]
+    [InlineData("xero", "TenantId", "not-a-tenant-guid")]
+    [InlineData("netsuite", "SubsidiaryId", "not-numeric")]
+    public async Task Lifecycle_MalformedCredential_RecordsTheValidationFailureNotACredentialChange(
+        string id, string field, string malformed)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-gl-verification", Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new FileProviderCredentialStore(root);
+            var values = new ExternalGlTestStore(id).Values;
+            var fields = ProviderCredentialCatalog.Find(id)!.RequiredFields.Where(entry => entry.Required)
+                .ToDictionary(entry => entry.Name, entry => (string?)values[entry.Name]);
+            fields[field] = malformed;
+            await store.SaveAsync(new(id, fields));
+            using var handler = new ExternalGlTestHandler(ExternalGlTestData.Respond);
+            using var client = new HttpClient(handler);
+            CredentialedAccountingProvider provider = id == "xero"
+                ? new XeroAccountingProvider(store, client) : new NetSuiteAccountingProvider(store, client);
+            var lifecycle = new ProviderConnectionLifecycleService(store, new ConfigStore(Path.Combine(root, "config.json")),
+                NullLogger<ProviderConnectionLifecycleService>.Instance, accountingSystemProviders: [provider]);
+
+            var result = await lifecycle.VerifyAsync(id, actor: "accounting-controller");
+
+            result.Success.Should().BeFalse();
+            result.VerificationState.Should().Be(ProviderVerificationStateDto.Failed);
+            result.LastError.Should().NotContain("changed during verification");
+            (await store.GetStatusAsync(id)).VerificationState.Should().Be(ProviderVerificationStateDto.Failed,
+                "the validation failure is recorded against the credential that was read");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
 }
