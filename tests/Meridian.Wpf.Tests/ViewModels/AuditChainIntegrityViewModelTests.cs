@@ -67,6 +67,7 @@ public sealed class AuditChainIntegrityViewModelTests
     [Theory]
     [InlineData(AuditIntegrityCheckOutcome.Forbidden, "Requires maintenance authority")]
     [InlineData(AuditIntegrityCheckOutcome.Busy, "Verification already running")]
+    [InlineData(AuditIntegrityCheckOutcome.RateLimited, "Rate limited")]
     [InlineData(AuditIntegrityCheckOutcome.Failed, "Audit integrity check failed")]
     public async Task ExplainsWhyNothingWasChecked_WithoutInventingAVerdict(AuditIntegrityCheckOutcome outcome, string status)
     {

@@ -23,7 +23,8 @@ public static partial class LedgerEndpoints
     /// Verification scans every chained row while holding each chain's head row lock, the same lock
     /// ledger and accounting appends take, so concurrent runs would queue behind one another and
     /// hold up posting for the whole time. One run at a time is admitted per host; a request that
-    /// arrives while one is running is refused with 429 rather than queued.
+    /// arrives while one is running is refused with 409 rather than queued, which keeps it distinct
+    /// from a 429 issued by the shared mutation rate limit before the gate is reached.
     /// </remarks>
     private static void MapAuditIntegrityEndpoint(WebApplication app, JsonSerializerOptions jsonOptions)
     {
@@ -32,7 +33,7 @@ public static partial class LedgerEndpoints
             if (!await AuditIntegrityGate.WaitAsync(0, context.RequestAborted).ConfigureAwait(false))
             {
                 return Results.Problem(
-                    statusCode: StatusCodes.Status429TooManyRequests,
+                    statusCode: StatusCodes.Status409Conflict,
                     title: "Audit chain verification already running",
                     detail: "Another audit chain verification is in progress on this host. Retry when it completes.");
             }
@@ -56,6 +57,7 @@ public static partial class LedgerEndpoints
         .WithName("VerifyLedgerAuditIntegrity").RequirePermission(UserPermission.AdminMaintenance)
         .Produces<AccountingAuditIntegrityReportDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }

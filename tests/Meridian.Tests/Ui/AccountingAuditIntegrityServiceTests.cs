@@ -68,6 +68,28 @@ public sealed class AccountingAuditIntegrityServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task VerifyAsync_ReportsAnEditedHeadJournalAsBrokenAndAnUnreadableOneAsUnavailable()
+    {
+        var store = new FileAccountingConfigurationStore(SnapshotPath);
+        await store.AppendAsync(AuditEvent("post-journal"));
+        var lines = File.ReadAllLines(store.AuditChainAnchorPath);
+        var edited = JsonNode.Parse(lines[0])!.AsObject();
+        edited["entryHash"] = new string('0', 64);
+
+        File.WriteAllLines(store.AuditChainAnchorPath, [edited.ToJsonString(), .. lines[1..]]);
+        var tampered = (await new AccountingAuditIntegrityService(store, ledgerEventAuditVerifier: null).VerifyAsync())
+            .Chains.Single(chain => chain.Chain == AuditChainIdentifiers.AccountingActions);
+
+        File.WriteAllLines(store.AuditChainAnchorPath, ["{not json", .. lines[1..]]);
+        var unreadable = (await new AccountingAuditIntegrityService(store, ledgerEventAuditVerifier: null).VerifyAsync())
+            .Chains.Single(chain => chain.Chain == AuditChainIdentifiers.AccountingActions);
+
+        tampered.Status.Should().Be(AuditChainIntegrityStatus.Broken, "a readable line failed its own hash");
+        tampered.FailureKind.Should().Be("AnchorJournalTampered");
+        unreadable.Status.Should().Be(AuditChainIntegrityStatus.Unavailable, "a line this build cannot read proves nothing");
+    }
+
+    [Fact]
     public async Task VerifyAsync_DoesNotCountAnUnchainedStoreAsVerified()
     {
         var report = await new AccountingAuditIntegrityService(

@@ -10,10 +10,17 @@ namespace Meridian.Ui.Shared.Services;
 /// <summary>Raised when the external head journal is unreadable or internally inconsistent.</summary>
 public sealed class AccountingAuditChainAnchorException : Exception
 {
-    public AccountingAuditChainAnchorException(string message)
+    public AccountingAuditChainAnchorException(string message, bool isIntegrityFailure = false)
         : base(message)
     {
+        IsIntegrityFailure = isIntegrityFailure;
     }
+
+    /// <summary>
+    /// True when a readable journal line failed its own hash or predecessor binding: proven
+    /// tampering with the head journal, as opposed to a line this build cannot read.
+    /// </summary>
+    public bool IsIntegrityFailure { get; }
 }
 
 /// <summary>
@@ -271,7 +278,8 @@ public sealed class FileAccountingAuditChainAnchor
             {
                 throw new AccountingAuditChainAnchorException(
                     $"Accounting audit head journal line {lineNumber.ToString(CultureInfo.InvariantCulture)} "
-                    + "does not follow its predecessor.");
+                    + "does not follow its predecessor.",
+                    isIntegrityFailure: true);
             }
 
             var expected = ComputeAnchorHash(
@@ -281,7 +289,8 @@ public sealed class FileAccountingAuditChainAnchor
             {
                 throw new AccountingAuditChainAnchorException(
                     $"Accounting audit head journal line {lineNumber.ToString(CultureInfo.InvariantCulture)} "
-                    + "failed hash verification.");
+                    + "failed hash verification.",
+                    isIntegrityFailure: true);
             }
 
             records.Add(record);

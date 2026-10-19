@@ -142,6 +142,10 @@ public sealed class AuditChainIntegrityViewModel : BindableBase
                 ClearVerdict();
                 StatusText = "Verification already running: another audit chain verification is in progress. Retry when it completes.";
                 break;
+            case AuditIntegrityCheckOutcome.RateLimited:
+                ClearVerdict();
+                StatusText = "Rate limited: the workstation's shared request budget is exhausted. Retry in a moment.";
+                break;
             default:
                 ClearVerdict();
                 StatusText = $"Audit integrity check failed: {result.Error ?? "no report was returned"}.";

@@ -37,7 +37,8 @@ public sealed class AccountingAuditIntegrityApiClientTests
 
     [Theory]
     [InlineData(HttpStatusCode.Forbidden, AuditIntegrityCheckOutcome.Forbidden)]
-    [InlineData(HttpStatusCode.TooManyRequests, AuditIntegrityCheckOutcome.Busy)]
+    [InlineData(HttpStatusCode.Conflict, AuditIntegrityCheckOutcome.Busy)]
+    [InlineData(HttpStatusCode.TooManyRequests, AuditIntegrityCheckOutcome.RateLimited)]
     [InlineData(HttpStatusCode.ServiceUnavailable, AuditIntegrityCheckOutcome.Failed)]
     public async Task Verify_ReturnsRefusalsAsOutcomesWithoutAReport(HttpStatusCode status, AuditIntegrityCheckOutcome expected)
     {

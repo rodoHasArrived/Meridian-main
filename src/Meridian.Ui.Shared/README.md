@@ -251,7 +251,8 @@ composed accounting-action and ledger-event audit chains without appending, repo
 `verified`, `broken`, `not-configured`, or `unavailable` with counts and break position only.
 A chain of either kind written under a newer schema is `unavailable`, not `broken`, and a ledger
 break still reports the genesis facts that predate chaining. One run is admitted per host at a
-time (a concurrent request gets 429) because the scan holds the same head locks appends take.
+time (a concurrent request gets 409; 429 means only the shared mutation rate limit) because the scan
+holds the same head locks appends take.
 Generated-candidate posting and manual journal lifecycle routes also require a resolved authenticated
 actor; permission alone cannot authorize use of a client-supplied posting identity.
 

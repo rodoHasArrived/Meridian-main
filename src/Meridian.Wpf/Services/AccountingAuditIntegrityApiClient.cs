@@ -12,8 +12,11 @@ public enum AuditIntegrityCheckOutcome
     /// <summary>The operator lacks <c>AdminMaintenance</c>; nothing was checked.</summary>
     Forbidden,
 
-    /// <summary>Another verification holds the host's single-flight slot, or the rate limit applied.</summary>
+    /// <summary>Another verification holds the host's single-flight slot (409).</summary>
     Busy,
+
+    /// <summary>The shared mutation rate limit refused the request (429).</summary>
+    RateLimited,
 
     /// <summary>The request failed; nothing is claimed about the chains.</summary>
     Failed,
@@ -63,7 +66,8 @@ public sealed class AccountingAuditIntegrityApiClient : IAccountingAuditIntegrit
         return response.StatusCode switch
         {
             403 => new(AuditIntegrityCheckOutcome.Forbidden),
-            429 => new(AuditIntegrityCheckOutcome.Busy),
+            409 => new(AuditIntegrityCheckOutcome.Busy),
+            429 => new(AuditIntegrityCheckOutcome.RateLimited),
             _ => new(AuditIntegrityCheckOutcome.Failed, Error: !string.IsNullOrWhiteSpace(response.ErrorMessage)
                 ? response.ErrorMessage
                 : response.IsConnectionError

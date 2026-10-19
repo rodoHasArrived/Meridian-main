@@ -619,6 +619,37 @@ public sealed class AccountingConfigurationPostgresStoreTests
 
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
+    public async Task VerifyAuditChainAsync_PointsAHeadDisagreementAtTheLinkItDisagreesWith()
+    {
+        // Every retained link verifies in each case; only the head is wrong. The report must count
+        // the full scan and name the link the head disagrees with, never the slot past the end.
+        var first = AccountingAuditChainState.FirstSequence;
+        (string Sql, AccountingAuditChainStatus Status, long FailedSequence)[] cases =
+        [
+            ("update {0}.accounting_action_audit_chain_head set last_hash = repeat('0', 64) where chain_id = 1;",
+                AccountingAuditChainStatus.AnchorMismatch, first + 2),
+            ("update {0}.accounting_action_audit_chain_head set next_sequence = next_sequence + 1 where chain_id = 1;",
+                AccountingAuditChainStatus.AnchorMismatch, first + 3),
+        ];
+        foreach (var (sql, status, failedSequence) in cases)
+        {
+            await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+            var store = database.AccountingConfigurationStore;
+            await store.AppendAsync(AuditEvent());
+            await store.AppendAsync(AuditEvent());
+            await store.AppendAsync(AuditEvent());
+            await ExecuteAsync(database, sql);
+
+            var verification = await store.VerifyAuditChainAsync();
+
+            verification.Status.Should().Be(status);
+            verification.FailedSequence.Should().Be(failedSequence);
+            verification.LinksChecked.Should().Be(3, "every retained link verified before the head was compared");
+        }
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
     public async Task AnEventDeletedFromTheMiddleOfTheChain_StopsTheNextAppend()
     {
         // The other shape of the same gap. Every surviving link still digests and binds correctly,

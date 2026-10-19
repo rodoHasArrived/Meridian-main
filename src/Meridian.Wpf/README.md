@@ -26,10 +26,11 @@ retained identity, scope checks, lock remediation, unavailable reads and retry r
 
 Accounting Configure also carries the on-demand Audit Chain Integrity card, the desktop twin of
 the browser Configuration panel (W9-GOV-008 verification tooling). `AccountingAuditIntegrityApiClient`
-calls `GET /api/ledger/audit-integrity` and returns `403` and `429` as refusals rather than
-failures; `AuditChainIntegrityViewModel` shows each chain's server verdict without rolling an
-unchecked chain into a passing one, and the page cancels a running check when it unloads so the
-server releases the chain locks. `AuditChainIntegrityViewModelTests` and
+calls `GET /api/ledger/audit-integrity` and returns `403`, `409` (a run in progress) and `429` (the
+shared rate limit) as distinct refusals rather than failures; `AuditChainIntegrityViewModel` shows
+each chain's server verdict without rolling an unchecked chain into a passing one, clears the
+previous verdict when a new check starts, and the page cancels a running check when it unloads so
+the server releases the chain locks. `AuditChainIntegrityViewModelTests` and
 `AccountingAuditIntegrityApiClientTests` cover verdicts, refusals and cancellation.
 
 The desktop workstation is installed as part of the single Meridian product and opened
