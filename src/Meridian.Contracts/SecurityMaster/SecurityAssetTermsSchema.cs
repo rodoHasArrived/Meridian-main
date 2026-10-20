@@ -557,6 +557,47 @@ public static class SecurityAssetTermsSchema
                 Opt("recoveryRateAssumption", SecurityAssetTermFieldType.Decimal, "recoveryRate"),
                 Opt("indexName", SecurityAssetTermFieldType.String)
             ],
+            ["Swaption"] =
+            [
+                ReqOneOf("payerReceiver", "Payer", "Receiver").WithVerbatimUndeclaredValue(),
+                OptOneOf("exerciseStyle", "European", "American", "Bermudan").WithVerbatimUndeclaredValue(),
+                Req("strikeRate", SecurityAssetTermFieldType.Decimal, "strike", "fixedRate"),
+                Req("expiry", SecurityAssetTermFieldType.Date, "expiryDate", "expirationDate"),
+                Opt("underlyingEffectiveDate", SecurityAssetTermFieldType.Date),
+                Req("underlyingMaturityDate", SecurityAssetTermFieldType.Date),
+                Req("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount"),
+                Opt("floatingIndex", SecurityAssetTermFieldType.String, "index", "referenceIndex"),
+                Opt("fixedLegPaymentFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.CouponFrequency),
+                Opt("fixedLegDayCount", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.DayCount),
+                Opt("settlementType", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.SettlementMethod)
+            ],
+            ["CapFloor"] =
+            [
+                ReqOneOf("capFloorType", "Cap", "Floor", "Collar").WithVerbatimUndeclaredValue(),
+                Req("referenceIndex", SecurityAssetTermFieldType.String, "index", "floatingIndex"),
+                Opt("capStrike", SecurityAssetTermFieldType.Decimal, "capRate"),
+                Opt("floorStrike", SecurityAssetTermFieldType.Decimal, "floorRate"),
+                Req("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount"),
+                Req("effectiveDate", SecurityAssetTermFieldType.Date),
+                Req("maturityDate", SecurityAssetTermFieldType.Date),
+                Opt("resetFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.PaymentFrequency),
+                Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention").WithConvention(SecurityTermConventionKind.DayCount),
+                Opt("premiumAmount", SecurityAssetTermFieldType.Decimal, "premium")
+            ],
+            ["StructuredNote"] =
+            [
+                Req("issuerName", SecurityAssetTermFieldType.String, "issuer"),
+                Req("underlyingDescription", SecurityAssetTermFieldType.String, "underlying", "referenceAsset"),
+                Req("maturity", SecurityAssetTermFieldType.Date, "maturityDate"),
+                Opt("issueDate", SecurityAssetTermFieldType.Date),
+                Opt("denomination", SecurityAssetTermFieldType.Decimal, "par", "faceAmount"),
+                Opt("principalProtectionPct", SecurityAssetTermFieldType.Decimal, "principalProtection"),
+                Opt("participationRate", SecurityAssetTermFieldType.Decimal, "participation"),
+                Opt("returnCap", SecurityAssetTermFieldType.Decimal, "cap"),
+                Opt("couponRate", SecurityAssetTermFieldType.Decimal, "coupon"),
+                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.CouponFrequency),
+                Opt("barrierLevel", SecurityAssetTermFieldType.Decimal, "barrier")
+            ],
             ["InvestmentFund"] =
             [
                 Opt("fundType", SecurityAssetTermFieldType.String),

@@ -71,6 +71,23 @@ erDiagram
         numeric floating_spread_bps
         bigint version
     }
+    security_master_cap_floor_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text cap_floor_type
+        text reference_index
+        numeric_18_10_ cap_strike
+        numeric_18_10_ floor_strike
+        numeric_28_10_ notional
+        date effective_date
+        date maturity_date
+        text reset_frequency
+        text day_count
+        numeric_28_10_ premium_amount
+        text primary_identifier_value
+        bigint version
+    }
     security_master_cash_sweep_projection {
         uuid security_id PK
         text display_name
@@ -1404,6 +1421,24 @@ erDiagram
         date reinvestment_period_end
         date non_call_period_end
     }
+    security_master_structured_note_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text issuer_name
+        text underlying_description
+        date maturity_date
+        date issue_date
+        numeric_28_10_ denomination
+        numeric_18_10_ principal_protection_pct
+        numeric_18_10_ participation_rate
+        numeric_18_10_ return_cap
+        numeric_18_10_ coupon_rate
+        text payment_frequency
+        numeric_18_10_ barrier_level
+        text primary_identifier_value
+        bigint version
+    }
     security_master_swap_projection {
         uuid security_id PK
         text display_name
@@ -1412,6 +1447,24 @@ erDiagram
         date effective_date
         date maturity_date
         text lifecycle_stat
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_swaption_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text payer_receiver
+        text exercise_style
+        numeric_18_10_ strike_rate
+        date expiry_date
+        date underlying_effective_date
+        date underlying_maturity_date
+        numeric_28_10_ notional
+        text floating_index
+        text fixed_leg_payment_frequency
+        text fixed_leg_day_count
+        text settlement_type
         text primary_identifier_value
         bigint version
     }

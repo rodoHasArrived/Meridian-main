@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "260c9323e6f03cb05544124e58fbc59f0d855c210c96a2032933a0cda4c27d38",
+  "database_fingerprint": "0b03e3b0ae51d2c6573ec931ddfb19b5e3a9ea9d9570be6fd1d0d355e79a08f6",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -14013,6 +14013,66 @@
       "object": "column:security_master.bond_projection.version"
     },
     {
+      "fingerprint": "e02b013581b99fe4f97b62cac15179dc227d52ba24f6ae70eba70c61f6cec84a",
+      "object": "column:security_master.cap_floor_projection.cap_floor_type"
+    },
+    {
+      "fingerprint": "e8b6915bc932ce3be3a23e68b1a85c97a8c984df7554d1d3b12709caf838d273",
+      "object": "column:security_master.cap_floor_projection.cap_strike"
+    },
+    {
+      "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+      "object": "column:security_master.cap_floor_projection.currency"
+    },
+    {
+      "fingerprint": "844037e7a78248e44e8e468aca02b5d078a80320326b1f0975cb272064c1cb98",
+      "object": "column:security_master.cap_floor_projection.day_count"
+    },
+    {
+      "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+      "object": "column:security_master.cap_floor_projection.display_name"
+    },
+    {
+      "fingerprint": "59be057217e536b03e14eb9c34080d107056dec7e2a5a6eaa9210ebe779d9836",
+      "object": "column:security_master.cap_floor_projection.effective_date"
+    },
+    {
+      "fingerprint": "3d9749b92e840837eb7dc6857a56c9e7e0aca44738d87436865352315a478169",
+      "object": "column:security_master.cap_floor_projection.floor_strike"
+    },
+    {
+      "fingerprint": "e5bb4e3a83f61886271d5824ae780540def88eb14b5e3f9b3a7b92be6ec21919",
+      "object": "column:security_master.cap_floor_projection.maturity_date"
+    },
+    {
+      "fingerprint": "f40e529d898f002421d35f375d4e7329990e7ab162ba642521b59a8b141d480d",
+      "object": "column:security_master.cap_floor_projection.notional"
+    },
+    {
+      "fingerprint": "7a013ddbbf232eff5c53e1c738541db7b511a6161ad43c344784f42e482b331f",
+      "object": "column:security_master.cap_floor_projection.premium_amount"
+    },
+    {
+      "fingerprint": "ce1f9e03f7b28756ba5421b1e18de211965b8d2931c4afaac01ed6d57d9f482d",
+      "object": "column:security_master.cap_floor_projection.primary_identifier_value"
+    },
+    {
+      "fingerprint": "007e31e8095f22c2b4a5855c6b93751d7c3875a57910e4a20fa2585dc63d9397",
+      "object": "column:security_master.cap_floor_projection.reference_index"
+    },
+    {
+      "fingerprint": "7647a61293029b81c6abccb760842c01d0eb9785fab35f2554dbeab15e6d0f08",
+      "object": "column:security_master.cap_floor_projection.reset_frequency"
+    },
+    {
+      "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+      "object": "column:security_master.cap_floor_projection.security_id"
+    },
+    {
+      "fingerprint": "070241c53cbb37c31314a071135914d9101280b9589789d419424817d72809ef",
+      "object": "column:security_master.cap_floor_projection.version"
+    },
+    {
       "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
       "object": "column:security_master.cash_sweep_projection.currency"
     },
@@ -18501,6 +18561,70 @@
       "object": "column:security_master.structured_credit_projection.weighted_average_maturity_months"
     },
     {
+      "fingerprint": "b6d37c989f23484610915ac3226f14e39d90a90c1b487f20c23932a957bd42b9",
+      "object": "column:security_master.structured_note_projection.barrier_level"
+    },
+    {
+      "fingerprint": "0a186639ce9a45bf12862db20a620006f8fcfab135c539b8e71df9e69b4ccbf2",
+      "object": "column:security_master.structured_note_projection.coupon_rate"
+    },
+    {
+      "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+      "object": "column:security_master.structured_note_projection.currency"
+    },
+    {
+      "fingerprint": "627e0d8017b53178adc9bccfc3ad33404fe587fdff4db66fb49df559401ba054",
+      "object": "column:security_master.structured_note_projection.denomination"
+    },
+    {
+      "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+      "object": "column:security_master.structured_note_projection.display_name"
+    },
+    {
+      "fingerprint": "4ed37bc010f6321b654ac65f1646fbd4a51ae3824514d4a56fb23b0efc2c7883",
+      "object": "column:security_master.structured_note_projection.issue_date"
+    },
+    {
+      "fingerprint": "ad7017fdfd84996dd6fe0dcbd8d975190c2c35aa10d94623d19765ea15114727",
+      "object": "column:security_master.structured_note_projection.issuer_name"
+    },
+    {
+      "fingerprint": "c02fabdfb0373f2bdf9894116b0c2054aa9b1623f16bbf057d9dcbdda2b8a25b",
+      "object": "column:security_master.structured_note_projection.maturity_date"
+    },
+    {
+      "fingerprint": "ff5d111047eb281bb664c2e35906842842f89d1ac5ad73314c3c66b102c4cdc7",
+      "object": "column:security_master.structured_note_projection.participation_rate"
+    },
+    {
+      "fingerprint": "4b6861c206f52507519ed1ba5aff662874756f6f377b034c0e1c85af85764267",
+      "object": "column:security_master.structured_note_projection.payment_frequency"
+    },
+    {
+      "fingerprint": "fea76fc3275a7c8108d579fc0418533f661d0ae029db533b3caa03f42ca7b702",
+      "object": "column:security_master.structured_note_projection.primary_identifier_value"
+    },
+    {
+      "fingerprint": "21fb95a0b8186c61ac66fe180b65115fc8c5555b977e6151fa1e61224eae72fc",
+      "object": "column:security_master.structured_note_projection.principal_protection_pct"
+    },
+    {
+      "fingerprint": "364fe20034b7d2aa6b27845192a3736ea703afc9f38d0c632397ac646447f1a1",
+      "object": "column:security_master.structured_note_projection.return_cap"
+    },
+    {
+      "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+      "object": "column:security_master.structured_note_projection.security_id"
+    },
+    {
+      "fingerprint": "6e3ac4109737a267d454fc70cf28bde0d441bb4cbfa892c86da1e6ea3535e014",
+      "object": "column:security_master.structured_note_projection.underlying_description"
+    },
+    {
+      "fingerprint": "ef32676fda2b77423c15093e35fac0938c225f4c3cf646c6320cdf04a09cf7f9",
+      "object": "column:security_master.structured_note_projection.version"
+    },
+    {
       "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
       "object": "column:security_master.swap_projection.currency"
     },
@@ -18535,6 +18659,70 @@
     {
       "fingerprint": "10da91aeb1c673b281c24fd0ec96951ea3aba3e1e1831566f23680bd4df79080",
       "object": "column:security_master.swap_projection.version"
+    },
+    {
+      "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+      "object": "column:security_master.swaption_projection.currency"
+    },
+    {
+      "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+      "object": "column:security_master.swaption_projection.display_name"
+    },
+    {
+      "fingerprint": "f6c7633e92078da7893744473a0fcc7bbe8d87461a5cffc6954bee1826a4ac1b",
+      "object": "column:security_master.swaption_projection.exercise_style"
+    },
+    {
+      "fingerprint": "eaeba6b3deb89f038d29486d406b31798f937ab86df3d44def906b5b7c4fa6a0",
+      "object": "column:security_master.swaption_projection.expiry_date"
+    },
+    {
+      "fingerprint": "8d7e9a5912ab7a8e01d9fbb6094b80a17bd58da94ac18261746c78b5e2b75851",
+      "object": "column:security_master.swaption_projection.fixed_leg_day_count"
+    },
+    {
+      "fingerprint": "a7abe6ecae64222a799d3fde43fb67f6e15c818bcd9cae604c4104373c5b3c9d",
+      "object": "column:security_master.swaption_projection.fixed_leg_payment_frequency"
+    },
+    {
+      "fingerprint": "0afe0d58d3b32e41187cb80e64f5af12e67e2bf4030a7e80ba5a22263663a23b",
+      "object": "column:security_master.swaption_projection.floating_index"
+    },
+    {
+      "fingerprint": "631b5d2d33dca37f36783b5ed057a1e87764ef046c2d11576fe47bd48936c37a",
+      "object": "column:security_master.swaption_projection.notional"
+    },
+    {
+      "fingerprint": "ddcfa56078854af22a61d3897eeebf07c3f4fa2ceec91e9677cb309b8c9b2cc8",
+      "object": "column:security_master.swaption_projection.payer_receiver"
+    },
+    {
+      "fingerprint": "fea76fc3275a7c8108d579fc0418533f661d0ae029db533b3caa03f42ca7b702",
+      "object": "column:security_master.swaption_projection.primary_identifier_value"
+    },
+    {
+      "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+      "object": "column:security_master.swaption_projection.security_id"
+    },
+    {
+      "fingerprint": "a1a244cbe488f2eeebd72d0fbac513d9a303781124af69189412879a9c37d3d2",
+      "object": "column:security_master.swaption_projection.settlement_type"
+    },
+    {
+      "fingerprint": "f61b63ca35aa05b8d7fc4f88e0f9fdab3d42ffce6de3487a125b37724d0a3ebc",
+      "object": "column:security_master.swaption_projection.strike_rate"
+    },
+    {
+      "fingerprint": "d39071a8b0b1c8818055f00c44ea92bdd3fcd59480cdb9de5fd060be075f743b",
+      "object": "column:security_master.swaption_projection.underlying_effective_date"
+    },
+    {
+      "fingerprint": "4ebd031f1431eabdad7271c183041b2e312cc3c5dba434d6292e79f097d2772c",
+      "object": "column:security_master.swaption_projection.underlying_maturity_date"
+    },
+    {
+      "fingerprint": "ef32676fda2b77423c15093e35fac0938c225f4c3cf646c6320cdf04a09cf7f9",
+      "object": "column:security_master.swaption_projection.version"
     },
     {
       "fingerprint": "5f8e6c0ecdb4db304f67070f416e4c1bc98a5fbb7975c867585b618c8070522a",
@@ -18669,6 +18857,10 @@
       "object": "comment:table:ledger.ledger_event_audit_events"
     },
     {
+      "fingerprint": "b587d5959ceb0d91518f07890eb24e03514a7f5d3939ee3df146970829aa1e9d",
+      "object": "comment:table:security_master.cap_floor_projection"
+    },
+    {
       "fingerprint": "93dc7d40b10cd6dc54209bcbb181d253e7518595f9f6649998d6b0f9847ebaa6",
       "object": "comment:table:security_master.cash_sweep_projection"
     },
@@ -18767,6 +18959,14 @@
     {
       "fingerprint": "069ae4acbd98a072b592b757390fadb973d0dfa701a3379212e6a14f40500eee",
       "object": "comment:table:security_master.structured_credit_projection"
+    },
+    {
+      "fingerprint": "c6aa2035435f50a9bc9e5b1db1807fd7bc99b6651cf341b068fd9a7e92a4c17b",
+      "object": "comment:table:security_master.structured_note_projection"
+    },
+    {
+      "fingerprint": "6a71a40e698774aa47b9bc12e2f5c1762afb8e1f3be853d813883b9ec7d4a664",
+      "object": "comment:table:security_master.swaption_projection"
     },
     {
       "fingerprint": "98acb001719a1f7661d809f57a09436dccfd08dde5a655a65ba5956acca22ef3",
@@ -20477,6 +20677,10 @@
       "object": "constraint:security_master.bond_projection.bond_projection_security_id_fkey"
     },
     {
+      "fingerprint": "60634ba34efc91821ad78f9ade279cb884a732bbb2e272ee3cc9a821534fd0eb",
+      "object": "constraint:security_master.cap_floor_projection.cap_floor_projection_pkey"
+    },
+    {
       "fingerprint": "c74349d94a2524dc0e2a73ad12a832a8f408a100af590b7bc01524ba4b23bccf",
       "object": "constraint:security_master.cash_sweep_projection.cash_sweep_projection_pkey"
     },
@@ -21417,8 +21621,16 @@
       "object": "constraint:security_master.structured_credit_projection.structured_credit_projection_pkey"
     },
     {
+      "fingerprint": "df96b63c78c9958ba777b9767e4948d9d05676c92341ffb50460e52eff9c5cd7",
+      "object": "constraint:security_master.structured_note_projection.structured_note_projection_pkey"
+    },
+    {
       "fingerprint": "822726500534473e5b033d929d47897d2f5b424cc421dfbfd9f18746905cd103",
       "object": "constraint:security_master.swap_projection.swap_projection_pkey"
+    },
+    {
+      "fingerprint": "375d7c970566ef58e056274ef16899ae244d503b6d55f2b7d28067c00905e1a3",
+      "object": "constraint:security_master.swaption_projection.swaption_projection_pkey"
     },
     {
       "fingerprint": "13c099cd4de6aa91deb1e917f9e81cda49c800c498c302a266310066cfd30a70",
@@ -25761,6 +25973,18 @@
       "object": "index:security_master.bond_projection_pkey"
     },
     {
+      "fingerprint": "8d6390230c7dadc1c196c9f7b8ec1e8a84d4eb459fe8163e01b5ff677a55ae7d",
+      "object": "index:security_master.cap_floor_projection_maturity_idx"
+    },
+    {
+      "fingerprint": "eda06f3d04d765aabfb367586529988406ef5669a5f37233d72248fc3b4efe43",
+      "object": "index:security_master.cap_floor_projection_pkey"
+    },
+    {
+      "fingerprint": "99d3f3c8a155f4972d02bebc3f9e17ce7df617d1bb0ca65f8985175aba3031b5",
+      "object": "index:security_master.cap_floor_projection_reference_index_idx"
+    },
+    {
       "fingerprint": "e5f2658bf3ca77163bf79f1d0d2b81ca2d1a9997e91d41a825458e0bb20ff1f4",
       "object": "index:security_master.cash_sweep_projection_pkey"
     },
@@ -26653,6 +26877,18 @@
       "object": "index:security_master.structured_credit_projection_pool_idx"
     },
     {
+      "fingerprint": "076d5b4f75315bc9ac89e52ce1cca1b333b5d7c7110cdcc16b5f8de0dbe9b3a7",
+      "object": "index:security_master.structured_note_projection_issuer_idx"
+    },
+    {
+      "fingerprint": "8c2aaf39cfbd7207ee4a2cd04b9249a96cd11e8f08947e7c8987b9a2aaf3516d",
+      "object": "index:security_master.structured_note_projection_maturity_idx"
+    },
+    {
+      "fingerprint": "87a20793c5520d4bcc653fbffc81a01327f1c668b7973d2dcec931f2c0d47334",
+      "object": "index:security_master.structured_note_projection_pkey"
+    },
+    {
       "fingerprint": "1f9b33eddf5d16426bebb47d9232dc7c2332e683d82ea0db5863035ba9bfa941",
       "object": "index:security_master.swap_projection_maturity_date_idx"
     },
@@ -26663,6 +26899,14 @@
     {
       "fingerprint": "53248b69ba6d0a4e5c2b6d57c46dc4d148a65a1f8dee0a36dfc99133d3f5ff07",
       "object": "index:security_master.swap_projection_swap_type_idx"
+    },
+    {
+      "fingerprint": "0dd029ac9db89d22989324f4558c8583e89981c7560b66bbea405e26f27d5628",
+      "object": "index:security_master.swaption_projection_expiry_idx"
+    },
+    {
+      "fingerprint": "a395714655e83e37a61cd97a4eb0090a46edcbb4e12c05cd6fa9af1b50e4ccc6",
+      "object": "index:security_master.swaption_projection_pkey"
     },
     {
       "fingerprint": "0b5a6143df254feb814e0116132f185b7bf0769dd6c334c9b6a3c85a575fae53",
@@ -27233,6 +27477,10 @@
       "object": "rls:security_master.bond_projection"
     },
     {
+      "fingerprint": "4dfa593e59ace85760510b5df2d50a6a7e5e2f7d4c3f1479de0ca5aaceff6d9b",
+      "object": "rls:security_master.cap_floor_projection"
+    },
+    {
       "fingerprint": "f3d13403c5d6b14278c449b8537aba857f5d90b147509ff27545e0be79336cd3",
       "object": "rls:security_master.cash_sweep_projection"
     },
@@ -27625,8 +27873,16 @@
       "object": "rls:security_master.structured_credit_projection"
     },
     {
+      "fingerprint": "dcfaf47934a1f1a2c098b0a7eddaae721bb007214710cb47e91adff3a57ba825",
+      "object": "rls:security_master.structured_note_projection"
+    },
+    {
       "fingerprint": "d041202527c73e747316899cdb8489dcc218b236ea80724c00fc6642ecc12ba7",
       "object": "rls:security_master.swap_projection"
+    },
+    {
+      "fingerprint": "b79eba56c472c748f052b899b51571f01fc86193e9d373dd1ccbfae6bd239236",
+      "object": "rls:security_master.swaption_projection"
     },
     {
       "fingerprint": "5c674e930958ed7690fc8990490ec6f824a3a1e25f3ced266c40194c94996d0e",
@@ -27673,7 +27929,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "f6a90c9471ee27019b2c368b8d16d60ebb744df7c540e657f84613628b51b037",
+      "fingerprint": "71e625e7d606e5aae6dd961006cacd47b3418a62ddef9e8173d2972092933795",
       "object": "schema:security_master"
     },
     {
@@ -28149,6 +28405,10 @@
       "object": "table:security_master.bond_projection"
     },
     {
+      "fingerprint": "c694aaccce95c5d96cdcde47f969168017e1e0afe2dfe213d33e21a6af01b61f",
+      "object": "table:security_master.cap_floor_projection"
+    },
+    {
       "fingerprint": "ecf3ffe56db7c7fc98a9b110e739659988f38bcb7f2fe57fe4da4d4b6d6c4125",
       "object": "table:security_master.cash_sweep_projection"
     },
@@ -28541,8 +28801,16 @@
       "object": "table:security_master.structured_credit_projection"
     },
     {
+      "fingerprint": "8f6f3ad6d8935d3ce1d46145031000975cab545d65af51e652daac6cb99f995e",
+      "object": "table:security_master.structured_note_projection"
+    },
+    {
       "fingerprint": "806408993316fa76bc9e1bcdd7f4065a72d3883c11d38eaf1f0120fa18d5dea0",
       "object": "table:security_master.swap_projection"
+    },
+    {
+      "fingerprint": "833e6f01eccd4f2417ced4223b527d8d5df77dc2e0fdcddc8728784edeee3786",
+      "object": "table:security_master.swaption_projection"
     },
     {
       "fingerprint": "4b8154d044fb79b1315844b989b32b4105e8c39e35f7aeefe74bef7683f51c51",
@@ -123031,6 +123299,12 @@
           "object_type": "column"
         },
         {
+          "comment": "Relational projection of CapFloor asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms.",
+          "fingerprint": "b587d5959ceb0d91518f07890eb24e03514a7f5d3939ee3df146970829aa1e9d",
+          "object": "security_master.cap_floor_projection",
+          "object_type": "table"
+        },
+        {
           "comment": "Relational projection of CashSweep asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms.",
           "fingerprint": "93dc7d40b10cd6dc54209bcbb181d253e7518595f9f6649998d6b0f9847ebaa6",
           "object": "security_master.cash_sweep_projection",
@@ -123178,6 +123452,18 @@
           "comment": "Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data.",
           "fingerprint": "069ae4acbd98a072b592b757390fadb973d0dfa701a3379212e6a14f40500eee",
           "object": "security_master.structured_credit_projection",
+          "object_type": "table"
+        },
+        {
+          "comment": "Relational projection of StructuredNote asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms.",
+          "fingerprint": "c6aa2035435f50a9bc9e5b1db1807fd7bc99b6651cf341b068fd9a7e92a4c17b",
+          "object": "security_master.structured_note_projection",
+          "object_type": "table"
+        },
+        {
+          "comment": "Relational projection of Swaption asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms.",
+          "fingerprint": "6a71a40e698774aa47b9bc12e2f5c1762afb8e1f3be853d813883b9ec7d4a664",
+          "object": "security_master.swaption_projection",
           "object_type": "table"
         },
         {
@@ -126272,7 +126558,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "f6a90c9471ee27019b2c368b8d16d60ebb744df7c540e657f84613628b51b037",
+      "fingerprint": "71e625e7d606e5aae6dd961006cacd47b3418a62ddef9e8173d2972092933795",
       "foreign_tables": [],
       "functions": [
         {
@@ -128296,6 +128582,404 @@
           "is_partition": false,
           "kind": "table",
           "name": "bond_projection",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "display_name",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "e02b013581b99fe4f97b62cac15179dc227d52ba24f6ae70eba70c61f6cec84a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "cap_floor_type",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "007e31e8095f22c2b4a5855c6b93751d7c3875a57910e4a20fa2585dc63d9397",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reference_index",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "e8b6915bc932ce3be3a23e68b1a85c97a8c984df7554d1d3b12709caf838d273",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "cap_strike",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "3d9749b92e840837eb7dc6857a56c9e7e0aca44738d87436865352315a478169",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "floor_strike",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "f40e529d898f002421d35f375d4e7329990e7ab162ba642521b59a8b141d480d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notional",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "59be057217e536b03e14eb9c34080d107056dec7e2a5a6eaa9210ebe779d9836",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "effective_date",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "e5bb4e3a83f61886271d5824ae780540def88eb14b5e3f9b3a7b92be6ec21919",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "maturity_date",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7647a61293029b81c6abccb760842c01d0eb9785fab35f2554dbeab15e6d0f08",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reset_frequency",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "844037e7a78248e44e8e468aca02b5d078a80320326b1f0975cb272064c1cb98",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "day_count",
+              "nullable": true,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "7a013ddbbf232eff5c53e1c738541db7b511a6161ad43c344784f42e482b331f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "premium_amount",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ce1f9e03f7b28756ba5421b1e18de211965b8d2931c4afaac01ed6d57d9f482d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "primary_identifier_value",
+              "nullable": false,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "070241c53cbb37c31314a071135914d9101280b9589789d419424817d72809ef",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Relational projection of CapFloor asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms.",
+          "constraints": [
+            {
+              "columns": [
+                "security_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id)",
+              "delete_action": null,
+              "fingerprint": "60634ba34efc91821ad78f9ade279cb884a732bbb2e272ee3cc9a821534fd0eb",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "cap_floor_projection_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "c694aaccce95c5d96cdcde47f969168017e1e0afe2dfe213d33e21a6af01b61f",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX cap_floor_projection_maturity_idx ON security_master.cap_floor_projection USING btree (maturity_date)",
+              "expression": null,
+              "fingerprint": "8d6390230c7dadc1c196c9f7b8ec1e8a84d4eb459fe8163e01b5ff677a55ae7d",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "maturity_date"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "cap_floor_projection_maturity_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX cap_floor_projection_pkey ON security_master.cap_floor_projection USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "eda06f3d04d765aabfb367586529988406ef5669a5f37233d72248fc3b4efe43",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "cap_floor_projection_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX cap_floor_projection_reference_index_idx ON security_master.cap_floor_projection USING btree (lower(reference_index))",
+              "expression": "lower(reference_index)",
+              "fingerprint": "99d3f3c8a155f4972d02bebc3f9e17ce7df617d1bb0ca65f8985175aba3031b5",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(reference_index)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "cap_floor_projection_reference_index_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "cap_floor_projection",
           "options": [],
           "owner": "meridian",
           "persistence": "permanent",
@@ -164489,6 +165173,420 @@
               "comment": null,
               "data_type": "text",
               "default": null,
+              "fingerprint": "ad7017fdfd84996dd6fe0dcbd8d975190c2c35aa10d94623d19765ea15114727",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "issuer_name",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6e3ac4109737a267d454fc70cf28bde0d441bb4cbfa892c86da1e6ea3535e014",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "underlying_description",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "c02fabdfb0373f2bdf9894116b0c2054aa9b1623f16bbf057d9dcbdda2b8a25b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "maturity_date",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "4ed37bc010f6321b654ac65f1646fbd4a51ae3824514d4a56fb23b0efc2c7883",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "issue_date",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "627e0d8017b53178adc9bccfc3ad33404fe587fdff4db66fb49df559401ba054",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "denomination",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "21fb95a0b8186c61ac66fe180b65115fc8c5555b977e6151fa1e61224eae72fc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "principal_protection_pct",
+              "nullable": true,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "ff5d111047eb281bb664c2e35906842842f89d1ac5ad73314c3c66b102c4cdc7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "participation_rate",
+              "nullable": true,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "364fe20034b7d2aa6b27845192a3736ea703afc9f38d0c632397ac646447f1a1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "return_cap",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "0a186639ce9a45bf12862db20a620006f8fcfab135c539b8e71df9e69b4ccbf2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "coupon_rate",
+              "nullable": true,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "4b6861c206f52507519ed1ba5aff662874756f6f377b034c0e1c85af85764267",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payment_frequency",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "b6d37c989f23484610915ac3226f14e39d90a90c1b487f20c23932a957bd42b9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "barrier_level",
+              "nullable": true,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "fea76fc3275a7c8108d579fc0418533f661d0ae029db533b3caa03f42ca7b702",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "primary_identifier_value",
+              "nullable": false,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "ef32676fda2b77423c15093e35fac0938c225f4c3cf646c6320cdf04a09cf7f9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Relational projection of StructuredNote asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms.",
+          "constraints": [
+            {
+              "columns": [
+                "security_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id)",
+              "delete_action": null,
+              "fingerprint": "df96b63c78c9958ba777b9767e4948d9d05676c92341ffb50460e52eff9c5cd7",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "structured_note_projection_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "8f6f3ad6d8935d3ce1d46145031000975cab545d65af51e652daac6cb99f995e",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX structured_note_projection_issuer_idx ON security_master.structured_note_projection USING btree (lower(issuer_name))",
+              "expression": "lower(issuer_name)",
+              "fingerprint": "076d5b4f75315bc9ac89e52ce1cca1b333b5d7c7110cdcc16b5f8de0dbe9b3a7",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(issuer_name)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "structured_note_projection_issuer_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX structured_note_projection_maturity_idx ON security_master.structured_note_projection USING btree (maturity_date)",
+              "expression": null,
+              "fingerprint": "8c2aaf39cfbd7207ee4a2cd04b9249a96cd11e8f08947e7c8987b9a2aaf3516d",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "maturity_date"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "structured_note_projection_maturity_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX structured_note_projection_pkey ON security_master.structured_note_projection USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "87a20793c5520d4bcc653fbffc81a01327f1c668b7973d2dcec931f2c0d47334",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "structured_note_projection_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "structured_note_projection",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "display_name",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
               "fingerprint": "65bd62f940a38d3293fd8e9ba9255679c88129743644568c7d6a08ab98c4e71c",
               "generated": null,
               "generated_expression": null,
@@ -164680,6 +165778,398 @@
           "is_partition": false,
           "kind": "table",
           "name": "swap_projection",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "display_name",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ddcfa56078854af22a61d3897eeebf07c3f4fa2ceec91e9677cb309b8c9b2cc8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payer_receiver",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f6c7633e92078da7893744473a0fcc7bbe8d87461a5cffc6954bee1826a4ac1b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "exercise_style",
+              "nullable": true,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "f61b63ca35aa05b8d7fc4f88e0f9fdab3d42ffce6de3487a125b37724d0a3ebc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "strike_rate",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "eaeba6b3deb89f038d29486d406b31798f937ab86df3d44def906b5b7c4fa6a0",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "expiry_date",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "d39071a8b0b1c8818055f00c44ea92bdd3fcd59480cdb9de5fd060be075f743b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "underlying_effective_date",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "4ebd031f1431eabdad7271c183041b2e312cc3c5dba434d6292e79f097d2772c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "underlying_maturity_date",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "631b5d2d33dca37f36783b5ed057a1e87764ef046c2d11576fe47bd48936c37a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notional",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "0afe0d58d3b32e41187cb80e64f5af12e67e2bf4030a7e80ba5a22263663a23b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "floating_index",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "a7abe6ecae64222a799d3fde43fb67f6e15c818bcd9cae604c4104373c5b3c9d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "fixed_leg_payment_frequency",
+              "nullable": true,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "8d7e9a5912ab7a8e01d9fbb6094b80a17bd58da94ac18261746c78b5e2b75851",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "fixed_leg_day_count",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "a1a244cbe488f2eeebd72d0fbac513d9a303781124af69189412879a9c37d3d2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "settlement_type",
+              "nullable": true,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "fea76fc3275a7c8108d579fc0418533f661d0ae029db533b3caa03f42ca7b702",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "primary_identifier_value",
+              "nullable": false,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "ef32676fda2b77423c15093e35fac0938c225f4c3cf646c6320cdf04a09cf7f9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Relational projection of Swaption asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms.",
+          "constraints": [
+            {
+              "columns": [
+                "security_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id)",
+              "delete_action": null,
+              "fingerprint": "375d7c970566ef58e056274ef16899ae244d503b6d55f2b7d28067c00905e1a3",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "swaption_projection_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "833e6f01eccd4f2417ced4223b527d8d5df77dc2e0fdcddc8728784edeee3786",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX swaption_projection_expiry_idx ON security_master.swaption_projection USING btree (expiry_date)",
+              "expression": null,
+              "fingerprint": "0dd029ac9db89d22989324f4558c8583e89981c7560b66bbea405e26f27d5628",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "expiry_date"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "swaption_projection_expiry_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX swaption_projection_pkey ON security_master.swaption_projection USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "a395714655e83e37a61cd97a4eb0090a46edcbb4e12c05cd6fa9af1b50e4ccc6",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "swaption_projection_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "swaption_projection",
           "options": [],
           "owner": "meridian",
           "persistence": "permanent",
@@ -165338,6 +166828,14 @@
           "forced": false,
           "policies": [],
           "relation": "bond_projection",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "4dfa593e59ace85760510b5df2d50a6a7e5e2f7d4c3f1479de0ca5aaceff6d9b",
+          "forced": false,
+          "policies": [],
+          "relation": "cap_floor_projection",
           "schema": "security_master"
         },
         {
@@ -166126,10 +167624,26 @@
         },
         {
           "enabled": false,
+          "fingerprint": "dcfaf47934a1f1a2c098b0a7eddaae721bb007214710cb47e91adff3a57ba825",
+          "forced": false,
+          "policies": [],
+          "relation": "structured_note_projection",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
           "fingerprint": "d041202527c73e747316899cdb8489dcc218b236ea80724c00fc6642ecc12ba7",
           "forced": false,
           "policies": [],
           "relation": "swap_projection",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "b79eba56c472c748f052b899b51571f01fc86193e9d373dd1ccbfae6bd239236",
+          "forced": false,
+          "policies": [],
+          "relation": "swaption_projection",
           "schema": "security_master"
         },
         {
@@ -168321,6 +169835,404 @@
               "comment": null,
               "data_type": "text",
               "default": null,
+              "fingerprint": "e02b013581b99fe4f97b62cac15179dc227d52ba24f6ae70eba70c61f6cec84a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "cap_floor_type",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "007e31e8095f22c2b4a5855c6b93751d7c3875a57910e4a20fa2585dc63d9397",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reference_index",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "e8b6915bc932ce3be3a23e68b1a85c97a8c984df7554d1d3b12709caf838d273",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "cap_strike",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "3d9749b92e840837eb7dc6857a56c9e7e0aca44738d87436865352315a478169",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "floor_strike",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "f40e529d898f002421d35f375d4e7329990e7ab162ba642521b59a8b141d480d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notional",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "59be057217e536b03e14eb9c34080d107056dec7e2a5a6eaa9210ebe779d9836",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "effective_date",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "e5bb4e3a83f61886271d5824ae780540def88eb14b5e3f9b3a7b92be6ec21919",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "maturity_date",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7647a61293029b81c6abccb760842c01d0eb9785fab35f2554dbeab15e6d0f08",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reset_frequency",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "844037e7a78248e44e8e468aca02b5d078a80320326b1f0975cb272064c1cb98",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "day_count",
+              "nullable": true,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "7a013ddbbf232eff5c53e1c738541db7b511a6161ad43c344784f42e482b331f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "premium_amount",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ce1f9e03f7b28756ba5421b1e18de211965b8d2931c4afaac01ed6d57d9f482d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "primary_identifier_value",
+              "nullable": false,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "070241c53cbb37c31314a071135914d9101280b9589789d419424817d72809ef",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Relational projection of CapFloor asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms.",
+          "constraints": [
+            {
+              "columns": [
+                "security_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id)",
+              "delete_action": null,
+              "fingerprint": "60634ba34efc91821ad78f9ade279cb884a732bbb2e272ee3cc9a821534fd0eb",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "cap_floor_projection_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "c694aaccce95c5d96cdcde47f969168017e1e0afe2dfe213d33e21a6af01b61f",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX cap_floor_projection_maturity_idx ON security_master.cap_floor_projection USING btree (maturity_date)",
+              "expression": null,
+              "fingerprint": "8d6390230c7dadc1c196c9f7b8ec1e8a84d4eb459fe8163e01b5ff677a55ae7d",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "maturity_date"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "cap_floor_projection_maturity_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX cap_floor_projection_pkey ON security_master.cap_floor_projection USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "eda06f3d04d765aabfb367586529988406ef5669a5f37233d72248fc3b4efe43",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "cap_floor_projection_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX cap_floor_projection_reference_index_idx ON security_master.cap_floor_projection USING btree (lower(reference_index))",
+              "expression": "lower(reference_index)",
+              "fingerprint": "99d3f3c8a155f4972d02bebc3f9e17ce7df617d1bb0ca65f8985175aba3031b5",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(reference_index)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "cap_floor_projection_reference_index_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "cap_floor_projection",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "display_name",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
               "fingerprint": "c91a7bc06718b74d736059ecfdde136e5a6c779cf4c929ffa4e0fda5580c60e0",
               "generated": null,
               "generated_expression": null,
@@ -204138,6 +206050,420 @@
               "comment": null,
               "data_type": "text",
               "default": null,
+              "fingerprint": "ad7017fdfd84996dd6fe0dcbd8d975190c2c35aa10d94623d19765ea15114727",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "issuer_name",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6e3ac4109737a267d454fc70cf28bde0d441bb4cbfa892c86da1e6ea3535e014",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "underlying_description",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "c02fabdfb0373f2bdf9894116b0c2054aa9b1623f16bbf057d9dcbdda2b8a25b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "maturity_date",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "4ed37bc010f6321b654ac65f1646fbd4a51ae3824514d4a56fb23b0efc2c7883",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "issue_date",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "627e0d8017b53178adc9bccfc3ad33404fe587fdff4db66fb49df559401ba054",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "denomination",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "21fb95a0b8186c61ac66fe180b65115fc8c5555b977e6151fa1e61224eae72fc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "principal_protection_pct",
+              "nullable": true,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "ff5d111047eb281bb664c2e35906842842f89d1ac5ad73314c3c66b102c4cdc7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "participation_rate",
+              "nullable": true,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "364fe20034b7d2aa6b27845192a3736ea703afc9f38d0c632397ac646447f1a1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "return_cap",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "0a186639ce9a45bf12862db20a620006f8fcfab135c539b8e71df9e69b4ccbf2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "coupon_rate",
+              "nullable": true,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "4b6861c206f52507519ed1ba5aff662874756f6f377b034c0e1c85af85764267",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payment_frequency",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "b6d37c989f23484610915ac3226f14e39d90a90c1b487f20c23932a957bd42b9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "barrier_level",
+              "nullable": true,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "fea76fc3275a7c8108d579fc0418533f661d0ae029db533b3caa03f42ca7b702",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "primary_identifier_value",
+              "nullable": false,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "ef32676fda2b77423c15093e35fac0938c225f4c3cf646c6320cdf04a09cf7f9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Relational projection of StructuredNote asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms.",
+          "constraints": [
+            {
+              "columns": [
+                "security_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id)",
+              "delete_action": null,
+              "fingerprint": "df96b63c78c9958ba777b9767e4948d9d05676c92341ffb50460e52eff9c5cd7",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "structured_note_projection_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "8f6f3ad6d8935d3ce1d46145031000975cab545d65af51e652daac6cb99f995e",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX structured_note_projection_issuer_idx ON security_master.structured_note_projection USING btree (lower(issuer_name))",
+              "expression": "lower(issuer_name)",
+              "fingerprint": "076d5b4f75315bc9ac89e52ce1cca1b333b5d7c7110cdcc16b5f8de0dbe9b3a7",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "lower(issuer_name)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "structured_note_projection_issuer_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX structured_note_projection_maturity_idx ON security_master.structured_note_projection USING btree (maturity_date)",
+              "expression": null,
+              "fingerprint": "8c2aaf39cfbd7207ee4a2cd04b9249a96cd11e8f08947e7c8987b9a2aaf3516d",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "maturity_date"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "structured_note_projection_maturity_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX structured_note_projection_pkey ON security_master.structured_note_projection USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "87a20793c5520d4bcc653fbffc81a01327f1c668b7973d2dcec931f2c0d47334",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "structured_note_projection_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "structured_note_projection",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "display_name",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
               "fingerprint": "65bd62f940a38d3293fd8e9ba9255679c88129743644568c7d6a08ab98c4e71c",
               "generated": null,
               "generated_expression": null,
@@ -204329,6 +206655,398 @@
           "is_partition": false,
           "kind": "table",
           "name": "swap_projection",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "141010d7466f67a298d7ad80e703e6e582df95653d220de04ae738936255609a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "display_name",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ddcfa56078854af22a61d3897eeebf07c3f4fa2ceec91e9677cb309b8c9b2cc8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payer_receiver",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f6c7633e92078da7893744473a0fcc7bbe8d87461a5cffc6954bee1826a4ac1b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "exercise_style",
+              "nullable": true,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(18,10)",
+              "default": null,
+              "fingerprint": "f61b63ca35aa05b8d7fc4f88e0f9fdab3d42ffce6de3487a125b37724d0a3ebc",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "strike_rate",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "eaeba6b3deb89f038d29486d406b31798f937ab86df3d44def906b5b7c4fa6a0",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "expiry_date",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "d39071a8b0b1c8818055f00c44ea92bdd3fcd59480cdb9de5fd060be075f743b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "underlying_effective_date",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "4ebd031f1431eabdad7271c183041b2e312cc3c5dba434d6292e79f097d2772c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "underlying_maturity_date",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "631b5d2d33dca37f36783b5ed057a1e87764ef046c2d11576fe47bd48936c37a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notional",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "0afe0d58d3b32e41187cb80e64f5af12e67e2bf4030a7e80ba5a22263663a23b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "floating_index",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "a7abe6ecae64222a799d3fde43fb67f6e15c818bcd9cae604c4104373c5b3c9d",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "fixed_leg_payment_frequency",
+              "nullable": true,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "8d7e9a5912ab7a8e01d9fbb6094b80a17bd58da94ac18261746c78b5e2b75851",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "fixed_leg_day_count",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "a1a244cbe488f2eeebd72d0fbac513d9a303781124af69189412879a9c37d3d2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "settlement_type",
+              "nullable": true,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "fea76fc3275a7c8108d579fc0418533f661d0ae029db533b3caa03f42ca7b702",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "primary_identifier_value",
+              "nullable": false,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "ef32676fda2b77423c15093e35fac0938c225f4c3cf646c6320cdf04a09cf7f9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Relational projection of Swaption asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms.",
+          "constraints": [
+            {
+              "columns": [
+                "security_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (security_id)",
+              "delete_action": null,
+              "fingerprint": "375d7c970566ef58e056274ef16899ae244d503b6d55f2b7d28067c00905e1a3",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "swaption_projection_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "833e6f01eccd4f2417ced4223b527d8d5df77dc2e0fdcddc8728784edeee3786",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX swaption_projection_expiry_idx ON security_master.swaption_projection USING btree (expiry_date)",
+              "expression": null,
+              "fingerprint": "0dd029ac9db89d22989324f4558c8583e89981c7560b66bbea405e26f27d5628",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "expiry_date"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "swaption_projection_expiry_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX swaption_projection_pkey ON security_master.swaption_projection USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "a395714655e83e37a61cd97a4eb0090a46edcbb4e12c05cd6fa9af1b50e4ccc6",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "swaption_projection_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "swaption_projection",
           "options": [],
           "owner": "meridian",
           "persistence": "permanent",

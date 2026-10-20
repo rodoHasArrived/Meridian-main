@@ -1760,7 +1760,12 @@ obligation, `protectionSide` Buy/Sell, notional, `fixedCouponBps`, effective and
 payment-frequency and day-count conventions, seniority, restructuring clause, upfront points,
 recovery assumption, index name) are declarative classes in the `derivatives-fx` pack with
 registry-written projections from the day they were modeled; `Forward` left the pack's planned
-vocabulary.
+vocabulary. `Swaption` (payer/receiver, exercise style, strike rate, expiry, underlying swap dates,
+notional, fixed-leg conventions, settlement method) and `CapFloor` (Cap, Floor or Collar on a
+reference index with cap and floor strikes, notional, dates, reset and day-count conventions,
+premium) join the same pack; `StructuredNote` (issuer, reference asset, maturity, denomination,
+principal protection, participation, return cap, coupon, barrier) is a face-value class in the
+`fixed-income` pack, classified as issuer debt rather than a derivative.
 `SecurityTermConventions` types day count, settlement method, option right and payment frequency
 (`SecurityPaymentFrequency`, the one cadence vocabulary; the direct-lending `PaymentFrequency`
 enum maps onto it through `ToSecurityPaymentFrequency`) as canonical conventions: stored text

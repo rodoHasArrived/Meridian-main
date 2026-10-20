@@ -985,6 +985,27 @@ let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Ma
     |> should equal None
 
 [<Fact>]
+let ``SecurityMasterLegacyUpgrade keeps a structured note cadence without a coupon rate`` () =
+    let terms = {
+        IssuerName = "Meridian Bank plc"; UnderlyingDescription = "EURO STOXX 50"; Maturity = DateOnly(2031, 12, 15)
+        IssueDate = None; Denomination = Some 1000m; PrincipalProtectionPct = Some 1m; ParticipationRate = None
+        ReturnCap = None; CouponRate = None; PaymentFrequency = Some "Quarterly"; BarrierLevel = Some 0.6m
+    }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.StructuredNote terms }
+
+    let record =
+        match SecurityMaster.create command with
+        | Ok [ SecurityMasterEvent.SecurityCreated snapshot ] -> snapshot
+        | Ok events -> failwithf "Expected SecurityCreated event, got: %A" events
+        | Error errors -> failwithf "Expected create to succeed, got: %A" errors
+
+    let definition = SecurityMasterLegacyUpgrade.toEconomicDefinition record
+    let coupon = definition.Terms.Coupon |> Option.defaultWith (fun () -> failwith "Expected Coupon term module")
+    coupon.PaymentFrequency |> should equal (Some (PaymentFrequency.parse "Quarterly"))
+    coupon.CouponRate |> should equal None
+
+[<Fact>]
 let ``SecurityMasterLegacyUpgrade maps preferred classification into term modules`` () =
     let preferredTerms, _, classification = createConvertiblePreferredClassification ()
     let record = createSecurityRecord (Some classification)
@@ -1519,6 +1540,18 @@ let private registrySampleKinds : (SecurityKind * string) list =
           FixedCouponBps = 100m; EffectiveDate = DateOnly(2026, 3, 20); MaturityDate = DateOnly(2031, 6, 20)
           PaymentFrequency = None; DayCount = None; Seniority = None; RestructuringClause = None; UpfrontPoints = None
           RecoveryRateAssumption = None; IndexName = None }, "CreditDefaultSwap"
+      SecurityKind.Swaption {
+          PayerReceiver = "Payer"; ExerciseStyle = None; StrikeRate = 0.0375m; Expiry = DateOnly(2027, 3, 15)
+          UnderlyingEffectiveDate = None; UnderlyingMaturityDate = DateOnly(2037, 3, 17); Notional = 25_000_000m
+          FloatingIndex = None; FixedLegPaymentFrequency = None; FixedLegDayCount = None; SettlementType = None }, "Swaption"
+      SecurityKind.CapFloor {
+          CapFloorType = "Cap"; ReferenceIndex = "SOFR"; CapStrike = Some 0.05m; FloorStrike = None; Notional = 50_000_000m
+          EffectiveDate = DateOnly(2026, 4, 1); MaturityDate = DateOnly(2031, 4, 1); ResetFrequency = None; DayCount = None
+          PremiumAmount = None }, "CapFloor"
+      SecurityKind.StructuredNote {
+          IssuerName = "Meridian Bank plc"; UnderlyingDescription = "S&P 500 Index"; Maturity = DateOnly(2031, 12, 15)
+          IssueDate = None; Denomination = None; PrincipalProtectionPct = None; ParticipationRate = None; ReturnCap = None
+          CouponRate = None; PaymentFrequency = None; BarrierLevel = None }, "StructuredNote"
       SecurityKind.InvestmentFund {
           FundType = None; FundFamily = None; NavCurrency = None; DistributionPolicy = None
           IsStableNav = None; PricingSource = None }, "InvestmentFund"
@@ -1740,7 +1773,7 @@ let ``AssetClassRegistry assetClassName agrees with SecurityKind.assetClass`` ()
 
 [<Fact>]
 let ``AssetClassRegistry isDerivative agrees with SecurityKind.isDerivative`` () =
-    let expectedDerivatives = set [ "Option"; "Future"; "Swap"; "Cfd"; "Warrant"; "FxForward"; "NonDeliverableForward"; "CreditDefaultSwap" ]
+    let expectedDerivatives = set [ "Option"; "Future"; "Swap"; "Cfd"; "Warrant"; "FxForward"; "NonDeliverableForward"; "CreditDefaultSwap"; "Swaption"; "CapFloor" ]
     for kind, name in registrySampleKinds do
         let expected = Set.contains name expectedDerivatives
         AssetClassRegistry.isDerivative kind |> should equal expected

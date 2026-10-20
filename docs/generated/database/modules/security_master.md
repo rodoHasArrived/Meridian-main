@@ -2,7 +2,7 @@
 
 # `security_master` schema
 
-- Relations: 112
+- Relations: 115
 - Functions/procedures: 7
 - Triggers: 15
 - Row-level security policies: 0
@@ -81,6 +81,23 @@ erDiagram
         numeric fixed_coupon_rate
         text floating_rate_index
         numeric floating_spread_bps
+        bigint version
+    }
+    security_master_cap_floor_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text cap_floor_type
+        text reference_index
+        numeric_18_10_ cap_strike
+        numeric_18_10_ floor_strike
+        numeric_28_10_ notional
+        date effective_date
+        date maturity_date
+        text reset_frequency
+        text day_count
+        numeric_28_10_ premium_amount
+        text primary_identifier_value
         bigint version
     }
     security_master_cash_sweep_projection {
@@ -1416,6 +1433,24 @@ erDiagram
         date reinvestment_period_end
         date non_call_period_end
     }
+    security_master_structured_note_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text issuer_name
+        text underlying_description
+        date maturity_date
+        date issue_date
+        numeric_28_10_ denomination
+        numeric_18_10_ principal_protection_pct
+        numeric_18_10_ participation_rate
+        numeric_18_10_ return_cap
+        numeric_18_10_ coupon_rate
+        text payment_frequency
+        numeric_18_10_ barrier_level
+        text primary_identifier_value
+        bigint version
+    }
     security_master_swap_projection {
         uuid security_id PK
         text display_name
@@ -1424,6 +1459,24 @@ erDiagram
         date effective_date
         date maturity_date
         text lifecycle_stat
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_swaption_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text payer_receiver
+        text exercise_style
+        numeric_18_10_ strike_rate
+        date expiry_date
+        date underlying_effective_date
+        date underlying_maturity_date
+        numeric_28_10_ notional
+        text floating_index
+        text fixed_leg_payment_frequency
+        text fixed_leg_day_count
+        text settlement_type
         text primary_identifier_value
         bigint version
     }
@@ -1541,6 +1594,7 @@ erDiagram
 | `bond_issuer_projection` | table | 8 | `security_id` | 1 | 2 | - |
 | `bond_lifecycle_projection` | table | 13 | `security_id` | 1 | 1 | - |
 | `bond_projection` | table | 11 | `security_id` | 1 | 2 | - |
+| `cap_floor_projection` | table | 15 | `security_id` | 0 | 3 | Relational projection of CapFloor asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `cash_sweep_projection` | table | 10 | `security_id` | 0 | 1 | Relational projection of CashSweep asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `cash_transaction` | table | 13 | `cash_transaction_id` | 2 | 5 | - |
 | `certificate_of_deposit_projection` | table | 10 | `security_id` | 0 | 3 | - |
@@ -1644,6 +1698,8 @@ erDiagram
 | `servicing_revision_source` | table | 4 | `loan_id`, `servicing_revision`, `servicer_report_batch_id` | 1 | 1 | - |
 | `structured_credit_factor_schedule_projection` | table | 4 | `security_id`, `ordinal` | 1 | 2 | Dated pool-factor points of a projected structured-credit tranche, in terms-document order (ordinal). Serves the factor-as-of lookup used by amortization. |
 | `structured_credit_projection` | table | 22 | `security_id` | 0 | 4 | Relational projection of StructuredCredit tranche terms, keyed by security_id. Additive read model over securities.asset_specific_terms, which remains the source of truth. factor_schedule_reference is the free-text trustee-report pointer, never factor data. |
+| `structured_note_projection` | table | 16 | `security_id` | 0 | 3 | Relational projection of StructuredNote asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `swap_projection` | table | 9 | `security_id` | 0 | 3 | - |
+| `swaption_projection` | table | 16 | `security_id` | 0 | 2 | Relational projection of Swaption asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `treasury_bill_projection` | table | 9 | `security_id` | 0 | 2 | Relational projection of TreasuryBill asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `warrant_projection` | table | 10 | `security_id` | 0 | 3 | Relational projection of Warrant asset-specific terms, keyed by security_id. underlying_id is the underlying security identity, deliberately not a foreign key. |

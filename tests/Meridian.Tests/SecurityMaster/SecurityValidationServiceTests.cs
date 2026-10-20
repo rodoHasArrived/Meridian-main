@@ -944,6 +944,177 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Theory]
+    [InlineData(0.05, 0.02, false)]
+    [InlineData(0.03, 0.03, false)]
+    [InlineData(0.02, 0.05, true)]
+    public void Scenario_CollarStrikes_FloorAboveCapIsAnError(double capStrike, double floorStrike, bool expectIssue)
+    {
+        var collar = CreateProjection(
+            Guid.NewGuid(),
+            "CapFloor",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "COLLAR-1", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                capFloorType = "Collar",
+                referenceIndex = "SOFR",
+                capStrike = (decimal)capStrike,
+                floorStrike = (decimal)floorStrike,
+                notional = 10_000_000m,
+                effectiveDate = "2026-04-01",
+                maturityDate = "2031-04-01"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(collar, [collar], Now);
+
+        var strikeIssues = report.Issues.Where(static item => item.Code == "SM_CAP_FLOOR_STRIKE_ORDER_INVALID").ToArray();
+        strikeIssues.Any().Should().Be(expectIssue);
+        strikeIssues.Should().OnlyContain(static item => item.Severity == SecurityValidationSeverityDto.Error);
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(-0.0025, false)]
+    [InlineData(0.0375, false)]
+    public void Scenario_SwaptionStrike_IsRequiredButMayBeNegative(double? strikeRate, bool expectIssue)
+    {
+        var terms = new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            ["payerReceiver"] = "Receiver",
+            ["expiry"] = "2027-03-15",
+            ["underlyingMaturityDate"] = "2037-03-17",
+            ["notional"] = 25_000_000m
+        };
+        if (strikeRate is { } strike)
+        {
+            terms["strikeRate"] = (decimal)strike;
+        }
+
+        var swaption = CreateProjection(
+            Guid.NewGuid(),
+            "Swaption",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "SWPN-2", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(terms));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(swaption, [swaption], Now);
+
+        report.Issues.Any(static item => item.Code == "SM_SWAPTION_STRIKE_REQUIRED").Should().Be(expectIssue);
+    }
+
+    [Theory]
+    [InlineData("Cap", true, false, null)]
+    [InlineData("Cap", false, false, "SM_CAP_FLOOR_CAP_STRIKE_REQUIRED")]
+    [InlineData("Floor", false, true, null)]
+    [InlineData("Floor", true, false, "SM_CAP_FLOOR_FLOOR_STRIKE_REQUIRED")]
+    [InlineData("collar", true, false, "SM_CAP_FLOOR_FLOOR_STRIKE_REQUIRED")]
+    [InlineData("Collar", false, true, "SM_CAP_FLOOR_CAP_STRIKE_REQUIRED")]
+    public void Scenario_CapFloorStrikes_AreRequiredByType(string capFloorType, bool withCap, bool withFloor, string? expectedCode)
+    {
+        var terms = new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            ["capFloorType"] = capFloorType,
+            ["referenceIndex"] = "SOFR",
+            ["notional"] = 10_000_000m,
+            ["effectiveDate"] = "2026-04-01",
+            ["maturityDate"] = "2031-04-01"
+        };
+        if (withCap)
+        {
+            terms["capStrike"] = 0.05m;
+        }
+
+        if (withFloor)
+        {
+            terms["floorStrike"] = 0.02m;
+        }
+
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "CapFloor",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "CAPFLOOR-1", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(terms));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var strikeCodes = service.ValidateRecord(record, [record], Now).Issues
+            .Select(static item => item.Code)
+            .Where(static code => code is "SM_CAP_FLOOR_CAP_STRIKE_REQUIRED" or "SM_CAP_FLOOR_FLOOR_STRIKE_REQUIRED")
+            .ToArray();
+
+        if (expectedCode is null)
+        {
+            strikeCodes.Should().BeEmpty();
+        }
+        else
+        {
+            strikeCodes.Should().Equal(expectedCode);
+        }
+    }
+
+    [Fact]
+    public void Scenario_SwaptionUnderlyingEndingOnItsStart_IsBlocking()
+    {
+        var swaption = CreateProjection(
+            Guid.NewGuid(),
+            "Swaption",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "SWPN-3", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                payerReceiver = "Payer",
+                strikeRate = 0.0375m,
+                expiry = "2027-03-15",
+                underlyingEffectiveDate = "2037-03-17",
+                underlyingMaturityDate = "2037-03-17",
+                notional = 25_000_000m
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(swaption, [swaption], Now);
+
+        report.Issues.Should().Contain(static item => item.Code == "SM_SWAPTION_UNDERLYING_DATES_INVALID");
+        report.HasBlockingIssues.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Scenario_SwaptionUnderlyingStartingBeforeExpiry_IsBlocking()
+    {
+        var swaption = CreateProjection(
+            Guid.NewGuid(),
+            "Swaption",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "SWPN-1", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                payerReceiver = "Payer",
+                strikeRate = 0.0375m,
+                expiry = "2027-03-15",
+                underlyingEffectiveDate = "2027-01-15",
+                underlyingMaturityDate = "2037-03-17",
+                notional = 25_000_000m
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(swaption, [swaption], Now);
+
+        report.Issues.Should().Contain(static item => item.Code == "SM_SWAPTION_EFFECTIVE_BEFORE_EXPIRY");
+        report.HasBlockingIssues.Should().BeTrue();
+    }
+
+    [Theory]
     [InlineData(null, true)]
     [InlineData(-25.0, true)]
     [InlineData(0.0, false)]

@@ -493,6 +493,16 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             // The upgrade stores FixedCouponBps / 10000 as coupon.couponRate.
             new FlatTermMapping("fixedCouponBps", [("coupon", "couponRate")], Scale: 10000m)
         ]),
+        ("Swaption", [Map("expiry", MaturityDate), Map("underlyingEffectiveDate", ("maturity", "effectiveDate"))]),
+        ("CapFloor", [Map("effectiveDate", ("maturity", "effectiveDate")), Map("maturityDate", MaturityDate)]),
+        ("StructuredNote",
+        [
+            Map("maturity", MaturityDate),
+            Map("issueDate", ("maturity", "issueDate")),
+            Map("issuerName", ("issuer", "issuerName")),
+            Map("couponRate", ("coupon", "couponRate")),
+            Map("paymentFrequency", ("coupon", "paymentFrequency"))
+        ]),
         ("InvestmentFund", [Map("fundFamily", ("fund", "fundFamily"))])
     ];
 
