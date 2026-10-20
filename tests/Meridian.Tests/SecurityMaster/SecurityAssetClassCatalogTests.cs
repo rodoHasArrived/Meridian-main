@@ -70,6 +70,9 @@ public sealed class SecurityAssetClassCatalogTests
     [InlineData("Fixed Income", SecurityAssetClassLabelResolution.Unresolved)]
     [InlineData("Equity Option", SecurityAssetClassLabelResolution.Ambiguous)]
     [InlineData("Bond / Equity", SecurityAssetClassLabelResolution.Ambiguous)]
+    [InlineData("Structured Credit Equity", SecurityAssetClassLabelResolution.Ambiguous)]
+    [InlineData("Structured Credit Loan", SecurityAssetClassLabelResolution.Ambiguous)]
+    [InlineData("Structured Credit", SecurityAssetClassLabelResolution.Resolved)]
     [InlineData("Treasury Bond", SecurityAssetClassLabelResolution.Resolved)]
     public void ResolveLabel_TellsAnAmbiguousLabelFromAnUnknownOne(string label, SecurityAssetClassLabelResolution expected)
     {

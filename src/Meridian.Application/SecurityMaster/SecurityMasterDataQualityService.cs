@@ -382,11 +382,11 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     };
 
     /// <summary>
-    /// Where a class's schema terms live: a profile-backed record (PrivateFundInterest,
-    /// RealEstateHolding, ...) persists its governed scalar terms beneath <c>profileFields</c>, so
-    /// for a class the catalog marks as supporting profile-backed terms that object is probed before
-    /// the envelope root, matching the other governed-term readers. Any other class is read from
-    /// the root alone, which is the only shape its canonical mapper consumes.
+    /// Where a class's schema terms live, mirroring the canonical mapper's
+    /// <c>ResolveAssetTermsJson</c>: for a class the catalog marks as supporting profile-backed
+    /// terms, an object-valued <c>profileFields</c> is the terms document and the envelope root is
+    /// not consulted (a term repeated only at the root is unreadable to the mapper); without that
+    /// object, and for every other class, the root is the terms document.
     /// </summary>
     private static IEnumerable<JsonElement> EnumerateTermSources(JsonElement terms, bool supportsProfileBackedTerms)
     {
@@ -400,6 +400,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
             && profileFields.ValueKind == JsonValueKind.Object)
         {
             yield return profileFields;
+            yield break;
         }
 
         yield return terms;
@@ -407,7 +408,10 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
 
     private static bool HasDeclaredValueIn(JsonElement terms, SecurityAssetTermField field)
     {
-        if (!TryGetDeclaredProperty(terms, field, out var value))
+        // The minimum-attribute rule asks whether the canonical mapper can read the term, and the
+        // mapper reads the declared key alone; schema aliases serve the tolerant readers (cash-flow
+        // resolver, projections), not the write/read codec.
+        if (!TryGetDeclaredProperty(terms, field, out var value, includeAliases: false))
         {
             return false;
         }
@@ -431,7 +435,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     private static DateTimeOffset? TryReadDateField(JsonElement element, SecurityAssetTermField field)
         => TryGetDeclaredProperty(element, field, out var value) ? TryReadDate(value) : null;
 
-    private static bool TryGetDeclaredProperty(JsonElement element, SecurityAssetTermField field, out JsonElement value)
+    private static bool TryGetDeclaredProperty(JsonElement element, SecurityAssetTermField field, out JsonElement value, bool includeAliases = true)
     {
         value = default;
         if (element.ValueKind != JsonValueKind.Object)
@@ -444,7 +448,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         foreach (var property in element.EnumerateObject())
         {
             if (string.Equals(property.Name, field.Key, StringComparison.Ordinal)
-                || field.Aliases.Any(alias => string.Equals(property.Name, alias, StringComparison.Ordinal)))
+                || (includeAliases && field.Aliases.Any(alias => string.Equals(property.Name, alias, StringComparison.Ordinal))))
             {
                 value = property.Value;
                 return value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined);

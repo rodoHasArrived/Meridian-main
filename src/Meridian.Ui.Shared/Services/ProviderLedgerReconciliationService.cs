@@ -338,15 +338,6 @@ public sealed partial class ProviderLedgerReconciliationService
                 null,
                 "Latest brokerage sync projection is available.");
 
-            await AddProviderCapabilityChecksAsync(
-                    runId,
-                    lifecycle,
-                    providerProjection,
-                    checks,
-                    breaks,
-                    ct)
-                .ConfigureAwait(false);
-
             var staleAfter = TimeSpan.FromMinutes(staleAfterMinutes);
             if (providerProjection.Status.IsStale || createdAt - providerProjection.SyncedAt > staleAfter)
             {
@@ -523,6 +514,19 @@ public sealed partial class ProviderLedgerReconciliationService
                     securityMasterPassports,
                     createdAt,
                     staleAfterMinutes,
+                    ct)
+                .ConfigureAwait(false);
+
+            // After security coverage, so the capability gate classifies positions from the same
+            // reconciliation-time resolution the readiness check uses: a position whose projection
+            // reference is unset but whose passport resolved this run still gates its feeds.
+            await AddProviderCapabilityChecksAsync(
+                    runId,
+                    lifecycle,
+                    providerProjection,
+                    checks,
+                    breaks,
+                    securityMasterPassports,
                     ct)
                 .ConfigureAwait(false);
         }
@@ -2169,12 +2173,18 @@ public sealed partial class ProviderLedgerReconciliationService
         FundAccountBrokerageSyncActivityDto providerProjection,
         List<ProviderLedgerReconciliationCheckDto> checks,
         List<ProviderLedgerReconciliationBreakDto> breaks,
+        IReadOnlyList<ProviderSecurityMasterPassportDto> securityMasterPassports,
         CancellationToken ct)
     {
         if (_capabilityRouter is null)
         {
             return;
         }
+
+        var passportsBySymbol = securityMasterPassports
+            .Where(static passport => !string.IsNullOrWhiteSpace(passport.Symbol))
+            .GroupBy(static passport => NormalizeSymbol(passport.Symbol), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
 
         foreach (var capability in RequiredProviderLedgerCapabilities)
         {
@@ -2247,9 +2257,9 @@ public sealed partial class ProviderLedgerReconciliationService
                 .ConfigureAwait(false);
         }
 
-        // Passports are not built yet at this point; the retained projection reference is the only
-        // resolved class available for the capability gate.
-        if (providerProjection.Positions.Any(static position => IsFixedIncomeOrStructuredAssetClass(position, passport: null)) ||
+        if (providerProjection.Positions.Any(position => IsFixedIncomeOrStructuredAssetClass(
+                position,
+                passportsBySymbol.TryGetValue(NormalizeSymbol(position.Symbol), out var passport) ? passport : null)) ||
             (providerProjection.CorporateActions ?? []).Any(static action =>
                 IsFactorScheduleEvent(action.EventType) ||
                 IsAmortizationScheduleEvent(action.EventType) ||

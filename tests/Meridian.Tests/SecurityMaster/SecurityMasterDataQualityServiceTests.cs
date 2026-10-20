@@ -283,6 +283,30 @@ public sealed class SecurityMasterDataQualityServiceTests
     }
 
     [Fact]
+    public async Task RunQualityChecksAsync_ReadsTermsTheWayTheMapperDoes_DeclaredKeyOnly_ProfileFieldsExclusively()
+    {
+        var (sut, store) = BuildSut();
+        // A schema alias is for the tolerant readers; the mapper reads "issuerName" alone.
+        var aliasOnly = MakeSecurity(Guid.NewGuid(), "StructuredNote", currency: "USD",
+            assetSpecificTerms: new { issuer = "Acme", underlyingDescription = "SPX basket", maturity = "2091-01-01" });
+        // When profileFields is an object the mapper reads it exclusively; a root-only term is unread.
+        var rootOnlyTerm = MakeSecurity(Guid.NewGuid(), "PrivateFundInterest", currency: "USD",
+            assetSpecificTerms: new
+            {
+                gpSponsor = "Meridian Capital",
+                profileFields = new { strategy = "Buyout", vintage = 2024, commitment = 1_000_000m, navDate = "2026-06-30" }
+            });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { aliasOnly, rootOnlyTerm });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Should().Contain(v =>
+            v.RuleId == "MA003" && v.SecurityId == aliasOnly.SecurityId && v.FieldPath == "assetSpecificTerms.issuerName");
+        report.Violations.Should().ContainSingle(v => v.RuleId == "MA003" && v.SecurityId == rootOnlyTerm.SecurityId)
+            .Which.FieldPath.Should().Be("assetSpecificTerms.gpSponsor");
+    }
+
+    [Fact]
     public async Task RunQualityChecksAsync_MatchesRequiredTermKeys_WithTheMappersExactCasing()
     {
         // The canonical mapper reads keys case-sensitively, so a differently cased key is missing.

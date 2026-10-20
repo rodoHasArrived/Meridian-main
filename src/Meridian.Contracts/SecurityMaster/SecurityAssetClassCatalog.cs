@@ -673,20 +673,28 @@ public static class SecurityAssetClassCatalog
             return SecurityAssetClassLabelResolution.Resolved;
         }
 
+        // Every contiguous run of tokens is a candidate name, so a multi-word class ("Structured
+        // Credit") is recognised as itself rather than ignored token by token, and a label that
+        // also names another class ("Structured Credit Equity") is ambiguous instead of resolving
+        // to the one single-token class it happens to contain.
+        var tokens = label.Split(LabelSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         SecurityAssetClassDescriptor? match = null;
-        foreach (var token in label.Split(LabelSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        for (var start = 0; start < tokens.Length; start++)
         {
-            if (!TryGet(token, out var candidate))
+            for (var length = 1; start + length <= tokens.Length; length++)
             {
-                continue;
-            }
+                if (!TryGet(string.Join(string.Empty, tokens, start, length), out var candidate))
+                {
+                    continue;
+                }
 
-            if (match is not null && !ReferenceEquals(match, candidate))
-            {
-                return SecurityAssetClassLabelResolution.Ambiguous;
-            }
+                if (match is not null && !ReferenceEquals(match, candidate))
+                {
+                    return SecurityAssetClassLabelResolution.Ambiguous;
+                }
 
-            match = candidate;
+                match = candidate;
+            }
         }
 
         descriptor = match;
