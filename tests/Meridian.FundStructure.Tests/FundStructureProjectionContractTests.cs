@@ -56,7 +56,7 @@ public sealed class FundStructureProjectionContractTests
                 AsOf: AsOf));
         Assert.Equal(fixture.LinkedAccountId, Assert.Single(accounting.Accounts).AccountId);
         var ledgerGroup = Assert.Single(accounting.LedgerGroups);
-        Assert.Equal("ASSIGNED-BOOK", ledgerGroup.DisplayName);
+        Assert.Equal("assigned-book", ledgerGroup.DisplayName);
         Assert.Equal(fixture.FundPortfolioId, Assert.Single(ledgerGroup.InvestmentPortfolioIds));
         Assert.Equal(metadata.Value, ledgerGroup.SharedDataAccess);
         Assert.Contains(accounting.Assignments, assignment => assignment.AssignmentId == fixture.AssignmentId);
@@ -104,12 +104,12 @@ public sealed class FundStructureProjectionContractTests
         var fixture = await SeedAsync(postgres);
         var atEnd = await fixture.Service.GetAccountingViewAsync(
             new AccountingStructureQuery(BusinessId: fixture.FundBusinessId, AsOf: AsOf));
-        Assert.Contains(atEnd.LedgerGroups, group => group.DisplayName == "ASSIGNED-BOOK");
+        Assert.Contains(atEnd.LedgerGroups, group => group.DisplayName == "assigned-book");
 
         var afterEnd = await fixture.Service.GetAccountingViewAsync(
             new AccountingStructureQuery(BusinessId: fixture.FundBusinessId, AsOf: AsOf.AddTicks(1)));
         Assert.DoesNotContain(afterEnd.Assignments, assignment => assignment.AssignmentId == fixture.AssignmentId);
-        Assert.DoesNotContain(afterEnd.LedgerGroups, group => group.DisplayName == "ASSIGNED-BOOK");
+        Assert.DoesNotContain(afterEnd.LedgerGroups, group => group.DisplayName == "assigned-book");
         Assert.Contains(afterEnd.LedgerGroups, group => group.DisplayName == "FALLBACK-BOOK");
 
         var beforeStart = await fixture.Service.GetFundStructureGraphAsync(
