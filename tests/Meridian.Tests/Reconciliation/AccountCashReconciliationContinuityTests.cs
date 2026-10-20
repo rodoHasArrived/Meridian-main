@@ -968,6 +968,32 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         File.Exists(Path.Combine(StoreDirectory, "state.json")).Should().BeFalse();
     }
 
+    [Theory]
+    [InlineData("null-run")]
+    [InlineData("null-case")]
+    public async Task Scope_file_with_null_members_is_corrupt_retained_state(string shape)
+    {
+        // Syntactically valid JSON whose run or case element is null is corrupt retained evidence
+        // (503), never an unhandled dereference (500); the other scope keeps working.
+        var service = await ServiceAsync();
+        var otherScope = _scope with { AccountId = "account-b" };
+        await service.RunAsync(Request("first", 0, 1000m, 990m));
+        await service.RunAsync(Request("other-first", 0, 500m, 500m, otherScope));
+        var envelope = JsonSerializer.Deserialize(await File.ReadAllBytesAsync(ScopeStatePath(_scope)),
+            AccountCashReconciliationJsonContext.Default.AccountCashReconciliationScopeEnvelope)!;
+        var document = shape == "null-run"
+            ? envelope.Document with { Runs = [null!] }
+            : envelope.Document with { Cases = [null!] };
+        var hash = Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(document, AccountCashReconciliationJsonContext.Default.AccountCashReconciliationDocument));
+        await File.WriteAllBytesAsync(ScopeStatePath(_scope), JsonSerializer.SerializeToUtf8Bytes(envelope with { Document = document, ContentHash = hash },
+            AccountCashReconciliationJsonContext.Default.AccountCashReconciliationScopeEnvelope));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => service.GetCasesAsync(_scope));
+        await Assert.ThrowsAsync<InvalidDataException>(() => service.RunAsync(Request("second", 1, 1000m, 1000m)));
+        await Assert.ThrowsAsync<InvalidDataException>(() => new FileAccountCashReconciliationStore(_root).InitializeAsync());
+        (await service.ReplayAsync(otherScope, "other-first")).Input.RunId.Should().Be("other-first");
+    }
+
     [Fact]
     public async Task Legacy_single_file_state_is_split_per_scope_losslessly_and_renamed_not_deleted()
     {

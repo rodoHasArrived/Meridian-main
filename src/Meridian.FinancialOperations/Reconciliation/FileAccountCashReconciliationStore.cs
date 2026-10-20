@@ -334,7 +334,7 @@ public sealed class FileAccountCashReconciliationStore
         {
             scope = JsonSerializer.Deserialize(await ReadSharedAsync(path, ct).ConfigureAwait(false), AccountCashReconciliationJsonContext.Default.AccountCashReconciliationScopeEnvelope)?.Scope;
         }
-        catch (Exception ex) when (ex is IOException or JsonException)
+        catch (Exception ex) when (ex is IOException or JsonException or ArgumentException or NullReferenceException or InvalidOperationException)
         {
             throw new InvalidDataException("An unregistered account cash continuity scope file is unreadable; restore retained state before retrying.", ex);
         }
@@ -387,7 +387,7 @@ public sealed class FileAccountCashReconciliationStore
                 throw new InvalidDataException("Account cash continuity scope state failed integrity validation.");
             return document;
         }
-        catch (Exception ex) when (ex is IOException or JsonException)
+        catch (Exception ex) when (ex is IOException or JsonException or ArgumentException or NullReferenceException or InvalidOperationException)
         {
             throw new InvalidDataException("Retained account cash continuity state is unavailable or corrupt; restore it before retrying.", ex);
         }
@@ -430,7 +430,7 @@ public sealed class FileAccountCashReconciliationStore
                 throw new InvalidDataException("Account cash continuity state failed integrity validation.");
             return document;
         }
-        catch (Exception ex) when (ex is IOException or JsonException)
+        catch (Exception ex) when (ex is IOException or JsonException or ArgumentException or NullReferenceException or InvalidOperationException)
         {
             throw new InvalidDataException("Retained account cash continuity state is unavailable or corrupt; restore it before retrying.", ex);
         }
@@ -438,6 +438,8 @@ public sealed class FileAccountCashReconciliationStore
 
     private static bool IsValid(AccountCashReconciliationDocument? document)
         => document is { SchemaVersion: 1, Runs: not null, Cases: not null }
+            && document.Runs.All(static item => item is { Input: not null })
+            && document.Cases.All(static item => item is { CaseId: not null, Scope: not null, History: not null, Assignments: not null })
             && document.Cases.Select(item => item.CaseId).Distinct(StringComparer.Ordinal).Count() == document.Cases.Count;
 
     private async Task<AccountCashReconciliationScope[]> ReadIndexAsync(CancellationToken ct)
@@ -453,7 +455,7 @@ public sealed class FileAccountCashReconciliationStore
                 throw new InvalidDataException("Account cash continuity scope index failed integrity validation.");
             return index.Scopes;
         }
-        catch (Exception ex) when (ex is IOException or JsonException)
+        catch (Exception ex) when (ex is IOException or JsonException or ArgumentException or NullReferenceException or InvalidOperationException)
         {
             throw new InvalidDataException("Retained account cash continuity scope index is unavailable or corrupt; restore it before retrying.", ex);
         }
