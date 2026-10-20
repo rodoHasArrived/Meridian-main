@@ -129,7 +129,7 @@ public sealed class SecurityMasterConvertibleEquityAmendmentTests
 
         var service = CreateService(eventStore, snapshotStore, store);
         var request = new AmendConvertibleEquityTermsRequest(
-            ExpectedVersion: 1,
+            ExpectedVersion: 7,
             UnderlyingSecurityId: Guid.NewGuid(),
             ConversionRatio: 2.0m,
             ConversionPrice: null,

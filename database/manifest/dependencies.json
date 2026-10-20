@@ -10132,6 +10132,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassRegistry"
     },
     {
@@ -23117,6 +23123,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution"
     },
     {
       "kind": "contract-set-member",
@@ -50969,7 +50981,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "90ce3c9d64eb3fee9d1817005ecabb97a6a34688dc337cf0c2e1081bff727374",
+  "fingerprint": "6c9fe0b94811cf094eb971e5e23bcb6ac271933952fdd0357bf19393a92ac8c7",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -61149,6 +61161,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution"
     },
     {
       "classification": "catalog",
@@ -74532,10 +74550,10 @@
   ],
   "summary": {
     "contract_references": 3325,
-    "contract_set_memberships": 4005,
-    "edges": 8469,
+    "contract_set_memberships": 4007,
+    "edges": 8471,
     "foreign_keys": 138,
     "logical_references": 6,
-    "nodes": 4080
+    "nodes": 4081
   }
 }
