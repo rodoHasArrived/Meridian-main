@@ -1,4 +1,6 @@
 -- Keep pre-existing duplicates as retained history while choosing one current attempt.
+-- The choice matches the runtime upsert: the higher status rank wins, then the later completion;
+-- on a full tie the later write replaces the retained one, so the newest attempt stays current.
 alter table __SCHEMA__.account_sync_history
     add column if not exists superseded_by_sync_history_id uuid
         references __SCHEMA__.account_sync_history (sync_history_id);
@@ -9,7 +11,7 @@ with ranked as (
                partition by account_id, lower(trim(capability)), lower(trim(correlation_id))
                order by case status when 'Succeeded' then 3 when 'Degraded' then 2
                                     when 'Pending' then 0 else 1 end desc,
-                        completed_at desc nulls last, attempted_at, sync_history_id) as retained_id
+                        completed_at desc nulls last, attempted_at desc, sync_history_id desc) as retained_id
     from __SCHEMA__.account_sync_history
     where correlation_id is not null and trim(correlation_id) <> ''
       and superseded_by_sync_history_id is null

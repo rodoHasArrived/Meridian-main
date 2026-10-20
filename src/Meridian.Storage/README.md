@@ -15,7 +15,8 @@ Fund Accounts migrations `005` and `006` retain reconciliation replacement/resol
 canonical sync-attempt correlation identity. Reconciliation append and supersession share one
 account/date advisory-locked transaction; original outcomes remain available. Scoped sync upserts
 use a partial unique index and return the retained row while refusing outcome regression. Existing
-duplicate attempts stay retained under explicit supersession links. Deploy after draining old
+duplicate attempts stay retained under explicit supersession links; migration `006` keeps current the
+attempt the runtime upsert would keep (higher status rank, then later completion, then the newest attempt). Deploy after draining old
 fund-account writers so every writer uses the new upsert and lifecycle contract.
 
 

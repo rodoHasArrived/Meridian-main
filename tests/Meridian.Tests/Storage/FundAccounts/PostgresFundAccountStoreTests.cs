@@ -357,6 +357,89 @@ public sealed class PostgresFundAccountStoreTests : IClassFixture<FundAccountDat
     }
 
     [FundAccountDatabaseFact]
+    public async Task SyncHistoryCorrelationMigration_EquallyRankedDuplicates_KeepsTheNewestAttemptCurrent()
+    {
+        var options = CreateIsolatedOptions("fa_sync_dedupe");
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await new FundAccountMigrationRunner(options).EnsureMigratedAsync(cts.Token);
+            var store = new PostgresFundAccountStore(options);
+            var account = MakeAccount();
+            await store.UpsertAccountAsync(account, cts.Token);
+            var t0 = new DateTimeOffset(2026, 7, 24, 9, 0, 0, TimeSpan.Zero);
+            var completed = t0.AddHours(1);
+            var pending = MakeSyncEntry(account.AccountId, AccountSyncStatusDto.Pending) with { AttemptedAt = t0 };
+            var succeeded = MakeSyncEntry(account.AccountId, AccountSyncStatusDto.Succeeded) with
+            {
+                AttemptedAt = t0,
+                CompletedAt = completed
+            };
+            await store.InsertSyncHistoryAsync(pending, cts.Token);
+            await store.InsertSyncHistoryAsync(succeeded, cts.Token);
+
+            // Recreate the pre-006 state: no correlation index, and later duplicate attempts that tie
+            // on status rank and completion (both null for Pending, equal for Succeeded).
+            var newestPending = Guid.NewGuid();
+            var newestSucceeded = Guid.NewGuid();
+            await using (var connection = new NpgsqlConnection(options.ConnectionString))
+            {
+                await connection.OpenAsync(cts.Token);
+                var table = $"{options.Schema}.account_sync_history";
+                var columns = new List<string>();
+                await using (var list = connection.CreateCommand())
+                {
+                    list.CommandText = """
+                        SELECT column_name FROM information_schema.columns
+                        WHERE table_schema = @schema AND table_name = 'account_sync_history'
+                          AND column_name NOT IN ('sync_history_id', 'attempted_at', 'superseded_by_sync_history_id')
+                        ORDER BY ordinal_position
+                        """;
+                    list.Parameters.AddWithValue("schema", options.Schema);
+                    await using var reader = await list.ExecuteReaderAsync(cts.Token);
+                    while (await reader.ReadAsync(cts.Token))
+                        columns.Add(reader.GetString(0));
+                }
+                var copied = string.Join(", ", columns);
+                await using var seed = connection.CreateCommand();
+                seed.CommandText = $"""
+                    DROP INDEX {options.Schema}.ux_account_sync_history_correlation;
+                    INSERT INTO {table} (sync_history_id, attempted_at, {copied})
+                    SELECT @middle_pending, attempted_at + interval '1 minute', {copied} FROM {table} WHERE sync_history_id = @pending;
+                    INSERT INTO {table} (sync_history_id, attempted_at, {copied})
+                    SELECT @newest_pending, attempted_at + interval '2 minutes', {copied} FROM {table} WHERE sync_history_id = @pending;
+                    INSERT INTO {table} (sync_history_id, attempted_at, {copied})
+                    SELECT @newest_succeeded, attempted_at + interval '2 minutes', {copied} FROM {table} WHERE sync_history_id = @succeeded;
+                    UPDATE {table} SET superseded_by_sync_history_id = NULL;
+                    """;
+                seed.Parameters.AddWithValue("pending", pending.SyncHistoryId);
+                seed.Parameters.AddWithValue("succeeded", succeeded.SyncHistoryId);
+                seed.Parameters.AddWithValue("middle_pending", Guid.NewGuid());
+                seed.Parameters.AddWithValue("newest_pending", newestPending);
+                seed.Parameters.AddWithValue("newest_succeeded", newestSucceeded);
+                await seed.ExecuteNonQueryAsync(cts.Token);
+
+                var script = await File.ReadAllTextAsync(Path.Combine(
+                    AppContext.BaseDirectory, "FundAccounts", "Migrations", "006_sync_history_correlation.sql"), cts.Token);
+                await using var migrate = connection.CreateCommand();
+                migrate.CommandText = script.Replace("__SCHEMA__", options.Schema, StringComparison.Ordinal);
+                await migrate.ExecuteNonQueryAsync(cts.Token);
+            }
+
+            var current = await store.GetSyncHistoryAsync(account.AccountId, null, cts.Token);
+            current.Select(entry => entry.SyncHistoryId).Should().BeEquivalentTo(
+                new[] { newestPending, newestSucceeded },
+                "like the runtime upsert, a full tie keeps the newest attempt current");
+            current.Single(entry => entry.SyncHistoryId == newestPending).AttemptedAt
+                .Should().BeCloseTo(t0.AddMinutes(2), TimeSpan.FromMilliseconds(2));
+        }
+        finally
+        {
+            await FundAccountDatabaseFixture.DropSchemaAsync(options.ConnectionString, options.Schema);
+        }
+    }
+
+    [FundAccountDatabaseFact]
     public async Task EnsureMigratedAsync_RunTwice_IsIdempotent()
     {
         var options = new FundAccountStoreOptions
