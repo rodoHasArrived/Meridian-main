@@ -1,9 +1,10 @@
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Runtime.Versioning;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Integrity;
 using Meridian.Core.Logging;
 using Meridian.Storage.Archival;
 using Serilog;
@@ -827,7 +828,7 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
     internal static string ComputeTokenDigest(OAuthToken token)
     {
         var material = string.Join("\n", token.AccessToken, token.RefreshToken ?? string.Empty, token.ExpiresAt.ToString("O"));
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(material))).ToLowerInvariant();
+        return Sha256Digest.ComputeUtf8(material);
     }
 
     /// <summary>One journal line: the audit record plus its commit phase and the proof replay needs.</summary>
