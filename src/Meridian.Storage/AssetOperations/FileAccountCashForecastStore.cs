@@ -351,6 +351,8 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
     /// <summary>
     /// Caller holds the store lock. A migrated legacy file is retained evidence: when the marker, index
     /// and scope files are lost beside it, provisioning fails closed instead of restarting history.
+    /// Every migration baseline is the same evidence, even an empty one: it is written only once a
+    /// scope was used after migration, so the scope may have acquired durable history since.
     /// </summary>
     private async Task RefuseRetainedMigratedHistoryAsync(CancellationToken ct)
     {
@@ -365,9 +367,8 @@ public sealed class FileAccountCashForecastStore : IAccountCashForecastStore
             foreach (var file in Directory.EnumerateFiles(MigrationBaselineDirectory, "*.json"))
             {
                 var scope = await ReadUnregisteredScopeAsync(file, Path.GetFileNameWithoutExtension(file), ct).ConfigureAwait(false);
-                var baseline = await ReadScopeFileAsync(scope, file, ct).ConfigureAwait(false);
-                if (baseline.Length != 0)
-                    throw new InvalidOperationException("Unprovisioned migration baseline history requires explicit recovery.");
+                await ReadScopeFileAsync(scope, file, ct).ConfigureAwait(false);
+                throw new InvalidOperationException("Unprovisioned migration baseline evidence requires explicit recovery.");
             }
         }
     }

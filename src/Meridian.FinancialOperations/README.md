@@ -50,7 +50,9 @@ artifact refuses provisioning and cold bootstrap while existing scoped baselines
 A nonempty baseline proves its active file previously existed: if that file is missing, migration
 refuses reconstruction even if its index entry was also lost. Restore the scope files, baselines,
 index and marker from the complete backup set; retained baseline-only history cannot be provisioned
-as empty, including beside an empty unmarked legacy file.
+as empty, including beside an empty unmarked legacy file. Any baseline left beside a lost marker,
+index and scope files refuses provisioning (`409`), even an empty one: it was recorded when its scope
+was first used after migration, so that scope may have acquired durable history since.
 Retained migrated runs must remain an exact prefix of the active scope document. Migrated cases
 retain their identity and observation/assignment prefixes; subsequent observations, assignments,
 resolution and reopening may advance the current case metadata. Provisioning, reads and writes
