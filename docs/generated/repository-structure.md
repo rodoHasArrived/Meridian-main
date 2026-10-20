@@ -10488,6 +10488,7 @@ Meridian-main
 │   │   │   ├── OmsGovernedBrokerageOrderGatewayTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.Outcomes.cs
+│   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.RejectedSuccessor.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.Validation.cs
 │   │   │   ├── OrderManagementSystemDurableHandoffOrderingTests.cs
 │   │   │   ├── OrderManagementSystemGovernanceTests.cs
@@ -10637,6 +10638,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementConfirmation.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTerms.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTrail.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.SendBoundary.cs
 │   │   │   │   ├── AlpacaConnectionReadinessTests.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs

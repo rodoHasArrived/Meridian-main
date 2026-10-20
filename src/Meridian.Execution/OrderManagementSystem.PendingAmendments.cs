@@ -153,7 +153,10 @@ public sealed partial class OrderManagementSystem
             throw new InvalidDataException("A terminal predecessor does not establish the candidate replacement outcome.");
         if (locallyConfirmed && report.ReportType is ExecutionReportType.Modified)
             return pending.Proposed;
-        if (report.ReportType is ExecutionReportType.ModificationRejected && !successor)
+        // A rejection settles the amendment as refused whichever broker id carries it: a
+        // rejected successor (Robinhood reports the rejected replacement itself) never makes the
+        // proposed terms live, even when its echoed terms match them.
+        if (report.ReportType is ExecutionReportType.ModificationRejected)
             return pending.Original;
         if (!report.HasOrderTerms
             && (pending.Original.LimitPrice != pending.Proposed.LimitPrice || pending.Original.StopPrice != pending.Proposed.StopPrice))
