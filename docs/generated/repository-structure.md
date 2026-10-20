@@ -10680,6 +10680,7 @@ Meridian-main
 │   │   │   │   ├── IBBrokerageGatewayTests.PreDispatch.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.Recovery.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.RecoveryScope.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.SessionRaces.cs
 │   │   │   │   ├── IBDataServicesTests.cs
 │   │   │   │   ├── IBHistoricalProviderContractTests.cs
 │   │   │   │   ├── IBMarketDataClientContractTests.cs

@@ -167,7 +167,8 @@ public sealed partial class IBBrokerageGateway :
         await _client.ConnectAsync(ct).ConfigureAwait(false);
         await PrimeNextOrderIdAsync(ct).ConfigureAwait(false);
 
-        Interlocked.Increment(ref _connectionEpoch);
+        lock (_sessionGate)
+            Interlocked.Increment(ref _connectionEpoch);
         _connected = true;
 
         _logger.LogInformation(
@@ -182,7 +183,7 @@ public sealed partial class IBBrokerageGateway :
             return;
 
         await _client.DisconnectAsync(ct).ConfigureAwait(false);
-        EndSession();
+        EndSession(forgetAccounts: true);
         _connected = false;
 
         _logger.LogInformation("IB brokerage disconnected");

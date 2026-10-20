@@ -9,9 +9,18 @@ public sealed partial class IBBrokerageGateway
     // the retained order.
     private int _connectionEpoch;
 
+    // Guards every epoch change and the install of recovered routes, so a route is installed only
+    // for evidence from the session that is still current and never needs rolling back.
+    private readonly object _sessionGate = new();
+
+    /// <summary>Test seam: runs inside the session gate immediately before recovered routes install.</summary>
+    internal Action? RecoveryRoutesInstalling { get; set; }
+
     private static readonly IReadOnlySet<string> NoVerifiedAccounts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-    // Accounts IB reported for this login via managedAccounts; cleared whenever the session ends.
+    // Accounts IB reported for this login via managedAccounts. Cleared when the transport is lost or
+    // explicitly reconnected, never on an automatic restore: IB reports them during the reconnect
+    // handshake, which can complete before ConnectionRestored is raised, and may not repeat them.
     private volatile IReadOnlySet<string> _verifiedAccounts = NoVerifiedAccounts;
 
     /// <inheritdoc />
@@ -35,15 +44,19 @@ public sealed partial class IBBrokerageGateway
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     // The client can drop and re-establish the transport on its own. Either edge ends the session
-    // that any in-flight recovery evidence belongs to.
-    private void OnConnectionLost(object? sender, EventArgs e) => EndSession();
+    // that any in-flight recovery evidence belongs to; only the loss forgets the accounts.
+    private void OnConnectionLost(object? sender, EventArgs e) => EndSession(forgetAccounts: true);
 
-    private void OnConnectionRestored(object? sender, EventArgs e) => EndSession();
+    private void OnConnectionRestored(object? sender, EventArgs e) => EndSession(forgetAccounts: false);
 
-    private void EndSession()
+    private void EndSession(bool forgetAccounts)
     {
-        _verifiedAccounts = NoVerifiedAccounts;
-        Interlocked.Increment(ref _connectionEpoch);
+        lock (_sessionGate)
+        {
+            if (forgetAccounts)
+                _verifiedAccounts = NoVerifiedAccounts;
+            Interlocked.Increment(ref _connectionEpoch);
+        }
     }
 
     /// <inheritdoc />
@@ -133,32 +146,19 @@ public sealed partial class IBBrokerageGateway
             OrderStopPrice = order.StopPrice
         };
 
-        // Routes are installed only for evidence from this session: validate first, then roll the
-        // routes back if the session changed underneath, so a stale snapshot can never leave a
-        // cancellation path into the next session.
-        Current(report);
-        var gatewayKey = gatewayOrderId.ToString();
-        var addedContext = _submittedOrders.TryAdd(gatewayOrderId, context);
-        var hadClientRoute = _gatewayOrderIdsByExternalId.TryGetValue(clientOrderId, out var priorClientRoute);
-        var hadGatewayRoute = _gatewayOrderIdsByExternalId.TryGetValue(gatewayKey, out var priorGatewayRoute);
-        _gatewayOrderIdsByExternalId[clientOrderId] = gatewayOrderId;
-        _gatewayOrderIdsByExternalId[gatewayKey] = gatewayOrderId;
-        if (Volatile.Read(ref _connectionEpoch) == epoch)
-            return report;
-
-        if (addedContext)
-            _submittedOrders.TryRemove(gatewayOrderId, out _);
-        RestoreRoute(clientOrderId, hadClientRoute, priorClientRoute);
-        RestoreRoute(gatewayKey, hadGatewayRoute, priorGatewayRoute);
-        return Current(report);
-
-        void RestoreRoute(string key, bool existed, int prior)
+        // Routes are installed only for evidence from this session. The epoch check and the install
+        // share the session gate with every epoch change, so the session cannot change in between:
+        // a stale snapshot never installs, and nothing installed is ever rolled back, which would
+        // otherwise race a recovery from the new session for the same order.
+        lock (_sessionGate)
         {
-            if (existed)
-                _gatewayOrderIdsByExternalId[key] = prior;
-            else
-                _gatewayOrderIdsByExternalId.TryRemove(key, out _);
+            RecoveryRoutesInstalling?.Invoke();
+            Current(report);
+            _submittedOrders.TryAdd(gatewayOrderId, context);
+            _gatewayOrderIdsByExternalId[clientOrderId] = gatewayOrderId;
+            _gatewayOrderIdsByExternalId[gatewayOrderId.ToString()] = gatewayOrderId;
         }
+        return report;
 
         ExecutionReport? Current(ExecutionReport? result) => Volatile.Read(ref _connectionEpoch) == epoch
             ? result
