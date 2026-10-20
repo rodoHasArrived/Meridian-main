@@ -156,7 +156,8 @@ public abstract class PollingProviderBase
             LastMessageReceivedAt: _lastMessageReceivedAt,
             LastReconnectAttemptAt: supervisor.LastReconnectAttemptAt ?? _lastPollAttemptAt,
             LastError: _lastError ?? supervisor.LastError,
-            LastFailureKind: supervisor.LastFailureKind,
+            LastFailureKind: supervisor.LastFailureKind ?? (_lastPollFailure is { } failure
+                ? ProviderFailureClassifier.Classify(failure) : null),
             ConnectionAge: supervisor.ConnectionAge,
             IdleDuration: _lastMessageReceivedAt is { } lastMessageAt ? now - lastMessageAt : null,
             ActiveSubscriptions: ActiveSubscriptionCount);
@@ -188,15 +189,20 @@ public abstract class PollingProviderBase
 
     protected void RecordTerminalPollFailure(Exception error)
     {
-        ArgumentNullException.ThrowIfNull(error);
-        _lastError = error.Message;
-        _lastPollFailure = error;
+        RecordPollFailure(error);
 
         if (_connectionSupervisor.LifecycleState == ProviderConnectionLifecycleState.Configured)
         {
             _lifecycleState = ProviderConnectionLifecycleState.Failed;
             PublishDiagnosticsChanged();
         }
+    }
+
+    protected void RecordPollFailure(Exception error)
+    {
+        ArgumentNullException.ThrowIfNull(error);
+        _lastError = error.Message;
+        _lastPollFailure = error;
     }
 
     protected void ClearError()
@@ -292,10 +298,10 @@ public abstract class PollingProviderBase
                 Exception? pollFailure = null;
                 try
                 {
-                    if (await PollOnceAsync(ct).ConfigureAwait(false))
+                    if (await PollCycleAsync(ct).ConfigureAwait(false))
                         continue;
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
                 {
                     throw;
                 }
@@ -319,7 +325,7 @@ public abstract class PollingProviderBase
                 var recovered = await _connectionSupervisor.ReconnectAsync(
                     async token =>
                     {
-                        if (!await PollOnceAsync(token).ConfigureAwait(false))
+                        if (!await PollCycleAsync(token).ConfigureAwait(false))
                         {
                             throw _lastPollFailure ?? new HttpRequestException(
                                 _lastError ?? $"{_providerName} polling recovery probe failed.");
@@ -331,7 +337,7 @@ public abstract class PollingProviderBase
                     break;
             }
         }
-        catch (OperationCanceledException) { }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
         catch (Exception ex)
         {
             _connectionSupervisor.RecordFailure(ex);
@@ -340,6 +346,23 @@ public abstract class PollingProviderBase
         finally
         {
             Log.LogInformation("{Provider} poll loop stopped", _providerName);
+        }
+    }
+
+    private async Task<bool> PollCycleAsync(CancellationToken ct)
+    {
+        _lastPollFailure = null;
+        try
+        {
+            var succeeded = await PollOnceAsync(ct).ConfigureAwait(false);
+            if (succeeded)
+                ClearError();
+            return succeeded;
+        }
+        catch (OperationCanceledException ex) when (!ct.IsCancellationRequested)
+        {
+            // HttpClient timeouts cancel an individual request without cancelling the polling lifetime.
+            throw new TimeoutException($"{_providerName} polling request timed out.", ex);
         }
     }
 

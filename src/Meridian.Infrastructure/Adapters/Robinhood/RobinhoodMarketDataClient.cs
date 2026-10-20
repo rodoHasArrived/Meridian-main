@@ -181,8 +181,9 @@ public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketData
 
     /// <summary>
     /// Runs one poll cycle: batches the subscribed symbols (deduplicated) and polls the
-    /// Robinhood quotes endpoint per batch. Returns <see langword="true"/> only if every batch
-    /// succeeded, so the base class can drive degraded-state backoff.
+    /// Robinhood quotes endpoint per batch. Every batch is polled even after one fails, so a
+    /// persistently rejected symbol cannot starve the others. Returns <see langword="true"/>
+    /// only if every batch succeeded, so the base class can drive degraded-state backoff.
     /// </summary>
     protected override async Task<bool> PollOnceAsync(CancellationToken ct)
     {
@@ -215,6 +216,10 @@ public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketData
             pollSucceeded &= await PollBatchAsync(batch, ct).ConfigureAwait(false);
         }
 
+        // Successful batches never clear the error, so a failure recorded earlier in the cycle
+        // survives the batches after it; only a fully successful cycle clears it.
+        if (pollSucceeded)
+            ClearError();
         return pollSucceeded;
     }
 
@@ -232,17 +237,19 @@ public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketData
 
             using var response = await client.SendAsync(request, ct).ConfigureAwait(false);
 
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            if (response.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden)
             {
                 RecordTerminalPollFailure(new UnauthorizedAccessException(
-                    "Provider returned Unauthorized while polling Robinhood quotes. Refresh or replace the stored access token."));
-                _logger.LogWarning("Robinhood quote polling: 401 Unauthorized — access token may have expired");
+                    $"Provider returned {response.StatusCode} while polling Robinhood quotes. Refresh or replace the stored access token."));
+                _logger.LogWarning("Robinhood quote polling: HTTP {StatusCode} — access token may have expired", response.StatusCode);
                 return false;
             }
 
             if (!response.IsSuccessStatusCode)
             {
-                RecordError($"Provider returned HTTP {(int)response.StatusCode} while polling Robinhood quotes.");
+                RecordPollFailure(new HttpRequestException(
+                    $"Provider returned HTTP {(int)response.StatusCode} while polling Robinhood quotes.",
+                    inner: null, response.StatusCode));
                 _logger.LogWarning(
                     "Robinhood quote polling: HTTP {StatusCode} for batch {Symbols}",
                     response.StatusCode, string.Join(",", symbols));
@@ -257,7 +264,6 @@ public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketData
             if (result?.Results is null)
             {
                 RecordSuccessfulApiCall();
-                ClearError();
                 return true;
             }
 
@@ -303,16 +309,20 @@ public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketData
             RecordSuccessfulApiCall();
             if (publishedAny)
                 RecordMessageReceived();
-            ClearError();
             return true;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }
+        catch (OperationCanceledException ex)
+        {
+            RecordPollFailure(new TimeoutException("Robinhood quote polling request timed out.", ex));
+            return false;
+        }
         catch (Exception ex)
         {
-            RecordError(ex.Message);
+            RecordPollFailure(ex);
             _logger.LogError(ex, "Robinhood quote poll error for batch {Symbols}", string.Join(",", symbols));
             return false;
         }
