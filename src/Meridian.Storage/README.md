@@ -22,10 +22,46 @@ snapshot payload lacking `Blockers` or `CreatedBy` is rejected instead of passin
 inventory exception records only the lexical false positive from `BEFORE TRUNCATE` rejection
 triggers and requires independent schema/storage review.
 
-`FileAccountCashForecastStore` retains append-only scoped forecast history with content hashes,
-atomic replacement and a process-independent writer lease. Explicit `InitializeAsync` provisioning
-is required; missing/corrupt initialized history cannot silently restart. Financial Operations
-owns cash-balance case semantics and delegates file replacement to Storage's shared writer.
+`FileAccountCashForecastStore` retains append-only forecast history partitioned per exact
+tenant/company/account/book/base-currency scope: one content-hashed `scopes/<sha256>.json` file and
+`.lock` per scope under `asset-operations/account-cash-forecasts`, a `scope-index.json` registry
+rewritten only when a scope first appears, atomic replacement and a 30-second cross-process lease.
+Explicit `InitializeAsync` provisioning is required; a missing or corrupt scope file fails closed for
+that scope's reads and appends without blocking other scopes (provisioning validates every scope and
+baseline, so it fails for the whole store until that scope is restored), a missing or corrupt index
+or marker fails closed for the whole store, and neither can silently restart history. A legacy single-file `snapshots.json` is
+validated, split losslessly and renamed `snapshots.json.migrated`, never deleted; a `.migrated` file
+left beside a lost layout refuses provisioning rather than restarting history, and a scope it retains
+is never treated as new while its scope file is missing. Once an append is
+validated, the first scope-file write and its registration run under one store lease, file first, and
+ignore request cancellation: an interruption between the two leaves a valid unregistered scope file
+that the next provisioning or scoped use registers, never an indexed scope without its file; every store read shares delete so a concurrent atomic replacement
+(a first registration rewriting the index, or a scope write overlapping provisioning's validation)
+succeeds on Windows. The data root remains host-local; multi-host deployments need the PostgreSQL follow-on.
+The migration is automatic and one-way: a pre-partition binary fails every operation once the legacy
+file is renamed, so stop every process on the data root before deploying, never mix pre-partition and
+per-scope binaries on one data root (rolling restarts included), and roll back only by restoring the
+pre-migration backup, which drops records captured after the migration.
+Financial Operations owns cash-balance case semantics and delegates file replacement to Storage's
+shared writer.
+Migration also retains per-scope baseline envelopes in `migration-baselines/<sha256>.json`.
+Scoped operations compare only their active file and baseline; provisioning cross-checks the full
+`.migrated` artifact and all baselines before writing recovery state. Older partitioned layouts
+materialize these baselines during provisioning, or once per scope under the store lease on first
+access after verifying the active prefix. A corrupt baseline affects its scope; a corrupt global
+artifact refuses provisioning and cold bootstrap while existing scoped baselines remain usable.
+A nonempty baseline proves its active file previously existed: if that file is missing, migration
+refuses reconstruction even if its index entry was also lost. Restore the scope files, baselines,
+index and marker from the complete backup set; retained baseline-only history cannot be provisioned
+as empty, including beside an empty unmarked legacy file. A baseline is committed only beside its
+scope's active file (first-time use after migration validates the scope but persists no baseline until
+its file exists), so any baseline whose scope file is missing is lost history, even an empty one:
+provisioning answers `409` beside a lost marker and index, and `503` while the marker survives.
+Retained migrated snapshots must remain an exact ordered prefix, including their outputs, of each
+active scope history. Provisioning, reads and appends refuse incomplete or contradictory restored
+histories even when the replacement files have valid hashes. Migration refuses any registered scope
+whose file is missing before writing recovery state; a stale legacy snapshot cannot replace
+post-migration appends. Existing files with a consistent migrated prefix retain their later records.
 Forecast corrections resolve a flow's last retained revision across temporarily omitted runs,
 separately for expected and actual cash, while retaining the latest snapshot predecessor.
 Close-price history uses one exact account/book/date query ordered by version and shares the
