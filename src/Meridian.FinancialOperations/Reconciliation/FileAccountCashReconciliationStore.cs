@@ -488,6 +488,12 @@ public sealed class FileAccountCashReconciliationStore
         // unregistered file that the next provisioning or scoped use registers, never an indexed scope
         // without its file.
         await WriteScopeFileAsync(scope, document, CancellationToken.None).ConfigureAwait(false);
+        // A first commit only happens for a scope the migrated artifact does not retain (the caller
+        // validated that before the write), so its baseline is empty. It is committed here, beside the
+        // file and before the first commit returns, so a later partial restore that loses the file still
+        // finds the evidence that this scope held history.
+        if (File.Exists(MigratedLegacyStatePath) && !File.Exists(MigrationBaselinePath(scope)))
+            await WriteMigrationBaselineAsync(scope, new AccountCashReconciliationDocument(1, [], []), CancellationToken.None).ConfigureAwait(false);
         await RegisterLockedAsync(scope).ConfigureAwait(false);
     }
 

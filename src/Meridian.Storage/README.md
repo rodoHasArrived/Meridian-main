@@ -38,6 +38,10 @@ ignore request cancellation: an interruption between the two leaves a valid unre
 that the next provisioning or scoped use registers, never an indexed scope without its file; every store read shares delete so a concurrent atomic replacement
 (a first registration rewriting the index, or a scope write overlapping provisioning's validation)
 succeeds on Windows. The data root remains host-local; multi-host deployments need the PostgreSQL follow-on.
+The migration is automatic and one-way: a pre-partition binary fails every operation once the legacy
+file is renamed, so stop every process on the data root before deploying, never mix pre-partition and
+per-scope binaries on one data root (rolling restarts included), and roll back only by restoring the
+pre-migration backup, which drops records captured after the migration.
 Financial Operations owns cash-balance case semantics and delegates file replacement to Storage's
 shared writer.
 Migration also retains per-scope baseline envelopes in `migration-baselines/<sha256>.json`.

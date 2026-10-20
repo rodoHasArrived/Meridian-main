@@ -38,7 +38,11 @@ is completed by the next provisioning or scoped use, and every store read shares
 so concurrent atomic replacements succeed on Windows. Corrupt or
 missing initialized state raises `InvalidDataException`, and each writer lease times out after 30
 seconds with `TimeoutException`. The data root remains host-local (PostgreSQL is the multi-host
-follow-on). Source clearing confers no governed close approval.
+follow-on). The migration is automatic and one-way: a pre-partition binary fails every operation once
+the legacy file is renamed, so stop every process on the data root before deploying, never mix
+pre-partition and per-scope binaries on one data root (rolling restarts included), and roll back only
+by restoring the pre-migration backup, which drops records captured after the migration. Source
+clearing confers no governed close approval.
 See [account oversight evidence](../../docs/domain/account-oversight-evidence.md) and
 `AccountCashReconciliationContinuityTests` for the first `W10-RECON-001` acceptance slice.
 Migration also retains per-scope baseline envelopes in `migration-baselines/<sha256>.json`.

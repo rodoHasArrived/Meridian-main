@@ -1552,8 +1552,7 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         (await service.GetCasesAsync(_scope)).Should().BeEmpty();
         File.Exists(baselinePath).Should().BeFalse("a queried scope without an active file leaves no baseline");
         await service.RunAsync(Request("first", 0, 1000m, 990m));
-        (await service.GetCasesAsync(_scope)).Should().ContainSingle();
-        File.Exists(baselinePath).Should().BeTrue();
+        File.Exists(baselinePath).Should().BeTrue("the first commit persists the baseline beside the scope file before it returns");
         var baseline = await File.ReadAllBytesAsync(baselinePath);
         var backupScope = await File.ReadAllBytesAsync(ScopeStatePath(_scope));
         var backupIndex = await File.ReadAllBytesAsync(indexPath);

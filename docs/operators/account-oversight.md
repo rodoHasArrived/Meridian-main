@@ -43,6 +43,15 @@ These stores live on the host's local data root and are not shared between hosts
 oversight API on a single host against one data root. Multi-host deployments are a known constraint
 and the planned follow-on is a PostgreSQL-backed store.
 
+The per-scope migration is automatic and one-way. The first provisioning or scoped operation served
+by a per-scope binary renames the legacy `state.json` or `snapshots.json` to `.migrated` while
+keeping the same `initialized` marker, and a pre-partition binary then accepts the marker but fails
+every cash-continuity and forecast operation because its state file is absent. Before deploying:
+back up both store directories, stop every process that uses the data root, and never run
+pre-partition and per-scope binaries against one data root, including during a rolling restart.
+Rolling back to a pre-partition binary requires restoring that pre-migration backup; records captured
+after the migration live only in the per-scope layout and are lost to the older binary.
+
 ## Shared routes
 
 | Workflow | Routes under the account prefix | Expected result |

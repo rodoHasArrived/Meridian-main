@@ -579,8 +579,7 @@ public sealed class AccountCashForecastTests : IDisposable
         (await store.GetHistoryAsync(Scope)).Should().BeEmpty();
         File.Exists(baselinePath).Should().BeFalse("a queried scope without an active file leaves no baseline");
         await store.AppendAsync(first);
-        (await store.GetHistoryAsync(Scope)).Should().ContainSingle();
-        File.Exists(baselinePath).Should().BeTrue();
+        File.Exists(baselinePath).Should().BeTrue("the first commit persists the baseline beside the scope file before it returns");
         var baseline = await File.ReadAllBytesAsync(baselinePath);
         var backupScope = await File.ReadAllBytesAsync(ScopeStatePath(Scope));
         var backupIndex = await File.ReadAllBytesAsync(indexPath);
