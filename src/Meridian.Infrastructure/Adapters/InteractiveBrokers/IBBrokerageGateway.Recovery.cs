@@ -13,6 +13,14 @@ public sealed partial class IBBrokerageGateway
     // for evidence from the session that is still current and never needs rolling back.
     private readonly object _sessionGate = new();
 
+    // Guards the open-orders request/end pairing: openOrderEnd carries no request id, so ends still
+    // owed to abandoned requests are counted and drained instead of completing a later request.
+    private readonly object _openOrdersFence = new();
+    private int _abandonedOpenOrdersRequests;
+
+    /// <summary>Test seam: runs after a stale recovered route is detected, before the session gate.</summary>
+    internal Action? StaleRouteCleanupStarting { get; set; }
+
     /// <summary>Test seam: runs inside the session gate immediately before recovered routes install.</summary>
     internal Action? RecoveryRoutesInstalling { get; set; }
 
@@ -56,7 +64,15 @@ public sealed partial class IBBrokerageGateway
             if (forgetAccounts)
                 _verifiedAccounts = NoVerifiedAccounts;
             Interlocked.Increment(ref _connectionEpoch);
+            ForgetOwedOpenOrdersEnds();
         }
+    }
+
+    // A previous session's owed ends never arrive in the new one.
+    private void ForgetOwedOpenOrdersEnds()
+    {
+        lock (_openOrdersFence)
+            _abandonedOpenOrdersRequests = 0;
     }
 
     /// <inheritdoc />

@@ -39,7 +39,11 @@ transport, and cancellation routes are installed only for evidence from the curr
 Recovery stays unresolved for a fill price that is not confirmed cumulative, for any amendment that
 requested a trail (the snapshot carries no trailing term), and for an order whose contract is not a
 reported stock. A route recovered from a snapshot is valid only in the session that read it; after a
-session change it is dropped and refused until reconciliation recovers the order again. Status
+session change it is dropped and refused until reconciliation recovers the order again. Cancel and
+modify check the session and send under the same gate as every session change, so a session-scoped
+order id is never sent into a later session, and stale-route cleanup removes only the exact stale
+context it found. An open-orders request abandoned before its `openOrderEnd` (which carries no request
+id) leaves that end owed, so it is drained rather than completing the next request early. Status
 echoes that the open-order snapshot produces for orders this session does not track are kept as
 recovery evidence rather than published as live reports. Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
 fills against pending exposure, keeps cancellation available, and keys

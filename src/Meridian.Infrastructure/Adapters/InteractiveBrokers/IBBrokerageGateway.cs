@@ -168,7 +168,10 @@ public sealed partial class IBBrokerageGateway :
         await PrimeNextOrderIdAsync(ct).ConfigureAwait(false);
 
         lock (_sessionGate)
+        {
             Interlocked.Increment(ref _connectionEpoch);
+            ForgetOwedOpenOrdersEnds();
+        }
         _connected = true;
 
         _logger.LogInformation(
@@ -238,7 +241,8 @@ public sealed partial class IBBrokerageGateway :
 
         try
         {
-            await _client.CancelOrderAsync(gatewayOrderId, ct).ConfigureAwait(false);
+            await SendInCurrentSession(orderId, gatewayOrderId, context,
+                () => _client.CancelOrderAsync(gatewayOrderId, ct)).ConfigureAwait(false);
             return await AwaitPendingOrderOperationAsync(
                 gatewayOrderId,
                 pendingOperation,
@@ -287,8 +291,11 @@ public sealed partial class IBBrokerageGateway :
             };
             pendingOperation = RegisterPendingOrderOperation(
                 gatewayOrderId, PendingOrderOperationKind.Modify, updatedContext);
-            sent = true;
-            await _client.PlaceOrderAsync(gatewayOrderId, updatedRequest, ct).ConfigureAwait(false);
+            await SendInCurrentSession(orderId, gatewayOrderId, context, () =>
+            {
+                sent = true;
+                return _client.PlaceOrderAsync(gatewayOrderId, updatedRequest, ct);
+            }).ConfigureAwait(false);
             return await AwaitPendingOrderOperationAsync(
                 gatewayOrderId,
                 pendingOperation,
@@ -390,19 +397,29 @@ public sealed partial class IBBrokerageGateway :
         EnsureConnected();
 
         await _openOrdersGate.WaitAsync(ct).ConfigureAwait(false);
+        var requested = false;
         try
         {
             _openOrdersSnapshotBuffer = new ConcurrentDictionary<int, BrokerOrder>();
             _openOrdersSnapshotWaiter = new TaskCompletionSource<IReadOnlyList<BrokerOrder>>(
                 TaskCreationOptions.RunContinuationsAsynchronously);
 
+            var waiter = _openOrdersSnapshotWaiter;
             _client.RequestOpenOrders();
-            return await _openOrdersSnapshotWaiter.Task.WaitAsync(CallbackTimeout, ct).ConfigureAwait(false);
+            requested = true;
+            return await waiter.Task.WaitAsync(CallbackTimeout, ct).ConfigureAwait(false);
         }
         finally
         {
-            _openOrdersSnapshotWaiter = null;
-            _openOrdersSnapshotBuffer = null;
+            lock (_openOrdersFence)
+            {
+                // openOrderEnd carries no request id. A request abandoned before its end arrived still
+                // owes one, which must drain here rather than complete the next request early.
+                if (requested && _openOrdersSnapshotWaiter is { Task.IsCompleted: false })
+                    _abandonedOpenOrdersRequests++;
+                _openOrdersSnapshotWaiter = null;
+                _openOrdersSnapshotBuffer = null;
+            }
             _openOrdersGate.Release();
         }
     }
@@ -709,16 +726,40 @@ public sealed partial class IBBrokerageGateway :
     {
         if (!context.RecoveredFromSnapshot || context.RecoveryEpoch == Volatile.Read(ref _connectionEpoch))
             return context;
+        StaleRouteCleanupStarting?.Invoke();
         lock (_sessionGate)
         {
-            ((ICollection<KeyValuePair<int, SubmittedOrderContext>>)_submittedOrders)
-                .Remove(new KeyValuePair<int, SubmittedOrderContext>(gatewayOrderId, context));
+            // Installs share this gate, so what is registered now is authoritative. A recovery in the
+            // current session may have reinstalled this order since it was looked up: its context
+            // and aliases are not the stale route's to remove.
+            if (!_submittedOrders.TryGetValue(gatewayOrderId, out var current))
+                throw StaleRoute(orderId);
+            if (!ReferenceEquals(current, context))
+                return CurrentSessionContext(orderId, gatewayOrderId, current);
+            _submittedOrders.TryRemove(gatewayOrderId, out _);
             foreach (var key in new[] { context.MeridianOrderId, gatewayOrderId.ToString() })
                 ((ICollection<KeyValuePair<string, int>>)_gatewayOrderIdsByExternalId)
                     .Remove(new KeyValuePair<string, int>(key, gatewayOrderId));
         }
-        throw new InvalidOperationException(
+        throw StaleRoute(orderId);
+    }
+
+    private static InvalidOperationException StaleRoute(string orderId) => new(
             $"Order '{orderId}' was recovered in an earlier IB session; reconcile it again before cancelling or amending it.");
+
+    /// <summary>
+    /// Sends a request that relies on a session-scoped order id. The session check and the client
+    /// call share the session gate with every session change, so the id is never sent into a later
+    /// session. Both client builds write to the socket synchronously and return a completed task, so
+    /// the gate is held only for the write and never across an await or an IB callback.
+    /// </summary>
+    private Task SendInCurrentSession(string orderId, int gatewayOrderId, SubmittedOrderContext context, Func<Task> send)
+    {
+        lock (_sessionGate)
+        {
+            CurrentSessionContext(orderId, gatewayOrderId, context);
+            return send();
+        }
     }
 
     private void EnsureConnected()
@@ -945,12 +986,20 @@ public sealed partial class IBBrokerageGateway :
 
     private void OnOpenOrdersCompleted(object? sender, EventArgs e)
     {
-        _openOrdersSnapshotWaiter?.TrySetResult(
-            _openOrdersSnapshotBuffer?.Values
-                .OrderBy(o => o.Symbol, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(o => o.OrderId, StringComparer.OrdinalIgnoreCase)
-                .ToArray()
-            ?? Array.Empty<BrokerOrder>());
+        lock (_openOrdersFence)
+        {
+            if (_abandonedOpenOrdersRequests > 0)
+            {
+                _abandonedOpenOrdersRequests--;
+                return;
+            }
+            _openOrdersSnapshotWaiter?.TrySetResult(
+                _openOrdersSnapshotBuffer?.Values
+                    .OrderBy(o => o.Symbol, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(o => o.OrderId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray()
+                ?? Array.Empty<BrokerOrder>());
+        }
     }
 
     private void OnOrderStatusReceived(object? sender, IBOrderStatusUpdate update)
