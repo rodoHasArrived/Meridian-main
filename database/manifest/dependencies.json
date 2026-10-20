@@ -4246,6 +4246,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Domain.ListingId"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Domain.MarketDataSources"
     },
     {
@@ -4253,6 +4259,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Domain.MarketStateValues"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Domain.Mic"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Domain.MicReference"
     },
     {
       "kind": "contract-set-member",
@@ -27855,6 +27873,18 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Domain.ListingId",
+      "target": "contract:Meridian.Contracts.Domain.Mic"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Domain.ListingId",
+      "target": "contract:Meridian.Contracts.Domain.SymbolId"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar",
       "target": "contract:Meridian.Contracts.Domain.Events.MarketEventPayload"
     },
@@ -50939,7 +50969,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "f606b29c7fa26a41b5470709dfe367099b017ca11b025bf3894edcf4334f0d3b",
+  "fingerprint": "90ce3c9d64eb3fee9d1817005ecabb97a6a34688dc337cf0c2e1081bff727374",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -55235,6 +55265,12 @@
       "label": "Meridian.Contracts.Domain.IntegrityEventDto"
     },
     {
+      "classification": "record_struct",
+      "id": "contract:Meridian.Contracts.Domain.ListingId",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Domain.ListingId"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.Domain.MarketDataSources",
       "kind": "contract-type",
@@ -55245,6 +55281,18 @@
       "id": "contract:Meridian.Contracts.Domain.MarketStateValues",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Domain.MarketStateValues"
+    },
+    {
+      "classification": "struct",
+      "id": "contract:Meridian.Contracts.Domain.Mic",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Domain.Mic"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Domain.MicReference",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Domain.MicReference"
     },
     {
       "classification": "record",
@@ -74483,11 +74531,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3323,
-    "contract_set_memberships": 4002,
-    "edges": 8464,
+    "contract_references": 3325,
+    "contract_set_memberships": 4005,
+    "edges": 8469,
     "foreign_keys": 138,
     "logical_references": 6,
-    "nodes": 4077
+    "nodes": 4080
   }
 }
