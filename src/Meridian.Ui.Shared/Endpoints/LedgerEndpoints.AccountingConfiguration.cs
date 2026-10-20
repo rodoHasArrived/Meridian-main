@@ -676,6 +676,8 @@ public static partial class LedgerEndpoints
         .Produces<IReadOnlyList<AccountingActionAuditEventDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
+
+        MapAuditIntegrityEndpoint(app, jsonOptions);
     }
 
     // The six WithAccessContext overloads live here rather than in LedgerEndpoints.cs

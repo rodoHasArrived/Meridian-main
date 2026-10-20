@@ -865,6 +865,7 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationPostingRuleTestCases = "/api/ledger/accounting-configuration/posting-rules/test-cases";
     public const string LedgerAccountingConfigurationActivate = "/api/ledger/accounting-configuration/activate";
     public const string LedgerAccountingConfigurationAudit = "/api/ledger/accounting-configuration/audit";
+    public const string LedgerAuditIntegrity = "/api/ledger/audit-integrity";
     public const string LedgerCloseManagementPeriodPlan = "/api/ledger/close-management/period-plan/{workflowId:guid}";
     public const string LedgerCloseManagementPeriodPlanConfiguration = "/api/ledger/close-management/period-plan/configuration";
     public const string LedgerCloseManagementTemplates = "/api/ledger/close-management/templates";

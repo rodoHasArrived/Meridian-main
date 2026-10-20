@@ -111,10 +111,31 @@ public sealed class SwapProjectionService : ISwapReferenceService
                 fixedRate = fr.GetDecimal();
             }
 
-            result.Add(new SwapLegDto(legType, currency, index, fixedRate));
+            result.Add(new SwapLegDto(
+                legType,
+                currency,
+                index,
+                fixedRate,
+                ReadLegString(leg, "paymentFrequency", "frequency"),
+                ReadLegString(leg, "dayCount", "dayCountConvention", "dayCountBasis")));
         }
 
         return result;
+    }
+
+    // Same alias order as the terms schema's swap-leg element fields, so the DTO shows the text the
+    // cash-flow resolver and the F# mapping read.
+    private static string? ReadLegString(JsonElement leg, params string[] keys)
+    {
+        foreach (var key in keys)
+        {
+            if (leg.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.String)
+            {
+                return value.GetString();
+            }
+        }
+
+        return null;
     }
 }
 

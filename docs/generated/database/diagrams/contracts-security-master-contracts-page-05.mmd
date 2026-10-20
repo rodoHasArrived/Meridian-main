@@ -1,5 +1,13 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry["StructuredFactorScheduleEntry"] {
+        +DateOnly AsOfDate
+        +decimal Factor
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry["StructuredPrincipalScheduleEntry"] {
+        +decimal Amount
+        +DateOnly PaymentDate
+    }
     class Meridian_Contracts_SecurityMaster_StructuredStepCouponEntry["StructuredStepCouponEntry"] {
         +DateOnly EffectiveDate
         +decimal Rate

@@ -281,6 +281,14 @@ Period creation requires a resolved authenticated actor and overwrites any clien
 `CreatedBy` before calling the shared ledger service. The actor is retained in the same-transaction
 PostgreSQL ledger audit. `WorkstationEndpointsTests.LedgerAuditActor` exercises spoofed client
 attribution against the real period service and PostgreSQL store.
+`GET /api/ledger/audit-integrity` (`AdminMaintenance`) runs `AccountingAuditIntegrityService` over the
+composed accounting-action and ledger-event audit chains without appending, reporting each as
+`verified`, `broken`, `not-configured`, `unavailable`, or `not-started` (nothing chained yet; never counted as verified) with counts and break position only.
+A chain of either kind written under a newer schema is `unavailable`, not `broken`, and a ledger
+break still reports the genesis facts that predate chaining. One run is admitted per host at a
+time (a concurrent request gets 409) because the scan holds the same head locks appends take. The
+route carries no shared rate-limit policy, so unauthorized callers cannot drain the per-address
+mutation permits; only authorized callers reach the single-flight gate.
 Generated-candidate posting and manual journal lifecycle routes also require a resolved authenticated
 actor; permission alone cannot authorize use of a client-supplied posting identity.
 

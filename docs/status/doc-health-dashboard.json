@@ -1,11 +1,11 @@
 {
-  "total_files": 740,
-  "total_lines": 163793,
-  "orphaned_count": 249,
+  "total_files": 742,
+  "total_lines": 164448,
+  "orphaned_count": 251,
   "no_heading_count": 157,
   "stale_count": 0,
-  "todo_count": 300,
-  "average_lines": 221.3,
+  "todo_count": 304,
+  "average_lines": 221.6,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -215,6 +215,8 @@
     "docs/generated/interfaces.md",
     "docs/generated/project-dependencies.md",
     "docs/generated/provider-registry.md",
+    "docs/product/w9-operator-acceptance-2026-10-18.md",
+    "docs/product/w9-operator-acceptance-2026-10-19.md",
     "docs/roadmap/generated-doc-policy.md",
     "docs/roadmap/roadmap-governance.md",
     "docs/roadmap/roadmap-item-template.md",
@@ -2421,7 +2423,7 @@
     },
     {
       "path": "docs/engineering/plans/wpf-web-ui-alignment-plan.md",
-      "line_count": 209,
+      "line_count": 210,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2605,7 +2607,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-01.md",
-      "line_count": 731,
+      "line_count": 730,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2613,7 +2615,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-02.md",
-      "line_count": 769,
+      "line_count": 741,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2621,7 +2623,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-03.md",
-      "line_count": 714,
+      "line_count": 684,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2629,7 +2631,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-04.md",
-      "line_count": 880,
+      "line_count": 866,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2637,7 +2639,7 @@
     },
     {
       "path": "docs/generated/database/contracts/ledger-contracts-page-05.md",
-      "line_count": 110,
+      "line_count": 212,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2693,7 +2695,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-04.md",
-      "line_count": 518,
+      "line_count": 511,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2701,7 +2703,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-05.md",
-      "line_count": 98,
+      "line_count": 106,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2861,7 +2863,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12250,
+      "line_count": 12267,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3301,7 +3303,7 @@
     },
     {
       "path": "docs/product/implementation-todo-list.md",
-      "line_count": 707,
+      "line_count": 706,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3309,7 +3311,7 @@
     },
     {
       "path": "docs/product/meridian-design-document.md",
-      "line_count": 1835,
+      "line_count": 2230,
       "has_heading": true,
       "todo_count": 6,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3452,6 +3454,22 @@
       "stale": false
     },
     {
+      "path": "docs/product/w9-operator-acceptance-2026-10-18.md",
+      "line_count": 93,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/product/w9-operator-acceptance-2026-10-19.md",
+      "line_count": 86,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/product/web-ui-improvements-brainstorm-2026-07.md",
       "line_count": 266,
       "has_heading": true,
@@ -3501,7 +3519,7 @@
     },
     {
       "path": "docs/reference/accounting-configuration.md",
-      "line_count": 189,
+      "line_count": 190,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5837,7 +5855,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1840,
+      "line_count": 1845,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6069,7 +6087,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1220,
+      "line_count": 1224,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6093,7 +6111,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2844,
+      "line_count": 2852,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6101,7 +6119,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1638,
+      "line_count": 1645,
       "has_heading": true,
       "todo_count": 4,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6149,7 +6167,7 @@
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 1001,
+      "line_count": 1010,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
