@@ -10679,6 +10679,7 @@ Meridian-main
 │   │   │   │   ├── IBBrokerageGatewayTests.PositionIdentity.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.PreDispatch.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.Recovery.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.RecoveryEvidence.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.RecoveryScope.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.SessionRaces.cs
 │   │   │   │   ├── IBDataServicesTests.cs

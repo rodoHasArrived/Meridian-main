@@ -36,8 +36,12 @@ scope is the trading environment plus the accounts IB reports via `managedAccoun
 login, so retained orders bind to that scope and recovery matches only orders in a verified account.
 Its connection generation also advances when the client loses or automatically restores the
 transport, and cancellation routes are installed only for evidence from the current session.
-Recovery stays unresolved for a fill price that is not confirmed cumulative and for a trail-only
-amendment, since the snapshot carries no trailing term. Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
+Recovery stays unresolved for a fill price that is not confirmed cumulative, for any amendment that
+requested a trail (the snapshot carries no trailing term), and for an order whose contract is not a
+reported stock. A route recovered from a snapshot is valid only in the session that read it; after a
+session change it is dropped and refused until reconciliation recovers the order again. Status
+echoes that the open-order snapshot produces for orders this session does not track are kept as
+recovery evidence rather than published as live reports. Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
 fills against pending exposure, keeps cancellation available, and keys
 positions by account plus qualified contract identity. Robinhood replacement submits only after
 confirmed cancellation with cumulative fill evidence, for the intended total less chain fills.

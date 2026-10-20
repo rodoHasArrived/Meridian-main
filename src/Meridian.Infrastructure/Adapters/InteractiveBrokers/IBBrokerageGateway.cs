@@ -687,17 +687,38 @@ public sealed partial class IBBrokerageGateway :
         if (_gatewayOrderIdsByExternalId.TryGetValue(orderId, out var gatewayOrderId) &&
             _submittedOrders.TryGetValue(gatewayOrderId, out var context))
         {
-            return (gatewayOrderId, context);
+            return (gatewayOrderId, CurrentSessionContext(orderId, gatewayOrderId, context));
         }
 
         if (int.TryParse(orderId, out gatewayOrderId) &&
             _submittedOrders.TryGetValue(gatewayOrderId, out context))
         {
-            return (gatewayOrderId, context);
+            return (gatewayOrderId, CurrentSessionContext(orderId, gatewayOrderId, context));
         }
 
         throw new InvalidOperationException(
             $"Order '{orderId}' is unknown to the IB brokerage gateway. Submit the order before modifying or cancelling it.");
+    }
+
+    /// <summary>
+    /// A route recovered from an open-order snapshot identifies an order only within the session it
+    /// was read in: a later login can reuse the numeric order id for an unrelated order. A stale
+    /// recovered route is dropped and refused; reconciliation recovers the order again.
+    /// </summary>
+    private SubmittedOrderContext CurrentSessionContext(string orderId, int gatewayOrderId, SubmittedOrderContext context)
+    {
+        if (!context.RecoveredFromSnapshot || context.RecoveryEpoch == Volatile.Read(ref _connectionEpoch))
+            return context;
+        lock (_sessionGate)
+        {
+            ((ICollection<KeyValuePair<int, SubmittedOrderContext>>)_submittedOrders)
+                .Remove(new KeyValuePair<int, SubmittedOrderContext>(gatewayOrderId, context));
+            foreach (var key in new[] { context.MeridianOrderId, gatewayOrderId.ToString() })
+                ((ICollection<KeyValuePair<string, int>>)_gatewayOrderIdsByExternalId)
+                    .Remove(new KeyValuePair<string, int>(key, gatewayOrderId));
+        }
+        throw new InvalidOperationException(
+            $"Order '{orderId}' was recovered in an earlier IB session; reconcile it again before cancelling or amending it.");
     }
 
     private void EnsureConnected()
@@ -998,7 +1019,13 @@ public sealed partial class IBBrokerageGateway :
             update.Status, update.RejectReason, null, update.ReceivedAt,
             update.Filled < (latest?.FilledQuantity ?? 0m) ? latest!.FillPriceIsCumulativeAverage :
                 update.AverageFillPrice > 0 || (update.LastFillPrice <= 0 && latest?.FillPriceIsCumulativeAverage == true));
-        PublishReport(report);
+        // reqOpenOrders echoes orderStatus for every open order, including orders this session does not
+        // track. Until recovery validates them (account, orderRef, contract and session) they are kept
+        // as recovery evidence only; tracked orders and updates outside a snapshot publish as before.
+        if (context is null && _openOrdersSnapshotBuffer is not null)
+            RecordLatestReport(report);
+        else
+            PublishReport(report);
 
         // PendingCancel/Submitted and partial fills are progress, not confirmation of a cancel.
         // A status-only callback cannot confirm amended quantity or price either.
@@ -1201,10 +1228,15 @@ public sealed partial class IBBrokerageGateway :
         }
     }
 
-    private void PublishReport(ExecutionReport report)
+    private void RecordLatestReport(ExecutionReport report)
     {
         if (int.TryParse(report.GatewayOrderId, out var gatewayOrderId))
             _latestOrderReports[gatewayOrderId] = report;
+    }
+
+    private void PublishReport(ExecutionReport report)
+    {
+        RecordLatestReport(report);
         if (!_reportChannel.Writer.TryWrite(report))
         {
             _ = _reportChannel.Writer.WriteAsync(report);
@@ -1384,7 +1416,8 @@ public sealed partial class IBBrokerageGateway :
         IReadOnlyList<OrderLeg>? Legs,
         IReadOnlyDictionary<string, string>? Metadata,
         DateTimeOffset CreatedAt,
-        bool RecoveredFromSnapshot = false)
+        bool RecoveredFromSnapshot = false,
+        int RecoveryEpoch = 0)
     {
         public static SubmittedOrderContext FromRequest(int gatewayOrderId, string meridianOrderId, OrderRequest request)
             => new(

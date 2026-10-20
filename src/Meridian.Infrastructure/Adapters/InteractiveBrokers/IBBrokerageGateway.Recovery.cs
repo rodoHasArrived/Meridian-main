@@ -103,8 +103,9 @@ public sealed partial class IBBrokerageGateway
             return Current(null);
         // Rebuilding a derivative context from the snapshot would lose contract detail that a
         // later amendment or cancellation needs; leave those for manual reconciliation.
+        // An unreported security type is not evidence of a stock either.
         if (!_openOrderSecurityTypes.TryGetValue(gatewayOrderId, out var securityType)
-            || securityType.Length > 0 && !string.Equals(securityType, "STK", StringComparison.OrdinalIgnoreCase))
+            || !string.Equals(securityType, "STK", StringComparison.OrdinalIgnoreCase))
             return Current(null);
 
         _latestOrderReports.TryGetValue(gatewayOrderId, out var latest);
@@ -119,9 +120,9 @@ public sealed partial class IBBrokerageGateway
         var reportType = order.Status == OrderStatus.PartiallyFilled ? ExecutionReportType.PartialFill : ExecutionReportType.New;
         if (amendment is not null)
         {
-            // The snapshot carries no trailing term, so a trail-only amendment echoes the same
-            // quantity and prices either way and cannot be told accepted from refused.
-            if (amendment.ProposedTrail is not null && MatchesTerms(order, amendment.Original) && MatchesTerms(order, amendment.Proposed))
+            // The snapshot carries no trailing term, so no amendment that requested one (trail-only
+            // or combined with other terms) can be confirmed or refused from it.
+            if (amendment.ProposedTrail is not null)
                 return Current(null);
             if (MatchesTerms(order, amendment.Proposed))
                 reportType = ExecutionReportType.Modified;
@@ -154,7 +155,11 @@ public sealed partial class IBBrokerageGateway
         {
             RecoveryRoutesInstalling?.Invoke();
             Current(report);
-            _submittedOrders.TryAdd(gatewayOrderId, context);
+            // A route recovered in an earlier session is refreshed; a context this process submitted
+            // is never replaced by snapshot terms.
+            var recovered = context with { RecoveryEpoch = epoch };
+            _submittedOrders.AddOrUpdate(gatewayOrderId, recovered,
+                (_, existing) => existing.RecoveredFromSnapshot ? recovered : existing);
             _gatewayOrderIdsByExternalId[clientOrderId] = gatewayOrderId;
             _gatewayOrderIdsByExternalId[gatewayOrderId.ToString()] = gatewayOrderId;
         }
