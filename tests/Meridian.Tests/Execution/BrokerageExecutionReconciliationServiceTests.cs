@@ -541,6 +541,7 @@ public sealed class BrokerageExecutionReconciliationServiceTests
                 store.Save(new RetainedBrokerageOrder(order, $"broker-{order.OrderId}", true));
             OrderManager = new OrderManagementSystem(Gateway, NullLogger<OrderManagementSystem>.Instance,
                 portfolioState: Portfolio, recoveryStore: store);
+            OrderManager.StartAsync().GetAwaiter().GetResult();
         }
 
         public IBrokerageGateway Gateway { get; }

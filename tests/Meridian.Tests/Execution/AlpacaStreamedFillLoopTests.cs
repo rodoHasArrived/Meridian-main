@@ -38,6 +38,7 @@ public sealed class AlpacaStreamedFillLoopTests
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
             tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         var filled = await PlaceAcceptedOrderAsync(oms, "AAPL", quantity: 10m);
         var cancelled = await PlaceAcceptedOrderAsync(oms, "MSFT", quantity: 5m);
@@ -103,6 +104,7 @@ public sealed class AlpacaStreamedFillLoopTests
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
             tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         var order = await PlaceAcceptedOrderAsync(oms, "AAPL", quantity: 10m);
         await client.ProcessMessageAsync(TradeUpdateJson(
@@ -161,6 +163,7 @@ public sealed class AlpacaStreamedFillLoopTests
                 NullLogger<OrderManagementSystem>.Instance,
                 portfolioState: new PaperTradingPortfolio(100_000m),
                 tradeEventPublisher: publisher);
+            await oms.StartAsync();
 
             var order = await PlaceAcceptedOrderAsync(oms, "AAPL", quantity: 10m);
             orderId = order.OrderId;
@@ -190,6 +193,7 @@ public sealed class AlpacaStreamedFillLoopTests
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: restartedPortfolio,
             tradeEventPublisher: restartedPublisher);
+        await restartedOms.StartAsync();
 
         var booked = await ReadFillIncrementsAsync(restartedOms, orderId, count: 1);
         booked.Single().FilledQuantity.Should().Be(6m,
@@ -224,6 +228,7 @@ public sealed class AlpacaStreamedFillLoopTests
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
             tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         await client.ProcessMessageAsync(TradeUpdateJson(
             "evt-option-fill", "alpaca-opt", "MDN-20260807-000001", "AAPL260918C00200000", "fill", "filled",
@@ -261,6 +266,7 @@ public sealed class AlpacaStreamedFillLoopTests
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
             tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         client.ConfigureReconciliation((_, _) => Task.FromResult<IReadOnlyList<AlpacaReconciliationReport>>(
         [
@@ -313,6 +319,7 @@ public sealed class AlpacaStreamedFillLoopTests
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
             tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         var booked = await ReadFillIncrementsAsync(oms, orderId, count: 2);
         booked.Select(static increment => increment.FilledQuantity).Should().Equal(new[] { 6m, 4m },
@@ -344,6 +351,7 @@ public sealed class AlpacaStreamedFillLoopTests
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
             tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         await client.ProcessMessageAsync(TradeUpdateJson(
             "evt-orphan-sell", "alpaca-orphan-sell", "MDN-20260807-000012", "AAPL", "fill", "filled",
@@ -392,6 +400,7 @@ public sealed class AlpacaStreamedFillLoopTests
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
             tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         await client.ProcessMessageAsync(TradeUpdateJson(
             "evt-close-sell", "alpaca-close-sell", "MDN-20260807-000014", "AAPL", "fill", "filled",

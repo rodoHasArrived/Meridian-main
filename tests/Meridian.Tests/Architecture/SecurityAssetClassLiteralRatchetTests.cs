@@ -39,7 +39,6 @@ public sealed class SecurityAssetClassLiteralRatchetTests
         "src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs",
         "src/Meridian.FSharp/Domain/SecurityClassification.fs",
         "src/Meridian.FSharp/Domain/SecurityMaster.fs",
-        "src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs",
         "src/Meridian.ReferenceData/SecurityMaster/SecurityKindMapping.cs",
         "src/Meridian.Storage/SecurityMaster/SecurityTermsProjectionRegistry.cs",
         "src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs",

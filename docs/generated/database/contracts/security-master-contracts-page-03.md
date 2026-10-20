@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 3 of 5
 
-Objects 161-240 of 328. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 333. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -174,6 +174,8 @@ classDiagram
         +SecurityLotUnitKind LotUnit
         +IReadOnlyList~SecurityIdentifierKind~ PreferredIdentifierKinds
         +SecurityTermsProjectionKind ProjectionKind
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetClassLabelResolution["SecurityAssetClassLabelResolution"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassRegistry["SecurityAssetClassRegistry"] {
         +IReadOnlyList~SecurityAssetClassDefinition~ All
@@ -533,8 +535,6 @@ classDiagram
         +string FieldPath
         +string SourceSystem
         +string? UpdatedBy
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityFieldProvenanceOrigins["SecurityFieldProvenanceOrigins"] {
     }
     Meridian_Contracts_SecurityMaster_SecurityAliasDto --> Meridian_Contracts_SecurityMaster_SecurityAliasScope
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor

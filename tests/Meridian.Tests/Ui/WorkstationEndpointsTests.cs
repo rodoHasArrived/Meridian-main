@@ -7907,7 +7907,6 @@ public sealed partial class WorkstationEndpointsTests
         StubSecurityValidationService? validationService = null)
     {
         services.AddSingleton<ISecurityMasterQueryService>(queryService);
-        services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(queryService);
         services.AddSingleton<ISecurityValidationService>(validationService ?? new StubSecurityValidationService());
         services.AddSingleton<ISecurityMasterConflictService>(conflictService);
         services.AddSingleton<ISecurityMasterIngestStatusService>(new StubSecurityMasterIngestStatusService());
@@ -9735,8 +9734,7 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     private sealed class StubSecurityMasterQueryService :
-        ISecurityMasterQueryService,
-        Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+        ISecurityMasterQueryService
     {
         private readonly Dictionary<Guid, SecurityDetailDto> _details = [];
         private readonly Dictionary<Guid, IReadOnlyList<SecurityMasterEventEnvelope>> _history = [];

@@ -666,9 +666,9 @@ public sealed class PostgresDirectLendingCommandServiceTests
         return store;
     }
 
-    private static Meridian.Application.SecurityMaster.ISecurityMasterQueryService BuildSecurityMasterQueryService()
+    private static Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService BuildSecurityMasterQueryService()
     {
-        var service = Substitute.For<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>();
+        var service = Substitute.For<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
         service.GetByIdAsync(Guid.Parse("99999999-9999-9999-9999-999999999999"), Arg.Any<CancellationToken>())
             .Returns(BuildSecurityMasterDetail());
         return service;

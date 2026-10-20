@@ -98,6 +98,7 @@ public sealed class OrderManagementSystemGovernanceTests
             operatorControls: controls,
             auditTrail: auditTrail,
             portfolioState: new StaticPortfolioState());
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -161,6 +162,7 @@ public sealed class OrderManagementSystemGovernanceTests
             operatorControls: controls,
             auditTrail: auditTrail,
             portfolioState: new StaticPortfolioState(new TestPosition("AAPL", 10)));
+        await oms.StartAsync();
 
         // Sells into a 10-share long: the emergency close the override exists for. A buy here
         // would open fresh risk behind the halt, which the close-only exception refuses.
@@ -238,6 +240,7 @@ public sealed class OrderManagementSystemGovernanceTests
             operatorControls: controls,
             auditTrail: auditTrail,
             portfolioState: new StaticPortfolioState(new TestPosition("AAPL", 10)));
+        await oms.StartAsync();
 
         // Admitted at the gate by the override; by dispatch the halt is lifted and the override
         // cleared, so the dispatch-time evaluation approves on its own.
@@ -301,6 +304,7 @@ public sealed class OrderManagementSystemGovernanceTests
             operatorControls: controls,
             auditTrail: auditTrail,
             portfolioState: new StaticPortfolioState());
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -358,6 +362,7 @@ public sealed class OrderManagementSystemGovernanceTests
             operatorControls: controls,
             auditTrail: auditTrail,
             portfolioState: new StaticPortfolioState(new TestPosition("AAPL", 8)));
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -418,6 +423,7 @@ public sealed class OrderManagementSystemGovernanceTests
             operatorControls: controls,
             auditTrail: auditTrail,
             portfolioState: new StaticPortfolioState());
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {

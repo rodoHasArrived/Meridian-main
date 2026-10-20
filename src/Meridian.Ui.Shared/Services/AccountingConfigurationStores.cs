@@ -114,7 +114,8 @@ public sealed class InMemoryAccountingActionAuditStore :
 public sealed class FileAccountingConfigurationStore :
     JsonFileSnapshotStore<FileAccountingConfigurationStore.AccountingConfigurationSnapshot>,
     IAccountingConfigurationStore,
-    IAccountingActionAuditStore
+    IAccountingActionAuditStore,
+    IAccountingAuditChainVerifier
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {

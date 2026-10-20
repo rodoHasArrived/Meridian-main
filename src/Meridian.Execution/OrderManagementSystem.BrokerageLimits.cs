@@ -17,7 +17,8 @@ public sealed partial class OrderManagementSystem
         if (_brokerageConfiguration is not { MaxOpenOrders: > 0 } configuration)
             return null;
 
-        var workingOrders = GetOpenOrders();
+        var workingOrders = GetOpenOrders().Concat(GetAmendmentExposureReservations())
+            .DistinctBy(order => order.OrderId).ToList();
         var count = workingOrders.Count;
         if (count >= configuration.MaxOpenOrders)
             return $"Open order count exceeds configured maximum of {configuration.MaxOpenOrders}.";
@@ -47,6 +48,13 @@ public sealed partial class OrderManagementSystem
             {
                 if (_orderBrokerIds.TryGetValue(workingOrder.OrderId, out var brokerId))
                     brokerIds.TryAdd(brokerId, workingOrder.OrderId);
+            }
+            // A broker snapshot can still expose a predecessor after the replacement was
+            // acknowledged locally. Its retained identity belongs to the same working slot.
+            foreach (var alias in _brokerOrderAliases)
+            {
+                if (clientIds.Contains(alias.Value))
+                    brokerIds.TryAdd(alias.Key, alias.Value);
             }
             var matchedClientIds = new HashSet<string>(StringComparer.Ordinal);
             foreach (var brokerOrder in brokerOrders)

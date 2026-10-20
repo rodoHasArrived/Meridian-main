@@ -5,7 +5,6 @@ namespace Meridian.Application.SecurityMaster;
 
 public sealed class SecurityMasterQueryService :
     ISecurityMasterQueryService,
-    Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService,
     ISecurityMasterReportingQueryService
 {
     private readonly ISecurityMasterEventStore _eventStore;

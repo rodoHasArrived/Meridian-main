@@ -75,7 +75,7 @@ public sealed class SecurityAssetClassRegistryCoverageTests
         // cash-flow behaviour. The sets are pinned so a re-declaration cannot silently change them.
         SecurityAssetClassCatalog.All.Where(static descriptor => descriptor.UsesFaceValueLots)
             .Select(static descriptor => descriptor.AssetClass)
-            .Should().BeEquivalentTo("Bond", "Deposit", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Repo", "DirectLoan", "StructuredCredit");
+            .Should().BeEquivalentTo("Bond", "Deposit", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Repo", "DirectLoan", "StructuredCredit", "StructuredNote");
         SecurityAssetClassCatalog.All.Where(static descriptor => descriptor.SupportsCashflowScheduleByDefault)
             .Select(static descriptor => descriptor.AssetClass)
             .Should().BeEquivalentTo("Bond", "Deposit", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Repo", "Swap", "DirectLoan", "StructuredCredit");
@@ -150,7 +150,7 @@ public sealed class SecurityAssetClassRegistryCoverageTests
 
         bond.LotUnit.Should().Be(SecurityLotUnitKind.FaceValue);
         bond.CashFlowBehavior.Should().Be(SecurityCashFlowBehavior.ContractualSchedule);
-        bond.ProjectionKind.Should().Be(SecurityTermsProjectionKind.Specialized);
+        bond.ProjectionKind.Should().Be(SecurityTermsProjectionKind.Declarative);
         bond.SupportsSchemaDrivenCreate.Should().BeTrue();
         bond.Fields.Select(static field => field.Key).Should().Equal(SecurityAssetTermsSchema.Fields("Bond").Select(static field => field.Key));
         SecurityAssetClassRegistry.Get("MBS").AssetClass.Should().Be("StructuredCredit", "aliases resolve through the catalog");

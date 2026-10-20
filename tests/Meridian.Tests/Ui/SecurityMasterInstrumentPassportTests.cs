@@ -519,8 +519,7 @@ public sealed class SecurityMasterInstrumentPassportTests
             httpContextAccessor);
 
     private sealed class StubSecurityMasterQueryService(Guid securityId)
-        : ContractSecurityMasterQueryService,
-          Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+        : ContractSecurityMasterQueryService
     {
         private readonly DateTimeOffset _effectiveFrom = new(2026, 1, 2, 0, 0, 0, TimeSpan.Zero);
 

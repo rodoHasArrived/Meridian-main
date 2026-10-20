@@ -399,7 +399,8 @@ public sealed record ProviderSecurityMasterPassportDto(
     IReadOnlyList<string> OverrideHistory,
     DateTimeOffset ObservedAt,
     int FreshnessMinutes,
-    string Reason);
+    string Reason,
+    string? ResolvedAssetClass = null);
 
 public sealed record ProviderShadowBookComparisonLineDto(
     string Dimension,

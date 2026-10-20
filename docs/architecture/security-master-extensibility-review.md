@@ -413,6 +413,13 @@ A new class must be added to: the F# `SecurityKind` DU **and** `AssetClassRegist
 serializer (`Interop.SecurityMaster.fs`); the C# deserializer (`SecurityMasterMapping.ToSecurityKind`);
 and optionally a projection interface + Postgres store + migration + DI registration.
 
+> **2026-10-19 update.** The OTC derivative classes `FxForward`, `NonDeliverableForward` and
+> `CreditDefaultSwap` were added as declarative classes (catalog, schema, validators, codec arms,
+> registry-written projections via migration 046), followed by `Swaption`, `CapFloor` and
+> `StructuredNote` (migration 047). Every surface below now reads 32; the
+> coverage, parity, round-trip and projection-DDL tests enumerate the classes by reflection and
+> held the addition to the hand-listed sites named in this section.
+
 The count of declared classes already differs by surface: F# DU 25, catalog 26, terms schema 26,
 kind mapping 26, projection writers 11 (*as of 2026-08-12; the DU/catalog/schema surfaces now all
 read 26 — see below*). Tests lock catalog↔registry and catalog↔terms-schema, but
@@ -2989,6 +2996,13 @@ than on `Specifications`. The parity guard then keeps the declared gap honest in
 for the fix.
 
 ### A4 — The custom-profile extension point declares projected and searchable fields and honours neither
+
+> **Status (2026-10-20): restated as promotion-readiness intent; the flags are documented as not
+> live.** `IsProjected` and `IsSearchable` now carry parameter documentation saying no projection
+> writer, index or search predicate reads them; the promotion signals and both workstation counts
+> say "declared projected"/"declared searchable". The generic indexed seam the entry describes
+> below (`security_profile_field_projection` plus profile content in the search vector) is still
+> the remedy if the flags are ever to govern anything.
 
 `SecurityAssetProfileFieldDefinitionDto` carries `IsProjected` and `IsSearchable`
 (`SecurityAssetProfiles.cs:49-50`) — the two properties an operator would read as "this profile field
@@ -5793,9 +5807,10 @@ reads it per security.
 
 | Finding | What landed |
 | --- | --- |
-| Most asset classes write their typed tables through hand-written code | `SecurityTermsProjectionColumn.Derived` lets a descriptor column compute its value from the whole record (common terms, fallback chains, derived states) while the registry owns the gate, delete branch, identity spine and generated upsert. Equity, FxSpot, Future, Swap and Commodity moved onto descriptors. Their derived columns call the same readers the writers used. Nine of the eleven original writers are now declarative, and the catalog's `ProjectionKind` says so (locked by `SecurityAssetClassRegistryCoverageTests`). Migration 044 added declarative descriptors for the twelve classes that had no projection at all, so 25 of 26 classes project (CustomAsset excepted). |
+| Most asset classes write their typed tables through hand-written code | `SecurityTermsProjectionColumn.Derived` lets a descriptor column compute its value from the whole record (common terms, fallback chains, derived states) while the registry owns the gate, delete branch, identity spine and generated upsert. Equity, FxSpot, Future, Swap and Commodity moved onto descriptors. Their derived columns call the same readers the writers used. Ten of the eleven original writers are now declarative, and the catalog's `ProjectionKind` says so (locked by `SecurityAssetClassRegistryCoverageTests`). Migration 044 added declarative descriptors for the twelve classes that had no projection at all, so 25 of 26 classes project (CustomAsset excepted). |
 | Each move needs a regression test | `SpecializedProjectionGoldenTests` is a PostgreSQL golden-row matrix covering gate hits and misses, stale rows cleared on a gate miss or class change, verbatim and normalized strings, common-terms columns, derived columns and wrong JSON kinds. It passed against the hand-written writers before they were deleted, and the descriptors are held to the same rows. |
-| Still specialized | Bond and Option. Option's tables are keyed by contract symbol and option chain, not by security; three of Bond's four tables carry no identity spine, and Bond keeps a legacy nested-coupon fallback. Both keep their existing writer tests. |
+| Bond moved (2026-10-20) | `SecurityTermsProjectionSatelliteTable` lets a descriptor write sibling `security_id`-keyed tables beside its parent, each declaring the identity spine it actually has and an optional presence condition. Bond's parent gates on maturity, its lifecycle and accrual-convention satellites always accompany it, and the issuer-ladder satellite exists only while the bond names an issuer; the legacy nested-coupon fallback and the lifecycle state are derived columns. `BondProjectionGoldenTests` holds all four tables to the rows the hand-written writer persisted. |
+| Still specialized | Option. Its tables are keyed by contract symbol and option chain rather than by security, its alias table fans out from the record's aliases rather than a declared term, its lifecycle row has an insert-only `listed_at`, and `PostgresOptionReferenceProjectionStore` writes the same tables from quotes. A security-keyed terms projection cannot own those tables; moving Option means re-keying them on `security_id` (a migration) and giving the quote path its own tables first. |
 
 ### Priority 4 — one lot model
 

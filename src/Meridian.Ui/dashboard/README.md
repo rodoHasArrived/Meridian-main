@@ -42,6 +42,13 @@ verified only on its original valuation date against the submitted reviewer and 
 different retained approval keeps the lock and is reported as not the operator's own decision. A
 cash comparison cannot be captured while an owner assignment draft is unsaved.
 
+Accounting → Configuration includes an on-demand audit chain integrity check over
+`GET /api/ledger/audit-integrity`. It reports each hash-chained log (accounting actions, ledger
+events) as verified, broken with its failure kind and sequence, unavailable, or not kept in this
+deployment, and never rolls an unchecked chain into a passing verdict. Leaving the screen aborts a
+running check so the server releases the chain locks. Focused coverage lives in
+`accounting-screen.audit-integrity*.test.ts(x)`.
+
 Governed Journal Entry Detail exposes retained disposal tax results from the shared period and
 journal read model. Operators can inspect mixed parcel character, carried holding-period starts,
 economic and recognized gain/loss, deferred loss, and the exact retained policy revision. Settled,
@@ -184,6 +191,11 @@ Browser workstation dashboard is the active browser operator workstation.
 This module owns the browser UI source for operator workflows. Keep shared contracts and read-model
 logic in `src/Meridian.Ui.Shared` or `src/Meridian.Ui.Services` when the same behavior is consumed
 by desktop or host surfaces.
+
+The PRD-109 contract parity gate enforces portfolio and position ownership scope, portfolio
+accounting policy and source provenance, and the execution mode on fill and attribution summaries.
+Keep the TypeScript declarations aligned with `StrategyRunReadModels.cs`; nullable source
+references remain nullable, while required policy and mode fields must also be present in fixtures.
 
 The browser workstation visual system is light-first and aligned to the Meridian Design System's
 Institutional Ops palette: paper canvas, white cards, near-black masthead/status chrome, hairline

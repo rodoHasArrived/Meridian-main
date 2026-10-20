@@ -734,6 +734,7 @@ describe("buildPortfolioScreenViewModel", () => {
       runId: "run-1",
       attribution: {
         runId: "run-1",
+        mode: "Paper",
         totalRealizedPnl: 120,
         totalUnrealizedPnl: 80,
         totalCommissions: 5,
@@ -783,6 +784,7 @@ describe("buildPortfolioScreenViewModel", () => {
       },
       trades: {
         runId: "run-1",
+        mode: "Paper",
         totalFills: 2,
         totalCommissions: 5,
         fills: [

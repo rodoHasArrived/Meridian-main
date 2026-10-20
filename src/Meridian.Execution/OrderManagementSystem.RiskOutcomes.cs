@@ -121,6 +121,9 @@ public sealed partial class OrderManagementSystem
     public IReadOnlyList<OrderState> GetExposureReservingOrders()
     {
         var reserving = new List<OrderState>(GetOpenOrders());
+        var amendments = GetAmendmentExposureReservations();
+        reserving.RemoveAll(order => _pendingModificationOrderIds.ContainsKey(order.OrderId));
+        reserving.AddRange(amendments);
 
         // A fill flips the tracked order terminal before ProcessFillReportAsync applies it
         // to the portfolio. Reports whose precise increment is not tracked yet reserve

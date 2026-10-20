@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Meridian.Tests.Infrastructure.Providers;
 
-public sealed class IBBrokerageGatewayTests
+public sealed partial class IBBrokerageGatewayTests
 {
     private static IBOptions DefaultOptions(bool paper = true)
         => new(Host: "127.0.0.1", Port: paper ? 7497 : 7496, ClientId: 1, UsePaperTrading: paper);

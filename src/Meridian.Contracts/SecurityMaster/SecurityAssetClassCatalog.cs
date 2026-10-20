@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Meridian.Contracts.Domain.Enums;
 
 namespace Meridian.Contracts.SecurityMaster;
@@ -91,7 +92,7 @@ public static class SecurityAssetClassCatalog
             InstrumentTypes: [InstrumentType.Bond],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.ContractualSchedule,
-            ProjectionKind: SecurityTermsProjectionKind.Specialized,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -354,7 +355,10 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
-            SupportsProfileBackedTerms: true),
+            SupportsProfileBackedTerms: true,
+            // Spellings the private-fund pack planned and Asset Operations used to accept by name;
+            // existing subjects carrying them keep resolving to this class.
+            Aliases: ["PrivateFund", "PartnershipInterest"]),
         new(
             AssetClass: "PrivateCompanyEquity",
             AssetPackIds: ["private-fund-partnership"],
@@ -465,6 +469,88 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode
             ]),
         new(
+            AssetClass: "FxForward",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.CurrencyAmount,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Ric
+            ]),
+        new(
+            AssetClass: "NonDeliverableForward",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.CurrencyAmount,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Ric
+            ]),
+        new(
+            AssetClass: "CreditDefaultSwap",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.Notional,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.PermId,
+                SecurityIdentifierKind.Lei,
+                SecurityIdentifierKind.ProviderSymbol
+            ],
+            RequiresMaturity: true),
+        new(
+            AssetClass: "Swaption",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.Notional,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.PermId,
+                SecurityIdentifierKind.ProviderSymbol
+            ]),
+        new(
+            AssetClass: "CapFloor",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.Notional,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.PermId,
+                SecurityIdentifierKind.ProviderSymbol
+            ],
+            RequiresMaturity: true),
+        new(
+            AssetClass: "StructuredNote",
+            AssetPackIds: ["fixed-income"],
+            LotUnit: SecurityLotUnitKind.FaceValue,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.Isin,
+                SecurityIdentifierKind.Cusip,
+                SecurityIdentifierKind.InternalCode
+            ],
+            RequiresMaturity: true),
+        new(
             AssetClass: "InvestmentFund",
             AssetPackIds: ["public-equity-etf"],
             LotUnit: SecurityLotUnitKind.Units,
@@ -533,6 +619,91 @@ public static class SecurityAssetClassCatalog
         => assetClass is not null && ByAssetClass.TryGetValue(assetClass.Trim(), out var descriptor)
             ? descriptor
             : DefaultDescriptor;
+
+    /// <summary>
+    /// Resolves a canonical asset-class name or registered alias exactly (case-insensitive,
+    /// whitespace-trimmed). Unlike <see cref="GetOrDefault"/>, input that names no catalog class
+    /// returns <see langword="false"/> instead of the Unknown descriptor, so a caller can tell
+    /// "not a catalog class" apart from "a class with no declared facts".
+    /// </summary>
+    public static bool TryGet(string? assetClass, [NotNullWhen(true)] out SecurityAssetClassDescriptor? descriptor)
+    {
+        descriptor = null;
+        return assetClass is not null && ByAssetClass.TryGetValue(assetClass.Trim(), out descriptor);
+    }
+
+    /// <summary>
+    /// Resolves a free-text asset-class label — the kind a brokerage or custodian stamps on a
+    /// position ("us_equity", "Treasury Bond", "Private Credit Loan") — to the one catalog class it
+    /// names. The label is tried as declared, then with separators removed ("Treasury Bill" is the
+    /// TreasuryBill class), then token by token against the canonical names and aliases ("Private
+    /// Credit Loan" names DirectLoan through its Loan alias). A label whose tokens name more than
+    /// one class ("Equity Option") does not resolve: the vocabulary is the catalog's, and there is
+    /// deliberately no substring heuristic to break the tie, so callers treat the position as
+    /// unclassified rather than guess. Matching whole tokens, not substrings, is what keeps
+    /// "Structured Credit Loan" from reading as a loan and "stockbroker" from reading as stock.
+    /// </summary>
+    public static bool TryResolveLabel(string? label, [NotNullWhen(true)] out SecurityAssetClassDescriptor? descriptor)
+        => ResolveLabel(label, out descriptor) == SecurityAssetClassLabelResolution.Resolved;
+
+    /// <summary>
+    /// <see cref="TryResolveLabel"/> with the reason a label did not resolve kept apart: a label
+    /// that names no catalog class at all (<see cref="SecurityAssetClassLabelResolution.Unresolved"/>)
+    /// says nothing about the position, and a caller may classify it another way; a label whose
+    /// tokens name more than one class (<see cref="SecurityAssetClassLabelResolution.Ambiguous"/>,
+    /// "Equity Option") does say something — that the catalog cannot pick — and a caller must not
+    /// fall back to a looser source that would pick one of them.
+    /// </summary>
+    public static SecurityAssetClassLabelResolution ResolveLabel(string? label, out SecurityAssetClassDescriptor? descriptor)
+    {
+        descriptor = null;
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            return SecurityAssetClassLabelResolution.Unresolved;
+        }
+
+        if (TryGet(label, out descriptor))
+        {
+            return SecurityAssetClassLabelResolution.Resolved;
+        }
+
+        var compact = new string(label.Where(char.IsLetterOrDigit).ToArray());
+        if (TryGet(compact, out descriptor))
+        {
+            return SecurityAssetClassLabelResolution.Resolved;
+        }
+
+        // Every contiguous run of tokens is a candidate name, so a multi-word class ("Structured
+        // Credit") is recognised as itself rather than ignored token by token, and a label that
+        // also names another class ("Structured Credit Equity") is ambiguous instead of resolving
+        // to the one single-token class it happens to contain.
+        var tokens = label.Split(LabelSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        SecurityAssetClassDescriptor? match = null;
+        for (var start = 0; start < tokens.Length; start++)
+        {
+            for (var length = 1; start + length <= tokens.Length; length++)
+            {
+                if (!TryGet(string.Join(string.Empty, tokens, start, length), out var candidate))
+                {
+                    continue;
+                }
+
+                if (match is not null && !ReferenceEquals(match, candidate))
+                {
+                    return SecurityAssetClassLabelResolution.Ambiguous;
+                }
+
+                match = candidate;
+            }
+        }
+
+        descriptor = match;
+        return match is null
+            ? SecurityAssetClassLabelResolution.Unresolved
+            : SecurityAssetClassLabelResolution.Resolved;
+    }
+
+    private static readonly char[] LabelSeparators = [' ', '_', '-', '/', ',', '.', ':', ';', '(', ')', '[', ']'];
 
     public static IReadOnlyList<SecurityIdentifierKind> GetPreferredIdentifierKinds(string? assetClass)
         => GetOrDefault(assetClass).PreferredIdentifierKinds;
@@ -713,6 +884,17 @@ public static class SecurityAssetClassCatalog
 /// the first-class alternative asset kinds MAY be profile-backed; CustomAsset and OtherSecurity have
 /// no terms contract of their own and so MUST be.
 /// </param>
+/// <summary>
+/// Outcome of <see cref="SecurityAssetClassCatalog.ResolveLabel"/>: the label named one catalog
+/// class, named none, or named more than one and so cannot be classified by the catalog.
+/// </summary>
+public enum SecurityAssetClassLabelResolution
+{
+    Unresolved,
+    Resolved,
+    Ambiguous
+}
+
 public sealed record SecurityAssetClassDescriptor(
     string AssetClass,
     SecurityLotUnitKind LotUnit,
