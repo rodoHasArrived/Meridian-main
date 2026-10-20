@@ -98,12 +98,15 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     private static IEnumerable<DataQualityRuleViolationDto> RunMinimumAttributeRules(
         SecurityProjectionRecord security, DateTimeOffset now)
     {
-        var assetClass = security.AssetClass;
+        // The schema is keyed by canonical class names, so a record carrying a catalog alias is
+        // validated against the class the catalog resolves it to.
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(security.AssetClass);
+        var assetClass = CanonicalAssetClass(security);
 
         // Only maturity-bearing classes require a maturity date; the shared catalog owns that fact.
         // Other non-equity classes (options, futures, FX, money-market funds, deposits) use different
         // required fields, so MA001 must not flag them for a missing maturity.
-        var requiresMaturity = SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresMaturity;
+        var requiresMaturity = descriptor.RequiresMaturity;
         if (requiresMaturity)
         {
             // The canonical Security Master mapper stores maturity under "maturity" for
@@ -159,7 +162,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
                 continue;
             }
 
-            if (HasDeclaredValue(security.AssetSpecificTerms, field))
+            if (HasDeclaredValue(security.AssetSpecificTerms, field, descriptor.SupportsProfileBackedTerms))
             {
                 continue;
             }
@@ -214,7 +217,8 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         }
 
         // Maturity must be after the issue date, for every class whose schema dates issuance.
-        if (SecurityAssetTermsSchema.Field(security.AssetClass, "issueDate") is not null)
+        var assetClass = CanonicalAssetClass(security);
+        if (SecurityAssetTermsSchema.Field(assetClass, "issueDate") is not null)
         {
             var issueDate = TryReadDateField(security.AssetSpecificTerms, "issueDate")
                 ?? TryReadDateField(security.CommonTerms, "issueDate");
@@ -236,7 +240,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         // aliases the schema declares rather than a spelling of this rule's own. The schema's Date
         // fields carry no intraday time (a date-only value reads as midnight UTC), so the comparison
         // is by calendar date: an instrument expiring today is not yet expired.
-        if (SecurityAssetTermsSchema.Field(security.AssetClass, "expiry") is { Type: SecurityAssetTermFieldType.Date } expiryField)
+        if (SecurityAssetTermsSchema.Field(assetClass, "expiry") is { Type: SecurityAssetTermFieldType.Date } expiryField)
         {
             var expiry = TryReadDateField(security.AssetSpecificTerms, expiryField);
             if (expiry.HasValue
@@ -338,6 +342,15 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
 
     // ── Helpers ─────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// The catalog's canonical name for the record's class when the record carries a registered
+    /// alias; the raw spelling otherwise, so an unknown class keeps reading as itself.
+    /// </summary>
+    private static string CanonicalAssetClass(SecurityProjectionRecord security)
+        => SecurityAssetClassCatalog.TryGet(security.AssetClass, out var descriptor)
+            ? descriptor.AssetClass
+            : security.AssetClass;
+
     private static bool IsMaturityField(SecurityAssetTermField field)
         => field.Type == SecurityAssetTermFieldType.Date
            && (IsMaturityKey(field.Key) || field.Aliases.Any(IsMaturityKey));
@@ -351,22 +364,25 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     /// declared aliases. Null, the wrong JSON kind, or an unparseable date/GUID count as missing,
     /// matching how the canonical mapper would fail to read them.
     /// </summary>
-    private static bool HasDeclaredValue(JsonElement terms, SecurityAssetTermField field)
-        => EnumerateTermSources(terms).Any(source => HasDeclaredValueIn(source, field));
+    private static bool HasDeclaredValue(JsonElement terms, SecurityAssetTermField field, bool supportsProfileBackedTerms)
+        => EnumerateTermSources(terms, supportsProfileBackedTerms).Any(source => HasDeclaredValueIn(source, field));
 
     /// <summary>
     /// Where a class's schema terms live: a profile-backed record (PrivateFundInterest,
     /// RealEstateHolding, ...) persists its governed scalar terms beneath <c>profileFields</c>, so
-    /// that object is probed before the envelope root, matching the other governed-term readers.
+    /// for a class the catalog marks as supporting profile-backed terms that object is probed before
+    /// the envelope root, matching the other governed-term readers. Any other class is read from
+    /// the root alone, which is the only shape its canonical mapper consumes.
     /// </summary>
-    private static IEnumerable<JsonElement> EnumerateTermSources(JsonElement terms)
+    private static IEnumerable<JsonElement> EnumerateTermSources(JsonElement terms, bool supportsProfileBackedTerms)
     {
         if (terms.ValueKind != JsonValueKind.Object)
         {
             yield break;
         }
 
-        if (terms.TryGetProperty("profileFields", out var profileFields)
+        if (supportsProfileBackedTerms
+            && terms.TryGetProperty("profileFields", out var profileFields)
             && profileFields.ValueKind == JsonValueKind.Object)
         {
             yield return profileFields;
@@ -385,7 +401,10 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         return field.Type switch
         {
             SecurityAssetTermFieldType.String => value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(value.GetString()),
-            SecurityAssetTermFieldType.Decimal or SecurityAssetTermFieldType.Integer => value.ValueKind == JsonValueKind.Number,
+            // The same conversions the canonical mapper applies: a fractional or out-of-range number
+            // is as unreadable to it as a missing one.
+            SecurityAssetTermFieldType.Decimal => value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out _),
+            SecurityAssetTermFieldType.Integer => value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out _),
             SecurityAssetTermFieldType.Boolean => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
             SecurityAssetTermFieldType.Date => TryReadDate(value) is not null,
             SecurityAssetTermFieldType.Guid => value.ValueKind == JsonValueKind.String && Guid.TryParse(value.GetString(), out _),

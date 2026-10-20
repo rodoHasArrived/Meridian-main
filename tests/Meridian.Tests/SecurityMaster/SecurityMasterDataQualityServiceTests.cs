@@ -264,6 +264,54 @@ public sealed class SecurityMasterDataQualityServiceTests
     }
 
     [Fact]
+    public async Task RunQualityChecksAsync_ValidatesAnAliasedClass_AgainstItsCanonicalSchema()
+    {
+        // The schema is keyed by canonical names; a record carrying the PrivateFund alias is held
+        // to PrivateFundInterest's required terms rather than escaping validation.
+        var (sut, store) = BuildSut();
+        var aliased = MakeSecurity(Guid.NewGuid(), "PrivateFund", currency: "USD",
+            assetSpecificTerms: new
+            {
+                profileFields = new { strategy = "Buyout", vintage = 2024, commitment = 1_000_000m, navDate = "2026-06-30" }
+            });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { aliased });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Should().ContainSingle(v => v.RuleId == "MA003" && v.SecurityId == aliased.SecurityId)
+            .Which.FieldPath.Should().Be("assetSpecificTerms.gpSponsor");
+    }
+
+    [Fact]
+    public async Task RunQualityChecksAsync_HoldsNumbersToTheDeclaredNumericType_AndProfileFieldsToProfileBackedClasses()
+    {
+        var (sut, store) = BuildSut();
+        // A fractional integer is unreadable to the canonical mapper's TryGetInt32, so it is missing.
+        var fractionalVintage = MakeSecurity(Guid.NewGuid(), "PrivateFundInterest", currency: "USD",
+            assetSpecificTerms: new
+            {
+                profileFields = new { gpSponsor = "Meridian Capital", strategy = "Buyout", vintage = 2024.5, commitment = 1_000_000m, navDate = "2026-06-30" }
+            });
+        // A Future's mapper reads the envelope root only; terms hidden under profileFields do not count.
+        var futureUnderProfileFields = MakeSecurity(Guid.NewGuid(), "Future", currency: "USD",
+            assetSpecificTerms: new
+            {
+                profileFields = new { rootSymbol = "ES", contractMonth = "Z6", multiplier = 50m, expiry = "2091-12-19" }
+            });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { fractionalVintage, futureUnderProfileFields });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Should().ContainSingle(v => v.RuleId == "MA003" && v.SecurityId == fractionalVintage.SecurityId)
+            .Which.FieldPath.Should().Be("assetSpecificTerms.vintage");
+        report.Violations.Where(v => v.RuleId == "MA003" && v.SecurityId == futureUnderProfileFields.SecurityId)
+            .Select(v => v.FieldPath)
+            .Should().BeEquivalentTo(
+                "assetSpecificTerms.rootSymbol", "assetSpecificTerms.contractMonth",
+                "assetSpecificTerms.expiry", "assetSpecificTerms.multiplier");
+    }
+
+    [Fact]
     public async Task RunQualityChecksAsync_DoesNotReportADateOnlyExpiryAsExpired_OnItsOwnDate()
     {
         // The schema's expiry is a date; a date-only value reads as midnight UTC, so comparing it to

@@ -10,7 +10,7 @@
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
       "readme_hash": "32f4418811fa567397eaf02536309b0b6daf2fb57cb99a450849a273a26f5396",
-      "source_hash": "9e9af749f69d58aa10cb139f51f93d7be734f5f29b20732965510152262c7d02"
+      "source_hash": "e59f84a9a9c5421efb2d070ffc7a6d6fdc892061db29bde8e2a9e65e3e786ae2"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -31,7 +31,7 @@
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
       "readme_hash": "83d3217903d1564463c7f1a71886ed15a3c03b01183afbc5b0f31c6a8636b697",
-      "source_hash": "3b3cff937141fdbf1aae805075e911ad9d4bcba5c26b6d8fb28a9a7dd4ee2752"
+      "source_hash": "1beceed31ec0934a7ddd164dbea6ffcb8f057ec29b42a82984a5c895213aff88"
     },
     {
       "id": "SRC-CORE",
