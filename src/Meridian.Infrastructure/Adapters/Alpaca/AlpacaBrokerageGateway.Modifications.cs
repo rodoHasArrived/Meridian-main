@@ -20,32 +20,44 @@ public sealed partial class AlpacaBrokerageGateway
         public RequestedReplacementTerms? Requested { get; init; }
     }
 
-    private sealed record RequestedReplacementTerms(decimal Quantity, decimal? LimitPrice, decimal? StopPrice, bool PricesChanged)
+    /// <param name="Trail">The requested trail, in the unit the order already trails by
+    /// (Alpaca's PATCH <c>trail</c> sets <c>trail_price</c> or <c>trail_percent</c>); null when the
+    /// amendment does not change it.</param>
+    private sealed record RequestedReplacementTerms(
+        decimal Quantity, decimal? LimitPrice, decimal? StopPrice, bool PricesChanged, decimal? Trail)
     {
         public static RequestedReplacementTerms From(AlpacaOrderResponse original, OrderModification modification)
         {
             var limit = modification.NewLimitPrice ?? ParseNullableDecimal(original.LimitPrice);
             var stop = modification.NewStopPrice ?? ParseNullableDecimal(original.StopPrice);
             return new(modification.NewQuantity ?? ParseDecimal(original.Qty), limit, stop,
-                limit != ParseNullableDecimal(original.LimitPrice) || stop != ParseNullableDecimal(original.StopPrice));
+                limit != ParseNullableDecimal(original.LimitPrice) || stop != ParseNullableDecimal(original.StopPrice),
+                modification.NewTrail);
         }
 
         public static RequestedReplacementTerms From(PendingOrderAmendment amendment) => new(
             amendment.Proposed.Quantity, amendment.Proposed.LimitPrice, amendment.Proposed.StopPrice,
             amendment.Proposed.LimitPrice != amendment.Original.LimitPrice
-                || amendment.Proposed.StopPrice != amendment.Original.StopPrice);
+                || amendment.Proposed.StopPrice != amendment.Original.StopPrice,
+            amendment.ProposedTrail);
 
         // Same rule the OMS applies to recovery evidence: quantity always; prices only when the
-        // snapshot carries them, and a missing price cannot confirm a requested price change.
-        // Alpaca order snapshots carry no trail value, so trail terms cannot be confirmed here.
+        // snapshot carries them, and a missing price cannot confirm a requested price change. A
+        // trailing stop's stop_price is recomputed from the high-water mark as the market moves,
+        // so it is not a term of the request; its trail is, and an unknown trail never confirms.
         public bool MatchedBy(AlpacaOrderResponse candidate)
         {
             if (ParseNullableDecimal(candidate.Qty) != Quantity)
                 return false;
-            if (!(candidate.HasLimitPrice && candidate.HasStopPrice))
-                return !PricesChanged;
-            return ParseNullableDecimal(candidate.LimitPrice) == LimitPrice
-                && ParseNullableDecimal(candidate.StopPrice) == StopPrice;
+            var trailing = string.Equals(candidate.Type, "trailing_stop", StringComparison.OrdinalIgnoreCase);
+            var pricesMatch = !(candidate.HasLimitPrice && (trailing || candidate.HasStopPrice))
+                ? !PricesChanged
+                : ParseNullableDecimal(candidate.LimitPrice) == LimitPrice
+                    && (trailing || ParseNullableDecimal(candidate.StopPrice) == StopPrice);
+            if (!pricesMatch)
+                return false;
+            return Trail is not { } trail
+                || (ParseNullableDecimal(candidate.TrailPrice) ?? ParseNullableDecimal(candidate.TrailPercent)) == trail;
         }
     }
 
