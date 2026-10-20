@@ -33,7 +33,7 @@ public sealed class SecurityMasterProjectionCodecTests
         var record = Record("Bond", new
         {
             schemaVersion = 1,
-            maturity = "2030-01-01",
+            maturity = "2091-01-01",
             couponType = "Fixed",
             couponRate = 5.0m,
             dayCount = "30/360",
@@ -46,9 +46,11 @@ public sealed class SecurityMasterProjectionCodecTests
 
         plan.Value("coupon_kind").Should().Be("Fixed");
         plan.Value("fixed_coupon_rate").Should().Be(5.0m);
-        plan.Value("maturity_date").Should().Be(new DateTime(2030, 1, 1));
+        plan.Value("maturity_date").Should().Be(new DateTime(2091, 1, 1));
         plan.SatelliteValue("bond_accrual_convention_projection", "day_count_convention").Should().Be("30/360");
         plan.SatelliteValue("bond_accrual_convention_projection", "coupon_kind").Should().Be("Fixed");
+        // The lifecycle state reads the real UTC date; the maturity above is far enough out that
+        // this stays Active rather than flipping to Matured as the calendar advances.
         plan.SatelliteValue("bond_lifecycle_projection", "lifecycle_stat").Should().Be("Active");
         plan.SatelliteColumns("bond_issuer_projection").Should().NotBeNull("the record names an issuer");
     }
@@ -86,7 +88,7 @@ public sealed class SecurityMasterProjectionCodecTests
         var record = Record("Bond", new
         {
             schemaVersion = 1,
-            maturity = "2030-01-01",
+            maturity = "2091-01-01",
             coupon = new { kind = "Fixed", rate = 4.5m, dayCountConvention = "30/360" },
             isCallable = false,
             subclass = "Corporate"

@@ -842,7 +842,8 @@ public sealed class SecurityTermsProjectionRegistryTests
         var record = Record("Bond", new
         {
             schemaVersion = 1,
-            maturity = "2031-06-15",
+            // Far enough out that the lifecycle state does not flip to Matured as the real date advances.
+            maturity = "2091-06-15",
             issueDate = "2021-06-15",
             couponType = "Fixed",
             couponRate = 5.25m,
