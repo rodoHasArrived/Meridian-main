@@ -68,12 +68,23 @@ Durable markers and sanitized recovery generations prevent deletion reversal;
 empty or missing primaries recover from the retained backup. Both audit surfaces append under the vault
 lock without copying accumulated history. Before appending, an incomplete final record is durably retained
 in a uniquely named `.partial-*` file, preserving every newline-terminated record in the original log.
-The service never writes plaintext OAuth JSON.
+Every provider-credential and OAuth mutation journals its audit record to
+`provider-credentials.audit.pending.jsonl` (atomic whole-file write, never secrets) *before* the vault
+write and removes it only after the audit append is durable, so an audit failure after the vault
+committed is no longer ambiguous: the journal is the marker, the next mutation and
+`ReplayPendingAuditAsync` (run at host start) append the owed records with a `replayedAt` stamp, and
+status reports `auditPending`. Provider-credential saves, deletes and verification records return
+success in that case; OAuth token saves throw `ProviderCredentialAuditDeferredException` (an
+`IOException` with `VaultCommitted`) because their callers reconcile a running cache. A journal write
+failure refuses the mutation before the vault is touched. Legacy imports keep their retry-by-sidecar
+contract and do not journal. The service never writes plaintext OAuth JSON.
 Scoped readers use the same stable generation path, including backup recovery, without acquiring a
 writer lock or creating storage for an absent vault. Scoped deletion sanitizes recovery generations
 while retaining other owners and unassigned records. Scoped audit appends retain tenant, connection,
 external account and environment through incomplete-tail recovery.
-The existing non-Windows local key file remains a production-hardening gap; this does not certify PRD-002.
+The non-Windows local key file is reachable only outside the ADR-019 production envelope: production
+postures now fail closed off Windows in `ProductionServiceRegistrationPolicy`, so the key file is a
+documented scope-out, not a production path. This does not certify PRD-002.
 
 `IScopedOAuthTokenVault` isolates tokens by the same four ownership dimensions as provider secrets.
 Scoped token records retain and validate their provider and ownership context; legacy token enumeration

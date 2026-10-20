@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-05
+**Reviewed:** 2026-10-20
 **Scope:** the six evidence-gated P0 rows in the
 [production-readiness tracker](../product/implementation-todo-list.md) — what evidence exists,
 what an agent can still generate, and exactly which decisions and activations require a human.
@@ -18,9 +18,9 @@ not change the tracker's release-gate semantics; the tracker stays authoritative
 
 | Row | Evidence gate (tracker) | Automation state | Hosted evidence to date | Remaining human action |
 | --- | --- | --- | --- | --- |
-| `PRD-000` | Core-team approval of ADR-019/ADR-020; clean installed publish/start/update/rollback receipts from the release commit | ADR-019 and ADR-020 are complete and implementation-linked; posture guard, lifecycle control plane, and receipts have focused proof | None — both ADRs remain **Proposed** | **Sign-off decision** (see [PRD-000 approval package](#prd-000-adr-019adr-020-approval-package)) |
+| `PRD-000` | Core-team approval of ADR-019/ADR-020; clean installed publish/start/update/rollback receipts from the release commit | ADR-019 and ADR-020 are complete and implementation-linked; posture guard, lifecycle control plane, and receipts have focused proof | **Signed 2026-10-20** (`DEC-PRD000-SUPPORT-MATRIX-001`); ADR-019 now also requires and implements a non-Windows platform fail-closed | **Signed-tag receipts** from the `v0.1.0-rc.1` run (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
 | `PRD-013` | Successful `web-workstation`/`win-x64` hosted `Publish Smoke` run attached to the release commit | Workflow starts the exact published artifact with required auth and dedicated PostgreSQL, then fetches startup/health/shell/assets. Eight hosted attempts drove out the full defect chain (publish contract, PostgreSQL discovery, elevated initdb ACLs, exit mutex affinity, unbounded pg_ctl pipe drain, first-boot budgets, lifecycle-bridge DI); every fix is receipt-evidenced | **First green run exists:** [run #15 / 30347353295](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30347353295) on candidate `d64506650` (2026-07-28) — publish, install, supervised dedicated-database startup, and all endpoint probes passed | Re-dispatch on the frozen release commit and keep that run link here |
-| `PRD-014` | Protected signing secret, native Windows ARM64 runner, prior release artifact, green tag workflow | Installer release creates SHA-256 checksums, SPDX SBOMs, GitHub attestations; tag release blocks on N-1 install/launch/update/repair/rollback/uninstall receipts for x64 and ARM64 | None — no release tag has run the hardened workflow | **Provision secrets + ARM64 runner, then tag** (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
+| `PRD-014` | Protected signing secret, native Windows ARM64 runner, prior release artifact, green tag workflow | Installer release creates SHA-256 checksums, SPDX SBOMs, GitHub attestations; tag release blocks on N-1 install/launch/update/repair/rollback/uninstall receipts for x64 and ARM64 | `v0.1.0-rc.1` tagged on `a9d470c3` 2026-10-20; the tag run's `eligibility` job fails closed until the signing secrets exist | **Provision `MDC_SIGNING_CERT_PFX_BASE64` / `MDC_SIGNING_CERT_PASSWORD` in `desktop-release-signing`, then re-dispatch `desktop-installer-packaging` on the tag** (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
 | `PRD-015` | Dated release-commit `production-recovery-drill-*` artifact, bound verification/reconciliation/acceptance evidence, and a separate independently evaluated receipt with `objectiveStatus: proven` under RPO 3600s/RTO 7200s | Schema-version-2 producer separates `backupDurationSeconds`/`restoreDurationSeconds` from objective measurements and records verified-point/loss milestones. The standalone validator recomputes point age and declared-loss-to-acceptance time; automation supplies no reconciliation or operator acceptance. | Green candidate archive round-trip receipts exist, including [first all-green certification run #19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on `b3bd557876523b81a2791f4bfd814647035f389a`. Historical receipts prove archive operations/state probes only; no accepted recovery-objective evidence is recorded. | **Complete recovery and record operations-owner acceptance/review** on the frozen release commit; the row stays evidence-gated (see [PRD-015 review](#prd-015-recovery-drill-operator-review)) |
 | `PRD-016` | Green hosted `Production Certification` run on the release commit; repository administrator activates it as a required release check | The workflow runs deterministic PostgreSQL integrations with Cobertura coverage, a zero-skip TRX gate, post-test schema capture, and NuGet/npm scans. Candidate `b3bd557876523b81a2791f4bfd814647035f389a` completed the ordered harness repair without narrowing either integration filter | **First all-green candidate run:** [#19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on 2026-08-05 — `Meridian.Tests` 781/0/0, Direct Lending 7/0/0, zero-skip aggregate 788/0/0 with `certifiable: true`, and all four jobs green. The successful post-test schema capture produced header-only table and migration-ledger inventories after teardown, proving cleanup rather than substantive migrated-schema coverage | Re-dispatch on the frozen release commit, then **required-check activation** by a repository administrator (see [PRD-016 activation](#prd-016-required-check-activation)) |
 | `PRD-017` | Local docs/hash validators and the hosted documentation evidence job green on the final candidate commit | `run-docs-automation.py --profile core` plus drift rejection runs inside `Production Certification` | The same-commit documentation job passed in [run #19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on candidate `b3bd557876523b81a2791f4bfd814647035f389a` | None beyond keeping the frozen release commit drift-free (agent-runnable; commands below) |
@@ -111,6 +111,8 @@ Approving [ADR-020](../adr/020-lifecycle-control-plane.md) ratifies the per-user
 host process split, dedicated-PostgreSQL ownership rules, readiness contract, deterministic
 drain/flush ordering, and lifecycle receipts.
 
+**Recorded 2026-10-20** in one change: both ADR status lines read `Accepted (core-team sign-off 2026-10-20)`, `DEC-PRD000-SUPPORT-MATRIX-001` is in the decision log, and the tracker's `PRD-000` rows carry the signature. The same decision accepted the ~1 GB consumer download for the `v0.1.0-rc` line and amended the matrix OS row to "Windows 11 (x64 and ARM64)" so it matches the PRD-014 receipts. The steps below remain as the procedure that was followed.
+
 **To record sign-off (all three, same change):**
 
 1. Flip the **Status** line of both ADRs to `Accepted (core-team sign-off YYYY-MM-DD)`.
@@ -150,7 +152,7 @@ drain/flush ordering, and lifecycle receipts.
    with a reason instead of failing closed. A failed release query stays fatal, so this cannot be
    mistaken for a missing predecessor. From the second release onward the N-1 artifact is required
    again, and is produced by the first release.
-4. Push the release tag (`v*`) on the frozen release commit and drive
+4. **Done 2026-10-20 for the tag half:** `v0.1.0-rc.1` was pushed on `a9d470c3`, the commit with the ten-workflow green receipt. Its tag run cannot publish until step 1 is done; re-dispatch `desktop-installer-packaging` on the tag afterwards. Push the release tag (`v*`) on the frozen release commit and drive
    `desktop-installer-packaging` to green; the tag run's install/launch/update/repair/
    rollback/uninstall receipts for x64 and ARM64 are the PRD-014 evidence. Record the run link
    here.
@@ -400,7 +402,7 @@ Append-only; newest first. Every entry names the commit, the run or decision, an
   work, and single-file publishing rules out deriving the offset from the PE headers.
   `InstallationTransaction` is untouched. The build now runs the packaged executable with
   `--verify-payload`, so the writer and the reader cannot drift apart without this lane going red.
-  The ~1 GB download is a product question this ledger does not settle.
+  The ~1 GB download was accepted for the `v0.1.0-rc` line on 2026-10-20 (`DEC-PRD000-SUPPORT-MATRIX-001`).
 - **2026-08-19** — `Production Certification` run #28 on `a73d9cb4`
   ([32278123178](https://github.com/rodoHasArrived/Meridian-main/actions/runs/32278123178))
   **did not fail on anything in the repository** and produced no usable frozen-commit evidence.
