@@ -172,9 +172,7 @@ public static class ProviderExtendedEndpoints
             if (!Enum.TryParse<DataSourceKind>(req.ProviderName, true, out var dataSource))
                 return Results.BadRequest(new { error = $"Unknown provider: {req.ProviderName}" });
 
-            var cfg = store.Load();
-            var next = cfg with { DataSource = dataSource };
-            await store.SaveAsync(next);
+            await store.UpdateAsync(cfg => cfg with { DataSource = dataSource });
 
             return Results.Json(new
             {
