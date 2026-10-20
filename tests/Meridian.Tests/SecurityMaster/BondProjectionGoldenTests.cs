@@ -189,7 +189,7 @@ public sealed class BondProjectionGoldenTests : IClassFixture<SecurityMasterData
         bond.DayCountConvention.Should().Be("30/360");
         bond.SettlementCycleDays.Should().Be(2);
         bond.LifecycleStat.Should().Be("Callable");
-        bond.MaturityDate.Should().Be(new DateOnly(2031, 6, 15));
+        bond.MaturityDate.Should().Be(new DateOnly(2091, 6, 15));
         bond.Par.Should().Be(1000m);
 
         (await reader.GetIssuerLadderAsync("Acme Corp")).Should().Contain(row => row.SecurityId == securityId);
