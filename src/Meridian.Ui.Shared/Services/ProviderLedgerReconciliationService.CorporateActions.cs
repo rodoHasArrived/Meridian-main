@@ -1101,7 +1101,16 @@ public sealed partial class ProviderLedgerReconciliationService
         FundAccountBrokeragePositionDto position,
         params CorporateActionLedgerPostingKind[] postingKinds)
     {
-        if (!SecurityAssetClassCatalog.TryResolveLabel(position.AssetClass, out var descriptor) &&
+        // An ambiguous label ("Equity Option") is not an unknown one: the catalog has said it cannot
+        // pick, so the resolved reference — possibly an inferred symbol match to the underlying —
+        // must not pick for it. Only a label that names no class defers to the reference.
+        var resolution = SecurityAssetClassCatalog.ResolveLabel(position.AssetClass, out var descriptor);
+        if (resolution == SecurityAssetClassLabelResolution.Ambiguous)
+        {
+            return false;
+        }
+
+        if (resolution == SecurityAssetClassLabelResolution.Unresolved &&
             !SecurityAssetClassCatalog.TryGet(position.Security?.AssetClass, out descriptor))
         {
             return false;

@@ -644,22 +644,33 @@ public static class SecurityAssetClassCatalog
     /// "Structured Credit Loan" from reading as a loan and "stockbroker" from reading as stock.
     /// </summary>
     public static bool TryResolveLabel(string? label, [NotNullWhen(true)] out SecurityAssetClassDescriptor? descriptor)
+        => ResolveLabel(label, out descriptor) == SecurityAssetClassLabelResolution.Resolved;
+
+    /// <summary>
+    /// <see cref="TryResolveLabel"/> with the reason a label did not resolve kept apart: a label
+    /// that names no catalog class at all (<see cref="SecurityAssetClassLabelResolution.Unresolved"/>)
+    /// says nothing about the position, and a caller may classify it another way; a label whose
+    /// tokens name more than one class (<see cref="SecurityAssetClassLabelResolution.Ambiguous"/>,
+    /// "Equity Option") does say something — that the catalog cannot pick — and a caller must not
+    /// fall back to a looser source that would pick one of them.
+    /// </summary>
+    public static SecurityAssetClassLabelResolution ResolveLabel(string? label, out SecurityAssetClassDescriptor? descriptor)
     {
         descriptor = null;
         if (string.IsNullOrWhiteSpace(label))
         {
-            return false;
+            return SecurityAssetClassLabelResolution.Unresolved;
         }
 
         if (TryGet(label, out descriptor))
         {
-            return true;
+            return SecurityAssetClassLabelResolution.Resolved;
         }
 
         var compact = new string(label.Where(char.IsLetterOrDigit).ToArray());
         if (TryGet(compact, out descriptor))
         {
-            return true;
+            return SecurityAssetClassLabelResolution.Resolved;
         }
 
         SecurityAssetClassDescriptor? match = null;
@@ -672,14 +683,16 @@ public static class SecurityAssetClassCatalog
 
             if (match is not null && !ReferenceEquals(match, candidate))
             {
-                return false;
+                return SecurityAssetClassLabelResolution.Ambiguous;
             }
 
             match = candidate;
         }
 
         descriptor = match;
-        return match is not null;
+        return match is null
+            ? SecurityAssetClassLabelResolution.Unresolved
+            : SecurityAssetClassLabelResolution.Resolved;
     }
 
     private static readonly char[] LabelSeparators = [' ', '_', '-', '/', ',', '.', ':', ';', '(', ')', '[', ']'];
@@ -863,6 +876,17 @@ public static class SecurityAssetClassCatalog
 /// the first-class alternative asset kinds MAY be profile-backed; CustomAsset and OtherSecurity have
 /// no terms contract of their own and so MUST be.
 /// </param>
+/// <summary>
+/// Outcome of <see cref="SecurityAssetClassCatalog.ResolveLabel"/>: the label named one catalog
+/// class, named none, or named more than one and so cannot be classified by the catalog.
+/// </summary>
+public enum SecurityAssetClassLabelResolution
+{
+    Unresolved,
+    Resolved,
+    Ambiguous
+}
+
 public sealed record SecurityAssetClassDescriptor(
     string AssetClass,
     SecurityLotUnitKind LotUnit,

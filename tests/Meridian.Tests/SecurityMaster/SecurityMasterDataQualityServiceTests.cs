@@ -283,6 +283,26 @@ public sealed class SecurityMasterDataQualityServiceTests
     }
 
     [Fact]
+    public async Task RunQualityChecksAsync_RequiresTheProfileEnvelope_AtTheDocumentRoot()
+    {
+        // customProfileId/profileVersion are the governance envelope the mapper and write validator
+        // read at the root; nesting them under profileFields does not satisfy the requirement.
+        var (sut, store) = BuildSut();
+        var nestedEnvelope = MakeSecurity(Guid.NewGuid(), "CustomAsset", currency: "USD",
+            assetSpecificTerms: new
+            {
+                profileFields = new { customProfileId = "art-collection", profileVersion = 2, appraiser = "Sotheby's" }
+            });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { nestedEnvelope });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Where(v => v.RuleId == "MA003" && v.SecurityId == nestedEnvelope.SecurityId)
+            .Select(v => v.FieldPath)
+            .Should().BeEquivalentTo("assetSpecificTerms.customProfileId", "assetSpecificTerms.profileVersion");
+    }
+
+    [Fact]
     public async Task RunQualityChecksAsync_HoldsNumbersToTheDeclaredNumericType_AndProfileFieldsToProfileBackedClasses()
     {
         var (sut, store) = BuildSut();

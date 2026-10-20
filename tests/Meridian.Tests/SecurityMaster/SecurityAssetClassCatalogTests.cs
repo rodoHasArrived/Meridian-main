@@ -65,6 +65,21 @@ public sealed class SecurityAssetClassCatalogTests
         descriptor.Should().BeNull();
     }
 
+    [Theory]
+    [InlineData("Common Stock", SecurityAssetClassLabelResolution.Unresolved)]
+    [InlineData("Fixed Income", SecurityAssetClassLabelResolution.Unresolved)]
+    [InlineData("Equity Option", SecurityAssetClassLabelResolution.Ambiguous)]
+    [InlineData("Bond / Equity", SecurityAssetClassLabelResolution.Ambiguous)]
+    [InlineData("Treasury Bond", SecurityAssetClassLabelResolution.Resolved)]
+    public void ResolveLabel_TellsAnAmbiguousLabelFromAnUnknownOne(string label, SecurityAssetClassLabelResolution expected)
+    {
+        // A caller may classify an unknown label from another source; an ambiguous one has already
+        // been judged by the catalog and must not be re-decided by a looser source.
+        SecurityAssetClassCatalog.ResolveLabel(label, out var descriptor).Should().Be(expected);
+
+        (descriptor is not null).Should().Be(expected == SecurityAssetClassLabelResolution.Resolved);
+    }
+
     [Fact]
     public void TryGet_DistinguishesUnknownInputFromTheUnknownDescriptor()
     {

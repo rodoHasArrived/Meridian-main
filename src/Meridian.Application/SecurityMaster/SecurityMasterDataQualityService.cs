@@ -365,7 +365,21 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     /// matching how the canonical mapper would fail to read them.
     /// </summary>
     private static bool HasDeclaredValue(JsonElement terms, SecurityAssetTermField field, bool supportsProfileBackedTerms)
-        => EnumerateTermSources(terms, supportsProfileBackedTerms).Any(source => HasDeclaredValueIn(source, field));
+        => EnumerateTermSources(terms, supportsProfileBackedTerms && !ProfileEnvelopeKeys.Contains(field.Key))
+            .Any(source => HasDeclaredValueIn(source, field));
+
+    /// <summary>
+    /// The profile governance envelope the canonical mapper and the write validator read at the
+    /// document root; a copy nested under <c>profileFields</c> is not where they look, so it does
+    /// not satisfy the requirement.
+    /// </summary>
+    private static readonly HashSet<string> ProfileEnvelopeKeys = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "customProfileId",
+        "profileVersion",
+        "profileFields",
+        "profileApproval"
+    };
 
     /// <summary>
     /// Where a class's schema terms live: a profile-backed record (PrivateFundInterest,
