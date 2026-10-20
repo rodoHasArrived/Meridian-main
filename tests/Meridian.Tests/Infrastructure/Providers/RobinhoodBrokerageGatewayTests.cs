@@ -1031,6 +1031,7 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
             await using var oms = new OrderManagementSystem(restarted, NullLogger<OrderManagementSystem>.Instance,
                 recoveryStore: new FileBrokerageOrderRecoveryStore(path, "robinhood"),
                 portfolioState: new PaperTradingPortfolio(100_000m));
+            await oms.StartAsync();
 
             var cancelled = await oms.CancelOrderAsync("client-1");
 

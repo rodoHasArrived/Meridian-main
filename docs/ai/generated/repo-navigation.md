@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-10-07T18:21:09Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-10-20T08:15:52Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs` | Providers and Storage | `baeea857d` (2026-10-07T17:17:54Z) | 6 |
-| `src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs` | Unmapped | `baeea857d` (2026-10-07T17:17:54Z) | 5 |
-| `src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs` | Desktop and UI Workflows | `baeea857d` (2026-10-07T17:17:54Z) | 5 |
-| `src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs` | Unmapped | `405dc1f3f` (2026-10-07T16:51:14Z) | 3 |
-| `src/Meridian.Contracts/Ledger/ConsolidationDtos.cs` | Host and Composition | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
-| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
-| `src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Consolidation.cs` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.test.tsx` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.tsx` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/types/consolidation.ts` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 2 |
-| `src/Meridian.Contracts/Ledger/LedgerBookDtos.cs` | Host and Composition | `405dc1f3f` (2026-10-07T16:51:14Z) | 1 |
-| `src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs` | Unmapped | `405dc1f3f` (2026-10-07T16:51:14Z) | 1 |
-| `src/Meridian.Ui.Shared/Services/ConsolidationChartValidation.cs` | Desktop and UI Workflows | `405dc1f3f` (2026-10-07T16:51:14Z) | 1 |
-| `src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs` | Unmapped | `4c039f269` (2026-10-07T16:17:55Z) | 2 |
-| `src/Meridian.Storage/FundStructure/PostgresFundStructureStore.Consolidation.cs` | Providers and Storage | `4c039f269` (2026-10-07T16:17:55Z) | 2 |
+| `src/Meridian.Application/README.md` | Host and Composition | `ebe59f45d` (2026-10-20T08:15:36Z) | 24 |
+| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 12 |
+| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 8 |
+| `src/Meridian.Execution/OrderManagementSystem.cs` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 4 |
+| `src/Meridian.Strategies/Live/LiveTradingEngine.cs` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 4 |
+| `src/Meridian.Execution/BrokerageServiceRegistration.cs` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 1 |
+| `src/Meridian.Execution/IOrderManagementLifecycle.cs` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 1 |
+| `src/Meridian.Execution/Meridian.Execution.csproj` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 1 |
+| `src/Meridian.Execution/OrderManagementSystem.Lifecycle.cs` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 1 |
+| `src/Meridian.Execution/Services/OrderManagementHostedService.cs` | Execution, Risk, and Strategies | `19d59dd7b` (2026-10-20T08:15:36Z) | 1 |
+| `src/Meridian.Application/FundStructure/FundStructureProjector.cs` | Host and Composition | `ebe59f45d` (2026-10-20T08:15:36Z) | 1 |
+| `src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs` | Host and Composition | `ebe59f45d` (2026-10-20T08:15:36Z) | 1 |
+| `src/Meridian.Application/FundStructure/PostgresFundStructureService.Tenancy.cs` | Host and Composition | `ebe59f45d` (2026-10-20T08:15:36Z) | 1 |
+| `src/Meridian.Application/FundStructure/PostgresFundStructureService.cs` | Host and Composition | `ebe59f45d` (2026-10-20T08:15:36Z) | 1 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `8c517f05a` (2026-10-20T08:15:24Z) | 48 |
 

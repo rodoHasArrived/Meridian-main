@@ -29,6 +29,7 @@ public sealed class OrderManagementSystemDurableHandoffOrderingTests
             NullLogger<OrderManagementSystem>.Instance,
             sessionPersistence: sessionPersistence,
             tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -63,6 +64,7 @@ public sealed class OrderManagementSystemDurableHandoffOrderingTests
             NullLogger<OrderManagementSystem>.Instance,
             sessionPersistence: sessionPersistence,
             tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -111,6 +113,7 @@ public sealed class OrderManagementSystemDurableHandoffOrderingTests
                              auditTrail: audit,
                              tradeEventPublisher: publisher))
             {
+                await oms.StartAsync();
                 var result = await oms.PlaceOrderAsync(new OrderRequest
                 {
                     Symbol = "AAPL",

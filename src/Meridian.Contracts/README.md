@@ -11,6 +11,13 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Contracts
 
+`SecurityMaster/ISecurityMasterQueryService.cs` is the single query contract for application,
+browser, WPF, reporting, and QuantScript consumers. The former Application interface has been
+removed; source consumers must import `Meridian.Contracts.SecurityMaster`. Configured and
+unconfigured hosts register this same contract once, so caller-supplied implementations also reach
+application validation and pricing consumers. Query signatures, retained-history semantics, and
+serialized payloads are unchanged.
+
 `LoanPortfolioSummaryDto.CurrencyTotals` carries separately denominated lending and collateral
 balances. `TotalCurrency` identifies a single-currency scalar summary; mixed-currency legacy
 scalar totals are `null`. These amounts do not imply an FX conversion. Loan currency and status
