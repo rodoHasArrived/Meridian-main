@@ -422,7 +422,11 @@ public sealed partial class ProviderLedgerReconciliationService
             OverrideHistory: overrideHistory,
             ObservedAt: observedAt,
             FreshnessMinutes: freshnessMinutes,
-            Reason: string.Join(" ", reasonParts));
+            Reason: string.Join(" ", reasonParts),
+            // The class of the Security Master record this run resolved the position to, which the
+            // retained projection reference may not carry yet (the record can be created between
+            // sync and reconciliation); corporate-action classification reads it.
+            ResolvedAssetClass: security?.AssetClass);
     }
 
     private static string[] FormatOpenIdentifierConflicts(
