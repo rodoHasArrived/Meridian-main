@@ -2002,6 +2002,8 @@ Meridian-main
 │   │   ├── review-history.md
 │   │   ├── w9-demo-002-closure-2026-09-16.md
 │   │   ├── w9-operator-acceptance-2026-08-29.md
+│   │   ├── w9-operator-acceptance-2026-10-18.md
+│   │   ├── w9-operator-acceptance-2026-10-19.md
 │   │   └── web-ui-improvements-brainstorm-2026-07.md
 │   ├── prompts
 │   │   ├── automation-prompts.md
@@ -4211,6 +4213,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterPublishFailedException.cs
 │   │   │   ├── SecurityMasterQueryService.cs
 │   │   │   ├── SecurityMasterService.cs
+│   │   │   ├── SecurityMasterStructuredCreditReclassificationService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Discard.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Mutations.cs
@@ -4536,8 +4539,10 @@ Meridian-main
 │   │   │   │   └── Trade.cs
 │   │   │   ├── CanonicalSymbol.cs
 │   │   │   ├── IPositionSnapshotStore.cs
+│   │   │   ├── ListingId.cs
 │   │   │   ├── MarketDataModels.cs
 │   │   │   ├── MarketDataSources.cs
+│   │   │   ├── Mic.cs
 │   │   │   ├── ProviderId.cs
 │   │   │   ├── ProviderSymbol.cs
 │   │   │   ├── StreamId.cs
@@ -4590,6 +4595,7 @@ Meridian-main
 │   │   │   ├── AccountingConfigurationDtos.cs
 │   │   │   ├── AccountingConfigurationPrivateCapitalDtos.cs
 │   │   │   ├── AccountingPostingCommandDtos.cs
+│   │   │   ├── AuditChainIntegrity.cs
 │   │   │   ├── AutomatedJournalEvidenceDtos.cs
 │   │   │   ├── ConsolidationDtos.cs
 │   │   │   ├── CurrencyMinorUnits.cs
@@ -4699,6 +4705,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterPricing.cs
 │   │   │   ├── SecurityMasterProvenance.cs
 │   │   │   ├── SecurityMasterSchemaVersions.cs
+│   │   │   ├── SecurityMasterStructuredCreditReclassification.cs
 │   │   │   ├── SecurityQueries.cs
 │   │   │   ├── SecurityTermBlocks.cs
 │   │   │   ├── SecurityTermConventions.cs
@@ -5153,6 +5160,7 @@ Meridian-main
 │   │   ├── BracketOrderMetadata.cs
 │   │   ├── BrokerageConfiguration.cs
 │   │   ├── BrokerageOrderPlacementGate.cs
+│   │   ├── BrokerageRequestNotSentException.cs
 │   │   ├── BrokerageValidationEvaluator.cs
 │   │   ├── BrokerNotionalMetadata.cs
 │   │   ├── CanonicalTaxLotAdapter.cs
@@ -6382,7 +6390,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_041__current_basis_disposal.sql
 │   │   │   │   ├── V_ledger_042__atomic_lot_successors.sql
 │   │   │   │   ├── V_ledger_043__amortization_reversal_basis_restoration.sql
-│   │   │   │   └── V_ledger_050__atomic_lot_capital_return.sql
+│   │   │   │   ├── V_ledger_050__atomic_lot_capital_return.sql
+│   │   │   │   └── V_ledger_051__tax_lot_account_case_insensitive_keys.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -6557,7 +6566,11 @@ Meridian-main
 │   │   │   │   ├── 041_security_master_governance_events_truncate_guard.sql
 │   │   │   │   ├── 042_security_master_terms_format_column.sql
 │   │   │   │   ├── 043_security_master_close_price_approval_null_guards.sql
-│   │   │   │   └── 044_security_master_declarative_terms_projections.sql
+│   │   │   │   ├── 044_security_master_declarative_terms_projections.sql
+│   │   │   │   ├── 045_structured_credit_typed_tranche_terms.sql
+│   │   │   │   ├── 046_otc_derivative_terms_projections.sql
+│   │   │   │   ├── 047_rate_option_and_note_terms_projections.sql
+│   │   │   │   └── 048_security_master_listing_mic.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -7178,6 +7191,7 @@ Meridian-main
 │   │   │   │   │   │   ├── accounting-onboarding.api.test.ts
 │   │   │   │   │   │   ├── accounting-onboarding.api.ts
 │   │   │   │   │   │   ├── archive-maintenance.api.ts
+│   │   │   │   │   │   ├── audit-integrity.api.ts
 │   │   │   │   │   │   ├── banking-payments.api.ts
 │   │   │   │   │   │   ├── break-audit-rebuild.api.ts
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
@@ -7391,6 +7405,10 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.account-oversight.test.tsx
 │   │   │   │   │   ├── accounting-screen.account-oversight.tsx
 │   │   │   │   │   ├── accounting-screen.approvals.ts
+│   │   │   │   │   ├── accounting-screen.audit-integrity.test.tsx
+│   │   │   │   │   ├── accounting-screen.audit-integrity.tsx
+│   │   │   │   │   ├── accounting-screen.audit-integrity.view-model.test.ts
+│   │   │   │   │   ├── accounting-screen.audit-integrity.view-model.ts
 │   │   │   │   │   ├── accounting-screen.basis-bridge.view-model.ts
 │   │   │   │   │   ├── accounting-screen.break-audit-rebuild.test.tsx
 │   │   │   │   │   ├── accounting-screen.break-audit-rebuild.tsx
@@ -7768,6 +7786,7 @@ Meridian-main
 │   │   │   │   │   ├── account-oversight.ts
 │   │   │   │   │   ├── accounting-onboarding.ts
 │   │   │   │   │   ├── archive-maintenance.types.ts
+│   │   │   │   │   ├── audit-integrity.ts
 │   │   │   │   │   ├── banking-payments.types.ts
 │   │   │   │   │   ├── brokerage-recovery.ts
 │   │   │   │   │   ├── canonical-symbol.ts
@@ -8067,6 +8086,7 @@ Meridian-main
 │   │   │   ├── LeanEndpoints.cs
 │   │   │   ├── LedgerEndpoints.AccountingConfiguration.cs
 │   │   │   ├── LedgerEndpoints.AccountOversight.cs
+│   │   │   ├── LedgerEndpoints.AuditIntegrity.cs
 │   │   │   ├── LedgerEndpoints.CloseExecution.cs
 │   │   │   ├── LedgerEndpoints.ClosePreparation.cs
 │   │   │   ├── LedgerEndpoints.Consolidation.cs
@@ -8221,6 +8241,7 @@ Meridian-main
 │   │   │   │   ├── ICoveredCallBacktestService.cs
 │   │   │   │   └── ICoveredCallChainProviderFactory.cs
 │   │   │   ├── AccountingAuditChainAnchor.cs
+│   │   │   ├── AccountingAuditIntegrityService.cs
 │   │   │   ├── AccountingClosePostingWorkbenchBridge.cs
 │   │   │   ├── AccountingConfigurationService.ActivationValidation.cs
 │   │   │   ├── AccountingConfigurationService.cs
@@ -8675,6 +8696,7 @@ Meridian-main
 │   │   │   ├── WorkstationNavigationDefaults.cs
 │   │   │   └── WorkstationOperatingContextModels.cs
 │   │   ├── Services
+│   │   │   ├── AccountingAuditIntegrityApiClient.cs
 │   │   │   ├── AccountingWorkspacePresentationService.cs
 │   │   │   ├── ApiStatusService.cs
 │   │   │   ├── AppConfigDefaults.cs
@@ -8838,6 +8860,7 @@ Meridian-main
 │   │   │   │   ├── AccountingCloseViewModel.MutationAuthority.cs
 │   │   │   │   ├── AccountingCloseViewModel.WorkflowSelection.cs
 │   │   │   │   ├── AccountingConfigureViewModel.cs
+│   │   │   │   ├── AuditChainIntegrityViewModel.cs
 │   │   │   │   └── RecurringJournalQueueViewModel.cs
 │   │   │   ├── AccountPortfolioViewModel.cs
 │   │   │   ├── ActivityLogViewModel.cs
@@ -10467,6 +10490,8 @@ Meridian-main
 │   │   │   ├── OmsGovernedBrokerageOrderGatewayTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.Outcomes.cs
+│   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.RejectedSuccessor.cs
+│   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.Validation.cs
 │   │   │   ├── OrderManagementSystemDurableHandoffOrderingTests.cs
 │   │   │   ├── OrderManagementSystemGovernanceTests.cs
 │   │   │   ├── OrderManagementSystemReportStreamTests.cs
@@ -10611,7 +10636,11 @@ Meridian-main
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.Amendments.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PortfolioRecovery.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.PreDispatch.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementConfirmation.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTerms.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTrail.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.SendBoundary.cs
 │   │   │   │   ├── AlpacaConnectionReadinessTests.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
@@ -10645,8 +10674,10 @@ Meridian-main
 │   │   │   │   ├── IBApiVersionValidatorTests.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.AmendmentRaces.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.OperationConflict.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.Operations.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.PositionIdentity.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.PreDispatch.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.Recovery.cs
 │   │   │   │   ├── IBDataServicesTests.cs
 │   │   │   │   ├── IBHistoricalProviderContractTests.cs
@@ -11008,6 +11039,8 @@ Meridian-main
 │   │   │   ├── FaceValueLotTests.cs
 │   │   │   ├── ForwardCurveCashFlowTests.cs
 │   │   │   ├── KeyedGatePoolTests.cs
+│   │   │   ├── ListingIdentityTests.cs
+│   │   │   ├── ListingMicColumnTests.cs
 │   │   │   ├── LoanIdentifierKindTests.cs
 │   │   │   ├── NullCorporateActionOperationsServiceTests.cs
 │   │   │   ├── NullOperatorOverridesStoreTests.cs
@@ -11095,6 +11128,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterServiceCommittedReadbackTests.cs
 │   │   │   ├── SecurityMasterServiceSnapshotTests.cs
 │   │   │   ├── SecurityMasterSnapshotStoreTests.cs
+│   │   │   ├── SecurityMasterStructuredCreditReclassificationServiceTests.cs
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
 │   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
 │   │   │   ├── SecurityTermBlockAmendmentTests.cs
@@ -11272,6 +11306,7 @@ Meridian-main
 │   │   │   ├── StrictTenantMutationPostgresTests.cs
 │   │   │   ├── SymbolAliasRepresentativeTests.cs
 │   │   │   ├── SymbolRegistryServiceTests.cs
+│   │   │   ├── TaxLotAccountCasingPostgresTests.cs
 │   │   │   ├── TenantCutoverInspectorTests.cs
 │   │   │   ├── TenantLowerIndexMigrationTests.cs
 │   │   │   ├── TenantReadPredicateTests.cs
@@ -11399,6 +11434,7 @@ Meridian-main
 │   │   │   │   └── StreamTopicTests.cs
 │   │   │   ├── AccountCashForecastEvidenceAdapterTests.cs
 │   │   │   ├── AccountingAuditAtomicityTests.cs
+│   │   │   ├── AccountingAuditIntegrityServiceTests.cs
 │   │   │   ├── AccountingConfigurationServiceTests.Consolidation.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ConsolidationChartRecovery.cs
 │   │   │   ├── AccountingConfigurationServiceTests.cs
@@ -11556,6 +11592,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterOperatorOverrideDecisionEndpointsTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterReconciliationSlaPolicyProviderTests.cs
+│   │   │   ├── SecurityMasterStructuredCreditReclassificationEndpointsTests.cs
 │   │   │   ├── SecurityMasterValidationEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchOptionsBindingTests.cs
@@ -11591,6 +11628,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.StatementAuthorityTests.cs
 │   │   │   ├── WorkstationEndpointsTests.AccountingConfiguration.cs
 │   │   │   ├── WorkstationEndpointsTests.AccountOversight.cs
+│   │   │   ├── WorkstationEndpointsTests.AuditIntegrity.cs
 │   │   │   ├── WorkstationEndpointsTests.ClosePreparation.cs
 │   │   │   ├── WorkstationEndpointsTests.CloseReadiness.cs
 │   │   │   ├── WorkstationEndpointsTests.cs
@@ -11758,6 +11796,7 @@ Meridian-main
 │   │   │   ├── ShellNavigationCatalogTests.cs
 │   │   │   └── WorkspaceShellChromeContributionTests.cs
 │   │   ├── Services
+│   │   │   ├── AccountingAuditIntegrityApiClientTests.cs
 │   │   │   ├── AdminMaintenanceServiceTests.cs
 │   │   │   ├── AppLifecycleDataRootTests.cs
 │   │   │   ├── AppServiceRegistrationTests.cs
@@ -11840,6 +11879,7 @@ Meridian-main
 │   │   │   ├── AggregatePortfolioViewModelTests.cs
 │   │   │   ├── AnalysisExportViewModelTests.cs
 │   │   │   ├── AnalysisExportWizardViewModelTests.cs
+│   │   │   ├── AuditChainIntegrityViewModelTests.cs
 │   │   │   ├── BackfillViewModelTests.cs
 │   │   │   ├── BacktestViewModelTests.cs
 │   │   │   ├── BatchBacktestViewModelTests.cs

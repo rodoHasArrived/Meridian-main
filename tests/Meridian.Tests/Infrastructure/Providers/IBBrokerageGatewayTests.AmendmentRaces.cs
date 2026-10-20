@@ -22,8 +22,10 @@ public sealed partial class IBBrokerageGatewayTests
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => sut.ModifyOrderAsync("working-order",
+        // Cancelled before PlaceOrderAsync: nothing reached IB, so the amendment is reported as not sent.
+        var notSent = await Assert.ThrowsAsync<BrokerageRequestNotSentException>(() => sut.ModifyOrderAsync("working-order",
             new OrderModification { NewQuantity = 12m }, cancellation.Token));
+        notSent.InnerException.Should().BeAssignableTo<OperationCanceledException>();
 
         var acknowledged = await sut.ModifyOrderAsync("working-order", new OrderModification { NewQuantity = 11m });
         acknowledged.ReportType.Should().Be(ExecutionReportType.Modified);
@@ -52,7 +54,7 @@ public sealed partial class IBBrokerageGatewayTests
             cancellation.Cancel();
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => amendment);
         }
-        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.ModifyOrderAsync("working-order",
+        await Assert.ThrowsAsync<BrokerageRequestNotSentException>(() => sut.ModifyOrderAsync("working-order",
             new OrderModification { NewQuantity = 13m }));
 
         client.RaiseExecution(AmendmentExecution(10m, 10m, 100d, 100d, "late-execution"));

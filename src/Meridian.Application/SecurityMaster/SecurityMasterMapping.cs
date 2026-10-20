@@ -210,6 +210,7 @@ internal static class SecurityMasterMapping
             SecurityIdentifierKind.Cik => IdentifierKind.Cik,
             SecurityIdentifierKind.LoanX => IdentifierKind.LoanX,
             SecurityIdentifierKind.Clip => IdentifierKind.Clip,
+            SecurityIdentifierKind.ListingId => IdentifierKind.ListingId,
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unsupported security identifier kind.")
         };
 
@@ -365,7 +366,20 @@ internal static class SecurityMasterMapping
                 GetRequiredString(terms, "couponOrIndex"),
                 ToOption(GetOptionalString(terms, "factorSchedule")),
                 ToFSharpList(GetOptionalArrayItemsStrict(terms, "factorScheduleEntries").Select(ToFactorScheduleEntry)),
-                ToOption(GetOptionalDateOnly(terms, "maturity")))),
+                ToOption(GetOptionalDateOnly(terms, "maturity")),
+                // Typed tranche terms are optional, but a WRITE must not read a malformed supplied
+                // value as absent: persisting null for a numeric kind, "1.5" months or an unparseable
+                // date would silently discard caller input. Reads stay tolerant so stored rows remain
+                // loadable.
+                ToStructuredCreditKindOption(GetOptionalString(terms, "structuredCreditKind", mode)),
+                ToOption(GetOptionalString(terms, "seniority", mode)),
+                ToOption(GetOptionalDecimal(terms, "attachmentPoint", mode)),
+                ToOption(GetOptionalDecimal(terms, "detachmentPoint", mode)),
+                ToOption(GetOptionalDecimal(terms, "weightedAverageCoupon", mode)),
+                ToOption(GetOptionalInt(terms, "weightedAverageMaturityMonths", mode)),
+                ToOption(GetOptionalInt(terms, "weightedAverageLoanAgeMonths", mode)),
+                ToOption(GetOptionalDateOnly(terms, "reinvestmentPeriodEnd", mode)),
+                ToOption(GetOptionalDateOnly(terms, "nonCallPeriodEnd", mode)))),
             "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
                 GetRequiredString(terms, "gpSponsor"),
                 GetRequiredString(terms, "strategy"),
@@ -419,6 +433,73 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(json, "strike")),
                 ToOption(GetOptionalDateOnly(json, "expiry")),
                 ToOption(GetOptionalDecimal(json, "multiplier")))),
+            "FxForward" => SecurityKind.NewFxForward(new FxForwardTerms(
+                GetRequiredString(json, "baseCurrency"),
+                GetRequiredString(json, "quoteCurrency"),
+                ToOption(GetOptionalDecimal(json, "notional", mode)),
+                ToOption(GetOptionalDecimal(json, "forwardRate", mode)),
+                ToOption(GetOptionalDateOnly(json, "tradeDate", mode)),
+                GetRequiredDateOnly(json, "valueDate"),
+                ToOption(GetOptionalString(json, "settlementType", mode)))),
+            "NonDeliverableForward" => SecurityKind.NewNonDeliverableForward(new NonDeliverableForwardTerms(
+                GetRequiredString(json, "baseCurrency"),
+                GetRequiredString(json, "quoteCurrency"),
+                GetRequiredString(json, "settlementCurrency"),
+                ToOption(GetOptionalDecimal(json, "notional", mode)),
+                ToOption(GetOptionalDecimal(json, "forwardRate", mode)),
+                GetRequiredDateOnly(json, "fixingDate"),
+                GetRequiredDateOnly(json, "valueDate"),
+                ToOption(GetOptionalString(json, "fixingSource", mode)))),
+            "CreditDefaultSwap" => SecurityKind.NewCreditDefaultSwap(new CreditDefaultSwapTerms(
+                GetRequiredString(json, "referenceEntity"),
+                ToOption(GetOptionalString(json, "referenceObligation", mode)),
+                GetRequiredString(json, "protectionSide"),
+                GetRequiredDecimal(json, "notional"),
+                GetRequiredDecimal(json, "fixedCouponBps"),
+                GetRequiredDateOnly(json, "effectiveDate"),
+                GetRequiredDateOnly(json, "maturityDate"),
+                ToOption(GetOptionalString(json, "paymentFrequency", mode)),
+                ToOption(GetOptionalString(json, "dayCount", mode)),
+                ToOption(GetOptionalString(json, "seniority", mode)),
+                ToOption(GetOptionalString(json, "restructuringClause", mode)),
+                ToOption(GetOptionalDecimal(json, "upfrontPoints", mode)),
+                ToOption(GetOptionalDecimal(json, "recoveryRateAssumption", mode)),
+                ToOption(GetOptionalString(json, "indexName", mode)))),
+            "Swaption" => SecurityKind.NewSwaption(new SwaptionTerms(
+                GetRequiredString(json, "payerReceiver"),
+                ToOption(GetOptionalString(json, "exerciseStyle", mode)),
+                GetRequiredDecimal(json, "strikeRate"),
+                GetRequiredDateOnly(json, "expiry"),
+                ToOption(GetOptionalDateOnly(json, "underlyingEffectiveDate", mode)),
+                GetRequiredDateOnly(json, "underlyingMaturityDate"),
+                GetRequiredDecimal(json, "notional"),
+                ToOption(GetOptionalString(json, "floatingIndex", mode)),
+                ToOption(GetOptionalString(json, "fixedLegPaymentFrequency", mode)),
+                ToOption(GetOptionalString(json, "fixedLegDayCount", mode)),
+                ToOption(GetOptionalString(json, "settlementType", mode)))),
+            "CapFloor" => SecurityKind.NewCapFloor(new CapFloorTerms(
+                GetRequiredString(json, "capFloorType"),
+                GetRequiredString(json, "referenceIndex"),
+                ToOption(GetOptionalDecimal(json, "capStrike", mode)),
+                ToOption(GetOptionalDecimal(json, "floorStrike", mode)),
+                GetRequiredDecimal(json, "notional"),
+                GetRequiredDateOnly(json, "effectiveDate"),
+                GetRequiredDateOnly(json, "maturityDate"),
+                ToOption(GetOptionalString(json, "resetFrequency", mode)),
+                ToOption(GetOptionalString(json, "dayCount", mode)),
+                ToOption(GetOptionalDecimal(json, "premiumAmount", mode)))),
+            "StructuredNote" => SecurityKind.NewStructuredNote(new StructuredNoteTerms(
+                GetRequiredString(json, "issuerName"),
+                GetRequiredString(json, "underlyingDescription"),
+                GetRequiredDateOnly(json, "maturity"),
+                ToOption(GetOptionalDateOnly(json, "issueDate", mode)),
+                ToOption(GetOptionalDecimal(json, "denomination", mode)),
+                ToOption(GetOptionalDecimal(json, "principalProtectionPct", mode)),
+                ToOption(GetOptionalDecimal(json, "participationRate", mode)),
+                ToOption(GetOptionalDecimal(json, "returnCap", mode)),
+                ToOption(GetOptionalDecimal(json, "couponRate", mode)),
+                ToOption(GetOptionalString(json, "paymentFrequency", mode)),
+                ToOption(GetOptionalDecimal(json, "barrierLevel", mode)))),
             "InvestmentFund" => SecurityKind.NewInvestmentFund(new InvestmentFundTerms(
                 ToOption(GetOptionalString(json, "fundType")),
                 ToOption(GetOptionalString(json, "fundFamily")),
@@ -513,6 +594,58 @@ internal static class SecurityMasterMapping
             {
                 throw new InvalidOperationException(
                     SecurityTermConventions.DescribeUnrecognized(field.Convention, assetClass, field.Key, raw));
+            }
+        }
+
+        EnsureElementConventionsOnWrite(assetClass, json);
+    }
+
+    /// <summary>
+    /// Typed conventions declared on the elements of an array term (the swap legs' payment
+    /// frequency and day count) are enforced on write exactly like top-level ones; otherwise a leg
+    /// could persist a cadence every typed reader and schedule would then misread. Every present
+    /// alias is checked, since readers differ in which spelling they prefer.
+    /// </summary>
+    private static void EnsureElementConventionsOnWrite(string assetClass, JsonElement json)
+    {
+        foreach (var arrayField in SecurityAssetTermsSchema.Fields(assetClass)
+                     .Where(static field => field.Type == SecurityAssetTermFieldType.Array))
+        {
+            var conventionFields = SecurityAssetTermsSchema.ElementFields(assetClass, arrayField.Key)
+                .Where(static field => field.Convention != SecurityTermConventionKind.None)
+                .ToArray();
+            if (conventionFields.Length == 0)
+            {
+                continue;
+            }
+
+            foreach (var arrayKey in new[] { arrayField.Key }.Concat(arrayField.Aliases))
+            {
+                if (!json.TryGetProperty(arrayKey, out var array) || array.ValueKind != JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                foreach (var element in array.EnumerateArray().Where(static item => item.ValueKind == JsonValueKind.Object))
+                {
+                    foreach (var field in conventionFields)
+                    {
+                        foreach (var key in new[] { field.Key }.Concat(field.Aliases))
+                        {
+                            if (!element.TryGetProperty(key, out var token) || token.ValueKind == JsonValueKind.Null)
+                            {
+                                continue;
+                            }
+
+                            var raw = token.ValueKind == JsonValueKind.String ? token.GetString() : token.GetRawText();
+                            if (token.ValueKind != JsonValueKind.String || !field.SatisfiesConvention(raw))
+                            {
+                                throw new InvalidOperationException(
+                                    SecurityTermConventions.DescribeUnrecognized(field.Convention, assetClass, $"{arrayField.Key}[].{key}", raw));
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -681,7 +814,79 @@ internal static class SecurityMasterMapping
             ToOption(ReadSwapLegDecimal(json, "notional", "notionalAmount", "faceAmount", "principal")),
             ToOption(ReadSwapLegString(json, "paymentFrequency", "frequency")),
             ToOption(ReadSwapLegString(json, "dayCountConvention", "dayCount", "dayCountBasis")),
-            ReadSwapLegPrincipalExchange(json));
+            ReadSwapLegPrincipalExchange(json),
+            ToFSharpList(ReadSwapLegNotionalSchedule(json)),
+            ToFSharpList(ReadSwapLegResetSchedule(json)));
+    }
+
+    // Dated schedules on a leg. Like the leg's scalar terms, a malformed entry is refused rather
+    // than read as absent, so a write never silently drops an amortization step or a fixing.
+    private static IEnumerable<SwapNotionalStep> ReadSwapLegNotionalSchedule(JsonElement json)
+        => ReadSwapLegScheduleItems(json, "notionalSchedule", "amortizationSchedule")
+            .Select(static item => new SwapNotionalStep(
+                ReadScheduleDate(item, "notionalSchedule", "effectiveDate", "date"),
+                SecurityTermReader.ReadDecimal(item, "notional", "amount")
+                    ?? throw new InvalidOperationException("Each swap leg notionalSchedule entry must have a numeric 'notional'.")))
+            .ToArray();
+
+    private static IEnumerable<SwapResetEntry> ReadSwapLegResetSchedule(JsonElement json)
+        => ReadSwapLegScheduleItems(json, "resetSchedule", "fixings")
+            .Select(static item => new SwapResetEntry(
+                ReadScheduleDate(item, "resetSchedule", "resetDate", "fixingDate", "date"),
+                ToOption(ReadOptionalScheduleDecimal(item, "resetSchedule", "fixingRate", "fixing", "rate"))))
+            .ToArray();
+
+    private static IEnumerable<JsonElement> ReadSwapLegScheduleItems(JsonElement json, params string[] aliases)
+    {
+        foreach (var alias in aliases)
+        {
+            if (!SecurityTermReader.TryGetProperty(json, alias, out var value)
+                || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            if (value.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidOperationException($"Swap leg property '{alias}' must be a JSON array.");
+            }
+
+            var items = new List<JsonElement>();
+            foreach (var item in value.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Object)
+                {
+                    throw new InvalidOperationException($"Each swap leg '{alias}' entry must be a JSON object.");
+                }
+
+                items.Add(item);
+            }
+
+            return items;
+        }
+
+        return [];
+    }
+
+    private static DateOnly ReadScheduleDate(JsonElement item, string schedule, params string[] aliases)
+        => SecurityTermReader.ReadDate(item, aliases)
+           ?? throw new InvalidOperationException($"Each swap leg {schedule} entry must have an ISO-8601 '{aliases[0]}'.");
+
+    private static decimal? ReadOptionalScheduleDecimal(JsonElement item, string schedule, params string[] aliases)
+    {
+        foreach (var alias in aliases)
+        {
+            if (!SecurityTermReader.TryGetProperty(item, alias, out var value)
+                || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            return SecurityTermReader.ReadDecimal(item, alias)
+                ?? throw new InvalidOperationException($"Swap leg {schedule} property '{alias}' must be a number or numeric string.");
+        }
+
+        return null;
     }
 
     private static IEnumerable<JsonElement> GetSwapLegItems(JsonElement json)
@@ -982,6 +1187,51 @@ internal static class SecurityMasterMapping
             ? intValue
             : null;
 
+    /// <summary>
+    /// Write-strict optional readers: in <see cref="SecurityKindMappingMode.Write"/> a property that
+    /// is present and not null but does not parse as its declared type is rejected instead of being
+    /// read as absent. In read mode they match the tolerant readers above.
+    /// </summary>
+    private static string? GetOptionalString(JsonElement json, string propertyName, SecurityKindMappingMode mode)
+    {
+        var parsed = GetOptionalString(json, propertyName);
+        if (parsed is null && mode == SecurityKindMappingMode.Write && HasNonNullProperty(json, propertyName))
+            throw new InvalidOperationException(MalformedOptionalValue(propertyName, "a string"));
+        return parsed;
+    }
+
+    private static decimal? GetOptionalDecimal(JsonElement json, string propertyName, SecurityKindMappingMode mode)
+    {
+        var parsed = GetOptionalDecimal(json, propertyName);
+        if (parsed is null && mode == SecurityKindMappingMode.Write && HasNonNullProperty(json, propertyName))
+            throw new InvalidOperationException(MalformedOptionalValue(propertyName, "a decimal number"));
+        return parsed;
+    }
+
+    private static int? GetOptionalInt(JsonElement json, string propertyName, SecurityKindMappingMode mode)
+    {
+        var parsed = GetOptionalInt(json, propertyName);
+        if (parsed is null && mode == SecurityKindMappingMode.Write && HasNonNullProperty(json, propertyName))
+            throw new InvalidOperationException(MalformedOptionalValue(propertyName, "a whole number"));
+        return parsed;
+    }
+
+    private static DateOnly? GetOptionalDateOnly(JsonElement json, string propertyName, SecurityKindMappingMode mode)
+    {
+        var parsed = GetOptionalDateOnly(json, propertyName);
+        if (parsed is null && mode == SecurityKindMappingMode.Write && HasNonNullProperty(json, propertyName))
+            throw new InvalidOperationException(MalformedOptionalValue(propertyName, "an ISO-8601 date"));
+        return parsed;
+    }
+
+    private static bool HasNonNullProperty(JsonElement json, string propertyName)
+        => json.ValueKind == JsonValueKind.Object
+           && json.TryGetProperty(propertyName, out var value)
+           && value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined);
+
+    private static string MalformedOptionalValue(string propertyName, string expected)
+        => $"Property '{propertyName}' must be {expected} when supplied; omit it or send null to leave it unset.";
+
     private static int GetRequiredInt(JsonElement json, string propertyName)
         => GetOptionalInt(json, propertyName)
            ?? throw new InvalidOperationException($"Missing required integer '{propertyName}'.");
@@ -1051,6 +1301,33 @@ internal static class SecurityMasterMapping
             not null => FSharpOption<BondSubclass>.Some(BondSubclass.NewOther(raw)),
             null => FSharpOption<BondSubclass>.None
         };
+
+    /// <summary>
+    /// The typed securitisation family. Governed labels match case-insensitively, as the taxonomy
+    /// validator does, and canonicalise to the named case; an unrecognised label is kept verbatim as
+    /// <c>OtherStructuredCreditKind</c> rather than dropped, mirroring the F# parser, and the
+    /// taxonomy validator is what reports it.
+    /// </summary>
+    private static FSharpOption<StructuredCreditKind> ToStructuredCreditKindOption(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return FSharpOption<StructuredCreditKind>.None;
+
+        var label = raw.Trim();
+        return FSharpOption<StructuredCreditKind>.Some(label.ToUpperInvariant() switch
+        {
+            "AGENCYMBS" => StructuredCreditKind.AgencyMbs,
+            "NONAGENCYMBS" => StructuredCreditKind.NonAgencyMbs,
+            "COMMERCIALMBS" => StructuredCreditKind.CommercialMbs,
+            "ASSETBACKED" => StructuredCreditKind.AssetBacked,
+            "CLO" => StructuredCreditKind.Clo,
+            "CDO" => StructuredCreditKind.Cdo,
+            "CMO" => StructuredCreditKind.Cmo,
+            "INTERESTONLY" => StructuredCreditKind.InterestOnly,
+            "PRINCIPALONLY" => StructuredCreditKind.PrincipalOnly,
+            _ => StructuredCreditKind.NewOtherStructuredCreditKind(label)
+        });
+    }
 
     private static FSharpOption<VotingRightsCat> ToVotingRightsCatOption(string? raw)
         => raw switch

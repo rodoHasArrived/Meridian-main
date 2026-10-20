@@ -14,7 +14,14 @@ last_reviewed: 2026-10-15
 Broker amendment and cancellation failures retain the broker-observed order status and use
 operation-specific reports. Alpaca amendments resolve explicit client/broker identifier namespaces
 and retain replacement aliases. Successful PATCH responses remain provisional until independent
-replacement evidence confirms the successor. Reconnect FILL-activity reports carry the broker's `replaces` link so a
+replacement evidence confirms the successor, and a linked successor confirms the amendment only when
+its quantity and prices match the requested terms, and a requested trail only when the successor's
+`trail_price`/`trail_percent` is known and equal (a trailing stop's derived `stop_price` is not compared);
+otherwise it stays pending. A refused PATCH whose
+re-read shows a replacement link is reconciled the same way instead of being reported as refused.
+Robinhood's cancel-then-replace crosses two send boundaries: failures before the predecessor's cancel are
+not sent, and failures after the confirmed cancel but before the replacement POST report the known outcome
+(cancelled, no successor); outcomes after the cancel are always delivered. Reconnect FILL-activity reports carry the broker's `replaces` link so a
 successor's fill stays bound to its original order after a restart. While a replacement is unconfirmed, cancellation also
 cancels the candidate successor and stays pending until it is proven inactive. A candidate that executed before
 that cancellation publishes its cumulative fills through the replacement chain first. Order and

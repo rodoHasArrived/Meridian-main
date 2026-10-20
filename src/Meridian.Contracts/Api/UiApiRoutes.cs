@@ -433,6 +433,9 @@ public static class UiApiRoutes
     public const string SecurityMasterQualityReportRun = "/api/security-master/quality-report/run";
     public const string SecurityMasterQualityReportLatest = "/api/security-master/quality-report/latest";
 
+    // Structured-credit reclassification report (ADR-022, report first)
+    public const string SecurityMasterStructuredCreditReclassificationReport = "/api/security-master/structured-credit-reclassification/report";
+
     // Exception aging / SLA
     public const string SecurityMasterExceptionsAging = "/api/security-master/exceptions/aging";
     public const string ReferenceDataEdgarFiler = "/api/reference-data/edgar/filers/{cik}";
@@ -862,6 +865,7 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationPostingRuleTestCases = "/api/ledger/accounting-configuration/posting-rules/test-cases";
     public const string LedgerAccountingConfigurationActivate = "/api/ledger/accounting-configuration/activate";
     public const string LedgerAccountingConfigurationAudit = "/api/ledger/accounting-configuration/audit";
+    public const string LedgerAuditIntegrity = "/api/ledger/audit-integrity";
     public const string LedgerCloseManagementPeriodPlan = "/api/ledger/close-management/period-plan/{workflowId:guid}";
     public const string LedgerCloseManagementPeriodPlanConfiguration = "/api/ledger/close-management/period-plan/configuration";
     public const string LedgerCloseManagementTemplates = "/api/ledger/close-management/templates";

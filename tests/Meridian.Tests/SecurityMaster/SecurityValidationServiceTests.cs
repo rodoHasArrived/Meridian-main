@@ -847,6 +847,397 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
+    public void Scenario_StructuredCreditTypedTrancheTerms_OutOfRangeValuesBlockReadiness_AndNullsPass()
+    {
+        // Terms version 2: the typed tranche terms are optional, but when supplied they are
+        // governed — the kind against its taxonomy, the attachment/detachment points as fractions.
+        var invalid = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                structuredCreditKind = "SyntheticWidget",
+                attachmentPoint = 12m,
+                detachmentPoint = 0.2m,
+                weightedAverageCoupon = -1m
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(invalid, [invalid], Now);
+
+        report.HasBlockingIssues.Should().BeTrue();
+        report.Issues.Select(static issue => issue.Code).Should().Contain(new[]
+        {
+            "SM_STRUCTURED_CREDIT_KIND_INVALID",
+            "SM_STRUCTURED_CREDIT_ATTACHMENT_INVALID",
+            "SM_STRUCTURED_CREDIT_WAC_INVALID"
+        });
+        report.Issues.Should().NotContain(static issue => issue.Code == "SM_STRUCTURED_CREDIT_DETACHMENT_INVALID");
+
+        // The canonical serializer writes null for an unset optional term; that is "not supplied".
+        var canonicalNulls = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                currentFactor = (decimal?)null,
+                structuredCreditKind = (string?)null,
+                attachmentPoint = (decimal?)null,
+                detachmentPoint = (decimal?)null,
+                weightedAverageCoupon = (decimal?)null,
+                weightedAverageMaturityMonths = (int?)null,
+                weightedAverageLoanAgeMonths = (int?)null,
+                reinvestmentPeriodEnd = (string?)null,
+                nonCallPeriodEnd = (string?)null
+            }));
+
+        service.ValidateRecord(canonicalNulls, [canonicalNulls], Now).Issues
+            .Should().NotContain(static issue => issue.Code.StartsWith("SM_STRUCTURED_CREDIT_", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Scenario_StructuredCreditMalformedPeriodEndAndSeniority_BlockReadiness()
+    {
+        // The ordering rule reads an unparseable date as "not supplied", so a malformed period end
+        // on an imported or restored row needs its own rule to be reported.
+        var malformed = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                maturity = "2036-01-15",
+                seniority = 42,
+                reinvestmentPeriodEnd = "someday",
+                nonCallPeriodEnd = "2028-01-15"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(malformed, [malformed], Now);
+
+        report.HasBlockingIssues.Should().BeTrue();
+        report.Issues.Should().ContainSingle(static item => item.Code == "SM_STRUCTURED_CREDIT_REINVESTMENT_END_NOT_A_DATE");
+        report.Issues.Should().ContainSingle(static item => item.Code == "SM_STRUCTURED_CREDIT_SENIORITY_INVALID");
+        report.Issues.Should().NotContain(static item =>
+            item.Code == "SM_STRUCTURED_CREDIT_NON_CALL_END_NOT_A_DATE" || item.Code == "SM_STRUCTURED_CREDIT_REINVESTMENT_END_INVALID");
+    }
+
+    [Theory]
+    [InlineData(0.05, 0.02, false)]
+    [InlineData(0.03, 0.03, false)]
+    [InlineData(0.02, 0.05, true)]
+    public void Scenario_CollarStrikes_FloorAboveCapIsAnError(double capStrike, double floorStrike, bool expectIssue)
+    {
+        var collar = CreateProjection(
+            Guid.NewGuid(),
+            "CapFloor",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "COLLAR-1", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                capFloorType = "Collar",
+                referenceIndex = "SOFR",
+                capStrike = (decimal)capStrike,
+                floorStrike = (decimal)floorStrike,
+                notional = 10_000_000m,
+                effectiveDate = "2026-04-01",
+                maturityDate = "2031-04-01"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(collar, [collar], Now);
+
+        var strikeIssues = report.Issues.Where(static item => item.Code == "SM_CAP_FLOOR_STRIKE_ORDER_INVALID").ToArray();
+        strikeIssues.Any().Should().Be(expectIssue);
+        strikeIssues.Should().OnlyContain(static item => item.Severity == SecurityValidationSeverityDto.Error);
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(-0.0025, false)]
+    [InlineData(0.0375, false)]
+    public void Scenario_SwaptionStrike_IsRequiredButMayBeNegative(double? strikeRate, bool expectIssue)
+    {
+        var terms = new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            ["payerReceiver"] = "Receiver",
+            ["expiry"] = "2027-03-15",
+            ["underlyingMaturityDate"] = "2037-03-17",
+            ["notional"] = 25_000_000m
+        };
+        if (strikeRate is { } strike)
+        {
+            terms["strikeRate"] = (decimal)strike;
+        }
+
+        var swaption = CreateProjection(
+            Guid.NewGuid(),
+            "Swaption",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "SWPN-2", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(terms));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(swaption, [swaption], Now);
+
+        report.Issues.Any(static item => item.Code == "SM_SWAPTION_STRIKE_REQUIRED").Should().Be(expectIssue);
+    }
+
+    [Theory]
+    [InlineData("Cap", true, false, null)]
+    [InlineData("Cap", false, false, "SM_CAP_FLOOR_CAP_STRIKE_REQUIRED")]
+    [InlineData("Floor", false, true, null)]
+    [InlineData("Floor", true, false, "SM_CAP_FLOOR_FLOOR_STRIKE_REQUIRED")]
+    [InlineData("collar", true, false, "SM_CAP_FLOOR_FLOOR_STRIKE_REQUIRED")]
+    [InlineData("Collar", false, true, "SM_CAP_FLOOR_CAP_STRIKE_REQUIRED")]
+    public void Scenario_CapFloorStrikes_AreRequiredByType(string capFloorType, bool withCap, bool withFloor, string? expectedCode)
+    {
+        var terms = new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            ["capFloorType"] = capFloorType,
+            ["referenceIndex"] = "SOFR",
+            ["notional"] = 10_000_000m,
+            ["effectiveDate"] = "2026-04-01",
+            ["maturityDate"] = "2031-04-01"
+        };
+        if (withCap)
+        {
+            terms["capStrike"] = 0.05m;
+        }
+
+        if (withFloor)
+        {
+            terms["floorStrike"] = 0.02m;
+        }
+
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "CapFloor",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "CAPFLOOR-1", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(terms));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var strikeCodes = service.ValidateRecord(record, [record], Now).Issues
+            .Select(static item => item.Code)
+            .Where(static code => code is "SM_CAP_FLOOR_CAP_STRIKE_REQUIRED" or "SM_CAP_FLOOR_FLOOR_STRIKE_REQUIRED")
+            .ToArray();
+
+        if (expectedCode is null)
+        {
+            strikeCodes.Should().BeEmpty();
+        }
+        else
+        {
+            strikeCodes.Should().Equal(expectedCode);
+        }
+    }
+
+    [Fact]
+    public void Scenario_SwaptionUnderlyingEndingOnItsStart_IsBlocking()
+    {
+        var swaption = CreateProjection(
+            Guid.NewGuid(),
+            "Swaption",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "SWPN-3", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                payerReceiver = "Payer",
+                strikeRate = 0.0375m,
+                expiry = "2027-03-15",
+                underlyingEffectiveDate = "2037-03-17",
+                underlyingMaturityDate = "2037-03-17",
+                notional = 25_000_000m
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(swaption, [swaption], Now);
+
+        report.Issues.Should().Contain(static item => item.Code == "SM_SWAPTION_UNDERLYING_DATES_INVALID");
+        report.HasBlockingIssues.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Scenario_SwaptionUnderlyingStartingBeforeExpiry_IsBlocking()
+    {
+        var swaption = CreateProjection(
+            Guid.NewGuid(),
+            "Swaption",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "SWPN-1", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                payerReceiver = "Payer",
+                strikeRate = 0.0375m,
+                expiry = "2027-03-15",
+                underlyingEffectiveDate = "2027-01-15",
+                underlyingMaturityDate = "2037-03-17",
+                notional = 25_000_000m
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(swaption, [swaption], Now);
+
+        report.Issues.Should().Contain(static item => item.Code == "SM_SWAPTION_EFFECTIVE_BEFORE_EXPIRY");
+        report.HasBlockingIssues.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(-25.0, true)]
+    [InlineData(0.0, false)]
+    [InlineData(100.0, false)]
+    public void Scenario_CreditDefaultSwapFixedCoupon_IsRequiredAndNonNegative(double? fixedCouponBps, bool expectIssue)
+    {
+        var terms = new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            ["referenceEntity"] = "Meridian Industries Inc",
+            ["protectionSide"] = "Buy",
+            ["notional"] = 10_000_000m,
+            ["effectiveDate"] = "2026-03-20",
+            ["maturityDate"] = "2031-06-20"
+        };
+        if (fixedCouponBps is { } coupon)
+        {
+            terms["fixedCouponBps"] = (decimal)coupon;
+        }
+
+        var cds = CreateProjection(
+            Guid.NewGuid(),
+            "CreditDefaultSwap",
+            [CreateIdentifier(SecurityIdentifierKind.InternalCode, "CDS-1", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(terms));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(cds, [cds], Now);
+
+        var couponIssues = report.Issues.Where(static item => item.Code == "SM_CDS_FIXED_COUPON_INVALID").ToArray();
+        couponIssues.Any().Should().Be(expectIssue);
+        couponIssues.Should().OnlyContain(static item => item.Severity == SecurityValidationSeverityDto.Error);
+    }
+
+    [Fact]
+    public void Scenario_StructuredCreditFactorSchedulePointerWithoutEntries_WarnsButDoesNotBlock()
+    {
+        // The free-text factorSchedule is a trustee-report pointer; only dated factorScheduleEntries
+        // drive paydown and cash-flow math. A pointer with no entries is steered, not blocked.
+        var pointerOnly = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                maturity = "2036-01-15",
+                factorSchedule = "monthly-trustee"
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(pointerOnly, [pointerOnly], Now);
+
+        var issue = report.Issues.Should().ContainSingle(static item =>
+            item.Code == "SM_STRUCTURED_CREDIT_FACTOR_ENTRIES_MISSING").Subject;
+        issue.Severity.Should().Be(SecurityValidationSeverityDto.Warning);
+        issue.AffectedFields.Should().BeEquivalentTo(new[] { "assetSpecificTerms.factorSchedule", "assetSpecificTerms.factorScheduleEntries" });
+        report.HasBlockingIssues.Should().BeFalse();
+
+        var backed = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                maturity = "2036-01-15",
+                factorSchedule = "monthly-trustee",
+                factorScheduleEntries = new[] { new { asOfDate = "2026-07-01", factor = 0.9825m } }
+            }));
+
+        service.ValidateRecord(backed, [backed], Now).Issues
+            .Should().NotContain(static item => item.Code == "SM_STRUCTURED_CREDIT_FACTOR_ENTRIES_MISSING");
+    }
+
+    [Fact]
+    public void Scenario_StructuredCreditAttachmentAboveDetachment_BlocksReadiness()
+    {
+        // Both points are valid fractions on their own; the loss interval they describe is not. The
+        // domain command validator already refuses this on write, and readiness validation of
+        // imported or restored rows must agree rather than certify an impossible tranche.
+        var inverted = CreateProjection(
+            Guid.NewGuid(),
+            "StructuredCredit",
+            [CreateIdentifier(SecurityIdentifierKind.Cusip, "037833100", isPrimary: true)],
+            assetSpecificTerms: JsonSerializer.SerializeToElement(new
+            {
+                schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                tranche = "A-1",
+                collateralType = "CLO",
+                originalFace = 1000000m,
+                couponOrIndex = "SOFR+250",
+                attachmentPoint = 0.8m,
+                detachmentPoint = 0.2m
+            }));
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(inverted, [inverted], Now);
+
+        report.HasBlockingIssues.Should().BeTrue();
+        var issue = report.Issues.Should().ContainSingle(static item =>
+            item.Code == "SM_STRUCTURED_CREDIT_ATTACHMENT_ABOVE_DETACHMENT").Subject;
+        issue.Severity.Should().Be(SecurityValidationSeverityDto.Error);
+        issue.AffectedFields.Should().BeEquivalentTo(new[] { "assetSpecificTerms.attachmentPoint", "assetSpecificTerms.detachmentPoint" });
+        report.Issues.Should().NotContain(static item =>
+            item.Code == "SM_STRUCTURED_CREDIT_ATTACHMENT_INVALID" || item.Code == "SM_STRUCTURED_CREDIT_DETACHMENT_INVALID");
+    }
+
+    [Fact]
     public void Scenario_ProfileBackedPrivateFundInterest_AsFirstClass_UsesProfileFieldsForValidation()
     {
         var record = CreateProjection(

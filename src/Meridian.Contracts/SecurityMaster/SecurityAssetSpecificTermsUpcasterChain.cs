@@ -225,6 +225,22 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
 
             foreach (var mapping in mappings)
             {
+                if (mapping.LabelFromFlags is { } flags)
+                {
+                    foreach (var (module, field, label) in flags)
+                    {
+                        if (GetObject(economicTerms, module) is JsonElement flagSource
+                            && flagSource.TryGetProperty(field, out var flag)
+                            && flag.ValueKind == JsonValueKind.True)
+                        {
+                            writer.WriteString(mapping.FlatKey, label);
+                            break;
+                        }
+                    }
+
+                    continue;
+                }
+
                 var written = false;
                 foreach (var (module, field) in mapping.Sources)
                 {
@@ -241,6 +257,10 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                     {
                         writer.WriteBooleanValue(value.ValueKind == JsonValueKind.String
                                                  && string.Equals(value.GetString(), label, StringComparison.Ordinal));
+                    }
+                    else if (mapping.Scale is { } scale && value.ValueKind == JsonValueKind.Number)
+                    {
+                        writer.WriteNumberValue(value.GetDecimal() * scale);
                     }
                     else
                     {
@@ -317,10 +337,25 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// One flat key and the economic-terms <c>(module, field)</c> sources that feed it, in priority
     /// order. <see cref="EqualsLabel"/> turns a label into a flag (commercial paper's
     /// <c>isAssetBacked</c> is carried as <c>issuer.issuerProgram = "AssetBacked"</c>).
+    /// <see cref="Scale"/> multiplies a numeric source on the way back, inverting a unit change the
+    /// upgrade made (a CDS coupon is quoted in basis points but carried as a rate).
     /// </summary>
-    private sealed record FlatTermMapping(string FlatKey, (string Module, string Field)[] Sources, string? EqualsLabel = null);
+    private sealed record FlatTermMapping(
+        string FlatKey,
+        (string Module, string Field)[] Sources,
+        string? EqualsLabel = null,
+        (string Module, string Field, string Label)[]? LabelFromFlags = null,
+        decimal? Scale = null);
 
     private static FlatTermMapping Map(string flatKey, params (string Module, string Field)[] sources) => new(flatKey, sources);
+
+    /// <summary>
+    /// The inverse of <see cref="EqualsLabel"/>: the first flag that is <c>true</c> writes its label
+    /// as the flat value; when no flag is set the key is left absent, because the economic document
+    /// does not carry the label itself (a CLO's kind is not recoverable from its IO/PO flags).
+    /// </summary>
+    private static FlatTermMapping LabelFromFlags(string flatKey, params (string Module, string Field, string Label)[] flags)
+        => new(flatKey, [], LabelFromFlags: flags);
 
     private static readonly (string Module, string Field) MaturityDate = ("maturity", "maturityDate");
 
@@ -419,8 +454,17 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("originalFace", ("structuredProduct", "notionalBalance")),
             Map("currentFactor", ("structuredProduct", "factor")),
             Map("couponOrIndex", ("coupon", "couponType")),
-            Map("factorSchedule", ("coupon", "paymentFrequency")),
-            Map("maturity", MaturityDate)
+            // The trustee-report pointer is evidence lineage on the structured-product module, not a
+            // coupon frequency.
+            Map("factorSchedule", ("structuredProduct", "factorScheduleReference")),
+            Map("maturity", MaturityDate),
+            Map("weightedAverageCoupon", ("structuredProduct", "weightedAvgCoupon")),
+            Map("weightedAverageMaturityMonths", ("structuredProduct", "weightedAvgMaturityMonths")),
+            Map("weightedAverageLoanAgeMonths", ("structuredProduct", "weightedAvgLoanAgeMos")),
+            LabelFromFlags(
+                "structuredCreditKind",
+                ("structuredProduct", "isInterestOnly", "InterestOnly"),
+                ("structuredProduct", "isPrincipalOnly", "PrincipalOnly"))
         ]),
         ("PrivateFundInterest", [Map("gpSponsor", ("issuer", "issuerName"), ("fund", "fundFamily")), Map("strategy", ("issuer", "issuerProgram"))]),
         ("PrivateCompanyEquity",
@@ -438,6 +482,27 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("expiryDate", MaturityDate)
         ]),
         ("Warrant", [Map("expiry", MaturityDate)]),
+        ("FxForward", [Map("tradeDate", ("maturity", "effectiveDate")), Map("valueDate", MaturityDate)]),
+        ("NonDeliverableForward", [Map("fixingDate", ("maturity", "effectiveDate")), Map("valueDate", MaturityDate)]),
+        ("CreditDefaultSwap",
+        [
+            Map("effectiveDate", ("maturity", "effectiveDate")),
+            Map("maturityDate", MaturityDate),
+            Map("paymentFrequency", ("coupon", "paymentFrequency")),
+            Map("dayCount", ("coupon", "dayCount")),
+            // The upgrade stores FixedCouponBps / 10000 as coupon.couponRate.
+            new FlatTermMapping("fixedCouponBps", [("coupon", "couponRate")], Scale: 10000m)
+        ]),
+        ("Swaption", [Map("expiry", MaturityDate), Map("underlyingEffectiveDate", ("maturity", "effectiveDate"))]),
+        ("CapFloor", [Map("effectiveDate", ("maturity", "effectiveDate")), Map("maturityDate", MaturityDate)]),
+        ("StructuredNote",
+        [
+            Map("maturity", MaturityDate),
+            Map("issueDate", ("maturity", "issueDate")),
+            Map("issuerName", ("issuer", "issuerName")),
+            Map("couponRate", ("coupon", "couponRate")),
+            Map("paymentFrequency", ("coupon", "paymentFrequency"))
+        ]),
         ("InvestmentFund", [Map("fundFamily", ("fund", "fundFamily"))])
     ];
 

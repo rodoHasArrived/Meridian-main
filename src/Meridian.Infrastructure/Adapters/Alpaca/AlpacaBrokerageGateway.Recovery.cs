@@ -24,7 +24,11 @@ public sealed partial class AlpacaBrokerageGateway
         if (original is null)
             return null;
         ValidateReplacementSnapshot(original);
-        var attempt = new ReplacementAttempt(original) { CandidateId = amendment.CandidateBrokerOrderId };
+        var attempt = new ReplacementAttempt(original)
+        {
+            CandidateId = amendment.CandidateBrokerOrderId,
+            Requested = RequestedReplacementTerms.From(amendment)
+        };
         _replacementAttempts[original.Id!] = attempt;
         if (amendment.CandidateBrokerOrderId is { Length: > 0 } candidateGatewayOrderId)
             _replacementAttempts[candidateGatewayOrderId] = attempt;
@@ -80,7 +84,7 @@ public sealed partial class AlpacaBrokerageGateway
                 return Current(attempt.Resolution = BuildReplacementSnapshotReport(original, clientOrderId,
                     ExecutionReportType.ModificationRejected, "Alpaca rejected the proposed replacement."));
             }
-            if (original.Status != "replaced" || replacement.Status is "pending_new" or "pending_replace")
+            if (original.Status != "replaced" || replacement.Status is "pending_new" or "pending_replace" or "accepted_for_bidding")
                 return Current(CreatePendingModification(attempt,
                     "Alpaca recovery has not confirmed the proposed replacement.") with
                 { ClientOrderId = clientOrderId });

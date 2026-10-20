@@ -397,6 +397,42 @@
       "sha256": "7867f1b439cdd565b1d985b919e33298a35e3354d43118c91f7cbab35100ecda"
     },
     {
+      "filename": "045_structured_credit_typed_tranche_terms.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 45,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/045_structured_credit_typed_tranche_terms.sql",
+      "schema": "security_master",
+      "sha256": "1fb66821530cfe45f4f3fb1e758afda590a1f441a821e4356e8dfaff58a1e47a"
+    },
+    {
+      "filename": "046_otc_derivative_terms_projections.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 46,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/046_otc_derivative_terms_projections.sql",
+      "schema": "security_master",
+      "sha256": "d57b4debc4cfe52704cc1b8b308503b6056b83baca188f64a19cd60d8bbb8255"
+    },
+    {
+      "filename": "047_rate_option_and_note_terms_projections.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 47,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/047_rate_option_and_note_terms_projections.sql",
+      "schema": "security_master",
+      "sha256": "461582114ea7236c04ddac61d53b5de7f9754243f6c744697c290bfbe0981f6f"
+    },
+    {
+      "filename": "048_security_master_listing_mic.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 48,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/048_security_master_listing_mic.sql",
+      "schema": "security_master",
+      "sha256": "fd13dfeb586f441379d8d7951348fcf9be1cd33a6a6d4501345aa61780429d1b"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -964,6 +1000,15 @@
       "sha256": "3272428a8a2b030ec3a72fd8bffdfe720f26f61d431a4edcbd9d62601503edb6"
     },
     {
+      "filename": "V_ledger_051__tax_lot_account_case_insensitive_keys.sql",
+      "immutable": true,
+      "migration_set_id": "ledger",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_051__tax_lot_account_case_insensitive_keys.sql",
+      "schema": "ledger",
+      "sha256": "1b14d6af17e68f8fcde80cfdacbf1323e1a60ccc210354811054c22a0a8dc8c9"
+    },
+    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1208,7 +1253,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "84870a30bedf4c1ef2ce93bdb5d344671630309c23d4256679ec210f7a84dd7c",
+  "fingerprint": "28e4a44b40b2af7f417d7c8aec994057bc910aaf8d4dc54e1885ffd4822c139c",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1446,9 +1491,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 134,
+    "files": 139,
     "migration_sets": 10,
-    "waivers": 19,
+    "waivers": 20,
     "warnings": 0
   },
   "waivers": [
@@ -1535,6 +1580,13 @@
       "reason": "Requires independent human schema/storage review. Transactionally replaces four existing named CHECK constraints with supersets admitting a basis-only CapitalReturn and replaces the new instruction constraint on explicit reapply. No table, column, row, acquisition fact or historical instruction is removed. The nullable capital_return_instruction is required only for new CapitalReturn batches. Populated through-043 upgrade, retained history, explicit reapply/restart and injected post-drop DDL failure tests are included; hosted PostgreSQL execution is required before release. This permits failed-upgrade rollback, not a downgrade that discards retained capital-return instructions.",
       "review_after": "2027-04-13",
       "rule_id": "migration-drop-table-member"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_051__tax_lot_account_case_insensitive_keys.sql",
+      "reason": "Requires independent human schema/storage review. DROP INDEX IF EXISTS immediately precedes CREATE INDEX for the same three tax_lots/tax_lot_policies index names in one transaction, replacing coalesce(financial_account_id, '') with lower(coalesce(financial_account_id, '')) so storage uniqueness and lookups agree with LedgerAccount's case-insensitive FinancialAccountId equality. No table, column, row or value is removed or rewritten; a leading DO block raises before any DDL when retained rows already collide under the case-insensitive key, naming the conflicting group and row counts for operator resolution. Follows the ledger set's drop/recreate reapply idiom (drift policy: reapply). Hosted PostgreSQL execution of the duplicate-label, cross-case lookup and populated pre-check tests is required before release.",
+      "review_after": "2027-04-17",
+      "rule_id": "migration-drop-object"
     },
     {
       "category": "destructive_changes",

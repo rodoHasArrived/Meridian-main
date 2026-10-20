@@ -235,7 +235,9 @@ internal sealed record SecurityTermsProjectionDescriptor(
 /// PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding, CommitmentGuarantee) as pure
 /// declarations over their terms contract, so every catalog class except the profile-governed
 /// CustomAsset now has a projection — 25 of 26 — and the catalog's <c>ProjectionKind</c> says which
-/// path writes each one.
+/// path writes each one. Migration 046 adds the OTC derivative classes (FxForward,
+/// NonDeliverableForward, CreditDefaultSwap) and migration 047 the rate options and linked notes
+/// (Swaption, CapFloor, StructuredNote) as declarative projections from the day they are modeled.
 /// </para>
 /// </summary>
 internal static partial class SecurityTermsProjectionRegistry
@@ -385,7 +387,17 @@ internal static partial class SecurityTermsProjectionRegistry
                 // The free-text trustee-report pointer, kept distinct from the typed dated schedule
                 // in the child table so a reader cannot mistake prose for factor data.
                 Optional("factor_schedule_reference", "factorSchedule", SecurityAssetTermFieldType.String),
-                Optional("maturity_date", "maturity", SecurityAssetTermFieldType.Date)
+                Optional("maturity_date", "maturity", SecurityAssetTermFieldType.Date),
+                // Typed tranche terms (asset-class terms version 2, migration 045).
+                Optional("structured_credit_kind", "structuredCreditKind", SecurityAssetTermFieldType.String),
+                Optional("seniority", "seniority", SecurityAssetTermFieldType.String),
+                Optional("attachment_point", "attachmentPoint", SecurityAssetTermFieldType.Decimal),
+                Optional("detachment_point", "detachmentPoint", SecurityAssetTermFieldType.Decimal),
+                Optional("weighted_average_coupon", "weightedAverageCoupon", SecurityAssetTermFieldType.Decimal),
+                Optional("weighted_average_maturity_months", "weightedAverageMaturityMonths", SecurityAssetTermFieldType.Integer),
+                Optional("weighted_average_loan_age_months", "weightedAverageLoanAgeMonths", SecurityAssetTermFieldType.Integer),
+                Optional("reinvestment_period_end", "reinvestmentPeriodEnd", SecurityAssetTermFieldType.Date),
+                Optional("non_call_period_end", "nonCallPeriodEnd", SecurityAssetTermFieldType.Date)
             ],
             ChildTables:
             [
@@ -627,6 +639,109 @@ internal static partial class SecurityTermsProjectionRegistry
                 Optional("strike", "strike", SecurityAssetTermFieldType.Decimal),
                 Optional("expiry_date", "expiry", SecurityAssetTermFieldType.Date),
                 Optional("multiplier", "multiplier", SecurityAssetTermFieldType.Decimal)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "FxForward",
+            TableName: "fx_forward_projection",
+            Columns:
+            [
+                Gate("base_currency", "baseCurrency", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.TrimUpperInvariant),
+                Gate("quote_currency", "quoteCurrency", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.TrimUpperInvariant),
+                Optional("notional", "notional", SecurityAssetTermFieldType.Decimal),
+                Optional("forward_rate", "forwardRate", SecurityAssetTermFieldType.Decimal),
+                Optional("trade_date", "tradeDate", SecurityAssetTermFieldType.Date),
+                Gate("value_date", "valueDate", SecurityAssetTermFieldType.Date),
+                Optional("settlement_type", "settlementType", SecurityAssetTermFieldType.String)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "NonDeliverableForward",
+            TableName: "ndf_projection",
+            Columns:
+            [
+                Gate("base_currency", "baseCurrency", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.TrimUpperInvariant),
+                Gate("quote_currency", "quoteCurrency", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.TrimUpperInvariant),
+                Gate("settlement_currency", "settlementCurrency", SecurityAssetTermFieldType.String, SecurityTermsProjectionTextNormalization.TrimUpperInvariant),
+                Optional("notional", "notional", SecurityAssetTermFieldType.Decimal),
+                Optional("forward_rate", "forwardRate", SecurityAssetTermFieldType.Decimal),
+                Gate("fixing_date", "fixingDate", SecurityAssetTermFieldType.Date),
+                Gate("value_date", "valueDate", SecurityAssetTermFieldType.Date),
+                Optional("fixing_source", "fixingSource", SecurityAssetTermFieldType.String)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "CreditDefaultSwap",
+            TableName: "credit_default_swap_projection",
+            Columns:
+            [
+                Gate("reference_entity", "referenceEntity", SecurityAssetTermFieldType.String),
+                Optional("reference_obligation", "referenceObligation", SecurityAssetTermFieldType.String),
+                Gate("protection_side", "protectionSide", SecurityAssetTermFieldType.String),
+                Gate("notional", "notional", SecurityAssetTermFieldType.Decimal),
+                Gate("fixed_coupon_bps", "fixedCouponBps", SecurityAssetTermFieldType.Decimal),
+                Gate("effective_date", "effectiveDate", SecurityAssetTermFieldType.Date),
+                Gate("maturity_date", "maturityDate", SecurityAssetTermFieldType.Date),
+                Optional("payment_frequency", "paymentFrequency", SecurityAssetTermFieldType.String),
+                Optional("day_count", "dayCount", SecurityAssetTermFieldType.String),
+                Optional("seniority", "seniority", SecurityAssetTermFieldType.String),
+                Optional("restructuring_clause", "restructuringClause", SecurityAssetTermFieldType.String),
+                Optional("upfront_points", "upfrontPoints", SecurityAssetTermFieldType.Decimal),
+                Optional("recovery_rate_assumption", "recoveryRateAssumption", SecurityAssetTermFieldType.Decimal),
+                Optional("index_name", "indexName", SecurityAssetTermFieldType.String)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "Swaption",
+            TableName: "swaption_projection",
+            Columns:
+            [
+                Gate("payer_receiver", "payerReceiver", SecurityAssetTermFieldType.String),
+                Optional("exercise_style", "exerciseStyle", SecurityAssetTermFieldType.String),
+                Gate("strike_rate", "strikeRate", SecurityAssetTermFieldType.Decimal),
+                Gate("expiry_date", "expiry", SecurityAssetTermFieldType.Date),
+                Optional("underlying_effective_date", "underlyingEffectiveDate", SecurityAssetTermFieldType.Date),
+                Gate("underlying_maturity_date", "underlyingMaturityDate", SecurityAssetTermFieldType.Date),
+                Gate("notional", "notional", SecurityAssetTermFieldType.Decimal),
+                Optional("floating_index", "floatingIndex", SecurityAssetTermFieldType.String),
+                Optional("fixed_leg_payment_frequency", "fixedLegPaymentFrequency", SecurityAssetTermFieldType.String),
+                Optional("fixed_leg_day_count", "fixedLegDayCount", SecurityAssetTermFieldType.String),
+                Optional("settlement_type", "settlementType", SecurityAssetTermFieldType.String)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "CapFloor",
+            TableName: "cap_floor_projection",
+            Columns:
+            [
+                Gate("cap_floor_type", "capFloorType", SecurityAssetTermFieldType.String),
+                Gate("reference_index", "referenceIndex", SecurityAssetTermFieldType.String),
+                Optional("cap_strike", "capStrike", SecurityAssetTermFieldType.Decimal),
+                Optional("floor_strike", "floorStrike", SecurityAssetTermFieldType.Decimal),
+                Gate("notional", "notional", SecurityAssetTermFieldType.Decimal),
+                Gate("effective_date", "effectiveDate", SecurityAssetTermFieldType.Date),
+                Gate("maturity_date", "maturityDate", SecurityAssetTermFieldType.Date),
+                Optional("reset_frequency", "resetFrequency", SecurityAssetTermFieldType.String),
+                Optional("day_count", "dayCount", SecurityAssetTermFieldType.String),
+                Optional("premium_amount", "premiumAmount", SecurityAssetTermFieldType.Decimal)
+            ],
+            ChildTables: []),
+        new(
+            AssetClass: "StructuredNote",
+            TableName: "structured_note_projection",
+            Columns:
+            [
+                Gate("issuer_name", "issuerName", SecurityAssetTermFieldType.String),
+                Gate("underlying_description", "underlyingDescription", SecurityAssetTermFieldType.String),
+                Gate("maturity_date", "maturity", SecurityAssetTermFieldType.Date),
+                Optional("issue_date", "issueDate", SecurityAssetTermFieldType.Date),
+                Optional("denomination", "denomination", SecurityAssetTermFieldType.Decimal),
+                Optional("principal_protection_pct", "principalProtectionPct", SecurityAssetTermFieldType.Decimal),
+                Optional("participation_rate", "participationRate", SecurityAssetTermFieldType.Decimal),
+                Optional("return_cap", "returnCap", SecurityAssetTermFieldType.Decimal),
+                Optional("coupon_rate", "couponRate", SecurityAssetTermFieldType.Decimal),
+                Optional("payment_frequency", "paymentFrequency", SecurityAssetTermFieldType.String),
+                Optional("barrier_level", "barrierLevel", SecurityAssetTermFieldType.Decimal)
             ],
             ChildTables: []),
         new(

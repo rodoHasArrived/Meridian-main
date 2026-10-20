@@ -111,10 +111,31 @@ public sealed class SwapProjectionService : ISwapReferenceService
                 fixedRate = fr.GetDecimal();
             }
 
-            result.Add(new SwapLegDto(legType, currency, index, fixedRate));
+            result.Add(new SwapLegDto(
+                legType,
+                currency,
+                index,
+                fixedRate,
+                ReadLegString(leg, "paymentFrequency", "frequency"),
+                ReadLegString(leg, "dayCountConvention", "dayCount", "dayCountBasis")));
         }
 
         return result;
+    }
+
+    // Same alias precedence as SecurityMasterMapping.ToSwapLeg and StructuredCashFlowTermsResolver
+    // (dayCountConvention before dayCount), so the DTO shows the text the economics are built from.
+    private static string? ReadLegString(JsonElement leg, params string[] keys)
+    {
+        foreach (var key in keys)
+        {
+            if (leg.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.String)
+            {
+                return value.GetString();
+            }
+        }
+
+        return null;
     }
 }
 

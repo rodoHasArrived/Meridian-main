@@ -15,6 +15,50 @@ public sealed partial class AlpacaBrokerageGateway
         public AlpacaOrderResponse Original { get; set; } = original;
         public string? CandidateId { get; set; }
         public volatile ExecutionReport? Resolution;
+        /// <summary>Terms the amendment asked for. Linkage and status prove a replacement exists,
+        /// not that it is this one: an out-of-band or racing replacement can carry other terms.</summary>
+        public RequestedReplacementTerms? Requested { get; init; }
+    }
+
+    /// <param name="Trail">The requested trail, in the unit the order already trails by
+    /// (Alpaca's PATCH <c>trail</c> sets <c>trail_price</c> or <c>trail_percent</c>); null when the
+    /// amendment does not change it.</param>
+    private sealed record RequestedReplacementTerms(
+        decimal Quantity, decimal? LimitPrice, decimal? StopPrice, bool PricesChanged, decimal? Trail)
+    {
+        public static RequestedReplacementTerms From(AlpacaOrderResponse original, OrderModification modification)
+        {
+            var limit = modification.NewLimitPrice ?? ParseNullableDecimal(original.LimitPrice);
+            var stop = modification.NewStopPrice ?? ParseNullableDecimal(original.StopPrice);
+            return new(modification.NewQuantity ?? ParseDecimal(original.Qty), limit, stop,
+                limit != ParseNullableDecimal(original.LimitPrice) || stop != ParseNullableDecimal(original.StopPrice),
+                modification.NewTrail);
+        }
+
+        public static RequestedReplacementTerms From(PendingOrderAmendment amendment) => new(
+            amendment.Proposed.Quantity, amendment.Proposed.LimitPrice, amendment.Proposed.StopPrice,
+            amendment.Proposed.LimitPrice != amendment.Original.LimitPrice
+                || amendment.Proposed.StopPrice != amendment.Original.StopPrice,
+            amendment.ProposedTrail);
+
+        // Same rule the OMS applies to recovery evidence: quantity always; prices only when the
+        // snapshot carries them, and a missing price cannot confirm a requested price change. A
+        // trailing stop's stop_price is recomputed from the high-water mark as the market moves,
+        // so it is not a term of the request; its trail is, and an unknown trail never confirms.
+        public bool MatchedBy(AlpacaOrderResponse candidate)
+        {
+            if (ParseNullableDecimal(candidate.Qty) != Quantity)
+                return false;
+            var trailing = string.Equals(candidate.Type, "trailing_stop", StringComparison.OrdinalIgnoreCase);
+            var pricesMatch = !(candidate.HasLimitPrice && (trailing || candidate.HasStopPrice))
+                ? !PricesChanged
+                : ParseNullableDecimal(candidate.LimitPrice) == LimitPrice
+                    && (trailing || ParseNullableDecimal(candidate.StopPrice) == StopPrice);
+            if (!pricesMatch)
+                return false;
+            return Trail is not { } trail
+                || (ParseNullableDecimal(candidate.TrailPrice) ?? ParseNullableDecimal(candidate.TrailPercent)) == trail;
+        }
     }
 
     /// <inheritdoc />
@@ -32,40 +76,59 @@ public sealed partial class AlpacaBrokerageGateway
         EnsureConnected();
 
         using var client = CreateHttpClient();
-        var existing = await ResolveOrderForCancellationAsync(client, identifier, ct).ConfigureAwait(false)
-            ?? throw new InvalidOperationException("Alpaca could not resolve the broker identity required for amendment.");
-        ValidateReplacementSnapshot(existing);
-        var brokerOrderId = existing.Id!;
-        ct.ThrowIfCancellationRequested();
-        var attempt = new ReplacementAttempt(existing);
-        while (!_replacementAttempts.TryAdd(brokerOrderId, attempt))
-        {
-            if (!_replacementAttempts.TryGetValue(brokerOrderId, out var inProgress))
-                continue;
-            if (inProgress.Resolution is null)
-                return CreatePendingModification(inProgress, "Alpaca replacement remains unconfirmed; reconcile before retrying.");
-            if (_replacementAttempts.TryUpdate(brokerOrderId, attempt, inProgress))
-                break;
-        }
-        var payload = new AlpacaOrderModifyPayload
-        {
-            Qty = FormatDecimal(modification.NewQuantity),
-            LimitPrice = FormatDecimal(modification.NewLimitPrice),
-            StopPrice = FormatDecimal(modification.NewStopPrice),
-            Trail = FormatDecimal(modification.NewTrail),
-        };
-
+        // Send boundary: everything before the PATCH is local or read-only, so a failure or
+        // cancellation there proves the amendment never reached Alpaca. It is reported as not
+        // sent and leaves no replacement attempt behind; only the PATCH itself is uncertain.
+        var sent = false;
+        ReplacementAttempt? attempt = null;
+        string brokerOrderId;
+        AlpacaOrderResponse existing;
         HttpResponseMessage response;
-        ct.ThrowIfCancellationRequested();
         try
         {
-            response = await client.PatchAsJsonAsync(
-                $"{BaseUrl}/v2/orders/{Uri.EscapeDataString(brokerOrderId)}", payload,
-                AlpacaBrokerageSerializerContext.Default.AlpacaOrderModifyPayload, ct).ConfigureAwait(false);
+            existing = await ResolveOrderForCancellationAsync(client, identifier, ct).ConfigureAwait(false)
+                ?? throw new BrokerageRequestNotSentException("Alpaca could not resolve the broker identity required for amendment.");
+            ValidateReplacementSnapshot(existing);
+            brokerOrderId = existing.Id!;
+            ct.ThrowIfCancellationRequested();
+            var candidateAttempt = new ReplacementAttempt(existing) { Requested = RequestedReplacementTerms.From(existing, modification) };
+            while (!_replacementAttempts.TryAdd(brokerOrderId, candidateAttempt))
+            {
+                if (!_replacementAttempts.TryGetValue(brokerOrderId, out var inProgress))
+                    continue;
+                if (inProgress.Resolution is null)
+                    return CreatePendingModification(inProgress, "Alpaca replacement remains unconfirmed; reconcile before retrying.");
+                if (_replacementAttempts.TryUpdate(brokerOrderId, candidateAttempt, inProgress))
+                    break;
+            }
+            attempt = candidateAttempt;
+            var payload = new AlpacaOrderModifyPayload
+            {
+                Qty = FormatDecimal(modification.NewQuantity),
+                LimitPrice = FormatDecimal(modification.NewLimitPrice),
+                StopPrice = FormatDecimal(modification.NewStopPrice),
+                Trail = FormatDecimal(modification.NewTrail),
+            };
+            ct.ThrowIfCancellationRequested();
+            sent = true;
+            try
+            {
+                response = await client.PatchAsJsonAsync(
+                    $"{BaseUrl}/v2/orders/{Uri.EscapeDataString(brokerOrderId)}", payload,
+                    AlpacaBrokerageSerializerContext.Default.AlpacaOrderModifyPayload, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
+            {
+                return PublishPendingModification(attempt, "Alpaca amendment acknowledgement was lost; reconcile the replacement before retrying.");
+            }
         }
-        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
+        catch (Exception ex) when (!sent)
         {
-            return PublishPendingModification(attempt, "Alpaca amendment acknowledgement was lost; reconcile the replacement before retrying.");
+            if (attempt is not null)
+                _replacementAttempts.TryRemove(new KeyValuePair<string, ReplacementAttempt>(attempt.Original.Id!, attempt));
+            if (ex is BrokerageRequestNotSentException)
+                throw;
+            throw new BrokerageRequestNotSentException($"Alpaca amendment was not sent: {ex.Message}", ex);
         }
         using var responseLifetime = response;
         if ((int)response.StatusCode >= 500 || (int)response.StatusCode == 408)
@@ -74,6 +137,21 @@ public sealed partial class AlpacaBrokerageGateway
         if (!response.IsSuccessStatusCode)
         {
             var observed = await ReadReplacementSnapshotAsync(client, brokerOrderId, ct).ConfigureAwait(false);
+            // A 422 such as "order already replaced" or "order chain not fully replaced" does not
+            // prove the order kept its terms: a predecessor that links or awaits a successor is
+            // reconciled like any other replacement rather than reported as refused.
+            if (observed is { ReplacedBy.Length: > 0 } || observed?.Status is "replaced" or "pending_replace")
+            {
+                attempt.Original = observed;
+                var reconciled = await ObserveReplacementAsync(client, attempt, ct).ConfigureAwait(false);
+                if (reconciled is not null)
+                {
+                    await _reportChannel.Writer.WriteAsync(reconciled, ct).ConfigureAwait(false);
+                    return reconciled;
+                }
+                return PublishPendingModification(attempt,
+                    $"Alpaca refused the amendment with HTTP {(int)response.StatusCode} while the order is mid-replacement; reconcile before retrying.");
+            }
             var refusal = BuildReplacementSnapshotReport(observed ?? existing, existing.ClientOrderId,
                 ExecutionReportType.ModificationRejected,
                 $"Alpaca amendment failed with HTTP {(int)response.StatusCode}.");
@@ -173,6 +251,10 @@ public sealed partial class AlpacaBrokerageGateway
         }
         if (original.Status != "replaced" || original.ReplacedBy != candidateId
             || candidate.Status is "pending_new" or "pending_replace" or "accepted_for_bidding")
+            return null;
+        // A live successor with other terms is not this amendment's outcome. Leave it pending for
+        // reconciliation rather than confirming terms the broker does not hold.
+        if (attempt.Requested is { } requested && !requested.MatchedBy(candidate))
             return null;
         return attempt.Resolution = BuildReplacementSnapshotReport(candidate, original.ClientOrderId,
             ExecutionReportType.Modified) with

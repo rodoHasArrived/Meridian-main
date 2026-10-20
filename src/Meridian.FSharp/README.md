@@ -38,11 +38,25 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   fixings, notionals, payment frequencies, and day-count conventions through serialization, plus
   the principal-exchange flag. Legacy legs may omit these terms. Supplied notionals must be
   positive and directions must be Pay or Receive; missing economics remain unresolved.
+- A swap leg may also carry a `NotionalSchedule` (dated notional steps for an amortizing or
+  accreting leg; positive, strictly ascending, within the swap's effective and maturity dates) and
+  a `ResetSchedule` (strictly ascending reset dates with the fixing once observed). Both are empty
+  for legs that do not track them and serialize as `notionalSchedule` / `resetSchedule` arrays.
 - The bond economic definition carries the record's issue date, payment frequency, call flag and
   first call date, and issuer name in its maturity, coupon, call, and issuer modules, so a replay
   from economic terms alone keeps a callable bond callable.
 - `assetSpecificTermsJson` stamps flat terms with the shared terms-format envelope for every kind
   except `CustomAsset`, whose profile owns its own document shape.
+- `StructuredProductTerms.FactorScheduleReference` carries the StructuredCredit record's free-text
+  `factorSchedule` pointer as evidence lineage. The legacy upgrade no longer writes that pointer into
+  the coupon payment frequency or the floating-rate reset frequency; both read `None` for
+  structured credit until a typed term supplies them.
+- `SecurityMasterLegacyUpgrade.proposeStructuredCreditReclassification` builds the report-first
+  StructuredCredit proposal for a legacy securitised row (ADR-022): a Bond in a securitised
+  subclass, a CustomAsset whose `category` names a securitised product, or an envelope-less legacy
+  custom row read back as OtherSecurity. It carries over par, coupon or index, maturity, seniority
+  and the family the label implies; every required term the source lacks and every ambiguous label
+  (`MortgageBacked`, `MBS`) is a blocker, so `ProposedTerms` exists only when nothing blocks.
 - `IdentifierKind` includes `LoanX` and `Clip` for syndicated-loan identifiers; interop maps
   them to the matching C# `SecurityIdentifierKind` values.
 - `SecurityTermModules` no longer carries `AccountingElections` or `Pci`. Amortization method,

@@ -353,11 +353,31 @@ public sealed class SecurityTermsProjectionRegistryTests
                 new { asOfDate = "2026-06-01", factor = 0.8412m },
                 new { asOfDate = "2026-07-01", factor = 0.8235m }
             },
-            maturity = "2031-06-15"
+            maturity = "2031-06-15",
+            structuredCreditKind = "Clo",
+            seniority = "Mezzanine",
+            attachmentPoint = 0.12m,
+            detachmentPoint = 0.20m,
+            weightedAverageCoupon = 7.85m,
+            weightedAverageMaturityMonths = 58,
+            weightedAverageLoanAgeMonths = 14,
+            reinvestmentPeriodEnd = "2028-06-15",
+            nonCallPeriodEnd = "2027-06-15"
         });
 
         PostgresSecurityMasterStore.TryBuildTermsProjection(Descriptor("StructuredCredit"), record, out var plan)
             .Should().BeTrue();
+
+        // Typed tranche terms (version 2) project beside the version-1 columns.
+        plan.Value("structured_credit_kind").Should().Be("Clo");
+        plan.Value("seniority").Should().Be("Mezzanine");
+        plan.Value("attachment_point").Should().Be(0.12m);
+        plan.Value("detachment_point").Should().Be(0.20m);
+        plan.Value("weighted_average_coupon").Should().Be(7.85m);
+        plan.Value("weighted_average_maturity_months").Should().Be(58);
+        plan.Value("weighted_average_loan_age_months").Should().Be(14);
+        plan.Value("reinvestment_period_end").Should().Be(new DateTime(2028, 6, 15));
+        plan.Value("non_call_period_end").Should().Be(new DateTime(2027, 6, 15));
 
         plan.Value("tranche").Should().Be("B");
         plan.Value("pool_id").Should().Be("MRDN-2026-1");
@@ -739,9 +759,26 @@ public sealed class SecurityTermsProjectionRegistryTests
     {
         var tables = new Dictionary<string, IReadOnlyCollection<string>>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (Match table in CreateTablePattern.Matches(ReadShippedMigrationSql()))
+        var sql = ReadShippedMigrationSql();
+        foreach (Match table in CreateTablePattern.Matches(sql))
         {
             tables[table.Groups["table"].Value] = ParseColumnNames(table.Groups["body"].Value);
+        }
+
+        // A later migration may widen a projection table (045 added the typed structured-credit
+        // tranche columns), so columns an `alter table … add column` declares count as well.
+        foreach (Match alter in AlterTableAddColumnPattern.Matches(sql))
+        {
+            var tableName = alter.Groups["table"].Value;
+            var columns = new HashSet<string>(
+                tables.TryGetValue(tableName, out var existing) ? existing : [],
+                StringComparer.OrdinalIgnoreCase);
+            foreach (Capture column in alter.Groups["column"].Captures)
+            {
+                columns.Add(column.Value);
+            }
+
+            tables[tableName] = columns;
         }
 
         return tables;
@@ -833,6 +870,15 @@ public sealed class SecurityTermsProjectionRegistryTests
         @"create\s+table\s+(?:if\s+not\s+exists\s+)?__SCHEMA__\.(?<table>\w+)\s*\((?<body>.*?)\)\s*;",
         RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
+    /// <summary>
+    /// <c>alter table __SCHEMA__.t add column [if not exists] c …[, add column …];</c> — every
+    /// <c>column</c> capture is one added column name. A type's own parenthesised arguments
+    /// (<c>numeric(18, 10)</c>) are skipped as a unit so their comma does not end the clause.
+    /// </summary>
+    private static readonly Regex AlterTableAddColumnPattern = new(
+        @"alter\s+table\s+(?:if\s+exists\s+)?__SCHEMA__\.(?<table>\w+)\s+(?:add\s+column\s+(?:if\s+not\s+exists\s+)?(?<column>\w+)(?:\([^)]*\)|[^,;(])*,?\s*)+;",
+        RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
     private static SecurityTermsProjectionDescriptor Descriptor(string assetClass)
         => SecurityTermsProjectionRegistry.Descriptors.Single(descriptor =>
             string.Equals(descriptor.AssetClass, assetClass, StringComparison.Ordinal));
@@ -844,6 +890,12 @@ public sealed class SecurityTermsProjectionRegistryTests
         "InvestmentFund", "PrivateFundInterest", "PrivateCompanyEquity", "RealEstateHolding", "CommitmentGuarantee"
     ];
 
+    /// <summary>The OTC derivative classes migration 046 projects from the day they are modeled.</summary>
+    private static readonly string[] Migration046Classes = ["FxForward", "NonDeliverableForward", "CreditDefaultSwap"];
+
+    /// <summary>The rate options and linked notes migration 047 projects from the day they are modeled.</summary>
+    private static readonly string[] Migration047Classes = ["Swaption", "CapFloor", "StructuredNote"];
+
     [Fact]
     public void Registry_ProjectsEveryCatalogClassExceptCustomAsset()
     {
@@ -854,6 +906,8 @@ public sealed class SecurityTermsProjectionRegistryTests
         SecurityTermsProjectionRegistry.AssetClasses.Should().BeEquivalentTo(expected,
             "CustomAsset is the one deliberate gap: its fields are governed per profile and have no fixed column set");
         Migration044Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
+        Migration046Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
+        Migration047Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
     }
 
     [Fact]
@@ -862,7 +916,7 @@ public sealed class SecurityTermsProjectionRegistryTests
         // The descriptors gate on the terms the schema marks Required, so the canonical full payload
         // of each class — the one the domain serializer writes — must satisfy every gate. A gate that
         // the canonical document could not satisfy would unproject every valid record of the class.
-        foreach (var assetClass in Migration044Classes)
+        foreach (var assetClass in Migration044Classes.Concat(Migration046Classes).Concat(Migration047Classes))
         {
             var descriptor = SecurityTermsProjectionRegistry.Descriptors.Single(candidate => candidate.AssetClass == assetClass);
             var record = SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(

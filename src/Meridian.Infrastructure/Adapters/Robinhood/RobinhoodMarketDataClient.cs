@@ -181,13 +181,15 @@ public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketData
 
     /// <summary>
     /// Runs one poll cycle: batches the subscribed symbols (deduplicated) and polls the
-    /// Robinhood quotes endpoint per batch. Returns <see langword="true"/> only if every batch
-    /// succeeded, so the base class can drive degraded-state backoff.
+    /// Robinhood quotes endpoint per batch. Every batch is polled even after one fails, so a
+    /// persistently rejected symbol cannot starve the others. Returns <see langword="true"/>
+    /// only if every batch succeeded, so the base class can drive degraded-state backoff.
     /// </summary>
     protected override async Task<bool> PollOnceAsync(CancellationToken ct)
     {
         var seenSymbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var batch = new List<string>(MaxSymbolsPerBatch);
+        var pollSucceeded = true;
 
         foreach (var symbol in _subscriptions.Values)
         {
@@ -204,20 +206,21 @@ public sealed class RobinhoodMarketDataClient : PollingProviderBase, IMarketData
                 continue;
             }
 
-            if (!await PollBatchAsync(batch, ct).ConfigureAwait(false))
-                return false;
+            pollSucceeded &= await PollBatchAsync(batch, ct).ConfigureAwait(false);
             batch.Clear();
         }
 
         if (batch.Count > 0)
         {
             ct.ThrowIfCancellationRequested();
-            if (!await PollBatchAsync(batch, ct).ConfigureAwait(false))
-                return false;
+            pollSucceeded &= await PollBatchAsync(batch, ct).ConfigureAwait(false);
         }
 
-        ClearError();
-        return true;
+        // Successful batches never clear the error, so a failure recorded earlier in the cycle
+        // survives the batches after it; only a fully successful cycle clears it.
+        if (pollSucceeded)
+            ClearError();
+        return pollSucceeded;
     }
 
     private async Task<bool> PollBatchAsync(IReadOnlyList<string> symbols, CancellationToken ct)

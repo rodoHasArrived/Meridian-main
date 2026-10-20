@@ -84,7 +84,16 @@ public sealed class PostgresStructuredCreditReferenceProjectionStore : IStructur
             row.NullableString("factor_schedule_reference"),
             row.NullableDate("maturity_date"),
             row.String("primary_identifier_value"),
-            row.Int64("version"));
+            row.Int64("version"),
+            row.NullableString("structured_credit_kind"),
+            row.NullableString("seniority"),
+            row.NullableDecimal("attachment_point"),
+            row.NullableDecimal("detachment_point"),
+            row.NullableDecimal("weighted_average_coupon"),
+            row.NullableInt32("weighted_average_maturity_months"),
+            row.NullableInt32("weighted_average_loan_age_months"),
+            row.NullableDate("reinvestment_period_end"),
+            row.NullableDate("non_call_period_end"));
 
     internal static StructuredCreditFactorScheduleRow MapFactorScheduleRow(ProjectionRow row)
         => new(

@@ -71,6 +71,23 @@ erDiagram
         numeric floating_spread_bps
         bigint version
     }
+    security_master_cap_floor_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text cap_floor_type
+        text reference_index
+        numeric_18_10_ cap_strike
+        numeric_18_10_ floor_strike
+        numeric_28_10_ notional
+        date effective_date
+        date maturity_date
+        text reset_frequency
+        text day_count
+        numeric_28_10_ premium_amount
+        text primary_identifier_value
+        bigint version
+    }
     security_master_cash_sweep_projection {
         uuid security_id PK
         text display_name
@@ -398,6 +415,27 @@ erDiagram
         integer payload_schema_version
         character_64_ economic_fingerprint
     }
+    security_master_credit_default_swap_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text reference_entity
+        text reference_obligation
+        text protection_side
+        numeric_28_10_ notional
+        numeric_18_8_ fixed_coupon_bps
+        date effective_date
+        date maturity_date
+        text payment_frequency
+        text day_count
+        text seniority
+        text restructuring_clause
+        numeric_18_8_ upfront_points
+        numeric_18_10_ recovery_rate_assumption
+        text index_name
+        text primary_identifier_value
+        bigint version
+    }
     security_master_crypto_projection {
         uuid security_id PK
         text display_name
@@ -524,6 +562,20 @@ erDiagram
         date delivery_month_dt
         text delivery_location_code
         text lifecycle_stat
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_fx_forward_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text base_currency
+        text quote_currency
+        numeric_28_10_ notional
+        numeric_28_10_ forward_rate
+        date trade_date
+        date value_date
+        text settlement_type
         text primary_identifier_value
         bigint version
     }
@@ -681,6 +733,21 @@ erDiagram
         boolean sweep_eligible
         integer weighted_average_maturity_days
         boolean liquidity_fee_eligible
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_ndf_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text base_currency
+        text quote_currency
+        text settlement_currency
+        numeric_28_10_ notional
+        numeric_28_10_ forward_rate
+        date fixing_date
+        date value_date
+        text fixing_source
         text primary_identifier_value
         bigint version
     }
@@ -956,6 +1023,7 @@ erDiagram
         text normalized_primary_identifier_value
         integer schema_version
         text terms_format
+        text listing_mic
     }
     security_master_security_alias_revisions {
         uuid alias_id PK
@@ -1344,6 +1412,33 @@ erDiagram
         date maturity_date
         text primary_identifier_value
         bigint version
+        text structured_credit_kind
+        text seniority
+        numeric_18_10_ attachment_point
+        numeric_18_10_ detachment_point
+        numeric_18_10_ weighted_average_coupon
+        integer weighted_average_maturity_months
+        integer weighted_average_loan_age_months
+        date reinvestment_period_end
+        date non_call_period_end
+    }
+    security_master_structured_note_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text issuer_name
+        text underlying_description
+        date maturity_date
+        date issue_date
+        numeric_28_10_ denomination
+        numeric_18_10_ principal_protection_pct
+        numeric_18_10_ participation_rate
+        numeric_18_10_ return_cap
+        numeric_18_10_ coupon_rate
+        text payment_frequency
+        numeric_18_10_ barrier_level
+        text primary_identifier_value
+        bigint version
     }
     security_master_swap_projection {
         uuid security_id PK
@@ -1353,6 +1448,24 @@ erDiagram
         date effective_date
         date maturity_date
         text lifecycle_stat
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_swaption_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text payer_receiver
+        text exercise_style
+        numeric_18_10_ strike_rate
+        date expiry_date
+        date underlying_effective_date
+        date underlying_maturity_date
+        numeric_28_10_ notional
+        text floating_index
+        text fixed_leg_payment_frequency
+        text fixed_leg_day_count
+        text settlement_type
         text primary_identifier_value
         bigint version
     }

@@ -85,6 +85,10 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [InlineData("StructuredCredit", "poolId")]
     [InlineData("StructuredCredit", "tranche")]
     [InlineData("StructuredCredit", "originalFace")]
+    [InlineData("StructuredCredit", "weightedAverageCoupon")]
+    [InlineData("StructuredCredit", "weightedAverageMaturityMonths")]
+    [InlineData("StructuredCredit", "weightedAverageLoanAgeMonths")]
+    [InlineData("StructuredCredit", "factorSchedule")]
     [InlineData("Repo", "counterparty")]
     [InlineData("Repo", "haircut")]
     [InlineData("CashSweep", "programName")]
@@ -99,6 +103,7 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [InlineData("Bond", "issuerName")]
     [InlineData("Bond", "paymentFrequency")]
     [InlineData("Swap", "maturityDate")]
+    [InlineData("CreditDefaultSwap", "maturityDate")]
     [InlineData("Option", "expiry")]
     public void ReplayWithoutLegacyTerms_RecoversPreviouslyDroppedTerms(string assetClass, string flatKey)
     {
@@ -112,6 +117,57 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
 
         rebuilt.TryGetProperty(flatKey, out var value).Should().BeTrue($"{assetClass}.{flatKey} is carried by the economic document");
         value.GetRawText().Should().Be(original.GetProperty(flatKey).GetRawText());
+    }
+
+    [Fact]
+    public void ReplayWithoutLegacyTerms_RestoresTheCreditDefaultSwapCouponInBasisPoints()
+    {
+        // The upgrade carries FixedCouponBps / 10000 as coupon.couponRate; replay must invert the
+        // unit change rather than drop the schema-required coupon.
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            "CreditDefaultSwap",
+            SecurityAssetTermsSchemaRoundTripTests.FullPayloads["CreditDefaultSwap"]);
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("CreditDefaultSwap", original));
+
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
+
+        rebuilt.GetProperty("fixedCouponBps").GetDecimal().Should().Be(original.GetProperty("fixedCouponBps").GetDecimal());
+    }
+
+    [Theory]
+    [InlineData("InterestOnly", "InterestOnly")]
+    [InlineData("PrincipalOnly", "PrincipalOnly")]
+    [InlineData("Clo", null)]
+    public void ReplayWithoutLegacyTerms_StructuredCreditRecoversStripKindsFromTheEconomicFlags(string kind, string? expectedRebuiltKind)
+    {
+        // The economic document carries the typed kind only as the IO/PO flags, so replay can give
+        // an IO or PO strip its kind back; any other family is not recoverable and stays absent
+        // rather than being guessed.
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            "StructuredCredit",
+            new
+            {
+                tranche = "X-1",
+                collateralType = "AgencyPool",
+                originalFace = 1_000_000m,
+                couponOrIndex = "5.5",
+                maturity = "2036-01-15",
+                structuredCreditKind = kind
+            });
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("StructuredCredit", original));
+
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
+
+        if (expectedRebuiltKind is null)
+        {
+            rebuilt.TryGetProperty("structuredCreditKind", out _).Should().BeFalse("the economic document does not carry this family");
+        }
+        else
+        {
+            rebuilt.GetProperty("structuredCreditKind").GetString().Should().Be(expectedRebuiltKind);
+        }
     }
 
     [Theory]

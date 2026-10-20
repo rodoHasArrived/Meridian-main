@@ -2,11 +2,78 @@
 
 # `security-master-contracts` data objects - page 5 of 5
 
-Objects 321-323 of 323. References crossing pages remain available in the dependency manifest.
+Objects 321-332 of 332. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationDisposition["StructuredCreditReclassificationDisposition"] {
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationReportDto["StructuredCreditReclassificationReportDto"] {
+        +int BlockedCount
+        +int CandidateCount
+        +IReadOnlyList~StructuredCreditReclassificationCandidateDto~ Candidates
+        +DateTimeOffset GeneratedAt
+        +int ReadyCount
+        +int SecuritiesScanned
+        +int UnreadableCount
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry["StructuredFactorScheduleEntry"] {
+        +DateOnly AsOfDate
+        +decimal Factor
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry["StructuredPrincipalScheduleEntry"] {
+        +decimal Amount
+        +DateOnly PaymentDate
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredStepCouponEntry["StructuredStepCouponEntry"] {
+        +DateOnly EffectiveDate
+        +decimal Rate
+    }
+    class Meridian_Contracts_SecurityMaster_SubscriptionCorporateActionTerms["SubscriptionCorporateActionTerms"] {
+        +string EventType
+        +decimal? PricePerUnit
+        +decimal? RightsPerHeldUnit
+        +Guid? RightsSecurityId
+        +Guid? SuccessorSecurityId
+        +decimal? UnitsPerRight
+    }
+    class Meridian_Contracts_SecurityMaster_TradingParametersDto["TradingParametersDto"] {
+        +DateTimeOffset AsOf
+        +decimal? CircuitBreakerThresholdPct
+        +decimal? ContractMultiplier
+        +bool? IsEasyToBorrow
+        +bool? IsFractionable
+        +bool? IsMarginable
+        +bool? IsShortable
+        +decimal? LotSize
+        +decimal? MarginRequirementPct
+        +decimal? MinimumOrderSize
+        +decimal? MinimumTradeIncrement
+        +decimal? PriceIncrement
+    }
+    class Meridian_Contracts_SecurityMaster_TransitionCorporateActionCaseRequestDto["TransitionCorporateActionCaseRequestDto"] {
+        +string Actor
+        +string? AssignedTo
+        +CorporateActionCaseTransitionAuthorityDto? Authority
+        +string? BlockedReason
+        +Guid CaseId
+        +string CompanyId
+        +string? CorrelationId
+        +long ExpectedVersion
+        +string IdempotencyKey
+        +bool PolicyOverride
+        +string Reason
+        +CorporateActionCaseScopeDto? ScopeAssertion
+    }
+    class Meridian_Contracts_SecurityMaster_UpsertCashFlowSourceRequest["UpsertCashFlowSourceRequest"] {
+        +string Actor
+        +string? ClientConfirmedBy
+        +bool Force
+        +bool IsClientOverride
+        +Guid SecurityId
+        +StructuredCashFlowSourceKind SourceKind
+    }
     class Meridian_Contracts_SecurityMaster_UpsertCorporateActionProcessingOptionRequestDto["UpsertCorporateActionProcessingOptionRequestDto"] {
         +string Actor
         +IReadOnlyList~string~? Blockers

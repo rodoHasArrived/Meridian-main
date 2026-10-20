@@ -255,26 +255,33 @@ public sealed partial class IBBrokerageGateway :
         ArgumentNullException.ThrowIfNull(modification);
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
-        ct.ThrowIfCancellationRequested();
 
-        var (gatewayOrderId, context) = ResolveOrder(orderId);
-        // The open-order snapshot omits time-in-force and contract detail; resubmitting those
-        // guessed terms could silently change the working order, so recovered orders cancel only.
-        if (context.RecoveredFromSnapshot)
-            throw new InvalidOperationException(
-                $"Order '{orderId}' was recovered from IB's open-order snapshot and cannot be amended; cancel and resubmit it.");
-        var updatedRequest = context.ToModifiedRequest(modification);
-        var updatedContext = context with
-        {
-            Quantity = updatedRequest.Quantity,
-            LimitPrice = updatedRequest.LimitPrice,
-            StopPrice = updatedRequest.StopPrice
-        };
-        var pendingOperation = RegisterPendingOrderOperation(
-            gatewayOrderId, PendingOrderOperationKind.Modify, updatedContext);
-
+        // Send boundary: resolution, request shaping and claiming the operation slot (which a
+        // concurrent cancel or amendment may own) are process-local, so a failure or cancellation
+        // before PlaceOrderAsync proves the amendment never reached IB. The slot is claimed last,
+        // immediately before the send, so nothing can leave it registered without dispatch.
+        var sent = false;
+        var gatewayOrderId = 0;
+        PendingOrderOperation? pendingOperation = null;
         try
         {
+            ct.ThrowIfCancellationRequested();
+            (gatewayOrderId, var context) = ResolveOrder(orderId);
+            // The open-order snapshot omits time-in-force and contract detail; resubmitting those
+            // guessed terms could silently change the working order, so recovered orders cancel only.
+            if (context.RecoveredFromSnapshot)
+                throw new InvalidOperationException(
+                    $"Order '{orderId}' was recovered from IB's open-order snapshot and cannot be amended; cancel and resubmit it.");
+            var updatedRequest = context.ToModifiedRequest(modification);
+            var updatedContext = context with
+            {
+                Quantity = updatedRequest.Quantity,
+                LimitPrice = updatedRequest.LimitPrice,
+                StopPrice = updatedRequest.StopPrice
+            };
+            pendingOperation = RegisterPendingOrderOperation(
+                gatewayOrderId, PendingOrderOperationKind.Modify, updatedContext);
+            sent = true;
             await _client.PlaceOrderAsync(gatewayOrderId, updatedRequest, ct).ConfigureAwait(false);
             return await AwaitPendingOrderOperationAsync(
                 gatewayOrderId,
@@ -282,9 +289,14 @@ public sealed partial class IBBrokerageGateway :
                 $"modify order {context.MeridianOrderId}",
                 ct).ConfigureAwait(false);
         }
+        catch (Exception ex) when (!sent && ex is not BrokerageRequestNotSentException)
+        {
+            throw new BrokerageRequestNotSentException(ex.Message, ex);
+        }
         finally
         {
-            ReleaseOrderOperationWaiter(gatewayOrderId, pendingOperation);
+            if (pendingOperation is not null)
+                ReleaseOrderOperationWaiter(gatewayOrderId, pendingOperation);
         }
     }
 

@@ -41,6 +41,8 @@ public partial class AccountingConfigurePage : Page
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
+        // Leaving the page abandons a running verification so the server releases the chain locks.
+        _viewModel.AuditChainIntegrity.Cancel();
         _loadCts?.Cancel();
         _loadCts?.Dispose();
         _loadCts = null;

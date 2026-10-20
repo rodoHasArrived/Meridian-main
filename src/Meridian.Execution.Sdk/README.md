@@ -51,6 +51,11 @@ Gateways whose providers keep client and broker order IDs in separate lookup nam
 `OrderCancellationIdentifier`; identifier shape is never used to guess whether a value is a broker
 ID, because a UUID-shaped client ID can otherwise target an unrelated broker order.
 `IExplicitOrderModificationGateway` applies the same namespace discipline to amendments.
+Each gateway's amendment path has one send boundary immediately before the call that can reach the
+venue. Any failure or cancellation before it (identity resolution, local validation, an operation
+conflict, a read-only lookup) raises `BrokerageRequestNotSentException` and discards local attempt
+state; the OMS releases reservations and rejects the amendment as never dispatched. Anything after
+the boundary stays dispatch-uncertain.
 `ExecutionReportType.CancelRejected` and `ModificationRejected` describe refused operations;
 their `OrderStatus` describes the actual order and does not imply terminal rejection. Report
 consumers retain cumulative fills and original client identity across broker replacements.

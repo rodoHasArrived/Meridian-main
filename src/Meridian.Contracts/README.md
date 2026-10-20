@@ -1143,7 +1143,13 @@ instead of accepting client-local JSON shapes.
 can distinguish profile-backed alternative assets from generic `OtherSecurity` fallback records.
 Alternative asset operations are represented as first-class Security Master asset classes for
 `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, and
-`CommitmentGuarantee`, while `DirectLoan` remains the private-credit class. The registry keeps
+`CommitmentGuarantee`, while `DirectLoan` remains the private-credit class. `StructuredCredit`
+carries typed tranche terms at asset-class terms version 2 (`structuredCreditKind` from the
+`structured-credit-kind` taxonomy, `seniority`, `attachmentPoint`/`detachmentPoint` as fractions
+of the deal balance, `weightedAverageCoupon`/`weightedAverageMaturityMonths`/
+`weightedAverageLoanAgeMonths`, and the CLO `reinvestmentPeriodEnd`/`nonCallPeriodEnd` dates); all
+are optional, so a version-1 payload reads unchanged, and the pool statistics bridge to the
+`structuredProduct` economic module. The registry keeps
 `CustomAsset` as the governed compatibility and wide-capture fallback for profile-backed records
 that cannot yet be upgraded to one of those minimum first-class classes.
 `SecurityAssetPackRegistry` defines the additive asset-pack registry contract for wide capture and
@@ -1747,13 +1753,43 @@ W7 live-readiness gate.
 behaviour, projection kind, preferred identifiers, terms version, multiplier key), the term
 schema, validators and editor hints. `SecurityAssetClassRegistryCoverageTests` fails when an F#
 `SecurityKind` case has no definition. The registry backs `/api/security-master/asset-classes`.
-`SecurityTermConventions` types day count, settlement method and option right as canonical
-vocabularies. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
+The OTC derivative classes `FxForward` (deliverable forward: pair, notional, forward rate, trade
+and value dates, settlement method), `NonDeliverableForward` (adds the settlement currency, the
+fixing date and an operational fixing source) and `CreditDefaultSwap` (reference entity and
+obligation, `protectionSide` Buy/Sell, notional, `fixedCouponBps`, effective and maturity dates,
+payment-frequency and day-count conventions, seniority, restructuring clause, upfront points,
+recovery assumption, index name) are declarative classes in the `derivatives-fx` pack with
+registry-written projections from the day they were modeled; `Forward` left the pack's planned
+vocabulary. `Swaption` (payer/receiver, exercise style, strike rate, expiry, underlying swap dates,
+notional, fixed-leg conventions, settlement method) and `CapFloor` (Cap, Floor or Collar on a
+reference index with cap and floor strikes, notional, dates, reset and day-count conventions,
+premium) join the same pack; `StructuredNote` (issuer, reference asset, maturity, denomination,
+principal protection, participation, return cap, coupon, barrier) is a face-value class in the
+`fixed-income` pack, classified as issuer debt rather than a derivative.
+`SecurityTermConventions` types day count, settlement method, option right and payment frequency
+(`SecurityPaymentFrequency`, the one cadence vocabulary; the direct-lending `PaymentFrequency`
+enum maps onto it through `ToSecurityPaymentFrequency`) as canonical conventions: stored text
+stays verbatim, writes must name a recognized spelling, and the reference DTOs (future
+`SettlementMethod`, deposit and CD `DayCountConvention`, option `Right`, bond `PaymentCadence`
+and `DayCount`, swap-leg `PaymentCadence` and `DayCountConvention`) expose the typed value
+beside the raw text. Schedule-driving coupon cadences (bond `paymentFrequency`, swap-leg
+`paymentFrequency`) carry the narrower `CouponFrequency` convention: only cadences the cash-flow
+engines step in whole months, or `AtMaturity`, are accepted on write, and
+`SecurityTermConventions.CouponPaymentsPerYear` is the shared reader both schedulers use.
+Conventions declared on array elements (the swap legs) are enforced on write like top-level ones. Swap legs may carry optional `notionalSchedule` (`{effectiveDate, notional}` steps) and
+`resetSchedule` (`{resetDate, fixingRate}`) arrays; `StructuredCashFlowLeg.NotionalOn` and `FixingOn`
+let the leg scheduler accrue on the scheduled notional (paying step-downs as principal when the leg
+exchanges principal) and use a recorded fixing for a period that has already reset. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
 one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `CommitmentLot` (commitment,
 funded and unfunded amounts, recallable distributions, `Draw`) and `FundUnitLot` (units at an
 acquisition NAV) are the `Commitment` and `Units` cases the registry assigns to private fund
 interests, guarantees and funds. `SecurityIdentifierKind` adds
-`LoanX` (`LX` plus six digits) and `Clip` (nine alphanumerics).
+`LoanX` (`LX` plus six digits), `Clip` (nine alphanumerics) and `ListingId`
+(`TICKER:MIC`, validated through `Meridian.Contracts.Domain.ListingId`). `Mic` is the
+format-validated ISO 10383 market code (four letters or digits); `MicReference` bundles the
+markets Meridian's providers and seed data use and maps unambiguous exchange names (`NYSE`,
+`Nasdaq`, `AMEX`, ...) to a MIC, leaving routing labels such as `SMART` unresolved; its `Codes` and
+`ExchangeNames` tables also drive the `securities.listing_mic` backfill.
 
 ### Security Master income, curves, factors and corporate-action terms
 
@@ -1808,3 +1844,15 @@ a pending transaction can become visible later with an earlier recorded timestam
 exact evaluation using `receiptId` on the golden-copy endpoint, retaining the security/account
 scope. Unknown or differently scoped receipts return no result and never silently recompute.
 Mixed quote units have no percentage comparison.
+
+StructuredCredit's free-text `factorSchedule` is the trustee or servicer report pointer and is
+declared `Operational`: the paydown projector keeps it as evidence lineage, the economic bridge
+carries it as `structuredProduct.factorScheduleReference`, and no cash-flow or accounting math reads
+it. The dated `factorScheduleEntries` array is the schedule; a pointer with no entries raises the
+`SM_STRUCTURED_CREDIT_FACTOR_ENTRIES_MISSING` warning.
+
+`ISecurityMasterStructuredCreditReclassificationService` returns the ADR-022
+`StructuredCreditReclassificationReportDto`: one candidate per active securitised `Bond` or
+`CustomAsset` row with a `Ready` or `Blocked` disposition, the proposed `structuredCreditKind`, the
+derived asset-specific terms and the blocker codes the operator must clear. The report never applies
+a proposal.

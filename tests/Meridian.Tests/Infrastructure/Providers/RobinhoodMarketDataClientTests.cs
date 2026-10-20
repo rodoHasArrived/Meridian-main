@@ -293,8 +293,7 @@ public sealed class RobinhoodMarketDataClientTests : IDisposable
         var diagnostics = sut.GetConnectionDiagnosticsSnapshot();
         diagnostics.LastFailureKind.Should().Be(expectedKind);
         diagnostics.LastError.Should().NotBeNullOrEmpty();
-        handler.RequestCount.Should().Be(successFirst ? 2 : 1,
-            "a failed batch must stop the cycle before another response can overwrite its failure");
+        handler.RequestCount.Should().Be(2, "a failed batch must not starve the batches after it");
     }
 
     [Fact]
@@ -310,6 +309,42 @@ public sealed class RobinhoodMarketDataClientTests : IDisposable
         (await InvokePollCycleAsync(sut)).Should().BeTrue();
         sut.GetConnectionDiagnosticsSnapshot().LastFailureKind.Should().BeNull();
         sut.GetDiagnosticsSnapshot().LastError.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task PollCycle_PersistentlyRejectedBatch_DoesNotStarveLaterBatches()
+    {
+        var handler = new RejectFirstBatchHttpHandler();
+        await using var sut = CreateSut(handler, out var publisher);
+        for (var i = 0; i < 51; i++)
+            sut.SubscribeQuotes(new Meridian.Contracts.Configuration.SymbolConfig($"SYM{i}"));
+
+        for (var cycle = 0; cycle < 2; cycle++)
+            (await InvokePollCycleAsync(sut)).Should().BeFalse("the first batch is rejected every cycle");
+
+        handler.RequestCount.Should().Be(4, "both batches are polled on every cycle");
+        publisher.Published.Should().HaveCount(2, "the valid symbol in the later batch keeps publishing");
+        sut.GetConnectionDiagnosticsSnapshot().LastError.Should().NotBeNullOrEmpty(
+            "the later success must not clear the rejected batch's failure");
+    }
+
+    private sealed class RejectFirstBatchHttpHandler : HttpMessageHandler
+    {
+        public int RequestCount { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        {
+            RequestCount++;
+            if (request.RequestUri!.Query.Contains("SYM0", StringComparison.Ordinal))
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest) { Content = new StringContent("{}") });
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                    {"results":[{"symbol":"SYM50","bid_price":"10.00","bid_size":100,
+                      "ask_price":"10.05","ask_size":100,"updated_at":"2026-05-20T12:00:00Z"}]}
+                    """)
+            });
+        }
     }
 
     private sealed class SequencedHttpHandler(params HttpStatusCode[] statuses) : HttpMessageHandler

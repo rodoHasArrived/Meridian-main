@@ -84,6 +84,36 @@ public sealed class SecurityMasterDataQualityServiceTests
         report.Violations.Should().NotContain(v => v.RuleId == "MA001");
     }
 
+    [Theory]
+    [InlineData("FxForward")]
+    [InlineData("NonDeliverableForward")]
+    public async Task RunQualityChecksAsync_DoesNotFlagMaturity_ForForwardsDatedByValueDate(string assetClass)
+    {
+        // Forwards are dated by valueDate, which the terms schema already requires; MA001 reads only
+        // maturity/maturityDate, so flagging them would raise a false error on every record.
+        var (sut, store) = BuildSut();
+        var security = MakeSecurity(Guid.NewGuid(), assetClass, currency: "USD",
+            assetSpecificTerms: new { baseCurrency = "EUR", quoteCurrency = "USD", valueDate = "2026-09-02" });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Should().NotContain(v => v.RuleId == "MA001");
+    }
+
+    [Fact]
+    public async Task RunQualityChecksAsync_ReportsMissingMaturity_ForCreditDefaultSwapWithoutMaturityDate()
+    {
+        var (sut, store) = BuildSut();
+        var security = MakeSecurity(Guid.NewGuid(), "CreditDefaultSwap", currency: "USD",
+            assetSpecificTerms: new { referenceEntity = "Meridian Industries Inc", protectionSide = "Buy" });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Should().Contain(v => v.RuleId == "MA001" && v.SecurityId == security.SecurityId);
+    }
+
     [Fact]
     public async Task RunQualityChecksAsync_FlagsOptionMissingStrike()
     {

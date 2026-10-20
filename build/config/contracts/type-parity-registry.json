@@ -614,6 +614,18 @@
       "csharp_record": "LedgerDisposalTaxParcelDto",
       "typescript_file": "src/Meridian.Ui/dashboard/src/types/ledger-tax-results.ts",
       "typescript_interface": "LedgerDisposalTaxParcel"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs",
+      "csharp_record": "AccountingAuditIntegrityReportDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/audit-integrity.ts",
+      "typescript_interface": "AccountingAuditIntegrityReportDto"
+    },
+    {
+      "csharp_file": "src/Meridian.Contracts/Ledger/AuditChainIntegrity.cs",
+      "csharp_record": "AuditChainIntegrityResultDto",
+      "typescript_file": "src/Meridian.Ui/dashboard/src/types/audit-integrity.ts",
+      "typescript_interface": "AuditChainIntegrityResultDto"
     }
   ],
   "known_divergences": [

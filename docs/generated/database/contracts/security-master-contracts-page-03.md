@@ -2,11 +2,25 @@
 
 # `security-master-contracts` data objects - page 3 of 5
 
-Objects 161-240 of 323. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 332. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_PreferredEquityTermsDto["PreferredEquityTermsDto"] {
+        +decimal? AdditionalDividendThreshold
+        +DateOnly? CallableDate
+        +string? Classification
+        +decimal? DividendRate
+        +string? DividendType
+        +bool? IsCumulative
+        +string? LiquidationPreferenceKind
+        +decimal? LiquidationPreferenceMultiple
+        +bool? ParticipatesInCommonDividends
+        +DateOnly? RedemptionDate
+        +decimal? RedemptionPrice
+        +Guid SecurityId
+    }
     class Meridian_Contracts_SecurityMaster_PricingHierarchyEntryDto["PricingHierarchyEntryDto"] {
         +int MaxDaysStale
         +int Priority
@@ -521,18 +535,6 @@ classDiagram
         +string? UpdatedBy
     }
     class Meridian_Contracts_SecurityMaster_SecurityFieldProvenanceOrigins["SecurityFieldProvenanceOrigins"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityFieldProvenanceRecord["SecurityFieldProvenanceRecord"] {
-        +DateTimeOffset? AsOf
-        +decimal? Confidence
-        +string FieldPath
-        +string Origin
-        +string? OriginReference
-        +DateTimeOffset RecordedAt
-        +Guid SecurityId
-        +string SourceSystem
-        +long? SourceVersion
-        +string? UpdatedBy
     }
     Meridian_Contracts_SecurityMaster_SecurityAliasDto --> Meridian_Contracts_SecurityMaster_SecurityAliasScope
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor

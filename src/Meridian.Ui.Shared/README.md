@@ -34,7 +34,8 @@ domain digests. Scoped access context supplies current session capabilities; clo
 loads all exact account/book/date versions after durable evidence validation.
 Close-price capture accepts an optional stable request identity. Identical retries recover the
 retained snapshot before price evaluation; changing its immutable command conflicts. The HTTP
-actor remains session-derived on both initial capture and recovery.
+actor remains session-derived on both initial capture and recovery. When only the unconfigured
+`NullSecurityMasterPricingService` fallback is registered, close-price routes answer 503 instead of empty history.
 
 Security Master override PATCH and decision endpoints return HTTP 409 when another instance
 advances the durable workbench generation. The governed workbench endpoints use their existing
@@ -246,6 +247,14 @@ Period creation requires a resolved authenticated actor and overwrites any clien
 `CreatedBy` before calling the shared ledger service. The actor is retained in the same-transaction
 PostgreSQL ledger audit. `WorkstationEndpointsTests.LedgerAuditActor` exercises spoofed client
 attribution against the real period service and PostgreSQL store.
+`GET /api/ledger/audit-integrity` (`AdminMaintenance`) runs `AccountingAuditIntegrityService` over the
+composed accounting-action and ledger-event audit chains without appending, reporting each as
+`verified`, `broken`, `not-configured`, `unavailable`, or `not-started` (nothing chained yet; never counted as verified) with counts and break position only.
+A chain of either kind written under a newer schema is `unavailable`, not `broken`, and a ledger
+break still reports the genesis facts that predate chaining. One run is admitted per host at a
+time (a concurrent request gets 409) because the scan holds the same head locks appends take. The
+route carries no shared rate-limit policy, so unauthorized callers cannot drain the per-address
+mutation permits; only authorized callers reach the single-flight gate.
 Generated-candidate posting and manual journal lifecycle routes also require a resolved authenticated
 actor; permission alone cannot authorize use of a client-supplied posting identity.
 
@@ -2719,6 +2728,11 @@ Security Master also serves `GET /api/security-master/{securityId}/income-cash-f
 `GET /api/security-master/{securityId}/factor-history`, and
 `PUT /api/security-master/{securityId}/terms/{blockKey}` (governed like the generic amend route;
 400 for an undeclared block or JSON kind).
+
+`POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance) builds the
+ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their proposed
+`StructuredCredit` terms and blockers. It is mapped only when the Postgres-backed service is
+registered and it never writes; applying a proposal is a governed amendment.
 
 ## Diagrams
 

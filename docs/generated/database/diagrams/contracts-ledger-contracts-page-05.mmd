@@ -1,5 +1,107 @@
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_ReportExportArtifactManifestDto["ReportExportArtifactManifestDto"] {
+        +string ArtifactId
+        +string ArtifactKind
+        +AccountingCertificationStateDto CertificationState
+        +string ContentHash
+        +string ContentType
+        +LedgerDimensionSetDto Dimensions
+        +ReportDimensionScopeDto? DimensionScope
+        +string DisplayName
+        +IReadOnlyList~string~ EvidenceLinks
+        +bool ExternalPostingAllowed
+        +string FileName
+        +string Format
+    }
+    class Meridian_Contracts_Ledger_ReportLineProvenanceDto["ReportLineProvenanceDto"] {
+        +decimal Amount
+        +string Currency
+        +LedgerDimensionSetDto Dimensions
+        +IReadOnlyList~string~ EvidenceLinks
+        +string LineId
+        +string LineLabel
+        +string SourceKind
+        +string StatementId
+    }
+    class Meridian_Contracts_Ledger_RestatementWorkflowDto["RestatementWorkflowDto"] {
+        +ManualJournalEntryStatusDto ApprovalState
+        +IReadOnlyList~string~ EvidenceLinks
+        +string PriorPackageId
+        +string ReasonCode
+        +DateTimeOffset RequestedAtUtc
+        +string RequestedBy
+        +string RestatementId
+    }
+    class Meridian_Contracts_Ledger_ReviewCloseEvidenceRequestDto["ReviewCloseEvidenceRequestDto"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string Actor
+        +string? CorrelationId
+        +IReadOnlyList~string~ EvidenceLinks
+        +string IssueCode
+        +string Notes
+        +string? TargetId
+        +Guid WorkflowId
+    }
+    class Meridian_Contracts_Ledger_ReviewLateAdjustmentRequestDto["ReviewLateAdjustmentRequestDto"] {
+        +OperationsActionOriginDto ActionOrigin
+        +string Actor
+        +string? CorrelationId
+        +ManualJournalEntryStatusDto Decision
+        +IReadOnlyList~string~ EvidenceLinks
+        +string Notes
+        +string RequestId
+        +Guid WorkflowId
+    }
+    class Meridian_Contracts_Ledger_RuleDryRunRequestDto["RuleDryRunRequestDto"] {
+        +string Actor
+        +string? CompanyId
+        +string? CorrelationId
+        +string? CounterpartyId
+        +string Currency
+        +LedgerDimensionSetDto? Dimensions
+        +DateOnly EffectiveDate
+        +decimal EventAmount
+        +string FundProfileId
+        +string? InstrumentSymbol
+        +Guid? LedgerBookId
+        +string SourceEventType
+    }
+    class Meridian_Contracts_Ledger_RuleDryRunResultDto["RuleDryRunResultDto"] {
+        +string Currency
+        +DateOnly EffectiveDate
+        +decimal EventAmount
+        +string FundProfileId
+        +IReadOnlyList~AccountingJournalPreviewLineDto~ GeneratedLines
+        +IReadOnlyList~GeneratedPostingLineDto~ GeneratedPostingLines
+        +bool IsPostingBalanced
+        +Guid? LedgerBookId
+        +IReadOnlyList~AccountingRuleDryRunMatchDto~ RuleMatches
+        +string? SelectedRuleId
+        +string SourceEventType
+        +IReadOnlyList~AccountingConfigurationValidationIssueDto~ ValidationIssues
+    }
+    class Meridian_Contracts_Ledger_RulePromotionApprovalDto["RulePromotionApprovalDto"] {
+        +string ApprovalId
+        +ManualJournalEntryStatusDto ApprovalState
+        +DateTimeOffset? ApprovedAtUtc
+        +string? ApprovedBy
+        +IReadOnlyList~string~ EvidenceLinks
+        +string? Notes
+        +DateTimeOffset RequestedAtUtc
+        +string RequestedBy
+    }
+    class Meridian_Contracts_Ledger_SaveManualJournalEntryDraftRequest["SaveManualJournalEntryDraftRequest"] {
+        +string Actor
+        +string? CompanyId
+        +string? CorrelationId
+        +ManualJournalEntryDraftDto Draft
+        +IReadOnlyList~string~? EvidenceLinks
+        +Guid? LedgerBookId
+        +bool PeriodIsLocked
+        +IReadOnlyList~string~? ReportGroupPrincipalIds
+        +string? TenantId
+    }
     class Meridian_Contracts_Ledger_SignOffCloseTaskRequestDto["SignOffCloseTaskRequestDto"] {
         +OperationsActionOriginDto ActionOrigin
         +string Actor

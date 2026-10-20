@@ -132,7 +132,10 @@ public sealed partial class OrderManagementSystem
             if (retained.RequiresRecovery || state.Status is not (OrderStatus.Filled or OrderStatus.Rejected))
                 _recoveryOrderIds[state.OrderId] = 0;
             if (retained.PendingAmendment is { } pending)
+            {
                 _pendingModificationOrderIds[state.OrderId] = pending;
+                _restoredPendingAmendments[state.OrderId] = pending;
+            }
             else if (retained.RequiresAmendmentRecovery)
                 _pendingModificationOrderIds[state.OrderId] = new PendingOrderAmendment(state, state, retained.BrokerOrderId);
             if (!string.IsNullOrWhiteSpace(retained.BrokerOrderId))
@@ -266,6 +269,10 @@ public sealed partial class OrderManagementSystem
             var pending = GetPendingAmendmentForRecovery(orderId);
             var selectedTerms = pending is null ? null : SelectAmendmentTerms(report, pending);
             var confirmedQuantity = selectedTerms?.Quantity ?? _orders.GetValueOrDefault(orderId)?.Quantity ?? 0m;
+            // A rejected successor echoes the refused proposal's quantity, not the order's: the
+            // original terms stand, so only its fills are checked against them.
+            var rejectedSuccessor = pending is not null && report.ReportType is ExecutionReportType.ModificationRejected
+                && !string.Equals(report.GatewayOrderId ?? report.OrderId, pending.OriginalBrokerOrderId, StringComparison.Ordinal);
             if (!_orders.TryGetValue(orderId, out var state)
                 || !_dispatchedOrderIds.ContainsKey(orderId)
                 || !string.Equals(state.Symbol, report.Symbol, StringComparison.OrdinalIgnoreCase)
@@ -273,7 +280,7 @@ public sealed partial class OrderManagementSystem
                 || report.FilledQuantity < state.FilledQuantity
                 || report.FilledQuantity > confirmedQuantity
                 || (report.FilledQuantity > state.FilledQuantity && report.FillPrice is not > 0m)
-                || (report.OrderQuantity > 0m && report.OrderQuantity != confirmedQuantity)
+                || (report.OrderQuantity > 0m && report.OrderQuantity != confirmedQuantity && !rejectedSuccessor)
                 || (IsTerminalStatus(state.Status) && report.OrderStatus != state.Status
                     && !(pending is not null && IsTerminalStatus(report.OrderStatus))
                     && !(report.FilledQuantity > state.FilledQuantity

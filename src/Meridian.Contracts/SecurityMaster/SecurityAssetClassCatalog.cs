@@ -333,6 +333,10 @@ public static class SecurityAssetClassCatalog
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
             AmortizesTowardPar: true,
+            // Version 2 added the typed tranche terms (structuredCreditKind, seniority, attachment and
+            // detachment points, WAC/WAM/WALA, CLO period dates); every addition is optional, so a
+            // version-1 payload reads unchanged and needs no field transformation (ADR-024).
+            TermsVersion: 2,
             SupportsProfileBackedTerms: true,
             Aliases: ["MortgageBacked", "MortgageBackedSecurity", "MBS", "AssetBacked", "AssetBackedSecurity", "ABS"],
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity),
@@ -460,6 +464,88 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.InternalCode
             ]),
+        new(
+            AssetClass: "FxForward",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.CurrencyAmount,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Ric
+            ]),
+        new(
+            AssetClass: "NonDeliverableForward",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.CurrencyAmount,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Ric
+            ]),
+        new(
+            AssetClass: "CreditDefaultSwap",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.Notional,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.PermId,
+                SecurityIdentifierKind.Lei,
+                SecurityIdentifierKind.ProviderSymbol
+            ],
+            RequiresMaturity: true),
+        new(
+            AssetClass: "Swaption",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.Notional,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.PermId,
+                SecurityIdentifierKind.ProviderSymbol
+            ]),
+        new(
+            AssetClass: "CapFloor",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.Notional,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.PermId,
+                SecurityIdentifierKind.ProviderSymbol
+            ],
+            RequiresMaturity: true),
+        new(
+            AssetClass: "StructuredNote",
+            AssetPackIds: ["fixed-income"],
+            LotUnit: SecurityLotUnitKind.FaceValue,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.Isin,
+                SecurityIdentifierKind.Cusip,
+                SecurityIdentifierKind.InternalCode
+            ],
+            RequiresMaturity: true),
         new(
             AssetClass: "InvestmentFund",
             AssetPackIds: ["public-equity-etf"],
