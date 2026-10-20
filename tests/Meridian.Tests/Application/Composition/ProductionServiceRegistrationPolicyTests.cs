@@ -73,6 +73,50 @@ public sealed class ProductionServiceRegistrationPolicyTests
             .WithMessage("*Linux (container, test) (Arm64)*");
     }
 
+    [Fact]
+    public void Validate_ProductionEnvironmentWithoutDeclaredPosture_NamesTheVariableThatSelectedProduction()
+    {
+        // ASPNETCORE_ENVIRONMENT=Development is set but did not select production; the diagnostic must
+        // name MERIDIAN_API_DEPLOYMENT_MODE, the variable whose value made the composition production.
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        using var environment = new EnvironmentVariableScope("ASPNETCORE_ENVIRONMENT", "Development");
+        using var deploymentMode = new EnvironmentVariableScope("MERIDIAN_API_DEPLOYMENT_MODE", "ProductionApi");
+        var services = new ServiceCollection();
+        services.DeclareMeridianHostPlatform(isWindows: false, OSArchitecture.X64, "Linux (test)");
+
+        Action act = () => ProductionServiceRegistrationPolicy.Validate(services);
+
+        act.Should().Throw<StartupRefusedException>()
+            .WithMessage("*posture 'ProductionApi (environment MERIDIAN_API_DEPLOYMENT_MODE=ProductionApi)'*");
+    }
+
+    [Theory]
+    [InlineData("ASPNETCORE_ENVIRONMENT", "Production", "ASPNETCORE_ENVIRONMENT", "Production")]
+    [InlineData("MERIDIAN_ENVIRONMENT", "Production", "MERIDIAN_ENVIRONMENT", "Production")]
+    [InlineData("MERIDIAN_MODE", "Live", "MERIDIAN_MODE", "Live")]
+    [InlineData("MERIDIAN_MODE", "live", "MERIDIAN_MODE", "live")]
+    public void ResolveProductionEnvironmentSelector_MatchesIsProductionEnvironment(string name, string value, string expectedName, string expectedValue)
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        using var variable = new EnvironmentVariableScope(name, value);
+        var configuration = new CompositionConfiguration();
+
+        ProductionServiceRegistrationPolicy.IsProductionEnvironment(configuration).Should().BeTrue();
+        ProductionServiceRegistrationPolicy.ResolveProductionEnvironmentSelector(configuration)
+            .Should().Be((expectedName, expectedValue));
+    }
+
+    [Fact]
+    public void ResolveProductionEnvironmentSelector_IsNullWhenNothingSelectsProduction()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        using var environment = new EnvironmentVariableScope("ASPNETCORE_ENVIRONMENT", "Development");
+        var configuration = new CompositionConfiguration();
+
+        ProductionServiceRegistrationPolicy.IsProductionEnvironment(configuration).Should().BeFalse();
+        ProductionServiceRegistrationPolicy.ResolveProductionEnvironmentSelector(configuration).Should().BeNull();
+    }
+
     [Theory]
     [InlineData(OSArchitecture.X64)]
     [InlineData(OSArchitecture.Arm64)]

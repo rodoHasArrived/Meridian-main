@@ -160,7 +160,13 @@ drain/flush ordering, and lifecycle receipts.
    git push origin v0.1.0-rc.1
    ```
 
-   Push the release tag (`v*`) on the frozen release commit and drive
+   Note the trade-off this records: `a9d470c3` is the commit that holds the ten-workflow green
+   receipt, and the determination chose it for that reason, but the ADR signatures, the platform
+   fail-closed, the concurrent-configuration protection and the credential-audit journal land in
+   the change that records this decision, after `a9d470c3`. Same-commit evidence for those controls
+   therefore needs a later candidate (`v0.1.0-rc.2` or the stable tag) cut from a `main` head that
+   contains them and carries its own green receipt; the `rc.1` receipts certify the envelope as it
+   stood at `a9d470c3`. Push the release tag (`v*`) on the frozen release commit and drive
    `desktop-installer-packaging` to green; the tag run's install/launch/update/repair/
    rollback/uninstall receipts for x64 and ARM64 are the PRD-014 evidence. Record the run link
    here.

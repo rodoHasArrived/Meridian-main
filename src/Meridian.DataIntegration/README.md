@@ -69,11 +69,15 @@ empty or missing primaries recover from the retained backup. Both audit surfaces
 lock without copying accumulated history. Before appending, an incomplete final record is durably retained
 in a uniquely named `.partial-*` file, preserving every newline-terminated record in the original log.
 Every provider-credential and OAuth mutation journals its audit record to
-`provider-credentials.audit.pending.jsonl` (atomic whole-file write, never secrets) *before* the vault
-write and removes it only after the audit append is durable, so an audit failure after the vault
-committed is no longer ambiguous: the journal is the marker, the next mutation and
-`ReplayPendingAuditAsync` (run at host start) append the owed records with a `replayedAt` stamp, and
-status reports `auditPending`. Provider-credential saves, deletes and verification records return
+`provider-credentials.audit.pending.jsonl` (atomic whole-file write, never secrets) in two phases: an
+`intent` line before the vault write, rewritten as `committed` after it, and removed only after the
+audit append is durable. An audit failure after the vault committed is therefore no longer ambiguous:
+the committed journal line is the marker, the next mutation and `ReplayPendingAuditAsync` (run at host
+start) append the owed records with a `replayedAt` stamp, and status reports `auditPending`. An
+`intent` still journaled after a crash is never taken as proof: replay verifies it against the vault
+(saved credential generation present, deleted key absent, verification timestamp recorded, OAuth key
+present or absent) and appends it only when the vault proves the mutation landed, discarding it with
+a warning otherwise; a vault write that throws removes its intent again. Provider-credential saves, deletes and verification records return
 success in that case; OAuth token saves throw `ProviderCredentialAuditDeferredException` (an
 `IOException` with `VaultCommitted`) because their callers reconcile a running cache. A journal write
 failure refuses the mutation before the vault is touched. Legacy imports keep their retry-by-sidecar

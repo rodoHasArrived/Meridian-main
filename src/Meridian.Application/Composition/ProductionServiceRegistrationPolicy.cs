@@ -143,7 +143,8 @@ public static class ProductionServiceRegistrationPolicy
             $"Production startup policy rejected the host platform for posture '{DescribeProductionPosture(services)}': " +
             $"detected {platform.Description} ({platform.Architecture}), but ADR-019 " +
             "(docs/adr/019-production-support-matrix-and-deployment-posture.md, support matrix) restricts the v1 " +
-            "production envelope to Windows 11. Linux container and systemd postures are experimental and must " +
+            "production envelope to Windows 11; this guard refuses every non-Windows host (architecture and Windows " +
+            "version are reported, not refused). Linux container and systemd postures are experimental and must " +
             "fail closed rather than degrade. Platform-bound production bindings that would otherwise silently " +
             $"degrade: {string.Join("; ", PlatformBoundProductionBindings)}. Run the supported local-workstation " +
             "posture on Windows, or scope the host out of the production envelope per ADR-019.";
@@ -157,27 +158,56 @@ public static class ProductionServiceRegistrationPolicy
             return declared.ToString();
         }
 
-        var configuration = CompositionConfiguration.Resolve(services);
-        foreach (var name in ProductionEnvironmentVariableNames)
-        {
-            var value = configuration[name];
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                return $"{nameof(MeridianDeploymentPosture.ProductionApi)} (environment {name}={value})";
-            }
-        }
-
-        return $"{nameof(MeridianDeploymentPosture.ProductionApi)} (environment)";
+        // Name the variable whose value actually selected production, using the same predicates and
+        // precedence as IsProductionEnvironment, so ASPNETCORE_ENVIRONMENT=Development beside
+        // MERIDIAN_API_DEPLOYMENT_MODE=ProductionApi is reported as the latter.
+        var selected = ResolveProductionEnvironmentSelector(CompositionConfiguration.Resolve(services));
+        return selected is null
+            ? $"{nameof(MeridianDeploymentPosture.ProductionApi)} (environment)"
+            : $"{nameof(MeridianDeploymentPosture.ProductionApi)} (environment {selected.Value.Name}={selected.Value.Value})";
     }
 
-    private static readonly string[] ProductionEnvironmentVariableNames =
+    /// <summary>
+    /// The environment variable and value that make <see cref="IsProductionEnvironment"/> true, or
+    /// <c>null</c> when none does. Mirrors that method's lookup order exactly.
+    /// </summary>
+    internal static (string Name, string Value)? ResolveProductionEnvironmentSelector(CompositionConfiguration configuration)
+    {
+        foreach (var name in EnvironmentNameVariables)
+        {
+            var value = configuration[name];
+            if (value is null)
+                continue;
+            // IsProductionEnvironment coalesces these four: the first non-null value decides, and a
+            // non-production value there still leaves the mode variables able to select production.
+            if (string.Equals(value, "Production", StringComparison.OrdinalIgnoreCase))
+                return (name, value);
+            break;
+        }
+
+        return ResolveModeSelector(configuration);
+    }
+
+    private static (string Name, string Value)? ResolveModeSelector(CompositionConfiguration configuration)
+    {
+        var mode = configuration["MERIDIAN_MODE"];
+        if (string.Equals(mode, "Production", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(mode, "Live", StringComparison.OrdinalIgnoreCase))
+            return ("MERIDIAN_MODE", mode!);
+
+        var apiDeploymentMode = configuration["MERIDIAN_API_DEPLOYMENT_MODE"];
+        if (string.Equals(apiDeploymentMode, nameof(MeridianDeploymentPosture.ProductionApi), StringComparison.OrdinalIgnoreCase))
+            return ("MERIDIAN_API_DEPLOYMENT_MODE", apiDeploymentMode!);
+
+        return null;
+    }
+
+    private static readonly string[] EnvironmentNameVariables =
     [
         "ASPNETCORE_ENVIRONMENT",
         "DOTNET_ENVIRONMENT",
         "MERIDIAN_ENVIRONMENT",
-        "MERIDIAN_DEPLOYMENT_ENVIRONMENT",
-        "MERIDIAN_MODE",
-        "MERIDIAN_API_DEPLOYMENT_MODE"
+        "MERIDIAN_DEPLOYMENT_ENVIRONMENT"
     ];
 
     internal static Type? GetRegisteredImplementationType(ServiceDescriptor descriptor)

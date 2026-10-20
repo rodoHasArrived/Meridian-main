@@ -110,8 +110,11 @@ format are governed by [ADR-020](020-lifecycle-control-plane.md).
   that would otherwise silently degrade: provider credential vault protection falling from
   `dpapi-current-user` to the adjacent-AES-key `local-aes-gcm`, and the lifecycle protected secret
   store. Architecture is reported but not refused, because `PRD-014` certifies both x64 and ARM64
-  installer receipts. `LocalWorkstation` and unspecified postures are never platform-gated, so
-  development on Linux keeps composing. Tests pin the platform through an internal
+  installer receipts. The Windows version is likewise reported, not refused: the code gate is the
+  operating-system family, which is the boundary that changes the credential-protection path; the
+  Windows 11 row of the matrix is enforced by the installer lane and certification receipts, not by
+  this guard. `LocalWorkstation` and unspecified postures are never platform-gated, so development
+  on Linux keeps composing. Tests pin the platform through an internal
   `DeclareMeridianHostPlatform` declaration rather than a process-global probe.
 - Prohibited-by-default implementation names in production postures: `InMemory*`, `Null*`,
   `NoOp*`, `Fake*`, `Stub*`, `Sample*`, plus anything carrying

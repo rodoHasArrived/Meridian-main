@@ -863,8 +863,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   production composition on a non-Windows host is refused by the descriptor-only half with a diagnostic
   naming the posture, the detected OS and architecture, and the platform-bound bindings (`dpapi-current-user`
   to `local-aes-gcm` vault protection, the lifecycle protected secret store) that would otherwise
-  silently degrade. Architecture is reported, not refused (PRD-014 certifies x64 and ARM64). Tests pin
-  the platform through the internal `DeclareMeridianHostPlatform` declaration. It derives from
+  silently degrade. Architecture and Windows version are reported, not refused (PRD-014 certifies x64 and ARM64; the
+  Windows 11 row is enforced by the installer lane, not this guard). Tests pin the platform through the
+  internal `DeclareMeridianHostPlatform` declaration. It derives from
   `InvalidOperationException`, so existing catches and assertions naming that type keep matching; the
   added type only lets a host that wants to escalate do so. Hosts decide through
   `Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal`.

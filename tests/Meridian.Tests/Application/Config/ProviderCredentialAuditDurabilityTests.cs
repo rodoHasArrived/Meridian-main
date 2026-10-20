@@ -79,7 +79,7 @@ public sealed class ProviderCredentialAuditDurabilityTests : IDisposable
         File.Exists(_pendingPath).Should().BeFalse();
         var audit = await File.ReadAllLinesAsync(_auditPath);
         audit.Should().ContainSingle();
-        var originalTimestamp = System.Text.Json.JsonDocument.Parse(journaled).RootElement.GetProperty("timestamp").GetString();
+        var originalTimestamp = System.Text.Json.JsonDocument.Parse(journaled).RootElement.GetProperty("record").GetProperty("timestamp").GetString();
         var replayedRecord = System.Text.Json.JsonDocument.Parse(audit[0]).RootElement;
         replayedRecord.GetProperty("timestamp").GetString().Should().Be(originalTimestamp, "replay keeps the mutation's own time");
         replayedRecord.TryGetProperty("replayedAt", out _).Should().BeTrue();
@@ -172,6 +172,102 @@ public sealed class ProviderCredentialAuditDurabilityTests : IDisposable
         audit.Should().HaveCount(2);
         audit[0].Should().Contain("alpaca");
         audit[1].Should().Contain("polygon");
+    }
+
+    [Fact]
+    public async Task Replay_IntentWhoseVaultWriteNeverCommitted_IsDiscardedNotAppended()
+    {
+        // Simulates a crash between the journal write and the vault write: the journal holds an
+        // "intent" for a save whose credential generation the vault never received. Replaying it as a
+        // completed save would fabricate an audit record.
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(SaveRequest("alpaca", "k", "s"));
+        var auditBefore = await File.ReadAllLinesAsync(_auditPath);
+        var intent = JournalLine(phase: "intent", kind: "provider-save", key: "alpaca", generation: "never-committed-generation",
+            record: "{\"timestamp\":\"2026-10-20T00:00:00+00:00\",\"providerId\":\"alpaca\",\"action\":\"save\",\"actor\":\"ghost\"}");
+        await File.WriteAllTextAsync(_pendingPath, intent + "\n");
+
+        var replayed = await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync();
+
+        replayed.Should().Be(0);
+        File.Exists(_pendingPath).Should().BeFalse("the aborted intent is discarded, not retained as owed audit");
+        (await File.ReadAllLinesAsync(_auditPath)).Should().Equal(auditBefore);
+    }
+
+    [Fact]
+    public async Task Replay_IntentWhoseVaultWriteDidCommit_IsAppendedWithReplayMarker()
+    {
+        // Crash between the vault write and the commit marker: the vault holds the saved generation, so
+        // the intent is proven and must be appended rather than lost.
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(SaveRequest("alpaca", "k", "s"));
+        var generation = (await store.GetStatusAsync("alpaca")).AuditMetadata["credentialGeneration"];
+        var auditBefore = await File.ReadAllLinesAsync(_auditPath);
+        var intent = JournalLine(phase: "intent", kind: "provider-save", key: "alpaca", generation: generation,
+            record: "{\"timestamp\":\"2026-10-20T00:00:00+00:00\",\"providerId\":\"alpaca\",\"action\":\"save\",\"actor\":\"recovered\"}");
+        await File.WriteAllTextAsync(_pendingPath, intent + "\n");
+
+        var replayed = await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync();
+
+        replayed.Should().Be(1);
+        var audit = await File.ReadAllLinesAsync(_auditPath);
+        audit.Should().HaveCount(auditBefore.Length + 1);
+        audit[^1].Should().Contain("\"actor\":\"recovered\"").And.Contain("replayedAt");
+    }
+
+    [Fact]
+    public async Task Replay_DeleteIntentIsProvenByAbsence_AndStaleDeleteIntentIsDiscarded()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(SaveRequest("alpaca", "k", "s"));
+        var record = "{\"timestamp\":\"2026-10-20T00:00:00+00:00\",\"providerId\":\"alpaca\",\"action\":\"delete\",\"actor\":\"x\"}";
+        // alpaca still exists, so a delete intent for it never committed.
+        await File.WriteAllTextAsync(_pendingPath, JournalLine("intent", "provider-delete", "alpaca", null, record) + "\n");
+        (await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync()).Should().Be(0);
+
+        // polygon never existed, so a delete intent for it is consistent with the vault and is appended.
+        var polygonRecord = record.Replace("alpaca", "polygon");
+        await File.WriteAllTextAsync(_pendingPath, JournalLine("intent", "provider-delete", "polygon", null, polygonRecord) + "\n");
+        (await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync()).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task SaveAsync_VaultWriteFailure_RemovesTheJournaledIntent()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(SaveRequest("alpaca", "original-key", "original-secret"));
+        var auditBefore = await File.ReadAllLinesAsync(_auditPath);
+        // Make the primary vault path unwritable: the backup still loads, the atomic replace fails.
+        File.Delete(store.VaultPath);
+        Directory.CreateDirectory(store.VaultPath);
+
+        var act = () => store.SaveAsync(SaveRequest("alpaca", "replacement-key", "replacement-secret"));
+
+        var failure = await Record.ExceptionAsync(act);
+        failure.Should().NotBeNull();
+        File.Exists(_pendingPath).Should().BeFalse("a failed vault write must not leave an intent behind");
+        (await File.ReadAllLinesAsync(_auditPath)).Should().Equal(auditBefore);
+    }
+
+    [Fact]
+    public async Task PendingJournal_RecordsCommittedPhaseWhenAuditAppendFails()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        BlockAuditLog();
+
+        await store.SaveAsync(SaveRequest("alpaca", "k", "s"));
+
+        var line = (await File.ReadAllLinesAsync(_pendingPath)).Single();
+        var journal = System.Text.Json.JsonDocument.Parse(line).RootElement;
+        journal.GetProperty("phase").GetString().Should().Be("committed");
+        journal.GetProperty("check").GetProperty("kind").GetString().Should().Be("provider-save");
+        journal.GetProperty("record").GetProperty("action").GetString().Should().Be("save");
+    }
+
+    private static string JournalLine(string phase, string kind, string key, string? generation, string record)
+    {
+        var generationJson = generation is null ? "null" : $"\"{generation}\"";
+        return $"{{\"phase\":\"{phase}\",\"providerId\":\"{key}\",\"action\":\"{kind}\",\"check\":{{\"kind\":\"{kind}\",\"key\":\"{key}\",\"credentialGeneration\":{generationJson},\"verifiedAt\":null}},\"record\":{record}}}";
     }
 
     private void BlockAuditLog()

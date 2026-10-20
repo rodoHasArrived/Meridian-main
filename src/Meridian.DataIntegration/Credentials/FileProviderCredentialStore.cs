@@ -203,7 +203,9 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
             await CommitWithAuditAsync(
                 auditLine,
                 () => WriteVaultAsync(vault, ct, retainCurrentGenerationAsBackup: retainCurrentGenerationAsBackup),
-                descriptor.ProviderId, "save", ct).ConfigureAwait(false);
+                descriptor.ProviderId, "save",
+                new AuditCommitCheck("provider-save", storageKey, updated.Metadata["credentialGeneration"], null),
+                ct).ConfigureAwait(false);
             return updated.Metadata["credentialGeneration"];
         }
         finally
@@ -390,7 +392,9 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
             var committed = await CommitWithAuditAsync(
                 BuildOAuthAuditLine(providerName, action, scope),
                 () => WriteVaultAsync(vault, ct, discardPreviousGeneration: token is null, retainCurrentGenerationAsBackup: true),
-                providerName, action, ct).ConfigureAwait(false);
+                providerName, action,
+                new AuditCommitCheck(token is null ? "scoped-oauth-delete" : "scoped-oauth-save", key, null, null),
+                ct).ConfigureAwait(false);
             ThrowIfAuditDeferred(committed, providerName, action);
         }
         finally { _gate.Release(); }
@@ -428,7 +432,9 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
             var committed = await CommitWithAuditAsync(
                 BuildOAuthAuditLine(providerName, action, scope: null),
                 () => WriteVaultAsync(vault, ct, discardPreviousGeneration: token is null, retainCurrentGenerationAsBackup: true),
-                providerName, action, ct).ConfigureAwait(false);
+                providerName, action,
+                new AuditCommitCheck(token is null ? "oauth-delete" : "oauth-save", providerName, null, null),
+                ct).ConfigureAwait(false);
             ThrowIfAuditDeferred(committed, providerName, action);
         }
         finally { _gate.Release(); }
@@ -480,19 +486,39 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
     // the journal. Legacy imports keep their own retry-by-sidecar contract and do not journal.
 
     /// <summary>
-    /// Runs <paramref name="writeVault"/> with the audit record journaled ahead of it. Returns
-    /// <c>true</c> when the audit line was appended durably, <c>false</c> when the vault committed
-    /// but the audit append failed and the record stays journaled for replay. A journal write
-    /// failure throws before the vault is touched. Callers hold <c>_gate</c> and the vault lock.
+    /// Runs <paramref name="writeVault"/> with the audit record journaled ahead of it in two phases.
+    /// The record is journaled as an <c>intent</c> before the vault write and marked <c>committed</c>
+    /// after it, so replay never reports a mutation whose vault write did not complete: an intent that
+    /// is still pending after a crash is verified against the vault (<paramref name="check"/>) and is
+    /// appended only when the vault proves the mutation landed. Returns <c>true</c> when the audit line
+    /// was appended durably, <c>false</c> when the vault committed but the append failed and the
+    /// committed record stays journaled for replay. A journal write failure throws before the vault is
+    /// touched; a vault write failure removes the intent again. Callers hold <c>_gate</c> and the vault lock.
     /// </summary>
-    private async Task<bool> CommitWithAuditAsync(string auditLine, Func<Task> writeVault, string providerId, string action, CancellationToken ct)
+    private async Task<bool> CommitWithAuditAsync(
+        string auditLine, Func<Task> writeVault, string providerId, string action, AuditCommitCheck check, CancellationToken ct)
     {
         await ReplayPendingAuditCoreAsync(ct).ConfigureAwait(false);
-        var journal = await ReadPendingAuditLinesAsync(ct).ConfigureAwait(false);
-        journal.Add(auditLine);
+        var journal = await ReadPendingAuditEntriesAsync(ct).ConfigureAwait(false);
+        var entry = PendingAuditEntry.Intent(providerId, action, check, auditLine);
+        journal.Add(entry);
         await WritePendingAuditAsync(journal, ct).ConfigureAwait(false);
 
-        await writeVault().ConfigureAwait(false);
+        try
+        {
+            await writeVault().ConfigureAwait(false);
+        }
+        catch
+        {
+            // The mutation did not commit; the intent must not survive as a would-be audit record.
+            journal.Remove(entry);
+            await WritePendingAuditAsync(journal, CancellationToken.None).ConfigureAwait(false);
+            throw;
+        }
+
+        var committed = entry.AsCommitted();
+        journal[journal.IndexOf(entry)] = committed;
+        await WritePendingAuditAsync(journal, CancellationToken.None).ConfigureAwait(false);
 
         try
         {
@@ -506,7 +532,7 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
             return false;
         }
 
-        journal.Remove(auditLine);
+        journal.Remove(committed);
         await WritePendingAuditAsync(journal, CancellationToken.None).ConfigureAwait(false);
         return true;
     }
@@ -519,8 +545,9 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
 
     /// <summary>
     /// Appends every journaled audit record that a committed mutation still owes to the audit log,
-    /// then removes the journal. Idempotent and safe at host start; the next mutation also replays.
-    /// Returns the number of records replayed.
+    /// then removes the journal. Intents whose vault write cannot be proven are discarded with a
+    /// warning. Idempotent and safe at host start; the next mutation also replays. Returns the number
+    /// of records appended.
     /// </summary>
     public async Task<int> ReplayPendingAuditAsync(CancellationToken ct = default)
     {
@@ -540,19 +567,37 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
 
     private async Task<int> ReplayPendingAuditCoreAsync(CancellationToken ct)
     {
-        var journal = await ReadPendingAuditLinesAsync(ct).ConfigureAwait(false);
+        var journal = await ReadPendingAuditEntriesAsync(ct).ConfigureAwait(false);
         if (journal.Count == 0)
             return 0;
 
         var replayedAt = DateTimeOffset.UtcNow;
         var replayed = 0;
+        var changed = false;
+        ProviderCredentialVault? vault = null;
         try
         {
             while (journal.Count > 0)
             {
                 ct.ThrowIfCancellationRequested();
-                await AppendAuditLineAsync(MarkReplayed(journal[0], replayedAt), CancellationToken.None).ConfigureAwait(false);
+                var entry = journal[0];
+                if (!entry.Committed)
+                {
+                    vault ??= await LoadVaultAsync(ct).ConfigureAwait(false);
+                    if (!entry.Check.IsSatisfiedBy(vault))
+                    {
+                        Log.Warning(
+                            "Discarded a credential audit intent for {ProviderId}/{Action} whose vault mutation never committed",
+                            entry.ProviderId, entry.Action);
+                        journal.RemoveAt(0);
+                        changed = true;
+                        continue;
+                    }
+                }
+
+                await AppendAuditLineAsync(MarkReplayed(entry.Record, replayedAt), CancellationToken.None).ConfigureAwait(false);
                 journal.RemoveAt(0);
+                changed = true;
                 replayed++;
             }
         }
@@ -563,7 +608,7 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         }
         finally
         {
-            if (replayed > 0)
+            if (changed)
                 await WritePendingAuditAsync(journal, CancellationToken.None).ConfigureAwait(false);
         }
 
@@ -603,17 +648,17 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         }
     }
 
-    private async Task<List<string>> ReadPendingAuditLinesAsync(CancellationToken ct)
+    private async Task<List<PendingAuditEntry>> ReadPendingAuditEntriesAsync(CancellationToken ct)
     {
         if (!File.Exists(_pendingAuditPath))
             return [];
         var lines = await File.ReadAllLinesAsync(_pendingAuditPath, ct).ConfigureAwait(false);
-        return lines.Where(static line => !string.IsNullOrWhiteSpace(line)).ToList();
+        return lines.Where(static line => !string.IsNullOrWhiteSpace(line)).Select(PendingAuditEntry.Parse).ToList();
     }
 
-    private async Task WritePendingAuditAsync(List<string> lines, CancellationToken ct)
+    private async Task WritePendingAuditAsync(List<PendingAuditEntry> entries, CancellationToken ct)
     {
-        if (lines.Count == 0)
+        if (entries.Count == 0)
         {
             if (File.Exists(_pendingAuditPath))
             {
@@ -624,9 +669,100 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         }
 
         var created = !File.Exists(_pendingAuditPath);
-        await AtomicFileWriter.WriteAsync(_pendingAuditPath, string.Join("\n", lines) + "\n", ct).ConfigureAwait(false);
+        var content = string.Join("\n", entries.Select(static entry => entry.Serialize())) + "\n";
+        await AtomicFileWriter.WriteAsync(_pendingAuditPath, content, ct).ConfigureAwait(false);
         if (created)
             await AtomicFileWriter.SyncDirectoryAsync(_directoryPath, CancellationToken.None).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// What the vault must contain for a journaled intent to count as a committed mutation. Replay
+    /// evaluates it only for intents left behind by a crash between the journal write and the commit
+    /// marker; a committed entry needs no proof.
+    /// </summary>
+    private sealed record AuditCommitCheck(string Kind, string Key, string? CredentialGeneration, DateTimeOffset? VerifiedAt)
+    {
+        public bool IsSatisfiedBy(ProviderCredentialVault vault) => Kind switch
+        {
+            "provider-save" => vault.Providers.TryGetValue(Key, out var saved)
+                && string.Equals(saved.Metadata.GetValueOrDefault("credentialGeneration"), CredentialGeneration, StringComparison.Ordinal),
+            "provider-delete" => !vault.Providers.ContainsKey(Key),
+            "provider-verify" => vault.Providers.TryGetValue(Key, out var verified) && verified.LastVerifiedAt == VerifiedAt,
+            "oauth-save" => vault.OAuthTokens.ContainsKey(Key),
+            "oauth-delete" => !vault.OAuthTokens.ContainsKey(Key),
+            "scoped-oauth-save" => vault.ScopedOAuthTokens.ContainsKey(Key),
+            "scoped-oauth-delete" => !vault.ScopedOAuthTokens.ContainsKey(Key),
+            _ => false
+        };
+    }
+
+    /// <summary>One journal line: the audit record plus its commit phase and the proof replay needs.</summary>
+    private sealed class PendingAuditEntry
+    {
+        private PendingAuditEntry(string providerId, string action, bool committed, AuditCommitCheck check, string record)
+        {
+            ProviderId = providerId;
+            Action = action;
+            Committed = committed;
+            Check = check;
+            Record = record;
+        }
+
+        public string ProviderId { get; }
+        public string Action { get; }
+        public bool Committed { get; }
+        public AuditCommitCheck Check { get; }
+        /// <summary>The audit log line exactly as it will be appended.</summary>
+        public string Record { get; }
+
+        public static PendingAuditEntry Intent(string providerId, string action, AuditCommitCheck check, string record)
+            => new(providerId, action, committed: false, check, record);
+
+        public PendingAuditEntry AsCommitted() => new(ProviderId, Action, committed: true, Check, Record);
+
+        public string Serialize()
+        {
+            var node = new JsonObject
+            {
+                ["phase"] = Committed ? "committed" : "intent",
+                ["providerId"] = ProviderId,
+                ["action"] = Action,
+                ["check"] = JsonSerializer.SerializeToNode(Check, JsonOptions),
+                ["record"] = JsonNode.Parse(Record)
+            };
+            return node.ToJsonString(JsonOptions);
+        }
+
+        public static PendingAuditEntry Parse(string line)
+        {
+            JsonObject? node = null;
+            try
+            {
+                node = JsonNode.Parse(line) as JsonObject;
+            }
+            catch (JsonException)
+            {
+                // Fall through: an unparseable line is treated as a committed legacy record below.
+            }
+
+            if (node is null || node["phase"] is null || node["record"] is not JsonNode record)
+            {
+                // A line without a phase predates the two-phase journal; nothing can disprove it, so
+                // it keeps the original contract and is appended as written.
+                return new PendingAuditEntry("unknown", "unknown", committed: true,
+                    new AuditCommitCheck("legacy", string.Empty, null, null), line);
+            }
+
+            var check = node["check"] is JsonNode checkNode
+                ? checkNode.Deserialize<AuditCommitCheck>(JsonOptions) ?? new AuditCommitCheck("legacy", string.Empty, null, null)
+                : new AuditCommitCheck("legacy", string.Empty, null, null);
+            return new PendingAuditEntry(
+                node["providerId"]?.GetValue<string>() ?? "unknown",
+                node["action"]?.GetValue<string>() ?? "unknown",
+                committed: string.Equals(node["phase"]?.GetValue<string>(), "committed", StringComparison.Ordinal),
+                check,
+                record.ToJsonString(JsonOptions));
+        }
     }
 
     private async Task AppendAuditLineAsync(string line, CancellationToken ct)
@@ -724,7 +860,9 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
             await CommitWithAuditAsync(
                 BuildAuditLine(descriptor, "delete", actor, BuildStatus(descriptor, null), [], scope),
                 () => WriteVaultAsync(vault, ct, discardPreviousGeneration: true),
-                descriptor.ProviderId, "delete", ct).ConfigureAwait(false);
+                descriptor.ProviderId, "delete",
+                new AuditCommitCheck("provider-delete", storageKey, null, null),
+                ct).ConfigureAwait(false);
         }
         finally
         {
@@ -790,7 +928,9 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
                     [],
                     scope),
                 () => WriteVaultAsync(vault, ct),
-                descriptor.ProviderId, action, ct).ConfigureAwait(false);
+                descriptor.ProviderId, action,
+                new AuditCommitCheck("provider-verify", storageKey, null, verifiedAt),
+                ct).ConfigureAwait(false);
         }
         finally
         {
