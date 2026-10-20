@@ -24,6 +24,7 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
         });
         await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
             portfolioState: new PaperTradingPortfolio(1_000_000m));
+        await oms.StartAsync();
         (await oms.PlaceOrderAsync(LimitOrder(100m, 100m))).Success.Should().BeTrue();
 
         (await oms.ModifyOrderAsync("local", new OrderModification { NewQuantity = 200m, NewLimitPrice = 40m }))
@@ -49,6 +50,7 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
             await using (var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
                 recoveryStore: store, portfolioState: new PaperTradingPortfolio(100_000m)))
             {
+                await oms.StartAsync();
                 (await oms.PlaceOrderAsync(LimitOrder(10m, 100m))).Success.Should().BeTrue();
 
                 var rejected = await oms.ModifyOrderAsync("local", new OrderModification { NewQuantity = 0m });
@@ -78,6 +80,7 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
         };
         await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
             portfolioState: new PaperTradingPortfolio(100_000m));
+        await oms.StartAsync();
         (await oms.PlaceOrderAsync(LimitOrder(10m, 100m))).Success.Should().BeTrue();
 
         var result = await oms.ModifyOrderAsync("local", new OrderModification { NewQuantity = 20m });

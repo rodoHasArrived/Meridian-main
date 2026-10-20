@@ -30,6 +30,7 @@ public sealed class OrderManagementSystemReportStreamTests
             SubmitAck = BuildReport("pending", OrderStatus.Accepted, ExecutionReportType.New, filledQty: 0m, fillPrice: null)
         };
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -72,6 +73,7 @@ public sealed class OrderManagementSystemReportStreamTests
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -118,6 +120,7 @@ public sealed class OrderManagementSystemReportStreamTests
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -167,6 +170,7 @@ public sealed class OrderManagementSystemReportStreamTests
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
             tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -224,6 +228,7 @@ public sealed class OrderManagementSystemReportStreamTests
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -269,6 +274,7 @@ public sealed class OrderManagementSystemReportStreamTests
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -322,6 +328,7 @@ public sealed class OrderManagementSystemReportStreamTests
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -371,6 +378,7 @@ public sealed class OrderManagementSystemReportStreamTests
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -415,6 +423,7 @@ public sealed class OrderManagementSystemReportStreamTests
         await using var oms = new OrderManagementSystem(
             gateway,
             NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
         await using var strategySubscriber = oms.SubscribeLosslessExecutionReports(capacity: 2);
         await using var auditSubscriber = oms.SubscribeLosslessExecutionReports(capacity: 2);
 
@@ -456,6 +465,7 @@ public sealed class OrderManagementSystemReportStreamTests
         await using var oms = new OrderManagementSystem(
             gateway,
             NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
         var accounted = new ConcurrentQueue<ExecutionReport>();
         await using var saturatedSubscriber = oms.SubscribeLosslessExecutionReports(
             capacity: 1,
@@ -513,6 +523,7 @@ public sealed class OrderManagementSystemReportStreamTests
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             options: new OrderManagementSystemOptions { ExecutionChannelCapacity = 2 });
+        await oms.StartAsync();
         var accounted = new ConcurrentQueue<ExecutionReport>();
         var overflowObserved = new TaskCompletionSource(
             TaskCreationOptions.RunContinuationsAsynchronously);
@@ -576,6 +587,7 @@ public sealed class OrderManagementSystemReportStreamTests
         var oms = new OrderManagementSystem(
             gateway,
             NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
         await using var subscriber = oms.SubscribeLosslessExecutionReports(capacity: 1);
         var first = BuildReport(
             "unrecoverable-1",
@@ -662,6 +674,7 @@ public sealed class OrderManagementSystemReportStreamTests
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             sessionPersistence: persistence);
+        await oms.StartAsync();
         await using var subscriber = oms.SubscribeLosslessExecutionReports(capacity: 1);
         var request = new OrderRequest
         {
@@ -704,6 +717,7 @@ public sealed class OrderManagementSystemReportStreamTests
         var oms = new OrderManagementSystem(
             gateway,
             NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
         await using var subscription = oms.SubscribeLosslessExecutionReports(capacity: 1);
 
         var placement = oms.PlaceOrderAsync(new OrderRequest
@@ -747,6 +761,7 @@ public sealed class OrderManagementSystemReportStreamTests
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             options: new OrderManagementSystemOptions { ExecutionChannelCapacity = 1 });
+        await oms.StartAsync();
 
         var first = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -794,6 +809,7 @@ public sealed class OrderManagementSystemReportStreamTests
                 var oms = new OrderManagementSystem(
                     gateway,
                     NullLogger<OrderManagementSystem>.Instance);
+                oms.StartAsync().GetAwaiter().GetResult();
                 oms.Dispose();
             }
             catch (Exception ex)

@@ -276,6 +276,7 @@ public sealed class BrokerageExecutionAdmissionLimitTests
             });
             _provider = services.BuildServiceProvider();
             Oms = _provider.GetRequiredService<IOrderManager>();
+            ((IOrderManagementLifecycle)Oms).StartAsync().GetAwaiter().GetResult();
         }
 
         public async ValueTask DisposeAsync()

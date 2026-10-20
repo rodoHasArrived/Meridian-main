@@ -450,7 +450,9 @@ public sealed partial class BrokerageOrderRecoveryTests
         PaperTradingPortfolio? portfolio = null,
         string? recoveryPath = null,
         ITradeEventPublisher? publisher = null,
-        OrderManagementSystemOptions? options = null) => new(
+        OrderManagementSystemOptions? options = null)
+    {
+        var oms = new OrderManagementSystem(
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
@@ -459,6 +461,9 @@ public sealed partial class BrokerageOrderRecoveryTests
             recoveryStore: recoveryPath is null
                 ? null
                 : new FileBrokerageOrderRecoveryStore(recoveryPath, gateway.GatewayId));
+        oms.StartAsync().GetAwaiter().GetResult();
+        return oms;
+    }
 
     private static OrderRequest Request(string clientOrderId) => new()
     {

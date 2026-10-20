@@ -21,6 +21,7 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
             var gateway = new PendingAmendmentGateway();
             await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
                 recoveryStore: store, portfolioState: new PaperTradingPortfolio(100_000m));
+            await oms.StartAsync();
             (await oms.PlaceOrderAsync(new OrderRequest
             {
                 ClientOrderId = "local",

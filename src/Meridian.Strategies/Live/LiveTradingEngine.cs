@@ -509,8 +509,8 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             // Closing engine launch admission and OMS outbound-order admission occurs under this
             // one lifecycle critical section. OMS operations that crossed their own gate first
             // remain admitted and are drained; later submissions fail closed.
-            var omsShutdown = _orderManager is OrderManagementSystem oms
-                ? oms.DisposeAsync().AsTask()
+            var omsShutdown = _orderManager is IOrderManagementLifecycle lifecycle
+                ? lifecycle.StopAsync()
                 : null;
             _disposeTask = DisposeCoreAsync(launchesDrained, omsShutdown);
             return new ValueTask(_disposeTask);
