@@ -35,6 +35,7 @@ public sealed class KillSwitchTripRaceTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: validator,
             operatorControls: controls);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(Order("AAPL"));
 
@@ -54,6 +55,7 @@ public sealed class KillSwitchTripRaceTests : IDisposable
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             operatorControls: controls);
+        await oms.StartAsync();
 
         // The submission passes every gate and is parked inside the gateway's SubmitOrderAsync,
         // acknowledged by nothing yet — the shape of an order in flight when a trip arrives.
@@ -91,6 +93,7 @@ public sealed class KillSwitchTripRaceTests : IDisposable
             {
                 CancelAllInFlightSettleTimeout = TimeSpan.FromMilliseconds(100)
             });
+        await oms.StartAsync();
 
         var placing = oms.PlaceOrderAsync(Order("AAPL"));
         await gateway.SubmissionStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -125,6 +128,7 @@ public sealed class KillSwitchTripRaceTests : IDisposable
             {
                 CancelAllInFlightSettleTimeout = TimeSpan.FromMilliseconds(100)
             });
+        await oms.StartAsync();
 
         var placing = oms.PlaceOrderAsync(Order("AAPL"));
         await gateway.SubmissionStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -154,6 +158,7 @@ public sealed class KillSwitchTripRaceTests : IDisposable
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             operatorControls: controls);
+        await oms.StartAsync();
 
         var winner = oms.PlaceOrderAsync(Order("AAPL") with { ClientOrderId = "dup-1" });
         await gateway.SubmissionStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
@@ -190,6 +195,7 @@ public sealed class KillSwitchTripRaceTests : IDisposable
             {
                 CancelAllInFlightSettleTimeout = TimeSpan.FromSeconds(30)
             });
+        await oms.StartAsync();
 
         var sweep = await oms.CancelAllAsync().WaitAsync(TimeSpan.FromSeconds(2));
 

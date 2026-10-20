@@ -295,6 +295,7 @@ public sealed partial class IBBrokerageGatewayTests
         var portfolio = new PaperTradingPortfolio(100_000m);
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio, tradeEventPublisher: publisher);
+        await oms.StartAsync();
         (await oms.PlaceOrderAsync(WorkingOrder())).Success.Should().BeTrue();
         OrderRequest? amendmentRequest = null;
         client.OnPlaceOrder = (c, _, request) =>

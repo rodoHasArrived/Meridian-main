@@ -24,6 +24,7 @@ public sealed class KillSwitchBrokerTruthTests
     {
         await using var gateway = new UnionSweepBrokerageGateway();
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -81,6 +82,7 @@ public sealed class KillSwitchBrokerTruthTests
         const string collidingClientId = "11111111-1111-1111-1111-111111111111";
         await using var gateway = new UnionSweepBrokerageGateway();
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -132,6 +134,7 @@ public sealed class KillSwitchBrokerTruthTests
     {
         await using var gateway = new UnionSweepBrokerageGateway();
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         gateway.BrokerOpenOrders.Add(new BrokerOrder
         {
@@ -159,6 +162,7 @@ public sealed class KillSwitchBrokerTruthTests
     {
         await using var gateway = new UnionSweepBrokerageGateway();
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -194,6 +198,7 @@ public sealed class KillSwitchBrokerTruthTests
     {
         await using var gateway = new UnionSweepBrokerageGateway();
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -244,6 +249,7 @@ public sealed class KillSwitchBrokerTruthTests
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -290,6 +296,7 @@ public sealed class KillSwitchBrokerTruthTests
     {
         await using var gateway = new UnionSweepBrokerageGateway();
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -333,6 +340,7 @@ public sealed class KillSwitchBrokerTruthTests
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -380,6 +388,7 @@ public sealed class KillSwitchBrokerTruthTests
             OpenOrdersFailure = new InvalidOperationException("the broker order listing timed out")
         };
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -411,6 +420,7 @@ public sealed class KillSwitchBrokerTruthTests
             OpenOrdersFailure = new InvalidOperationException("connection refused")
         };
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var sweep = await oms.CancelAllAsync();
 
@@ -432,6 +442,7 @@ public sealed class KillSwitchBrokerTruthTests
             ChildOrdersOnSubmit = BracketChildLegs()
         };
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -468,6 +479,7 @@ public sealed class KillSwitchBrokerTruthTests
             ChildOrdersOnSubmit = BracketChildLegs()
         };
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -509,6 +521,7 @@ public sealed class KillSwitchBrokerTruthTests
             ChildOrdersOnSubmit = BracketChildLegs()
         };
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {

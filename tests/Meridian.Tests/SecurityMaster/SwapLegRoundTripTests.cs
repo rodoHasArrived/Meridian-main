@@ -6,7 +6,7 @@ using Meridian.FSharp.SecurityMasterInterop;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using SecurityMasterQueryContract = Meridian.Application.SecurityMaster.ISecurityMasterQueryService;
+using SecurityMasterQueryContract = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.SecurityMaster;
 

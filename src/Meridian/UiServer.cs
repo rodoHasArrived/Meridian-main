@@ -549,9 +549,6 @@ public sealed class UiServer : IAsyncDisposable
                 serviceRegistrationStopwatch.ElapsedMilliseconds,
                 appBuildStopwatch.ElapsedMilliseconds);
 
-            // Wire Polly circuit breaker callbacks to CircuitBreakerStatusService
-            ServiceCompositionRoot.InitializeCircuitBreakerCallbackRouter(_app.Services);
-
             // Standardize fail-closed endpoint failures before authentication and other
             // middleware can short-circuit the request pipeline.
             _app.UseExceptionHandler();

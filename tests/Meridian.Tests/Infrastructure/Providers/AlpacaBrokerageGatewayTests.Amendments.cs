@@ -82,6 +82,7 @@ public sealed partial class AlpacaBrokerageGatewayTests
         var publisher = new AmendmentPublisher();
         using var oms = new OrderManagementSystem(new SimulatedAlpaca(gateway), NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio, tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         (await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -281,6 +282,7 @@ public sealed partial class AlpacaBrokerageGatewayTests
             await using var oms = new OrderManagementSystem(new SimulatedAlpaca(gateway), NullLogger<OrderManagementSystem>.Instance,
                 portfolioState: portfolio, tradeEventPublisher: publisher,
                 recoveryStore: new FileBrokerageOrderRecoveryStore(path, "alpaca"));
+            await oms.StartAsync();
             var reports = (System.Threading.Channels.Channel<ExecutionReport>)typeof(AlpacaBrokerageGateway)
                 .GetField("_reportChannel", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
                 .GetValue(gateway)!;
