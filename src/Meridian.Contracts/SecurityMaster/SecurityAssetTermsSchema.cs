@@ -625,7 +625,11 @@ public static class SecurityAssetTermsSchema
                 Opt("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount", "faceAmount", "principal"),
                 Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.CouponFrequency),
                 Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention", "dayCountBasis").WithConvention(SecurityTermConventionKind.DayCount),
-                Req("exchangesPrincipal", SecurityAssetTermFieldType.Boolean, "principalExchange", "notionalExchange")
+                Req("exchangesPrincipal", SecurityAssetTermFieldType.Boolean, "principalExchange", "notionalExchange"),
+                // Dated {effectiveDate, notional} steps of an amortizing or accreting leg.
+                Opt("notionalSchedule", SecurityAssetTermFieldType.Array, "amortizationSchedule"),
+                // Dated {resetDate, fixingRate} resets of a floating leg, with the fixing once observed.
+                Opt("resetSchedule", SecurityAssetTermFieldType.Array, "fixings")
             ]
         };
 

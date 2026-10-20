@@ -619,12 +619,21 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         for (var i = 0; i < periods.Length; i++)
         {
             var (accrualStart, date) = periods[i];
+            // An amortizing or accreting leg accrues on the notional in effect at the period start;
+            // without a schedule this is the leg notional for every period, as before.
+            var periodNotional = leg.NotionalOn(accrualStart, notional);
             var annualRate = ResolveLegAnnualRate(leg, scenario, curve, accrualStart, asOfDate);
             var interest = annualRate > 0m
-                ? RoundCash(notional * annualRate * DayCountConventions.Fraction(dayCount, accrualStart, date))
+                ? RoundCash(periodNotional * annualRate * DayCountConventions.Fraction(dayCount, accrualStart, date))
                 : 0m;
             var isLast = i == periods.Length - 1;
-            var principal = leg.ExchangesPrincipal && isLast ? RoundCash(notional) : 0m;
+            // With principal exchange, a notional step-down between periods pays the reduction at
+            // the period end, and the final period returns what is left outstanding.
+            var principal = !leg.ExchangesPrincipal
+                ? 0m
+                : isLast
+                    ? RoundCash(periodNotional)
+                    : RoundCash(Math.Max(0m, periodNotional - leg.NotionalOn(date, notional)));
             entries.Add(new StructuredCashFlowScheduleEntry(
                 ToUtcDateTimeOffset(date),
                 principal,
@@ -653,10 +662,14 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             return fixedRate < 0m ? 0m : fixedRate;
         }
 
+        // A period that has already reset uses the fixing recorded for its reset date when the leg
+        // carries a reset schedule; otherwise the retained current fixing, as before.
+        var recordedFixing = accrualStart <= asOfDate ? leg.FixingOn(accrualStart) : null;
         var hasReset = accrualStart <= asOfDate && leg.CurrentIndexRate is not null;
-        var index = !hasReset && curve?.RateAt(accrualStart) is decimal projected
-            ? projected
-            : leg.CurrentIndexRate ?? curve?.RateAt(accrualStart) ?? 0m;
+        var index = recordedFixing
+            ?? (!hasReset && curve?.RateAt(accrualStart) is decimal projected
+                ? projected
+                : leg.CurrentIndexRate ?? curve?.RateAt(accrualStart) ?? 0m);
         var rate = NormalizeAnnualRate(index) + ((leg.SpreadBps ?? 0m) / 10_000m) + ScenarioRateShift(scenario);
         return rate < 0m ? 0m : rate;
     }

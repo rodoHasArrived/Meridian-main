@@ -10888,7 +10888,19 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowNotionalStep"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowResetFixing"
     },
     {
       "kind": "contract-set-member",
@@ -23866,7 +23878,19 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowNotionalStep"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowResetFixing"
     },
     {
       "kind": "contract-set-member",
@@ -35363,6 +35387,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLeg",
       "target": "contract:Meridian.Contracts.SecurityMaster.CashFlowLegRateKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLeg",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowNotionalStep"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLeg",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowResetFixing"
     },
     {
       "kind": "contract-reference",
@@ -50903,7 +50939,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "d01e4278cd593459805d2a6ee3814d4c4d320dbad2d5afc998c239fd822adae2",
+  "fingerprint": "f606b29c7fa26a41b5470709dfe367099b017ca11b025bf3894edcf4334f0d3b",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -61841,10 +61877,22 @@
       "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowLegSchedule"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowNotionalStep",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowNotionalStep"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowResetFixing",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowResetFixing"
     },
     {
       "classification": "enum",
@@ -74435,11 +74483,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3321,
-    "contract_set_memberships": 3998,
-    "edges": 8458,
+    "contract_references": 3323,
+    "contract_set_memberships": 4002,
+    "edges": 8464,
     "foreign_keys": 138,
     "logical_references": 6,
-    "nodes": 4075
+    "nodes": 4077
   }
 }
