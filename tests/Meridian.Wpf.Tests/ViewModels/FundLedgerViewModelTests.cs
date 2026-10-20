@@ -27,7 +27,6 @@ using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Workstation.Models;
-using AppSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
@@ -2706,8 +2705,7 @@ public sealed class FundLedgerViewModelTests
     }
 
     private sealed class StubApplicationSecurityMasterQueryService :
-        AppSecurityMasterQueryService,
-        Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
+        ISecurityMasterQueryService
     {
         public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<SecurityDetailDto?>(null);
