@@ -38,6 +38,10 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   fixings, notionals, payment frequencies, and day-count conventions through serialization, plus
   the principal-exchange flag. Legacy legs may omit these terms. Supplied notionals must be
   positive and directions must be Pay or Receive; missing economics remain unresolved.
+- A swap leg may also carry a `NotionalSchedule` (dated notional steps for an amortizing or
+  accreting leg; positive, strictly ascending, within the swap's effective and maturity dates) and
+  a `ResetSchedule` (strictly ascending reset dates with the fixing once observed). Both are empty
+  for legs that do not track them and serialize as `notionalSchedule` / `resetSchedule` arrays.
 - The bond economic definition carries the record's issue date, payment frequency, call flag and
   first call date, and issuer name in its maturity, coupon, call, and issuer modules, so a replay
   from economic terms alone keeps a callable bond callable.

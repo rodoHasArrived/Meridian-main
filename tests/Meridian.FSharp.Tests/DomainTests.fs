@@ -598,6 +598,8 @@ let private legacySwapLeg : SwapLeg = {
     PaymentFrequency = None
     DayCount = None
     ExchangesPrincipal = false
+    NotionalSchedule = []
+    ResetSchedule = []
 }
 
 let private createSwapCommand legs =
@@ -683,6 +685,51 @@ let ``SecurityMaster accepts swap legs without optional economics`` () =
         leg.GetProperty(field).ValueKind |> should equal JsonValueKind.Null
     leg.GetProperty("fixedRate").GetDecimal() |> should equal 0.0425m
     leg.GetProperty("exchangesPrincipal").GetBoolean() |> should equal false
+
+[<Fact>]
+let ``SecurityMasterSnapshotWrapper serializes swap leg notional and reset schedules`` () =
+    let leg = {
+        legacySwapLeg with
+            NotionalSchedule =
+                [ { EffectiveDate = DateOnly(2026, 1, 15); Notional = 10_000_000m }
+                  { EffectiveDate = DateOnly(2028, 1, 15); Notional = 5_000_000m } ]
+            ResetSchedule =
+                [ { ResetDate = DateOnly(2026, 1, 15); FixingRate = Some 0.0375m }
+                  { ResetDate = DateOnly(2026, 4, 15); FixingRate = None } ]
+    }
+    let wrapper = createSwapSnapshot [ leg ]
+    use assetDocument = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    let payload = assetDocument.RootElement.GetProperty("legs").[0]
+    let notionalSchedule = payload.GetProperty("notionalSchedule")
+    notionalSchedule.GetArrayLength() |> should equal 2
+    notionalSchedule.[1].GetProperty("effectiveDate").GetString() |> should equal "2028-01-15"
+    notionalSchedule.[1].GetProperty("notional").GetDecimal() |> should equal 5_000_000m
+    let resetSchedule = payload.GetProperty("resetSchedule")
+    resetSchedule.GetArrayLength() |> should equal 2
+    resetSchedule.[0].GetProperty("resetDate").GetString() |> should equal "2026-01-15"
+    resetSchedule.[0].GetProperty("fixingRate").GetDecimal() |> should equal 0.0375m
+    resetSchedule.[1].GetProperty("fixingRate").ValueKind |> should equal JsonValueKind.Null
+
+[<Fact>]
+let ``SecurityMaster rejects malformed swap leg schedules`` () =
+    let leg = {
+        legacySwapLeg with
+            NotionalSchedule =
+                [ { EffectiveDate = DateOnly(2027, 1, 15); Notional = 0m }
+                  { EffectiveDate = DateOnly(2026, 1, 15); Notional = 1m }
+                  { EffectiveDate = DateOnly(2032, 1, 15); Notional = 1m } ]
+            ResetSchedule =
+                [ { ResetDate = DateOnly(2026, 4, 15); FixingRate = None }
+                  { ResetDate = DateOnly(2026, 4, 15); FixingRate = None } ]
+    }
+    match SecurityMaster.create (createSwapCommand [ leg ]) with
+    | Error errors ->
+        let codes = errors |> List.map (fun error -> error.Code)
+        codes |> should contain "swap_leg_notional_schedule_invalid"
+        codes |> should contain "swap_leg_notional_schedule_order_invalid"
+        codes |> should contain "swap_leg_notional_schedule_range_invalid"
+        codes |> should contain "swap_leg_reset_schedule_order_invalid"
+    | Ok _ -> failwith "Expected malformed swap leg schedules to be rejected."
 
 [<Theory>]
 [<InlineData(0)>]
