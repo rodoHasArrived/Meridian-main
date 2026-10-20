@@ -1294,7 +1294,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// nested-coupon fallback, so the record reads as <c>Fixed(couponRate ?? 0)</c> and
     /// re-serializing flattens it to <c>couponType: "Fixed"</c>, dropping the nested index, spread,
     /// and day count. Nothing in this repo writes that shape, but the projection store reads it
-    /// deliberately — <c>PostgresSecurityMasterStore.TryBuildBondProjection</c> falls back to
+    /// deliberately — the Bond descriptor in <c>SecurityTermsProjectionRegistry</c> falls back to
     /// <c>coupon.kind</c>/<c>rate</c>/<c>index</c> "for externally-authored payloads that still use
     /// it", with a regression test pinning the behaviour — so such rows are expected to exist.
     /// <para>The same hole is open one step wider, and a present <c>couponType</c> does not close
@@ -1415,7 +1415,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
 
     /// <summary>
     /// The legacy nested <c>coupon</c> members and the flat key each corresponds to, mirroring the
-    /// per-field fallback in <c>PostgresSecurityMasterStore.TryBuildBondProjection</c>. That
+    /// per-field fallback in the Bond descriptor in <c>SecurityTermsProjectionRegistry</c>. That
     /// per-field shape is why the nested object cannot be judged present-or-absent: a row can carry
     /// its discriminant flat and one value only nested.
     /// </summary>
@@ -1487,7 +1487,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     /// InflationLinked arms, and those arms READ the key, so they are judged by
     /// <see cref="CodecCanRead"/> and never reach this branch at all. The arms that do reach it
     /// leave <c>BondTerms.couponRate</c> as <c>None</c>, so re-serializing writes
-    /// <c>couponRate: null</c> while <c>TryBuildBondProjection</c> reads the flat key without
+    /// <c>couponRate: null</c> while the Bond projection reads the flat key without
     /// consulting the arm — a stored <c>fixed_coupon_rate</c> of 0 becomes NULL. That is a stated
     /// value turning into an absence, refused like any other.</para>
     /// </summary>

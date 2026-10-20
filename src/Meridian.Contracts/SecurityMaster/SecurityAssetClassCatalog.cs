@@ -92,7 +92,7 @@ public static class SecurityAssetClassCatalog
             InstrumentTypes: [InstrumentType.Bond],
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.ContractualSchedule,
-            ProjectionKind: SecurityTermsProjectionKind.Specialized,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
