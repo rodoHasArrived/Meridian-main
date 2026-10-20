@@ -37,6 +37,19 @@ public enum SecurityAssetProfileAccountingImpactHintDto
     IncomeAccrual
 }
 
+/// <param name="IsProjected">
+/// Declared promotion intent, NOT a live capability: the profile author's statement that this field
+/// should become a typed read-model column if the profile is promoted to a first-class asset
+/// package. No projection writer reads it today — profile fields live in the
+/// <c>asset_specific_terms</c> document and are not projected to columns, whatever this flag says.
+/// It is counted into the promotion-readiness score and shown as a "declared projected" count.
+/// </param>
+/// <param name="IsSearchable">
+/// Declared promotion intent, NOT a live capability: the author's statement that the field should
+/// get indexed lookup support when promoted. No index or search predicate consults it today —
+/// <c>SecurityMasterQueryService.SearchAsync</c> scans every profile field in memory regardless of
+/// this flag. It is counted into the promotion-readiness score and nowhere else.
+/// </param>
 public sealed record SecurityAssetProfileFieldDefinitionDto(
     string Key,
     string Label,
