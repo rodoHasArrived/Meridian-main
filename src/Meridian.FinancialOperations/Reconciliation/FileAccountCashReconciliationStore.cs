@@ -153,9 +153,9 @@ public sealed class FileAccountCashReconciliationStore
             {
                 var scope = await ReadUnregisteredScopeAsync(file, Path.GetFileNameWithoutExtension(file), ct).ConfigureAwait(false);
                 var baseline = await ReadScopeFileAsync(scope, file, ct).ConfigureAwait(false);
-                // Baselines are committed after their active file. They are independent evidence of
-                // retained history even when its index entry was also lost in a partial restore.
-                if ((baseline.Runs.Count != 0 || baseline.Cases.Count != 0) && !File.Exists(ScopeStatePath(scope)))
+                // Baselines are committed only beside their active file. They are independent evidence
+                // of retained history even when its index entry was also lost in a partial restore.
+                if (!File.Exists(ScopeStatePath(scope)))
                     throw new InvalidDataException("A retained migration baseline has no active scope file; restore the complete backup set before retrying.");
                 ValidateMigratedPrefix(baseline, ForScope(legacy, scope));
             }
@@ -215,8 +215,8 @@ public sealed class FileAccountCashReconciliationStore
             foreach (var file in Directory.EnumerateFiles(MigrationBaselineDirectory, "*.json"))
             {
                 var scope = await ReadUnregisteredScopeAsync(file, Path.GetFileNameWithoutExtension(file), ct).ConfigureAwait(false);
-                var baseline = await ReadScopeFileAsync(scope, file, ct).ConfigureAwait(false);
-                if ((baseline.Runs.Count != 0 || baseline.Cases.Count != 0) && !index.Contains(scope))
+                await ReadScopeFileAsync(scope, file, ct).ConfigureAwait(false);
+                if (!index.Contains(scope))
                     throw new InvalidDataException("Retained migration evidence has no active scope; restore retained history before retrying.");
             }
         }
@@ -316,7 +316,10 @@ public sealed class FileAccountCashReconciliationStore
         var migrated = await ReadLegacyAsync(MigratedLegacyStatePath, ct).ConfigureAwait(false);
         var baseline = ForScope(migrated, scope);
         ValidateMigratedPrefix(baseline, retained);
-        await WriteMigrationBaselineAsync(scope, baseline, ct).ConfigureAwait(false);
+        // A baseline is committed only beside an existing active file, so a baseline without its file
+        // is always lost history rather than a scope that was merely queried or never committed.
+        if (File.Exists(ScopeStatePath(scope)))
+            await WriteMigrationBaselineAsync(scope, baseline, ct).ConfigureAwait(false);
     }
 
     /// <summary>A scope retained in migration evidence cannot restart as new.</summary>
@@ -393,8 +396,8 @@ public sealed class FileAccountCashReconciliationStore
     /// <summary>
     /// Caller holds the store lock. A migrated legacy file is retained evidence: when the marker, index
     /// and scope files are lost beside it, provisioning fails closed instead of restarting history.
-    /// Every migration baseline is the same evidence, even an empty one: it is written only once a
-    /// scope was used after migration, so the scope may have acquired durable history since.
+    /// Every migration baseline is the same evidence, even an empty one: it is committed only beside
+    /// its scope's active file, so a baseline without that file always means lost history.
     /// </summary>
     private async Task RefuseRetainedMigratedHistoryAsync(CancellationToken ct)
     {

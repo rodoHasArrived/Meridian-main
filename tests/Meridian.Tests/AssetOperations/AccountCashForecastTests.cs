@@ -558,11 +558,13 @@ public sealed class AccountCashForecastTests : IDisposable
         Directory.Exists(Path.Combine(StoreDirectory, "scopes")).Should().BeFalse();
     }
 
-    [Fact]
-    public async Task Store_EmptyMigrationBaselineBesideALostLayoutRefusesProvisioning()
+    [Theory]
+    [InlineData("layout-lost")]
+    [InlineData("empty-index-left")]
+    public async Task Store_EmptyMigrationBaselineBesideALostLayoutRefusesProvisioning(string remains)
     {
-        // An empty pre-partition store migrates to an empty .migrated file; the first scope used after
-        // that records an empty baseline before its active file and index entry are committed.
+        // An empty pre-partition store migrates to an empty .migrated file; a scope first used after
+        // that records an empty baseline, but only once its active file exists.
         var first = AccountCashForecastEngine.Build(Request([], 100m));
         Directory.CreateDirectory(StoreDirectory);
         var legacyPath = Path.Combine(StoreDirectory, "snapshots.json");
@@ -573,24 +575,39 @@ public sealed class AccountCashForecastTests : IDisposable
         await File.WriteAllTextAsync(markerPath, "meridian-account-cash-forecast-v1");
         var store = new FileAccountCashForecastStore(_dataRoot);
         await store.InitializeAsync();
+        var emptyIndex = await File.ReadAllBytesAsync(indexPath);
+        (await store.GetHistoryAsync(Scope)).Should().BeEmpty();
+        File.Exists(baselinePath).Should().BeFalse("a queried scope without an active file leaves no baseline");
         await store.AppendAsync(first);
+        (await store.GetHistoryAsync(Scope)).Should().ContainSingle();
         File.Exists(baselinePath).Should().BeTrue();
         var baseline = await File.ReadAllBytesAsync(baselinePath);
         var backupScope = await File.ReadAllBytesAsync(ScopeStatePath(Scope));
         var backupIndex = await File.ReadAllBytesAsync(indexPath);
 
-        // A partial restore keeps the empty migrated file and the empty baseline but loses the marker,
-        // index and scope files; the baseline alone proves the scope existed and may hold later history.
-        File.Delete(markerPath);
-        File.Delete(indexPath);
+        // A partial restore keeps the empty migrated file and the empty baseline but loses the scope
+        // file, with or without the marker and index; the baseline alone proves later history existed.
         Directory.Delete(Path.Combine(StoreDirectory, "scopes"), recursive: true);
-        var reprovision = () => new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
-        await reprovision.Should().ThrowAsync<InvalidOperationException>();
-        File.Exists(markerPath).Should().BeFalse();
-        File.Exists(indexPath).Should().BeFalse();
+        if (remains == "layout-lost")
+        {
+            File.Delete(markerPath);
+            File.Delete(indexPath);
+            var reprovision = () => new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
+            await reprovision.Should().ThrowAsync<InvalidOperationException>();
+            File.Exists(markerPath).Should().BeFalse();
+            File.Exists(indexPath).Should().BeFalse();
+            var read = () => new FileAccountCashForecastStore(_dataRoot).GetHistoryAsync(Scope);
+            await read.Should().ThrowAsync<InvalidOperationException>();
+        }
+        else
+        {
+            await File.WriteAllBytesAsync(indexPath, emptyIndex);
+            var reprovision = () => new FileAccountCashForecastStore(_dataRoot).InitializeAsync();
+            await reprovision.Should().ThrowAsync<InvalidDataException>();
+            (await File.ReadAllBytesAsync(indexPath)).Should().Equal(emptyIndex);
+            Directory.Exists(Path.Combine(StoreDirectory, "scopes")).Should().BeFalse();
+        }
         (await File.ReadAllBytesAsync(baselinePath)).Should().Equal(baseline);
-        var read = () => new FileAccountCashForecastStore(_dataRoot).GetHistoryAsync(Scope);
-        await read.Should().ThrowAsync<InvalidOperationException>();
 
         // Restoring the complete scope layout and marker from the same backup set recovers the history without a reset.
         Directory.CreateDirectory(Path.Combine(StoreDirectory, "scopes"));
