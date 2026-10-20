@@ -1072,13 +1072,16 @@ public sealed partial class ProviderLedgerReconciliationService
 
     /// <summary>
     /// Which corporate-action evidence a provider position owes is a fact about its asset class,
-    /// read from two catalogs rather than from the label's spelling: the position's resolved
-    /// Security Master class when it has one, else the provider label resolved through the asset
-    /// class catalog's names and aliases, then the corporate-action types the type catalog declares
-    /// for that class. Split-posting types mark the classes that owe split and dividend evidence;
-    /// factor-paydown and redemption postings mark the classes that owe factor and coupon schedules.
-    /// Substring-matching the label ("equity", "loan", "mortgage") classified whatever a provider
-    /// happened to call a position, and nothing the catalog spelled differently.
+    /// read from two catalogs rather than from the label's spelling: the provider label resolved
+    /// through the asset class catalog's names and aliases, else the position's resolved Security
+    /// Master class, then the corporate-action types the type catalog declares for that class.
+    /// Split-posting types mark the classes that owe split and dividend evidence; factor-paydown and
+    /// redemption postings mark the classes that owe factor and coupon schedules. The provider label
+    /// is consulted first because it describes the instrument as the broker holds it, whereas the
+    /// resolved reference may be a symbol-level (Inferred) match; the reference only classifies a
+    /// position whose label names no catalog class ("Common Stock"). Substring-matching the label
+    /// ("equity", "loan", "mortgage") classified whatever a provider happened to call a position,
+    /// and nothing the catalog spelled differently.
     /// </summary>
     private static bool IsEquityAssetClass(FundAccountBrokeragePositionDto position)
         => OwesCorporateActionPosting(position, CorporateActionLedgerPostingKind.SplitMemo);
@@ -1093,8 +1096,8 @@ public sealed partial class ProviderLedgerReconciliationService
         FundAccountBrokeragePositionDto position,
         params CorporateActionLedgerPostingKind[] postingKinds)
     {
-        if (!SecurityAssetClassCatalog.TryGet(position.Security?.AssetClass, out var descriptor) &&
-            !SecurityAssetClassCatalog.TryResolveLabel(position.AssetClass, out descriptor))
+        if (!SecurityAssetClassCatalog.TryResolveLabel(position.AssetClass, out var descriptor) &&
+            !SecurityAssetClassCatalog.TryGet(position.Security?.AssetClass, out descriptor))
         {
             return false;
         }
