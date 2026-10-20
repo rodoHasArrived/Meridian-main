@@ -102,7 +102,7 @@ export function buildAssetProfileGovernancePanel(
 
   const approvedProfiles = profiles.filter((profile) => profile.status === "Approved");
   const projectedFieldCount = approvedProfiles.reduce(
-    (sum, profile) => sum + profile.fields.filter((field) => field.isProjected || field.isSearchable).length,
+    (sum, profile) => sum + profile.fields.filter((field) => field.isProjected).length,
     0
   );
   const requiredIdentifierCount = approvedProfiles.reduce(
@@ -126,7 +126,7 @@ export function buildAssetProfileGovernancePanel(
     canCreateSecurity: approvedProfiles.length > 0,
     createDisabledReason: approvedProfiles.length > 0 ? null : "Approve an asset profile before creating custom assets.",
     rows: profiles.map((profile) => {
-      const projectedFields = profile.fields.filter((field) => field.isProjected || field.isSearchable).length;
+      const projectedFields = profile.fields.filter((field) => field.isProjected).length;
       const requiredIdentifiers = profile.identifierPreferences
         .filter((preference) => preference.isRequiredForClose)
         .map((preference) => preference.kind);
