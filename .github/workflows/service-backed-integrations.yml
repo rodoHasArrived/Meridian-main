@@ -11,6 +11,27 @@ on:
         description: Days to retain the test, coverage and schema evidence.
         type: number
         default: 14
+      reuse-artifact-id:
+        description: Immutable evidence artifact ID from a successful caller dependency in this run.
+        type: string
+        default: ""
+      reuse-artifact-name:
+        type: string
+        default: ""
+      reuse-receipt-sha256:
+        type: string
+        default: ""
+      reuse-result:
+        description: Result of the dependency that produced the evidence.
+        type: string
+        default: ""
+    outputs:
+      artifact-id:
+        value: ${{ jobs.evidence-gate.outputs.artifact-id }}
+      artifact-name:
+        value: ${{ jobs.evidence-gate.outputs.artifact-name }}
+      receipt-sha256:
+        value: ${{ jobs.evidence-gate.outputs.receipt-sha256 }}
 
 # This workflow runs untrusted PR code with a read-only token and disposable service
 # credentials. It does not accept production connections or inherit caller secrets.
@@ -26,12 +47,19 @@ env:
 
 jobs:
   deterministic-integrations:
+    # Any supplied reuse input selects verification; incomplete inputs must fail,
+    # never silently fall back to tests or satisfy the gate with a skipped job.
+    if: ${{ inputs.reuse-artifact-id == '' && inputs.reuse-artifact-name == '' && inputs.reuse-receipt-sha256 == '' && inputs.reuse-result == '' }}
     name: deterministic PostgreSQL integration and coverage evidence
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+      artifact-name: ${{ steps.receipt.outputs.artifact-name }}
+      receipt-sha256: ${{ steps.receipt.outputs.receipt-sha256 }}
     services:
       postgres:
-        image: postgres:17
+        image: postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: meridian-certification
@@ -84,7 +112,7 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/NuGet.Config', 'global.json') }}
+          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/*.packages.lock.json', '**/NuGet.Config', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-v1-
 
@@ -109,7 +137,7 @@ jobs:
             --no-restore \
             --collect:"XPlat Code Coverage" \
             --settings tests/coverlet.runsettings \
-            --results-directory artifacts/test-results/production-certification \
+            --results-directory artifacts/test-results/production-certification/meridian-integrations \
             --logger "trx;LogFilePrefix=meridian-integrations" \
             --filter "Category=Integration&Category!=LiveProvider"
 
@@ -122,7 +150,7 @@ jobs:
             --no-restore \
             --collect:"XPlat Code Coverage" \
             --settings tests/coverlet.runsettings \
-            --results-directory artifacts/test-results/production-certification \
+            --results-directory artifacts/test-results/production-certification/direct-lending-integrations \
             --logger "trx;LogFilePrefix=direct-lending-integrations" \
             --filter "Category=Integration"
 
@@ -173,7 +201,17 @@ jobs:
             --command "SELECT table_schema, table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND (table_name LIKE '%migration%' OR table_name LIKE '%schema%') ORDER BY table_schema, table_name" \
             > "$evidence_dir/migration-ledger-inventory.csv"
 
+      - name: Bind successful integration evidence to this commit and run attempt
+        id: receipt
+        env:
+          EVIDENCE_ARTIFACT_NAME: ${{ inputs.artifact-name }}-${{ github.run_number }}-${{ github.run_attempt }}
+        run: >-
+          python build/scripts/ci/integration_evidence.py create
+          --results-dir artifacts/test-results/production-certification
+          --artifact-name "$EVIDENCE_ARTIFACT_NAME"
+
       - name: Upload deterministic integration evidence
+        id: upload
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -181,3 +219,101 @@ jobs:
           path: artifacts/test-results/production-certification/
           if-no-files-found: error
           retention-days: ${{ inputs.retention-days }}
+
+  reuse-integrations:
+    name: verify coordinated integration evidence
+    if: ${{ inputs.reuse-artifact-id != '' || inputs.reuse-artifact-name != '' || inputs.reuse-receipt-sha256 != '' || inputs.reuse-result != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+      artifact-name: ${{ steps.receipt.outputs.artifact-name }}
+      receipt-sha256: ${{ steps.receipt.outputs.receipt-sha256 }}
+    steps:
+      - name: Check out exact validation implementation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Require complete successful producer identity
+        env:
+          SOURCE_ARTIFACT_ID: ${{ inputs.reuse-artifact-id }}
+          SOURCE_ARTIFACT_NAME: ${{ inputs.reuse-artifact-name }}
+          SOURCE_RECEIPT_SHA256: ${{ inputs.reuse-receipt-sha256 }}
+          SOURCE_RESULT: ${{ inputs.reuse-result }}
+        run: |
+          python - <<'PY'
+          import os, re
+          valid = (
+              os.environ["SOURCE_RESULT"] == "success"
+              and re.fullmatch(r"[1-9][0-9]*", os.environ["SOURCE_ARTIFACT_ID"])
+              and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,199}", os.environ["SOURCE_ARTIFACT_NAME"])
+              and re.fullmatch(r"[0-9a-f]{64}", os.environ["SOURCE_RECEIPT_SHA256"])
+          )
+          if not valid:
+              raise SystemExit("A successful producer and complete immutable artifact identity are required")
+          PY
+      - name: Download immutable evidence from this workflow run
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ inputs.reuse-artifact-id }}
+          path: artifacts/test-results/production-certification
+          merge-multiple: true
+      - name: Revalidate raw tests, coverage, schema and exact producer receipt
+        id: receipt
+        env:
+          SOURCE_ARTIFACT_ID: ${{ inputs.reuse-artifact-id }}
+          SOURCE_ARTIFACT_NAME: ${{ inputs.reuse-artifact-name }}
+          SOURCE_RECEIPT_SHA256: ${{ inputs.reuse-receipt-sha256 }}
+          SOURCE_RESULT: ${{ inputs.reuse-result }}
+          EVIDENCE_ARTIFACT_NAME: ${{ inputs.artifact-name }}-${{ github.run_number }}-${{ github.run_attempt }}
+        run: >-
+          python build/scripts/ci/integration_evidence.py reuse
+          --results-dir artifacts/test-results/production-certification
+          --artifact-name "$EVIDENCE_ARTIFACT_NAME"
+      - name: Retain verified certification evidence
+        id: upload
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.artifact-name }}-${{ github.run_number }}-${{ github.run_attempt }}
+          path: artifacts/test-results/production-certification/
+          if-no-files-found: error
+          retention-days: ${{ inputs.retention-days }}
+
+  evidence-gate:
+    name: require verified integration evidence
+    needs: [deterministic-integrations, reuse-integrations]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      artifact-id: ${{ steps.result.outputs.artifact-id }}
+      artifact-name: ${{ steps.result.outputs.artifact-name }}
+      receipt-sha256: ${{ steps.result.outputs.receipt-sha256 }}
+    steps:
+      - name: Require exactly one successful evidence path
+        id: result
+        env:
+          FRESH_RESULT: ${{ needs.deterministic-integrations.result }}
+          REUSE_RESULT: ${{ needs.reuse-integrations.result }}
+          FRESH_OUTPUTS: ${{ toJSON(needs.deterministic-integrations.outputs) }}
+          REUSE_OUTPUTS: ${{ toJSON(needs.reuse-integrations.outputs) }}
+        run: |
+          python - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          results = (os.environ["FRESH_RESULT"], os.environ["REUSE_RESULT"])
+          if results not in (("success", "skipped"), ("skipped", "success")):
+              raise SystemExit("Integration evidence is missing, failed, cancelled, or ambiguous: " + repr(results))
+          outputs = json.loads(os.environ["FRESH_OUTPUTS" if results[0] == "success" else "REUSE_OUTPUTS"])
+          patterns = {"artifact-id": r"[1-9][0-9]*", "artifact-name": r"[A-Za-z0-9][A-Za-z0-9_.-]{0,199}", "receipt-sha256": r"[0-9a-f]{64}"}
+          if any(not re.fullmatch(pattern, outputs.get(key, "")) for key, pattern in patterns.items()):
+              raise SystemExit("Successful integration job did not produce complete evidence outputs")
+          with Path(os.environ["GITHUB_OUTPUT"]).open("a") as stream:
+              for key in patterns:
+                  stream.write(f"{key}={outputs[key]}\n")
+          PY
