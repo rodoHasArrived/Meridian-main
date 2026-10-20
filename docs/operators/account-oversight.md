@@ -33,7 +33,10 @@ Both file stores partition retained history per exact account scope. Each store 
 `initialized` provisioning marker, a `scope-index.json` registry of retained scopes, and one
 `scopes/<sha256>.json` history file plus `scopes/<sha256>.lock` per scope, where the hash is the
 canonical scope identity (tenant, company, account and ledger book, plus base currency for forecasts).
-A corrupt or missing scope file blocks only that scope; other accounts continue to read and capture.
+A corrupt or missing scope file blocks only that scope's reads and captures; other accounts continue
+to read and capture. Provisioning is store-wide: `POST oversight/provision` validates every registered
+scope file and migration baseline in both stores, so it answers `503` for any account while any
+scope's retained state is corrupt or missing, until that scope is restored.
 The `scope-index.json` registry and the `initialized` marker are read before any scope is selected,
 so a corrupt or missing index or marker blocks every account in that store until it is restored.
 These stores live on the host's local data root and are not shared between hosts: run the account
@@ -230,8 +233,10 @@ Preserve the original run/snapshot ID and response. Conflicting input under an e
 requires a new correction, rather than replacement. On missing/corrupt durable state, stop capture
 and restore the complete history from backup; provisioning is not a history-reset operation.
 A corrupt or missing scope file answers `503` for both forecasts and cash continuity on the affected
-account only. A corrupt or missing `scope-index.json` answers `503` for every account in that store,
-because the index is read before any scope is selected. Unprovisioned retained history answers `409`,
+account's scoped reads and captures only; provisioning for any account answers `503` while it exists,
+because provisioning validates every registered scope and baseline before completing. A corrupt or
+missing `scope-index.json` answers `503` for every account in that store, because the index is read
+before any scope is selected. Unprovisioned retained history answers `409`,
 including a `.migrated` legacy file left without its marker, index and scope files: provisioning never
 recreates an empty layout beside retained evidence. While the marker and index survive, every scope
 the `.migrated` file retains must stay registered with its scope file; a lost file for such a scope

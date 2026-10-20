@@ -1,6 +1,6 @@
 {
   "total_files": 742,
-  "total_lines": 164933,
+  "total_lines": 164940,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2966,7 +2966,7 @@
     },
     {
       "path": "docs/operators/account-oversight.md",
-      "line_count": 270,
+      "line_count": 275,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5918,7 +5918,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 1074,
+      "line_count": 1075,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6086,7 +6086,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1219,
+      "line_count": 1220,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

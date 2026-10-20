@@ -27,8 +27,9 @@ tenant/company/account/book/base-currency scope: one content-hashed `scopes/<sha
 `.lock` per scope under `asset-operations/account-cash-forecasts`, a `scope-index.json` registry
 rewritten only when a scope first appears, atomic replacement and a 30-second cross-process lease.
 Explicit `InitializeAsync` provisioning is required; a missing or corrupt scope file fails closed for
-that scope without blocking other scopes, a missing or corrupt index or marker fails closed for the
-whole store, and neither can silently restart history. A legacy single-file `snapshots.json` is
+that scope's reads and appends without blocking other scopes (provisioning validates every scope and
+baseline, so it fails for the whole store until that scope is restored), a missing or corrupt index
+or marker fails closed for the whole store, and neither can silently restart history. A legacy single-file `snapshots.json` is
 validated, split losslessly and renamed `snapshots.json.migrated`, never deleted; a `.migrated` file
 left beside a lost layout refuses provisioning rather than restarting history, and a scope it retains
 is never treated as new while its scope file is missing. Once an append is
