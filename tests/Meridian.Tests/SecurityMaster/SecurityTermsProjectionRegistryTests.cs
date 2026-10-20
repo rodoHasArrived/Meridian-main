@@ -787,7 +787,8 @@ public sealed class SecurityTermsProjectionRegistryTests
                 [
                     new(
                         TableName: "deposit_probe_lifecycle_projection",
-                        Columns: [SecurityTermsProjectionColumn.Gate("maturity_date", "maturity", SecurityAssetTermFieldType.Date)])
+                        // depositType is Required, so the only objection is the gate's placement.
+                        Columns: [SecurityTermsProjectionColumn.Gate("deposit_type", "depositType", SecurityAssetTermFieldType.String)])
                 ])
         ]);
 
