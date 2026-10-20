@@ -518,8 +518,8 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
             dedicatedBehaviorNeeds.Add("typed projection");
             signals.Add(new SecurityAssetProfilePromotionSignalDto(
                 "profile-fields.projected",
-                "Projected field surface",
-                $"{projectedFields} profile fields are projected and should become typed read-model columns if usage grows.",
+                "Declared projected field surface",
+                $"{projectedFields} profile fields are declared projected (intent only; no profile field is projected today) and should become typed read-model columns if usage grows.",
                 projectedFields >= 6
                     ? SecurityAssetProfilePromotionSignalSeverityDto.Strong
                     : SecurityAssetProfilePromotionSignalSeverityDto.Advisory));
@@ -532,8 +532,8 @@ public sealed class SecurityAssetProfileGovernanceService : ISecurityAssetProfil
             dedicatedBehaviorNeeds.Add("indexed search");
             signals.Add(new SecurityAssetProfilePromotionSignalDto(
                 "profile-fields.searchable",
-                "Searchable field coverage",
-                $"{searchableFields} fields are searchable and may need indexed package-specific lookup support.",
+                "Declared searchable field coverage",
+                $"{searchableFields} fields are declared searchable (intent only; profile search is an unindexed in-memory scan today) and may need indexed package-specific lookup support.",
                 SecurityAssetProfilePromotionSignalSeverityDto.Advisory));
         }
 

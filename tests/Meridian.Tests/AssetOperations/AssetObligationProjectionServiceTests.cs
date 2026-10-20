@@ -338,6 +338,122 @@ public sealed class AssetObligationProjectionServiceTests
             "the scheduled factor must scale principal on the canonical stored path");
     }
 
+    [Fact]
+    public void ProjectFromSecurityMaster_Deposit_IsProjectedAsContractualScheduleFixedIncome()
+    {
+        // The catalog declares Deposit as ContractualSchedule, the same cash-flow behaviour as a
+        // bond or CD; the old hand-written fixed-income list left it out, so a term deposit got no
+        // projected maturity flow and no fixed-income obligations at all.
+        var security = MakeSecurity("Deposit", "Meridian 12M Term Deposit", new
+        {
+            depositType = "Term",
+            institutionName = "Meridian Bank",
+            maturity = "2031-06-15",
+            interestRate = 0.045m,
+            isCallable = false
+        });
+
+        var detail = new AssetObligationProjectionService().ProjectFromSecurityMaster(security);
+
+        detail.ProjectedCashFlows.Should().Contain(flow => flow.FlowType == "Maturity");
+        detail.TermsObligationsTimeline!.Events.Should().Contain(evt => evt.EventKind == "CorporateActionCheckpoint");
+        detail.TermsObligationsTimeline.Events.Should().NotContain(evt => evt.EventKind == "TrusteeReport",
+            "trustee reports are a factor-amortizing obligation, not a contractual-schedule one");
+    }
+
+    [Fact]
+    public void ProjectFromSecurityMaster_Deposit_ReadsAFractionalInterestRateAsPercentagePoints()
+    {
+        // Deposit interestRate is written both as a fraction (0.045) and as percentage points (4.5);
+        // the bond projector expects percentage points, so the two spellings must project the same
+        // interest flows instead of the fraction producing a coupon a hundred times too small.
+        static SecurityDetailDto Deposit(decimal interestRate) => MakeSecurity("Deposit", "Meridian 12M Term Deposit", new
+        {
+            depositType = "Term",
+            institutionName = "Meridian Bank",
+            maturity = "2091-06-15",
+            interestRate,
+            par = 1_000_000m,
+            isCallable = false
+        });
+
+        var fraction = new AssetObligationProjectionService().ProjectFromSecurityMaster(Deposit(0.045m));
+        var percentagePoints = new AssetObligationProjectionService().ProjectFromSecurityMaster(Deposit(4.5m));
+
+        var interestFlows = fraction.ProjectedCashFlows.Where(static flow => flow.FlowType != "Maturity").ToList();
+        interestFlows.Should().NotBeEmpty("a term deposit with a rate accrues interest flows");
+        interestFlows.Select(static flow => (flow.FlowType, flow.DueDate, flow.Amount))
+            .Should().Equal(percentagePoints.ProjectedCashFlows.Where(static flow => flow.FlowType != "Maturity")
+                .Select(static flow => (flow.FlowType, flow.DueDate, flow.Amount)));
+    }
+
+    [Fact]
+    public void ProjectFromSecurityMaster_PrivateCompanyEquity_ReceivesValuationReview_LikeOtherAlternatives()
+    {
+        // Ops-capable alternatives that no other branch owns (real estate, guarantees) always got a
+        // quarterly valuation review; PrivateCompanyEquity shares that capability set in the
+        // catalog and now receives it too, instead of being skipped because its name was not listed.
+        var security = MakeSecurity("PrivateCompanyEquity", "Meridian Holdings Series B", new
+        {
+            issuer = "Meridian Holdings",
+            shareClass = "Series B",
+            round = "B",
+            ownershipPercent = 4.5m
+        });
+
+        var detail = new AssetObligationProjectionService().ProjectFromSecurityMaster(security);
+
+        detail.TermsObligationsTimeline!.Events.Should().Contain(evt => evt.EventKind == "ValuationReview");
+        detail.TermsObligationsTimeline.Events.Should().NotContain(evt => evt.EventKind == "CustomProfileEvidenceReview",
+            "custom-profile review belongs to classes that must carry a governed profile");
+        detail.ProjectedCashFlows.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("PrivateFund")]
+    [InlineData("PartnershipInterest")]
+    public void ProjectFromSecurityMaster_LegacyPrivateFundSpellings_ProjectLikePrivateFundInterest(string legacySpelling)
+    {
+        // The name-based predicate accepted these spellings; they are now catalog aliases of
+        // PrivateFundInterest, so a subject still carrying one keeps its fund-interest obligations.
+        var terms = new
+        {
+            gpSponsor = "Meridian Capital",
+            strategy = "Buyout",
+            vintage = 2024,
+            commitment = 1_000_000m,
+            fundedAmount = 250_000m,
+            unfundedAmount = 750_000m,
+            navDate = "2026-06-30"
+        };
+
+        var canonical = new AssetObligationProjectionService()
+            .ProjectFromSecurityMaster(MakeSecurity("PrivateFundInterest", "Meridian Fund IV", terms));
+        var legacy = new AssetObligationProjectionService()
+            .ProjectFromSecurityMaster(MakeSecurity(legacySpelling, "Meridian Fund IV", terms));
+
+        canonical.TermsObligationsTimeline!.Events.Should().NotBeEmpty();
+        legacy.TermsObligationsTimeline!.Events.Select(static evt => evt.EventKind)
+            .Should().Equal(canonical.TermsObligationsTimeline.Events.Select(static evt => evt.EventKind));
+        legacy.TermsObligationsTimeline.Events.Should().NotContain(evt => evt.EventKind == "ValuationReview",
+            "a fund interest is not routed through the structured-or-custom branch");
+    }
+
+    private static SecurityDetailDto MakeSecurity(string assetClass, string displayName, object assetTerms)
+        => new(
+            Guid.NewGuid(),
+            assetClass,
+            SecurityStatusDto.Active,
+            displayName,
+            "USD",
+            JsonSerializer.SerializeToElement(new { currency = "USD" }),
+            JsonSerializer.SerializeToElement(assetTerms),
+            [],
+            [],
+            3,
+            new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            null);
+
     private static SecurityDetailDto MakeStructuredCredit(object assetTerms)
         => new(
             Guid.NewGuid(),

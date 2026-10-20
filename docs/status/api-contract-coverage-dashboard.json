@@ -4394,67 +4394,67 @@
     },
     {
       "name": "ProviderShadowBookComparisonLineDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:403",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:404",
       "documented": false
     },
     {
       "name": "ProviderShadowBookComparisonDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:414",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:415",
       "documented": false
     },
     {
       "name": "ProviderCorporateActionReadinessLineDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:424",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:425",
       "documented": false
     },
     {
       "name": "ProviderCorporateActionEvidenceCandidateDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:433",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:434",
       "documented": false
     },
     {
       "name": "ProviderCorporateActionLedgerEffectDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:451",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:452",
       "documented": false
     },
     {
       "name": "ProviderSecurityMasterScheduleFeedDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:468",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:469",
       "documented": false
     },
     {
       "name": "ProviderCorporateActionReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:492",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:493",
       "documented": false
     },
     {
       "name": "ProviderLedgerReconciliationDetailDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:524",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:525",
       "documented": false
     },
     {
       "name": "FundAccountCloseReadinessStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:537",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:538",
       "documented": false
     },
     {
       "name": "FundAccountCloseReadinessComponentDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:543",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:544",
       "documented": false
     },
     {
       "name": "FundAccountCloseReadinessBlockerDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:557",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:558",
       "documented": false
     },
     {
       "name": "FundAccountCloseReadinessActionDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:565",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:566",
       "documented": false
     },
     {
       "name": "FundAccountCloseReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:571",
+      "source": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:572",
       "documented": false
     },
     {
