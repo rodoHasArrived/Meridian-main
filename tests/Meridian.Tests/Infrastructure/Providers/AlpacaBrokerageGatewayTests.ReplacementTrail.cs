@@ -56,16 +56,37 @@ public sealed partial class AlpacaBrokerageGatewayTests
         => trailPrice is null
             ? BuildJson(new
             {
-                id, client_order_id = clientOrderId, symbol = "AAPL", side = "sell", type = "trailing_stop",
-                qty = "10", filled_qty = "0", replaces, replaced_by = replacedBy,
-                limit_price = (string?)null, stop_price = stopPrice, status,
-                created_at = "2024-01-15T10:00:00Z", updated_at = "2024-01-15T10:01:00Z"
+                id,
+                client_order_id = clientOrderId,
+                symbol = "AAPL",
+                side = "sell",
+                type = "trailing_stop",
+                qty = "10",
+                filled_qty = "0",
+                replaces,
+                replaced_by = replacedBy,
+                limit_price = (string?)null,
+                stop_price = stopPrice,
+                status,
+                created_at = "2024-01-15T10:00:00Z",
+                updated_at = "2024-01-15T10:01:00Z"
             })
             : BuildJson(new
             {
-                id, client_order_id = clientOrderId, symbol = "AAPL", side = "sell", type = "trailing_stop",
-                qty = "10", filled_qty = "0", replaces, replaced_by = replacedBy,
-                limit_price = (string?)null, stop_price = stopPrice, trail_price = trailPrice, status,
-                created_at = "2024-01-15T10:00:00Z", updated_at = "2024-01-15T10:01:00Z"
+                id,
+                client_order_id = clientOrderId,
+                symbol = "AAPL",
+                side = "sell",
+                type = "trailing_stop",
+                qty = "10",
+                filled_qty = "0",
+                replaces,
+                replaced_by = replacedBy,
+                limit_price = (string?)null,
+                stop_price = stopPrice,
+                trail_price = trailPrice,
+                status,
+                created_at = "2024-01-15T10:00:00Z",
+                updated_at = "2024-01-15T10:01:00Z"
             });
 }
