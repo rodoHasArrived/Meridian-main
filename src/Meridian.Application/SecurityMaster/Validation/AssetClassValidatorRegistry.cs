@@ -301,6 +301,42 @@ internal static class DefaultAssetClassValidators
                     FieldRule.OptionalPositive("strike", "SM_WARRANT_STRIKE_INVALID", "Warrant strike is invalid", "Warrant strike must be greater than zero when supplied."),
                     FieldRule.OptionalPositive("multiplier", "SM_WARRANT_MULTIPLIER_INVALID", "Warrant multiplier is invalid", "Warrant multiplier must be greater than zero when supplied.")
                 ]),
+            new JsonAssetClassValidator(
+                "FxForward",
+                [
+                    FieldRule.RequiredString("baseCurrency", "SM_FX_FORWARD_BASE_CURRENCY_REQUIRED", "FX forward base currency is missing", "FX forwards must include a base currency."),
+                    FieldRule.RequiredString("quoteCurrency", "SM_FX_FORWARD_QUOTE_CURRENCY_REQUIRED", "FX forward quote currency is missing", "FX forwards must include a quote currency."),
+                    DistinctStringRule.Required("baseCurrency", "quoteCurrency", "SM_FX_FORWARD_PAIR_INVALID", "FX forward currency pair is invalid", "FX forward base and quote currencies must differ."),
+                    FieldRule.RequiredDate("valueDate", "SM_FX_FORWARD_VALUE_DATE_REQUIRED", "FX forward value date is missing", "FX forwards must include a value date."),
+                    DateOrderRule.Optional("tradeDate", "valueDate", "SM_FX_FORWARD_TRADE_DATE_INVALID", "FX forward trade date is after value date", "FX forward trade date must be on or before the value date."),
+                    FieldRule.OptionalPositive("notional", "SM_FX_FORWARD_NOTIONAL_INVALID", "FX forward notional is invalid", "FX forward notional must be greater than zero when present."),
+                    FieldRule.OptionalPositive("forwardRate", "SM_FX_FORWARD_RATE_INVALID", "FX forward rate is invalid", "FX forward rate must be greater than zero when present.")
+                ]),
+            new JsonAssetClassValidator(
+                "NonDeliverableForward",
+                [
+                    FieldRule.RequiredString("baseCurrency", "SM_NDF_BASE_CURRENCY_REQUIRED", "NDF base currency is missing", "Non-deliverable forwards must include a base currency."),
+                    FieldRule.RequiredString("quoteCurrency", "SM_NDF_QUOTE_CURRENCY_REQUIRED", "NDF quote currency is missing", "Non-deliverable forwards must include a quote currency."),
+                    FieldRule.RequiredString("settlementCurrency", "SM_NDF_SETTLEMENT_CURRENCY_REQUIRED", "NDF settlement currency is missing", "Non-deliverable forwards must name the currency the net difference settles in."),
+                    DistinctStringRule.Required("baseCurrency", "quoteCurrency", "SM_NDF_PAIR_INVALID", "NDF currency pair is invalid", "NDF base and quote currencies must differ."),
+                    FieldRule.RequiredDate("fixingDate", "SM_NDF_FIXING_DATE_REQUIRED", "NDF fixing date is missing", "Non-deliverable forwards must include a fixing date."),
+                    FieldRule.RequiredDate("valueDate", "SM_NDF_VALUE_DATE_REQUIRED", "NDF value date is missing", "Non-deliverable forwards must include a value date."),
+                    DateOrderRule.Required("fixingDate", "valueDate", "SM_NDF_FIXING_DATE_INVALID", "NDF fixing date is after value date", "NDF fixing date must be on or before the value date."),
+                    FieldRule.OptionalPositive("notional", "SM_NDF_NOTIONAL_INVALID", "NDF notional is invalid", "NDF notional must be greater than zero when present."),
+                    FieldRule.OptionalPositive("forwardRate", "SM_NDF_RATE_INVALID", "NDF forward rate is invalid", "NDF forward rate must be greater than zero when present.")
+                ]),
+            new JsonAssetClassValidator(
+                "CreditDefaultSwap",
+                [
+                    FieldRule.RequiredString("referenceEntity", "SM_CDS_REFERENCE_ENTITY_REQUIRED", "CDS reference entity is missing", "Credit default swaps must name a reference entity or index."),
+                    FieldRule.RequiredAllowedString("protectionSide", ["Buy", "Sell"], "SM_CDS_PROTECTION_SIDE_INVALID", "CDS protection side is invalid", "CDS protection side must be 'Buy' or 'Sell'."),
+                    FieldRule.RequiredPositive("notional", "SM_CDS_NOTIONAL_REQUIRED", "CDS notional is missing or invalid", "Credit default swaps must include a notional greater than zero."),
+                    FieldRule.RequiredDate("effectiveDate", "SM_CDS_EFFECTIVE_DATE_REQUIRED", "CDS effective date is missing", "Credit default swaps must include an effective date."),
+                    FieldRule.RequiredDate("maturityDate", "SM_CDS_MATURITY_DATE_REQUIRED", "CDS maturity date is missing", "Credit default swaps must include a scheduled termination date."),
+                    DateOrderRule.Required("effectiveDate", "maturityDate", "SM_CDS_DATE_RANGE_INVALID", "CDS date range is invalid", "CDS effective date must be on or before the maturity date."),
+                    FieldRule.RequiredNonNegative("fixedCouponBps", "SM_CDS_FIXED_COUPON_INVALID", "CDS fixed coupon is missing or invalid", "Credit default swaps must include a running fixed coupon of zero or more basis points."),
+                    FieldRule.OptionalFraction("recoveryRateAssumption", "SM_CDS_RECOVERY_RATE_INVALID", "CDS recovery rate is invalid", "CDS recovery rate assumption must be a fraction between 0 and 1.")
+                ]),
             // ADR-022 canonical-home guidance: MoneyMarketFund is the canonical home for
             // stable-NAV money-market and government liquidity vehicles; the generic fund wrapper
             // flagged stable-NAV is the overlap the review called out. Warning (not Error): the
@@ -789,6 +825,9 @@ internal sealed record FieldRule(
     public static FieldRule RequiredPositive(string fieldPath, string code, string title, string message)
         => new(fieldPath, SecurityFieldRuleKind.RequiredPositiveNumber, SecurityValidationSeverityDto.Error, code, title, message);
 
+    public static FieldRule RequiredNonNegative(string fieldPath, string code, string title, string message)
+        => new(fieldPath, SecurityFieldRuleKind.RequiredNonNegativeNumber, SecurityValidationSeverityDto.Error, code, title, message);
+
     public static FieldRule RequiredArray(string fieldPath, string code, string title, string message)
         => new(fieldPath, SecurityFieldRuleKind.RequiredArrayNotEmpty, SecurityValidationSeverityDto.Error, code, title, message);
 
@@ -838,6 +877,7 @@ internal sealed record FieldRule(
             SecurityFieldRuleKind.RequiredGuid => JsonValidationReader.HasGuid(property),
             SecurityFieldRuleKind.RequiredDate => JsonValidationReader.HasDate(property),
             SecurityFieldRuleKind.RequiredPositiveNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value > 0m,
+            SecurityFieldRuleKind.RequiredNonNegativeNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value >= 0m,
             SecurityFieldRuleKind.RequiredArrayNotEmpty => property.ValueKind == JsonValueKind.Array && property.GetArrayLength() > 0,
             SecurityFieldRuleKind.OptionalPositiveNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value > 0m,
             SecurityFieldRuleKind.OptionalNonNegativeNumber => JsonValidationReader.TryGetDecimal(property, out var value) && value >= 0m,
@@ -866,6 +906,7 @@ internal sealed record FieldRule(
             or SecurityFieldRuleKind.RequiredGuid
             or SecurityFieldRuleKind.RequiredDate
             or SecurityFieldRuleKind.RequiredPositiveNumber
+            or SecurityFieldRuleKind.RequiredNonNegativeNumber
             or SecurityFieldRuleKind.RequiredArrayNotEmpty;
 }
 
@@ -1121,6 +1162,7 @@ internal enum SecurityFieldRuleKind
     RequiredGuid,
     RequiredDate,
     RequiredPositiveNumber,
+    RequiredNonNegativeNumber,
     RequiredArrayNotEmpty,
     OptionalPositiveNumber,
     OptionalNonNegativeNumber,

@@ -684,6 +684,44 @@ module SecurityMasterLegacyUpgrade =
                             CircuitBreakerThresholdPct = None
                         }
             }
+        | SecurityKind.FxForward terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = terms.TradeDate
+                            IssueDate = None
+                            MaturityDate = Some terms.ValueDate
+                        }
+            }
+        | SecurityKind.NonDeliverableForward terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = Some terms.FixingDate
+                            IssueDate = None
+                            MaturityDate = Some terms.ValueDate
+                        }
+            }
+        | SecurityKind.CreditDefaultSwap terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = Some terms.EffectiveDate
+                            IssueDate = Some terms.EffectiveDate
+                            MaturityDate = Some terms.MaturityDate
+                        }
+                    Coupon =
+                        Some {
+                            CouponType = Some CouponKind.Fixed
+                            // Running coupon quoted in basis points per annum; the economic module carries a rate.
+                            CouponRate = Some (terms.FixedCouponBps / 10000m)
+                            PaymentFrequency = terms.PaymentFrequency |> Option.map PaymentFrequency.parse
+                            DayCount = terms.DayCount |> mapDayCount
+                        }
+            }
         | SecurityKind.InvestmentFund terms ->
             {
                 SecurityTermModules.empty with

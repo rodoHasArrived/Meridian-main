@@ -425,6 +425,44 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    strike = terms.Strike
                    expiry = terms.Expiry
                    multiplier = terms.Multiplier |})
+        | SecurityKind.FxForward terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   baseCurrency = terms.BaseCurrency
+                   quoteCurrency = terms.QuoteCurrency
+                   notional = terms.Notional
+                   forwardRate = terms.ForwardRate
+                   tradeDate = terms.TradeDate
+                   valueDate = terms.ValueDate
+                   settlementType = terms.SettlementType |})
+        | SecurityKind.NonDeliverableForward terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   baseCurrency = terms.BaseCurrency
+                   quoteCurrency = terms.QuoteCurrency
+                   settlementCurrency = terms.SettlementCurrency
+                   notional = terms.Notional
+                   forwardRate = terms.ForwardRate
+                   fixingDate = terms.FixingDate
+                   valueDate = terms.ValueDate
+                   fixingSource = terms.FixingSource |})
+        | SecurityKind.CreditDefaultSwap terms ->
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   referenceEntity = terms.ReferenceEntity
+                   referenceObligation = terms.ReferenceObligation
+                   protectionSide = terms.ProtectionSide
+                   notional = terms.Notional
+                   fixedCouponBps = terms.FixedCouponBps
+                   effectiveDate = terms.EffectiveDate
+                   maturityDate = terms.MaturityDate
+                   paymentFrequency = terms.PaymentFrequency
+                   dayCount = terms.DayCount
+                   seniority = terms.Seniority
+                   restructuringClause = terms.RestructuringClause
+                   upfrontPoints = terms.UpfrontPoints
+                   recoveryRateAssumption = terms.RecoveryRateAssumption
+                   indexName = terms.IndexName |})
         | SecurityKind.InvestmentFund terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion

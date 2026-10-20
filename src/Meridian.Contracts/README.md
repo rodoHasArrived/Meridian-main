@@ -1753,6 +1753,14 @@ W7 live-readiness gate.
 behaviour, projection kind, preferred identifiers, terms version, multiplier key), the term
 schema, validators and editor hints. `SecurityAssetClassRegistryCoverageTests` fails when an F#
 `SecurityKind` case has no definition. The registry backs `/api/security-master/asset-classes`.
+The OTC derivative classes `FxForward` (deliverable forward: pair, notional, forward rate, trade
+and value dates, settlement method), `NonDeliverableForward` (adds the settlement currency, the
+fixing date and an operational fixing source) and `CreditDefaultSwap` (reference entity and
+obligation, `protectionSide` Buy/Sell, notional, `fixedCouponBps`, effective and maturity dates,
+payment-frequency and day-count conventions, seniority, restructuring clause, upfront points,
+recovery assumption, index name) are declarative classes in the `derivatives-fx` pack with
+registry-written projections from the day they were modeled; `Forward` left the pack's planned
+vocabulary.
 `SecurityTermConventions` types day count, settlement method, option right and payment frequency
 (`SecurityPaymentFrequency`, the one cadence vocabulary; the direct-lending `PaymentFrequency`
 enum maps onto it through `ToSecurityPaymentFrequency`) as canonical conventions: stored text

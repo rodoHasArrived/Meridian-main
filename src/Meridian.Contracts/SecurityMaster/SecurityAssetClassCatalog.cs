@@ -465,6 +465,47 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode
             ]),
         new(
+            AssetClass: "FxForward",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.CurrencyAmount,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Ric
+            ]),
+        new(
+            AssetClass: "NonDeliverableForward",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.CurrencyAmount,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.ProviderSymbol,
+                SecurityIdentifierKind.Ric
+            ]),
+        new(
+            AssetClass: "CreditDefaultSwap",
+            AssetPackIds: ["derivatives-fx"],
+            LotUnit: SecurityLotUnitKind.Notional,
+            CashFlowBehavior: SecurityCashFlowBehavior.None,
+            ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            SupportsBasicCreateWorkflow: false,
+            PreferredIdentifierKinds:
+            [
+                SecurityIdentifierKind.InternalCode,
+                SecurityIdentifierKind.PermId,
+                SecurityIdentifierKind.Lei,
+                SecurityIdentifierKind.ProviderSymbol
+            ],
+            RequiresMaturity: true),
+        new(
             AssetClass: "InvestmentFund",
             AssetPackIds: ["public-equity-etf"],
             LotUnit: SecurityLotUnitKind.Units,

@@ -333,6 +333,44 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
             expiry = "2029-05-31",
             multiplier = 1m
         },
+        ["FxForward"] = new
+        {
+            baseCurrency = "EUR",
+            quoteCurrency = "USD",
+            notional = 10_000_000m,
+            forwardRate = 1.0925m,
+            tradeDate = "2026-03-02",
+            valueDate = "2026-09-02",
+            settlementType = "Physical"
+        },
+        ["NonDeliverableForward"] = new
+        {
+            baseCurrency = "USD",
+            quoteCurrency = "BRL",
+            settlementCurrency = "USD",
+            notional = 5_000_000m,
+            forwardRate = 5.4150m,
+            fixingDate = "2026-06-29",
+            valueDate = "2026-07-01",
+            fixingSource = "PTAX"
+        },
+        ["CreditDefaultSwap"] = new
+        {
+            referenceEntity = "Meridian Industries Inc",
+            referenceObligation = "US59000AAB12",
+            protectionSide = "Buy",
+            notional = 10_000_000m,
+            fixedCouponBps = 100m,
+            effectiveDate = "2026-03-20",
+            maturityDate = "2031-06-20",
+            paymentFrequency = "Quarterly",
+            dayCount = "ACT/360",
+            seniority = "SeniorUnsecured",
+            restructuringClause = "XR",
+            upfrontPoints = 2.35m,
+            recoveryRateAssumption = 0.4m,
+            indexName = "CDX.NA.IG.46"
+        },
         ["InvestmentFund"] = new
         {
             fundType = "ETF",

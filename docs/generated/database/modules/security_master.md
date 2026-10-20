@@ -2,7 +2,7 @@
 
 # `security_master` schema
 
-- Relations: 109
+- Relations: 112
 - Functions/procedures: 7
 - Triggers: 15
 - Row-level security policies: 0
@@ -410,6 +410,27 @@ erDiagram
         integer payload_schema_version
         character_64_ economic_fingerprint
     }
+    security_master_credit_default_swap_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text reference_entity
+        text reference_obligation
+        text protection_side
+        numeric_28_10_ notional
+        numeric_18_8_ fixed_coupon_bps
+        date effective_date
+        date maturity_date
+        text payment_frequency
+        text day_count
+        text seniority
+        text restructuring_clause
+        numeric_18_8_ upfront_points
+        numeric_18_10_ recovery_rate_assumption
+        text index_name
+        text primary_identifier_value
+        bigint version
+    }
     security_master_crypto_projection {
         uuid security_id PK
         text display_name
@@ -536,6 +557,20 @@ erDiagram
         date delivery_month_dt
         text delivery_location_code
         text lifecycle_stat
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_fx_forward_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text base_currency
+        text quote_currency
+        numeric_28_10_ notional
+        numeric_28_10_ forward_rate
+        date trade_date
+        date value_date
+        text settlement_type
         text primary_identifier_value
         bigint version
     }
@@ -693,6 +728,21 @@ erDiagram
         boolean sweep_eligible
         integer weighted_average_maturity_days
         boolean liquidity_fee_eligible
+        text primary_identifier_value
+        bigint version
+    }
+    security_master_ndf_projection {
+        uuid security_id PK
+        text display_name
+        text currency
+        text base_currency
+        text quote_currency
+        text settlement_currency
+        numeric_28_10_ notional
+        numeric_28_10_ forward_rate
+        date fixing_date
+        date value_date
+        text fixing_source
         text primary_identifier_value
         bigint version
     }
@@ -1512,6 +1562,7 @@ erDiagram
 | `corporate_action_restatement_obligations` | table | 10 | `obligation_id` | 2 | 4 | - |
 | `corporate_action_source_proposals` | table | 29 | `proposal_id` | 4 | 7 | - |
 | `corporate_actions` | table | 22 | `corp_act_id` | 2 | 5 | - |
+| `credit_default_swap_projection` | table | 19 | `security_id` | 0 | 3 | Relational projection of CreditDefaultSwap asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `crypto_projection` | table | 7 | `security_id` | 0 | 3 | - |
 | `data_vendor_entitlements` | table | 21 | `entitlement_id` | 0 | 4 | - |
 | `deposit_projection` | table | 11 | `security_id` | 0 | 3 | - |
@@ -1523,6 +1574,7 @@ erDiagram
 | `equity_projection` | table | 11 | `security_id` | 1 | 3 | - |
 | `fee_balance` | table | 9 | `fee_balance_id` | 2 | 2 | - |
 | `future_projection` | table | 17 | `security_id` | 1 | 3 | - |
+| `fx_forward_projection` | table | 12 | `security_id` | 0 | 3 | Relational projection of FxForward asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `fxspot_projection` | table | 7 | `security_id` | 1 | 4 | - |
 | `investment_fund_projection` | table | 11 | `security_id` | 0 | 2 | Relational projection of InvestmentFund asset-specific terms, keyed by security_id. Every term is optional, so a row exists for every record of the class. |
 | `journal_entry` | table | 11 | `journal_entry_id` | 2 | 3 | - |
@@ -1536,6 +1588,7 @@ erDiagram
 | `loan_state` | table | 6 | `loan_id` | 0 | 1 | - |
 | `loan_terms_version` | table | 28 | `loan_id`, `terms_version` | 0 | 2 | - |
 | `money_market_fund_projection` | table | 9 | `security_id` | 0 | 3 | - |
+| `ndf_projection` | table | 13 | `security_id` | 0 | 3 | Relational projection of NonDeliverableForward asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `operations_workflow_audit` | table | 28 | `audit_id` | 0 | 5 | - |
 | `option_alias_projection` | table | 5 | `contract_symbol`, `alias_kind`, `alias_value`, `provider` | 1 | 2 | - |
 | `option_contract_projection` | table | 14 | `contract_symbol` | 2 | 4 | - |

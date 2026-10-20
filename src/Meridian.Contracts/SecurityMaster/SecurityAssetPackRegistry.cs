@@ -217,8 +217,7 @@ public static class SecurityAssetPackRegistry
             Claimed("derivatives-fx"),
             ["Purchase", "Sale", "Draw", "Repayment", "Appraisal", "Maturity", "Default", "Amendment", "CorporateAction", "MarginSettlement"],
             ["MarketPrice", "DiscountedCashFlow", "ExternalModel", "UserEstimate"],
-            ["premium", "variation margin", "settlement", "FX remeasurement", "realized gain/loss"],
-            plannedAssetClasses: ["Forward"]),
+            ["premium", "variation margin", "settlement", "FX remeasurement", "realized gain/loss"]),
         DeepAutomation(
             "mortgage-facility-intercompany",
             "Mortgages, credit facilities and intercompany loans",
