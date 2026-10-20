@@ -50,6 +50,7 @@ type SecurityIdentifierSnapshot(identifier: Identifier) =
         | IdentifierKind.Cik -> "Cik"
         | IdentifierKind.LoanX -> "LoanX"
         | IdentifierKind.Clip -> "Clip"
+        | IdentifierKind.ListingId -> "ListingId"
 
     member _.Kind = kind
     member _.Value = identifier.Value
@@ -303,7 +304,13 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                                notional = leg.Notional
                                paymentFrequency = leg.PaymentFrequency
                                dayCount = leg.DayCount
-                               exchangesPrincipal = leg.ExchangesPrincipal |}) |})
+                               exchangesPrincipal = leg.ExchangesPrincipal
+                               notionalSchedule =
+                                   leg.NotionalSchedule
+                                   |> List.map (fun step -> {| effectiveDate = step.EffectiveDate; notional = step.Notional |})
+                               resetSchedule =
+                                   leg.ResetSchedule
+                                   |> List.map (fun entry -> {| resetDate = entry.ResetDate; fixingRate = entry.FixingRate |}) |}) |})
         | SecurityKind.DirectLoan terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion

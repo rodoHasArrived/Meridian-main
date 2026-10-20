@@ -410,6 +410,19 @@ type OtherSecurityTerms = {
     SettlementType: string option
 }
 
+/// One step of an amortizing or accreting leg notional: the notional in effect from this date
+/// until the next step (or maturity).
+type SwapNotionalStep = {
+    EffectiveDate: DateOnly
+    Notional: decimal
+}
+
+/// A floating-leg reset date with the index fixing observed on it, once known.
+type SwapResetEntry = {
+    ResetDate: DateOnly
+    FixingRate: decimal option
+}
+
 /// A swap leg with the economics consumed by cash-flow projection. Optional terms keep
 /// legacy legs readable and allow the projection to use security-level fallbacks.
 type SwapLeg = {
@@ -428,6 +441,10 @@ type SwapLeg = {
     DayCount: string option
     /// Whether principal exchanges are part of the leg's contractual terms.
     ExchangesPrincipal: bool
+    /// Dated notional steps for an amortizing or accreting leg; empty for a constant notional.
+    NotionalSchedule: SwapNotionalStep list
+    /// Reset dates with their observed fixings for a floating leg; empty when not tracked.
+    ResetSchedule: SwapResetEntry list
 }
 
 type SwapTerms = {
