@@ -250,44 +250,28 @@ public sealed class IBBrokerageGateway :
         ArgumentNullException.ThrowIfNull(modification);
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
-        ct.ThrowIfCancellationRequested();
 
-        // Resolution and request shaping are process-local; a failure here proves nothing was
-        // sent to IB, so the caller may treat the amendment as never dispatched.
-        int gatewayOrderId;
-        SubmittedOrderContext context;
-        OrderRequest updatedRequest;
+        // Send boundary: resolution, request shaping and claiming the operation slot (which a
+        // concurrent cancel or amendment may own) are process-local, so a failure or cancellation
+        // before PlaceOrderAsync proves the amendment never reached IB. The slot is claimed last,
+        // immediately before the send, so nothing can leave it registered without dispatch.
+        var sent = false;
+        var gatewayOrderId = 0;
+        PendingOrderOperation? pendingOperation = null;
         try
         {
-            (gatewayOrderId, context) = ResolveOrder(orderId);
-            updatedRequest = context.ToModifiedRequest(modification);
-        }
-        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
-        {
-            throw new BrokerageRequestNotSentException(ex.Message, ex);
-        }
-
-        var updatedContext = context with
-        {
-            Quantity = updatedRequest.Quantity,
-            LimitPrice = updatedRequest.LimitPrice,
-            StopPrice = updatedRequest.StopPrice
-        };
-        // A concurrent cancel or amendment already owns the order's operation slot. The
-        // conflict is detected before PlaceOrderAsync, so this amendment never reached IB.
-        PendingOrderOperation pendingOperation;
-        try
-        {
+            ct.ThrowIfCancellationRequested();
+            (gatewayOrderId, var context) = ResolveOrder(orderId);
+            var updatedRequest = context.ToModifiedRequest(modification);
+            var updatedContext = context with
+            {
+                Quantity = updatedRequest.Quantity,
+                LimitPrice = updatedRequest.LimitPrice,
+                StopPrice = updatedRequest.StopPrice
+            };
             pendingOperation = RegisterPendingOrderOperation(
                 gatewayOrderId, PendingOrderOperationKind.Modify, updatedContext);
-        }
-        catch (InvalidOperationException ex)
-        {
-            throw new BrokerageRequestNotSentException(ex.Message, ex);
-        }
-
-        try
-        {
+            sent = true;
             await _client.PlaceOrderAsync(gatewayOrderId, updatedRequest, ct).ConfigureAwait(false);
             return await AwaitPendingOrderOperationAsync(
                 gatewayOrderId,
@@ -295,9 +279,14 @@ public sealed class IBBrokerageGateway :
                 $"modify order {context.MeridianOrderId}",
                 ct).ConfigureAwait(false);
         }
+        catch (Exception ex) when (!sent && ex is not BrokerageRequestNotSentException)
+        {
+            throw new BrokerageRequestNotSentException(ex.Message, ex);
+        }
         finally
         {
-            ReleaseOrderOperationWaiter(gatewayOrderId, pendingOperation);
+            if (pendingOperation is not null)
+                ReleaseOrderOperationWaiter(gatewayOrderId, pendingOperation);
         }
     }
 

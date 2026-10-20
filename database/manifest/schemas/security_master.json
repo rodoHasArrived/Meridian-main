@@ -3317,7 +3317,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "71e625e7d606e5aae6dd961006cacd47b3418a62ddef9e8173d2972092933795",
+  "fingerprint": "f40a4addefccd1c49cde37632f1400a99cb2c5a1e0fe25620a94308eb9bf2718",
   "foreign_tables": [],
   "functions": [
     {
@@ -30891,6 +30891,22 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "fc7fac6f8cac565d0fd28210e74fbe5fcd837684a7e9c671251a91206c4508b7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "listing_mic",
+          "nullable": true,
+          "ordinal_position": 23,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -30938,10 +30954,32 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "e3196b37f9c119f7ed23e64218058c9a8cabee3561d18f6c90cf658ef4c17ae7",
+      "fingerprint": "800a7fe0d09a3fc1e3c09c2d66f948474157ca6ff580f3decc1575e4810f1287",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_securities_listing_mic ON security_master.securities USING btree (listing_mic) WHERE (listing_mic IS NOT NULL)",
+          "expression": null,
+          "fingerprint": "d1914cc223b0c5169a38fef5e2d9d0e8c592530ac150e39faadbb83f8187c15b",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "listing_mic"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_securities_listing_mic",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "listing_mic IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
         {
           "comment": null,
           "definition": "CREATE INDEX ix_securities_schema_version ON security_master.securities USING btree (schema_version)",
@@ -71927,6 +71965,22 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "fc7fac6f8cac565d0fd28210e74fbe5fcd837684a7e9c671251a91206c4508b7",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "listing_mic",
+          "nullable": true,
+          "ordinal_position": 23,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -71974,10 +72028,32 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "e3196b37f9c119f7ed23e64218058c9a8cabee3561d18f6c90cf658ef4c17ae7",
+      "fingerprint": "800a7fe0d09a3fc1e3c09c2d66f948474157ca6ff580f3decc1575e4810f1287",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_securities_listing_mic ON security_master.securities USING btree (listing_mic) WHERE (listing_mic IS NOT NULL)",
+          "expression": null,
+          "fingerprint": "d1914cc223b0c5169a38fef5e2d9d0e8c592530ac150e39faadbb83f8187c15b",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "listing_mic"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_securities_listing_mic",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "listing_mic IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
         {
           "comment": null,
           "definition": "CREATE INDEX ix_securities_schema_version ON security_master.securities USING btree (schema_version)",

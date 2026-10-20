@@ -130,7 +130,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         => SubmitOrderCoreAsync(request, ct, publishReports: true);
 
     private async Task<ExecutionReport> SubmitOrderCoreAsync(
-        OrderRequest request, CancellationToken ct, bool publishReports)
+        OrderRequest request, CancellationToken ct, bool publishReports, SendBoundary? boundary = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -190,7 +190,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
                 optionInstrumentUrl,
                 positionEffect,
                 ct,
-                publishReports).ConfigureAwait(false);
+                publishReports,
+                boundary).ConfigureAwait(false);
         }
 
         // Look up the instrument URL required by Robinhood's order API.
@@ -219,6 +220,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         };
 
         using var client = CreateHttpClient();
+        boundary?.Cross();
         var response = await client.PostAsJsonAsync(
             $"{BaseUrl}/orders/", payload,
             RobinhoodBrokerageSerializerContext.Default.RobinhoodOrderPayload, ct)
@@ -304,6 +306,23 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         ArgumentNullException.ThrowIfNull(modification);
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
+        // Send boundary: chain resolution, the operation gate and replacement reconciliation only
+        // read, so a failure or cancellation before the predecessor's cancel request proves
+        // nothing reached Robinhood.
+        var cancelBoundary = new SendBoundary();
+        try
+        {
+            return await ModifyOrderCoreAsync(orderId, modification, cancelBoundary, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (!cancelBoundary.Crossed && ex is not BrokerageRequestNotSentException)
+        {
+            throw new BrokerageRequestNotSentException($"Robinhood amendment was not sent: {ex.Message}", ex);
+        }
+    }
+
+    private async Task<ExecutionReport> ModifyOrderCoreAsync(
+        string orderId, OrderModification modification, SendBoundary cancelBoundary, CancellationToken ct)
+    {
         using var client = CreateHttpClient();
         var chain = await ResolveOrderChainAsync(client, orderId, ct).ConfigureAwait(false);
         if (chain is null)
@@ -321,28 +340,28 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
                 return await PublishAsync(BuildOrderReport(chain, chain.Snapshot,
                     ExecutionReportType.ModificationRejected, "Replacement quantity must be positive."), ct).ConfigureAwait(false);
 
-            var (snapshot, error) = await RequestConfirmedCancellationAsync(client, chain, ct).ConfigureAwait(false);
+            var (snapshot, error) = await RequestConfirmedCancellationAsync(client, chain, ct, cancelBoundary).ConfigureAwait(false);
             if (error is not null || snapshot.Status != OrderStatus.Cancelled)
                 return await PublishAsync(BuildOrderReport(chain, snapshot,
                     ExecutionReportType.ModificationRejected,
-                    error ?? "Order became terminal before cancellation; no replacement was submitted."), ct).ConfigureAwait(false);
+                    error ?? "Order became terminal before cancellation; no replacement was submitted."), CancellationToken.None).ConfigureAwait(false);
 
             // A missing quantity is not evidence of zero fills. Fail closed instead of risking
             // duplicate exposure when Robinhood omits the cumulative execution fields.
             if (snapshot.FilledQuantity is not { } executed)
                 return await PublishAsync(BuildOrderReport(chain, snapshot,
                     ExecutionReportType.ModificationRejected,
-                    "Cancelled order did not include a confirmed cumulative fill quantity; no replacement was submitted."), ct).ConfigureAwait(false);
+                    "Cancelled order did not include a confirmed cumulative fill quantity; no replacement was submitted."), CancellationToken.None).ConfigureAwait(false);
 
             if (executed > 0m && snapshot.AverageFillPrice is not > 0m)
                 return await PublishAsync(BuildOrderReport(chain, snapshot,
                     ExecutionReportType.ModificationRejected,
-                    "Cancelled order did not include a confirmed execution price; no replacement was submitted."), ct).ConfigureAwait(false);
+                    "Cancelled order did not include a confirmed execution price; no replacement was submitted."), CancellationToken.None).ConfigureAwait(false);
 
             if (executed < 0m || snapshot.Quantity <= 0m || executed > snapshot.Quantity)
                 return await PublishAsync(BuildOrderReport(chain, snapshot,
                     ExecutionReportType.ModificationRejected,
-                    "Cancelled order included an invalid cumulative fill quantity; no replacement was submitted."), ct).ConfigureAwait(false);
+                    "Cancelled order included an invalid cumulative fill quantity; no replacement was submitted."), CancellationToken.None).ConfigureAwait(false);
 
             var cumulativeFills = chain.PriorFilledQuantity + executed;
             var cumulativeNotional = chain.PriorFilledNotional + executed * (snapshot.AverageFillPrice ?? 0m);
@@ -350,7 +369,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
             if (remaining <= 0m)
                 return await PublishAsync(BuildOrderReport(chain, snapshot,
                     ExecutionReportType.ModificationRejected,
-                    "Confirmed fills already meet or exceed the requested total; no replacement was submitted."), ct).ConfigureAwait(false);
+                    "Confirmed fills already meet or exceed the requested total; no replacement was submitted."), CancellationToken.None).ConfigureAwait(false);
 
             var request = snapshot.Equity is { } equity
                 ? new OrderRequest
@@ -380,9 +399,22 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
             chain.PendingReplacement = attempt;
             _orderChains[request.ClientOrderId!] = chain;
             ExecutionReport replacement;
+            var replacementBoundary = new SendBoundary();
             try
             {
-                replacement = await SubmitOrderCoreAsync(request, ct, publishReports: false).ConfigureAwait(false);
+                replacement = await SubmitOrderCoreAsync(request, ct, publishReports: false, replacementBoundary).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (!replacementBoundary.Crossed)
+            {
+                // The predecessor is confirmed cancelled and the replacement POST never started
+                // (an account or instrument lookup failed or was cancelled), so the outcome is
+                // known: cancelled, no successor. Report it rather than an unresolvable pending ref.
+                chain.PendingReplacement = null;
+                _orderChains.TryRemove(request.ClientOrderId!, out _);
+                _logger.LogWarning(ex, "Robinhood replacement {RefId} was not submitted", request.ClientOrderId);
+                return await PublishAsync(BuildOrderReport(chain, snapshot,
+                    ExecutionReportType.ModificationRejected,
+                    "Original order cancelled; the replacement was not submitted."), CancellationToken.None).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -401,7 +433,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
             if (replacement.OrderStatus == OrderStatus.Rejected)
                 return await PublishAsync(BuildOrderReport(chain, snapshot,
                     ExecutionReportType.ModificationRejected,
-                    $"Original order cancelled; replacement submission failed: {replacement.RejectReason}"), ct).ConfigureAwait(false);
+                    $"Original order cancelled; replacement submission failed: {replacement.RejectReason}"), CancellationToken.None).ConfigureAwait(false);
 
             AdoptReplacement(chain, attempt, snapshot with
             {
@@ -795,6 +827,14 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         string RefId, OrderRequest Request, OrderSnapshot CancelledOrder,
         decimal TotalQuantity, decimal PriorFilledQuantity, decimal PriorFilledNotional);
 
+    /// <summary>Marks the point after which a request may have reached Robinhood.</summary>
+    private sealed class SendBoundary
+    {
+        public bool Crossed { get; private set; }
+
+        public void Cross() => Crossed = true;
+    }
+
     private sealed class OrderChain(OrderSnapshot snapshot, string clientOrderId, decimal totalQuantity)
     {
         public string ClientOrderId { get; } = clientOrderId;
@@ -1000,7 +1040,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
     }
 
     private async Task<(OrderSnapshot Snapshot, string? Error)> RequestConfirmedCancellationAsync(
-        HttpClient client, OrderChain chain, CancellationToken ct)
+        HttpClient client, OrderChain chain, CancellationToken ct, SendBoundary? boundary = null)
     {
         if (chain.HasUnconfirmedReplacement)
             return (chain.Snapshot with { Status = OrderStatus.PendingNew },
@@ -1014,6 +1054,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
             return (snapshot, null);
 
         var segment = snapshot.Option is null ? "orders" : "options/orders";
+        boundary?.Cross();
         using var response = await client.PostAsync(
             $"{BaseUrl}/{segment}/{snapshot.Id}/cancel/", content: null, ct).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
@@ -1267,7 +1308,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         string optionInstrumentUrl,
         string positionEffect,
         CancellationToken ct,
-        bool publishReports)
+        bool publishReports,
+        SendBoundary? boundary = null)
     {
         var payload = new RobinhoodOptionOrderPayload
         {
@@ -1291,6 +1333,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         };
 
         using var client = CreateHttpClient();
+        boundary?.Cross();
         var response = await client.PostAsJsonAsync(
             $"{BaseUrl}/options/orders/",
             payload,

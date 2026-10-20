@@ -76,48 +76,59 @@ public sealed partial class AlpacaBrokerageGateway
         EnsureConnected();
 
         using var client = CreateHttpClient();
-        var existing = await ResolveOrderForCancellationAsync(client, identifier, ct).ConfigureAwait(false)
-            ?? throw new BrokerageRequestNotSentException("Alpaca could not resolve the broker identity required for amendment.");
-        // Snapshot validation runs before the PATCH; failing it proves nothing was sent.
-        try
-        {
-            ValidateReplacementSnapshot(existing);
-        }
-        catch (InvalidDataException ex)
-        {
-            throw new BrokerageRequestNotSentException(ex.Message, ex);
-        }
-        var brokerOrderId = existing.Id!;
-        ct.ThrowIfCancellationRequested();
-        var attempt = new ReplacementAttempt(existing) { Requested = RequestedReplacementTerms.From(existing, modification) };
-        while (!_replacementAttempts.TryAdd(brokerOrderId, attempt))
-        {
-            if (!_replacementAttempts.TryGetValue(brokerOrderId, out var inProgress))
-                continue;
-            if (inProgress.Resolution is null)
-                return CreatePendingModification(inProgress, "Alpaca replacement remains unconfirmed; reconcile before retrying.");
-            if (_replacementAttempts.TryUpdate(brokerOrderId, attempt, inProgress))
-                break;
-        }
-        var payload = new AlpacaOrderModifyPayload
-        {
-            Qty = FormatDecimal(modification.NewQuantity),
-            LimitPrice = FormatDecimal(modification.NewLimitPrice),
-            StopPrice = FormatDecimal(modification.NewStopPrice),
-            Trail = FormatDecimal(modification.NewTrail),
-        };
-
+        // Send boundary: everything before the PATCH is local or read-only, so a failure or
+        // cancellation there proves the amendment never reached Alpaca. It is reported as not
+        // sent and leaves no replacement attempt behind; only the PATCH itself is uncertain.
+        var sent = false;
+        ReplacementAttempt? attempt = null;
+        string brokerOrderId;
+        AlpacaOrderResponse existing;
         HttpResponseMessage response;
-        ct.ThrowIfCancellationRequested();
         try
         {
-            response = await client.PatchAsJsonAsync(
-                $"{BaseUrl}/v2/orders/{Uri.EscapeDataString(brokerOrderId)}", payload,
-                AlpacaBrokerageSerializerContext.Default.AlpacaOrderModifyPayload, ct).ConfigureAwait(false);
+            existing = await ResolveOrderForCancellationAsync(client, identifier, ct).ConfigureAwait(false)
+                ?? throw new BrokerageRequestNotSentException("Alpaca could not resolve the broker identity required for amendment.");
+            ValidateReplacementSnapshot(existing);
+            brokerOrderId = existing.Id!;
+            ct.ThrowIfCancellationRequested();
+            var candidateAttempt = new ReplacementAttempt(existing) { Requested = RequestedReplacementTerms.From(existing, modification) };
+            while (!_replacementAttempts.TryAdd(brokerOrderId, candidateAttempt))
+            {
+                if (!_replacementAttempts.TryGetValue(brokerOrderId, out var inProgress))
+                    continue;
+                if (inProgress.Resolution is null)
+                    return CreatePendingModification(inProgress, "Alpaca replacement remains unconfirmed; reconcile before retrying.");
+                if (_replacementAttempts.TryUpdate(brokerOrderId, candidateAttempt, inProgress))
+                    break;
+            }
+            attempt = candidateAttempt;
+            var payload = new AlpacaOrderModifyPayload
+            {
+                Qty = FormatDecimal(modification.NewQuantity),
+                LimitPrice = FormatDecimal(modification.NewLimitPrice),
+                StopPrice = FormatDecimal(modification.NewStopPrice),
+                Trail = FormatDecimal(modification.NewTrail),
+            };
+            ct.ThrowIfCancellationRequested();
+            sent = true;
+            try
+            {
+                response = await client.PatchAsJsonAsync(
+                    $"{BaseUrl}/v2/orders/{Uri.EscapeDataString(brokerOrderId)}", payload,
+                    AlpacaBrokerageSerializerContext.Default.AlpacaOrderModifyPayload, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
+            {
+                return PublishPendingModification(attempt, "Alpaca amendment acknowledgement was lost; reconcile the replacement before retrying.");
+            }
         }
-        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
+        catch (Exception ex) when (!sent)
         {
-            return PublishPendingModification(attempt, "Alpaca amendment acknowledgement was lost; reconcile the replacement before retrying.");
+            if (attempt is not null)
+                _replacementAttempts.TryRemove(new KeyValuePair<string, ReplacementAttempt>(attempt.Original.Id!, attempt));
+            if (ex is BrokerageRequestNotSentException)
+                throw;
+            throw new BrokerageRequestNotSentException($"Alpaca amendment was not sent: {ex.Message}", ex);
         }
         using var responseLifetime = response;
         if ((int)response.StatusCode >= 500 || (int)response.StatusCode == 408)

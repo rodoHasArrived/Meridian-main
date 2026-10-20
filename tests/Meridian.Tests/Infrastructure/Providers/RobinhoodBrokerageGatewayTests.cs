@@ -1259,6 +1259,89 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
     private static bool IsReplacementPost(RecordedRequest request)
         => request.Method == HttpMethod.Post && request.Url.EndsWith("/orders/", StringComparison.Ordinal);
 
+    [Fact]
+    public async Task ModifyOrderAsync_CancelledBeforeThePredecessorCancel_IsNotSentAndLeavesTheOrderUnblocked()
+    {
+        using var stop = new CancellationTokenSource();
+        var cancelOnRead = false;
+        var handler = CreateSendBoundaryHandler(stop, () => cancelOnRead, cancelOnInstrument: () => false);
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+        cancelOnRead = true;
+
+        var cancelled = () => sut.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 12m }, stop.Token);
+
+        await cancelled.Should().ThrowAsync<BrokerageRequestNotSentException>();
+        handler.Requests.Should().NotContain(r => r.Url.EndsWith("/cancel/", StringComparison.Ordinal),
+            "nothing reached Robinhood before the predecessor's cancel request");
+        cancelOnRead = false;
+        var retried = await sut.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 12m });
+        retried.ReportType.Should().Be(ExecutionReportType.Modified, "the unsent attempt left nothing to reconcile");
+    }
+
+    [Fact]
+    public async Task ModifyOrderAsync_CancelledAfterThePredecessorCancelBeforeTheReplacementPost_ReportsCancelledWithoutSuccessor()
+    {
+        using var stop = new CancellationTokenSource();
+        var handler = CreateSendBoundaryHandler(stop, () => false, cancelOnInstrument: () => true);
+        await using var sut = CreateSut(handler);
+        await sut.ConnectAsync();
+
+        var report = await sut.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 12m }, stop.Token);
+
+        report.ReportType.Should().Be(ExecutionReportType.ModificationRejected,
+            "the predecessor is confirmed cancelled and no replacement request was sent");
+        report.OrderStatus.Should().Be(OrderStatus.Cancelled);
+        report.CandidateClientOrderId.Should().BeNull("there is no replacement reference left to reconcile");
+        handler.Requests.Should().NotContain(r => IsReplacementPost(r));
+        var next = await sut.CancelOrderAsync("client-1");
+        (next.RejectReason ?? string.Empty).Should().NotContain("must be reconciled", "no unresolved attempt remains");
+    }
+
+    /// <summary>Order-1 is working until its cancel request, then cancelled. Optionally cancels
+    /// the caller's token on the first order read or on the replacement's instrument lookup.</summary>
+    private static RecordingHttpHandler CreateSendBoundaryHandler(
+        CancellationTokenSource stop, Func<bool> cancelOnRead, Func<bool> cancelOnInstrument)
+    {
+        var cancelled = false;
+        var replacements = 0;
+        return new RecordingHttpHandler((request, _) =>
+        {
+            var path = request.RequestUri!.AbsolutePath;
+            HttpResponseMessage response;
+            if (path == "/accounts/")
+                response = new(HttpStatusCode.OK) { Content = BuildAccountResponse() };
+            else if (path == "/instruments/")
+            {
+                if (cancelOnInstrument())
+                    stop.Cancel();
+                response = new(HttpStatusCode.OK) { Content = BuildInstrumentListResponse() };
+            }
+            else if (path.EndsWith("/cancel/", StringComparison.Ordinal))
+            {
+                cancelled = true;
+                response = new(HttpStatusCode.NoContent);
+            }
+            else if (path == "/orders/" && request.Method == HttpMethod.Post)
+                response = new(HttpStatusCode.OK) { Content = BuildOrderResponse($"replacement-{++replacements}") };
+            else if (path.StartsWith("/orders/", StringComparison.Ordinal))
+            {
+                if (cancelOnRead())
+                    stop.Cancel();
+                var id = path.Split('/')[2];
+                response = new(HttpStatusCode.OK)
+                {
+                    Content = id == "order-1"
+                        ? BuildOrderResponse(state: cancelled ? "cancelled" : "confirmed", quantity: "10", filledQuantity: "2", averagePrice: "150")
+                        : BuildOrderResponse(id)
+                };
+            }
+            else
+                response = new(HttpStatusCode.NotFound) { Content = new StringContent("unexpected") };
+            return Task.FromResult(response);
+        });
+    }
+
     private static RecordingHttpHandler CreateModificationHandler(
         Func<string, int, HttpContent> orderResponse, bool rejectReplacement = false,
         bool timeoutReplacement = false, Action? replacementStarted = null,
