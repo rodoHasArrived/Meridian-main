@@ -53,8 +53,12 @@ Security Master migration `040_security_master_governance_events.sql` adds the a
 triggers refuse update and delete, and migration `041_security_master_governance_events_truncate_guard.sql` adds a statement-level BEFORE TRUNCATE rejection. Override patches and decisions, alias revisions and
 projection batch rebuilds append in the same transaction as the change, and an override reviewer
 cannot approve values they staged. The event store and projection store join
-`PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap and
-Commodity projections are now declarative registry plans rather than hand-written writers.
+`PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap,
+Commodity and Bond projections are now declarative registry plans rather than hand-written writers;
+Bond's `bond_projection` parent and its `bond_lifecycle_projection`,
+`bond_accrual_convention_projection` and `bond_issuer_projection` satellites are written by one
+`SecurityTermsProjectionRegistry` descriptor. Only the Option writer remains hand-written, because
+its tables are keyed by `contract_symbol` and are also written from the quote path.
 
 Projection fan-out is keyed by asset class. `UpsertProjectionCoreAsync` reads the security's stored
 `asset_class` under the row lock the upsert takes anyway and runs only the writers that write can
@@ -70,9 +74,12 @@ store whose table is a `SecurityTermsProjectionRegistry` descriptor (Equity, Fut
 Commodity, CryptoCurrency, Deposit, MoneyMarketFund, CertificateOfDeposit, DirectLoan,
 StructuredCredit and their child tables) selects the descriptor's column list rather than
 restating it, mapping rows by column name through `ProjectionRow`. The registry is therefore the
-single statement of a projection table's columns on the write and read sides; only the specialized
-Bond and Option stores carry their own select lists. The per-class store interfaces and row
-records are unchanged, so `*ProjectionService` consumers and DI registrations did not move.
+single statement of a projection table's columns on the write and read sides. Two stores still
+carry their own select lists: `PostgresBondReferenceProjectionStore`, whose registry-written parent
+table predates the identity spine and so joins `securities` for display name and primary
+identifier alongside its three satellites, and the specialized Option store. The per-class store
+interfaces and row records are unchanged, so `*ProjectionService` consumers and DI registrations
+did not move.
 
 Security Master migration `045_structured_credit_typed_tranche_terms.sql` widens
 `structured_credit_projection` with the typed tranche terms StructuredCredit asset-class terms

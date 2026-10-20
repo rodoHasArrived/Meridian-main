@@ -825,8 +825,8 @@ commitments — recorded widely, automated narrowly, per contract packs (Section
 Current source foundation (supported, not accepted): one `SecurityAssetClassRegistry` composes the
 asset-class descriptor table with the term schema and is locked by coverage tests to the F#
 `SecurityKind` union, the validator registry, and the storage writers. Each descriptor owns lot unit
-and multiplier, cash-flow behavior, and projection kind; nine of the eleven projection writers are
-declarative (Bond and Option remain specialized). Terms and security-event payloads declare their
+and multiplier, cash-flow behavior, and projection kind; ten of the eleven projection writers are
+declarative (Option remains specialized; Bond moved onto registry satellite tables). Terms and security-event payloads declare their
 family and version, and replay checks them before decoding. Day-count and settlement conventions
 are typed; corporate-action economics are typed per event family; declared dividend and fund
 distribution income and a dated factor history are projected from effective corporate actions.
