@@ -1785,7 +1785,8 @@ interests, guarantees and funds. `SecurityIdentifierKind` adds
 (`TICKER:MIC`, validated through `Meridian.Contracts.Domain.ListingId`). `Mic` is the
 format-validated ISO 10383 market code (four letters or digits); `MicReference` bundles the
 markets Meridian's providers and seed data use and maps unambiguous exchange names (`NYSE`,
-`Nasdaq`, `AMEX`, ...) to a MIC, leaving routing labels such as `SMART` unresolved.
+`Nasdaq`, `AMEX`, ...) to a MIC, leaving routing labels such as `SMART` unresolved; its `Codes` and
+`ExchangeNames` tables also drive the `securities.listing_mic` backfill.
 
 ### Security Master income, curves, factors and corporate-action terms
 
