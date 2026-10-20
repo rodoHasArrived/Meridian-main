@@ -3751,7 +3751,7 @@ export function SettingsScreen({
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <SettingsChip label="Approved" value={vm.assetProfileGovernancePanel.approvedCountLabel} />
-              <SettingsChip label="Projected" value={vm.assetProfileGovernancePanel.projectedFieldCountLabel} />
+              <SettingsChip label="Declared projected" value={vm.assetProfileGovernancePanel.projectedFieldCountLabel} />
               <SettingsChip label="Close IDs" value={vm.assetProfileGovernancePanel.closeIdentifierCountLabel} />
               <SeverityBadge
                 status={badgeVariantToOperatorSeverity(vm.assetProfileGovernancePanel.statusVariant)}
