@@ -748,6 +748,14 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             return 1;
         }
 
+        // The write path admits only the cadences the shared convention recognizes; read them the
+        // same way (this adds BiMonthly and tenor spellings such as "3M"). Anything else keeps the
+        // legacy interpretation below so stored values read exactly as before.
+        if (SecurityTermConventions.CouponPaymentsPerYear(paymentFrequency) is { } paymentsPerYear)
+        {
+            return paymentsPerYear;
+        }
+
         var normalized = paymentFrequency
             .Replace("-", string.Empty, StringComparison.Ordinal)
             .Replace("_", string.Empty, StringComparison.Ordinal)

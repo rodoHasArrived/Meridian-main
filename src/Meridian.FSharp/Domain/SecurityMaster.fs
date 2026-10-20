@@ -660,6 +660,123 @@ type CustomAssetTerms = {
     TermsJson: string
 }
 
+/// Outright FX forward: an agreed exchange of the base and quote currencies at a forward rate on
+/// the value date. Deliverable unless SettlementType says otherwise.
+type FxForwardTerms = {
+    BaseCurrency: string
+    QuoteCurrency: string
+    /// Notional in the base currency.
+    Notional: decimal option
+    /// Agreed forward rate, quote currency per unit of base currency.
+    ForwardRate: decimal option
+    TradeDate: DateOnly option
+    ValueDate: DateOnly
+    /// Settlement method label ("Physical" by default, "Cash" for a cash-settled forward).
+    SettlementType: string option
+}
+
+/// Non-deliverable forward: cash-settled in the settlement currency against a published fixing of
+/// the base/quote rate on the fixing date; no exchange of the restricted currency takes place.
+type NonDeliverableForwardTerms = {
+    BaseCurrency: string
+    QuoteCurrency: string
+    /// Currency in which the net difference is paid (usually the convertible leg).
+    SettlementCurrency: string
+    /// Notional in the base currency.
+    Notional: decimal option
+    /// Agreed forward rate, quote currency per unit of base currency.
+    ForwardRate: decimal option
+    FixingDate: DateOnly
+    ValueDate: DateOnly
+    /// Published fixing source the settlement rate is read from (operational reference).
+    FixingSource: string option
+}
+
+/// Single-name or index credit default swap: protection bought or sold on a reference entity (or
+/// index) for a running fixed coupon over the protection period.
+type CreditDefaultSwapTerms = {
+    ReferenceEntity: string
+    ReferenceObligation: string option
+    /// "Buy" when the holder buys protection (pays the coupon), "Sell" when it sells protection.
+    ProtectionSide: string
+    Notional: decimal
+    /// Running fixed coupon in basis points per annum (e.g. 100 or 500 under the standard contract).
+    FixedCouponBps: decimal
+    EffectiveDate: DateOnly
+    MaturityDate: DateOnly
+    PaymentFrequency: string option
+    DayCount: string option
+    /// Seniority of the reference obligation (e.g. "SeniorUnsecured", "Subordinated").
+    Seniority: string option
+    /// ISDA restructuring clause (e.g. "ModR", "ModModR", "XR", "CR").
+    RestructuringClause: string option
+    /// Upfront payment as points of notional; positive when paid by the protection buyer.
+    UpfrontPoints: decimal option
+    /// Assumed recovery rate as a fraction (0 to 1).
+    RecoveryRateAssumption: decimal option
+    /// Index name and series for an index CDS (e.g. "CDX.NA.IG.42"); None for single-name.
+    IndexName: string option
+}
+
+/// Option to enter an interest-rate swap: the holder may pay ("Payer") or receive ("Receiver") the
+/// strike fixed rate against the floating index on the underlying swap dates.
+type SwaptionTerms = {
+    /// "Payer" (right to pay fixed) or "Receiver" (right to receive fixed).
+    PayerReceiver: string
+    /// "European", "American" or "Bermudan"; None leaves the style undeclared.
+    ExerciseStyle: string option
+    /// Fixed rate of the underlying swap, as a decimal rate; may be negative.
+    StrikeRate: decimal
+    Expiry: DateOnly
+    UnderlyingEffectiveDate: DateOnly option
+    UnderlyingMaturityDate: DateOnly
+    Notional: decimal
+    FloatingIndex: string option
+    FixedLegPaymentFrequency: string option
+    FixedLegDayCount: string option
+    /// Settlement method label ("Physical" enters the swap, "Cash" pays its value).
+    SettlementType: string option
+}
+
+/// Interest-rate cap, floor or collar on a floating reference index over the protection period.
+type CapFloorTerms = {
+    /// "Cap", "Floor" or "Collar" (a long cap with a short floor).
+    CapFloorType: string
+    ReferenceIndex: string
+    /// Cap strike as a decimal rate; required for Cap and Collar.
+    CapStrike: decimal option
+    /// Floor strike as a decimal rate; required for Floor and Collar.
+    FloorStrike: decimal option
+    Notional: decimal
+    EffectiveDate: DateOnly
+    MaturityDate: DateOnly
+    ResetFrequency: string option
+    DayCount: string option
+    PremiumAmount: decimal option
+}
+
+/// Issuer note whose return is linked to a reference asset or basket (principal-protected notes,
+/// participation notes, reverse convertibles, autocallables). Held and priced by face like debt.
+type StructuredNoteTerms = {
+    IssuerName: string
+    /// Reference asset, index or basket the payoff is linked to.
+    UnderlyingDescription: string
+    Maturity: DateOnly
+    IssueDate: DateOnly option
+    /// Face amount of one note.
+    Denomination: decimal option
+    /// Share of principal repaid at maturity regardless of the underlying, as a fraction (1 = 100%).
+    PrincipalProtectionPct: decimal option
+    /// Share of the underlying's return the holder receives, as a fraction (1 = 100%).
+    ParticipationRate: decimal option
+    /// Maximum return paid, as a fraction of face.
+    ReturnCap: decimal option
+    CouponRate: decimal option
+    PaymentFrequency: string option
+    /// Knock-in or knock-out barrier as a fraction of the underlying's initial level.
+    BarrierLevel: decimal option
+}
+
 [<RequireQualifiedAccess>]
 type SecurityKind =
     | Equity of EquityTerms
@@ -686,6 +803,18 @@ type SecurityKind =
     | CryptoCurrency of CryptoTerms
     | Cfd of CfdTerms
     | Warrant of WarrantTerms
+    /// Outright deliverable FX forward.
+    | FxForward of FxForwardTerms
+    /// Cash-settled non-deliverable FX forward.
+    | NonDeliverableForward of NonDeliverableForwardTerms
+    /// Single-name or index credit default swap.
+    | CreditDefaultSwap of CreditDefaultSwapTerms
+    /// Option to enter an interest-rate swap.
+    | Swaption of SwaptionTerms
+    /// Interest-rate cap, floor or collar.
+    | CapFloor of CapFloorTerms
+    /// Issuer note with a payoff linked to a reference asset or basket.
+    | StructuredNote of StructuredNoteTerms
     /// Mutual fund, ETF, hedge fund, REIT, or closed-end fund.
     /// Market value = units × NAV (or market price); no amortization in general.
     | InvestmentFund of InvestmentFundTerms
@@ -773,6 +902,18 @@ module AssetClassRegistry =
             SubType = SecuritySubType.OtherSubType "Cfd"; IssuerType = None; RiskCountry = None; IsDerivative = true }
           { AssetClassName = "Warrant"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.ListedDerivative
             SubType = SecuritySubType.OtherSubType "Warrant"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "FxForward"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+            SubType = SecuritySubType.OtherSubType "FxForward"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "NonDeliverableForward"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+            SubType = SecuritySubType.OtherSubType "NonDeliverableForward"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "CreditDefaultSwap"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+            SubType = SecuritySubType.OtherSubType "CreditDefaultSwap"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "Swaption"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+            SubType = SecuritySubType.OtherSubType "Swaption"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "CapFloor"; AssetClass = AssetClass.Derivative; Family = Some (AssetFamily.OtherFamily "OtcDerivative")
+            SubType = SecuritySubType.OtherSubType "CapFloor"; IssuerType = None; RiskCountry = None; IsDerivative = true }
+          { AssetClassName = "StructuredNote"; AssetClass = AssetClass.FixedIncome; Family = Some AssetFamily.CorporateDebt
+            SubType = SecuritySubType.OtherSubType "StructuredNote"; IssuerType = Some "Corporate"; RiskCountry = None; IsDerivative = false }
           { AssetClassName = "InvestmentFund"; AssetClass = AssetClass.Fund; Family = None
             SubType = SecuritySubType.OtherSubType "InvestmentFund"; IssuerType = None; RiskCountry = None; IsDerivative = false }
           { AssetClassName = "CustomAsset"; AssetClass = AssetClass.Other; Family = Some (AssetFamily.OtherFamily "CustomAsset")
@@ -810,6 +951,12 @@ module AssetClassRegistry =
         | SecurityKind.CryptoCurrency _ -> "CryptoCurrency"
         | SecurityKind.Cfd _ -> "Cfd"
         | SecurityKind.Warrant _ -> "Warrant"
+        | SecurityKind.FxForward _ -> "FxForward"
+        | SecurityKind.NonDeliverableForward _ -> "NonDeliverableForward"
+        | SecurityKind.CreditDefaultSwap _ -> "CreditDefaultSwap"
+        | SecurityKind.Swaption _ -> "Swaption"
+        | SecurityKind.CapFloor _ -> "CapFloor"
+        | SecurityKind.StructuredNote _ -> "StructuredNote"
         | SecurityKind.InvestmentFund _ -> "InvestmentFund"
         | SecurityKind.CustomAsset _ -> "CustomAsset"
 

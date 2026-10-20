@@ -413,6 +413,13 @@ A new class must be added to: the F# `SecurityKind` DU **and** `AssetClassRegist
 serializer (`Interop.SecurityMaster.fs`); the C# deserializer (`SecurityMasterMapping.ToSecurityKind`);
 and optionally a projection interface + Postgres store + migration + DI registration.
 
+> **2026-10-19 update.** The OTC derivative classes `FxForward`, `NonDeliverableForward` and
+> `CreditDefaultSwap` were added as declarative classes (catalog, schema, validators, codec arms,
+> registry-written projections via migration 046), followed by `Swaption`, `CapFloor` and
+> `StructuredNote` (migration 047). Every surface below now reads 32; the
+> coverage, parity, round-trip and projection-DDL tests enumerate the classes by reflection and
+> held the addition to the hand-listed sites named in this section.
+
 The count of declared classes already differs by surface: F# DU 25, catalog 26, terms schema 26,
 kind mapping 26, projection writers 11 (*as of 2026-08-12; the DU/catalog/schema surfaces now all
 read 26 — see below*). Tests lock catalog↔registry and catalog↔terms-schema, but
