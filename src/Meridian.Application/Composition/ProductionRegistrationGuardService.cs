@@ -85,6 +85,14 @@ public sealed class ProductionRegistrationGuardService : IHostedService
 
         if (ProductionServiceRegistrationPolicy.IsSupportedLocalComposition(services))
         {
+            // The packaged or customer local-workstation build is the shipped topology, so the
+            // ADR-019 platform gate applies to it as it does to production postures.
+            if (ProductionServiceRegistrationPolicy.IsPlatformGatedLocalComposition(services))
+            {
+                ProductionServiceRegistrationPolicy.ThrowIfViolations(
+                    [], ProductionServiceRegistrationPolicy.CollectPlatformViolation(services));
+            }
+
             var runsLabeled =
                 ProductionServiceRegistrationPolicy.TryResolveForcedProvenance(services, out var forced)
                 && forced.IsNonReal();

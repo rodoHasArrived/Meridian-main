@@ -489,6 +489,24 @@ public sealed class ProductionRegistrationGuardServiceTests
         await host.StopAsync();
     }
 
+    [Fact]
+    public async Task Preflight_PackagedLocalWorkstationOnLinux_RefusesBeforeAnyShell()
+    {
+        using var quiet = new ProductionEnvironmentQuietScope();
+        using var packaged = new EnvironmentVariableScope("MDC_PACKAGED_BUILD", "true");
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+        services.DeclareMeridianHostPlatform(isWindows: false, OSArchitecture.X64, "Linux (test)");
+        services.AddProductionRegistrationGuard();
+        services.AddSingleton<ITestStore, DurableTestStore>();
+        await using var provider = services.BuildServiceProvider();
+
+        var preflight = async () => await StartupRefusalPreflight.RunAsync(provider);
+
+        (await preflight.Should().ThrowAsync<StartupRefusedException>())
+            .Which.Message.Should().Contain("LocalWorkstation (packaged build MDC_PACKAGED_BUILD=true)");
+    }
+
     private static void AddStoreFactory(IServiceCollection services, ServiceLifetime lifetime, bool keyed, Func<ITestStore> factory)
         => services.Add(keyed
             ? new ServiceDescriptor(typeof(ITestStore), "company-a", (_, _) => factory(), lifetime)

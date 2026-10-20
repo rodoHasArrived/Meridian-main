@@ -38,8 +38,10 @@ public sealed class ProviderCredentialAuditReplayHostedService : IHostedService
         {
             throw;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is not OutOfMemoryException)
         {
+            // Replay is a recovery convenience, never a startup gate: whatever the journal holds, the
+            // host starts and the journal is retained for the next attempt or for review.
             _logger.LogWarning(ex, "Credential audit replay at startup did not complete; the journal is retained for the next attempt");
         }
     }

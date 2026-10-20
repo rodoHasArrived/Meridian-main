@@ -264,6 +264,61 @@ public sealed class ProviderCredentialAuditDurabilityTests : IDisposable
         journal.GetProperty("record").GetProperty("action").GetString().Should().Be("save");
     }
 
+    [Fact]
+    public async Task Replay_CommittedEntryAlreadyInAuditLog_IsNotAppendedTwice()
+    {
+        // Crash after the audit append but before the journal line was removed: the record is already
+        // durable, carries its operation id, and must not be appended again.
+        var store = new FileProviderCredentialStore(_root);
+        BlockAuditLog();
+        await store.SaveAsync(SaveRequest("alpaca", "k", "s"));
+        var journalLine = (await File.ReadAllLinesAsync(_pendingPath)).Single();
+        var record = System.Text.Json.JsonDocument.Parse(journalLine).RootElement.GetProperty("record").GetRawText();
+        UnblockAuditLog();
+        await File.WriteAllTextAsync(_auditPath, record + "\n");
+
+        var replayed = await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync();
+
+        replayed.Should().Be(0);
+        File.Exists(_pendingPath).Should().BeFalse();
+        var audit = await File.ReadAllLinesAsync(_auditPath);
+        audit.Should().ContainSingle();
+        audit[0].Should().Contain("\"operationId\":");
+    }
+
+    [Fact]
+    public async Task Replay_MalformedJournalLines_AreQuarantinedNotAppendedAndDoNotThrow()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(SaveRequest("alpaca", "k", "s"));
+        var auditBefore = await File.ReadAllLinesAsync(_auditPath);
+        await File.WriteAllTextAsync(_pendingPath,
+            "{\"phase\":\"committed\",\"providerId\":{\"x\":1},\"action\":\"save\",\"check\":\"nope\",\"record\":\"not-an-object\"}\n" +
+            "{\n" +
+            "[1,2,3]\n");
+
+        var replayed = await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync();
+
+        replayed.Should().Be(0);
+        File.Exists(_pendingPath).Should().BeFalse();
+        (await File.ReadAllLinesAsync(_pendingPath + ".rejected")).Should().HaveCount(3);
+        (await File.ReadAllLinesAsync(_auditPath)).Should().Equal(auditBefore);
+    }
+
+    [Fact]
+    public async Task ReplayHostedService_NeverRefusesStartup()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        Directory.CreateDirectory(Path.GetDirectoryName(_pendingPath)!);
+        Directory.CreateDirectory(_pendingPath); // the journal path itself is unreadable as a file
+        var service = new Meridian.Application.Config.Credentials.ProviderCredentialAuditReplayHostedService(
+            store, Microsoft.Extensions.Logging.Abstractions.NullLogger<Meridian.Application.Config.Credentials.ProviderCredentialAuditReplayHostedService>.Instance);
+
+        var act = () => service.StartAsync(CancellationToken.None);
+
+        await act.Should().NotThrowAsync();
+    }
+
     private static string JournalLine(string phase, string kind, string key, string? generation, string record)
     {
         var generationJson = generation is null ? "null" : $"\"{generation}\"";

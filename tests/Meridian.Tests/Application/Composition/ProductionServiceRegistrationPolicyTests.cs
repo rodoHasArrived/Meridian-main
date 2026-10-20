@@ -151,10 +151,50 @@ public sealed class ProductionServiceRegistrationPolicyTests
             .Should().BeLessThan(message.IndexOf("rejected the host platform", StringComparison.Ordinal));
     }
 
+    [Theory]
+    [InlineData("MDC_PACKAGED_BUILD")]
+    [InlineData("MERIDIAN_CUSTOMER_BUILD")]
+    public void Validate_PackagedLocalWorkstationOnLinux_RefusesNamingTheBuildFlag(string flag)
+    {
+        // The shipped topology: the lifecycle supervisor starts the host as a LocalWorkstation with
+        // MDC_PACKAGED_BUILD=true. It is inside the ADR-019 gate exactly like a production posture.
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        using var packaged = new EnvironmentVariableScope(flag, "true");
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+        services.DeclareMeridianHostPlatform(isWindows: false, OSArchitecture.X64, "Linux (test)");
+        services.AddSingleton<AllowedService>();
+
+        Action act = () => ProductionServiceRegistrationPolicy.Validate(services);
+
+        act.Should().Throw<StartupRefusedException>()
+            .WithMessage($"*posture 'LocalWorkstation (packaged build {flag}=true)'*")
+            .WithMessage("*ADR-019*");
+    }
+
+    [Fact]
+    public void Validate_PackagedLocalWorkstationOnWindows_Allows()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        using var packaged = new EnvironmentVariableScope("MDC_PACKAGED_BUILD", "true");
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+        services.DeclareMeridianHostPlatform(isWindows: true, OSArchitecture.Arm64, "Windows 11 (test)");
+        services.AddSingleton<AllowedService>();
+
+        Action act = () => ProductionServiceRegistrationPolicy.Validate(services);
+
+        act.Should().NotThrow();
+    }
+
     [Fact]
     public void Validate_LocalWorkstationOnLinux_IsNotPlatformGated()
     {
+        // Unflagged LocalWorkstation is development; MDC_PACKAGED_BUILD / MERIDIAN_CUSTOMER_BUILD are
+        // cleared by the quiet scope below, so this composition stays outside the gate.
         using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        using var unpackaged = new EnvironmentVariableScope("MDC_PACKAGED_BUILD", null);
+        using var nonCustomer = new EnvironmentVariableScope("MERIDIAN_CUSTOMER_BUILD", null);
         var services = new ServiceCollection();
         services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
         services.DeclareMeridianHostPlatform(isWindows: false, OSArchitecture.X64, "Linux (test)");

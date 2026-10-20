@@ -103,9 +103,11 @@ format are governed by [ADR-020](020-lifecycle-control-plane.md).
   required because .NET 10 does not enumerate wildcard registrations through `GetKeyedServices`.
   Unlabeled local-workstation graphs apply the runtime check to durable-store contracts, while a pinned
   non-real provenance declaration preserves the documented simulation lane.
-- **Platform fail-closed.** A production composition on any non-Windows host is refused by the
+- **Platform fail-closed.** A production composition, or the shipped topology itself (a
+  `LocalWorkstation` composition flagged `MDC_PACKAGED_BUILD` or `MERIDIAN_CUSTOMER_BUILD`, which is
+  how the lifecycle supervisor starts the installed host), on any non-Windows host is refused by the
   same policy, from the service collection alone, so the descriptor-only preflight guard rejects it
-  before any shell. The diagnostic names the posture (declared, or the environment variable that
+  before any shell. An unflagged `LocalWorkstation` composition is development and is not gated. The diagnostic names the posture (declared, or the environment variable that
   selected production), the detected OS and architecture, this ADR, and the platform-bound bindings
   that would otherwise silently degrade: provider credential vault protection falling from
   `dpapi-current-user` to the adjacent-AES-key `local-aes-gcm`, and the lifecycle protected secret
@@ -113,8 +115,8 @@ format are governed by [ADR-020](020-lifecycle-control-plane.md).
   installer receipts. The Windows version is likewise reported, not refused: the code gate is the
   operating-system family, which is the boundary that changes the credential-protection path; the
   Windows 11 row of the matrix is enforced by the installer lane and certification receipts, not by
-  this guard. `LocalWorkstation` and unspecified postures are never platform-gated, so development
-  on Linux keeps composing. Tests pin the platform through an internal
+  this guard. Unflagged `LocalWorkstation` and unspecified postures are never platform-gated, so
+  development on Linux keeps composing. Tests pin the platform through an internal
   `DeclareMeridianHostPlatform` declaration rather than a process-global probe.
 - Prohibited-by-default implementation names in production postures: `InMemory*`, `Null*`,
   `NoOp*`, `Fake*`, `Stub*`, `Sample*`, plus anything carrying

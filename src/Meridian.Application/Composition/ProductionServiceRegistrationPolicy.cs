@@ -40,12 +40,16 @@ public static class ProductionServiceRegistrationPolicy
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        if (!IsProductionComposition(services))
+        if (IsProductionComposition(services))
         {
+            ThrowIfViolations(CollectStaticViolations(services), CollectPlatformViolation(services));
             return;
         }
 
-        ThrowIfViolations(CollectStaticViolations(services), CollectPlatformViolation(services));
+        if (IsPlatformGatedLocalComposition(services))
+        {
+            ThrowIfViolations([], CollectPlatformViolation(services));
+        }
     }
 
     internal static string[] CollectStaticViolations(IServiceCollection services)
@@ -92,8 +96,11 @@ public static class ProductionServiceRegistrationPolicy
     // silently degraded, when a production posture selects them. The degradation this prevents is
     // concrete: off Windows the provider credential vault cannot use DPAPI and falls back to a raw
     // AES key stored beside the vault, and the lifecycle protected secret store is unsupported.
-    // Architecture is reported for the diagnostic but not refused: PRD-014 certifies both x64 and
-    // ARM64 installer receipts on Windows.
+    // The gate applies to production compositions and to the shipped topology itself: the packaged
+    // or customer local-workstation build that the lifecycle supervisor starts with
+    // MDC_PACKAGED_BUILD=true. An unflagged LocalWorkstation composition is development and is not
+    // gated, so work on Linux keeps composing. Architecture and Windows version are reported for the
+    // diagnostic but not refused: PRD-014 certifies both x64 and ARM64 installer receipts.
 
     /// <summary>Production bindings that silently select a weaker implementation off Windows.</summary>
     private static readonly string[] PlatformBoundProductionBindings =
@@ -126,10 +133,31 @@ public static class ProductionServiceRegistrationPolicy
     }
 
     /// <summary>
-    /// The ADR-019 platform refusal for a production composition, or <c>null</c> when the host is
-    /// inside the supported envelope. Callers gate on <see cref="IsProductionComposition"/> first;
-    /// local-workstation and unspecified postures are never platform-gated so development on Linux
-    /// keeps composing.
+    /// Whether a supported local-workstation composition is the packaged or customer build, which is
+    /// the shipped topology and therefore inside the ADR-019 platform gate. The same flags that
+    /// <see cref="EnsureIsolatedQuantLabIsAllowed"/> treats as customer distribution.
+    /// </summary>
+    internal static bool IsPlatformGatedLocalComposition(IServiceCollection services)
+        => IsSupportedLocalComposition(services) && ResolvePackagedBuildFlag(services) is not null;
+
+    private static (string Name, string Value)? ResolvePackagedBuildFlag(IServiceCollection services)
+    {
+        var configuration = CompositionConfiguration.Resolve(services);
+        foreach (var name in new[] { "MDC_PACKAGED_BUILD", "MERIDIAN_CUSTOMER_BUILD" })
+        {
+            var value = configuration[name];
+            if (IsTruthy(value))
+                return (name, value!);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// The ADR-019 platform refusal, or <c>null</c> when the host is inside the supported envelope.
+    /// Callers gate on <see cref="IsProductionComposition"/> or
+    /// <see cref="IsPlatformGatedLocalComposition"/> first; an unflagged local-workstation or
+    /// unspecified posture is never platform-gated so development on Linux keeps composing.
     /// </summary>
     internal static string? CollectPlatformViolation(IServiceCollection services)
     {
@@ -140,19 +168,26 @@ public static class ProductionServiceRegistrationPolicy
         }
 
         return
-            $"Production startup policy rejected the host platform for posture '{DescribeProductionPosture(services)}': " +
+            $"Production startup policy rejected the host platform for posture '{DescribeGatedPosture(services)}': " +
             $"detected {platform.Description} ({platform.Architecture}), but ADR-019 " +
             "(docs/adr/019-production-support-matrix-and-deployment-posture.md, support matrix) restricts the v1 " +
-            "production envelope to Windows 11; this guard refuses every non-Windows host (architecture and Windows " +
-            "version are reported, not refused). Linux container and systemd postures are experimental and must " +
-            "fail closed rather than degrade. Platform-bound production bindings that would otherwise silently " +
-            $"degrade: {string.Join("; ", PlatformBoundProductionBindings)}. Run the supported local-workstation " +
-            "posture on Windows, or scope the host out of the production envelope per ADR-019.";
+            "supported envelope to Windows 11; this guard refuses every non-Windows host for production postures and " +
+            "for packaged or customer local-workstation builds (architecture and Windows version are reported, not " +
+            "refused). Linux container and systemd postures are experimental and must fail closed rather than " +
+            "degrade. Platform-bound production bindings that would otherwise silently degrade: " +
+            $"{string.Join("; ", PlatformBoundProductionBindings)}. Run the supported local-workstation posture on " +
+            "Windows, or scope the host out of the supported envelope per ADR-019.";
     }
 
-    private static string DescribeProductionPosture(IServiceCollection services)
+    private static string DescribeGatedPosture(IServiceCollection services)
     {
         var declared = ResolveDeclaredPosture(services);
+        if (declared == MeridianDeploymentPosture.LocalWorkstation || IsLocalWorkstationEnvironment(CompositionConfiguration.Resolve(services)))
+        {
+            if (!IsProductionComposition(services) && ResolvePackagedBuildFlag(services) is { } flag)
+                return $"{nameof(MeridianDeploymentPosture.LocalWorkstation)} (packaged build {flag.Name}={flag.Value})";
+        }
+
         if (declared != MeridianDeploymentPosture.Unspecified)
         {
             return declared.ToString();

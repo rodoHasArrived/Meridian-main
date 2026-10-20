@@ -860,7 +860,8 @@ Core workstation host. Do not introduce a second listener or independent monitor
   indistinguishable from it and gets swallowed by the same tolerance. `ProductionRegistrationGuardService`
   and `ProductionServiceRegistrationPolicy` raise this type for every ADR-019 refusal, including the
   unconstructible-factory case found during final-graph validation and the platform fail-closed: a
-  production composition on a non-Windows host is refused by the descriptor-only half with a diagnostic
+  production composition, or a packaged/customer `LocalWorkstation` composition (the shipped
+  topology), on a non-Windows host is refused by the descriptor-only half with a diagnostic
   naming the posture, the detected OS and architecture, and the platform-bound bindings (`dpapi-current-user`
   to `local-aes-gcm` vault protection, the lifecycle protected secret store) that would otherwise
   silently degrade. Architecture and Windows version are reported, not refused (PRD-014 certifies x64 and ARM64; the

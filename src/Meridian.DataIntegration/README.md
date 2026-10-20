@@ -77,7 +77,11 @@ start) append the owed records with a `replayedAt` stamp, and status reports `au
 `intent` still journaled after a crash is never taken as proof: replay verifies it against the vault
 (saved credential generation present, deleted key absent, verification timestamp recorded, OAuth key
 present or absent) and appends it only when the vault proves the mutation landed, discarding it with
-a warning otherwise; a vault write that throws removes its intent again. Provider-credential saves, deletes and verification records return
+a warning otherwise; a vault write that throws removes its intent again. Each journaled record carries
+a stable `operationId`, so a replay after a crash between the audit append and the journal cleanup
+recognises the record already in the log and does not append it twice. A journal line that is not a
+structurally valid entry is moved to `provider-credentials.audit.pending.jsonl.rejected` for review and
+never appended; the start-up replay logs and continues on any failure rather than refusing the host. Provider-credential saves, deletes and verification records return
 success in that case; OAuth token saves throw `ProviderCredentialAuditDeferredException` (an
 `IOException` with `VaultCommitted`) because their callers reconcile a running cache. A journal write
 failure refuses the mutation before the vault is touched. Legacy imports keep their retry-by-sidecar

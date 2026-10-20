@@ -500,6 +500,9 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
     {
         await ReplayPendingAuditCoreAsync(ct).ConfigureAwait(false);
         var journal = await ReadPendingAuditEntriesAsync(ct).ConfigureAwait(false);
+        // A stable operation id rides on the audit record itself, so replay can tell an already
+        // appended record (crash after the append, before the journal line was removed) from an owed one.
+        auditLine = StampOperationId(auditLine, Guid.NewGuid().ToString("N"));
         var entry = PendingAuditEntry.Intent(providerId, action, check, auditLine);
         journal.Add(entry);
         await WritePendingAuditAsync(journal, ct).ConfigureAwait(false);
@@ -575,12 +578,37 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         var replayed = 0;
         var changed = false;
         ProviderCredentialVault? vault = null;
+        HashSet<string>? appendedOperationIds = null;
         try
         {
             while (journal.Count > 0)
             {
                 ct.ThrowIfCancellationRequested();
                 var entry = journal[0];
+                if (entry.Malformed)
+                {
+                    // Schema-invalid journal lines are retained for review beside the journal and never
+                    // appended to the audit log; a damaged journal must not refuse startup.
+                    await QuarantinePendingAuditLineAsync(entry.Record).ConfigureAwait(false);
+                    Log.Warning("Quarantined a malformed credential audit journal line at {QuarantinePath}", _pendingAuditPath + ".rejected");
+                    journal.RemoveAt(0);
+                    changed = true;
+                    continue;
+                }
+
+                if (entry.OperationId is not null)
+                {
+                    appendedOperationIds ??= await ReadAppendedOperationIdsAsync(ct).ConfigureAwait(false);
+                    if (appendedOperationIds.Contains(entry.OperationId))
+                    {
+                        // Already durable in the audit log: the crash landed between the append and the
+                        // journal cleanup. Replay is idempotent, so drop the journal line without appending.
+                        journal.RemoveAt(0);
+                        changed = true;
+                        continue;
+                    }
+                }
+
                 if (!entry.Committed)
                 {
                     vault ??= await LoadVaultAsync(ct).ConfigureAwait(false);
@@ -596,6 +624,8 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
                 }
 
                 await AppendAuditLineAsync(MarkReplayed(entry.Record, replayedAt), CancellationToken.None).ConfigureAwait(false);
+                if (entry.OperationId is not null)
+                    appendedOperationIds?.Add(entry.OperationId);
                 journal.RemoveAt(0);
                 changed = true;
                 replayed++;
@@ -615,6 +645,50 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         if (replayed > 0)
             Log.Information("Replayed {ReplayedAuditCount} journaled credential audit record(s)", replayed);
         return replayed;
+    }
+
+    private static string StampOperationId(string line, string operationId)
+    {
+        if (JsonNode.Parse(line) is JsonObject record)
+        {
+            record["operationId"] = operationId;
+            return record.ToJsonString(JsonOptions);
+        }
+        return line;
+    }
+
+    /// <summary>Operation ids already present in the audit log; read only while a journal is non-empty.</summary>
+    private async Task<HashSet<string>> ReadAppendedOperationIdsAsync(CancellationToken ct)
+    {
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        if (!File.Exists(_auditPath))
+            return ids;
+        foreach (var line in await File.ReadAllLinesAsync(_auditPath, ct).ConfigureAwait(false))
+        {
+            if (string.IsNullOrWhiteSpace(line))
+                continue;
+            try
+            {
+                if (JsonNode.Parse(line) is JsonObject record && record["operationId"] is JsonValue value &&
+                    value.TryGetValue<string>(out var id) && !string.IsNullOrEmpty(id))
+                    ids.Add(id);
+            }
+            catch (JsonException)
+            {
+                // An unparseable audit line carries no operation id; it cannot match a journal entry.
+            }
+        }
+        return ids;
+    }
+
+    private async Task QuarantinePendingAuditLineAsync(string line)
+    {
+        var quarantinePath = _pendingAuditPath + ".rejected";
+        await using var stream = new FileStream(quarantinePath, FileMode.Append, FileAccess.Write, FileShare.Read,
+            4096, FileOptions.Asynchronous | FileOptions.WriteThrough);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes(line + "\n"), CancellationToken.None).ConfigureAwait(false);
+        await stream.FlushAsync(CancellationToken.None).ConfigureAwait(false);
+        stream.Flush(flushToDisk: true);
     }
 
     private static string MarkReplayed(string line, DateTimeOffset replayedAt)
@@ -699,26 +773,47 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
     /// <summary>One journal line: the audit record plus its commit phase and the proof replay needs.</summary>
     private sealed class PendingAuditEntry
     {
-        private PendingAuditEntry(string providerId, string action, bool committed, AuditCommitCheck check, string record)
+        private PendingAuditEntry(string providerId, string action, bool committed, AuditCommitCheck check, string record, bool malformed = false)
         {
             ProviderId = providerId;
             Action = action;
             Committed = committed;
             Check = check;
             Record = record;
+            Malformed = malformed;
+            OperationId = malformed ? null : ReadOperationId(record);
         }
 
         public string ProviderId { get; }
         public string Action { get; }
         public bool Committed { get; }
         public AuditCommitCheck Check { get; }
-        /// <summary>The audit log line exactly as it will be appended.</summary>
+        /// <summary>The audit log line exactly as it will be appended (the raw journal line when malformed).</summary>
         public string Record { get; }
+        /// <summary>A journal line that is not a structurally valid entry; quarantined by replay, never appended.</summary>
+        public bool Malformed { get; }
+        /// <summary>The record's stable operation id, when it carries one; replay deduplicates on it.</summary>
+        public string? OperationId { get; }
 
         public static PendingAuditEntry Intent(string providerId, string action, AuditCommitCheck check, string record)
             => new(providerId, action, committed: false, check, record);
 
         public PendingAuditEntry AsCommitted() => new(ProviderId, Action, committed: true, Check, Record);
+
+        private static string? ReadOperationId(string record)
+        {
+            try
+            {
+                return JsonNode.Parse(record) is JsonObject node && node["operationId"] is JsonValue value &&
+                       value.TryGetValue<string>(out var id) && !string.IsNullOrEmpty(id)
+                    ? id
+                    : null;
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
 
         public string Serialize()
         {
@@ -733,36 +828,51 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
             return node.ToJsonString(JsonOptions);
         }
 
+        /// <summary>
+        /// Never throws: a line that is not a structurally valid journal entry comes back
+        /// <see cref="Malformed"/> so replay can quarantine it instead of refusing startup.
+        /// </summary>
         public static PendingAuditEntry Parse(string line)
         {
-            JsonObject? node = null;
             try
             {
-                node = JsonNode.Parse(line) as JsonObject;
-            }
-            catch (JsonException)
-            {
-                // Fall through: an unparseable line is treated as a committed legacy record below.
-            }
+                if (JsonNode.Parse(line) is not JsonObject node)
+                    return AsMalformed(line);
 
-            if (node is null || node["phase"] is null || node["record"] is not JsonNode record)
-            {
-                // A line without a phase predates the two-phase journal; nothing can disprove it, so
-                // it keeps the original contract and is appended as written.
-                return new PendingAuditEntry("unknown", "unknown", committed: true,
-                    new AuditCommitCheck("legacy", string.Empty, null, null), line);
-            }
+                if (node["phase"] is null && node["record"] is null && node["action"] is JsonValue)
+                {
+                    // A bare audit record predates the two-phase journal; nothing can disprove it, so
+                    // it keeps the original contract and is appended as written.
+                    return new PendingAuditEntry("unknown", "unknown", committed: true,
+                        new AuditCommitCheck("legacy", string.Empty, null, null), line);
+                }
 
-            var check = node["check"] is JsonNode checkNode
-                ? checkNode.Deserialize<AuditCommitCheck>(JsonOptions) ?? new AuditCommitCheck("legacy", string.Empty, null, null)
-                : new AuditCommitCheck("legacy", string.Empty, null, null);
-            return new PendingAuditEntry(
-                node["providerId"]?.GetValue<string>() ?? "unknown",
-                node["action"]?.GetValue<string>() ?? "unknown",
-                committed: string.Equals(node["phase"]?.GetValue<string>(), "committed", StringComparison.Ordinal),
-                check,
-                record.ToJsonString(JsonOptions));
+                if (node["record"] is not JsonObject record ||
+                    node["phase"] is not JsonValue phase || !phase.TryGetValue<string>(out var phaseText) ||
+                    node["providerId"] is not JsonValue providerValue || !providerValue.TryGetValue<string>(out var providerId) ||
+                    node["action"] is not JsonValue actionValue || !actionValue.TryGetValue<string>(out var action) ||
+                    node["check"] is not JsonObject checkNode)
+                    return AsMalformed(line);
+
+                var check = checkNode.Deserialize<AuditCommitCheck>(JsonOptions);
+                if (check is null || string.IsNullOrEmpty(check.Kind))
+                    return AsMalformed(line);
+
+                return new PendingAuditEntry(
+                    providerId,
+                    action,
+                    committed: string.Equals(phaseText, "committed", StringComparison.Ordinal),
+                    check,
+                    record.ToJsonString(JsonOptions));
+            }
+            catch (Exception ex) when (ex is JsonException or InvalidOperationException or NotSupportedException or FormatException)
+            {
+                return AsMalformed(line);
+            }
         }
+
+        private static PendingAuditEntry AsMalformed(string line)
+            => new("unknown", "unknown", committed: false, new AuditCommitCheck("malformed", string.Empty, null, null), line, malformed: true);
     }
 
     private async Task AppendAuditLineAsync(string line, CancellationToken ct)
