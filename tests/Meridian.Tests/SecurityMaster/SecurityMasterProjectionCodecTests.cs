@@ -14,14 +14,18 @@ namespace Meridian.Tests.SecurityMaster;
 /// <see cref="SecurityAssetTermsSchema"/>; these tests assert the columns are populated end-to-end from a
 /// canonical payload without a live database.
 /// <para>
-/// Covers the hand-written decoders only. The schema-driven projections declared in
-/// <c>SecurityTermsProjectionRegistry</c> decode through one shared path, so their equivalent guards
-/// live in <c>SecurityTermsProjectionRegistryTests</c> instead of being restated per class here.
+/// Bond and Swap now decode through <c>SecurityTermsProjectionRegistry</c> descriptors whose derived
+/// columns call the same readers the hand-written decoders did; these guards hold the descriptors to
+/// the flat contract and the legacy fallback. The generic decode path has its own guards in
+/// <c>SecurityTermsProjectionRegistryTests</c>.
 /// </para>
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class SecurityMasterProjectionCodecTests
 {
+    private static readonly SecurityTermsProjectionDescriptor Bond =
+        SecurityTermsProjectionRegistry.Descriptors.Single(static descriptor => descriptor.AssetClass == "Bond");
+
     [Fact]
     public void Bond_FlatFixedCoupon_PopulatesCouponColumns()
     {
@@ -38,12 +42,15 @@ public sealed class SecurityMasterProjectionCodecTests
             issuerName = "ACME"
         });
 
-        PostgresSecurityMasterStore.TryBuildBondProjection(record, out var projection).Should().BeTrue();
+        PostgresSecurityMasterStore.TryBuildTermsProjection(Bond, record, out var plan).Should().BeTrue();
 
-        projection.CouponKind.Should().Be("Fixed");
-        projection.FixedCouponRate.Should().Be(5.0m);
-        projection.DayCountConvention.Should().Be("30/360");
-        projection.MaturityDate.Should().Be(new DateOnly(2030, 1, 1));
+        plan.Value("coupon_kind").Should().Be("Fixed");
+        plan.Value("fixed_coupon_rate").Should().Be(5.0m);
+        plan.Value("maturity_date").Should().Be(new DateTime(2030, 1, 1));
+        plan.SatelliteValue("bond_accrual_convention_projection", "day_count_convention").Should().Be("30/360");
+        plan.SatelliteValue("bond_accrual_convention_projection", "coupon_kind").Should().Be("Fixed");
+        plan.SatelliteValue("bond_lifecycle_projection", "lifecycle_stat").Should().Be("Active");
+        plan.SatelliteColumns("bond_issuer_projection").Should().NotBeNull("the record names an issuer");
     }
 
     [Fact]
@@ -61,12 +68,14 @@ public sealed class SecurityMasterProjectionCodecTests
             subclass = "FloatingRate"
         });
 
-        PostgresSecurityMasterStore.TryBuildBondProjection(record, out var projection).Should().BeTrue();
+        PostgresSecurityMasterStore.TryBuildTermsProjection(Bond, record, out var plan).Should().BeTrue();
 
-        projection.CouponKind.Should().Be("Floating");
-        projection.FloatingRateIndex.Should().Be("SOFR");
-        projection.FloatingSpreadBps.Should().Be(125m);
-        projection.DayCountConvention.Should().Be("ACT/360");
+        plan.Value("coupon_kind").Should().Be("Floating");
+        plan.Value("floating_rate_index").Should().Be("SOFR");
+        plan.Value("floating_spread_bps").Should().Be(125m);
+        plan.Value("fixed_coupon_rate").Should().Be(DBNull.Value);
+        plan.SatelliteValue("bond_accrual_convention_projection", "day_count_convention").Should().Be("ACT/360");
+        plan.SatelliteColumns("bond_issuer_projection").Should().BeNull("a bond that names no issuer has no issuer-ladder row");
     }
 
     [Fact]
@@ -83,11 +92,21 @@ public sealed class SecurityMasterProjectionCodecTests
             subclass = "Corporate"
         });
 
-        PostgresSecurityMasterStore.TryBuildBondProjection(record, out var projection).Should().BeTrue();
+        PostgresSecurityMasterStore.TryBuildTermsProjection(Bond, record, out var plan).Should().BeTrue();
 
-        projection.CouponKind.Should().Be("Fixed");
-        projection.FixedCouponRate.Should().Be(4.5m);
-        projection.DayCountConvention.Should().Be("30/360");
+        plan.Value("coupon_kind").Should().Be("Fixed");
+        plan.Value("fixed_coupon_rate").Should().Be(4.5m);
+        plan.SatelliteValue("bond_accrual_convention_projection", "day_count_convention").Should().Be("30/360");
+    }
+
+    [Fact]
+    public void Bond_MissingMaturity_HasNoProjection()
+    {
+        // The parent gates on maturity exactly as the hand-written writer did; without it the store
+        // clears all four bond tables rather than projecting a bond with no term.
+        var record = Record("Bond", new { schemaVersion = 1, couponType = "Fixed", couponRate = 5.0m, isCallable = false });
+
+        PostgresSecurityMasterStore.TryBuildTermsProjection(Bond, record, out _).Should().BeFalse();
     }
 
     [Fact]
