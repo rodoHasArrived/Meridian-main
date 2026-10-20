@@ -4540,8 +4540,10 @@ Meridian-main
 │   │   │   │   └── Trade.cs
 │   │   │   ├── CanonicalSymbol.cs
 │   │   │   ├── IPositionSnapshotStore.cs
+│   │   │   ├── ListingId.cs
 │   │   │   ├── MarketDataModels.cs
 │   │   │   ├── MarketDataSources.cs
+│   │   │   ├── Mic.cs
 │   │   │   ├── ProviderId.cs
 │   │   │   ├── ProviderSymbol.cs
 │   │   │   ├── StreamId.cs
@@ -6568,7 +6570,9 @@ Meridian-main
 │   │   │   │   ├── 042_security_master_terms_format_column.sql
 │   │   │   │   ├── 043_security_master_close_price_approval_null_guards.sql
 │   │   │   │   ├── 044_security_master_declarative_terms_projections.sql
-│   │   │   │   └── 045_structured_credit_typed_tranche_terms.sql
+│   │   │   │   ├── 045_structured_credit_typed_tranche_terms.sql
+│   │   │   │   ├── 046_otc_derivative_terms_projections.sql
+│   │   │   │   └── 047_rate_option_and_note_terms_projections.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -11026,6 +11030,7 @@ Meridian-main
 │   │   │   ├── FaceValueLotTests.cs
 │   │   │   ├── ForwardCurveCashFlowTests.cs
 │   │   │   ├── KeyedGatePoolTests.cs
+│   │   │   ├── ListingIdentityTests.cs
 │   │   │   ├── LoanIdentifierKindTests.cs
 │   │   │   ├── NullCorporateActionOperationsServiceTests.cs
 │   │   │   ├── NullOperatorOverridesStoreTests.cs

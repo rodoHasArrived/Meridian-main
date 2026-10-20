@@ -75,7 +75,7 @@ public sealed class SecurityAssetClassRegistryCoverageTests
         // cash-flow behaviour. The sets are pinned so a re-declaration cannot silently change them.
         SecurityAssetClassCatalog.All.Where(static descriptor => descriptor.UsesFaceValueLots)
             .Select(static descriptor => descriptor.AssetClass)
-            .Should().BeEquivalentTo("Bond", "Deposit", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Repo", "DirectLoan", "StructuredCredit");
+            .Should().BeEquivalentTo("Bond", "Deposit", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Repo", "DirectLoan", "StructuredCredit", "StructuredNote");
         SecurityAssetClassCatalog.All.Where(static descriptor => descriptor.SupportsCashflowScheduleByDefault)
             .Select(static descriptor => descriptor.AssetClass)
             .Should().BeEquivalentTo("Bond", "Deposit", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Repo", "Swap", "DirectLoan", "StructuredCredit");

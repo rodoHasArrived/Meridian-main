@@ -84,6 +84,25 @@ public sealed class SwapProjectionServiceTests
     }
 
     [Fact]
+    public async Task GetReferenceAsync_PrefersDayCountConvention_LikeTheEconomicsReaders()
+    {
+        var id = Guid.NewGuid();
+        var termsJson = System.Text.Json.JsonDocument.Parse(
+            """{"legs":[{"legType":"Fixed","currency":"USD","dayCountConvention":"ACT/360","dayCount":"30/360","dayCountBasis":"ACT/365"}]}""")
+            .RootElement;
+
+        _smStore.GetProjectionAsync(id, Arg.Any<CancellationToken>())
+            .Returns(MakeProjection(id, "Swap", termsJson));
+        _projStore.GetSwapAsync(id, Arg.Any<CancellationToken>())
+            .Returns(BuildRow(id));
+
+        var result = await CreateSut().GetReferenceAsync(id);
+
+        result!.Legs[0].DayCount.Should().Be("ACT/360");
+        result.Legs[0].DayCountConvention.Should().Be(DayCountConvention.Actual360);
+    }
+
+    [Fact]
     public async Task GetBySwapTypeAsync_ReturnsEmpty_ForBlankInput()
     {
         var results = await CreateSut().GetBySwapTypeAsync("   ");

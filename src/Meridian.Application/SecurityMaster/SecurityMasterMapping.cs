@@ -210,6 +210,7 @@ internal static class SecurityMasterMapping
             SecurityIdentifierKind.Cik => IdentifierKind.Cik,
             SecurityIdentifierKind.LoanX => IdentifierKind.LoanX,
             SecurityIdentifierKind.Clip => IdentifierKind.Clip,
+            SecurityIdentifierKind.ListingId => IdentifierKind.ListingId,
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unsupported security identifier kind.")
         };
 
@@ -432,6 +433,73 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(json, "strike")),
                 ToOption(GetOptionalDateOnly(json, "expiry")),
                 ToOption(GetOptionalDecimal(json, "multiplier")))),
+            "FxForward" => SecurityKind.NewFxForward(new FxForwardTerms(
+                GetRequiredString(json, "baseCurrency"),
+                GetRequiredString(json, "quoteCurrency"),
+                ToOption(GetOptionalDecimal(json, "notional", mode)),
+                ToOption(GetOptionalDecimal(json, "forwardRate", mode)),
+                ToOption(GetOptionalDateOnly(json, "tradeDate", mode)),
+                GetRequiredDateOnly(json, "valueDate"),
+                ToOption(GetOptionalString(json, "settlementType", mode)))),
+            "NonDeliverableForward" => SecurityKind.NewNonDeliverableForward(new NonDeliverableForwardTerms(
+                GetRequiredString(json, "baseCurrency"),
+                GetRequiredString(json, "quoteCurrency"),
+                GetRequiredString(json, "settlementCurrency"),
+                ToOption(GetOptionalDecimal(json, "notional", mode)),
+                ToOption(GetOptionalDecimal(json, "forwardRate", mode)),
+                GetRequiredDateOnly(json, "fixingDate"),
+                GetRequiredDateOnly(json, "valueDate"),
+                ToOption(GetOptionalString(json, "fixingSource", mode)))),
+            "CreditDefaultSwap" => SecurityKind.NewCreditDefaultSwap(new CreditDefaultSwapTerms(
+                GetRequiredString(json, "referenceEntity"),
+                ToOption(GetOptionalString(json, "referenceObligation", mode)),
+                GetRequiredString(json, "protectionSide"),
+                GetRequiredDecimal(json, "notional"),
+                GetRequiredDecimal(json, "fixedCouponBps"),
+                GetRequiredDateOnly(json, "effectiveDate"),
+                GetRequiredDateOnly(json, "maturityDate"),
+                ToOption(GetOptionalString(json, "paymentFrequency", mode)),
+                ToOption(GetOptionalString(json, "dayCount", mode)),
+                ToOption(GetOptionalString(json, "seniority", mode)),
+                ToOption(GetOptionalString(json, "restructuringClause", mode)),
+                ToOption(GetOptionalDecimal(json, "upfrontPoints", mode)),
+                ToOption(GetOptionalDecimal(json, "recoveryRateAssumption", mode)),
+                ToOption(GetOptionalString(json, "indexName", mode)))),
+            "Swaption" => SecurityKind.NewSwaption(new SwaptionTerms(
+                GetRequiredString(json, "payerReceiver"),
+                ToOption(GetOptionalString(json, "exerciseStyle", mode)),
+                GetRequiredDecimal(json, "strikeRate"),
+                GetRequiredDateOnly(json, "expiry"),
+                ToOption(GetOptionalDateOnly(json, "underlyingEffectiveDate", mode)),
+                GetRequiredDateOnly(json, "underlyingMaturityDate"),
+                GetRequiredDecimal(json, "notional"),
+                ToOption(GetOptionalString(json, "floatingIndex", mode)),
+                ToOption(GetOptionalString(json, "fixedLegPaymentFrequency", mode)),
+                ToOption(GetOptionalString(json, "fixedLegDayCount", mode)),
+                ToOption(GetOptionalString(json, "settlementType", mode)))),
+            "CapFloor" => SecurityKind.NewCapFloor(new CapFloorTerms(
+                GetRequiredString(json, "capFloorType"),
+                GetRequiredString(json, "referenceIndex"),
+                ToOption(GetOptionalDecimal(json, "capStrike", mode)),
+                ToOption(GetOptionalDecimal(json, "floorStrike", mode)),
+                GetRequiredDecimal(json, "notional"),
+                GetRequiredDateOnly(json, "effectiveDate"),
+                GetRequiredDateOnly(json, "maturityDate"),
+                ToOption(GetOptionalString(json, "resetFrequency", mode)),
+                ToOption(GetOptionalString(json, "dayCount", mode)),
+                ToOption(GetOptionalDecimal(json, "premiumAmount", mode)))),
+            "StructuredNote" => SecurityKind.NewStructuredNote(new StructuredNoteTerms(
+                GetRequiredString(json, "issuerName"),
+                GetRequiredString(json, "underlyingDescription"),
+                GetRequiredDateOnly(json, "maturity"),
+                ToOption(GetOptionalDateOnly(json, "issueDate", mode)),
+                ToOption(GetOptionalDecimal(json, "denomination", mode)),
+                ToOption(GetOptionalDecimal(json, "principalProtectionPct", mode)),
+                ToOption(GetOptionalDecimal(json, "participationRate", mode)),
+                ToOption(GetOptionalDecimal(json, "returnCap", mode)),
+                ToOption(GetOptionalDecimal(json, "couponRate", mode)),
+                ToOption(GetOptionalString(json, "paymentFrequency", mode)),
+                ToOption(GetOptionalDecimal(json, "barrierLevel", mode)))),
             "InvestmentFund" => SecurityKind.NewInvestmentFund(new InvestmentFundTerms(
                 ToOption(GetOptionalString(json, "fundType")),
                 ToOption(GetOptionalString(json, "fundFamily")),
@@ -526,6 +594,58 @@ internal static class SecurityMasterMapping
             {
                 throw new InvalidOperationException(
                     SecurityTermConventions.DescribeUnrecognized(field.Convention, assetClass, field.Key, raw));
+            }
+        }
+
+        EnsureElementConventionsOnWrite(assetClass, json);
+    }
+
+    /// <summary>
+    /// Typed conventions declared on the elements of an array term (the swap legs' payment
+    /// frequency and day count) are enforced on write exactly like top-level ones; otherwise a leg
+    /// could persist a cadence every typed reader and schedule would then misread. Every present
+    /// alias is checked, since readers differ in which spelling they prefer.
+    /// </summary>
+    private static void EnsureElementConventionsOnWrite(string assetClass, JsonElement json)
+    {
+        foreach (var arrayField in SecurityAssetTermsSchema.Fields(assetClass)
+                     .Where(static field => field.Type == SecurityAssetTermFieldType.Array))
+        {
+            var conventionFields = SecurityAssetTermsSchema.ElementFields(assetClass, arrayField.Key)
+                .Where(static field => field.Convention != SecurityTermConventionKind.None)
+                .ToArray();
+            if (conventionFields.Length == 0)
+            {
+                continue;
+            }
+
+            foreach (var arrayKey in new[] { arrayField.Key }.Concat(arrayField.Aliases))
+            {
+                if (!json.TryGetProperty(arrayKey, out var array) || array.ValueKind != JsonValueKind.Array)
+                {
+                    continue;
+                }
+
+                foreach (var element in array.EnumerateArray().Where(static item => item.ValueKind == JsonValueKind.Object))
+                {
+                    foreach (var field in conventionFields)
+                    {
+                        foreach (var key in new[] { field.Key }.Concat(field.Aliases))
+                        {
+                            if (!element.TryGetProperty(key, out var token) || token.ValueKind == JsonValueKind.Null)
+                            {
+                                continue;
+                            }
+
+                            var raw = token.ValueKind == JsonValueKind.String ? token.GetString() : token.GetRawText();
+                            if (token.ValueKind != JsonValueKind.String || !field.SatisfiesConvention(raw))
+                            {
+                                throw new InvalidOperationException(
+                                    SecurityTermConventions.DescribeUnrecognized(field.Convention, assetClass, $"{arrayField.Key}[].{key}", raw));
+                            }
+                        }
+                    }
+                }
             }
         }
     }

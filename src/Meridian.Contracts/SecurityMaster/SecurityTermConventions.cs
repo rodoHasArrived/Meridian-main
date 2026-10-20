@@ -121,7 +121,15 @@ public enum SecurityTermConventionKind
     SettlementMethod,
 
     /// <summary>A payment, reset or sweep cadence (<see cref="SecurityPaymentFrequency"/>).</summary>
-    PaymentFrequency
+    PaymentFrequency,
+
+    /// <summary>
+    /// A coupon cadence that drives a calculated cash-flow schedule: a <see cref="SecurityPaymentFrequency"/>
+    /// whose period is a whole number of months, or <see cref="SecurityPaymentFrequency.AtMaturity"/>.
+    /// The schedule engines step coupon periods in months, so a sub-monthly or irregular cadence on
+    /// these fields would silently produce the wrong number of coupons.
+    /// </summary>
+    CouponFrequency
 }
 
 /// <summary>Parsers and typed readers for the term conventions.</summary>
@@ -137,6 +145,10 @@ public static class SecurityTermConventions
                 .ToArray(),
             SecurityTermConventionKind.SettlementMethod => Enum.GetNames<SecuritySettlementMethod>(),
             SecurityTermConventionKind.PaymentFrequency => Enum.GetNames<SecurityPaymentFrequency>(),
+            SecurityTermConventionKind.CouponFrequency => Enum.GetValues<SecurityPaymentFrequency>()
+                .Where(static frequency => IsSchedulableCoupon(frequency))
+                .Select(static frequency => frequency.ToString())
+                .ToArray(),
             _ => []
         };
 
@@ -147,8 +159,26 @@ public static class SecurityTermConventions
             SecurityTermConventionKind.DayCount => DayCountConventions.TryParse(raw, out _),
             SecurityTermConventionKind.SettlementMethod => TryParseSettlementMethod(raw, out _),
             SecurityTermConventionKind.PaymentFrequency => TryParsePaymentFrequency(raw, out _),
+            SecurityTermConventionKind.CouponFrequency => TryParsePaymentFrequency(raw, out var frequency) && IsSchedulableCoupon(frequency),
             _ => true
         };
+
+    /// <summary>
+    /// Whether a cadence can drive a calculated coupon schedule: a whole number of months per period,
+    /// or a single payment at maturity.
+    /// </summary>
+    public static bool IsSchedulableCoupon(SecurityPaymentFrequency frequency)
+        => frequency == SecurityPaymentFrequency.AtMaturity || frequency.MonthsPerPeriod() is not null;
+
+    /// <summary>
+    /// Coupon payments per year for a schedule-driving cadence spelling, or null when the text is not
+    /// a recognized monthly-or-longer cadence. Shared by the cash-flow and asset-operations schedulers
+    /// so they agree with the convention the write path enforces.
+    /// </summary>
+    public static int? CouponPaymentsPerYear(string? raw)
+        => TryParsePaymentFrequency(raw, out var frequency) && frequency.MonthsPerPeriod() is { } months
+            ? 12 / months
+            : null;
 
     /// <summary>The shared rejection reason for an unrecognized convention value.</summary>
     public static string DescribeUnrecognized(SecurityTermConventionKind kind, string assetClass, string key, string? raw)
@@ -320,6 +350,7 @@ public static class SecurityTermConventions
             SecurityTermConventionKind.DayCount => "day-count convention",
             SecurityTermConventionKind.SettlementMethod => "settlement method",
             SecurityTermConventionKind.PaymentFrequency => "payment frequency",
+            SecurityTermConventionKind.CouponFrequency => "coupon frequency (monthly or longer, or at maturity)",
             _ => "value"
         };
 

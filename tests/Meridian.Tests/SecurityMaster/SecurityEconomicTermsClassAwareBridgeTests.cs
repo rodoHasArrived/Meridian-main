@@ -103,6 +103,7 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [InlineData("Bond", "issuerName")]
     [InlineData("Bond", "paymentFrequency")]
     [InlineData("Swap", "maturityDate")]
+    [InlineData("CreditDefaultSwap", "maturityDate")]
     [InlineData("Option", "expiry")]
     public void ReplayWithoutLegacyTerms_RecoversPreviouslyDroppedTerms(string assetClass, string flatKey)
     {
@@ -116,6 +117,22 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
 
         rebuilt.TryGetProperty(flatKey, out var value).Should().BeTrue($"{assetClass}.{flatKey} is carried by the economic document");
         value.GetRawText().Should().Be(original.GetProperty(flatKey).GetRawText());
+    }
+
+    [Fact]
+    public void ReplayWithoutLegacyTerms_RestoresTheCreditDefaultSwapCouponInBasisPoints()
+    {
+        // The upgrade carries FixedCouponBps / 10000 as coupon.couponRate; replay must invert the
+        // unit change rather than drop the schema-required coupon.
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            "CreditDefaultSwap",
+            SecurityAssetTermsSchemaRoundTripTests.FullPayloads["CreditDefaultSwap"]);
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("CreditDefaultSwap", original));
+
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
+
+        rebuilt.GetProperty("fixedCouponBps").GetDecimal().Should().Be(original.GetProperty("fixedCouponBps").GetDecimal());
     }
 
     [Theory]

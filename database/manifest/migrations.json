@@ -406,6 +406,24 @@
       "sha256": "1fb66821530cfe45f4f3fb1e758afda590a1f441a821e4356e8dfaff58a1e47a"
     },
     {
+      "filename": "046_otc_derivative_terms_projections.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 46,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/046_otc_derivative_terms_projections.sql",
+      "schema": "security_master",
+      "sha256": "d57b4debc4cfe52704cc1b8b308503b6056b83baca188f64a19cd60d8bbb8255"
+    },
+    {
+      "filename": "047_rate_option_and_note_terms_projections.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 47,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/047_rate_option_and_note_terms_projections.sql",
+      "schema": "security_master",
+      "sha256": "461582114ea7236c04ddac61d53b5de7f9754243f6c744697c290bfbe0981f6f"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1078,7 +1096,7 @@
       "ordinal": null,
       "path": "src/Meridian.Storage/FundAccounts/Migrations/006_sync_history_correlation.sql",
       "schema": "fund_accounts",
-      "sha256": "8fb4687497ef27603fec88d7a5a92032753bdec19a2add02ce5c871c6ecad7b0"
+      "sha256": "fbf94b3fea850a8d4f8f91f59df9133261f110bfb57ecd77804efd0e09686a54"
     },
     {
       "filename": "007_bank_statement_authority.sql",
@@ -1253,7 +1271,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "a09b605d627792b8973206328ce96305bab9cb4faab1446120c02e1e1ac65166",
+  "fingerprint": "19cf57cb72b798bef6d8d36e90649d4e18ad8c50a54c6f7d2f9e0b136206b224",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1491,7 +1509,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 139,
+    "files": 141,
     "migration_sets": 10,
     "waivers": 20,
     "warnings": 0

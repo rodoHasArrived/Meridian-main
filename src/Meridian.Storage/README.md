@@ -145,6 +145,16 @@ profile-governed CustomAsset is now projected (25 of 26). Guid-typed terms proje
 columns. The tables are created empty; an existing database populates them through
 `SecurityMasterRebuildOrchestrator.RebuildAssetClassAsync` per class.
 
+Security Master migration `046_otc_derivative_terms_projections.sql` creates `fx_forward_projection`,
+`ndf_projection` and `credit_default_swap_projection` for the OTC derivative classes FxForward,
+NonDeliverableForward and CreditDefaultSwap, written by the same declarative
+`SecurityTermsProjectionRegistry` descriptor path from the day the classes are modeled (28 of 29
+catalog classes projected; CustomAsset remains the deliberate gap). NOT NULL columns are the terms
+the contract marks Required; the tables are created empty and populate as records are persisted.
+Migration `047_rate_option_and_note_terms_projections.sql` does the same for `swaption_projection`,
+`cap_floor_projection` and `structured_note_projection` (31 of 32 classes projected); strike and
+rate columns are signed because negative strikes are valid in negative-rate currencies.
+
 Security Master migration `042_security_master_terms_format_column.sql` promotes the terms-payload
 family to a queryable `securities.terms_format` column (ADR-024). The backfill never rewrites the
 payload: a declared `termsFormat` wins and an untagged row is classified by the same shape rule

@@ -1591,7 +1591,8 @@ export type SecurityIdentifierKind =
   | "Ric"
   | "Cik"
   | "LoanX"
-  | "Clip";
+  | "Clip"
+  | "ListingId";
 
 export type SecurityAssetProfileStatus = "Draft" | "Approved" | "Superseded" | "Retired";
 

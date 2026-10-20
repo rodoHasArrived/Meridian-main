@@ -474,6 +474,19 @@ module PaymentFrequency =
         | Annual -> "Annual"
         | OtherFrequency other -> other
 
+    /// Inverse of label for the canonical labels; any other text is carried verbatim as
+    /// OtherFrequency, matching the C# mapping's ToPaymentFrequencyOption.
+    [<CompiledName("Parse")>]
+    let parse (value: string) =
+        match value.Trim() with
+        | "Daily" -> Daily
+        | "Weekly" -> Weekly
+        | "Monthly" -> Monthly
+        | "Quarterly" -> Quarterly
+        | "SemiAnnual" -> SemiAnnual
+        | "Annual" -> Annual
+        | other -> OtherFrequency other
+
 [<RequireQualifiedAccess>]
 module DayCountConvention =
 
