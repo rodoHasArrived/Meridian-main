@@ -383,6 +383,36 @@ public sealed class AssetObligationProjectionServiceTests
         detail.ProjectedCashFlows.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData("PrivateFund")]
+    [InlineData("PartnershipInterest")]
+    public void ProjectFromSecurityMaster_LegacyPrivateFundSpellings_ProjectLikePrivateFundInterest(string legacySpelling)
+    {
+        // The name-based predicate accepted these spellings; they are now catalog aliases of
+        // PrivateFundInterest, so a subject still carrying one keeps its fund-interest obligations.
+        var terms = new
+        {
+            gpSponsor = "Meridian Capital",
+            strategy = "Buyout",
+            vintage = 2024,
+            commitment = 1_000_000m,
+            fundedAmount = 250_000m,
+            unfundedAmount = 750_000m,
+            navDate = "2026-06-30"
+        };
+
+        var canonical = new AssetObligationProjectionService()
+            .ProjectFromSecurityMaster(MakeSecurity("PrivateFundInterest", "Meridian Fund IV", terms));
+        var legacy = new AssetObligationProjectionService()
+            .ProjectFromSecurityMaster(MakeSecurity(legacySpelling, "Meridian Fund IV", terms));
+
+        canonical.TermsObligationsTimeline!.Events.Should().NotBeEmpty();
+        legacy.TermsObligationsTimeline!.Events.Select(static evt => evt.EventKind)
+            .Should().Equal(canonical.TermsObligationsTimeline.Events.Select(static evt => evt.EventKind));
+        legacy.TermsObligationsTimeline.Events.Should().NotContain(evt => evt.EventKind == "ValuationReview",
+            "a fund interest is not routed through the structured-or-custom branch");
+    }
+
     private static SecurityDetailDto MakeSecurity(string assetClass, string displayName, object assetTerms)
         => new(
             Guid.NewGuid(),

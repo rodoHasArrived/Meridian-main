@@ -227,6 +227,67 @@ public sealed class SecurityMasterDataQualityServiceTests
         report.Violations.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task RunQualityChecksAsync_ReadsRequiredTermsOfProfileBackedClasses_FromProfileFields()
+    {
+        // A profile-backed record persists its governed scalar terms beneath profileFields, so the
+        // required-term rule must look there before declaring the envelope root incomplete.
+        var (sut, store) = BuildSut();
+        var complete = MakeSecurity(Guid.NewGuid(), "PrivateFundInterest", currency: "USD",
+            assetSpecificTerms: new
+            {
+                customProfileId = "private-fund",
+                profileVersion = 1,
+                profileFields = new
+                {
+                    gpSponsor = "Meridian Capital",
+                    strategy = "Buyout",
+                    vintage = 2024,
+                    commitment = 1_000_000m,
+                    navDate = "2026-06-30"
+                }
+            });
+        var incomplete = MakeSecurity(Guid.NewGuid(), "PrivateFundInterest", currency: "USD",
+            assetSpecificTerms: new
+            {
+                customProfileId = "private-fund",
+                profileVersion = 1,
+                profileFields = new { strategy = "Buyout", vintage = 2024, commitment = 1_000_000m, navDate = "2026-06-30" }
+            });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { complete, incomplete });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Should().NotContain(v => v.RuleId == "MA003" && v.SecurityId == complete.SecurityId);
+        report.Violations.Should().ContainSingle(v => v.RuleId == "MA003" && v.SecurityId == incomplete.SecurityId)
+            .Which.FieldPath.Should().Be("assetSpecificTerms.gpSponsor");
+    }
+
+    [Fact]
+    public async Task RunQualityChecksAsync_DoesNotReportADateOnlyExpiryAsExpired_OnItsOwnDate()
+    {
+        // The schema's expiry is a date; a date-only value reads as midnight UTC, so comparing it to
+        // the current instant would report an instrument expiring today as already expired.
+        var (sut, store) = BuildSut();
+        var today = DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd");
+        var expiresToday = MakeSecurity(Guid.NewGuid(), "Future", currency: "USD",
+            assetSpecificTerms: new { rootSymbol = "ES", contractMonth = "Z6", multiplier = 50m, expiry = today });
+        var expiredYesterday = MakeSecurity(Guid.NewGuid(), "Future", currency: "USD",
+            assetSpecificTerms: new
+            {
+                rootSymbol = "ES",
+                contractMonth = "Z6",
+                multiplier = 50m,
+                expiry = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-1).ToString("yyyy-MM-dd")
+            });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { expiresToday, expiredYesterday });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Should().NotContain(v => v.RuleId == "VC003" && v.SecurityId == expiresToday.SecurityId);
+        report.Violations.Should().Contain(v => v.RuleId == "VC003" && v.SecurityId == expiredYesterday.SecurityId);
+    }
+
     private static SecurityProjectionRecord MakeSecurity(
         Guid securityId,
         string assetClass,

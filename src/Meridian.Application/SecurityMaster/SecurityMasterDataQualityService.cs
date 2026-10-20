@@ -233,11 +233,14 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
 
         // Expiry must be in the future for an active security, for every class whose schema
         // declares an expiry (options, futures, warrants, swaptions, ...), read under the key and
-        // aliases the schema declares rather than a spelling of this rule's own.
+        // aliases the schema declares rather than a spelling of this rule's own. The schema's Date
+        // fields carry no intraday time (a date-only value reads as midnight UTC), so the comparison
+        // is by calendar date: an instrument expiring today is not yet expired.
         if (SecurityAssetTermsSchema.Field(security.AssetClass, "expiry") is { Type: SecurityAssetTermFieldType.Date } expiryField)
         {
             var expiry = TryReadDateField(security.AssetSpecificTerms, expiryField);
-            if (expiry.HasValue && expiry.Value < now)
+            if (expiry.HasValue
+                && DateOnly.FromDateTime(expiry.Value.UtcDateTime) < DateOnly.FromDateTime(now.UtcDateTime))
             {
                 yield return Violation(
                     "VC003", "Already Expired", DataQualityRuleCategory.ValueConsistency,
@@ -349,6 +352,30 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     /// matching how the canonical mapper would fail to read them.
     /// </summary>
     private static bool HasDeclaredValue(JsonElement terms, SecurityAssetTermField field)
+        => EnumerateTermSources(terms).Any(source => HasDeclaredValueIn(source, field));
+
+    /// <summary>
+    /// Where a class's schema terms live: a profile-backed record (PrivateFundInterest,
+    /// RealEstateHolding, ...) persists its governed scalar terms beneath <c>profileFields</c>, so
+    /// that object is probed before the envelope root, matching the other governed-term readers.
+    /// </summary>
+    private static IEnumerable<JsonElement> EnumerateTermSources(JsonElement terms)
+    {
+        if (terms.ValueKind != JsonValueKind.Object)
+        {
+            yield break;
+        }
+
+        if (terms.TryGetProperty("profileFields", out var profileFields)
+            && profileFields.ValueKind == JsonValueKind.Object)
+        {
+            yield return profileFields;
+        }
+
+        yield return terms;
+    }
+
+    private static bool HasDeclaredValueIn(JsonElement terms, SecurityAssetTermField field)
     {
         if (!TryGetDeclaredProperty(terms, field, out var value))
         {

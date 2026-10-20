@@ -276,8 +276,13 @@ public sealed partial class ProviderLedgerReconciliationService
             warnings.Add("No corporate-action-sensitive positions, provider corporate-action events, income transactions, or principal cash movements were present in the provider projection.");
         }
 
+        // A position whose provider label names no catalog class and whose Security Master identity
+        // is unresolved is not a candidate (nothing says what evidence it owes), but it is not
+        // matched either: the missing identity stays a break until it resolves and classifies.
         var status = candidateCount == 0
-            ? ProviderLedgerReconciliationCheckStatusDto.Matched
+            ? unresolvedSecurityCount == 0
+                ? ProviderLedgerReconciliationCheckStatusDto.Matched
+                : ProviderLedgerReconciliationCheckStatusDto.Break
             : !hasRequiredCorporateActionCapabilityEvidence || !hasRequiredFactorScheduleCapabilityEvidence
                 ? ProviderLedgerReconciliationCheckStatusDto.Blocked
                 : requiredProviderCapabilitiesRoutable && unresolvedSecurityCount == 0

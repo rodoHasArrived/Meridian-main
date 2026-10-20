@@ -355,7 +355,10 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
-            SupportsProfileBackedTerms: true),
+            SupportsProfileBackedTerms: true,
+            // Spellings the private-fund pack planned and Asset Operations used to accept by name;
+            // existing subjects carrying them keep resolving to this class.
+            Aliases: ["PrivateFund", "PartnershipInterest"]),
         new(
             AssetClass: "PrivateCompanyEquity",
             AssetPackIds: ["private-fund-partnership"],
