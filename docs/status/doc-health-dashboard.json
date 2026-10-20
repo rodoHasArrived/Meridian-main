@@ -1,11 +1,11 @@
 {
   "total_files": 742,
-  "total_lines": 164924,
+  "total_lines": 165059,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 305,
-  "average_lines": 222.3,
+  "average_lines": 222.5,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -2966,7 +2966,7 @@
     },
     {
       "path": "docs/operators/account-oversight.md",
-      "line_count": 223,
+      "line_count": 287,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5918,7 +5918,7 @@
     },
     {
       "path": "src/Meridian.FinancialOperations/README.md",
-      "line_count": 1047,
+      "line_count": 1082,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6086,7 +6086,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1191,
+      "line_count": 1227,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
