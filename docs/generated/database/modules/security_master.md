@@ -1035,6 +1035,7 @@ erDiagram
         text normalized_primary_identifier_value
         integer schema_version
         text terms_format
+        text listing_mic
     }
     security_master_security_alias_revisions {
         uuid alias_id PK
@@ -1663,7 +1664,7 @@ erDiagram
 | `reconciliation_run` | table | 6 | `reconciliation_run_id` | 2 | 1 | - |
 | `repo_projection` | table | 11 | `security_id` | 0 | 3 | Relational projection of Repo asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `schema_migrations` | table | 4 | `filename` | 0 | 1 | - |
-| `securities` | table | 22 | `security_id` | 0 | 5 | - |
+| `securities` | table | 23 | `security_id` | 0 | 6 | - |
 | `security_alias_revisions` | table | 17 | `alias_id`, `revision` | 1 | 2 | Append-only Security Master alias revisions. Recorded-as-of reads select the latest available revision at or before the cutoff. Pre-migration current-row baselines retain their creation metadata but are available only from history_available_from; earlier alias history is unknown. |
 | `security_aliases` | table | 14 | `alias_id` | 1 | 3 | - |
 | `security_cashflow_source_assignments` | table | 6 | `security_id` | 1 | 2 | - |

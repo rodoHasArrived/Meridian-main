@@ -6572,7 +6572,8 @@ Meridian-main
 │   │   │   │   ├── 044_security_master_declarative_terms_projections.sql
 │   │   │   │   ├── 045_structured_credit_typed_tranche_terms.sql
 │   │   │   │   ├── 046_otc_derivative_terms_projections.sql
-│   │   │   │   └── 047_rate_option_and_note_terms_projections.sql
+│   │   │   │   ├── 047_rate_option_and_note_terms_projections.sql
+│   │   │   │   └── 048_security_master_listing_mic.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -11031,6 +11032,7 @@ Meridian-main
 │   │   │   ├── ForwardCurveCashFlowTests.cs
 │   │   │   ├── KeyedGatePoolTests.cs
 │   │   │   ├── ListingIdentityTests.cs
+│   │   │   ├── ListingMicColumnTests.cs
 │   │   │   ├── LoanIdentifierKindTests.cs
 │   │   │   ├── NullCorporateActionOperationsServiceTests.cs
 │   │   │   ├── NullOperatorOverridesStoreTests.cs

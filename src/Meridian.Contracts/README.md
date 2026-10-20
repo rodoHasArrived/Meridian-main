@@ -1788,7 +1788,10 @@ beside the raw text. Schedule-driving coupon cadences (bond `paymentFrequency`, 
 `paymentFrequency`) carry the narrower `CouponFrequency` convention: only cadences the cash-flow
 engines step in whole months, or `AtMaturity`, are accepted on write, and
 `SecurityTermConventions.CouponPaymentsPerYear` is the shared reader both schedulers use.
-Conventions declared on array elements (the swap legs) are enforced on write like top-level ones. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
+Conventions declared on array elements (the swap legs) are enforced on write like top-level ones. Swap legs may carry optional `notionalSchedule` (`{effectiveDate, notional}` steps) and
+`resetSchedule` (`{resetDate, fixingRate}`) arrays; `StructuredCashFlowLeg.NotionalOn` and `FixingOn`
+let the leg scheduler accrue on the scheduled notional (paying step-downs as principal when the leg
+exchanges principal) and use a recorded fixing for a period that has already reset. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
 one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `CommitmentLot` (commitment,
 funded and unfunded amounts, recallable distributions, `Draw`) and `FundUnitLot` (units at an
 acquisition NAV) are the `Commitment` and `Units` cases the registry assigns to private fund
@@ -1797,7 +1800,8 @@ interests, guarantees and funds. `SecurityIdentifierKind` adds
 (`TICKER:MIC`, validated through `Meridian.Contracts.Domain.ListingId`). `Mic` is the
 format-validated ISO 10383 market code (four letters or digits); `MicReference` bundles the
 markets Meridian's providers and seed data use and maps unambiguous exchange names (`NYSE`,
-`Nasdaq`, `AMEX`, ...) to a MIC, leaving routing labels such as `SMART` unresolved.
+`Nasdaq`, `AMEX`, ...) to a MIC, leaving routing labels such as `SMART` unresolved; its `Codes` and
+`ExchangeNames` tables also drive the `securities.listing_mic` backfill.
 
 ### Security Master income, curves, factors and corporate-action terms
 

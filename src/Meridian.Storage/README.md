@@ -161,6 +161,12 @@ payload: a declared `termsFormat` wins and an untagged row is classified by the 
 `SecurityTermsEnvelope.ResolveFormat` applies on read. `PostgresSecurityMasterStore` derives the
 column from the stored payload on every upsert and refuses an unknown declared format before the
 column's check constraint does.
+Migration `048_security_master_listing_mic.sql` adds the nullable `securities.listing_mic` column
+(ISO 10383) beside the free-text `exchange_code`, which is left unchanged. A well-formed
+`commonTerms.primaryListingMic` wins; otherwise `exchange_code` resolves through the bundled
+`MicReference` codes and exchange names. Routing labels and unknown names stay null. The upsert
+derives the column with the same rule (`PostgresSecurityMasterStore.ResolveListingMic`), and
+`ListingMicColumnTests` holds the backfill to the `MicReference` tables.
 Asset-operations migration `005_asset_operations_write_events.sql` adds an append-only write-event
 log for direct projection writes; migration `006_asset_operations_write_events_truncate_guard.sql`
 rejects TRUNCATE on it as well.

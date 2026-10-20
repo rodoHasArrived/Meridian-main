@@ -145,6 +145,9 @@ public static class MicReference
     /// <summary>The bundled MIC codes.</summary>
     public static IReadOnlyCollection<string> Codes => Names.Keys;
 
+    /// <summary>The exchange names and legacy codes <see cref="TryResolve"/> maps, keyed case-insensitively.</summary>
+    public static IReadOnlyDictionary<string, string> ExchangeNames => ExchangeNameAliases;
+
     /// <summary>Looks up the market name for a bundled MIC.</summary>
     public static bool TryGetName(string? mic, out string name)
     {
