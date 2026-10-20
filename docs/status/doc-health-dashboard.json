@@ -1,6 +1,6 @@
 {
   "total_files": 741,
-  "total_lines": 164588,
+  "total_lines": 164592,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -3822,7 +3822,7 @@
     },
     {
       "path": "docs/roadmap/roadmap-governance.md",
-      "line_count": 97,
+      "line_count": 101,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

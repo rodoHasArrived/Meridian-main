@@ -122,6 +122,31 @@ class DocumentationWorkflowTests(unittest.TestCase):
             self.assertNotIn("paths-ignore", events[event])
         self.assertNotIn("branches", events["pull_request"])
 
+    def test_phase_metadata_changes_retrigger_the_trusted_scope_gate(self) -> None:
+        workflow = yaml.load(
+            (REPO_ROOT / ".github/workflows/roadmap-source-docs.yml").read_text(),
+            Loader=yaml.BaseLoader,
+        )
+        event = workflow["on"]["pull_request"]
+        self.assertEqual(
+            {"opened", "synchronize", "reopened", "edited", "labeled", "unlabeled"},
+            set(event["types"]),
+        )
+        self.assertEqual(event["paths"], workflow["on"]["push"]["paths"])
+        self.assertEqual(workflow["permissions"], {"contents": "read"})
+        steps = workflow["jobs"]["scope-gate"]["steps"]
+        trusted = next(step for step in steps if step.get("name") == "Checkout trusted phase gate script")
+        self.assertEqual(trusted["with"]["ref"], "${{ github.event.pull_request.base.sha || github.sha }}")
+        self.assertEqual(trusted["with"]["persist-credentials"], "false")
+        gate = next(step for step in steps if step.get("name") == "Enforce phase scope")
+        self.assertEqual(gate["if"], "${{ github.event_name != 'push' && github.actor != 'dependabot[bot]' }}")
+        self.assertEqual(gate["env"]["PR_BODY"], "${{ github.event.pull_request.body }}")
+        self.assertEqual(gate["env"]["PR_LABELS"], "${{ join(github.event.pull_request.labels.*.name, ',') }}")
+        self.assertIn("python3 .trusted-base/tools/roadmap/enforce_phase_scope.py", gate["run"])
+        self.assertIn('--pr-body "$PR_BODY"', gate["run"])
+        self.assertIn('--labels "$PR_LABELS"', gate["run"])
+        self.assertNotIn("continue-on-error", gate)
+
     def test_canonical_lane_fails_for_generation_failure_or_freshness_drift(self) -> None:
         # Run the actual shell orchestrator with inert tools. This proves a failed
         # producer cannot reach a green freshness gate, and a stale-output verdict

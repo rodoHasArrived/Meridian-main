@@ -8,6 +8,9 @@ on:
         required: false
         default: "PR1"
   pull_request:
+    # Phase is supplied in the PR body or labels. Metadata corrections need a new
+    # event payload; rerunning an old workflow keeps its original phase metadata.
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
     paths:
       - "docs/roadmap/**"
       - "docs/source/**"
