@@ -24,7 +24,11 @@ public sealed partial class AlpacaBrokerageGateway
         if (original is null)
             return null;
         ValidateReplacementSnapshot(original);
-        var attempt = new ReplacementAttempt(original) { CandidateId = amendment.CandidateBrokerOrderId };
+        var attempt = new ReplacementAttempt(original)
+        {
+            CandidateId = amendment.CandidateBrokerOrderId,
+            Requested = RequestedReplacementTerms.From(amendment)
+        };
         _replacementAttempts[original.Id!] = attempt;
         if (amendment.CandidateBrokerOrderId is { Length: > 0 } candidateGatewayOrderId)
             _replacementAttempts[candidateGatewayOrderId] = attempt;

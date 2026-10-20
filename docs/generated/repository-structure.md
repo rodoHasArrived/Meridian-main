@@ -10631,6 +10631,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PortfolioRecovery.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PreDispatch.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementConfirmation.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTerms.cs
 │   │   │   │   ├── AlpacaConnectionReadinessTests.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs

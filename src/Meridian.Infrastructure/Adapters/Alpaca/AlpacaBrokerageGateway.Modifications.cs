@@ -15,6 +15,38 @@ public sealed partial class AlpacaBrokerageGateway
         public AlpacaOrderResponse Original { get; set; } = original;
         public string? CandidateId { get; set; }
         public volatile ExecutionReport? Resolution;
+        /// <summary>Terms the amendment asked for. Linkage and status prove a replacement exists,
+        /// not that it is this one: an out-of-band or racing replacement can carry other terms.</summary>
+        public RequestedReplacementTerms? Requested { get; init; }
+    }
+
+    private sealed record RequestedReplacementTerms(decimal Quantity, decimal? LimitPrice, decimal? StopPrice, bool PricesChanged)
+    {
+        public static RequestedReplacementTerms From(AlpacaOrderResponse original, OrderModification modification)
+        {
+            var limit = modification.NewLimitPrice ?? ParseNullableDecimal(original.LimitPrice);
+            var stop = modification.NewStopPrice ?? ParseNullableDecimal(original.StopPrice);
+            return new(modification.NewQuantity ?? ParseDecimal(original.Qty), limit, stop,
+                limit != ParseNullableDecimal(original.LimitPrice) || stop != ParseNullableDecimal(original.StopPrice));
+        }
+
+        public static RequestedReplacementTerms From(PendingOrderAmendment amendment) => new(
+            amendment.Proposed.Quantity, amendment.Proposed.LimitPrice, amendment.Proposed.StopPrice,
+            amendment.Proposed.LimitPrice != amendment.Original.LimitPrice
+                || amendment.Proposed.StopPrice != amendment.Original.StopPrice);
+
+        // Same rule the OMS applies to recovery evidence: quantity always; prices only when the
+        // snapshot carries them, and a missing price cannot confirm a requested price change.
+        // Alpaca order snapshots carry no trail value, so trail terms cannot be confirmed here.
+        public bool MatchedBy(AlpacaOrderResponse candidate)
+        {
+            if (ParseNullableDecimal(candidate.Qty) != Quantity)
+                return false;
+            if (!(candidate.HasLimitPrice && candidate.HasStopPrice))
+                return !PricesChanged;
+            return ParseNullableDecimal(candidate.LimitPrice) == LimitPrice
+                && ParseNullableDecimal(candidate.StopPrice) == StopPrice;
+        }
     }
 
     /// <inheritdoc />
@@ -45,7 +77,7 @@ public sealed partial class AlpacaBrokerageGateway
         }
         var brokerOrderId = existing.Id!;
         ct.ThrowIfCancellationRequested();
-        var attempt = new ReplacementAttempt(existing);
+        var attempt = new ReplacementAttempt(existing) { Requested = RequestedReplacementTerms.From(existing, modification) };
         while (!_replacementAttempts.TryAdd(brokerOrderId, attempt))
         {
             if (!_replacementAttempts.TryGetValue(brokerOrderId, out var inProgress))
@@ -196,6 +228,10 @@ public sealed partial class AlpacaBrokerageGateway
         }
         if (original.Status != "replaced" || original.ReplacedBy != candidateId
             || candidate.Status is "pending_new" or "pending_replace" or "accepted_for_bidding")
+            return null;
+        // A live successor with other terms is not this amendment's outcome. Leave it pending for
+        // reconciliation rather than confirming terms the broker does not hold.
+        if (attempt.Requested is { } requested && !requested.MatchedBy(candidate))
             return null;
         return attempt.Resolution = BuildReplacementSnapshotReport(candidate, original.ClientOrderId,
             ExecutionReportType.Modified) with

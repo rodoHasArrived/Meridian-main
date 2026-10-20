@@ -2,7 +2,9 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Execution;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Infrastructure.Adapters.Robinhood;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -989,6 +991,58 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
         cancelled.GatewayOrderId.Should().Be("recovered");
         cancelled.ClientOrderId.Should().Be("client-1");
         handler.Requests.Should().ContainSingle(r => IsReplacementPost(r));
+    }
+
+    [Fact]
+    public async Task OmsCancel_AfterRestartWithOnlyTheReplacementReference_CancelsTheRecoveredSuccessor()
+    {
+        var handler = CreateRecoveryHandler((reference, _, _) =>
+            OrderHistory([BuildOrderResponse("recovered", quantity: "10", filledQuantity: "1", averagePrice: "160", refId: reference)]));
+        ExecutionReport pending;
+        await using (var first = CreateSut(handler))
+        {
+            await first.ConnectAsync();
+            pending = await first.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 12m });
+        }
+        var original = new OrderState
+        {
+            OrderId = "client-1",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Market,
+            Quantity = 10m,
+            FilledQuantity = 2m,
+            AverageFillPrice = 150m,
+            Status = OrderStatus.Accepted
+        };
+        var directory = Path.Combine(Path.GetTempPath(), $"robinhood-ref-cancel-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var path = Path.Combine(directory, "orders.json");
+            // The pending report persisted only the replacement's client reference.
+            new FileBrokerageOrderRecoveryStore(path, "robinhood").Save(new RetainedBrokerageOrder(original, "order-1", true)
+            {
+                PendingAmendment = new PendingOrderAmendment(original, original with { Quantity = 12m }, "order-1")
+                { CandidateClientOrderId = pending.CandidateClientOrderId }
+            });
+            await using var restarted = CreateSut(handler);
+            await restarted.ConnectAsync();
+            await using var oms = new OrderManagementSystem(restarted, NullLogger<OrderManagementSystem>.Instance,
+                recoveryStore: new FileBrokerageOrderRecoveryStore(path, "robinhood"),
+                portfolioState: new PaperTradingPortfolio(100_000m));
+
+            var cancelled = await oms.CancelOrderAsync("client-1");
+
+            cancelled.Success.Should().BeTrue(cancelled.ErrorMessage);
+            handler.Requests.Should().Contain(r => r.Url.Contains("/orders/recovered/cancel/", StringComparison.Ordinal),
+                "the kill switch must reach the live successor, not only the cancelled predecessor");
+            oms.GetOrder("client-1")!.FilledQuantity.Should().Be(3m, "the successor's fill is booked before cancelling");
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
     }
 
     [Fact]
