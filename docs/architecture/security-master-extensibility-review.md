@@ -2997,6 +2997,13 @@ for the fix.
 
 ### A4 — The custom-profile extension point declares projected and searchable fields and honours neither
 
+> **Status (2026-10-20): restated as promotion-readiness intent; the flags are documented as not
+> live.** `IsProjected` and `IsSearchable` now carry parameter documentation saying no projection
+> writer, index or search predicate reads them; the promotion signals and both workstation counts
+> say "declared projected"/"declared searchable". The generic indexed seam the entry describes
+> below (`security_profile_field_projection` plus profile content in the search vector) is still
+> the remedy if the flags are ever to govern anything.
+
 `SecurityAssetProfileFieldDefinitionDto` carries `IsProjected` and `IsSearchable`
 (`SecurityAssetProfiles.cs:49-50`) — the two properties an operator would read as "this profile field
 is queryable". Across `src/` and `tests/`, neither flag reaches a projection writer, an index, or a
