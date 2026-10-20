@@ -1370,7 +1370,12 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         RecordMessageReceived();
         NextValidIdReceived?.Invoke(this, orderId);
     }
-    public void managedAccounts(string accountsList) { }
+    public void managedAccounts(string accountsList)
+    {
+        RecordMessageReceived();
+        ManagedAccountsReceived?.Invoke(this, (accountsList ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+    }
     public void currentTime(long time)
     {
         RecordMessageReceived();

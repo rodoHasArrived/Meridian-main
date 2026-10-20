@@ -31,7 +31,13 @@ while serialized pending reports retain it, preserving replay identities across 
 Interactive Brokers implements order and amendment restart recovery from its authoritative
 open-order snapshot, matched by orderRef: echoed terms select the amendment outcome, absent or
 ambiguous orders stay unresolved, evidence read across a reconnect is refused, and recovered
-orders can be cancelled but not amended. Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
+orders can be cancelled but not amended. The gateway exposes `IBrokerageConnectionState`: its
+scope is the trading environment plus the accounts IB reports via `managedAccounts` for the current
+login, so retained orders bind to that scope and recovery matches only orders in a verified account.
+Its connection generation also advances when the client loses or automatically restores the
+transport, and cancellation routes are installed only for evidence from the current session.
+Recovery stays unresolved for a fill price that is not confirmed cumulative and for a trail-only
+amendment, since the snapshot carries no trailing term. Interactive Brokers retains uncertain amendment context for late acknowledgements, sizes execution
 fills against pending exposure, keeps cancellation available, and keys
 positions by account plus qualified contract identity. Robinhood replacement submits only after
 confirmed cancellation with cumulative fill evidence, for the intended total less chain fills.

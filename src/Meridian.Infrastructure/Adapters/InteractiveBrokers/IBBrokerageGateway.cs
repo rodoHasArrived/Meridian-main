@@ -31,6 +31,7 @@ public sealed partial class IBBrokerageGateway :
     IExecutionGatewayModeProvider,
     IBrokerageOrderRecoveryGateway,
     IBrokerageOrderAmendmentRecoveryGateway,
+    IBrokerageConnectionState,
     IBrokerageAccountCatalog,
     IBrokeragePortfolioSync,
     IBrokerageActivitySync
@@ -83,6 +84,9 @@ public sealed partial class IBBrokerageGateway :
         _client.AccountSummaryReceived += OnAccountSummaryReceived;
         _client.AccountSummaryCompleted += OnAccountSummaryCompleted;
         _client.ErrorOccurred += OnErrorOccurred;
+        _client.ManagedAccountsReceived += OnManagedAccountsReceived;
+        _client.ConnectionLost += OnConnectionLost;
+        _client.ConnectionRestored += OnConnectionRestored;
     }
 
     /// <inheritdoc />
@@ -159,6 +163,7 @@ public sealed partial class IBBrokerageGateway :
             "IB brokerage connecting to {Host}:{Port} (clientId={ClientId}, paper={Paper})",
             _options.Host, _options.Port, _options.ClientId, _options.UsePaperTrading);
 
+        _verifiedAccounts = NoVerifiedAccounts;
         await _client.ConnectAsync(ct).ConfigureAwait(false);
         await PrimeNextOrderIdAsync(ct).ConfigureAwait(false);
 
@@ -177,7 +182,7 @@ public sealed partial class IBBrokerageGateway :
             return;
 
         await _client.DisconnectAsync(ct).ConfigureAwait(false);
-        Interlocked.Increment(ref _connectionEpoch);
+        EndSession();
         _connected = false;
 
         _logger.LogInformation("IB brokerage disconnected");
@@ -555,6 +560,9 @@ public sealed partial class IBBrokerageGateway :
         _client.AccountSummaryReceived -= OnAccountSummaryReceived;
         _client.AccountSummaryCompleted -= OnAccountSummaryCompleted;
         _client.ErrorOccurred -= OnErrorOccurred;
+        _client.ManagedAccountsReceived -= OnManagedAccountsReceived;
+        _client.ConnectionLost -= OnConnectionLost;
+        _client.ConnectionRestored -= OnConnectionRestored;
 
         try
         {
@@ -1568,6 +1576,9 @@ public sealed partial class IBBrokerageGateway :
         public event EventHandler<IBAccountSummaryUpdate>? AccountSummaryReceived;
         public event EventHandler<int>? AccountSummaryCompleted;
         public event EventHandler<IBApiError>? ErrorOccurred;
+        public event EventHandler<IReadOnlyList<string>>? ManagedAccountsReceived;
+        public event EventHandler? ConnectionLost;
+        public event EventHandler? ConnectionRestored;
 #pragma warning restore CS0067
 
         public Task ConnectAsync(CancellationToken ct = default)
