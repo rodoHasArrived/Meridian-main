@@ -283,6 +283,29 @@ public sealed class SecurityMasterDataQualityServiceTests
     }
 
     [Fact]
+    public async Task RunQualityChecksAsync_MatchesRequiredTermKeys_WithTheMappersExactCasing()
+    {
+        // The canonical mapper reads keys case-sensitively, so a differently cased key is missing.
+        var (sut, store) = BuildSut();
+        var option = MakeSecurity(Guid.NewGuid(), "Option", currency: "USD",
+            assetSpecificTerms: new Dictionary<string, object?>
+            {
+                ["underlyingId"] = Guid.NewGuid(),
+                ["putCall"] = "Call",
+                ["Strike"] = 100m,
+                ["expiry"] = "2091-12-19",
+                ["contractMultiplier"] = 100m,
+                ["exerciseStyle"] = "American"
+            });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { option });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Should().Contain(v =>
+            v.RuleId == "MA003" && v.SecurityId == option.SecurityId && v.FieldPath == "assetSpecificTerms.strike");
+    }
+
+    [Fact]
     public async Task RunQualityChecksAsync_RequiresTheProfileEnvelope_AtTheDocumentRoot()
     {
         // customProfileId/profileVersion are the governance envelope the mapper and write validator

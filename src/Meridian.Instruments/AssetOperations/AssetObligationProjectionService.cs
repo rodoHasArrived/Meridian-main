@@ -386,7 +386,7 @@ public sealed class AssetObligationProjectionService
                 security.Version,
                 terms.PrincipalFace,
                 PaymentFrequency: terms.PaymentFrequency),
-            terms.CouponRate is null
+            NormalizeCouponRatePercent(security.AssetClass, terms.CouponRate) is not { } couponRatePercent
                 ? null
                 : new BondAccrualConventionDto(
                     security.SecurityId,
@@ -394,7 +394,7 @@ public sealed class AssetObligationProjectionService
                     null,
                     null,
                     "Fixed",
-                    terms.CouponRate,
+                    couponRatePercent,
                     null,
                     null,
                     security.Version),
@@ -857,6 +857,26 @@ public sealed class AssetObligationProjectionService
     private static bool IsFixedIncome(SecurityAssetClassDescriptor descriptor)
         => descriptor.CashFlowBehavior is SecurityCashFlowBehavior.ContractualSchedule or SecurityCashFlowBehavior.FactorAmortizing
            && !IsDirectLoan(descriptor);
+
+    /// <summary>
+    /// The bond projector's accrual convention carries the coupon in percentage points (4.5 for
+    /// 4.5%). Deposit terms declare <c>interestRate</c> without a unit convention and are written
+    /// both ways (0.045 and 4.5), so they are normalised the way the Security Master cash-flow
+    /// service already does: a value at or below 1 is a fraction. Bond-family classes keep their
+    /// percentage-point convention untouched (a 0.5 coupon is half a percent).
+    /// </summary>
+    private static decimal? NormalizeCouponRatePercent(string? assetClass, decimal? couponRate)
+    {
+        if (couponRate is not { } rate)
+        {
+            return null;
+        }
+
+        return string.Equals(SecurityAssetClassCatalog.GetOrDefault(assetClass).AssetClass, "Deposit", StringComparison.Ordinal)
+               && rate <= 1m
+            ? rate * 100m
+            : rate;
+    }
 
     private static bool IsFactorAmortizing(string? assetClass)
         => SecurityAssetClassCatalog.GetOrDefault(assetClass).CashFlowBehavior == SecurityCashFlowBehavior.FactorAmortizing;

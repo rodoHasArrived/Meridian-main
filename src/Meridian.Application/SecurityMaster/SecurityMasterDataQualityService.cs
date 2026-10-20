@@ -439,10 +439,12 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
             return false;
         }
 
+        // Exact casing: the canonical mapper reads these keys with case-sensitive TryGetProperty,
+        // so "Strike" or "EXPIRY" is as unreadable to it as a missing key.
         foreach (var property in element.EnumerateObject())
         {
-            if (string.Equals(property.Name, field.Key, StringComparison.OrdinalIgnoreCase)
-                || field.Aliases.Any(alias => string.Equals(property.Name, alias, StringComparison.OrdinalIgnoreCase)))
+            if (string.Equals(property.Name, field.Key, StringComparison.Ordinal)
+                || field.Aliases.Any(alias => string.Equals(property.Name, alias, StringComparison.Ordinal)))
             {
                 value = property.Value;
                 return value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined);

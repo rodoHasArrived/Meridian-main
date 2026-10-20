@@ -362,6 +362,32 @@ public sealed class AssetObligationProjectionServiceTests
     }
 
     [Fact]
+    public void ProjectFromSecurityMaster_Deposit_ReadsAFractionalInterestRateAsPercentagePoints()
+    {
+        // Deposit interestRate is written both as a fraction (0.045) and as percentage points (4.5);
+        // the bond projector expects percentage points, so the two spellings must project the same
+        // interest flows instead of the fraction producing a coupon a hundred times too small.
+        static SecurityDetailDto Deposit(decimal interestRate) => MakeSecurity("Deposit", "Meridian 12M Term Deposit", new
+        {
+            depositType = "Term",
+            institutionName = "Meridian Bank",
+            maturity = "2091-06-15",
+            interestRate,
+            par = 1_000_000m,
+            isCallable = false
+        });
+
+        var fraction = new AssetObligationProjectionService().ProjectFromSecurityMaster(Deposit(0.045m));
+        var percentagePoints = new AssetObligationProjectionService().ProjectFromSecurityMaster(Deposit(4.5m));
+
+        var interestFlows = fraction.ProjectedCashFlows.Where(static flow => flow.FlowType != "Maturity").ToList();
+        interestFlows.Should().NotBeEmpty("a term deposit with a rate accrues interest flows");
+        interestFlows.Select(static flow => (flow.FlowType, flow.DueDate, flow.Amount))
+            .Should().Equal(percentagePoints.ProjectedCashFlows.Where(static flow => flow.FlowType != "Maturity")
+                .Select(static flow => (flow.FlowType, flow.DueDate, flow.Amount)));
+    }
+
+    [Fact]
     public void ProjectFromSecurityMaster_PrivateCompanyEquity_ReceivesValuationReview_LikeOtherAlternatives()
     {
         // Ops-capable alternatives that no other branch owns (real estate, guarantees) always got a

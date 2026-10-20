@@ -2247,7 +2247,9 @@ public sealed partial class ProviderLedgerReconciliationService
                 .ConfigureAwait(false);
         }
 
-        if (providerProjection.Positions.Any(static position => IsFixedIncomeOrStructuredAssetClass(position)) ||
+        // Passports are not built yet at this point; the retained projection reference is the only
+        // resolved class available for the capability gate.
+        if (providerProjection.Positions.Any(static position => IsFixedIncomeOrStructuredAssetClass(position, passport: null)) ||
             (providerProjection.CorporateActions ?? []).Any(static action =>
                 IsFactorScheduleEvent(action.EventType) ||
                 IsAmortizationScheduleEvent(action.EventType) ||
