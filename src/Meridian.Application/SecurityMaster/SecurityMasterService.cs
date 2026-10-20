@@ -233,6 +233,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     {
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
+        EnsurePatchBaseMatchesExpectedVersion(currentProjection, request.ExpectedVersion);
 
         var amendRequest = new AmendSecurityTermsRequest(
             SecurityId: securityId,
@@ -254,6 +255,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
     {
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
+        EnsurePatchBaseMatchesExpectedVersion(currentProjection, request.ExpectedVersion);
 
         var amendRequest = new AmendSecurityTermsRequest(
             SecurityId: securityId,
@@ -276,6 +278,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         ArgumentNullException.ThrowIfNull(request);
         var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
+        EnsurePatchBaseMatchesExpectedVersion(currentProjection, request.ExpectedVersion);
 
         var amendRequest = new AmendSecurityTermsRequest(
             SecurityId: securityId,
@@ -292,6 +295,20 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
             Reason: request.Reason);
 
         return await AmendTermsInternalAsync(amendRequest, eventType: SecurityTermBlocks.AmendedEventType, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Patch-building amends merge the caller's change into terms read from the projection. If that
+    /// projection is not the version the caller edited, the merged patch would silently carry (or
+    /// drop) a concurrent writer's changes, so reject it before building the patch. The event-store
+    /// append still enforces ExpectedVersion for races after this read.
+    /// </summary>
+    private static void EnsurePatchBaseMatchesExpectedVersion(SecurityProjectionRecord currentProjection, long expectedVersion)
+    {
+        if (currentProjection.Version != expectedVersion)
+        {
+            throw new SecurityMasterConcurrencyException(currentProjection.SecurityId, expectedVersion, currentProjection.Version);
+        }
     }
 
     public async Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
