@@ -27,7 +27,7 @@ using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Workstation.Models;
-using AppSecurityMasterQueryService = Meridian.Application.SecurityMaster.ISecurityMasterQueryService;
+using AppSecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 

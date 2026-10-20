@@ -115,12 +115,29 @@ public static class SharedResiliencePolicies
         this IHttpClientBuilder builder,
         string clientName,
         Action<string, string, string?> onStateChanged)
+        => builder.AddSharedResiliencePolicyTracked(clientName, _ => onStateChanged);
+
+    /// <summary>
+    /// Adds tracked resilience policies whose callback and circuit state belong to the
+    /// service provider that creates the client. The policy is reused across requests
+    /// and handler rotation, but never shared by independent service providers.
+    /// </summary>
+    public static IHttpClientBuilder AddSharedResiliencePolicyTracked(
+        this IHttpClientBuilder builder,
+        string clientName,
+        Func<IServiceProvider, Action<string, string, string?>> onStateChangedFactory)
     {
+        ArgumentNullException.ThrowIfNull(onStateChangedFactory);
+
+        builder.Services.AddKeyedSingleton<IAsyncPolicy<HttpResponseMessage>>(clientName,
+            (serviceProvider, _) => GetCircuitBreakerPolicy(
+                breakerName: clientName,
+                onStateChanged: onStateChangedFactory(serviceProvider)));
+
         return builder
             .AddPolicyHandler(GetRetryPolicy())
-            .AddPolicyHandler(GetCircuitBreakerPolicy(
-                breakerName: clientName,
-                onStateChanged: onStateChanged));
+            .AddPolicyHandler((serviceProvider, _) =>
+                serviceProvider.GetRequiredKeyedService<IAsyncPolicy<HttpResponseMessage>>(clientName));
     }
 
     /// <summary>

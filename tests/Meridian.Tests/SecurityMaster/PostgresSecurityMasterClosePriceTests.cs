@@ -423,7 +423,7 @@ public sealed class PostgresSecurityMasterClosePriceTests(SecurityMasterDatabase
             "checker", "Independently reviewed close source evidence");
     private static SecurityMasterPricingService Service(ISecurityMasterPricingStore store, Guid id)
     {
-        var query = Substitute.For<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>();
+        var query = Substitute.For<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
         query.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(new SecurityDetailDto(
             id, "Bond", SecurityStatusDto.Active, "Close test", "USD", JsonSerializer.SerializeToElement(new { }),
             JsonSerializer.SerializeToElement(new { }), [], [], 1, Close.AddDays(-10), null));
