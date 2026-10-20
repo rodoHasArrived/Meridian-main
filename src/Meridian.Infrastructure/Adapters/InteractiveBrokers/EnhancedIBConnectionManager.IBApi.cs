@@ -155,6 +155,11 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public event EventHandler? ConnectionRestored;
 
     /// <summary>
+    /// Event raised when IB reports the accounts managed by the current login.
+    /// </summary>
+    public event EventHandler<IReadOnlyList<string>>? ManagedAccountsReceived;
+
+    /// <summary>
     /// Raised when the shared connection lifecycle snapshot changes.
     /// </summary>
     public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged;
