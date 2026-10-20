@@ -3,7 +3,7 @@
 **Status:** active
 **Owner:** core-team
 **Reviewed:** 2026-10-20
-**Review history:** scheduled institutional-requirements pass 2026-10-20; scheduled institutional-requirements pass 2026-10-19; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Review history:** scheduled institutional-requirements re-check 2026-10-20 (post-merge); scheduled institutional-requirements pass 2026-10-20; scheduled institutional-requirements pass 2026-10-19; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -2997,6 +2997,13 @@ for the fix.
 
 ### A4 — The custom-profile extension point declares projected and searchable fields and honours neither
 
+> **Status (2026-10-20): restated as promotion-readiness intent; the flags are documented as not
+> live.** `IsProjected` and `IsSearchable` now carry parameter documentation saying no projection
+> writer, index or search predicate reads them; the promotion signals and both workstation counts
+> say "declared projected"/"declared searchable". The generic indexed seam the entry describes
+> below (`security_profile_field_projection` plus profile content in the search vector) is still
+> the remedy if the flags are ever to govern anything.
+
 `SecurityAssetProfileFieldDefinitionDto` carries `IsProjected` and `IsSearchable`
 (`SecurityAssetProfiles.cs:49-50`) — the two properties an operator would read as "this profile field
 is queryable". Across `src/` and `tests/`, neither flag reaches a projection writer, an index, or a
@@ -5800,9 +5807,10 @@ reads it per security.
 
 | Finding | What landed |
 | --- | --- |
-| Most asset classes write their typed tables through hand-written code | `SecurityTermsProjectionColumn.Derived` lets a descriptor column compute its value from the whole record (common terms, fallback chains, derived states) while the registry owns the gate, delete branch, identity spine and generated upsert. Equity, FxSpot, Future, Swap and Commodity moved onto descriptors. Their derived columns call the same readers the writers used. Nine of the eleven original writers are now declarative, and the catalog's `ProjectionKind` says so (locked by `SecurityAssetClassRegistryCoverageTests`). Migration 044 added declarative descriptors for the twelve classes that had no projection at all, so 25 of 26 classes project (CustomAsset excepted). |
+| Most asset classes write their typed tables through hand-written code | `SecurityTermsProjectionColumn.Derived` lets a descriptor column compute its value from the whole record (common terms, fallback chains, derived states) while the registry owns the gate, delete branch, identity spine and generated upsert. Equity, FxSpot, Future, Swap and Commodity moved onto descriptors. Their derived columns call the same readers the writers used. Ten of the eleven original writers are now declarative, and the catalog's `ProjectionKind` says so (locked by `SecurityAssetClassRegistryCoverageTests`). Migration 044 added declarative descriptors for the twelve classes that had no projection at all, so 25 of 26 classes project (CustomAsset excepted). |
 | Each move needs a regression test | `SpecializedProjectionGoldenTests` is a PostgreSQL golden-row matrix covering gate hits and misses, stale rows cleared on a gate miss or class change, verbatim and normalized strings, common-terms columns, derived columns and wrong JSON kinds. It passed against the hand-written writers before they were deleted, and the descriptors are held to the same rows. |
-| Still specialized | Bond and Option. Option's tables are keyed by contract symbol and option chain, not by security; three of Bond's four tables carry no identity spine, and Bond keeps a legacy nested-coupon fallback. Both keep their existing writer tests. |
+| Bond moved (2026-10-20) | `SecurityTermsProjectionSatelliteTable` lets a descriptor write sibling `security_id`-keyed tables beside its parent, each declaring the identity spine it actually has and an optional presence condition. Bond's parent gates on maturity, its lifecycle and accrual-convention satellites always accompany it, and the issuer-ladder satellite exists only while the bond names an issuer; the legacy nested-coupon fallback and the lifecycle state are derived columns. `BondProjectionGoldenTests` holds all four tables to the rows the hand-written writer persisted. |
+| Still specialized | Option. Its tables are keyed by contract symbol and option chain rather than by security, its alias table fans out from the record's aliases rather than a declared term, its lifecycle row has an insert-only `listed_at`, and `PostgresOptionReferenceProjectionStore` writes the same tables from quotes. A security-keyed terms projection cannot own those tables; moving Option means re-keying them on `security_id` (a migration) and giving the quote path its own tables first. |
 
 ### Priority 4 — one lot model
 
@@ -6003,3 +6011,73 @@ acceptable as such. The consistency rule should land before `listing_mic` is use
 per merged PR, then read the new descriptors, term records, codecs, the accounting-class resolver
 and its tests, the cash-flow gate and migration 048. Each prior open item was re-derived from the
 cited lines. No source changed in this pass, so no tests were run.
+
+---
+
+## Scheduled institutional-requirements re-check — 2026-10-20 (post-merge)
+
+Static re-read at `d158363d` (main, after #3236), stacked on the 2026-10-20 pass above. No build or
+test run; every claim cites the file read. Only what changed since that pass is recorded.
+
+### Closed or narrowed since the 2026-10-20 pass
+
+| # | Disposition | Evidence |
+| --- | --- | --- |
+| E1 — term-block amend not fenced (HIGH) | **Closed** | `3b3e24a8`: `AmendTermBlockAsync` calls `EnsurePatchBaseMatchesExpectedVersion` before building the patch (`SecurityMasterService.cs:281`). |
+| E5 — Asset Operations class predicates | **Closed** | `408bf146`: `AssetObligationProjectionService` routes through `SecurityAssetClassCatalog`; the `PrivateFund` / `PartnershipInterest` literals are gone. |
+| E6 — hard-coded Bond/Option data-quality rules | **Closed** | `408bf146`: no `"Bond"` / `"Option"` literals remain in `SecurityMasterDataQualityService.cs`. |
+| A4 — profile `IsProjected`/`IsSearchable` | **Narrowed** | `ae83757a` documents both flags as promotion intent rather than live behaviour; nothing consumes them yet (`SecurityAssetProfileGovernanceService.cs:514`). |
+| Priority 3 — Bond projection writer | **Closed** | `07233cb6`: Bond is declarative via satellite tables; Option is the only specialized writer left. |
+
+### G1 — Coupon rate units are inferred per consumer, and the consumers disagree (medium, correctness)
+
+No term field declares a rate unit. Each consumer guesses from the magnitude, and they guess
+differently for the same field:
+
+- `SecurityMasterCashFlowService.NormalizeAnnualRate` (`:793-794`) and
+  `SecurityMasterAccountingEventService.NormalizeRate` (`:875`) treat any value `<= 1` as a
+  fraction: a Bond `couponRate` of `0.5` is read as **50%** a year, and `1.0` as 100%.
+- `AssetObligationProjectionService.NormalizeCouponRatePercent` (`:862-879`) says the opposite in
+  its own doc comment: bond-family coupons are percentage points, so "a 0.5 coupon is half a
+  percent". Only `Deposit` gets the `<= 1` fraction rule.
+
+Failure path: a sub-1% bond (common for 2020–2021 sovereign and IG issuance) stored as `0.5` gets
+100× its true coupon in Security Master cash-flow projection and in the accrual and coupon
+postings the accounting event service builds (`:432`, `:475`), while Asset Operations projects it
+correctly. The swap-leg fixed-rate and index paths (`SecurityMasterCashFlowService.cs:661`, `:673`)
+use the same heuristic.
+
+Fix direction: declare the unit on the term field (a `SecurityTermConventions` rate-unit
+convention, like day count and payment frequency), normalise once at write, and delete the three
+magnitude heuristics. Legacy rows need a governed backfill decision, not a read-time guess.
+
+### Re-verified as still open (unchanged)
+
+- **R4 — alias-probing term reader.** `StructuredCashFlowTermsResolver` still holds roughly twenty
+  alias arrays (`:15-27`) that are not derived from `SecurityAssetTermsSchema`. A1 was fixed by
+  a per-class `"DirectLoan"` arm (`:96`), which adds another class branch to the reader.
+- **Profile-to-class routing.** `KnownProfileAssetClasses` and `AssetClassMetadataKeywords`
+  (`SecurityMasterService.cs:1857-1899`) still map profile ids to classes by hand. The same ids are
+  declared in `SecurityAssetProfileCatalog` (ReferenceData) and repeated in
+  `SecurityMasterOperationalReadinessService.cs:312`. The predicate itself is now catalog-driven
+  (`SupportsProfileBackedTerms`, `:1843-1849`).
+- **N4/N5 — pack registry.** It is consumed only by the readiness report
+  (`SecurityMasterOperationalReadinessService.cs:296`, `:873`); its validator still substring-matches
+  policy prose (`SecurityAssetPackRegistry.cs:341`, `:721-731`). It gates no admission.
+- **Option projection.** Still keyed by contract symbol and option chain, and shared with the
+  quote path (see Priority 3 above).
+- **Codec generation.** Not started; `UnrecoverableKeys` still lists what the v2 → v1 bridge loses.
+  `retainedEconomicTerms` softens this.
+
+### Priorities from this re-check
+
+1. **G1.** Declare a rate-unit convention and remove the magnitude heuristics. This is the only
+   item here that produces a wrong ledger number.
+2. **F1/F3** from the 2026-10-20 pass (StructuredNote taxonomy fallback; OTC trade/instrument
+   separation). Both are unchanged.
+3. **Move profile-to-class routing onto the profile definition** (`SecurityAssetProfileCatalog`),
+   so a new reclassifying profile is one catalog row.
+4. **Derive the term-reader aliases from the schema** (an `Aliases` list on
+   `SecurityAssetTermField`) and drop the per-class arms in `StructuredCashFlowTermsResolver`.
+5. **Decide on the pack registry.** Either make it gate admission against real catalog data, or
+   move it to `docs/`.

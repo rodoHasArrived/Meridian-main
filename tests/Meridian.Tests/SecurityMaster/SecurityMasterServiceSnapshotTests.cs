@@ -928,7 +928,7 @@ public sealed class SecurityMasterServiceSnapshotTests
         // coupon states nothing new. The substitution is real; it just belongs to the Fixed and
         // InflationLinked arms, which READ couponRate and are judged by CodecCanRead instead — they
         // never reach that exemption. The arms that do reach it leave BondTerms.couponRate as None,
-        // so the round trip writes couponRate: null while TryBuildBondProjection reads the flat key
+        // so the round trip writes couponRate: null while the Bond projection reads the flat key
         // without consulting the arm: fixed_coupon_rate goes from 0 to NULL. The exemption held
         // nowhere its justification applied and applied everywhere it did not.
         var securityId = Guid.NewGuid();
