@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-19
-**Review history:** scheduled institutional-requirements pass 2026-10-19; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-10-20
+**Review history:** scheduled institutional-requirements pass 2026-10-20; scheduled institutional-requirements pass 2026-10-19; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -5896,3 +5896,110 @@ registry, and follow-on capabilities that exist without callers.
 **Method.** Read-only re-check of `bb4a0899`. Changed Security Master files were listed with
 `git log --since=2026-10-15`; each still-open item was re-derived by reading the cited lines and by
 grep for callers. No source changed in this pass, so no tests were run.
+
+## Scheduled institutional-requirements pass — 2026-10-20
+
+Source snapshot: `a9d470c3`. Stacked on the 2026-10-19 pass (open PR #3220, snapshot `bb4a0899`).
+This pass covers only what merged in between: six OTC classes (#3221 `FxForward`,
+`NonDeliverableForward`, `CreditDefaultSwap`; #3222 `Swaption`, `CapFloor`, `StructuredNote`;
+migrations 046/047), the typed payment-frequency convention and typed DTO companions (#3219,
+#3226), optional notional and reset schedules on swap legs (#3228), and `Mic`/`ListingId` with
+the additive `securities.listing_mic` column (#3229, #3230; migration 048).
+
+**Verdict.** No regression. The new classes landed through the registry the way the 2026-10-15
+priorities intended: they are declarative from the start, and the coverage, parity, round-trip
+and projection tests enumerate them by reflection. What they show is the remaining cost of a
+new class, and that the descriptor's *downstream* fields are optional. When a class leaves one
+blank, the class drops out of the consumer, or a fallback picks for it.
+
+### Re-verified on `a9d470c3`
+
+| Item | State |
+| --- | --- |
+| E1: term-block amend not fenced on `ExpectedVersion` (HIGH) | Still open on main. `SecurityMasterService.cs:274-295` is unchanged. The fix is in draft PR #3233 (merge-conflicted against main at the time of this pass). |
+| E2: follow-ons with no consumers | Unchanged. `LotQuantity.EconomicUnits` still has no caller outside `LotQuantity.cs`. No forward-curve publisher exists. |
+| E5: Asset Operations class predicates | Unchanged (`AssetObligationProjectionService.cs:861-862` still matches `PrivateFund` / `PartnershipInterest`; `Deposit` still absent). |
+| E6: hard-coded Bond/Option data-quality rules | Unchanged (`SecurityMasterDataQualityService.cs:127, :147-167, :216, :234-243`). None of the six new classes has a minimum-attribute or value-consistency rule. Their schema `Required` flags are enforced on write by the validator registry only. |
+| A4, N4/N5 | Unchanged. |
+
+### F1: `StructuredNote` posts through the Bond accounting slice by taxonomy fallback (medium)
+
+The `StructuredNote` descriptor (`SecurityAssetClassCatalog.cs:536-548`) declares no
+`AccountingInstrumentClass`, and its F# classification is `AssetClass.FixedIncome`
+(`SecurityMaster.fs:932`). `ResolveAccountingInstrumentClass` (`SecurityAssetClassCatalog.cs:659-680`)
+finds no specific class, then falls back to the taxonomy map `FixedIncome → Bond` (`:575-579`). It
+returns `Bond`, and `SecurityMasterAccountingEventService.IsFixedIncome` admits the record. The
+fallback is deliberate and test-locked for unmodelled names
+(`SecurityAccountingInstrumentClassTests.cs:68-69`). However, `StructuredNote` is now a *modelled*
+class whose descriptor says something else: `CashFlowBehavior.None`, no `AmortizesTowardPar`, and
+principal-protection, participation, cap and barrier terms that a plain bond does not have. No test
+pins the class's accounting outcome. A note with `PrincipalProtectionPct < 1` or an
+underlying-linked payoff would accrue and redeem like a vanilla bond.
+**Fix:** give every catalogued class an explicit accounting disposition: a class, or a declared
+"outside the slice" marker. Restrict the taxonomy fallback to names the catalog does not know, and
+add a catalog-wide test so a new class must make that choice.
+
+### F2: the descriptor's downstream fields are optional, so new classes stay reference-only (note)
+
+All six new classes declare `CashFlowBehavior.None`, no `InstrumentTypes`, no
+`AccountingInstrumentClass` and no `AssetOperationsCapabilities` (`SecurityAssetClassCatalog.cs:467-548`).
+The calculated-cash-flow service handles this honestly and returns a blocked reason
+(`SecurityMasterCashFlowService.cs:262`). The other consumers do not say anything: there is no
+premium-leg schedule for CDS, no caplet schedule for CapFloor, no settlement flow on the FX forward
+value date, and no routing type for execution or risk. That is a reasonable first slice, but the
+catalog cannot tell "deliberately reference-only" from "not yet decided". The same optional-field
+default is what produced F1.
+**Fix:** make these dispositions required, non-null descriptor values (an explicit
+`ReferenceOnly` / `NotModelled` case per dimension), so the coverage tests force a decision for
+each class.
+
+### F3: OTC contract terms mix instrument, trade and valuation data, with no OTC identity (medium)
+
+The new OTC term records carry position- or holder-perspective fields: `Notional`, `ProtectionSide`,
+`PayerReceiver`, `TradeDate` and `ForwardRate` (`SecurityMaster.fs:682-760`). They also carry a
+valuation assumption (`CreditDefaultSwapTerms.RecoveryRateAssumption`). Three of the classes
+declare `LotUnit = Notional`, so notional now has two sources: the term and the lot quantity. No
+rule reconciles them. The identifier model has no UTI, UPI or RED-code kinds
+(`SecurityIdentifiers.fs:9-38`). `CreditDefaultSwapTerms.ReferenceEntity` is free text with no LEI
+link. Unlike `RepoTerms` and `CommitmentGuaranteeTerms`, neither `SwapTerms` nor any new OTC record
+carries a counterparty or clearing status.
+**Fix:** before more OTC classes are added, decide whether a bilateral contract is one security
+per trade (then the holder-side fields and the counterparty belong to a typed contract block, and
+the lot quantity is derived from the contract) or a shared instrument (then the holder-side fields
+move to the position). Add UTI/UPI (and RED for CDS) identifier kinds either way, and move
+valuation assumptions to pricing.
+
+### F4: one class's field list is still written by hand in four places (note, extends finding 4)
+
+Adding `CapFloor` touched 11 source files. Its field list is written four times: the F# record
+(`SecurityMaster.fs:759`), the C# JSON reader (`SecurityMasterMapping.cs:480-490`), the F# JSON
+writer (`Interop.SecurityMaster.fs:487-499`) and the term schema (`SecurityAssetTermsSchema.cs:574-586`).
+The projection descriptor and SQL DDL repeat it twice more. The round-trip and
+projection-DDL tests catch any drift, so this is cost, not risk. Codec generation from the schema
+(open since the 2026-10-10 pass) is still the remaining lever on per-class cost.
+
+### F5: listing identity now has three representations (note)
+
+A listing MIC can now come from `commonTerms.primaryListingMic`, from the derived
+`securities.listing_mic` column (store-derived at `PostgresSecurityMasterStore.cs:1483-1498`,
+falling back to a name map over free-text `exchange_code`), and from `ListingId` (`TICKER:MIC`)
+identifiers. No rule checks that a record's `ListingId` MIC agrees with its primary listing MIC.
+The exchange-name map is duplicated between `MicReference` and the SQL backfill in migration 048.
+A test holds the two together. These are staged slices of the ticker-plus-MIC work and are
+acceptable as such. The consistency rule should land before `listing_mic` is used for resolution.
+
+### Priorities from this pass
+
+1. **E1:** land #3233 (resolve its conflict with main). This is still the only HIGH item.
+2. **F1 + F2:** make the accounting, cash-flow, routing and operations dispositions explicit,
+   required descriptor values, and stop the taxonomy fallback from classifying catalogued classes.
+3. **F3:** settle the OTC contract-versus-instrument model, plus the UTI/UPI/RED identifiers and
+   counterparty/clearing terms, before more OTC kinds are added.
+4. **E5 / E6:** unchanged from the 2026-10-19 pass. Schema-derived data-quality rules would also
+   give the six new classes coverage for free.
+5. **E2 / codec generation (F4):** unchanged.
+
+**Method.** Read-only review of `bb4a0899..a9d470c3`. I listed the changed Security Master files
+per merged PR, then read the new descriptors, term records, codecs, the accounting-class resolver
+and its tests, the cash-flow gate and migration 048. Each prior open item was re-derived from the
+cited lines. No source changed in this pass, so no tests were run.
