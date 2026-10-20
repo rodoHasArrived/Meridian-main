@@ -1531,6 +1531,36 @@ public sealed class AccountCashReconciliationContinuityTests : IDisposable
         Assert.Single(await (await ServiceAsyncWithoutProvisioning()).GetCasesAsync(_scope));
     }
 
+    [Fact]
+    public async Task Interrupted_empty_legacy_split_resumes_on_the_next_provisioning()
+    {
+        // Provisioning an empty pre-partition store writes its empty index before renaming the legacy
+        // file; a crash between the two leaves an empty unmarked legacy file beside an empty index.
+        await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+        var markerPath = Path.Combine(StoreDirectory, "initialized");
+        var legacyPath = Path.Combine(StoreDirectory, "state.json");
+        File.Delete(markerPath);
+        await File.WriteAllBytesAsync(legacyPath, await LegacyStateBytesAsync());
+
+        await new FileAccountCashReconciliationStore(_root).InitializeAsync();
+        File.Exists(markerPath).Should().BeTrue();
+        File.Exists(legacyPath).Should().BeFalse();
+        File.Exists(legacyPath + ".migrated").Should().BeTrue();
+        var service = await ServiceAsync();
+        await service.RunAsync(Request("first", 0, 1000m, 990m));
+        (await service.GetCasesAsync(_scope)).Should().ContainSingle();
+
+        // Retained history beside an empty index is still a recovery condition, not an interrupted split.
+        var separateRoot = Path.Combine(Path.GetTempPath(), $"meridian-account-cash-{Guid.NewGuid():N}");
+        await new FileAccountCashReconciliationStore(separateRoot).InitializeAsync();
+        var separateDirectory = Path.Combine(separateRoot, "reconciliation", "account-cash-continuity");
+        File.Delete(Path.Combine(separateDirectory, "initialized"));
+        await File.WriteAllBytesAsync(Path.Combine(separateDirectory, "state.json"), await LegacyBytesFromSeparateRootAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => new FileAccountCashReconciliationStore(separateRoot).InitializeAsync());
+        File.Exists(Path.Combine(separateDirectory, "initialized")).Should().BeFalse();
+        Directory.Delete(separateRoot, recursive: true);
+    }
+
     private string StoreDirectory => Path.Combine(_root, "reconciliation", "account-cash-continuity");
     private string ScopeStatePath(AccountCashReconciliationScope scope)
         => Path.Combine(StoreDirectory, "scopes", FileAccountCashReconciliationStore.ScopeFileName(scope) + ".json");

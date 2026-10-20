@@ -62,7 +62,10 @@ public sealed class FileAccountCashReconciliationStore
         if (File.Exists(LegacyStatePath))
         {
             var unmarked = await ReadLegacyAsync(LegacyStatePath, ct).ConfigureAwait(false);
-            if (unmarked.Runs.Count != 0 || unmarked.Cases.Count != 0 || File.Exists(IndexPath) || HasScopeFiles())
+            // An interrupted empty split commits its empty index before renaming the legacy file; that
+            // state resumes the idempotent split. Any retained history or scope file still requires recovery.
+            var emptyIndex = !File.Exists(IndexPath) || (await ReadIndexAsync(ct).ConfigureAwait(false)).Length == 0;
+            if (unmarked.Runs.Count != 0 || unmarked.Cases.Count != 0 || !emptyIndex || HasScopeFiles())
                 throw new InvalidOperationException("Unprovisioned continuity state requires explicit recovery.");
             await SplitLegacyAsync(ct).ConfigureAwait(false);
         }
