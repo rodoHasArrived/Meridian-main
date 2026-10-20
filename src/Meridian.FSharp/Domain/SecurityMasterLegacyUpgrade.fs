@@ -684,6 +684,104 @@ module SecurityMasterLegacyUpgrade =
                             CircuitBreakerThresholdPct = None
                         }
             }
+        | SecurityKind.FxForward terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = terms.TradeDate
+                            IssueDate = None
+                            MaturityDate = Some terms.ValueDate
+                        }
+            }
+        | SecurityKind.NonDeliverableForward terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = Some terms.FixingDate
+                            IssueDate = None
+                            MaturityDate = Some terms.ValueDate
+                        }
+            }
+        | SecurityKind.CreditDefaultSwap terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = Some terms.EffectiveDate
+                            IssueDate = Some terms.EffectiveDate
+                            MaturityDate = Some terms.MaturityDate
+                        }
+                    Coupon =
+                        Some {
+                            CouponType = Some CouponKind.Fixed
+                            // Running coupon quoted in basis points per annum; the economic module carries a rate.
+                            CouponRate = Some (terms.FixedCouponBps / 10000m)
+                            PaymentFrequency = terms.PaymentFrequency |> Option.map PaymentFrequency.parse
+                            DayCount = terms.DayCount |> mapDayCount
+                        }
+            }
+        | SecurityKind.Swaption terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = terms.UnderlyingEffectiveDate
+                            IssueDate = None
+                            MaturityDate = Some terms.Expiry
+                        }
+            }
+        | SecurityKind.CapFloor terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = Some terms.EffectiveDate
+                            IssueDate = None
+                            MaturityDate = Some terms.MaturityDate
+                        }
+                    FloatingRate =
+                        Some {
+                            ReferenceIndex = Some terms.ReferenceIndex
+                            SpreadBps = None
+                            ResetFrequency = terms.ResetFrequency
+                            FloorRate = terms.FloorStrike
+                            CapRate = terms.CapStrike
+                        }
+            }
+        | SecurityKind.StructuredNote terms ->
+            {
+                SecurityTermModules.empty with
+                    Maturity =
+                        Some {
+                            EffectiveDate = None
+                            IssueDate = terms.IssueDate
+                            MaturityDate = Some terms.Maturity
+                        }
+                    // A cadence without a rate (a contingent coupon) still belongs on the coupon module.
+                    Coupon =
+                        if terms.CouponRate.IsNone && terms.PaymentFrequency.IsNone then
+                            None
+                        else
+                            Some {
+                                // The coupon may be contingent on the underlying; the style is not declared.
+                                CouponType = None
+                                CouponRate = terms.CouponRate
+                                PaymentFrequency = terms.PaymentFrequency |> Option.map PaymentFrequency.parse
+                                DayCount = None
+                            }
+                    Issuer =
+                        Some {
+                            IssuerName = Some terms.IssuerName
+                            InstitutionName = None
+                            IssuerProgram = None
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
+                        }
+            }
         | SecurityKind.InvestmentFund terms ->
             {
                 SecurityTermModules.empty with

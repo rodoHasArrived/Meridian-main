@@ -218,7 +218,23 @@ module SecurityMaster =
                             || String.Equals(direction, "Receive", StringComparison.OrdinalIgnoreCase)))
                        (error "swap_leg_direction_invalid" "SwapLeg Direction must be either 'Pay' or 'Receive' when present.")
                    @ require (leg.PaymentFrequency |> Option.forall (String.IsNullOrWhiteSpace >> not))
-                       (error "swap_leg_payment_frequency_invalid" "SwapLeg PaymentFrequency must not be blank when present.")))
+                       (error "swap_leg_payment_frequency_invalid" "SwapLeg PaymentFrequency must not be blank when present.")
+                   @ require (leg.NotionalSchedule |> List.forall (fun step -> step.Notional > 0m))
+                       (error "swap_leg_notional_schedule_invalid" "SwapLeg NotionalSchedule steps must have a notional greater than zero.")
+                   @ require
+                       (leg.NotionalSchedule
+                        |> List.pairwise
+                        |> List.forall (fun (earlier, later) -> earlier.EffectiveDate < later.EffectiveDate))
+                       (error "swap_leg_notional_schedule_order_invalid" "SwapLeg NotionalSchedule dates must be strictly ascending.")
+                   @ require
+                       (leg.NotionalSchedule
+                        |> List.forall (fun step -> step.EffectiveDate >= terms.EffectiveDate && step.EffectiveDate <= terms.MaturityDate))
+                       (error "swap_leg_notional_schedule_range_invalid" "SwapLeg NotionalSchedule dates must fall within the swap's effective and maturity dates.")
+                   @ require
+                       (leg.ResetSchedule
+                        |> List.pairwise
+                        |> List.forall (fun (earlier, later) -> earlier.ResetDate < later.ResetDate))
+                       (error "swap_leg_reset_schedule_order_invalid" "SwapLeg ResetSchedule dates must be strictly ascending.")))
         | SecurityKind.DirectLoan terms ->
             []
             @ requireNotBlank "direct_loan_borrower_required" "Borrower" terms.Borrower
@@ -351,6 +367,101 @@ module SecurityMaster =
                 (error "warrant_strike_invalid" "Warrant Strike must be greater than zero when present.")
             @ require (terms.Multiplier |> Option.forall (fun m -> m > 0m))
                 (error "warrant_multiplier_invalid" "Warrant Multiplier must be greater than zero when present.")
+        | SecurityKind.FxForward terms ->
+            []
+            @ requireNotBlank "fx_forward_base_currency_required" "BaseCurrency" terms.BaseCurrency
+            @ requireNotBlank "fx_forward_quote_currency_required" "QuoteCurrency" terms.QuoteCurrency
+            @ require (not (String.Equals(terms.BaseCurrency, terms.QuoteCurrency, StringComparison.OrdinalIgnoreCase)))
+                (error "fx_forward_currency_pair_invalid" "FxForward BaseCurrency and QuoteCurrency must differ.")
+            @ require (terms.Notional |> Option.forall (fun n -> n > 0m))
+                (error "fx_forward_notional_invalid" "FxForward Notional must be greater than zero when present.")
+            @ require (terms.ForwardRate |> Option.forall (fun r -> r > 0m))
+                (error "fx_forward_rate_invalid" "FxForward ForwardRate must be greater than zero when present.")
+            @ require (terms.TradeDate |> Option.forall (fun tradeDate -> tradeDate <= terms.ValueDate))
+                (error "fx_forward_trade_date_invalid" "FxForward TradeDate must be on or before ValueDate when present.")
+        | SecurityKind.NonDeliverableForward terms ->
+            []
+            @ requireNotBlank "ndf_base_currency_required" "BaseCurrency" terms.BaseCurrency
+            @ requireNotBlank "ndf_quote_currency_required" "QuoteCurrency" terms.QuoteCurrency
+            @ requireNotBlank "ndf_settlement_currency_required" "SettlementCurrency" terms.SettlementCurrency
+            @ require (not (String.Equals(terms.BaseCurrency, terms.QuoteCurrency, StringComparison.OrdinalIgnoreCase)))
+                (error "ndf_currency_pair_invalid" "NonDeliverableForward BaseCurrency and QuoteCurrency must differ.")
+            @ require (terms.Notional |> Option.forall (fun n -> n > 0m))
+                (error "ndf_notional_invalid" "NonDeliverableForward Notional must be greater than zero when present.")
+            @ require (terms.ForwardRate |> Option.forall (fun r -> r > 0m))
+                (error "ndf_rate_invalid" "NonDeliverableForward ForwardRate must be greater than zero when present.")
+            @ require (terms.FixingDate <= terms.ValueDate)
+                (error "ndf_fixing_date_invalid" "NonDeliverableForward FixingDate must be on or before ValueDate.")
+        | SecurityKind.CreditDefaultSwap terms ->
+            []
+            @ requireNotBlank "cds_reference_entity_required" "ReferenceEntity" terms.ReferenceEntity
+            @ require
+                (String.Equals(terms.ProtectionSide, "Buy", StringComparison.OrdinalIgnoreCase)
+                 || String.Equals(terms.ProtectionSide, "Sell", StringComparison.OrdinalIgnoreCase))
+                (error "cds_protection_side_invalid" "CreditDefaultSwap ProtectionSide must be either 'Buy' or 'Sell'.")
+            @ require (terms.Notional > 0m)
+                (error "cds_notional_invalid" "CreditDefaultSwap Notional must be greater than zero.")
+            @ require (terms.FixedCouponBps >= 0m)
+                (error "cds_fixed_coupon_invalid" "CreditDefaultSwap FixedCouponBps must be zero or greater.")
+            @ require (terms.EffectiveDate <= terms.MaturityDate)
+                (error "cds_date_range_invalid" "CreditDefaultSwap EffectiveDate must be on or before MaturityDate.")
+            @ require (terms.RecoveryRateAssumption |> Option.forall (fun r -> r >= 0m && r <= 1m))
+                (error "cds_recovery_rate_invalid" "CreditDefaultSwap RecoveryRateAssumption must be between 0 and 1 when present.")
+        | SecurityKind.Swaption terms ->
+            let isOneOf (values: string list) (value: string) =
+                values |> List.exists (fun candidate -> String.Equals(candidate, value, StringComparison.OrdinalIgnoreCase))
+            []
+            @ require (isOneOf [ "Payer"; "Receiver" ] terms.PayerReceiver)
+                (error "swaption_payer_receiver_invalid" "Swaption PayerReceiver must be either 'Payer' or 'Receiver'.")
+            @ require (terms.ExerciseStyle |> Option.forall (isOneOf [ "European"; "American"; "Bermudan" ]))
+                (error "swaption_exercise_style_invalid" "Swaption ExerciseStyle must be European, American or Bermudan when present.")
+            @ require (terms.Notional > 0m)
+                (error "swaption_notional_invalid" "Swaption Notional must be greater than zero.")
+            @ require (terms.Expiry <= terms.UnderlyingMaturityDate)
+                (error "swaption_expiry_invalid" "Swaption Expiry must be on or before UnderlyingMaturityDate.")
+            @ require
+                (terms.UnderlyingEffectiveDate
+                 |> Option.forall (fun effective -> terms.Expiry <= effective && effective < terms.UnderlyingMaturityDate))
+                (error "swaption_underlying_dates_invalid" "Swaption UnderlyingEffectiveDate must fall on or after Expiry and before UnderlyingMaturityDate when present.")
+        | SecurityKind.CapFloor terms ->
+            let isType value = String.Equals(terms.CapFloorType, value, StringComparison.OrdinalIgnoreCase)
+            []
+            @ require (isType "Cap" || isType "Floor" || isType "Collar")
+                (error "cap_floor_type_invalid" "CapFloor CapFloorType must be Cap, Floor or Collar.")
+            @ requireNotBlank "cap_floor_reference_index_required" "ReferenceIndex" terms.ReferenceIndex
+            @ require (not (isType "Cap" || isType "Collar") || terms.CapStrike.IsSome)
+                (error "cap_floor_cap_strike_required" "CapFloor CapStrike is required for a Cap or Collar.")
+            @ require (not (isType "Floor" || isType "Collar") || terms.FloorStrike.IsSome)
+                (error "cap_floor_floor_strike_required" "CapFloor FloorStrike is required for a Floor or Collar.")
+            @ require
+                (match terms.FloorStrike, terms.CapStrike with
+                 | Some floor, Some cap -> floor <= cap
+                 | _ -> true)
+                (error "cap_floor_strike_order_invalid" "CapFloor FloorStrike must be at or below CapStrike when both are present.")
+            @ require (terms.Notional > 0m)
+                (error "cap_floor_notional_invalid" "CapFloor Notional must be greater than zero.")
+            @ require (terms.EffectiveDate <= terms.MaturityDate)
+                (error "cap_floor_date_range_invalid" "CapFloor EffectiveDate must be on or before MaturityDate.")
+            @ require (terms.PremiumAmount |> Option.forall (fun premium -> premium >= 0m))
+                (error "cap_floor_premium_invalid" "CapFloor PremiumAmount must be zero or greater when present.")
+        | SecurityKind.StructuredNote terms ->
+            []
+            @ requireNotBlank "structured_note_issuer_required" "IssuerName" terms.IssuerName
+            @ requireNotBlank "structured_note_underlying_required" "UnderlyingDescription" terms.UnderlyingDescription
+            @ require (terms.IssueDate |> Option.forall (fun issueDate -> issueDate <= terms.Maturity))
+                (error "structured_note_issue_date_invalid" "StructuredNote IssueDate must be on or before Maturity when present.")
+            @ require (terms.Denomination |> Option.forall (fun d -> d > 0m))
+                (error "structured_note_denomination_invalid" "StructuredNote Denomination must be greater than zero when present.")
+            @ require (terms.PrincipalProtectionPct |> Option.forall (fun p -> p >= 0m && p <= 1m))
+                (error "structured_note_protection_invalid" "StructuredNote PrincipalProtectionPct must be between 0 and 1 when present.")
+            @ require (terms.ParticipationRate |> Option.forall (fun p -> p >= 0m))
+                (error "structured_note_participation_invalid" "StructuredNote ParticipationRate must be zero or greater when present.")
+            @ require (terms.ReturnCap |> Option.forall (fun c -> c >= 0m))
+                (error "structured_note_return_cap_invalid" "StructuredNote ReturnCap must be zero or greater when present.")
+            @ require (terms.CouponRate |> Option.forall (fun c -> c >= 0m))
+                (error "structured_note_coupon_invalid" "StructuredNote CouponRate must be zero or greater when present.")
+            @ require (terms.BarrierLevel |> Option.forall (fun b -> b > 0m))
+                (error "structured_note_barrier_invalid" "StructuredNote BarrierLevel must be greater than zero when present.")
         | SecurityKind.InvestmentFund _ ->
             []
         | SecurityKind.CustomAsset terms ->

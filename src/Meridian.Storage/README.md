@@ -90,12 +90,28 @@ profile-governed CustomAsset is now projected (25 of 26). Guid-typed terms proje
 columns. The tables are created empty; an existing database populates them through
 `SecurityMasterRebuildOrchestrator.RebuildAssetClassAsync` per class.
 
+Security Master migration `046_otc_derivative_terms_projections.sql` creates `fx_forward_projection`,
+`ndf_projection` and `credit_default_swap_projection` for the OTC derivative classes FxForward,
+NonDeliverableForward and CreditDefaultSwap, written by the same declarative
+`SecurityTermsProjectionRegistry` descriptor path from the day the classes are modeled (28 of 29
+catalog classes projected; CustomAsset remains the deliberate gap). NOT NULL columns are the terms
+the contract marks Required; the tables are created empty and populate as records are persisted.
+Migration `047_rate_option_and_note_terms_projections.sql` does the same for `swaption_projection`,
+`cap_floor_projection` and `structured_note_projection` (31 of 32 classes projected); strike and
+rate columns are signed because negative strikes are valid in negative-rate currencies.
+
 Security Master migration `042_security_master_terms_format_column.sql` promotes the terms-payload
 family to a queryable `securities.terms_format` column (ADR-024). The backfill never rewrites the
 payload: a declared `termsFormat` wins and an untagged row is classified by the same shape rule
 `SecurityTermsEnvelope.ResolveFormat` applies on read. `PostgresSecurityMasterStore` derives the
 column from the stored payload on every upsert and refuses an unknown declared format before the
 column's check constraint does.
+Migration `048_security_master_listing_mic.sql` adds the nullable `securities.listing_mic` column
+(ISO 10383) beside the free-text `exchange_code`, which is left unchanged. A well-formed
+`commonTerms.primaryListingMic` wins; otherwise `exchange_code` resolves through the bundled
+`MicReference` codes and exchange names. Routing labels and unknown names stay null. The upsert
+derives the column with the same rule (`PostgresSecurityMasterStore.ResolveListingMic`), and
+`ListingMicColumnTests` holds the backfill to the `MicReference` tables.
 Asset-operations migration `005_asset_operations_write_events.sql` adds an append-only write-event
 log for direct projection writes; migration `006_asset_operations_write_events_truncate_guard.sql`
 rejects TRUNCATE on it as well.
@@ -371,6 +387,10 @@ The same limitation applies to coordinated rewriting of facts, their event hashe
 head; a locally recomputed chain is not independent authentication of its history.
 Coverage permits new SQL columns but compares retained column values, including nested JSON, exactly.
 `LedgerEventAuditPostgresTests` exercises these boundaries; hosted PostgreSQL proof is required.
+`PostgresLedgerJournalStore` (`ILedgerEventAuditVerifier`) and `PostgresAccountingConfigurationStore`
+(`IAccountingAuditChainVerifier`) also expose read-only verification that runs the same full scan
+under the head lock and commits nothing; a break is reported, never repaired. It is subject to the
+same limits as the append-time scan above.
 
 Audit actors come from validated posting commands or period transitions. Missing legacy attribution
 remains null. The period-creation endpoint stamps the authenticated creator; generated candidate

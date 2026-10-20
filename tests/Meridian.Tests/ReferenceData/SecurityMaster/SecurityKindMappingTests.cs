@@ -61,6 +61,12 @@ public sealed class SecurityKindMappingTests
             ["CryptoCurrency"] = [InstrumentType.Crypto],
             ["Cfd"] = [InstrumentType.CFD],
             ["Warrant"] = [InstrumentType.Warrant],
+            ["FxForward"] = [],
+            ["NonDeliverableForward"] = [],
+            ["CreditDefaultSwap"] = [],
+            ["Swaption"] = [],
+            ["CapFloor"] = [],
+            ["StructuredNote"] = [],
             ["InvestmentFund"] = [],
         };
 

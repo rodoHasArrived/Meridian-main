@@ -598,6 +598,8 @@ let private legacySwapLeg : SwapLeg = {
     PaymentFrequency = None
     DayCount = None
     ExchangesPrincipal = false
+    NotionalSchedule = []
+    ResetSchedule = []
 }
 
 let private createSwapCommand legs =
@@ -683,6 +685,51 @@ let ``SecurityMaster accepts swap legs without optional economics`` () =
         leg.GetProperty(field).ValueKind |> should equal JsonValueKind.Null
     leg.GetProperty("fixedRate").GetDecimal() |> should equal 0.0425m
     leg.GetProperty("exchangesPrincipal").GetBoolean() |> should equal false
+
+[<Fact>]
+let ``SecurityMasterSnapshotWrapper serializes swap leg notional and reset schedules`` () =
+    let leg = {
+        legacySwapLeg with
+            NotionalSchedule =
+                [ { EffectiveDate = DateOnly(2026, 1, 15); Notional = 10_000_000m }
+                  { EffectiveDate = DateOnly(2028, 1, 15); Notional = 5_000_000m } ]
+            ResetSchedule =
+                [ { ResetDate = DateOnly(2026, 1, 15); FixingRate = Some 0.0375m }
+                  { ResetDate = DateOnly(2026, 4, 15); FixingRate = None } ]
+    }
+    let wrapper = createSwapSnapshot [ leg ]
+    use assetDocument = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    let payload = assetDocument.RootElement.GetProperty("legs").[0]
+    let notionalSchedule = payload.GetProperty("notionalSchedule")
+    notionalSchedule.GetArrayLength() |> should equal 2
+    notionalSchedule.[1].GetProperty("effectiveDate").GetString() |> should equal "2028-01-15"
+    notionalSchedule.[1].GetProperty("notional").GetDecimal() |> should equal 5_000_000m
+    let resetSchedule = payload.GetProperty("resetSchedule")
+    resetSchedule.GetArrayLength() |> should equal 2
+    resetSchedule.[0].GetProperty("resetDate").GetString() |> should equal "2026-01-15"
+    resetSchedule.[0].GetProperty("fixingRate").GetDecimal() |> should equal 0.0375m
+    resetSchedule.[1].GetProperty("fixingRate").ValueKind |> should equal JsonValueKind.Null
+
+[<Fact>]
+let ``SecurityMaster rejects malformed swap leg schedules`` () =
+    let leg = {
+        legacySwapLeg with
+            NotionalSchedule =
+                [ { EffectiveDate = DateOnly(2027, 1, 15); Notional = 0m }
+                  { EffectiveDate = DateOnly(2026, 1, 15); Notional = 1m }
+                  { EffectiveDate = DateOnly(2032, 1, 15); Notional = 1m } ]
+            ResetSchedule =
+                [ { ResetDate = DateOnly(2026, 4, 15); FixingRate = None }
+                  { ResetDate = DateOnly(2026, 4, 15); FixingRate = None } ]
+    }
+    match SecurityMaster.create (createSwapCommand [ leg ]) with
+    | Error errors ->
+        let codes = errors |> List.map (fun error -> error.Code)
+        codes |> should contain "swap_leg_notional_schedule_invalid"
+        codes |> should contain "swap_leg_notional_schedule_order_invalid"
+        codes |> should contain "swap_leg_notional_schedule_range_invalid"
+        codes |> should contain "swap_leg_reset_schedule_order_invalid"
+    | Ok _ -> failwith "Expected malformed swap leg schedules to be rejected."
 
 [<Theory>]
 [<InlineData(0)>]
@@ -983,6 +1030,27 @@ let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Ma
     |> should equal None
     (definition.Terms.FloatingRate |> Option.defaultWith (fun () -> failwith "Expected FloatingRate term module")).ResetFrequency
     |> should equal None
+
+[<Fact>]
+let ``SecurityMasterLegacyUpgrade keeps a structured note cadence without a coupon rate`` () =
+    let terms = {
+        IssuerName = "Meridian Bank plc"; UnderlyingDescription = "EURO STOXX 50"; Maturity = DateOnly(2031, 12, 15)
+        IssueDate = None; Denomination = Some 1000m; PrincipalProtectionPct = Some 1m; ParticipationRate = None
+        ReturnCap = None; CouponRate = None; PaymentFrequency = Some "Quarterly"; BarrierLevel = Some 0.6m
+    }
+    let equityCommand = createEquityCreateCommand None
+    let command = { equityCommand with Kind = SecurityKind.StructuredNote terms }
+
+    let record =
+        match SecurityMaster.create command with
+        | Ok [ SecurityMasterEvent.SecurityCreated snapshot ] -> snapshot
+        | Ok events -> failwithf "Expected SecurityCreated event, got: %A" events
+        | Error errors -> failwithf "Expected create to succeed, got: %A" errors
+
+    let definition = SecurityMasterLegacyUpgrade.toEconomicDefinition record
+    let coupon = definition.Terms.Coupon |> Option.defaultWith (fun () -> failwith "Expected Coupon term module")
+    coupon.PaymentFrequency |> should equal (Some (PaymentFrequency.parse "Quarterly"))
+    coupon.CouponRate |> should equal None
 
 [<Fact>]
 let ``SecurityMasterLegacyUpgrade maps preferred classification into term modules`` () =
@@ -1508,6 +1576,29 @@ let private registrySampleKinds : (SecurityKind * string) list =
       SecurityKind.Cfd { UnderlyingAssetClass = "Equity"; UnderlyingDescription = None; Leverage = None }, "Cfd"
       SecurityKind.Warrant {
           UnderlyingId = secId (); WarrantType = "Call"; Strike = None; Expiry = None; Multiplier = None }, "Warrant"
+      SecurityKind.FxForward {
+          BaseCurrency = "EUR"; QuoteCurrency = "USD"; Notional = None; ForwardRate = None; TradeDate = None
+          ValueDate = DateOnly(2026, 9, 2); SettlementType = None }, "FxForward"
+      SecurityKind.NonDeliverableForward {
+          BaseCurrency = "USD"; QuoteCurrency = "BRL"; SettlementCurrency = "USD"; Notional = None; ForwardRate = None
+          FixingDate = DateOnly(2026, 6, 29); ValueDate = DateOnly(2026, 7, 1); FixingSource = None }, "NonDeliverableForward"
+      SecurityKind.CreditDefaultSwap {
+          ReferenceEntity = "Meridian Industries Inc"; ReferenceObligation = None; ProtectionSide = "Buy"; Notional = 10_000_000m
+          FixedCouponBps = 100m; EffectiveDate = DateOnly(2026, 3, 20); MaturityDate = DateOnly(2031, 6, 20)
+          PaymentFrequency = None; DayCount = None; Seniority = None; RestructuringClause = None; UpfrontPoints = None
+          RecoveryRateAssumption = None; IndexName = None }, "CreditDefaultSwap"
+      SecurityKind.Swaption {
+          PayerReceiver = "Payer"; ExerciseStyle = None; StrikeRate = 0.0375m; Expiry = DateOnly(2027, 3, 15)
+          UnderlyingEffectiveDate = None; UnderlyingMaturityDate = DateOnly(2037, 3, 17); Notional = 25_000_000m
+          FloatingIndex = None; FixedLegPaymentFrequency = None; FixedLegDayCount = None; SettlementType = None }, "Swaption"
+      SecurityKind.CapFloor {
+          CapFloorType = "Cap"; ReferenceIndex = "SOFR"; CapStrike = Some 0.05m; FloorStrike = None; Notional = 50_000_000m
+          EffectiveDate = DateOnly(2026, 4, 1); MaturityDate = DateOnly(2031, 4, 1); ResetFrequency = None; DayCount = None
+          PremiumAmount = None }, "CapFloor"
+      SecurityKind.StructuredNote {
+          IssuerName = "Meridian Bank plc"; UnderlyingDescription = "S&P 500 Index"; Maturity = DateOnly(2031, 12, 15)
+          IssueDate = None; Denomination = None; PrincipalProtectionPct = None; ParticipationRate = None; ReturnCap = None
+          CouponRate = None; PaymentFrequency = None; BarrierLevel = None }, "StructuredNote"
       SecurityKind.InvestmentFund {
           FundType = None; FundFamily = None; NavCurrency = None; DistributionPolicy = None
           IsStableNav = None; PricingSource = None }, "InvestmentFund"
@@ -1729,7 +1820,7 @@ let ``AssetClassRegistry assetClassName agrees with SecurityKind.assetClass`` ()
 
 [<Fact>]
 let ``AssetClassRegistry isDerivative agrees with SecurityKind.isDerivative`` () =
-    let expectedDerivatives = set [ "Option"; "Future"; "Swap"; "Cfd"; "Warrant" ]
+    let expectedDerivatives = set [ "Option"; "Future"; "Swap"; "Cfd"; "Warrant"; "FxForward"; "NonDeliverableForward"; "CreditDefaultSwap"; "Swaption"; "CapFloor" ]
     for kind, name in registrySampleKinds do
         let expected = Set.contains name expectedDerivatives
         AssetClassRegistry.isDerivative kind |> should equal expected

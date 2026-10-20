@@ -423,13 +423,13 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                 $"""
                 insert into {Qualified("securities")} as retained (
                     security_id, asset_class, status, display_name, currency, country_of_risk, issuer_name,
-                    exchange_code, lot_size, tick_size, primary_identifier_kind, primary_identifier_value,
+                    exchange_code, listing_mic, lot_size, tick_size, primary_identifier_kind, primary_identifier_value,
                     normalized_primary_identifier_value,
                     common_terms, asset_specific_terms, provenance, version, schema_version, terms_format,
                     effective_from, effective_to)
                 values (
                     @security_id, @asset_class, @status, @display_name, @currency, @country_of_risk, @issuer_name,
-                    @exchange_code, @lot_size, @tick_size, @primary_identifier_kind, @primary_identifier_value,
+                    @exchange_code, @listing_mic, @lot_size, @tick_size, @primary_identifier_kind, @primary_identifier_value,
                     @normalized_primary_identifier_value,
                     @common_terms::jsonb, @asset_specific_terms::jsonb, @provenance::jsonb, @version, @schema_version,
                     @terms_format, @effective_from, @effective_to)
@@ -441,6 +441,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                     country_of_risk = excluded.country_of_risk,
                     issuer_name = excluded.issuer_name,
                     exchange_code = excluded.exchange_code,
+                    listing_mic = excluded.listing_mic,
                     lot_size = excluded.lot_size,
                     tick_size = excluded.tick_size,
                     primary_identifier_kind = excluded.primary_identifier_kind,
@@ -477,6 +478,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             command.Parameters.AddWithValue("country_of_risk", (object?)GetOptionalString(record.CommonTerms, "countryOfRisk") ?? DBNull.Value);
             command.Parameters.AddWithValue("issuer_name", (object?)GetOptionalString(record.CommonTerms, "issuerName") ?? DBNull.Value);
             command.Parameters.AddWithValue("exchange_code", (object?)GetOptionalString(record.CommonTerms, "exchange") ?? DBNull.Value);
+            command.Parameters.AddWithValue("listing_mic", (object?)ResolveListingMic(record.CommonTerms) ?? DBNull.Value);
             command.Parameters.AddWithValue("lot_size", (object?)GetOptionalDecimal(record.CommonTerms, "lotSize") ?? DBNull.Value);
             command.Parameters.AddWithValue("tick_size", (object?)GetOptionalDecimal(record.CommonTerms, "tickSize") ?? DBNull.Value);
             command.Parameters.AddWithValue("primary_identifier_kind", record.PrimaryIdentifierKind);
@@ -1477,6 +1479,23 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         return string.Join("/", legTypes);
     }
 
+
+    /// <summary>
+    /// The ISO 10383 MIC of the primary listing: a well-formed <c>primaryListingMic</c> wins,
+    /// otherwise <c>exchange</c> resolves through <see cref="Meridian.Contracts.Domain.MicReference"/>.
+    /// Migration 048 backfills existing rows with the same rule.
+    /// </summary>
+    internal static string? ResolveListingMic(JsonElement commonTerms)
+    {
+        if (Meridian.Contracts.Domain.Mic.TryParse(GetOptionalString(commonTerms, "primaryListingMic"), out var primary))
+        {
+            return primary.Value;
+        }
+
+        return Meridian.Contracts.Domain.MicReference.TryResolve(GetOptionalString(commonTerms, "exchange"), out var resolved)
+            ? resolved.Value
+            : null;
+    }
 
     internal static string? GetOptionalString(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String

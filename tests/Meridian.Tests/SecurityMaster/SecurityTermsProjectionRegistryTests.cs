@@ -890,6 +890,12 @@ public sealed class SecurityTermsProjectionRegistryTests
         "InvestmentFund", "PrivateFundInterest", "PrivateCompanyEquity", "RealEstateHolding", "CommitmentGuarantee"
     ];
 
+    /// <summary>The OTC derivative classes migration 046 projects from the day they are modeled.</summary>
+    private static readonly string[] Migration046Classes = ["FxForward", "NonDeliverableForward", "CreditDefaultSwap"];
+
+    /// <summary>The rate options and linked notes migration 047 projects from the day they are modeled.</summary>
+    private static readonly string[] Migration047Classes = ["Swaption", "CapFloor", "StructuredNote"];
+
     [Fact]
     public void Registry_ProjectsEveryCatalogClassExceptCustomAsset()
     {
@@ -900,6 +906,8 @@ public sealed class SecurityTermsProjectionRegistryTests
         SecurityTermsProjectionRegistry.AssetClasses.Should().BeEquivalentTo(expected,
             "CustomAsset is the one deliberate gap: its fields are governed per profile and have no fixed column set");
         Migration044Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
+        Migration046Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
+        Migration047Classes.Should().BeSubsetOf(SecurityTermsProjectionRegistry.AssetClasses);
     }
 
     [Fact]
@@ -908,7 +916,7 @@ public sealed class SecurityTermsProjectionRegistryTests
         // The descriptors gate on the terms the schema marks Required, so the canonical full payload
         // of each class — the one the domain serializer writes — must satisfy every gate. A gate that
         // the canonical document could not satisfy would unproject every valid record of the class.
-        foreach (var assetClass in Migration044Classes)
+        foreach (var assetClass in Migration044Classes.Concat(Migration046Classes).Concat(Migration047Classes))
         {
             var descriptor = SecurityTermsProjectionRegistry.Descriptors.Single(candidate => candidate.AssetClass == assetClass);
             var record = SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(

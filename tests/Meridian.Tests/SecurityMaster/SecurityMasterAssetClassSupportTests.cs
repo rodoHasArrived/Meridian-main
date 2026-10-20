@@ -23,6 +23,12 @@ public sealed class SecurityMasterAssetClassSupportTests
     [InlineData("CryptoCurrency")]
     [InlineData("Cfd")]
     [InlineData("Warrant")]
+    [InlineData("FxForward")]
+    [InlineData("NonDeliverableForward")]
+    [InlineData("CreditDefaultSwap")]
+    [InlineData("Swaption")]
+    [InlineData("CapFloor")]
+    [InlineData("StructuredNote")]
     [InlineData("StructuredCredit")]
     [InlineData("PrivateFundInterest")]
     [InlineData("PrivateCompanyEquity")]
@@ -389,6 +395,71 @@ public sealed class SecurityMasterAssetClassSupportTests
                 strike = 150m,
                 expiry = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(12)),
                 multiplier = 1m
+            }),
+            "FxForward" => JsonSerializer.SerializeToElement(new
+            {
+                baseCurrency = "EUR",
+                quoteCurrency = "USD",
+                notional = 1_000_000m,
+                forwardRate = 1.09m,
+                tradeDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                valueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(3)),
+                settlementType = "Physical"
+            }),
+            "NonDeliverableForward" => JsonSerializer.SerializeToElement(new
+            {
+                baseCurrency = "USD",
+                quoteCurrency = "INR",
+                settlementCurrency = "USD",
+                notional = 1_000_000m,
+                forwardRate = 84.5m,
+                fixingDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(3).AddDays(-2)),
+                valueDate = DateOnly.FromDateTime(DateTime.UtcNow.AddMonths(3)),
+                fixingSource = "RBI"
+            }),
+            "CreditDefaultSwap" => JsonSerializer.SerializeToElement(new
+            {
+                referenceEntity = "Meridian Industries Inc",
+                protectionSide = "Sell",
+                notional = 5_000_000m,
+                fixedCouponBps = 500m,
+                effectiveDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                maturityDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(5)),
+                paymentFrequency = "Quarterly",
+                dayCount = "ACT/360",
+                seniority = "SeniorUnsecured",
+                restructuringClause = "XR"
+            }),
+            "Swaption" => JsonSerializer.SerializeToElement(new
+            {
+                payerReceiver = "Receiver",
+                exerciseStyle = "Bermudan",
+                strikeRate = 0.035m,
+                expiry = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(1)),
+                underlyingMaturityDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(11)),
+                notional = 10_000_000m,
+                floatingIndex = "SOFR",
+                settlementType = "Cash"
+            }),
+            "CapFloor" => JsonSerializer.SerializeToElement(new
+            {
+                capFloorType = "Cap",
+                referenceIndex = "SOFR",
+                capStrike = 0.055m,
+                notional = 20_000_000m,
+                effectiveDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                maturityDate = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(3)),
+                resetFrequency = "Quarterly",
+                dayCount = "ACT/360"
+            }),
+            "StructuredNote" => JsonSerializer.SerializeToElement(new
+            {
+                issuerName = "Meridian Bank plc",
+                underlyingDescription = "EURO STOXX 50",
+                maturity = DateOnly.FromDateTime(DateTime.UtcNow.AddYears(5)),
+                denomination = 1000m,
+                principalProtectionPct = 0.9m,
+                participationRate = 1.2m
             }),
             "StructuredCredit" => JsonSerializer.SerializeToElement(new
             {
