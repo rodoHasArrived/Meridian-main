@@ -25,6 +25,8 @@ is still unresolved, so a confirmation that races it is reported as the actual o
 recovery reports must prove the same identity and fill evidence as resolved ones. Cancelling an order with a retained
 unconfirmed replacement also cancels the retained candidate, so a restart cannot leave a successor
 working; the cancellation stays pending until the candidate is proven inactive without fills.
+When a restored amendment carries only the replacement's client reference, cancellation first runs
+the gateway's amendment recovery and applies its outcome, so the cancel reaches the adopted successor.
 Trail-only amendments retain the requested trail and report the broker's actual outcome. A pending
 recovery answer that arrives after the live stream resolved the amendment is discarded without
 re-blocking the order. Late amendment acknowledgements

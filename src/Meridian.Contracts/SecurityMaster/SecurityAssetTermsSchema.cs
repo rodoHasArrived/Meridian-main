@@ -310,7 +310,7 @@ public static class SecurityAssetTermsSchema
                 Opt("seniority", SecurityAssetTermFieldType.String),
                 Req("subclass", SecurityAssetTermFieldType.String),
                 Opt("par", SecurityAssetTermFieldType.Decimal),
-                Opt("paymentFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.PaymentFrequency),
+                Opt("paymentFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.CouponFrequency),
                 Opt("legalFinalMaturity", SecurityAssetTermFieldType.Date),
                 Opt("preRefundDate", SecurityAssetTermFieldType.Date),
                 Opt("mandatoryPutDate", SecurityAssetTermFieldType.Date),
@@ -519,6 +519,85 @@ public static class SecurityAssetTermsSchema
                 Opt("expiry", SecurityAssetTermFieldType.Date),
                 Opt("multiplier", SecurityAssetTermFieldType.Decimal)
             ],
+            ["FxForward"] =
+            [
+                Req("baseCurrency", SecurityAssetTermFieldType.String),
+                Req("quoteCurrency", SecurityAssetTermFieldType.String),
+                Opt("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount"),
+                Opt("forwardRate", SecurityAssetTermFieldType.Decimal, "rate"),
+                Opt("tradeDate", SecurityAssetTermFieldType.Date),
+                Req("valueDate", SecurityAssetTermFieldType.Date, "settlementDate", "maturityDate"),
+                Opt("settlementType", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.SettlementMethod)
+            ],
+            ["NonDeliverableForward"] =
+            [
+                Req("baseCurrency", SecurityAssetTermFieldType.String),
+                Req("quoteCurrency", SecurityAssetTermFieldType.String),
+                Req("settlementCurrency", SecurityAssetTermFieldType.String),
+                Opt("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount"),
+                Opt("forwardRate", SecurityAssetTermFieldType.Decimal, "rate"),
+                Req("fixingDate", SecurityAssetTermFieldType.Date),
+                Req("valueDate", SecurityAssetTermFieldType.Date, "settlementDate", "maturityDate"),
+                Opt("fixingSource", SecurityAssetTermFieldType.String).AsOperational()
+            ],
+            ["CreditDefaultSwap"] =
+            [
+                Req("referenceEntity", SecurityAssetTermFieldType.String),
+                Opt("referenceObligation", SecurityAssetTermFieldType.String),
+                ReqOneOf("protectionSide", "Buy", "Sell").WithVerbatimUndeclaredValue(),
+                Req("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount"),
+                Req("fixedCouponBps", SecurityAssetTermFieldType.Decimal, "couponBps", "runningSpreadBps"),
+                Req("effectiveDate", SecurityAssetTermFieldType.Date),
+                Req("maturityDate", SecurityAssetTermFieldType.Date, "scheduledTerminationDate"),
+                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.CouponFrequency),
+                Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention").WithConvention(SecurityTermConventionKind.DayCount),
+                Opt("seniority", SecurityAssetTermFieldType.String),
+                Opt("restructuringClause", SecurityAssetTermFieldType.String, "docClause"),
+                Opt("upfrontPoints", SecurityAssetTermFieldType.Decimal),
+                Opt("recoveryRateAssumption", SecurityAssetTermFieldType.Decimal, "recoveryRate"),
+                Opt("indexName", SecurityAssetTermFieldType.String)
+            ],
+            ["Swaption"] =
+            [
+                ReqOneOf("payerReceiver", "Payer", "Receiver").WithVerbatimUndeclaredValue(),
+                OptOneOf("exerciseStyle", "European", "American", "Bermudan").WithVerbatimUndeclaredValue(),
+                Req("strikeRate", SecurityAssetTermFieldType.Decimal, "strike", "fixedRate"),
+                Req("expiry", SecurityAssetTermFieldType.Date, "expiryDate", "expirationDate"),
+                Opt("underlyingEffectiveDate", SecurityAssetTermFieldType.Date),
+                Req("underlyingMaturityDate", SecurityAssetTermFieldType.Date),
+                Req("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount"),
+                Opt("floatingIndex", SecurityAssetTermFieldType.String, "index", "referenceIndex"),
+                Opt("fixedLegPaymentFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.CouponFrequency),
+                Opt("fixedLegDayCount", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.DayCount),
+                Opt("settlementType", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.SettlementMethod)
+            ],
+            ["CapFloor"] =
+            [
+                ReqOneOf("capFloorType", "Cap", "Floor", "Collar").WithVerbatimUndeclaredValue(),
+                Req("referenceIndex", SecurityAssetTermFieldType.String, "index", "floatingIndex"),
+                Opt("capStrike", SecurityAssetTermFieldType.Decimal, "capRate"),
+                Opt("floorStrike", SecurityAssetTermFieldType.Decimal, "floorRate"),
+                Req("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount"),
+                Req("effectiveDate", SecurityAssetTermFieldType.Date),
+                Req("maturityDate", SecurityAssetTermFieldType.Date),
+                Opt("resetFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.PaymentFrequency),
+                Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention").WithConvention(SecurityTermConventionKind.DayCount),
+                Opt("premiumAmount", SecurityAssetTermFieldType.Decimal, "premium")
+            ],
+            ["StructuredNote"] =
+            [
+                Req("issuerName", SecurityAssetTermFieldType.String, "issuer"),
+                Req("underlyingDescription", SecurityAssetTermFieldType.String, "underlying", "referenceAsset"),
+                Req("maturity", SecurityAssetTermFieldType.Date, "maturityDate"),
+                Opt("issueDate", SecurityAssetTermFieldType.Date),
+                Opt("denomination", SecurityAssetTermFieldType.Decimal, "par", "faceAmount"),
+                Opt("principalProtectionPct", SecurityAssetTermFieldType.Decimal, "principalProtection"),
+                Opt("participationRate", SecurityAssetTermFieldType.Decimal, "participation"),
+                Opt("returnCap", SecurityAssetTermFieldType.Decimal, "cap"),
+                Opt("couponRate", SecurityAssetTermFieldType.Decimal, "coupon"),
+                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.CouponFrequency),
+                Opt("barrierLevel", SecurityAssetTermFieldType.Decimal, "barrier")
+            ],
             ["InvestmentFund"] =
             [
                 Opt("fundType", SecurityAssetTermFieldType.String),
@@ -544,7 +623,7 @@ public static class SecurityAssetTermsSchema
                 Opt("spreadBps", SecurityAssetTermFieldType.Decimal),
                 Opt("currentIndexRate", SecurityAssetTermFieldType.Decimal, "lastFixing", "currentRate", "indexRate"),
                 Opt("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount", "faceAmount", "principal"),
-                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.PaymentFrequency),
+                Opt("paymentFrequency", SecurityAssetTermFieldType.String, "frequency").WithConvention(SecurityTermConventionKind.CouponFrequency),
                 Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention", "dayCountBasis").WithConvention(SecurityTermConventionKind.DayCount),
                 Req("exchangesPrincipal", SecurityAssetTermFieldType.Boolean, "principalExchange", "notionalExchange")
             ]

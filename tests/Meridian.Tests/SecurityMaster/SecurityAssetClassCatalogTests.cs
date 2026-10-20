@@ -87,7 +87,7 @@ public sealed class SecurityAssetClassCatalogTests
             .Where(descriptor => descriptor.RequiresMaturity)
             .Select(descriptor => descriptor.AssetClass)
             .Should().BeEquivalentTo(
-                "Bond", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Swap");
+                "Bond", "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Swap", "CreditDefaultSwap", "CapFloor", "StructuredNote");
     }
 
     [Fact]
@@ -154,6 +154,12 @@ public sealed class SecurityAssetClassCatalogTests
             "CryptoCurrency",
             "Cfd",
             "Warrant",
+            "FxForward",
+            "NonDeliverableForward",
+            "CreditDefaultSwap",
+            "Swaption",
+            "CapFloor",
+            "StructuredNote",
             "InvestmentFund",
             "OtherSecurity"
         });

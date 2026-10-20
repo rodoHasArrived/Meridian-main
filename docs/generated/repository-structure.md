@@ -6565,7 +6565,9 @@ Meridian-main
 │   │   │   │   ├── 042_security_master_terms_format_column.sql
 │   │   │   │   ├── 043_security_master_close_price_approval_null_guards.sql
 │   │   │   │   ├── 044_security_master_declarative_terms_projections.sql
-│   │   │   │   └── 045_structured_credit_typed_tranche_terms.sql
+│   │   │   │   ├── 045_structured_credit_typed_tranche_terms.sql
+│   │   │   │   ├── 046_otc_derivative_terms_projections.sql
+│   │   │   │   └── 047_rate_option_and_note_terms_projections.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -10632,6 +10634,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PortfolioRecovery.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PreDispatch.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementConfirmation.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTerms.cs
 │   │   │   │   ├── AlpacaConnectionReadinessTests.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs

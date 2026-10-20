@@ -44,8 +44,8 @@ public sealed partial class OrderManagementSystem
             : new OrderCancellationIdentifier(gatewayOrderId, OrderCancellationIdentifierKind.BrokerOrderId);
         // After a restart the gateway's in-process replacement bookkeeping is gone, so only the
         // OMS still knows a retained amendment may have a live successor. Cancel it explicitly.
-        var unresolvedCandidate = await CancelRetainedReplacementCandidateAsync(orderId, gatewayOrderId, ct)
-            .ConfigureAwait(false);
+        var unresolvedCandidate = await ReconcileRetainedReplacementReferenceAsync(orderId, ct).ConfigureAwait(false)
+            ?? await CancelRetainedReplacementCandidateAsync(orderId, gatewayOrderId, ct).ConfigureAwait(false);
         var report = await CancelAtGatewayAsync(cancellationIdentifier, ct).ConfigureAwait(false);
         if (unresolvedCandidate is not null
             && report.OrderStatus is OrderStatus.Cancelled && report.ReportType is not ExecutionReportType.CancelRejected)
@@ -170,6 +170,39 @@ public sealed partial class OrderManagementSystem
         return candidate.OrderStatus is OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired
             ? null
             : $"Replacement candidate {candidateId} is not proven inactive.";
+    }
+
+    /// <summary>
+    /// A restored amendment known only by its replacement client reference cannot be cancelled by
+    /// broker id, and a gateway that keys replacement chains in process (Robinhood) has lost the
+    /// link after a restart, so the ordinary cancel would never reach the possible successor. Run
+    /// the gateway's own reference reconciliation first and apply its outcome; once it adopts the
+    /// successor, the cancel that follows targets it.
+    /// </summary>
+    /// <returns>null when the outcome is settled or nothing needs reconciling; otherwise why the
+    /// cancellation cannot complete yet.</returns>
+    private async Task<string?> ReconcileRetainedReplacementReferenceAsync(string orderId, CancellationToken ct)
+    {
+        if (_gateway is IExplicitOrderCancellationGateway
+            || _gateway is not IBrokerageOrderAmendmentRecoveryGateway recoveryGateway
+            || GetPendingAmendmentForRecovery(orderId) is not { CandidateBrokerOrderId: null, CandidateClientOrderId: { Length: > 0 } candidateRef } pending
+            || !_restoredPendingAmendments.TryGetValue(orderId, out var restored)
+            || !ReferenceEquals(restored.Original, pending.Original)
+            || !_orders.TryGetValue(orderId, out var state))
+            return null;
+        try
+        {
+            var report = await recoveryGateway.GetAmendmentForRecoveryAsync(orderId, state, pending, ct)
+                .ConfigureAwait(false);
+            if (report is null || report.ReportType is ExecutionReportType.ModificationPending)
+                return $"Replacement {candidateRef} is not proven inactive.";
+            await ReconcileRecoveryOrderAsync(report, ct).ConfigureAwait(false);
+            return null;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            return $"Replacement {candidateRef} could not be reconciled before cancellation: {ex.Message}";
+        }
     }
 
     private Task<ExecutionReport> CancelAtGatewayAsync(
