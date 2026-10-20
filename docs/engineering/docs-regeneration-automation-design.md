@@ -33,16 +33,16 @@ checks, approve or merge a PR, or write directly to protected `main`.
 
 ## Discovery and permission are separate
 
-The generation sequence is discovered from the maintained `regenerate-docs` job in
-[`documentation.yml`](../../.github/workflows/documentation.yml), plus the runner's browser
-contract/build and roadmap/source prerequisites. It includes steps outside the core docs profile:
-Mermaid, WPF diagrams, workflow overview and manifest generation. Adding a generator must not
-require maintaining a second list of commands in a repair workflow. The workflow's final
-`--docs-only` convergence call is orchestration, so discovery excludes that call to avoid recursion.
+The explicit maintained catalog in
+[`run-maintained-generation.py`](../../build/scripts/run-maintained-generation.py) owns browser
+contract/build, adapter readiness, roadmap/source, the core documentation profile, Mermaid, WPF
+diagrams, optional UML, workflow overview, and workflow manifest generation. Canonical CI,
+Documentation Automation, manual roadmap validation, and repair invoke that same catalog.
+Workflows do not copy its generator sequence or recursively discover their own orchestration.
 
 The output policy in
 [`maintained-generation-outputs.json`](../../build/scripts/maintained-generation-outputs.json)
-answers a different question: which writes are allowed. A new discovered output does not
+answers a different question: which writes are allowed. A new generated output does not
 automatically gain write permission. Review its owner and add an exact path, appropriate generated
 tree, or named generated block to the policy. Unknown writes fail rather than expanding the policy.
 
@@ -57,6 +57,12 @@ source and prose changes from the pinned base are accounted for by reproducing t
 remaining generated delta is checked against that merged candidate. A generator cannot disguise
 an unrelated source edit as part of the merge.
 
+Conflict recovery has separate explicit strategies in that policy. Only outputs with a declared
+required generator can use whole-file regeneration. Protected suffixes use a real three-way
+handwritten-content merge before seeding their generated prefix; a prose conflict refuses
+recovery. This applies to the local resolver and the publisher's reconstructed baseline, so
+lost prose cannot be hidden in the baseline used to validate a later generated delta.
+
 ## Reviewed hashes are not disposable output
 
 [`source-hash-manifest.json`](../source/generated/source-hash-manifest.json) records a reviewed
@@ -69,6 +75,12 @@ Use a three-way merge keyed by module ID:
   merged module under the manifest's existing hashing rules.
 - Require module-specific review when final contents match neither reviewed parent, or metadata
   cannot be reconciled without making a new review assertion.
+
+Version 2 fingerprints retain source review evidence and fingerprint handwritten README content
+separately from generated block freshness. Exact registered markers remain part of the review
+fingerprint; malformed markers fail. Migration verifies the accepted version 1 full README
+fingerprint before changing its representation, preserves the accepted source hash, and refuses
+unmatched evidence. Mixed-version parents require explicit migration before reconciliation.
 
 Generated README blocks do not turn handwritten documentation review into a mechanical task.
 Unresolved hash decisions remain explicit in the repair evidence. Follow the
@@ -97,8 +109,15 @@ for untrusted code or a way to distinguish concurrent user edits.
 ## Separate generation from the privileged writer
 
 `generated-repair.yml` prepares evidence without a write credential or persisted checkout
-credentials. Its `pull_request_target` event can run despite merge conflicts, but candidate
-dependencies and generators execute only inside the container launched by
+credentials. Its `pull_request_target` event can run despite merge conflicts. An eligible
+same-repository request with the repository App variable configured asks the publisher to dispatch
+generation on the default branch; forks and requests without that variable generate artifact-only
+candidates. The publisher never writes a target-event candidate. Version 2 run metadata records
+the workflow execution SHA/ref separately from the PR head/base inputs. Publication requires a
+server-verified default-branch dispatch whose execution SHA matches both that metadata and the
+trusted workflow bytes. Checkout pins `github.workflow_sha`.
+
+Candidate dependencies and generators execute only inside the container launched by
 [`generated_repair_sandbox.py`](../../build/scripts/ci/generated_repair_sandbox.py). The trusted
 Dockerfile uses a pinned Node image with Git and Python. The container runs as an unprivileged user
 with a read-only root filesystem, dropped capabilities, resource limits and no privilege escalation.
