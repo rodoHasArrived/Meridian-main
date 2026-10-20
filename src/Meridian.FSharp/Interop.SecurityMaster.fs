@@ -50,6 +50,7 @@ type SecurityIdentifierSnapshot(identifier: Identifier) =
         | IdentifierKind.Cik -> "Cik"
         | IdentifierKind.LoanX -> "LoanX"
         | IdentifierKind.Clip -> "Clip"
+        | IdentifierKind.ListingId -> "ListingId"
 
     member _.Kind = kind
     member _.Value = identifier.Value
