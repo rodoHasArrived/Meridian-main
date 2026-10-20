@@ -93,6 +93,44 @@ public sealed class ForwardCurveCashFlowTests
         withoutCurve.BlockedReason.Should().Contain("index fixing");
     }
 
+    [Fact]
+    public async Task FloatingLeg_UsesTheRecordedResetFixing_ForThePeriodAlreadyReset()
+    {
+        var (security, _) = FloatingSwap(
+            currentIndexRate: 0.03m,
+            configureFloating: (leg, effectiveDate) => leg["resetSchedule"] = new object[]
+            {
+                new { resetDate = effectiveDate, fixingRate = 0.035m }
+            });
+
+        var projection = await Project(security, new InMemorySecurityForwardCurveProvider());
+
+        var floating = projection.LegSchedules!.Single(static leg => leg.LegId == "pay-floating");
+        // The first quarter reset at the recorded 3.50% + 25bp; later quarters stay flat forward at 3.00% + 25bp.
+        floating.Schedule.Select(static payment => payment.InterestAmount).Should().Equal(9_375m, 8_125m, 8_125m, 8_125m);
+    }
+
+    [Fact]
+    public async Task AmortizingLeg_AccruesOnTheScheduledNotional_AndPaysTheStepDownAsPrincipal()
+    {
+        var (security, _) = FloatingSwap(
+            currentIndexRate: 0.03m,
+            configureFixed: (leg, effectiveDate) =>
+            {
+                leg["exchangesPrincipal"] = true;
+                leg["notionalSchedule"] = new object[]
+                {
+                    new { effectiveDate = effectiveDate.AddMonths(6), notional = 500_000m }
+                };
+            });
+
+        var projection = await Project(security, new InMemorySecurityForwardCurveProvider());
+
+        var fixedLeg = projection.LegSchedules!.Single(static leg => leg.LegId == "receive-fixed");
+        fixedLeg.Schedule.Select(static payment => payment.InterestAmount).Should().Equal(20_000m, 10_000m);
+        fixedLeg.Schedule.Select(static payment => payment.PrincipalAmount).Should().Equal(500_000m, 500_000m);
+    }
+
     private static async Task<StructuredCashFlowProjectionDto> Project(SecurityDetailDto security, ISecurityForwardCurveProvider curves)
     {
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
@@ -110,7 +148,10 @@ public sealed class ForwardCurveCashFlowTests
         return projection!;
     }
 
-    private static (SecurityDetailDto Security, DateOnly EffectiveDate) FloatingSwap(decimal? currentIndexRate)
+    private static (SecurityDetailDto Security, DateOnly EffectiveDate) FloatingSwap(
+        decimal? currentIndexRate,
+        Action<Dictionary<string, object?>, DateOnly>? configureFloating = null,
+        Action<Dictionary<string, object?>, DateOnly>? configureFixed = null)
     {
         // First-of-month dates keep all four quarterly payments ahead of today and give exact
         // 30/360 quarter fractions.
@@ -135,6 +176,21 @@ public sealed class ForwardCurveCashFlowTests
             floatingLeg["currentIndexRate"] = currentIndexRate;
         }
 
+        configureFloating?.Invoke(floatingLeg, effectiveDate);
+        var fixedLeg = new Dictionary<string, object?>
+        {
+            ["legId"] = "receive-fixed",
+            ["legType"] = "Fixed",
+            ["currency"] = "USD",
+            ["direction"] = "Receive",
+            ["fixedRate"] = 0.04m,
+            ["notional"] = 1_000_000m,
+            ["paymentFrequency"] = "SemiAnnual",
+            ["dayCount"] = "30/360",
+            ["exchangesPrincipal"] = false
+        };
+        configureFixed?.Invoke(fixedLeg, effectiveDate);
+
         var projection = new SecurityProjectionRecord(
             SecurityId: Guid.NewGuid(),
             AssetClass: "Swap",
@@ -148,22 +204,7 @@ public sealed class ForwardCurveCashFlowTests
             {
                 effectiveDate,
                 maturityDate = effectiveDate.AddYears(1),
-                legs = new object[]
-                {
-                    new
-                    {
-                        legId = "receive-fixed",
-                        legType = "Fixed",
-                        currency = "USD",
-                        direction = "Receive",
-                        fixedRate = 0.04m,
-                        notional = 1_000_000m,
-                        paymentFrequency = "SemiAnnual",
-                        dayCount = "30/360",
-                        exchangesPrincipal = false
-                    },
-                    floatingLeg
-                }
+                legs = new object[] { fixedLeg, floatingLeg }
             }),
             Provenance: JsonSerializer.SerializeToElement(new { sourceSystem = "forward-curve-tests", asOf, updatedBy = "forward-curve-tests" }),
             Version: 1,
