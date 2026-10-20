@@ -8,6 +8,9 @@ import os
 from pathlib import Path
 import re
 import shutil
+import subprocess
+import tempfile
+import zipfile
 
 FAMILIES = {('desktop-installer', 'win-x64'), ('desktop-installer', 'win-arm64'), ('consumer-setup', 'win-x64')}
 GATES = {'eligibility', 'ci', 'secrets', 'codeql', 'production', 'smoke', 'release-preflight',
@@ -22,6 +25,113 @@ CONSUMER_PREDECESSOR_STEPS = {
     'install-prior', 'launch-prior', 'update-current', 'rollback-prior', 'launch-after-rollback',
 }
 CONSUMER_RESTORE_STEPS = {'restore-current', 'launch-after-restore'}
+AUDIT_BUNDLE = 'release-audit-evidence.zip'
+MAX_EVIDENCE_BYTES = 2 * 1024**3 - 1024**2
+
+
+def required_evidence(run_id: str, number: str, attempt: str) -> set[str]:
+    """Exact names emitted by the reviewed coordinator and its reusable workflows."""
+    numbered = ('meridian-ci-dotnet', 'meridian-ci-browser', 'meridian-ci-docs',
+                'meridian-ci-workflows', 'production-certification',
+                'production-dependency-evidence', 'production-documentation-evidence',
+                'desktop-release-preflight-test-results', 'meridian-web-workstation-win-x64')
+    identified = ('commit-secret-scan', 'production-recovery-drill',
+                  'codeql-csharp', 'codeql-javascript-typescript',
+                  'desktop-install-certification-win-x64', 'desktop-install-certification-win-arm64',
+                  'consumer-install-certification-win-x64',
+                  'release-attestation-desktop-installer-win-x64',
+                  'release-attestation-desktop-installer-win-arm64',
+                  'release-attestation-consumer-setup-win-x64')
+    return {f'{name}-{number}-{attempt}' for name in numbered} | {
+        f'{name}-{run_id}-{attempt}' for name in identified}
+
+
+class EvidenceApi:
+    def __init__(self, repository):
+        if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repository):
+            raise ValueError('Invalid evidence repository.')
+        self.prefix = f'repos/{repository}'
+
+    def json(self, path):
+        return json.loads(subprocess.check_output(['gh', 'api', f'{self.prefix}/{path}'], text=True))
+
+    def download(self, artifact, path):
+        with path.open('wb') as stream:
+            subprocess.run(['gh', 'api', f'{self.prefix}/actions/artifacts/{artifact["id"]}/zip'],
+                           stdout=stream, check=True)
+
+
+def collect_upstream_evidence(output: Path, *, repository: str, commit: str, run_id: str,
+                              number: str, attempt: str, needs: dict, api=None):
+    """Keep original artifact archives and their verified API provenance, never execute them.
+
+    Archives are deliberately stored without extraction. The retained inner ZIPs
+    preserve complete upstream reports and attestations after Actions expiry.
+    """
+    api = api or EvidenceApi(repository)
+    run = api.json(f'actions/runs/{run_id}/attempts/{attempt}')
+    if (str(run.get('id')) != run_id or str(run.get('run_attempt')) != attempt
+            or str(run.get('run_number')) != number or run.get('head_sha') != commit
+            or run.get('path') != '.github/workflows/desktop-installer-packaging.yml'):
+        raise ValueError('Upstream evidence is not bound to this release coordinator attempt.')
+    expected = required_evidence(run_id, number, attempt)
+    selected = {}
+    count = 0
+    for page in range(1, 11):
+        response = api.json(f'actions/runs/{run_id}/artifacts?per_page=100&page={page}')
+        rows = response['artifacts']
+        count += len(rows)
+        for row in rows:
+            if row.get('name') in expected:
+                if row['name'] in selected:
+                    raise ValueError('Duplicate upstream evidence artifact.')
+                selected[row['name']] = row
+        if count == response['total_count']:
+            break
+        if not rows or count > response['total_count']:
+            raise ValueError('Incomplete upstream artifact pagination.')
+    else:
+        raise ValueError('Upstream artifact pagination exceeds 1,000 artifacts.')
+    if set(selected) != expected:
+        raise ValueError(f'Missing required upstream reports: {sorted(expected - set(selected))}')
+    if sum(row.get('size_in_bytes', MAX_EVIDENCE_BYTES + 1) for row in selected.values()) > MAX_EVIDENCE_BYTES:
+        raise ValueError('Upstream evidence exceeds the explicit 2 GiB release-asset bound.')
+    provenance = []
+    with tempfile.TemporaryDirectory(prefix='meridian-audit-') as temporary:
+        with zipfile.ZipFile(output, 'w', compression=zipfile.ZIP_STORED) as bundle:
+            for name, row in sorted(selected.items()):
+                origin = row.get('workflow_run', {})
+                advertised = row.get('digest', '')
+                if (row.get('expired') is not False or origin.get('head_sha') != commit
+                        or str(origin.get('id')) != run_id
+                        or not isinstance(row.get('size_in_bytes'), int) or row['size_in_bytes'] < 0
+                        or not re.fullmatch(r'sha256:[0-9a-f]{64}', advertised or '')):
+                    raise ValueError(f'Unbound, expired or digestless upstream evidence: {name}')
+                archive = Path(temporary) / 'artifact.zip'
+                api.download(row, archive)
+                sha = digest(archive)
+                if (sha != advertised.removeprefix('sha256:') or archive.stat().st_size != row['size_in_bytes']
+                        or archive.stat().st_size > MAX_EVIDENCE_BYTES):
+                    raise ValueError(f'Upstream evidence archive digest differs: {name}')
+                if not zipfile.is_zipfile(archive):
+                    raise ValueError(f'Upstream evidence archive is invalid: {name}')
+                # A fixed timestamp makes rebundling the same archived bytes deterministic.
+                entry = zipfile.ZipInfo(f'artifacts/{name}.zip', date_time=(1980, 1, 1, 0, 0, 0))
+                with archive.open('rb') as source, bundle.open(entry, 'w', force_zip64=True) as target:
+                    shutil.copyfileobj(source, target)
+                provenance.append(dict(name=name, artifactId=row['id'], sha256=sha,
+                                       archiveBytes=archive.stat().st_size,
+                                       sourceCommit=commit, workflowRunId=run_id, workflowRunAttempt=attempt))
+            manifest = dict(schemaVersion=1, repository=repository, commitSha=commit,
+                            runId=run_id, runAttempt=attempt, runNumber=number,
+                            workflowPath=run['path'], validations=needs, artifacts=provenance,
+                            retention='Retain with the corresponding published release; Actions expiry does not remove this bundle.')
+            entry = zipfile.ZipInfo('manifest.json', date_time=(1980, 1, 1, 0, 0, 0))
+            bundle.writestr(entry, json.dumps(manifest, indent=2, sort_keys=True) + '\n')
+    if output.stat().st_size > MAX_EVIDENCE_BYTES:
+        output.unlink()
+        raise ValueError('Audit bundle exceeds the explicit 2 GiB release-asset bound.')
+    return provenance
 
 
 def digest(file):
@@ -207,10 +317,17 @@ def main():
         shutil.copyfile(asset['path'], args.output / name)
         if digest(args.output / name) != asset['sha256']:
             raise ValueError('Digest changed while staging publication.')
-    evidence = dict(schemaVersion=1, commitSha=os.environ['GITHUB_SHA'], runId=os.environ['GITHUB_RUN_ID'],
+    bundle = args.output / AUDIT_BUNDLE
+    upstream = collect_upstream_evidence(
+        bundle, repository=os.environ['GITHUB_REPOSITORY'], commit=os.environ['GITHUB_SHA'],
+        run_id=os.environ['GITHUB_RUN_ID'], number=os.environ['GITHUB_RUN_NUMBER'],
+        attempt=os.environ['GITHUB_RUN_ATTEMPT'], needs=needs)
+    assets[AUDIT_BUNDLE] = {'path': bundle, 'sha256': digest(bundle)}
+    evidence = dict(schemaVersion=2, repository=os.environ['GITHUB_REPOSITORY'],
+                    commitSha=os.environ['GITHUB_SHA'], runId=os.environ['GITHUB_RUN_ID'],
                     runAttempt=os.environ['GITHUB_RUN_ATTEMPT'],
                     runUrl=f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}/attempts/{os.environ['GITHUB_RUN_ATTEMPT']}",
-                    validations=needs, lifecycle=receipts, installedStartup=startup,
+                    validations=needs, lifecycle=receipts, installedStartup=startup, upstreamEvidence=upstream,
                     assets={name: asset['sha256'] for name, asset in assets.items()})
     (args.output / 'release-gate-evidence.json').write_text(json.dumps(evidence, indent=2) + '\n', encoding='utf-8')
     print(f'Verified {len(assets)} unique release assets at the exact certified commit.')

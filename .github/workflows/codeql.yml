@@ -81,3 +81,13 @@ jobs:
         uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4
         with:
           category: "/language:${{ matrix.language }}"
+          output: artifacts/codeql/${{ matrix.language }}
+
+      - name: Retain CodeQL reports for release audit evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: codeql-${{ matrix.language }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/codeql/${{ matrix.language }}/*.sarif
+          if-no-files-found: error
+          retention-days: 90
