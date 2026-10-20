@@ -138,7 +138,8 @@ export function buildAssetProfileGovernancePanel(
         statusLabel: profile.status,
         statusVariant: assetProfileStatusVariant(profile.status),
         fieldCountLabel: `${profile.fields.length} field${profile.fields.length === 1 ? "" : "s"}`,
-        projectedFieldLabel: `${projectedFields} projected`,
+        // "Declared": isProjected/isSearchable are promotion intent, not live projection or search.
+        projectedFieldLabel: `${projectedFields} declared projected`,
         requiredCloseIdentifierLabel: requiredIdentifiers.length > 0
           ? requiredIdentifiers.join(", ")
           : "No close identifier",
