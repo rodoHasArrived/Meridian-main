@@ -33,6 +33,48 @@ public sealed class SecurityAssetClassCatalogTests
         descriptor.AmortizesTowardPar.Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData("Equity", "Equity")]
+    [InlineData(" bond ", "Bond")]
+    [InlineData("us_equity", "Equity")]
+    [InlineData("us_option", "Option")]
+    [InlineData("Treasury Bond", "Bond")]
+    [InlineData("Treasury Bill", "TreasuryBill")]
+    [InlineData("Private Credit Loan", "DirectLoan")]
+    [InlineData("Corporate Bond", "Bond")]
+    [InlineData("mbs", "StructuredCredit")]
+    public void TryResolveLabel_ResolvesProviderLabelsThroughCatalogNamesAndAliases(string label, string expected)
+    {
+        SecurityAssetClassCatalog.TryResolveLabel(label, out var descriptor).Should().BeTrue();
+
+        descriptor!.AssetClass.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("Common Stock")]
+    [InlineData("Fixed Income")]
+    [InlineData("stockbroker")]
+    [InlineData("Equity Option")]
+    public void TryResolveLabel_LeavesUnknownAndAmbiguousLabelsUnresolved(string? label)
+    {
+        SecurityAssetClassCatalog.TryResolveLabel(label, out var descriptor).Should().BeFalse();
+
+        descriptor.Should().BeNull();
+    }
+
+    [Fact]
+    public void TryGet_DistinguishesUnknownInputFromTheUnknownDescriptor()
+    {
+        SecurityAssetClassCatalog.TryGet("NotAClass", out _).Should().BeFalse();
+        SecurityAssetClassCatalog.TryGet(null, out _).Should().BeFalse();
+        SecurityAssetClassCatalog.TryGet("Loan", out var loan).Should().BeTrue();
+
+        loan!.AssetClass.Should().Be("DirectLoan");
+    }
+
     [Fact]
     public void Templates_HaveExactDeclaredBindings_AndUnrealizedIsNeverSale()
     {

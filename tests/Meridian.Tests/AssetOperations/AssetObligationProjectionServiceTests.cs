@@ -338,6 +338,66 @@ public sealed class AssetObligationProjectionServiceTests
             "the scheduled factor must scale principal on the canonical stored path");
     }
 
+    [Fact]
+    public void ProjectFromSecurityMaster_Deposit_IsProjectedAsContractualScheduleFixedIncome()
+    {
+        // The catalog declares Deposit as ContractualSchedule, the same cash-flow behaviour as a
+        // bond or CD; the old hand-written fixed-income list left it out, so a term deposit got no
+        // projected maturity flow and no fixed-income obligations at all.
+        var security = MakeSecurity("Deposit", "Meridian 12M Term Deposit", new
+        {
+            depositType = "Term",
+            institutionName = "Meridian Bank",
+            maturity = "2031-06-15",
+            interestRate = 0.045m,
+            isCallable = false
+        });
+
+        var detail = new AssetObligationProjectionService().ProjectFromSecurityMaster(security);
+
+        detail.ProjectedCashFlows.Should().Contain(flow => flow.FlowType == "Maturity");
+        detail.TermsObligationsTimeline!.Events.Should().Contain(evt => evt.EventKind == "CorporateActionCheckpoint");
+        detail.TermsObligationsTimeline.Events.Should().NotContain(evt => evt.EventKind == "TrusteeReport",
+            "trustee reports are a factor-amortizing obligation, not a contractual-schedule one");
+    }
+
+    [Fact]
+    public void ProjectFromSecurityMaster_PrivateCompanyEquity_ReceivesValuationReview_LikeOtherAlternatives()
+    {
+        // Ops-capable alternatives that no other branch owns (real estate, guarantees) always got a
+        // quarterly valuation review; PrivateCompanyEquity shares that capability set in the
+        // catalog and now receives it too, instead of being skipped because its name was not listed.
+        var security = MakeSecurity("PrivateCompanyEquity", "Meridian Holdings Series B", new
+        {
+            issuer = "Meridian Holdings",
+            shareClass = "Series B",
+            round = "B",
+            ownershipPercent = 4.5m
+        });
+
+        var detail = new AssetObligationProjectionService().ProjectFromSecurityMaster(security);
+
+        detail.TermsObligationsTimeline!.Events.Should().Contain(evt => evt.EventKind == "ValuationReview");
+        detail.TermsObligationsTimeline.Events.Should().NotContain(evt => evt.EventKind == "CustomProfileEvidenceReview",
+            "custom-profile review belongs to classes that must carry a governed profile");
+        detail.ProjectedCashFlows.Should().BeEmpty();
+    }
+
+    private static SecurityDetailDto MakeSecurity(string assetClass, string displayName, object assetTerms)
+        => new(
+            Guid.NewGuid(),
+            assetClass,
+            SecurityStatusDto.Active,
+            displayName,
+            "USD",
+            JsonSerializer.SerializeToElement(new { currency = "USD" }),
+            JsonSerializer.SerializeToElement(assetTerms),
+            [],
+            [],
+            3,
+            new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            null);
+
     private static SecurityDetailDto MakeStructuredCredit(object assetTerms)
         => new(
             Guid.NewGuid(),

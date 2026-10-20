@@ -119,14 +119,62 @@ public sealed class SecurityMasterDataQualityServiceTests
     {
         var (sut, store) = BuildSut();
         var security = MakeSecurity(Guid.NewGuid(), "Option", currency: "USD",
-            assetSpecificTerms: new { expirationDate = DateTimeOffset.UtcNow.AddDays(30) });
+            assetSpecificTerms: new { expiry = DateTimeOffset.UtcNow.AddDays(30) });
         store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { security });
 
         var report = await sut.RunQualityChecksAsync();
 
         report.Violations.Should().Contain(v =>
             v.RuleId == "MA003"
-            && v.Category == DataQualityRuleCategory.MinimumAttribute);
+            && v.Category == DataQualityRuleCategory.MinimumAttribute
+            && v.FieldPath == "assetSpecificTerms.strike");
+        report.Violations.Should().NotContain(v => v.RuleId == "MA003" && v.FieldPath == "assetSpecificTerms.expiry");
+    }
+
+    [Fact]
+    public async Task RunQualityChecksAsync_RequiredTerms_ComeFromTheSchema_NotFromLegacySpellings()
+    {
+        // "expirationDate" is not a key the Option schema declares (the canonical mapper writes
+        // "expiry"), so a row carrying only that spelling has no expiry as far as the schema is
+        // concerned. An Equity row with no asset-specific terms at all declares nothing Required.
+        var (sut, store) = BuildSut();
+        var option = MakeSecurity(Guid.NewGuid(), "Option", currency: "USD",
+            assetSpecificTerms: new { expirationDate = DateTimeOffset.UtcNow.AddDays(30), strike = 100m });
+        var equity = MakeSecurity(Guid.NewGuid(), "Equity", currency: "USD");
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { option, equity });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Should().Contain(v =>
+            v.RuleId == "MA003" && v.SecurityId == option.SecurityId && v.FieldPath == "assetSpecificTerms.expiry");
+        report.Violations.Should().NotContain(v =>
+            v.RuleId == "MA003" && v.SecurityId == option.SecurityId && v.FieldPath == "assetSpecificTerms.strike");
+        report.Violations.Should().NotContain(v => v.RuleId == "MA003" && v.SecurityId == equity.SecurityId);
+    }
+
+    [Fact]
+    public async Task RunQualityChecksAsync_FlagsExpiredWarrant_UnderTheSchemaExpiryKey()
+    {
+        // The expiry rule used to be gated on the Option class name, so an expired warrant (whose
+        // schema declares the same "expiry" field) was never reported.
+        var (sut, store) = BuildSut();
+        var warrant = MakeSecurity(Guid.NewGuid(), "Warrant", currency: "USD",
+            assetSpecificTerms: new
+            {
+                underlyingId = Guid.NewGuid(),
+                warrantType = "Call",
+                expiry = DateTimeOffset.UtcNow.AddDays(-5)
+            });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { warrant });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Should().Contain(v =>
+            v.RuleId == "VC003"
+            && v.Category == DataQualityRuleCategory.ValueConsistency
+            && v.SecurityId == warrant.SecurityId
+            && v.FieldPath == "assetSpecificTerms.expiry");
+        report.Violations.Should().NotContain(v => v.RuleId == "MA003" && v.SecurityId == warrant.SecurityId);
     }
 
     [Fact]

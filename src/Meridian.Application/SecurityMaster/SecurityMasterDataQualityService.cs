@@ -103,7 +103,8 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         // Only maturity-bearing classes require a maturity date; the shared catalog owns that fact.
         // Other non-equity classes (options, futures, FX, money-market funds, deposits) use different
         // required fields, so MA001 must not flag them for a missing maturity.
-        if (SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresMaturity)
+        var requiresMaturity = SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresMaturity;
+        if (requiresMaturity)
         {
             // The canonical Security Master mapper stores maturity under "maturity" for
             // Bond/CD/CP/TBill and "maturityDate" for swaps; accept either spelling.
@@ -122,9 +123,11 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
             }
         }
 
-        // Only fixed-coupon bonds require a coupon rate. Floating and zero-coupon bonds are valid
-        // without one (the canonical mapper defaults couponType to "Fixed" when absent).
-        if (string.Equals(assetClass, "Bond", StringComparison.OrdinalIgnoreCase))
+        // A coupon rate is conditional on the coupon structure, which the schema cannot mark as
+        // Required: a fixed coupon needs a rate, floating and zero-coupon structures do not (the
+        // canonical mapper defaults couponType to "Fixed" when absent). The rule is scoped to the
+        // classes whose schema declares a coupon structure, not to one class name.
+        if (SecurityAssetTermsSchema.Field(assetClass, "couponType") is not null)
         {
             var couponType = TryReadStringField(security.AssetSpecificTerms, "couponType") ?? "Fixed";
             if (string.Equals(couponType, "Fixed", StringComparison.OrdinalIgnoreCase))
@@ -135,39 +138,37 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
                 if (coupon is null)
                 {
                     yield return Violation(
-                        "MA002", "Missing Bond Coupon", DataQualityRuleCategory.MinimumAttribute,
+                        "MA002", "Missing Fixed Coupon Rate", DataQualityRuleCategory.MinimumAttribute,
                         security.SecurityId, "assetSpecificTerms.couponRate",
-                        "Fixed-coupon bond securities require a coupon rate.",
+                        $"Fixed-coupon {assetClass} securities require a coupon rate.",
                         DataQualityRuleSeverity.Error, now);
                 }
             }
         }
 
-        // Options require strike and expiry.
-        if (string.Equals(assetClass, "Option", StringComparison.OrdinalIgnoreCase))
+        // Every other minimum attribute is what the terms schema marks Required for the class: the
+        // canonical serializer always emits those fields, so a governed row missing one was not
+        // written through it. Reading the schema replaces the per-class strike/expiry rules, which
+        // also probed spellings ("strikePrice", "expirationDate") the schema never declared, and
+        // covers the classes those rules skipped (futures, warrants, swaptions, ...). Maturity is
+        // left to MA001 so a class that requires it is not reported twice.
+        foreach (var field in SecurityAssetTermsSchema.Fields(assetClass))
         {
-            var strike = TryReadDecimalField(security.AssetSpecificTerms, "strikePrice")
-                ?? TryReadDecimalField(security.AssetSpecificTerms, "strike");
-            var expiry = TryReadDateField(security.AssetSpecificTerms, "expirationDate")
-                ?? TryReadDateField(security.AssetSpecificTerms, "expiry");
-
-            if (strike is null)
+            if (!field.Required || (requiresMaturity && IsMaturityField(field)))
             {
-                yield return Violation(
-                    "MA003", "Missing Option Strike", DataQualityRuleCategory.MinimumAttribute,
-                    security.SecurityId, "assetSpecificTerms.strikePrice",
-                    "Option securities require a strike price.",
-                    DataQualityRuleSeverity.Error, now);
+                continue;
             }
 
-            if (expiry is null)
+            if (HasDeclaredValue(security.AssetSpecificTerms, field))
             {
-                yield return Violation(
-                    "MA004", "Missing Option Expiry", DataQualityRuleCategory.MinimumAttribute,
-                    security.SecurityId, "assetSpecificTerms.expirationDate",
-                    "Option securities require an expiration date.",
-                    DataQualityRuleSeverity.Error, now);
+                continue;
             }
+
+            yield return Violation(
+                "MA003", "Missing Required Term", DataQualityRuleCategory.MinimumAttribute,
+                security.SecurityId, $"assetSpecificTerms.{field.Key}",
+                $"{assetClass} securities require '{field.Key}'.",
+                DataQualityRuleSeverity.Error, now);
         }
     }
 
@@ -212,8 +213,8 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
                 DataQualityRuleSeverity.HardBlock, now);
         }
 
-        // Bond: maturity must be after issue date.
-        if (string.Equals(security.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase))
+        // Maturity must be after the issue date, for every class whose schema dates issuance.
+        if (SecurityAssetTermsSchema.Field(security.AssetClass, "issueDate") is not null)
         {
             var issueDate = TryReadDateField(security.AssetSpecificTerms, "issueDate")
                 ?? TryReadDateField(security.CommonTerms, "issueDate");
@@ -224,24 +225,24 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
             {
                 yield return Violation(
                     "VC002", "Maturity On or Before Issue Date", DataQualityRuleCategory.ValueConsistency,
-                    security.SecurityId, "assetSpecificTerms.maturityDate",
-                    "Bond maturity date must be after the issue date.",
+                    security.SecurityId, "assetSpecificTerms.maturity",
+                    $"{security.AssetClass} maturity date must be after the issue date.",
                     DataQualityRuleSeverity.Error, now);
             }
         }
 
-        // Options: expiry must be in the future (for active securities).
-        if (string.Equals(security.AssetClass, "Option", StringComparison.OrdinalIgnoreCase))
+        // Expiry must be in the future for an active security, for every class whose schema
+        // declares an expiry (options, futures, warrants, swaptions, ...), read under the key and
+        // aliases the schema declares rather than a spelling of this rule's own.
+        if (SecurityAssetTermsSchema.Field(security.AssetClass, "expiry") is { Type: SecurityAssetTermFieldType.Date } expiryField)
         {
-            var expiry = TryReadDateField(security.AssetSpecificTerms, "expirationDate")
-                ?? TryReadDateField(security.AssetSpecificTerms, "expiry");
-
+            var expiry = TryReadDateField(security.AssetSpecificTerms, expiryField);
             if (expiry.HasValue && expiry.Value < now)
             {
                 yield return Violation(
-                    "VC003", "Option Already Expired", DataQualityRuleCategory.ValueConsistency,
-                    security.SecurityId, "assetSpecificTerms.expirationDate",
-                    $"Active option security has expiration date {expiry.Value:yyyy-MM-dd} in the past.",
+                    "VC003", "Already Expired", DataQualityRuleCategory.ValueConsistency,
+                    security.SecurityId, $"assetSpecificTerms.{expiryField.Key}",
+                    $"Active {security.AssetClass} security has expiry {expiry.Value:yyyy-MM-dd} in the past.",
                     DataQualityRuleSeverity.Warning, now);
             }
         }
@@ -333,6 +334,80 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
+
+    private static bool IsMaturityField(SecurityAssetTermField field)
+        => field.Type == SecurityAssetTermFieldType.Date
+           && (IsMaturityKey(field.Key) || field.Aliases.Any(IsMaturityKey));
+
+    private static bool IsMaturityKey(string key)
+        => string.Equals(key, "maturity", StringComparison.OrdinalIgnoreCase)
+           || string.Equals(key, "maturityDate", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Whether the terms carry a value of the declared kind under the field's key or one of its
+    /// declared aliases. Null, the wrong JSON kind, or an unparseable date/GUID count as missing,
+    /// matching how the canonical mapper would fail to read them.
+    /// </summary>
+    private static bool HasDeclaredValue(JsonElement terms, SecurityAssetTermField field)
+    {
+        if (!TryGetDeclaredProperty(terms, field, out var value))
+        {
+            return false;
+        }
+
+        return field.Type switch
+        {
+            SecurityAssetTermFieldType.String => value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(value.GetString()),
+            SecurityAssetTermFieldType.Decimal or SecurityAssetTermFieldType.Integer => value.ValueKind == JsonValueKind.Number,
+            SecurityAssetTermFieldType.Boolean => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
+            SecurityAssetTermFieldType.Date => TryReadDate(value) is not null,
+            SecurityAssetTermFieldType.Guid => value.ValueKind == JsonValueKind.String && Guid.TryParse(value.GetString(), out _),
+            SecurityAssetTermFieldType.Array => value.ValueKind == JsonValueKind.Array,
+            SecurityAssetTermFieldType.Object => value.ValueKind == JsonValueKind.Object,
+            _ => value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined)
+        };
+    }
+
+    private static DateTimeOffset? TryReadDateField(JsonElement element, SecurityAssetTermField field)
+        => TryGetDeclaredProperty(element, field, out var value) ? TryReadDate(value) : null;
+
+    private static bool TryGetDeclaredProperty(JsonElement element, SecurityAssetTermField field, out JsonElement value)
+    {
+        value = default;
+        if (element.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        foreach (var property in element.EnumerateObject())
+        {
+            if (string.Equals(property.Name, field.Key, StringComparison.OrdinalIgnoreCase)
+                || field.Aliases.Any(alias => string.Equals(property.Name, alias, StringComparison.OrdinalIgnoreCase)))
+            {
+                value = property.Value;
+                return value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined);
+            }
+        }
+
+        return false;
+    }
+
+    private static DateTimeOffset? TryReadDate(JsonElement value)
+    {
+        if (value.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        if (value.TryGetDateTimeOffset(out var timestamp))
+        {
+            return timestamp;
+        }
+
+        return DateOnly.TryParse(value.GetString(), System.Globalization.CultureInfo.InvariantCulture, out var date)
+            ? new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)
+            : null;
+    }
 
     private static DateTimeOffset? TryReadDateField(JsonElement element, string fieldName)
     {

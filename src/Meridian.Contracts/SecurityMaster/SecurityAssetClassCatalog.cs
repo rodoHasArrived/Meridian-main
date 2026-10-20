@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Meridian.Contracts.Domain.Enums;
 
 namespace Meridian.Contracts.SecurityMaster;
@@ -615,6 +616,70 @@ public static class SecurityAssetClassCatalog
         => assetClass is not null && ByAssetClass.TryGetValue(assetClass.Trim(), out var descriptor)
             ? descriptor
             : DefaultDescriptor;
+
+    /// <summary>
+    /// Resolves a canonical asset-class name or registered alias exactly (case-insensitive,
+    /// whitespace-trimmed). Unlike <see cref="GetOrDefault"/>, input that names no catalog class
+    /// returns <see langword="false"/> instead of the Unknown descriptor, so a caller can tell
+    /// "not a catalog class" apart from "a class with no declared facts".
+    /// </summary>
+    public static bool TryGet(string? assetClass, [NotNullWhen(true)] out SecurityAssetClassDescriptor? descriptor)
+    {
+        descriptor = null;
+        return assetClass is not null && ByAssetClass.TryGetValue(assetClass.Trim(), out descriptor);
+    }
+
+    /// <summary>
+    /// Resolves a free-text asset-class label — the kind a brokerage or custodian stamps on a
+    /// position ("us_equity", "Treasury Bond", "Private Credit Loan") — to the one catalog class it
+    /// names. The label is tried as declared, then with separators removed ("Treasury Bill" is the
+    /// TreasuryBill class), then token by token against the canonical names and aliases ("Private
+    /// Credit Loan" names DirectLoan through its Loan alias). A label whose tokens name more than
+    /// one class ("Equity Option") does not resolve: the vocabulary is the catalog's, and there is
+    /// deliberately no substring heuristic to break the tie, so callers treat the position as
+    /// unclassified rather than guess. Matching whole tokens, not substrings, is what keeps
+    /// "Structured Credit Loan" from reading as a loan and "stockbroker" from reading as stock.
+    /// </summary>
+    public static bool TryResolveLabel(string? label, [NotNullWhen(true)] out SecurityAssetClassDescriptor? descriptor)
+    {
+        descriptor = null;
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            return false;
+        }
+
+        if (TryGet(label, out descriptor))
+        {
+            return true;
+        }
+
+        var compact = new string(label.Where(char.IsLetterOrDigit).ToArray());
+        if (TryGet(compact, out descriptor))
+        {
+            return true;
+        }
+
+        SecurityAssetClassDescriptor? match = null;
+        foreach (var token in label.Split(LabelSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (!TryGet(token, out var candidate))
+            {
+                continue;
+            }
+
+            if (match is not null && !ReferenceEquals(match, candidate))
+            {
+                return false;
+            }
+
+            match = candidate;
+        }
+
+        descriptor = match;
+        return match is not null;
+    }
+
+    private static readonly char[] LabelSeparators = [' ', '_', '-', '/', ',', '.', ':', ';', '(', ')', '[', ']'];
 
     public static IReadOnlyList<SecurityIdentifierKind> GetPreferredIdentifierKinds(string? assetClass)
         => GetOrDefault(assetClass).PreferredIdentifierKinds;

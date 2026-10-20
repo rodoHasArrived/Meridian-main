@@ -2247,7 +2247,7 @@ public sealed partial class ProviderLedgerReconciliationService
                 .ConfigureAwait(false);
         }
 
-        if (providerProjection.Positions.Any(static position => IsFixedIncomeOrStructuredAssetClass(position.AssetClass)) ||
+        if (providerProjection.Positions.Any(static position => IsFixedIncomeOrStructuredAssetClass(position)) ||
             (providerProjection.CorporateActions ?? []).Any(static action =>
                 IsFactorScheduleEvent(action.EventType) ||
                 IsAmortizationScheduleEvent(action.EventType) ||

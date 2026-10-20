@@ -63,8 +63,8 @@ public sealed partial class ProviderLedgerReconciliationService
 
         var positions = providerProjection.Positions;
         var corporateActionEvents = providerProjection.CorporateActions ?? [];
-        var equityPositionCount = positions.Count(static position => IsEquityAssetClass(position.AssetClass));
-        var fixedIncomeOrStructuredPositionCount = positions.Count(static position => IsFixedIncomeOrStructuredAssetClass(position.AssetClass));
+        var equityPositionCount = positions.Count(static position => IsEquityAssetClass(position));
+        var fixedIncomeOrStructuredPositionCount = positions.Count(static position => IsFixedIncomeOrStructuredAssetClass(position));
         var incomeCashTransactionCount = providerProjection.CashTransactions.Count(static transaction => IsIncomeTransaction(transaction.TransactionType));
         var dividendCashTransactionCount = providerProjection.CashTransactions.Count(static transaction => IsDividendTransaction(transaction.TransactionType));
         var interestCashTransactionCount = providerProjection.CashTransactions.Count(static transaction => IsInterestTransaction(transaction.TransactionType));
@@ -286,14 +286,14 @@ public sealed partial class ProviderLedgerReconciliationService
 
         foreach (var position in positions)
         {
-            if (!IsEquityAssetClass(position.AssetClass) &&
-                !IsFixedIncomeOrStructuredAssetClass(position.AssetClass))
+            if (!IsEquityAssetClass(position) &&
+                !IsFixedIncomeOrStructuredAssetClass(position))
             {
                 continue;
             }
 
             passportsBySymbol.TryGetValue(NormalizeSymbol(position.Symbol), out var passport);
-            var candidateType = IsFixedIncomeOrStructuredAssetClass(position.AssetClass)
+            var candidateType = IsFixedIncomeOrStructuredAssetClass(position)
                 ? "FactorScheduleCandidate"
                 : "EquityCorporateActionCandidate";
             var requiredFeed = candidateType == "FactorScheduleCandidate"
@@ -1070,25 +1070,36 @@ public sealed partial class ProviderLedgerReconciliationService
             : "provider-corporate-actions";
     }
 
-    private static bool IsEquityAssetClass(string assetClass)
-        => !string.IsNullOrWhiteSpace(assetClass) &&
-           (assetClass.Contains("equity", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("stock", StringComparison.OrdinalIgnoreCase));
+    /// <summary>
+    /// Which corporate-action evidence a provider position owes is a fact about its asset class,
+    /// read from two catalogs rather than from the label's spelling: the position's resolved
+    /// Security Master class when it has one, else the provider label resolved through the asset
+    /// class catalog's names and aliases, then the corporate-action types the type catalog declares
+    /// for that class. Split-posting types mark the classes that owe split and dividend evidence;
+    /// factor-paydown and redemption postings mark the classes that owe factor and coupon schedules.
+    /// Substring-matching the label ("equity", "loan", "mortgage") classified whatever a provider
+    /// happened to call a position, and nothing the catalog spelled differently.
+    /// </summary>
+    private static bool IsEquityAssetClass(FundAccountBrokeragePositionDto position)
+        => OwesCorporateActionPosting(position, CorporateActionLedgerPostingKind.SplitMemo);
 
-    private static bool IsFixedIncomeOrStructuredAssetClass(string assetClass)
+    private static bool IsFixedIncomeOrStructuredAssetClass(FundAccountBrokeragePositionDto position)
+        => OwesCorporateActionPosting(
+            position,
+            CorporateActionLedgerPostingKind.FactorPaydown,
+            CorporateActionLedgerPostingKind.RedemptionMemo);
+
+    private static bool OwesCorporateActionPosting(
+        FundAccountBrokeragePositionDto position,
+        params CorporateActionLedgerPostingKind[] postingKinds)
     {
-        if (string.IsNullOrWhiteSpace(assetClass))
+        if (!SecurityAssetClassCatalog.TryGet(position.Security?.AssetClass, out var descriptor) &&
+            !SecurityAssetClassCatalog.TryResolveLabel(position.AssetClass, out descriptor))
         {
             return false;
         }
 
-        return assetClass.Contains("bond", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("fixed", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("treasury", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("mbs", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("abs", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("loan", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("structured", StringComparison.OrdinalIgnoreCase) ||
-            assetClass.Contains("mortgage", StringComparison.OrdinalIgnoreCase);
+        return CorporateActionTypeDescriptorCatalog.FindByAssetClass(descriptor.AssetClass)
+            .Any(type => type.ValidSecurityMasterAssetClasses.Count > 0 && postingKinds.Contains(type.LedgerPostingKind));
     }
 }
