@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-10
-**Review history:** resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-10-17
+**Review history:** scheduled institutional-requirements pass 2026-10-17; resolution pass 2026-10-15; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -5833,3 +5833,106 @@ reads it per security.
 | UI edit forms are not built from the schema | The browser and WPF passport editors build their term picker and value controls from `/api/security-master/asset-classes/{assetClass}`. |
 
 **TRUNCATE guards.** Migrations `041_security_master_governance_events_truncate_guard.sql` and asset-operations `006_asset_operations_write_events_truncate_guard.sql` add statement-level BEFORE TRUNCATE rejections to both append-only logs, each under a reviewed `migration-truncate` waiver authorized by the repository owner. PostgreSQL regression tests attempt TRUNCATE on both and verify the rows are retained.
+
+---
+
+## Scheduled institutional-requirements pass — 2026-10-17
+
+Source snapshot: `e447587e`. No Security Master source has changed since the 2026-10-16 follow-on
+merges. This pass checks whether those follow-ons are actually used by consumers and which write
+paths still lack an audit trail.
+
+**Verdict.** The core is sound and the 2026-10-15 priorities landed as described: one registry
+locked to the F# union, declared payload formats, append-only governance events, atomic canonical
+writes, and schema-driven passport editors. Several 2026-10-16 follow-ons, however, exist only as
+types or endpoints. The ledger, NAV, risk and UI paths still run on the older code, so the review
+record should not yet treat them as closed.
+
+### E1 — The term-block route can apply a stale terms document (HIGH)
+
+`SecurityMasterService.AmendTermBlockAsync` (`SecurityMasterService.cs:274-294`) builds its patch
+from `_store.GetProjectionAsync`. `SecurityTermBlocks.BuildPatch` copies **every** current key
+into the patch, and the projection is read outside the amendment gate. Nothing compares that
+projection's `Version` with `request.ExpectedVersion`. The patch is then applied to a fresh
+rebuild, which is a different read.
+
+Failure path: another amendment commits after the projection read, and the client's
+`ExpectedVersion` already names that newer version. The append passes the stream check, and
+the other amendment's terms are reverted.
+
+Fix: refuse the request when `currentProjection.Version != request.ExpectedVersion`, or build the
+patch from the rebuilt record inside `AmendTermsInternalAsync`. The endpoint's block-key check
+uses a third read source (`queryService.GetByIdAsync`, `SecurityMasterEndpoints.cs:454-465`).
+
+### E2 — The 2026-10-16 follow-ons are exposed but not integrated
+
+| Follow-on | Status | Evidence |
+| --- | --- | --- |
+| Income cash flows | Endpoint only | Only caller is `SecurityMasterEndpoints.cs:749`. Ledger dividend posting still multiplies the raw `DividendPerShare` by quantity (`SecurityMasterLedgerBridge.cs:151-161`). The projector itself reads the wide nullable columns, not `CorporateActionTerms`. |
+| Forward curves | No real provider | Production DI registers `InMemorySecurityForwardCurveProvider` (`StorageFeatureRegistration.cs:415`), and nothing in `src/` calls `Publish`. Every floating leg still projects `flatForward:lastFixing`. |
+| Factor history | Endpoint only; a second model is still used | `SecurityMasterWorkbenchQueryService.cs:4423-4470` builds the WPF Schedule Book from `structuredProduct.factorHistory`, ignores paydowns and does no conflict check. `SecurityMasterCashFlowService.cs:316-321` seeds from `terms.FactorSchedule` only. |
+| `IUnitizedLot` / `LotQuantity` | Shape only | No code in `src/` calls `LotQuantity.*` or `EconomicUnits`. No lot sets `UnitKind`/`Multiplier` except `FaceValueLot`. P&L and margin use raw quantity, and option/future exposure uses separate `ContractMultiplier` fields (`OrderNotionalResolver.cs` defaults to 100). Acquisition-currency FX is modelled, on the open-lot `Acquisition` record. |
+| `CorporateActionTerms.From` | One caller | Only `SecurityFactorHistory.cs:71`. Validation, adjustment, ledger bridge, journal producers and cost basis still read the wide columns. |
+| UI | Missing | No dashboard, `Ui.Services` or WPF consumer for `income-cash-flows`, `factor-history` or curves. |
+
+### E3 — Asset-class lists outside the registry, with no guard
+
+- **Browser taxonomy.** The browser Security Details panel has its own nine-value taxonomy
+  (`security-details-tracker.view-model.ts:137`: FixedIncome, Fund, Currency, Crypto, Index, …),
+  and ~69 hand-coded fields with per-class visibility sets (:151-292). It shares only four class
+  names with the 26-class registry. DirectLoan, StructuredCredit, Swap and Repo all fall into
+  "unknown".
+- **CSV upload hint.** The hint lists classes the parser rejects (`data-screen.view-model.ts:862`).
+- **Lists the coverage test does not lock:**
+  - `SecurityKindMapping` (ReferenceData)
+  - operational-readiness depth specs and `ProjectorsFor`
+  - `IsProfileBackedCustomAsset`, duplicated in `SecurityMasterService` and `AssetClassValidatorRegistry`
+  - `DeriveSubType`, duplicated in two files
+  - `AssetObligationProjectionService` predicates
+  - `OpenLotAmortization` class checks
+  - pack journal templates
+  - WPF `RequiresContractMultiplier`, which matches on substrings
+- **Legacy terms.** Accounting still reads `LegacyAssetSpecificTerms`
+  (`SecurityMasterAccountingEventSourceAdapter.cs`) and so does certified reporting
+  (`CertifiedReportingSnapshotBuilder.cs:345`).
+
+### E4 — Audit and versioning gaps that remain (MEDIUM)
+
+- **Mutable rows outside both append-only logs.**
+  - Cash-flow sources are upserted in place (`PostgresSecurityMasterCashFlowStore.cs:50-60`).
+    `Force` replaces a client override, and `ClientConfirmedBy` is taken from the request.
+  - Data vendor entitlements are upserted and deactivated in place.
+  - Field-provenance rows are updated and deleted in place.
+  - Conflict resolution is a mutable row.
+  - The governance stream `CHECK` (migration 040) allows only overrides, aliases and rebuilds.
+- **Field attribution in WPF.** The WPF host registers no `ISecurityFieldProvenanceStore` or
+  conflict service (`StrategyFeatureModule.cs:135-140`), so its amendments record no attribution
+  and no conflicts.
+- **Format declaration is not authoritative yet.**
+  - `FromEconomicPayload` still dispatches on shape, and `SecurityTermsEnvelope.ResolveFormat`
+    has no callers.
+  - `SecurityTermsFormats.CustomProfile` is never written.
+  - Snapshot reads skip the version check.
+  - `ReservedKeys` is enforced only by the field-edit validator. A custom-profile envelope that
+    carries `termsFormat` is likely stored verbatim; this was not proven end to end.
+
+### Priorities from this pass
+
+1. **Close E1** with a projection-version check, plus a concurrency regression test.
+2. **Wire the follow-ons into consumers** before calling them closed:
+   - ledger dividend and distribution posting from the income projector;
+   - one factor-history model (retire the workbench builder);
+   - `LotQuantity.EconomicUnits` in P&L, margin and notional;
+   - `CorporateActionTerms` in validation, adjustment and the ledger bridge;
+   - a real curve source, or say plainly that floating legs are flat-forward only.
+3. **Replace the browser Security Details taxonomy and field list** with the registry endpoint,
+   and extend `SecurityAssetClassRegistryCoverageTests` to the lists in E3.
+4. **Move the remaining mutable tables onto the governance log:** cash-flow sources,
+   entitlements and conflict resolution. Register field provenance in the WPF host.
+5. **Make `termsFormat` authoritative on every read path.** Write `customProfile`, and strip or
+   refuse reserved envelope keys on the create and amend envelopes.
+
+**Method.** Read-only source review of `e447587e` in three independent lanes: registry and UI,
+write paths and audit, and cash-flow, factor and lot integration. E1 and the zero-caller claims
+for `LotQuantity`, the curve `Publish` and the two projectors were checked by direct reading and
+grep. No tests were run, because no source changed.
