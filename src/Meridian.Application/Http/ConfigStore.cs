@@ -150,6 +150,15 @@ public sealed class ConfigStore
     private AppConfig LoadForUpdate()
         => File.Exists(ConfigPath) ? LoadRequired() : CreateDefaultConfig(ConfigPath);
 
+    /// <summary>
+    /// Holds the cross-process configuration write lock (the <c>.lock</c> sidecar beside the file)
+    /// until the returned lease is disposed. For writers that persist the document through their own
+    /// serializer, such as the WPF shell's configuration service, so the installed two-process
+    /// workstation shares one lock with every <see cref="UpdateAsync{T}"/> caller. Not reentrant.
+    /// </summary>
+    public async Task<IDisposable> AcquireWriteLeaseAsync(CancellationToken ct = default)
+        => await AcquireWriteLockAsync(ct).ConfigureAwait(false);
+
     private async Task<FileStream> AcquireWriteLockAsync(CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();

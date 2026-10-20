@@ -184,7 +184,8 @@ public sealed class ProviderCredentialAuditDurabilityTests : IDisposable
         await store.SaveAsync(SaveRequest("alpaca", "k", "s"));
         var auditBefore = await File.ReadAllLinesAsync(_auditPath);
         var intent = JournalLine(phase: "intent", kind: "provider-save", key: "alpaca", generation: "never-committed-generation",
-            record: "{\"timestamp\":\"2026-10-20T00:00:00+00:00\",\"providerId\":\"alpaca\",\"action\":\"save\",\"actor\":\"ghost\"}");
+            record: "{\"timestamp\":\"2026-10-20T00:00:00+00:00\",\"providerId\":\"alpaca\",\"action\":\"save\",\"actor\":\"ghost\"}",
+            publicationId: Guid.NewGuid().ToString("N"));
         await File.WriteAllTextAsync(_pendingPath, intent + "\n");
 
         var replayed = await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync();
@@ -204,7 +205,8 @@ public sealed class ProviderCredentialAuditDurabilityTests : IDisposable
         var generation = (await store.GetStatusAsync("alpaca")).AuditMetadata["credentialGeneration"];
         var auditBefore = await File.ReadAllLinesAsync(_auditPath);
         var intent = JournalLine(phase: "intent", kind: "provider-save", key: "alpaca", generation: generation,
-            record: "{\"timestamp\":\"2026-10-20T00:00:00+00:00\",\"providerId\":\"alpaca\",\"action\":\"save\",\"actor\":\"recovered\"}");
+            record: "{\"timestamp\":\"2026-10-20T00:00:00+00:00\",\"providerId\":\"alpaca\",\"action\":\"save\",\"actor\":\"recovered\"}",
+            publicationId: await LastPublicationIdAsync());
         await File.WriteAllTextAsync(_pendingPath, intent + "\n");
 
         var replayed = await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync();
@@ -216,19 +218,39 @@ public sealed class ProviderCredentialAuditDurabilityTests : IDisposable
     }
 
     [Fact]
-    public async Task Replay_DeleteIntentIsProvenByAbsence_AndStaleDeleteIntentIsDiscarded()
+    public async Task Replay_DeleteIntent_IsProvenOnlyByItsOwnPublication_NeverByPreexistingAbsence()
     {
         var store = new FileProviderCredentialStore(_root);
         await store.SaveAsync(SaveRequest("alpaca", "k", "s"));
         var record = "{\"timestamp\":\"2026-10-20T00:00:00+00:00\",\"providerId\":\"alpaca\",\"action\":\"delete\",\"actor\":\"x\"}";
-        // alpaca still exists, so a delete intent for it never committed.
-        await File.WriteAllTextAsync(_pendingPath, JournalLine("intent", "provider-delete", "alpaca", null, record) + "\n");
+
+        // polygon never existed: its absence pre-dates the intent, so an intent whose publication never
+        // landed must be discarded even though the "key absent" state happens to hold.
+        var polygonRecord = record.Replace("alpaca", "polygon");
+        await File.WriteAllTextAsync(_pendingPath,
+            JournalLine("intent", "provider-delete", "polygon", null, polygonRecord, Guid.NewGuid().ToString("N")) + "\n");
         (await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync()).Should().Be(0);
 
-        // polygon never existed, so a delete intent for it is consistent with the vault and is appended.
-        var polygonRecord = record.Replace("alpaca", "polygon");
-        await File.WriteAllTextAsync(_pendingPath, JournalLine("intent", "provider-delete", "polygon", null, polygonRecord) + "\n");
+        // A delete that did publish stamps the vault with its own id; an intent carrying that id is proven.
+        await store.DeleteAsync("alpaca", "operator");
+        var auditBefore = await File.ReadAllLinesAsync(_auditPath);
+        await File.WriteAllTextAsync(_pendingPath,
+            JournalLine("intent", "provider-delete", "alpaca", null, record, await LastPublicationIdAsync()) + "\n");
         (await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync()).Should().Be(1);
+        (await File.ReadAllLinesAsync(_auditPath)).Should().HaveCount(auditBefore.Length + 1);
+    }
+
+    [Fact]
+    public async Task Replay_IntentWithoutPublicationId_IsNeverTakenAsProof()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(SaveRequest("alpaca", "k", "s"));
+        var generation = (await store.GetStatusAsync("alpaca")).AuditMetadata["credentialGeneration"];
+        var record = "{\"timestamp\":\"2026-10-20T00:00:00+00:00\",\"providerId\":\"alpaca\",\"action\":\"save\",\"actor\":\"x\"}";
+        await File.WriteAllTextAsync(_pendingPath, JournalLine("intent", "provider-save", "alpaca", generation, record, publicationId: null) + "\n");
+
+        (await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync()).Should().Be(0,
+            "matching state alone is not proof; the intent must name the publication it caused");
     }
 
     [Fact]
@@ -331,11 +353,12 @@ public sealed class ProviderCredentialAuditDurabilityTests : IDisposable
         var replacement = new OAuthToken("replacement-access", "Bearer", DateTimeOffset.UtcNow.AddHours(2), "replacement-refresh");
         var record = "{\"timestamp\":\"2026-10-20T00:00:00+00:00\",\"providerId\":\"provider\",\"action\":\"oauth-save\"}";
 
-        await File.WriteAllTextAsync(_pendingPath, OAuthJournalLine("provider", FileProviderCredentialStore.ComputeTokenDigest(replacement), record) + "\n");
+        var publication = await LastPublicationIdAsync();
+        await File.WriteAllTextAsync(_pendingPath, OAuthJournalLine("provider", FileProviderCredentialStore.ComputeTokenDigest(replacement), record, publication) + "\n");
         (await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync()).Should().Be(0, "the replacement never landed");
         (await File.ReadAllLinesAsync(_auditPath)).Should().Equal(auditBefore);
 
-        await File.WriteAllTextAsync(_pendingPath, OAuthJournalLine("provider", FileProviderCredentialStore.ComputeTokenDigest(current), record) + "\n");
+        await File.WriteAllTextAsync(_pendingPath, OAuthJournalLine("provider", FileProviderCredentialStore.ComputeTokenDigest(current), record, publication) + "\n");
         (await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync()).Should().Be(1, "the vault holds exactly this token");
         (await File.ReadAllTextAsync(_auditPath)).Should().NotContain("current-access").And.NotContain("replacement-access");
         (await File.ReadAllTextAsync(_auditPath)).Should().NotContain("current-refresh");
@@ -380,13 +403,21 @@ public sealed class ProviderCredentialAuditDurabilityTests : IDisposable
         (await File.ReadAllLinesAsync(_auditPath)).Should().HaveCount(auditBefore.Length + 1);
     }
 
-    private static string OAuthJournalLine(string provider, string digest, string record)
-        => $"{{\"phase\":\"intent\",\"providerId\":\"{provider}\",\"action\":\"oauth-save\",\"check\":{{\"kind\":\"oauth-save\",\"key\":\"{provider}\",\"credentialGeneration\":null,\"verifiedAt\":null,\"tokenDigest\":\"{digest}\"}},\"record\":{record}}}";
+    private static string OAuthJournalLine(string provider, string digest, string record, string publicationId)
+        => $"{{\"phase\":\"intent\",\"providerId\":\"{provider}\",\"action\":\"oauth-save\",\"check\":{{\"kind\":\"oauth-save\",\"key\":\"{provider}\",\"credentialGeneration\":null,\"verifiedAt\":null,\"tokenDigest\":\"{digest}\",\"publicationId\":\"{publicationId}\"}},\"record\":{record}}}";
 
-    private static string JournalLine(string phase, string kind, string key, string? generation, string record)
+    /// <summary>The operation id of the last appended audit record, which is also the vault's publication marker.</summary>
+    private async Task<string> LastPublicationIdAsync()
+    {
+        var last = (await File.ReadAllLinesAsync(_auditPath)).Last(static line => !string.IsNullOrWhiteSpace(line));
+        return System.Text.Json.JsonDocument.Parse(last).RootElement.GetProperty("operationId").GetString()!;
+    }
+
+    private static string JournalLine(string phase, string kind, string key, string? generation, string record, string? publicationId)
     {
         var generationJson = generation is null ? "null" : $"\"{generation}\"";
-        return $"{{\"phase\":\"{phase}\",\"providerId\":\"{key}\",\"action\":\"{kind}\",\"check\":{{\"kind\":\"{kind}\",\"key\":\"{key}\",\"credentialGeneration\":{generationJson},\"verifiedAt\":null}},\"record\":{record}}}";
+        var publicationJson = publicationId is null ? "null" : $"\"{publicationId}\"";
+        return $"{{\"phase\":\"{phase}\",\"providerId\":\"{key}\",\"action\":\"{kind}\",\"check\":{{\"kind\":\"{kind}\",\"key\":\"{key}\",\"credentialGeneration\":{generationJson},\"verifiedAt\":null,\"publicationId\":{publicationJson}}},\"record\":{record}}}";
     }
 
     private void BlockAuditLog()

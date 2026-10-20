@@ -182,7 +182,10 @@ each other's change (PRD-002 "concurrent configuration writes"). An edit through
 closed on a corrupt or JSON-null file instead of replacing it with defaults. `ConfigStore.SaveAsync`
 remains whole-document replacement, last writer wins, reserved for callers that own the entire document:
 the CLI `SaveConfigAsync` path and the setup wizard's generated output. Capability override writes take
-the same lock. External editors do not honor this lock.
+the same lock, and so does the WPF shell: `ConfigServiceBase` runs every section-level mutation through a
+locked read-modify-write whose lease the shell's `ConfigService` takes from `ConfigStore.AcquireWriteLeaseAsync`,
+so the installed two-process workstation shares one lock across both clients. External editors do not honor
+this lock.
 Certification persistence re-reads configuration inside the transaction after the runner completes.
 Deleted, ambiguous or changed connections and results naming another connection are refused without
 writing certification state. Unrelated concurrent connection changes are retained. This compares the
@@ -392,7 +395,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   resumes without parsing erased bytes. Failed initialization can be retried on the same service instance,
   and a failed refresh-loop start can be stopped and restarted. Unreadable evidence fails closed. After an audit failure the cache
   reloads the committed token or evicts it if recovery is unavailable; that failure is now
-  `ProviderCredentialAuditDeferredException` (an `IOException` whose `VaultCommitted` is true), and the
+  `ProviderCredentialAuditDeferredException` (an `IOException` whose `VaultCommitted` is true); a remote
+  refresh whose only failure is that deferred audit is reported as `Success` with `AuditDeferred` set, so
+  callers never retry a rotation the provider already honoured, and the
   owed audit record is journaled in the vault's `provider-credentials.audit.pending.jsonl` for replay by
   `ProviderCredentialAuditReplayHostedService` at startup or by the next vault mutation. Disposal never
   rewrites a cached token snapshot. Production postures fail closed off Windows (ADR-019 platform guard),

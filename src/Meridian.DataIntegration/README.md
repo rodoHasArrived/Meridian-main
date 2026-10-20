@@ -77,9 +77,11 @@ start) append the owed records with a `replayedAt` stamp, and status reports `au
 `intent` still journaled after a crash is never taken as proof: replay verifies it against the vault
 (saved credential generation present, deleted key absent, verification timestamp recorded, OAuth key
 present or absent) and appends it only when the vault proves the mutation landed, discarding it with
-a warning otherwise; a vault write that throws removes its intent again. An OAuth save intent carries a
-SHA-256 digest of the replacement token (never the token), so a pre-existing token under the same key
-cannot prove a rotation that did not land. Once the primary vault generation is published the
+a warning otherwise; a vault write that throws removes its intent again. Every mutation stamps the vault with its
+own operation id as the publication marker, and an intent is proven only when the vault carries that
+marker and the kind-specific state matches: a pre-existing absence or an older token never proves an
+intent whose write did not land. An OAuth save intent additionally carries a SHA-256 digest of the
+replacement token (never the token), so an older token under the same key cannot prove a rotation. Once the primary vault generation is published the
 mutation is committed even if the recovery-generation write or a journal write fails: such failures
 keep the record journaled as owed and surface only through the deferred contract, never as a failed
 mutation. Each journaled record carries

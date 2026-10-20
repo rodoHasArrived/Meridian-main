@@ -202,6 +202,7 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
                 updated.Fields.Keys.OrderBy(static field => field, StringComparer.OrdinalIgnoreCase).ToArray(),
                 scope);
             await CommitWithAuditAsync(
+                vault,
                 auditLine,
                 () => WriteVaultAsync(vault, ct, retainCurrentGenerationAsBackup: retainCurrentGenerationAsBackup),
                 descriptor.ProviderId, "save",
@@ -391,6 +392,7 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
             // A completed remote rotation must recover this owner's replacement token.
             var action = token is null ? "oauth-delete" : "oauth-save";
             var committed = await CommitWithAuditAsync(
+                vault,
                 BuildOAuthAuditLine(providerName, action, scope),
                 () => WriteVaultAsync(vault, ct, discardPreviousGeneration: token is null, retainCurrentGenerationAsBackup: true),
                 providerName, action,
@@ -431,6 +433,7 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
             // Acknowledging the save requires the replacement in both recovery generations.
             var action = token is null ? "oauth-delete" : "oauth-save";
             var committed = await CommitWithAuditAsync(
+                vault,
                 BuildOAuthAuditLine(providerName, action, scope: null),
                 () => WriteVaultAsync(vault, ct, discardPreviousGeneration: token is null, retainCurrentGenerationAsBackup: true),
                 providerName, action,
@@ -497,13 +500,18 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
     /// touched; a vault write failure removes the intent again. Callers hold <c>_gate</c> and the vault lock.
     /// </summary>
     private async Task<bool> CommitWithAuditAsync(
-        string auditLine, Func<Task> writeVault, string providerId, string action, AuditCommitCheck check, CancellationToken ct)
+        ProviderCredentialVault vault, string auditLine, Func<Task> writeVault, string providerId, string action, AuditCommitCheck check, CancellationToken ct)
     {
         await ReplayPendingAuditCoreAsync(ct).ConfigureAwait(false);
         var journal = await ReadPendingAuditEntriesAsync(ct).ConfigureAwait(false);
         // A stable operation id rides on the audit record itself, so replay can tell an already
         // appended record (crash after the append, before the journal line was removed) from an owed one.
-        auditLine = StampOperationId(auditLine, Guid.NewGuid().ToString("N"));
+        // The same id is written into the vault as its publication marker, so an intent is proven only
+        // by the publication it caused, never by state that happened to exist before it.
+        var operationId = Guid.NewGuid().ToString("N");
+        auditLine = StampOperationId(auditLine, operationId);
+        vault.LastPublicationId = operationId;
+        check = check with { PublicationId = operationId };
         var entry = PendingAuditEntry.Intent(providerId, action, check, auditLine);
         journal.Add(entry);
         await WritePendingAuditAsync(journal, ct).ConfigureAwait(false);
@@ -799,9 +807,20 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
     /// evaluates it only for intents left behind by a crash between the journal write and the commit
     /// marker; a committed entry needs no proof.
     /// </summary>
-    private sealed record AuditCommitCheck(string Kind, string Key, string? CredentialGeneration, DateTimeOffset? VerifiedAt, string? TokenDigest = null)
+    private sealed record AuditCommitCheck(
+        string Kind, string Key, string? CredentialGeneration, DateTimeOffset? VerifiedAt, string? TokenDigest = null, string? PublicationId = null)
     {
-        public bool IsSatisfiedBy(ProviderCredentialVault vault) => Kind switch
+        /// <summary>
+        /// An intent is proven only by the publication it caused: the vault's publication marker must
+        /// equal this intent's id, and the kind-specific state must match. A pre-existing state (an
+        /// already-absent key, an older token) never satisfies an intent whose write did not land.
+        /// </summary>
+        public bool IsSatisfiedBy(ProviderCredentialVault vault)
+            => PublicationId is not null
+               && string.Equals(vault.LastPublicationId, PublicationId, StringComparison.Ordinal)
+               && IsStateConsistentWith(vault);
+
+        private bool IsStateConsistentWith(ProviderCredentialVault vault) => Kind switch
         {
             "provider-save" => vault.Providers.TryGetValue(Key, out var saved)
                 && string.Equals(saved.Metadata.GetValueOrDefault("credentialGeneration"), CredentialGeneration, StringComparison.Ordinal),
@@ -1029,6 +1048,7 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
             if (scope is null)
                 vault.LegacyImportedProviderIds.Add(descriptor.ProviderId);
             await CommitWithAuditAsync(
+                vault,
                 BuildAuditLine(descriptor, "delete", actor, BuildStatus(descriptor, null), [], scope),
                 () => WriteVaultAsync(vault, ct, discardPreviousGeneration: true),
                 descriptor.ProviderId, "delete",
@@ -1091,6 +1111,7 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
             vault.Providers[storageKey] = record;
             var action = update.Success ? "verify-success" : "verify-failure";
             await CommitWithAuditAsync(
+                vault,
                 BuildAuditLine(
                     descriptor,
                     action,
@@ -1874,6 +1895,12 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
     {
         public int Version { get; set; } = VaultVersion;
         public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+        /// <summary>
+        /// The operation id of the mutation that last published this vault. Changes only when a
+        /// publication lands, so replay can prove a journaled intent by it rather than by a
+        /// pre-existing state (an already-absent key, an older token) that the intent did not create.
+        /// </summary>
+        public string? LastPublicationId { get; set; }
         public Dictionary<string, ProviderCredentialVaultRecord> Providers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, OAuthToken> OAuthTokens { get; set; } = new(StringComparer.Ordinal);
         public Dictionary<string, ScopedOAuthVaultRecord> ScopedOAuthTokens { get; set; } = new(StringComparer.Ordinal);
