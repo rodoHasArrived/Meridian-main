@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-10
-**Review history:** resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-10-19
+**Review history:** scheduled institutional-requirements pass 2026-10-19; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -5833,3 +5833,66 @@ reads it per security.
 | UI edit forms are not built from the schema | The browser and WPF passport editors build their term picker and value controls from `/api/security-master/asset-classes/{assetClass}`. |
 
 **TRUNCATE guards.** Migrations `041_security_master_governance_events_truncate_guard.sql` and asset-operations `006_asset_operations_write_events_truncate_guard.sql` add statement-level BEFORE TRUNCATE rejections to both append-only logs, each under a reviewed `migration-truncate` waiver authorized by the repository owner. PostgreSQL regression tests attempt TRUNCATE on both and verify the rows are retained.
+
+## Scheduled institutional-requirements pass — 2026-10-19
+
+Source snapshot: `bb4a0899`. The 2026-10-17 pass (E1–E4, open PR #3188) and its re-check addendum
+at `0342643d` (E5–E6, open PR #3196) are not on main; this pass re-verifies their findings against
+current source rather than restating them, and records what landed in between (#3198, #3204,
+#3205, #3209, `5bdd5740`, the terms-format requirement `b702cc20`, and migration 044).
+
+**Verdict.** The core remains sound and is measurably more uniform than at the last pass. The
+remaining risk is no longer the registry or storage shape; it is consumers that bypass the
+registry, and follow-on capabilities that exist without callers.
+
+### Closed or narrowed since the last pass
+
+| Item | Disposition | Evidence |
+| --- | --- | --- |
+| N6 — projection fan-out writes every class on every upsert | **Closed** | #3204: the upsert reads the stored `asset_class` under the existing row lock and visits only the current class's writer and, on a class change, the prior class's writer (`ProjectionWritersFor`). `ProjectionFanOutTests` and `ProjectionFanOutPostgresTests` pin selection and clean-up. |
+| Classes with no relational projection | **Narrowed to one** | Migration 044 projects the twelve previously unprojected classes declaratively; 25 of 26 classes project, `CustomAsset` excepted. Bond and Option keep specialized writers for the reasons in the 2026-10-15 section. A single descriptor-driven reader (`PostgresReferenceProjectionReader`) replaces per-class readers. |
+| Structured products modeled as free text | **Narrowed** | #3205 raises `StructuredCredit` to terms version 2 with typed kind (`StructuredCreditKind` with a verbatim `Other` case), seniority, attachment/detachment, pool WAC/WAM/WALA and CLO period dates, all optional so v1 payloads read unchanged (identity upcast, ADR-024). Migration 045 widens the projection. #3209 adds a read-only reclassification report with blocker codes rather than an automatic rewrite. `5bdd5740` keeps the `factorSchedule` pointer as evidence instead of mis-reading it as a coupon frequency. |
+| E4 — `termsFormat` not authoritative | **Narrowed** | `b702cc20` requires the tag on every write; `SecurityTermsEnvelope.ResolveFormat` now has callers in the store (`PostgresSecurityMasterStore.cs:1496`) and validation (`SecurityValidationService.cs:249`). `customProfile` is still inferred on read rather than written by any path. |
+
+### Re-verified as still open
+
+| Item | State on `bb4a0899` |
+| --- | --- |
+| E1 — term-block route can apply a stale terms document (HIGH) | Unchanged. `AmendTermBlockAsync` (`SecurityMasterService.cs:274-295`) builds the full-document patch from an unfenced `GetProjectionAsync` read and never compares `currentProjection.Version` with `request.ExpectedVersion`. |
+| E2 — follow-ons exposed but not consumed | Unchanged. `LotQuantity`/`EconomicUnits` has no caller outside its own file; `CorporateActionTerms.From` has one caller (`SecurityFactorHistory.cs:71`); no forward-curve `Publish` caller exists; ledger dividend posting still multiplies the raw `DividendPerShare` (`SecurityMasterLedgerBridge.cs:151-161`). |
+| E5 — Asset Operations class predicates disagree with the catalog | Unchanged. `AssetObligationProjectionService.cs:848-868` still omits `Deposit` from fixed-income routing and matches the non-catalog names `PrivateFund` and `PartnershipInterest`. |
+| E6 — single-class branches escape the literal ratchet | Unchanged. `SecurityMasterDataQualityService` still hard-codes MA002/MA003 and VC002/VC003 for `Bond` and `Option` (`:127`, `:147`, `:216`, `:234`) while the term schema's `Required` flags go unread; MA003 probes the undeclared keys `strikePrice`/`expirationDate` before the declared `strike`/`expiry`, and `Warrant` (which declares both) is never checked. |
+| A4 — profile `IsProjected`/`IsSearchable` govern nothing | Unchanged; still counted only by `SecurityAssetProfileGovernanceService.cs:514, :528`. |
+| N4/N5 — pack registry overlap rule and shared prose contract | Unchanged. `ValidateAll()` still passes an empty candidate set (`SecurityAssetPackRegistry.cs:261-263`); the three shared prose instances and the `Contains("core ledger")`/`Contains("evidence")` policy checks remain (`:40`, `:120`, `:156`, `:342`, `:722-732`). |
+
+### New observations, not filed as findings
+
+- **Two more prose classifiers outside the catalog.** `SecurityMasterAccountingEventService.IsFixedIncome`
+  (`Strategies/Services/SecurityMasterAccountingEventService.cs:298-310`) accepts twelve spellings,
+  ten of them non-catalog read-tolerance names (`Mbs`, `Abs`, `Loan`, `AmortizingLoan`, …).
+  `ProviderLedgerReconciliationService.IsFixedIncomeOrStructuredAssetClass`
+  (`CorporateActions.cs:1078-1094`) classifies provider positions by substring (`"abs"`, `"loan"`,
+  `"fixed"`). Both are the N1/N2 pattern on read-tolerance paths; they belong with E5/E6 under one
+  provider-class → catalog-class normalization step at ingress.
+- **Inconsistent key naming across classes.** Maturity is `maturity` for Bond/CD/CP/TBill and
+  `maturityDate` for Swap, and readers accept both (`SecurityMasterDataQualityService.cs:108-111`).
+  Harmless while every reader tolerates both; a schema-derived rule set (E6) should read the key the
+  schema declares per class instead.
+
+### Priorities from this pass
+
+1. **E1** — fence `AmendTermBlockAsync` on `ExpectedVersion` (or build the patch from the rebuilt
+   record inside the gate) with a concurrency regression test. Still the only HIGH item.
+2. **E5 + the two classifiers above** — derive obligation and fixed-income routing from
+   `CashFlowBehavior` / `AccountingInstrumentClass`, normalize provider class spellings once at
+   ingress, and add a catalog parity test. Fixes the visible Deposit gap.
+3. **E6** — generate minimum-attribute and value-consistency rules from the term schema's
+   `Required` fields and conventions, and extend the ratchet to count single-class equality branches.
+4. **E2** — wire `LotQuantity.EconomicUnits`, `CorporateActionTerms` and the income projector into
+   ledger posting, P&L and notional before treating those follow-ons as closed.
+5. **A4 / CustomAsset** — either project and index profile fields marked `IsProjected`/`IsSearchable`,
+   or rename the flags to say they are advisory; `CustomAsset` is now the only unprojected class.
+
+**Method.** Read-only re-check of `bb4a0899`. Changed Security Master files were listed with
+`git log --since=2026-10-15`; each still-open item was re-derived by reading the cited lines and by
+grep for callers. No source changed in this pass, so no tests were run.
