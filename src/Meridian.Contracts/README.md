@@ -1781,7 +1781,11 @@ one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `CommitmentLo
 funded and unfunded amounts, recallable distributions, `Draw`) and `FundUnitLot` (units at an
 acquisition NAV) are the `Commitment` and `Units` cases the registry assigns to private fund
 interests, guarantees and funds. `SecurityIdentifierKind` adds
-`LoanX` (`LX` plus six digits) and `Clip` (nine alphanumerics).
+`LoanX` (`LX` plus six digits), `Clip` (nine alphanumerics) and `ListingId`
+(`TICKER:MIC`, validated through `Meridian.Contracts.Domain.ListingId`). `Mic` is the
+format-validated ISO 10383 market code (four letters or digits); `MicReference` bundles the
+markets Meridian's providers and seed data use and maps unambiguous exchange names (`NYSE`,
+`Nasdaq`, `AMEX`, ...) to a MIC, leaving routing labels such as `SMART` unresolved.
 
 ### Security Master income, curves, factors and corporate-action terms
 

@@ -127,6 +127,7 @@ public static class SecurityIdentifierNormalizer
             SecurityIdentifierKind.Cik => normalized.Length is >= 1 and <= 10 && IsDigitsOnly(normalized),
             SecurityIdentifierKind.LoanX => normalized.Length == 8 && normalized.StartsWith("LX", StringComparison.Ordinal) && IsDigitsOnly(normalized[2..]),
             SecurityIdentifierKind.Clip => normalized.Length == 9 && IsAlphaNumeric(normalized),
+            SecurityIdentifierKind.ListingId => Domain.ListingId.TryParse(normalized, out _),
             _ => true
         };
 
@@ -144,6 +145,7 @@ public static class SecurityIdentifierNormalizer
             SecurityIdentifierKind.Cik => "CIK must be a 1- to 10-digit SEC issuer code.",
             SecurityIdentifierKind.LoanX => "LoanX ID must be 'LX' followed by six digits.",
             SecurityIdentifierKind.Clip => "CLIP must be a 9-character alphanumeric loan identifier.",
+            SecurityIdentifierKind.ListingId => "Listing id must be TICKER:MIC with a four-character ISO 10383 MIC (for example AAPL:XNAS).",
             _ => "Identifier format is invalid."
         };
 
