@@ -375,7 +375,7 @@ public sealed class SecurityMasterDataQualityServiceTests
             .Select(v => v.FieldPath)
             .Should().BeEquivalentTo(
                 "assetSpecificTerms.rootSymbol", "assetSpecificTerms.contractMonth",
-                "assetSpecificTerms.expiry", "assetSpecificTerms.multiplier");
+                "assetSpecificTerms.expiry", "assetSpecificTerms.multiplier", "assetSpecificTerms.isRollTarget");
     }
 
     [Fact]
