@@ -132,7 +132,38 @@ public sealed record StructuredCashFlowLeg(
     decimal? Notional,
     string? PaymentFrequency,
     string? DayCountConvention,
-    bool ExchangesPrincipal = false);
+    bool ExchangesPrincipal = false,
+    IReadOnlyList<StructuredCashFlowNotionalStep>? NotionalSchedule = null,
+    IReadOnlyList<StructuredCashFlowResetFixing>? ResetSchedule = null)
+{
+    /// <summary>
+    /// The notional in effect on <paramref name="date"/>: the latest schedule step on or before
+    /// it, otherwise <paramref name="baseNotional"/>.
+    /// </summary>
+    public decimal NotionalOn(DateOnly date, decimal baseNotional)
+        => NotionalSchedule?
+               .Where(step => step.EffectiveDate <= date)
+               .OrderBy(static step => step.EffectiveDate)
+               .LastOrDefault() is { } step
+            ? step.Notional
+            : baseNotional;
+
+    /// <summary>
+    /// The observed fixing of the latest reset on or before <paramref name="date"/>; null when there
+    /// is no such reset or its fixing is not yet recorded (an earlier fixing is never carried forward).
+    /// </summary>
+    public decimal? FixingOn(DateOnly date)
+        => ResetSchedule?
+            .Where(entry => entry.ResetDate <= date)
+            .OrderBy(static entry => entry.ResetDate)
+            .LastOrDefault()?.FixingRate;
+}
+
+/// <summary>One dated step of an amortizing or accreting leg notional.</summary>
+public sealed record StructuredCashFlowNotionalStep(DateOnly EffectiveDate, decimal Notional);
+
+/// <summary>A floating-leg reset date with its observed fixing, when known.</summary>
+public sealed record StructuredCashFlowResetFixing(DateOnly ResetDate, decimal? FixingRate);
 
 /// <summary>A single leg's projected schedule, always unsigned (direction is carried alongside).</summary>
 /// <param name="RateSource">

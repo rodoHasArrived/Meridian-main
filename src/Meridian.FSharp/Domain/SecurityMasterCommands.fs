@@ -218,7 +218,23 @@ module SecurityMaster =
                             || String.Equals(direction, "Receive", StringComparison.OrdinalIgnoreCase)))
                        (error "swap_leg_direction_invalid" "SwapLeg Direction must be either 'Pay' or 'Receive' when present.")
                    @ require (leg.PaymentFrequency |> Option.forall (String.IsNullOrWhiteSpace >> not))
-                       (error "swap_leg_payment_frequency_invalid" "SwapLeg PaymentFrequency must not be blank when present.")))
+                       (error "swap_leg_payment_frequency_invalid" "SwapLeg PaymentFrequency must not be blank when present.")
+                   @ require (leg.NotionalSchedule |> List.forall (fun step -> step.Notional > 0m))
+                       (error "swap_leg_notional_schedule_invalid" "SwapLeg NotionalSchedule steps must have a notional greater than zero.")
+                   @ require
+                       (leg.NotionalSchedule
+                        |> List.pairwise
+                        |> List.forall (fun (earlier, later) -> earlier.EffectiveDate < later.EffectiveDate))
+                       (error "swap_leg_notional_schedule_order_invalid" "SwapLeg NotionalSchedule dates must be strictly ascending.")
+                   @ require
+                       (leg.NotionalSchedule
+                        |> List.forall (fun step -> step.EffectiveDate >= terms.EffectiveDate && step.EffectiveDate <= terms.MaturityDate))
+                       (error "swap_leg_notional_schedule_range_invalid" "SwapLeg NotionalSchedule dates must fall within the swap's effective and maturity dates.")
+                   @ require
+                       (leg.ResetSchedule
+                        |> List.pairwise
+                        |> List.forall (fun (earlier, later) -> earlier.ResetDate < later.ResetDate))
+                       (error "swap_leg_reset_schedule_order_invalid" "SwapLeg ResetSchedule dates must be strictly ascending.")))
         | SecurityKind.DirectLoan terms ->
             []
             @ requireNotBlank "direct_loan_borrower_required" "Borrower" terms.Borrower

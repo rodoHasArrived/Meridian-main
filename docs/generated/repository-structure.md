@@ -4539,8 +4539,10 @@ Meridian-main
 │   │   │   │   └── Trade.cs
 │   │   │   ├── CanonicalSymbol.cs
 │   │   │   ├── IPositionSnapshotStore.cs
+│   │   │   ├── ListingId.cs
 │   │   │   ├── MarketDataModels.cs
 │   │   │   ├── MarketDataSources.cs
+│   │   │   ├── Mic.cs
 │   │   │   ├── ProviderId.cs
 │   │   │   ├── ProviderSymbol.cs
 │   │   │   ├── StreamId.cs
@@ -10635,6 +10637,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PreDispatch.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementConfirmation.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTerms.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTrail.cs
 │   │   │   │   ├── AlpacaConnectionReadinessTests.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
@@ -11032,6 +11035,7 @@ Meridian-main
 │   │   │   ├── FaceValueLotTests.cs
 │   │   │   ├── ForwardCurveCashFlowTests.cs
 │   │   │   ├── KeyedGatePoolTests.cs
+│   │   │   ├── ListingIdentityTests.cs
 │   │   │   ├── LoanIdentifierKindTests.cs
 │   │   │   ├── NullCorporateActionOperationsServiceTests.cs
 │   │   │   ├── NullOperatorOverridesStoreTests.cs

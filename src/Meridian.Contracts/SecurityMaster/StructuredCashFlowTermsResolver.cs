@@ -56,6 +56,8 @@ public static class StructuredCashFlowTermsResolver
     private static readonly string[] LegCurrentIndexRateAliases = ["currentIndexRate", "lastFixing", "currentRate", "indexRate"];
     private static readonly string[] LegNotionalAliases = ["notional", "notionalAmount", "faceAmount", "principal"];
     private static readonly string[] LegPaymentFrequencyAliases = ["paymentFrequency", "frequency"];
+    private static readonly string[] LegNotionalScheduleAliases = ["notionalSchedule", "amortizationSchedule"];
+    private static readonly string[] LegResetScheduleAliases = ["resetSchedule", "fixings"];
     private static readonly string[] LegDayCountAliases = ["dayCountConvention", "dayCount", "dayCountBasis"];
     private static readonly string[] LegPrincipalExchangeAliases = ["exchangesPrincipal", "principalExchange", "notionalExchange"];
 
@@ -251,7 +253,31 @@ public static class StructuredCashFlowTermsResolver
             Notional: SecurityTermReader.ReadDecimal(leg, LegNotionalAliases),
             PaymentFrequency: SecurityTermReader.ReadString(leg, LegPaymentFrequencyAliases),
             DayCountConvention: SecurityTermReader.ReadString(leg, LegDayCountAliases),
-            ExchangesPrincipal: ReadBoolean(leg, LegPrincipalExchangeAliases));
+            ExchangesPrincipal: ReadBoolean(leg, LegPrincipalExchangeAliases),
+            NotionalSchedule: ReadScheduleItems(leg, LegNotionalScheduleAliases)
+                .Select(static item => (Date: SecurityTermReader.ReadDate(item, "effectiveDate", "date"), Notional: SecurityTermReader.ReadDecimal(item, "notional", "amount")))
+                .Where(static step => step.Date is not null && step.Notional is > 0m)
+                .Select(static step => new StructuredCashFlowNotionalStep(step.Date!.Value, step.Notional!.Value))
+                .ToArray(),
+            ResetSchedule: ReadScheduleItems(leg, LegResetScheduleAliases)
+                .Select(static item => (Date: SecurityTermReader.ReadDate(item, "resetDate", "fixingDate", "date"), Fixing: SecurityTermReader.ReadDecimal(item, "fixingRate", "fixing", "rate")))
+                .Where(static entry => entry.Date is not null)
+                .Select(static entry => new StructuredCashFlowResetFixing(entry.Date!.Value, entry.Fixing))
+                .ToArray());
+    }
+
+    // Read-side tolerance: an entry that cannot be typed is skipped (the write path refuses it).
+    private static IReadOnlyList<JsonElement> ReadScheduleItems(JsonElement leg, string[] aliases)
+    {
+        foreach (var alias in aliases)
+        {
+            if (SecurityTermReader.TryGetProperty(leg, alias, out var value) && value.ValueKind == JsonValueKind.Array)
+            {
+                return value.EnumerateArray().Where(static item => item.ValueKind == JsonValueKind.Object).ToArray();
+            }
+        }
+
+        return [];
     }
 
     private static CashFlowLegRateKind ResolveRateKind(string? token, decimal? fixedRate, string? indexName)

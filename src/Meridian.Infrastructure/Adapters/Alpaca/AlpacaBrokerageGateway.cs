@@ -1811,6 +1811,8 @@ public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokera
             get => _stopPrice;
             set { _stopPrice = value; HasStopPrice = true; }
         }
+        [JsonPropertyName("trail_price")] public string? TrailPrice { get; set; }
+        [JsonPropertyName("trail_percent")] public string? TrailPercent { get; set; }
         [JsonPropertyName("status")] public string? Status { get; set; }
         [JsonPropertyName("created_at")] public DateTimeOffset? CreatedAt { get; set; }
         [JsonPropertyName("updated_at")] public DateTimeOffset? UpdatedAt { get; set; }

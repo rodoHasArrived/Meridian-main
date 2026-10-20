@@ -1,5 +1,16 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationDisposition["StructuredCreditReclassificationDisposition"] {
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationReportDto["StructuredCreditReclassificationReportDto"] {
+        +int BlockedCount
+        +int CandidateCount
+        +IReadOnlyList~StructuredCreditReclassificationCandidateDto~ Candidates
+        +DateTimeOffset GeneratedAt
+        +int ReadyCount
+        +int SecuritiesScanned
+        +int UnreadableCount
+    }
     class Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry["StructuredFactorScheduleEntry"] {
         +DateOnly AsOfDate
         +decimal Factor

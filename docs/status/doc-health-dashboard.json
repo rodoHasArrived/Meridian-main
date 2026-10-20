@@ -1,6 +1,6 @@
 {
   "total_files": 741,
-  "total_lines": 164403,
+  "total_lines": 164429,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2686,7 +2686,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-04.md",
-      "line_count": 511,
+      "line_count": 509,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2694,7 +2694,7 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-05.md",
-      "line_count": 106,
+      "line_count": 117,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2854,7 +2854,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12269,
+      "line_count": 12273,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5846,7 +5846,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1850,
+      "line_count": 1857,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5942,7 +5942,7 @@
     },
     {
       "path": "src/Meridian.FSharp/README.md",
-      "line_count": 110,
+      "line_count": 114,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5966,7 +5966,7 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 461,
+      "line_count": 463,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

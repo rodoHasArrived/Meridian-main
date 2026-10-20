@@ -210,6 +210,7 @@ internal static class SecurityMasterMapping
             SecurityIdentifierKind.Cik => IdentifierKind.Cik,
             SecurityIdentifierKind.LoanX => IdentifierKind.LoanX,
             SecurityIdentifierKind.Clip => IdentifierKind.Clip,
+            SecurityIdentifierKind.ListingId => IdentifierKind.ListingId,
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unsupported security identifier kind.")
         };
 
@@ -813,7 +814,79 @@ internal static class SecurityMasterMapping
             ToOption(ReadSwapLegDecimal(json, "notional", "notionalAmount", "faceAmount", "principal")),
             ToOption(ReadSwapLegString(json, "paymentFrequency", "frequency")),
             ToOption(ReadSwapLegString(json, "dayCountConvention", "dayCount", "dayCountBasis")),
-            ReadSwapLegPrincipalExchange(json));
+            ReadSwapLegPrincipalExchange(json),
+            ToFSharpList(ReadSwapLegNotionalSchedule(json)),
+            ToFSharpList(ReadSwapLegResetSchedule(json)));
+    }
+
+    // Dated schedules on a leg. Like the leg's scalar terms, a malformed entry is refused rather
+    // than read as absent, so a write never silently drops an amortization step or a fixing.
+    private static IEnumerable<SwapNotionalStep> ReadSwapLegNotionalSchedule(JsonElement json)
+        => ReadSwapLegScheduleItems(json, "notionalSchedule", "amortizationSchedule")
+            .Select(static item => new SwapNotionalStep(
+                ReadScheduleDate(item, "notionalSchedule", "effectiveDate", "date"),
+                SecurityTermReader.ReadDecimal(item, "notional", "amount")
+                    ?? throw new InvalidOperationException("Each swap leg notionalSchedule entry must have a numeric 'notional'.")))
+            .ToArray();
+
+    private static IEnumerable<SwapResetEntry> ReadSwapLegResetSchedule(JsonElement json)
+        => ReadSwapLegScheduleItems(json, "resetSchedule", "fixings")
+            .Select(static item => new SwapResetEntry(
+                ReadScheduleDate(item, "resetSchedule", "resetDate", "fixingDate", "date"),
+                ToOption(ReadOptionalScheduleDecimal(item, "resetSchedule", "fixingRate", "fixing", "rate"))))
+            .ToArray();
+
+    private static IEnumerable<JsonElement> ReadSwapLegScheduleItems(JsonElement json, params string[] aliases)
+    {
+        foreach (var alias in aliases)
+        {
+            if (!SecurityTermReader.TryGetProperty(json, alias, out var value)
+                || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            if (value.ValueKind != JsonValueKind.Array)
+            {
+                throw new InvalidOperationException($"Swap leg property '{alias}' must be a JSON array.");
+            }
+
+            var items = new List<JsonElement>();
+            foreach (var item in value.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Object)
+                {
+                    throw new InvalidOperationException($"Each swap leg '{alias}' entry must be a JSON object.");
+                }
+
+                items.Add(item);
+            }
+
+            return items;
+        }
+
+        return [];
+    }
+
+    private static DateOnly ReadScheduleDate(JsonElement item, string schedule, params string[] aliases)
+        => SecurityTermReader.ReadDate(item, aliases)
+           ?? throw new InvalidOperationException($"Each swap leg {schedule} entry must have an ISO-8601 '{aliases[0]}'.");
+
+    private static decimal? ReadOptionalScheduleDecimal(JsonElement item, string schedule, params string[] aliases)
+    {
+        foreach (var alias in aliases)
+        {
+            if (!SecurityTermReader.TryGetProperty(item, alias, out var value)
+                || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            {
+                continue;
+            }
+
+            return SecurityTermReader.ReadDecimal(item, alias)
+                ?? throw new InvalidOperationException($"Swap leg {schedule} property '{alias}' must be a number or numeric string.");
+        }
+
+        return null;
     }
 
     private static IEnumerable<JsonElement> GetSwapLegItems(JsonElement json)
