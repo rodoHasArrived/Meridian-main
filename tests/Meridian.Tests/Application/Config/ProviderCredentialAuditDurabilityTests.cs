@@ -319,6 +319,70 @@ public sealed class ProviderCredentialAuditDurabilityTests : IDisposable
         await act.Should().NotThrowAsync();
     }
 
+    [Fact]
+    public async Task Replay_OAuthSaveIntent_IsProvenOnlyByTheReplacementTokenDigest()
+    {
+        // A token already exists under the key. An intent for a rotation whose replacement never
+        // landed must not be satisfied by that older token; the digest of the replacement is the proof.
+        var store = new FileProviderCredentialStore(_root);
+        var current = new OAuthToken("current-access", "Bearer", DateTimeOffset.UtcNow.AddHours(1), "current-refresh");
+        await store.SaveOAuthTokenAsync("provider", current);
+        var auditBefore = await File.ReadAllLinesAsync(_auditPath);
+        var replacement = new OAuthToken("replacement-access", "Bearer", DateTimeOffset.UtcNow.AddHours(2), "replacement-refresh");
+        var record = "{\"timestamp\":\"2026-10-20T00:00:00+00:00\",\"providerId\":\"provider\",\"action\":\"oauth-save\"}";
+
+        await File.WriteAllTextAsync(_pendingPath, OAuthJournalLine("provider", FileProviderCredentialStore.ComputeTokenDigest(replacement), record) + "\n");
+        (await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync()).Should().Be(0, "the replacement never landed");
+        (await File.ReadAllLinesAsync(_auditPath)).Should().Equal(auditBefore);
+
+        await File.WriteAllTextAsync(_pendingPath, OAuthJournalLine("provider", FileProviderCredentialStore.ComputeTokenDigest(current), record) + "\n");
+        (await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync()).Should().Be(1, "the vault holds exactly this token");
+        (await File.ReadAllTextAsync(_auditPath)).Should().NotContain("current-access").And.NotContain("replacement-access");
+        (await File.ReadAllTextAsync(_auditPath)).Should().NotContain("current-refresh");
+    }
+
+    [Fact]
+    public void ComputeTokenDigest_IsStableAndContainsNoTokenMaterial()
+    {
+        var token = new OAuthToken("secret-access", "Bearer", new DateTimeOffset(2026, 10, 20, 0, 0, 0, TimeSpan.Zero), "secret-refresh");
+
+        var digest = FileProviderCredentialStore.ComputeTokenDigest(token);
+
+        digest.Should().Be(FileProviderCredentialStore.ComputeTokenDigest(token)).And.HaveLength(64).And.MatchRegex("^[0-9a-f]+$");
+        digest.Should().NotContain("secret");
+        FileProviderCredentialStore.ComputeTokenDigest(token with { AccessToken = "other" }).Should().NotBe(digest);
+    }
+
+    [Fact]
+    public async Task SaveRotated_BackupWriteFailureAfterPrimaryPublished_KeepsTheCommittedAuditOwed()
+    {
+        // WriteVaultAsync publishes the primary, then the recovery generation. When the backup write
+        // fails the mutation is already live, so the journal must keep a committed record, not drop it.
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(SaveRequest("alpaca", "k1", "s1"));
+        var backupPath = Path.Combine(_root, ".mdc", "provider-credentials.vault.bak");
+        var auditBefore = await File.ReadAllLinesAsync(_auditPath);
+        File.Delete(backupPath);
+        Directory.CreateDirectory(backupPath);
+
+        var act = () => store.SaveRotatedCredentialsAsync(SaveRequest("alpaca", "k2", "rotated-secret"));
+
+        var failure = await Record.ExceptionAsync(act);
+        failure.Should().NotBeNull("the recovery-generation write fails");
+        (await store.ReadForProviderAsync("alpaca"))!.Get("SecretKey").Should().Be("rotated-secret", "the primary was published before the failure");
+        var journal = await File.ReadAllLinesAsync(_pendingPath);
+        journal.Should().ContainSingle();
+        System.Text.Json.JsonDocument.Parse(journal[0]).RootElement.GetProperty("phase").GetString().Should().Be("committed");
+        (await File.ReadAllLinesAsync(_auditPath)).Should().Equal(auditBefore, "the audit append is owed, not fabricated");
+
+        Directory.Delete(backupPath);
+        (await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync()).Should().Be(1);
+        (await File.ReadAllLinesAsync(_auditPath)).Should().HaveCount(auditBefore.Length + 1);
+    }
+
+    private static string OAuthJournalLine(string provider, string digest, string record)
+        => $"{{\"phase\":\"intent\",\"providerId\":\"{provider}\",\"action\":\"oauth-save\",\"check\":{{\"kind\":\"oauth-save\",\"key\":\"{provider}\",\"credentialGeneration\":null,\"verifiedAt\":null,\"tokenDigest\":\"{digest}\"}},\"record\":{record}}}";
+
     private static string JournalLine(string phase, string kind, string key, string? generation, string record)
     {
         var generationJson = generation is null ? "null" : $"\"{generation}\"";
