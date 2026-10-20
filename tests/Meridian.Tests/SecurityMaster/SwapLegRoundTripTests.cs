@@ -94,6 +94,7 @@ public sealed class SwapLegRoundTripTests
                     SecurityAssetTermFieldType.String => value.ValueKind == JsonValueKind.String,
                     SecurityAssetTermFieldType.Decimal => value.ValueKind == JsonValueKind.Number,
                     SecurityAssetTermFieldType.Boolean => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
+                    SecurityAssetTermFieldType.Array => value.ValueKind == JsonValueKind.Array,
                     _ => false
                 };
                 shapeMatches.Should().BeTrue($"swap leg field '{field.Key}' must serialize as its declared {field.Type} shape");
