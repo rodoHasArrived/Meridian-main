@@ -1,3 +1,5 @@
+using OSArchitecture = System.Runtime.InteropServices.Architecture;
+using System.Runtime.InteropServices;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
@@ -36,6 +38,111 @@ public sealed class ProductionServiceRegistrationPolicyTests
 
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("*rejected non-production DI registrations*InMemorySampleService*");
+    }
+
+    [Fact]
+    public void Validate_ProductionPostureOnLinux_RefusesNamingPostureDetectedOsAndAdr019()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        services.DeclareMeridianHostPlatform(isWindows: false, OSArchitecture.X64, "Linux 6.18 (test)");
+        services.AddSingleton<AllowedService>();
+
+        Action act = () => ProductionServiceRegistrationPolicy.Validate(services);
+
+        act.Should().Throw<StartupRefusedException>()
+            .WithMessage("Production startup policy rejected the host platform for posture 'ProductionApi'*")
+            .WithMessage("*Linux 6.18 (test) (X64)*")
+            .WithMessage("*docs/adr/019-production-support-matrix-and-deployment-posture.md*")
+            .WithMessage("*'dpapi-current-user' -> 'local-aes-gcm'*");
+    }
+
+    [Fact]
+    public void Validate_ProductionEnvironmentWithoutDeclaredPosture_RefusesOffWindowsNamingTheVariable()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        using var deploymentMode = new EnvironmentVariableScope("MERIDIAN_API_DEPLOYMENT_MODE", "ProductionApi");
+        var services = new ServiceCollection();
+        services.DeclareMeridianHostPlatform(isWindows: false, OSArchitecture.Arm64, "Linux (container, test)");
+
+        Action act = () => ProductionServiceRegistrationPolicy.Validate(services);
+
+        act.Should().Throw<StartupRefusedException>()
+            .WithMessage("*posture 'ProductionApi (environment MERIDIAN_API_DEPLOYMENT_MODE=ProductionApi)'*")
+            .WithMessage("*Linux (container, test) (Arm64)*");
+    }
+
+    [Theory]
+    [InlineData(OSArchitecture.X64)]
+    [InlineData(OSArchitecture.Arm64)]
+    public void Validate_ProductionPostureOnWindows_WithOnlyProductionSafeBindings_Allows(OSArchitecture architecture)
+    {
+        // Architecture is reported but not refused: PRD-014 certifies x64 and ARM64 installer receipts.
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        services.DeclareMeridianHostPlatform(isWindows: true, architecture, "Windows 11 (test)");
+        services.AddSingleton<AllowedService>();
+
+        Action act = () => ProductionServiceRegistrationPolicy.Validate(services);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void Validate_ProductionPostureOnLinux_WithProhibitedBinding_ReportsBindingFirstThenPlatform()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        services.DeclareMeridianHostPlatform(isWindows: false, OSArchitecture.X64, "Linux (test)");
+        services.AddSingleton<InMemorySampleService>();
+
+        Action act = () => ProductionServiceRegistrationPolicy.Validate(services);
+
+        var message = act.Should().Throw<StartupRefusedException>().Which.Message;
+        message.Should().StartWith("Production startup policy rejected non-production DI registrations: ");
+        message.IndexOf("InMemorySampleService", StringComparison.Ordinal)
+            .Should().BeLessThan(message.IndexOf("rejected the host platform", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Validate_LocalWorkstationOnLinux_IsNotPlatformGated()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+        services.DeclareMeridianHostPlatform(isWindows: false, OSArchitecture.X64, "Linux (test)");
+        services.AddSingleton<AllowedService>();
+
+        Action act = () => ProductionServiceRegistrationPolicy.Validate(services);
+
+        act.Should().NotThrow();
+        ProductionServiceRegistrationPolicy.CollectPlatformViolation(services).Should().NotBeNull(
+            "the platform finding exists but only production compositions act on it");
+    }
+
+    [Fact]
+    public void IsProductionComposition_IsNotAffectedByHostPlatform()
+    {
+        using var quietEnvironment = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        services.DeclareMeridianHostPlatform(isWindows: false, OSArchitecture.X64, "Linux (test)");
+
+        ProductionServiceRegistrationPolicy.IsProductionComposition(services).Should().BeTrue(
+            "feature registrations keep omitting non-production bindings; the platform refusal is additive");
+    }
+
+    [Fact]
+    public void ResolveHostPlatform_WithoutDeclaration_ReportsTheRunningOperatingSystem()
+    {
+        var platform = ProductionServiceRegistrationPolicy.ResolveHostPlatform(new ServiceCollection());
+
+        platform.IsWindows.Should().Be(OperatingSystem.IsWindows());
+        platform.Architecture.Should().Be(RuntimeInformation.OSArchitecture);
+        platform.Description.Should().Be(RuntimeInformation.OSDescription);
     }
 
     [Fact]

@@ -9,7 +9,9 @@ namespace Meridian.Application.Composition;
 /// <see cref="IHostedService"/> so it runs before any other hosted service and re-validates the
 /// complete service collection — including registrations added after <c>AddMarketDataServices</c>
 /// — once the host starts. In production postures it additionally resolves closed factory descriptors of every lifetime and explicit service key so factory-hidden implementations are checked by their actual runtime
-/// type; any violation aborts startup with the full list of prohibited bindings.
+/// type; any violation aborts startup with the full list of prohibited bindings. Production postures
+/// also fail closed on any host outside the ADR-019 platform envelope (non-Windows), naming the
+/// platform-bound bindings that would otherwise silently degrade.
 /// </summary>
 public sealed class ProductionRegistrationGuardService : IHostedService
 {
@@ -69,10 +71,15 @@ public sealed class ProductionRegistrationGuardService : IHostedService
     {
         if (ProductionServiceRegistrationPolicy.IsProductionComposition(services))
         {
+            // ADR-019: prohibited bindings and an unsupported host platform are both decided from
+            // the collection alone, so both refuse here, ahead of any shell and before any factory
+            // is resolved. A Production posture on Linux never reaches the point where the vault
+            // would silently select the adjacent-AES-key protection.
             ProductionServiceRegistrationPolicy.ThrowIfViolations(
                 new SortedSet<string>(
                     ProductionServiceRegistrationPolicy.CollectStaticViolations(services),
-                    StringComparer.Ordinal));
+                    StringComparer.Ordinal),
+                ProductionServiceRegistrationPolicy.CollectPlatformViolation(services));
             return;
         }
 
