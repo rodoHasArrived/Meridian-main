@@ -31,6 +31,7 @@ public sealed class DurableFillDeliveryBoundaryTests
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -64,6 +65,7 @@ public sealed class DurableFillDeliveryBoundaryTests
             NullLogger<OrderManagementSystem>.Instance,
             tradeEventPublisher: publisher,
             tradeFillHandoffFailureStore: store);
+        await oms.StartAsync();
 
         // First load throws; the retry after backoff succeeds and the retained fill is replayed.
         var replayed = await WaitUntilAsync(

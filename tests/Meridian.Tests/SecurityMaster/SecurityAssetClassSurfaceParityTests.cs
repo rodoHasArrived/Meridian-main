@@ -31,11 +31,11 @@ public sealed class SecurityAssetClassSurfaceParityTests
         {
             ["cash-bank"] = ["Deposit", "CashSweep", "MoneyMarketFund"],
             ["public-equity-etf"] = ["Equity", "InvestmentFund"],
-            ["fixed-income"] = ["Bond", "StructuredCredit", "TreasuryBill", "CommercialPaper", "CertificateOfDeposit", "Repo"],
+            ["fixed-income"] = ["Bond", "StructuredCredit", "TreasuryBill", "CommercialPaper", "CertificateOfDeposit", "Repo", "StructuredNote"],
             ["private-fund-partnership"] = ["PrivateFundInterest", "PrivateCompanyEquity"],
             ["private-loan-credit"] = ["DirectLoan"],
             ["real-estate"] = ["RealEstateHolding"],
-            ["derivatives-fx"] = ["Option", "Future", "Swap", "FxSpot", "Cfd", "Warrant"],
+            ["derivatives-fx"] = ["Option", "Future", "Swap", "FxSpot", "Cfd", "Warrant", "FxForward", "NonDeliverableForward", "CreditDefaultSwap", "Swaption", "CapFloor"],
             ["mortgage-facility-intercompany"] = ["DirectLoan"],
             ["commitment-guarantee"] = ["CommitmentGuarantee"],
             ["controlled-other-asset"] = ["OtherSecurity", "CustomAsset", "Commodity", "CryptoCurrency"],

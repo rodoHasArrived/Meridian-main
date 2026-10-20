@@ -1282,6 +1282,7 @@ export interface RunFillEntry {
 
 export interface RunFillSummary {
   runId: string;
+  mode: StrategyRunMode;
   totalFills: number;
   totalCommissions: number;
   fills: RunFillEntry[];
@@ -1343,6 +1344,7 @@ export interface SymbolAttributionEntry {
 
 export interface RunAttributionSummary {
   runId: string;
+  mode: StrategyRunMode;
   totalRealizedPnl: number;
   totalUnrealizedPnl: number;
   totalCommissions: number;
@@ -1591,7 +1593,8 @@ export type SecurityIdentifierKind =
   | "Ric"
   | "Cik"
   | "LoanX"
-  | "Clip";
+  | "Clip"
+  | "ListingId";
 
 export type SecurityAssetProfileStatus = "Draft" | "Approved" | "Superseded" | "Retired";
 

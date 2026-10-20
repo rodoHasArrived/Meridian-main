@@ -140,6 +140,7 @@ public sealed class LiveBrokeragePortfolioSyncServiceTests
         var localPortfolio = new PaperTradingPortfolio(2000m);
         await using var oms = new OrderManagementSystem(fixture.Gateway.Object,
             NullLogger<OrderManagementSystem>.Instance, portfolioState: localPortfolio);
+        await oms.StartAsync();
         var synchronization = new LiveBrokeragePortfolioSyncService(() => fixture.Gateway.Object, () => oms,
             new BrokerageExecutionReconciliationService(NullLogger<BrokerageExecutionReconciliationService>.Instance),
             fixture.Clock);

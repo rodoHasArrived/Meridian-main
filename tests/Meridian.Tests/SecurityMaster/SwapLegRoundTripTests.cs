@@ -6,7 +6,7 @@ using Meridian.FSharp.SecurityMasterInterop;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using SecurityMasterQueryContract = Meridian.Application.SecurityMaster.ISecurityMasterQueryService;
+using SecurityMasterQueryContract = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.SecurityMaster;
 
@@ -94,6 +94,7 @@ public sealed class SwapLegRoundTripTests
                     SecurityAssetTermFieldType.String => value.ValueKind == JsonValueKind.String,
                     SecurityAssetTermFieldType.Decimal => value.ValueKind == JsonValueKind.Number,
                     SecurityAssetTermFieldType.Boolean => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
+                    SecurityAssetTermFieldType.Array => value.ValueKind == JsonValueKind.Array,
                     _ => false
                 };
                 shapeMatches.Should().BeTrue($"swap leg field '{field.Key}' must serialize as its declared {field.Type} shape");
@@ -241,6 +242,46 @@ public sealed class SwapLegRoundTripTests
             .GetProperty("exchangesPrincipal").ValueKind.Should().Be(JsonValueKind.False);
     }
 
+    [Fact]
+    public void NotionalAndResetSchedules_SurviveTheDomainRoundTripAndReachTheResolver()
+    {
+        var projection = RoundTrip(new object[]
+        {
+            new
+            {
+                legId = "floating-receive",
+                legType = "Floating",
+                currency = "USD",
+                index = "SOFR",
+                notional = 10_000_000m,
+                exchangesPrincipal = true,
+                amortizationSchedule = new object[]
+                {
+                    new { effectiveDate = "2028-01-15", notional = "5000000" }
+                },
+                fixings = new object[]
+                {
+                    new { resetDate = "2026-01-15", fixingRate = 0.0375m },
+                    new { resetDate = "2026-04-15", fixingRate = (decimal?)null }
+                }
+            }
+        });
+
+        var leg = Resolve(projection).Legs!.Single();
+        leg.NotionalSchedule.Should().Equal(new StructuredCashFlowNotionalStep(new DateOnly(2028, 1, 15), 5_000_000m));
+        leg.ResetSchedule.Should().Equal(
+            new StructuredCashFlowResetFixing(new DateOnly(2026, 1, 15), 0.0375m),
+            new StructuredCashFlowResetFixing(new DateOnly(2026, 4, 15), null));
+        leg.NotionalOn(new DateOnly(2027, 1, 15), 10_000_000m).Should().Be(10_000_000m);
+        leg.NotionalOn(new DateOnly(2029, 1, 15), 10_000_000m).Should().Be(5_000_000m);
+        leg.FixingOn(new DateOnly(2026, 2, 1)).Should().Be(0.0375m);
+        // The April reset has no recorded fixing yet, so the January fixing is not carried forward.
+        leg.FixingOn(new DateOnly(2026, 5, 1)).Should().BeNull();
+        var stored = projection.AssetSpecificTerms.GetProperty("legs")[0];
+        stored.GetProperty("notionalSchedule")[0].GetProperty("notional").GetDecimal().Should().Be(5_000_000m);
+        stored.GetProperty("resetSchedule").GetArrayLength().Should().Be(2);
+    }
+
     [Theory]
     [InlineData("legId", "12")]
     [InlineData("direction", "true")]
@@ -256,6 +297,12 @@ public sealed class SwapLegRoundTripTests
     [InlineData("couponRate", "\"unknown\"")]
     [InlineData("lastFixing", "[]")]
     [InlineData("principalExchange", "\"perhaps\"")]
+    [InlineData("notionalSchedule", "{}")]
+    [InlineData("notionalSchedule", "[1]")]
+    [InlineData("notionalSchedule", "[{\"effectiveDate\":\"2027-01-15\"}]")]
+    [InlineData("amortizationSchedule", "[{\"notional\":1000}]")]
+    [InlineData("resetSchedule", "[{\"fixingRate\":0.03}]")]
+    [InlineData("fixings", "[{\"resetDate\":\"2026-04-15\",\"fixingRate\":\"unknown\"}]")]
     public void MalformedOptionalTerms_AreRejectedInsteadOfDiscarded(string field, string rawValue)
     {
         using var document = JsonDocument.Parse(rawValue);

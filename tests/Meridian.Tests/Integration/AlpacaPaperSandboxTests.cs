@@ -48,6 +48,7 @@ public sealed class AlpacaPaperSandboxTests(ITestOutputHelper output)
         var localAccountId = Guid.NewGuid();
 
         await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
         var reconciliation = new BrokerageExecutionReconciliationService(
             NullLogger<BrokerageExecutionReconciliationService>.Instance);
         var sync = new LiveBrokeragePortfolioSyncService(() => gateway, () => oms, reconciliation);
