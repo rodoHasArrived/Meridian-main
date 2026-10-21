@@ -18,9 +18,9 @@ not change the tracker's release-gate semantics; the tracker stays authoritative
 
 | Row | Evidence gate (tracker) | Automation state | Hosted evidence to date | Remaining human action |
 | --- | --- | --- | --- | --- |
-| `PRD-000` | Core-team approval of ADR-019/ADR-020; clean installed publish/start/update/rollback receipts from the release commit | ADR-019 and ADR-020 are complete and implementation-linked; posture guard, lifecycle control plane, and receipts have focused proof | **Signed 2026-10-20** (`DEC-PRD000-SUPPORT-MATRIX-001`); ADR-019 now also requires and implements a non-Windows platform fail-closed | **Signed-tag receipts** from the `v0.1.0-rc.1` run once the owner pushes the tag (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
+| `PRD-000` | Core-team approval of ADR-019/ADR-020; clean installed publish/start/update/rollback receipts from the release commit | ADR-019 and ADR-020 are complete and implementation-linked; posture guard, lifecycle control plane, and receipts have focused proof | **Signed 2026-10-20** (`DEC-PRD000-SUPPORT-MATRIX-001`); ADR-019 now also requires and implements a non-Windows platform fail-closed | **Signed-tag receipts** from a release-candidate tag run: `v0.1.0-rc.1` (pushed 2026-10-21 on `c51c5d8d`) failed closed at eligibility and its tree's `verify-docs` lane is red, so the receipts come from `v0.1.0-rc.2` on a green `main` head once the signing secrets exist (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
 | `PRD-013` | Successful `web-workstation`/`win-x64` hosted `Publish Smoke` run attached to the release commit | Workflow starts the exact published artifact with required auth and dedicated PostgreSQL, then fetches startup/health/shell/assets. Eight hosted attempts drove out the full defect chain (publish contract, PostgreSQL discovery, elevated initdb ACLs, exit mutex affinity, unbounded pg_ctl pipe drain, first-boot budgets, lifecycle-bridge DI); every fix is receipt-evidenced | **First green run exists:** [run #15 / 30347353295](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30347353295) on candidate `d64506650` (2026-07-28) — publish, install, supervised dedicated-database startup, and all endpoint probes passed | Re-dispatch on the frozen release commit and keep that run link here |
-| `PRD-014` | Protected signing secret, native Windows ARM64 runner, prior release artifact, green tag workflow | Installer release creates SHA-256 checksums, SPDX SBOMs, GitHub attestations; tag release blocks on N-1 install/launch/update/repair/rollback/uninstall receipts for x64 and ARM64 | `v0.1.0-rc.1` pushed 2026-10-21 on `c51c5d8d` (merge of PR #3239); [tag run 39630903593](https://github.com/rodoHasArrived/Meridian-main/actions/runs/39630903593) failed closed at eligibility with `signing-secrets-unavailable` (both signing secrets empty); nothing built or published | **Provision `MDC_SIGNING_CERT_PFX_BASE64` / `MDC_SIGNING_CERT_PASSWORD` in `desktop-release-signing`, then re-run the tag workflow on `v0.1.0-rc.1`** (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
+| `PRD-014` | Protected signing secret, native Windows ARM64 runner, prior release artifact, green tag workflow | Installer release creates SHA-256 checksums, SPDX SBOMs, GitHub attestations; tag release blocks on N-1 install/launch/update/repair/rollback/uninstall receipts for x64 and ARM64 | `v0.1.0-rc.1` pushed 2026-10-21 on `c51c5d8d` (merge of PR #3239); [tag run 39630903593](https://github.com/rodoHasArrived/Meridian-main/actions/runs/39630903593) failed closed at eligibility with `signing-secrets-unavailable` (both signing secrets empty); nothing built or published. `c51c5d8d`'s own `Meridian CI` is red on `verify-docs` (source-hash drift), so that tag cannot certify even with secrets | **Provision `MDC_SIGNING_CERT_PFX_BASE64` / `MDC_SIGNING_CERT_PASSWORD` in `desktop-release-signing`, then cut `v0.1.0-rc.2` from the first green `main` head containing the drift fix** (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
 | `PRD-015` | Dated release-commit `production-recovery-drill-*` artifact, bound verification/reconciliation/acceptance evidence, and a separate independently evaluated receipt with `objectiveStatus: proven` under RPO 3600s/RTO 7200s | Schema-version-2 producer separates `backupDurationSeconds`/`restoreDurationSeconds` from objective measurements and records verified-point/loss milestones. The standalone validator recomputes point age and declared-loss-to-acceptance time; automation supplies no reconciliation or operator acceptance. | Green candidate archive round-trip receipts exist, including [first all-green certification run #19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on `b3bd557876523b81a2791f4bfd814647035f389a`. Historical receipts prove archive operations/state probes only; no accepted recovery-objective evidence is recorded. | **Complete recovery and record operations-owner acceptance/review** on the frozen release commit; the row stays evidence-gated (see [PRD-015 review](#prd-015-recovery-drill-operator-review)) |
 | `PRD-016` | Green hosted `Production Certification` run on the release commit; repository administrator activates it as a required release check | The workflow runs deterministic PostgreSQL integrations with Cobertura coverage, a zero-skip TRX gate, post-test schema capture, and NuGet/npm scans. Candidate `b3bd557876523b81a2791f4bfd814647035f389a` completed the ordered harness repair without narrowing either integration filter | **First all-green candidate run:** [#19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on 2026-08-05 — `Meridian.Tests` 781/0/0, Direct Lending 7/0/0, zero-skip aggregate 788/0/0 with `certifiable: true`, and all four jobs green. The successful post-test schema capture produced header-only table and migration-ledger inventories after teardown, proving cleanup rather than substantive migrated-schema coverage | Re-dispatch on the frozen release commit, then **required-check activation** by a repository administrator (see [PRD-016 activation](#prd-016-required-check-activation)) |
 | `PRD-017` | Local docs/hash validators and the hosted documentation evidence job green on the final candidate commit | `run-docs-automation.py --profile core` plus drift rejection runs inside `Production Certification` | The same-commit documentation job passed in [run #19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on candidate `b3bd557876523b81a2791f4bfd814647035f389a` | None beyond keeping the frozen release commit drift-free (agent-runnable; commands below) |
@@ -160,9 +160,12 @@ drain/flush ordering, and lifecycle receipts.
    controls it certifies (ADR-019/ADR-020 signatures, the platform fail-closed guard, the
    concurrent-configuration lock shared with the WPF shell, and the credential-audit journal), which
    is the same-commit evidence the previous entry said a later candidate would need. The receipt
-   trade-off is therefore reversed: `c51c5d8d` carries the controls, and its own green receipt is
-   the `Meridian CI` run on the merge plus the tag run below rather than a pre-existing
-   ten-workflow push receipt. The tag fired
+   trade-off is therefore reversed: `c51c5d8d` carries the controls but, unlike `a9d470c3`, has no
+   green receipt of its own. Its `Meridian CI` push run
+   ([39630535634](https://github.com/rodoHasArrived/Meridian-main/actions/runs/39630535634)) is
+   **red**: `verify-docs` fails on the tracked `src/Meridian.Application` source-hash entry, which
+   the merge left behind both parents (#3239 and #3243 each refreshed it), and the tag receipt below
+   is failed and pending, not green. The tag fired
    [Desktop Installer Release run 39630903593](https://github.com/rodoHasArrived/Meridian-main/actions/runs/39630903593);
    its `validate-release-eligibility` outcome is recorded in the PRD-014 row above and in the
    paragraph that follows. Drive that run to green; its install/launch/update/repair/rollback/
@@ -174,10 +177,21 @@ drain/flush ordering, and lifecycle receipts.
    desktop-release-signing environment.` Both `MDC_SIGNING_CERT_PFX_BASE64` and
    `MDC_SIGNING_CERT_PASSWORD` were empty, so no build, certification or publish job ran; the
    non-secret readiness evidence is retained as artifact `release-signing-readiness-39630903593-1`.
-   This is the documented fail-closed behaviour, not a defect. The remaining administrator action
-   is unchanged: provision both secrets in `desktop-release-signing`, then re-run
-   `Desktop Installer Release` on `v0.1.0-rc.1` (re-run the failed run or dispatch the workflow on
-   the tag). The tag itself stays where it is.
+   This is the documented fail-closed behaviour, not a defect.
+
+   **Two blockers remain for this candidate, and the secrets are not the only one.**
+   (a) Provision `MDC_SIGNING_CERT_PFX_BASE64` and `MDC_SIGNING_CERT_PASSWORD` in
+   `desktop-release-signing`. (b) The tagged tree itself cannot certify: the tag workflow's
+   packaging and publish jobs depend on the reusable `Meridian CI` job, and on `c51c5d8d` that job's
+   `verify-docs` lane is red (the source-hash drift above), so re-running the immutable tag after the
+   secrets exist would still stop at CI. The drift fix lands with this receipt change on `main`;
+   the corrected candidate is therefore a new tag, `v0.1.0-rc.2`, cut from the first `main` head that
+   contains it and carries a green `Meridian CI` push run. `v0.1.0-rc.1` stays where it is as the
+   record of this attempt; tags are not moved. When a tag run is re-run, re-run the failed
+   **tag-push** run itself (the workflow's `workflow_dispatch` path is a rehearsal by design:
+   `release-preflight.py` sets publication only for `push` events and the publish step is gated on
+   `github.event_name == 'push'`, so a manual dispatch on the tag builds rehearsal-version packages
+   and never publishes).
 
 The consumer EXE has an additional mandatory certification gate. After human governance review
 of the workflow changes, run a signed rehearsal on the reviewed commit. Retain
