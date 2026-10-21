@@ -4,7 +4,6 @@ using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Channels;
-using Meridian.Application.Pipeline;
 using Meridian.Execution.Events;
 using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;

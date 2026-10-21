@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-10-14
+last_reviewed: 2026-10-21
 ---
 
 # src/Meridian.Execution
@@ -65,6 +65,12 @@ Execution owns order routing, execution services, allocation, margin, derivative
 ## Layer responsibility
 
 This layer implements execution behavior and broker-facing runtime services while preserving paper-first and evidence-backed gating rules.
+
+Security Master dependencies come from `Meridian.Contracts.SecurityMaster`, with no Application
+project reference. The gate needs only `ISecurityResolver`; paper gateways accept separate identity
+and trading-parameter query services; paper portfolios consume the canonical live-position adjuster.
+Existing aggregate query callers continue to supply both query capabilities through the optional
+identity fallback. Host registrations can provide each narrow service independently.
 
 ## Key folders and files
 
@@ -356,6 +362,7 @@ See `DIA-PAPER-SESSION-REPLAY` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~PaperTradingGatewayTests|FullyQualifiedName~PaperTradingPortfolioBasisParityTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
 ```
 

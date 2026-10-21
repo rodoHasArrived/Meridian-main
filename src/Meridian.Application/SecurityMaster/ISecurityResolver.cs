@@ -1,8 +1,7 @@
-using Meridian.Contracts.SecurityMaster;
-
 namespace Meridian.Application.SecurityMaster;
 
-public interface ISecurityResolver
+/// <summary>Compatibility contract for hosts using the former Application-owned resolver.</summary>
+[Obsolete("Use Meridian.Contracts.SecurityMaster.ISecurityResolver.")]
+public interface ISecurityResolver : Meridian.Contracts.SecurityMaster.ISecurityResolver
 {
-    Task<Guid?> ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);
 }
