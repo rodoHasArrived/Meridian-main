@@ -4156,6 +4156,7 @@ Meridian-main
 │   │   │   ├── Validation
 │   │   │   │   ├── AssetClassValidatorRegistry.cs
 │   │   │   │   ├── FileSecurityValidationSnapshotStore.cs
+│   │   │   │   ├── SchemaTermsAssetClassValidator.cs
 │   │   │   │   ├── SecurityMasterOptionsValidator.cs
 │   │   │   │   ├── SecurityValidationGateService.cs
 │   │   │   │   └── SecurityValidationService.cs
@@ -10271,6 +10272,7 @@ Meridian-main
 │   │   │   ├── LedgerNetBalanceCentralizationTests.cs
 │   │   │   ├── ProjectReferenceGraph.cs
 │   │   │   ├── ProjectReferenceGraphTests.cs
+│   │   │   ├── SecurityAssetClassComparisonRatchetTests.cs
 │   │   │   ├── SecurityAssetClassLiteralRatchetTests.cs
 │   │   │   ├── SecurityMasterContractOwnershipTests.cs
 │   │   │   └── VendorNeutralDomainTests.cs
@@ -11066,7 +11068,9 @@ Meridian-main
 │   │   │   ├── ProjectionFanOutPostgresTests.cs
 │   │   │   ├── ProjectionFanOutTests.cs
 │   │   │   ├── RegistryMigratedProjectionGoldenTests.cs
+│   │   │   ├── SchemaTermsValidationTests.cs
 │   │   │   ├── SecurityAccountingInstrumentClassTests.cs
+│   │   │   ├── SecurityAssetClassBehaviorFactsTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
 │   │   │   ├── SecurityAssetClassRegistryCoverageTests.cs

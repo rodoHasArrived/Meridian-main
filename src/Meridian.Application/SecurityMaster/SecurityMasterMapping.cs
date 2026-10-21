@@ -1427,7 +1427,7 @@ internal static class SecurityMasterMapping
 
     public static JsonElement BuildPreferredEquityTermsPatch(SecurityProjectionRecord current, AmendPreferredEquityTermsRequest request)
     {
-        if (!string.Equals(current.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
+        if (!SecurityAssetClassCatalog.GetOrDefault(current.AssetClass).SupportsEquityClassification)
             throw new InvalidOperationException($"Security '{current.SecurityId}' is not an equity and cannot accept preferred term amendments.");
 
         var assetSpecificNode = JsonNode.Parse(current.AssetSpecificTerms.GetRawText()) as JsonObject
@@ -1485,7 +1485,7 @@ internal static class SecurityMasterMapping
 
     public static JsonElement BuildConvertibleEquityTermsPatch(SecurityProjectionRecord current, AmendConvertibleEquityTermsRequest request)
     {
-        if (!string.Equals(current.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase))
+        if (!SecurityAssetClassCatalog.GetOrDefault(current.AssetClass).SupportsEquityClassification)
             throw new InvalidOperationException($"Security '{current.SecurityId}' is not an equity and cannot accept convertible term amendments.");
 
         var assetSpecificNode = JsonNode.Parse(current.AssetSpecificTerms.GetRawText()) as JsonObject
