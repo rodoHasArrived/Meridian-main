@@ -5952,3 +5952,83 @@ termination) have no event types. PIK and rate resets for direct loans run in th
 the position economic state remains the source of the current factor for posting. Persisting the
 current factor on the lot of record, and moving the Security Master's lot-of-record reads onto
 `SecurityLotModel`, is the next increment.
+
+## Scheduled institutional-requirements pass — 2026-10-21 (afternoon)
+
+Re-read against `main` at `c51c5d8d`. The only Security Master change since the morning pass is
+the lot-model resolution above, so G1–G5 and the morning's priorities 2–5 carry forward unchanged
+(the three `limit 1` resolution queries at `PostgresSecurityMasterStore.cs:839-840, :853, :868`
+and the in-memory-only forward curve are re-confirmed). This pass adds five findings the earlier
+passes did not record. None was executed in this container (no .NET SDK); each is from source.
+
+### H1 — The economic-definition adapter persists F# `ToString()` output as classification labels
+
+`SecurityEconomicDefinitionAdapter.ToEconomicRecord` writes `Classification.Family?.ToString()`
+and `Classification.SubType.ToString()` (`SecurityEconomicDefinitionAdapter.cs:30-31`, again in
+`BuildClassificationJson` at `:157-159`; `GetSubType` at `:53-54`). `Family` is an F#
+`AssetFamily option`, whose `ToString()` is `Some(CorporateDebt)`, and every class whose sub-type
+is `SecuritySubType.OtherSubType of string` (FxSpot, Cfd, Warrant and the other `OtherSubType`
+rows of `SecurityMaster.fs:873+`) renders as `OtherSubType "FxSpot"`. This path is the main write
+path (`SecurityMasterService.cs:138, :331, :380`, the rebuilder at
+`Rebuild/SecurityMasterAggregateRebuilder.cs:48`, history at `SecurityMasterQueryService.cs:262`), and the
+values flow to certified reporting (`CertifiedReportingSnapshotBuilder.cs:140-141, :330-331`) and
+the report grouping (`ReportGenerationService.cs:246`). The correct label helpers
+`SecurityClassification.familyName`/`subTypeName` (`SecurityClassification.fs:101-147`) exist and
+are unused here. No test asserts the adapter's emitted family or sub-type.
+
+### H2 — The economic event log has no database append-only guard, and identifiers keep no history
+
+Append-only triggers exist for governance events (040/041), alias revisions (038), price-selection
+receipts (035) and close-price snapshots (037), but not for `security_events`, the system of
+record for economic changes. `ReplaceIdentifiersAsync` deletes and re-inserts every identifier row
+on each write (`PostgresSecurityMasterStore.cs:582-600`), so identifier history is recoverable only
+by replaying event payloads; aliases got a revision table, identifiers did not.
+
+### H3 — Asset-profile approval has no separation of duties
+
+`SecurityAssetProfileGovernanceService.ApproveProfileAsync` (`:217-271`) checks only that a
+matching draft exists; the profile records no drafter and the approver is never compared with one,
+so one operator can draft and approve a custom asset profile. Revisions and overrides do enforce
+reviewer ≠ submitter; profile governance, which defines new asset shapes, does not.
+
+### H4 — Contract-multiplier requirements are restated against the catalog, and disagree
+
+The catalog declares `LotMultiplierTermKey` for Option, Future, Commodity and Warrant
+(`SecurityAssetClassCatalog.cs:61, :78, :415, :460`). The workbench query service hard-codes
+Option, Future, **Swap** and Warrant (`SecurityMasterWorkbenchQueryService.cs:3914-3919`), so Swap
+is flagged for a missing multiplier it does not have and Commodity is never flagged; the WPF view
+model matches on substrings ("Option", "Future", "Derivative") instead
+(`SecurityMasterViewModel.cs:4263-4266`).
+
+### H5 — `InstrumentTypeDescriptorCatalog` restates classification and drifts from the registry
+
+The descriptor catalog's free-string family and sub-type disagree with the F# registry with no
+parity test: Deposit is `DemandDeposit` (`InstrumentTypeDescriptorCatalog.cs:371`) versus
+`TimeDeposit` (`SecurityMaster.fs:885`); FxSpot's family is `BankProduct` (`:128`) versus `None`
+(`SecurityMaster.fs:882`); Warrant is `OptionContract` (`:283`) versus `OtherSubType "Warrant"`.
+Instrument type → asset class is also declared twice (`SecurityKindMapping.cs:23-43` and the
+descriptor catalog) with no test joining them.
+
+### Still open from earlier passes, re-confirmed
+
+- The dashboard tracker's `ASSET_CLASS_OPTIONS` (`security-details-tracker.view-model.ts:137-139`)
+  still lists `FixedIncome`, `Fund`, `Currency`, `Crypto` and `Index`, which are not catalog classes.
+- `RequireGovernedTermAmendments` still defaults to false, so the direct amend, term-block,
+  preferred and convertible routes bypass maker-checker by default.
+- `SecurityLotModel`, `NotionalLot`, `CommitmentLot` and `FundUnitLot` have no production
+  construction; `FaceValueLot` is the only live typed lot. Relief methods are still four enums.
+
+### Priorities from this pass
+
+1. **Fix H1 now:** emit labels through `familyName`/`subTypeName`, add a test pinning the emitted
+   family and sub-type for every catalog class, and decide whether already-written economic events
+   need an upcast for the `Some(...)`/`OtherSubType "..."` strings.
+2. **Make the audit trail tamper-evident (H2):** an append-only trigger on `security_events`, and an
+   identifier revision table matching `security_alias_revisions`.
+3. **Separation of duties on profile approval (H3)** and default `RequireGovernedTermAmendments` on
+   for production configuration.
+4. **Read multiplier and classification facts from the registry (H4, H5)** as part of the morning's
+   priority 2 string-check ratchet, with a parity test between the descriptor catalog and the F#
+   registry.
+5. Carry forward the morning's priorities 3–5 (deterministic identifier lookup, underlying/OTC
+   contract model, one schedule engine).
