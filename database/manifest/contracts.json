@@ -4170,7 +4170,7 @@
       ]
     }
   ],
-  "fingerprint": "01e54938b9c98ca7f40cfbb2f57e1634f978a3a722fb98f69643a5f6cb964fda",
+  "fingerprint": "840ffed7496bd073a32e35073d13abacdfb49c5d11d98fa0f3b0b2329a8a4f5a",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6656,7 +6656,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "4678d6e2b05720d99f75b2e56296a71c8785626e43107d1b0c6f9f93f58c7e88",
+      "fingerprint": "240a445abea7318f10a8eb5cde329c775fa45b7e290c2c74e2776f084d1c347a",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Workstation",
       "object_ids": [
@@ -345789,7 +345789,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "d106fe62ff0d62c39e86e87593935a15dc67bed7a6a28781dd0292726509c01e",
+      "fingerprint": "2c382d614411599795f800d49112a40b29951a3e24314d59ab10aefeb6bbdf90",
       "full_name": "Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto",
       "id": "Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto",
       "kind": "record",
@@ -345878,6 +345878,20 @@
           "raw_type": "IReadOnlyList<Guid>",
           "source_line": 13,
           "type": "IReadOnlyList<Guid>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "ProofAvailable",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "bool?",
+          "source_line": 26,
+          "type": "bool?"
         },
         {
           "collection": false,
