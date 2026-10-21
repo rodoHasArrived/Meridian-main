@@ -7,6 +7,7 @@ using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Execution;
@@ -115,6 +116,7 @@ public static class BrokerageServiceRegistration
         });
 
         services.TryAddSingleton<BrokerageExecutionReconciliationService>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, OrderManagementHostedService>());
 
         return services;
     }

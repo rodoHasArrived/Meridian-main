@@ -77,6 +77,16 @@ This layer implements execution behavior and broker-facing runtime services whil
 
 Use this module for paper session execution, broker gateway behavior, order lifecycle, and execution evidence.
 
+`OrderManagementSystem` implements `IOrderManagementLifecycle`: construction restores retained
+order identities but leaves report intake and accounting-handoff replay inactive. Call `StartAsync`
+before submitting, amending, cancelling, or reconciling orders; concurrent starts launch one pair
+of pumps. `AddBrokerageExecution` registers a hosted lifecycle owner for the resolved `IOrderManager`,
+including a host-provided OMS registration. Direct callers own start and stop explicitly.
+`StopAsync` closes admission, drains already-admitted operations and accepted accounting handoffs,
+then joins both pumps before dependencies are disposed. Stop and disposal share one terminal
+shutdown; cancelling a stop wait does not abandon the drain, and a stopped instance cannot restart.
+This lifecycle boundary supports `W7-LIVE-001` without changing order or fill semantics.
+
 Paper session fills retain exact remaining carrying basis on each internal `PositionLot` (an
 `IUnitizedLot` whose unit and multiplier come live from its `PaperPosition`) and use
 Ledger's `LotBasisRelief` for partial long sales and short covers. Average unit cost remains a

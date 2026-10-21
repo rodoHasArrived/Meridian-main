@@ -30,6 +30,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using NSubstitute;
 
 namespace Meridian.Tests.Application.Composition;
 
@@ -117,6 +118,70 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
             sd.ImplementationType == typeof(TenantPostureHostedService<DirectLendingOutboxDispatcher>));
         services.Should().NotContain(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(TenantPostureHostedService<DailyAccrualWorker>));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Register_ResolvesOneCanonicalSecurityMasterQueryContract(bool configured)
+    {
+        var settings = new Dictionary<string, string?>
+        {
+            ["DOTNET_ENVIRONMENT"] = "Test",
+            ["MERIDIAN_USE_INMEMORY_GOVERNANCE"] = "true",
+            [SecurityMasterStartup.ConnectionStringVariable] = configured
+                ? "Host=unused;Database=unused;Username=test;Password=test"
+                : null
+        };
+        var services = new ServiceCollection();
+        services.AddLogging();
+        new StorageFeatureRegistration().Register(services, CompositionOptions.Minimal with
+        {
+            Configuration = new ConfigurationBuilder().AddInMemoryCollection(settings).Build()
+        });
+        using var provider = services.BuildServiceProvider();
+
+        services.Should().ContainSingle(descriptor => descriptor.ServiceType == typeof(ISecurityMasterQueryService));
+        var query = provider.GetRequiredService<ISecurityMasterQueryService>();
+        provider.GetServices<ISecurityMasterQueryService>().Should().ContainSingle().Which.Should().BeSameAs(query);
+        if (configured)
+        {
+            query.Should().BeSameAs(provider.GetRequiredService<SecurityMasterQueryService>());
+        }
+        else
+        {
+            query.Should().BeOfType<NullSecurityMasterQueryService>();
+        }
+    }
+
+    [Fact]
+    public async Task Register_UsesCallerSuppliedCanonicalQueryForApplicationValidation()
+    {
+        var services = new ServiceCollection();
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        services.AddSingleton(query);
+        services.AddSingleton(Substitute.For<ISecurityValidationSnapshotStore>());
+        services.AddLogging();
+        new StorageFeatureRegistration().Register(services, CompositionOptions.Minimal with
+        {
+            Configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["DOTNET_ENVIRONMENT"] = "Test",
+                ["MERIDIAN_USE_INMEMORY_GOVERNANCE"] = "true"
+            }).Build()
+        });
+        using var provider = services.BuildServiceProvider();
+        using var cancellation = new CancellationTokenSource();
+
+        var result = await provider.GetRequiredService<ISecurityValidationGateService>()
+            .ValidateSymbolAsync(" unknown ", SecurityValidationWorkflowDto.StrategyRunPreflight,
+                ct: cancellation.Token);
+
+        result.IsBlocked.Should().BeTrue();
+        result.IsResolved.Should().BeFalse();
+        await query.Received(1).GetByIdentifierAsync(
+            SecurityIdentifierKind.Ticker, "UNKNOWN", null, cancellation.Token);
+        provider.GetRequiredService<ISecurityMasterQueryService>().Should().BeSameAs(query);
     }
 
     [Theory]

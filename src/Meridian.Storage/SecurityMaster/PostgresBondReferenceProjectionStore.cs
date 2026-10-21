@@ -4,10 +4,11 @@ using Npgsql;
 namespace Meridian.Storage.SecurityMaster;
 
 /// <summary>
-/// Reads the specialized bond projection: the parent row joined to the securities spine and the
-/// issuer, lifecycle and accrual-convention child projections. Bond is one of the two writers that
-/// stayed outside <see cref="SecurityTermsProjectionRegistry"/>, so this store states its own
-/// column lists; it shares the connection, command and reader plumbing through
+/// Reads the bond projection: the parent row joined to the securities spine and the issuer,
+/// lifecycle and accrual-convention satellite projections that the Bond descriptor in
+/// <see cref="SecurityTermsProjectionRegistry"/> writes. The parent table predates the registry's
+/// identity spine and carries neither display name nor primary identifier, so this store joins
+/// <c>securities</c> for them; it shares the connection, command and reader plumbing through
 /// <see cref="PostgresReferenceProjectionReader"/> like every other reference-projection store.
 /// </summary>
 public sealed class PostgresBondReferenceProjectionStore : IBondReferenceProjectionStore

@@ -34,6 +34,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             options: new Meridian.Execution.Adapters.PaperTradingGatewayOptions { AllowScaffoldMarketFills = true },
             costOptions: new Meridian.Execution.PaperMatching.PaperTradingCostOptions { CommissionRate = 0m });
         _oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance);
+        _oms.StartAsync().GetAwaiter().GetResult();
     }
 
     public void Dispose()
@@ -109,6 +110,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -139,6 +141,7 @@ public sealed class OrderManagementSystemTests : IDisposable
         string value)
     {
         using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         // The paper gateway routes Quantity. Measuring this as a $1 order while it fills
         // 100,000 shares would consume none of the notional, gross, or concentration limits.
@@ -161,6 +164,7 @@ public sealed class OrderManagementSystemTests : IDisposable
     {
         var gateway = new NotionalSizingPaperExecutionGateway("alpaca");
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -184,6 +188,7 @@ public sealed class OrderManagementSystemTests : IDisposable
         // gateway routes it for equities.
         var gateway = new AssetClassAwareNotionalGateway("alpaca");
         using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -220,6 +225,7 @@ public sealed class OrderManagementSystemTests : IDisposable
     public async Task PlaceOrderAsync_OnGatewayThatRoutesQuantity_AllowsOrdersWithoutNotionalMetadata()
     {
         using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -272,6 +278,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             auditTrail: auditTrail);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -413,6 +420,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             auditTrail: auditTrail);
+        await oms.StartAsync();
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
             Symbol = "AAPL",
@@ -486,6 +494,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             auditTrail: auditTrail);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -545,6 +554,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             brokerageConfiguration: CreateEnabledBrokerageConfiguration("robinhood"),
             liveOrderReadinessGate: new RecordingLiveOrderReadinessGate(
                 LiveOrderReadinessDecision.Approved("audit://live/run-disconnected")));
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -597,6 +607,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             brokerageConfiguration: config);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -620,6 +631,7 @@ public sealed class OrderManagementSystemTests : IDisposable
         using var oms = new OrderManagementSystem(
             gateway,
             NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -647,6 +659,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
             liveOrderReadinessGate: liveReadinessGate);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -672,6 +685,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"));
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -703,6 +717,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
             liveOrderReadinessGate: liveReadinessGate);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -739,6 +754,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
             liveOrderReadinessGate: liveReadinessGate);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -794,6 +810,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             auditTrail: auditTrail,
             brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
             liveOrderReadinessGate: liveReadinessGate);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -856,6 +873,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             brokerageConfiguration: CreateEnabledBrokerageConfiguration("alpaca"),
             liveOrderReadinessGate: liveReadinessGate);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -898,6 +916,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             liveOrderReadinessGate: liveReadinessGate);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -923,6 +942,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             {
                 CancelAllMaxConcurrency = 2
             });
+        await oms.StartAsync();
 
         for (var i = 0; i < 6; i++)
         {
@@ -1009,6 +1029,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             new NotionalSizingPaperExecutionGateway("alpaca"),
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         // Alpaca-style: the quantity field carries dollars and the gateway routes those.
         var placed = await oms.PlaceOrderAsync(new OrderRequest
@@ -1075,6 +1096,7 @@ public sealed class OrderManagementSystemTests : IDisposable
             new NotionalSizingPaperExecutionGateway("alpaca"),
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1385,6 +1407,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         var gate = new ApproveAllGate();
         using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance,
             securityMasterGate: gate);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1413,6 +1436,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1440,6 +1464,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
         var gate = new RejectAllGate("UNKNWN is not in Security Master");
         using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance,
             securityMasterGate: gate);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1458,6 +1483,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
     public async Task PlaceOrderAsync_WithNoGateWired_AcceptsAnySymbol()
     {
         using var oms = new OrderManagementSystem(_gateway, NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1481,6 +1507,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var firstResult = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1521,6 +1548,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1546,6 +1574,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1576,6 +1605,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1628,6 +1658,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator,
             escalationQueue: queue);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(order with { ClientOrderId = "CLIENT-FAULT" });
 
@@ -1649,6 +1680,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1686,6 +1718,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1743,6 +1776,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1796,6 +1830,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1851,6 +1886,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1909,6 +1945,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator,
             auditTrail: auditTrail);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -1974,6 +2011,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -2025,6 +2063,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -2069,6 +2108,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -2147,6 +2187,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -2186,6 +2227,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -2219,6 +2261,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -2259,6 +2302,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -2316,6 +2360,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator,
             escalationQueue: queue);
+        await oms.StartAsync();
 
         await oms.PlaceOrderAsync(order with { ClientOrderId = "CLIENT-MULTI-FAULT" });
 
@@ -2355,6 +2400,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator,
             escalationQueue: queue);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -2379,6 +2425,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
+        await oms.StartAsync();
 
         var fundAccountId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
         (await oms.PlaceOrderAsync(new OrderRequest
@@ -2427,6 +2474,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator,
             escalationQueue: queue);
+        await oms.StartAsync();
 
         var fundAccountId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
         var placed = await oms.PlaceOrderAsync(new OrderRequest
@@ -2479,6 +2527,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             riskValidator: riskValidator,
             escalationQueue: queue,
             options: new OrderManagementSystemOptions { MaxRetainedOrders = 2 });
+        await oms.StartAsync();
 
         var parkedResult = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -2538,6 +2587,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator,
             escalationQueue: queue);
+        await oms.StartAsync();
 
         var parkedResult = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -2598,6 +2648,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator,
             escalationQueue: queue);
+        await oms.StartAsync();
 
         var parkedResult = await oms.PlaceOrderAsync(order);
         parkedResult.RequiresApproval.Should().BeTrue();
@@ -2651,6 +2702,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             riskValidator: riskValidator,
             escalationQueue: queue))
         {
+            await oms.StartAsync();
             (await oms.PlaceOrderAsync(order)).RequiresApproval.Should().BeTrue();
         }
 
@@ -2670,6 +2722,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: approveEverything,
             escalationQueue: restartedQueue);
+        await restarted.StartAsync();
 
         var retry = await restarted.PlaceOrderAsync(order);
 
@@ -2728,6 +2781,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator,
             escalationQueue: queue);
+        await oms.StartAsync();
 
         var parkedResult = await oms.PlaceOrderAsync(order);
         parkedResult.RequiresApproval.Should().BeTrue();
@@ -2767,6 +2821,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             NullLogger<OrderManagementSystem>.Instance,
             riskValidator: riskValidator,
             escalationQueue: queue);
+        await oms.StartAsync();
 
         var parked = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -2800,6 +2855,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -2841,6 +2897,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
+        await oms.StartAsync();
 
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -2879,6 +2936,7 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             _gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
+        await oms.StartAsync();
 
         (await oms.PlaceOrderAsync(new OrderRequest
         {

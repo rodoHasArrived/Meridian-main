@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
 
@@ -385,7 +386,7 @@ public sealed class AssetObligationProjectionService
                 security.Version,
                 terms.PrincipalFace,
                 PaymentFrequency: terms.PaymentFrequency),
-            terms.CouponRate is null
+            NormalizeCouponRatePercent(security.AssetClass, terms.CouponRate) is not { } couponRatePercent
                 ? null
                 : new BondAccrualConventionDto(
                     security.SecurityId,
@@ -393,7 +394,7 @@ public sealed class AssetObligationProjectionService
                     null,
                     null,
                     "Fixed",
-                    terms.CouponRate,
+                    couponRatePercent,
                     null,
                     null,
                     security.Version),
@@ -705,7 +706,7 @@ public sealed class AssetObligationProjectionService
         string currency,
         string? ledgerReference)
     {
-        if (string.Equals(subject.AssetClass, "StructuredCredit", StringComparison.OrdinalIgnoreCase))
+        if (IsFactorAmortizing(subject.AssetClass))
         {
             events.Add(BuildObligationEvent(
                 subject,
@@ -754,7 +755,7 @@ public sealed class AssetObligationProjectionService
             ledgerReference,
             "Attach valuation support or record review blocker."));
 
-        if (string.Equals(subject.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase) ||
+        if (SecurityAssetClassCatalog.GetOrDefault(subject.AssetClass).RequiresGovernedProfile ||
             TryReadString(payload, out _, "customProfileId"))
         {
             events.Add(BuildObligationEvent(
@@ -845,27 +846,71 @@ public sealed class AssetObligationProjectionService
             security.AssetSpecificTerms
         });
 
+    // Each branch reads a catalog fact instead of naming classes, so a class the catalog declares
+    // as (say) contractual-schedule fixed income receives fixed-income obligations without this
+    // file learning its name. Deposit was the first casualty of the old list: ContractualSchedule
+    // in the catalog, absent here. Direct loans share that cash-flow behaviour but have their own
+    // obligations and projector, so they are carved out by instrument type rather than by name.
     private static bool IsFixedIncome(string? assetClass)
-        => assetClass is not null &&
-           (string.Equals(assetClass, "Bond", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(assetClass, "TreasuryBill", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(assetClass, "CommercialPaper", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(assetClass, "CertificateOfDeposit", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(assetClass, "StructuredCredit", StringComparison.OrdinalIgnoreCase));
+        => IsFixedIncome(SecurityAssetClassCatalog.GetOrDefault(assetClass));
+
+    private static bool IsFixedIncome(SecurityAssetClassDescriptor descriptor)
+        => descriptor.CashFlowBehavior is SecurityCashFlowBehavior.ContractualSchedule or SecurityCashFlowBehavior.FactorAmortizing
+           && !IsDirectLoan(descriptor);
+
+    /// <summary>
+    /// The bond projector's accrual convention carries the coupon in percentage points (4.5 for
+    /// 4.5%). Deposit terms declare <c>interestRate</c> without a unit convention and are written
+    /// both ways (0.045 and 4.5), so they are normalised the way the Security Master cash-flow
+    /// service already does: a value at or below 1 is a fraction. Bond-family classes keep their
+    /// percentage-point convention untouched (a 0.5 coupon is half a percent).
+    /// </summary>
+    private static decimal? NormalizeCouponRatePercent(string? assetClass, decimal? couponRate)
+    {
+        if (couponRate is not { } rate)
+        {
+            return null;
+        }
+
+        return string.Equals(SecurityAssetClassCatalog.GetOrDefault(assetClass).AssetClass, "Deposit", StringComparison.Ordinal)
+               && rate <= 1m
+            ? rate * 100m
+            : rate;
+    }
+
+    private static bool IsFactorAmortizing(string? assetClass)
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass).CashFlowBehavior == SecurityCashFlowBehavior.FactorAmortizing;
 
     private static bool IsDirectLoan(string? assetClass)
-        => string.Equals(assetClass, "DirectLoan", StringComparison.OrdinalIgnoreCase);
+        => IsDirectLoan(SecurityAssetClassCatalog.GetOrDefault(assetClass));
 
+    private static bool IsDirectLoan(SecurityAssetClassDescriptor descriptor)
+        => descriptor.InstrumentTypes?.Contains(InstrumentType.DirectLoan) == true;
+
+    // No declared fact singles out fund interests (commitment lots and provider-supplied flows are
+    // shared with guarantees), so this is the one place that names a class — through the catalog,
+    // so aliases resolve and a label the catalog does not know is not a fund interest.
     private static bool IsPrivateFund(string? assetClass)
-        => string.Equals(assetClass, "PrivateFundInterest", StringComparison.OrdinalIgnoreCase) ||
-           string.Equals(assetClass, "PrivateFund", StringComparison.OrdinalIgnoreCase) ||
-           string.Equals(assetClass, "PartnershipInterest", StringComparison.OrdinalIgnoreCase);
+        => IsPrivateFund(SecurityAssetClassCatalog.GetOrDefault(assetClass));
 
+    private static bool IsPrivateFund(SecurityAssetClassDescriptor descriptor)
+        => string.Equals(descriptor.AssetClass, PrivateFundInterestAssetClass, StringComparison.Ordinal);
+
+    // Factor-amortizing structures, classes that must carry a governed custom profile, and the
+    // remaining ops-capable alternatives (real estate, guarantees, private company equity) that no
+    // other branch owns.
     private static bool IsStructuredOrCustom(string? assetClass)
-        => string.Equals(assetClass, "StructuredCredit", StringComparison.OrdinalIgnoreCase) ||
-           string.Equals(assetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase) ||
-           string.Equals(assetClass, "RealEstateHolding", StringComparison.OrdinalIgnoreCase) ||
-           string.Equals(assetClass, "CommitmentGuarantee", StringComparison.OrdinalIgnoreCase);
+    {
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(assetClass);
+        return descriptor.CashFlowBehavior == SecurityCashFlowBehavior.FactorAmortizing
+            || descriptor.RequiresGovernedProfile
+            || (descriptor.AssetOperationsCapabilities is not null
+                && !IsFixedIncome(descriptor)
+                && !IsDirectLoan(descriptor)
+                && !IsPrivateFund(descriptor));
+    }
+
+    private const string PrivateFundInterestAssetClass = "PrivateFundInterest";
 
     private static string? ResolvePrimaryIdentifier(IReadOnlyList<SecurityIdentifierDto> identifiers)
     {

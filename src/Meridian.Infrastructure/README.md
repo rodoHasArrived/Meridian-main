@@ -103,6 +103,11 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+Tracked HTTP clients resolve circuit-breaker callbacks through their owning service provider.
+Each named breaker is a provider-local singleton, retaining state across requests and handler
+renewal while keeping independent hosts isolated. Composition regression coverage is in
+`HttpClientFeatureRegistrationTests`; this supports `W1-DATA-001` provider-health reporting.
+
 Streaming readiness requires acknowledged authentication and successful subscription replay on both
 initial connection and recovery. Alpaca validates the provider's full subscription acknowledgment
 before confirming replay or live subscription changes; rejected or timed-out changes invalidate

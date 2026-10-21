@@ -185,6 +185,7 @@ public sealed partial class IBBrokerageGatewayTests
             store.BindScope("live:U1000000");
             await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
                 recoveryStore: store, portfolioState: new PaperTradingPortfolio(100_000m));
+            await oms.StartAsync();
 
             var placed = 0;
             client.OnPlaceOrder = (_, _, _) => placed++;

@@ -20,7 +20,7 @@ namespace Meridian.Execution;
 /// for backpressure-aware execution event processing.
 /// </summary>
 [ImplementsAdr("ADR-013", "Uses bounded channels for execution event pipeline")]
-public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, IAsyncDisposable
+public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagementLifecycle, IDisposable, IAsyncDisposable
 {
     private readonly ConcurrentDictionary<string, OrderState> _orders = new();
     private readonly IExecutionGateway _gateway;
@@ -59,10 +59,10 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
     // would be reclaimable while the approval is still live.
     private readonly ConcurrentDictionary<string, string> _parkedOrderIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly CancellationTokenSource _reportPumpCts = new();
-    private readonly Task _reportPumpTask;
+    private Task _reportPumpTask = Task.CompletedTask;
     private readonly ITradeEventPublisher? _tradeEventPublisher;
     private readonly ITradeFillHandoffFailureStore? _tradeFillHandoffFailureStore;
-    private readonly Task _handoffRecoveryTask;
+    private Task _handoffRecoveryTask = Task.CompletedTask;
     private readonly ConcurrentDictionary<string, string> _orderFinancialAccountIds = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<ExecutionReport, FillProcessingProgress> _fillProcessing = new();
     // Reports whose fill must already reserve exposure but whose precise increment is not
@@ -109,13 +109,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         _securityMasterGate = securityMasterGate;
         _operatorControls = operatorControls;
 
-        // The close-only exception needs to see committed reductions, and only the OMS holds the
-        // open book. Without this the gate cannot establish that a close is within the position and
-        // refuses every one, so a halted desk could not flatten at all.
-        if (_operatorControls is not null)
-        {
-            _operatorControls.WorkingReductionQuantityProbe = ResolveWorkingReductionQuantity;
-        }
         _liveOrderReadinessGate = liveOrderReadinessGate;
         _auditTrail = auditTrail;
         _escalationQueue = escalationQueue;
@@ -193,13 +186,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         RestoreBrokerageOrders();
         RehydrateParkedOrderReservations();
 
-        // Consume the gateway's asynchronous execution report stream so partial fills,
-        // rejects, and cancels that arrive after the synchronous submit ack still reach
-        // order state, session persistence, and downstream fill consumers.
-        _reportPumpTask = Task.Run(() => PumpGatewayExecutionReportsAsync(_reportPumpCts.Token));
-        _handoffRecoveryTask = _tradeEventPublisher is not null && _tradeFillHandoffFailureStore is not null
-            ? Task.Run(() => ReplayRetainedAccountingHandoffsAsync(_reportPumpCts.Token))
-            : Task.CompletedTask;
+        // Construction restores identity evidence but performs no background work.
+        // The lifecycle owner starts report intake before admitting order operations.
     }
 
     /// <inheritdoc />
@@ -1017,6 +1005,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         {
             _executionChannel.Writer.TryComplete();
             _reportPumpCts.Dispose();
+            if (_operatorControls?.WorkingReductionQuantityProbe == ResolveWorkingReductionQuantity)
+                _operatorControls.WorkingReductionQuantityProbe = null;
         }
 
         // A consumer can fail after it accepted a channel item, outside the OMS gateway-pump
@@ -1077,6 +1067,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IDisposable, 
         {
             if (_disposeStarted != 0)
                 throw new ObjectDisposedException(nameof(OrderManagementSystem));
+
+            if (!_started)
+                throw new InvalidOperationException("The OMS must be started before accepting operations. Call StartAsync first.");
 
             if (Volatile.Read(ref _terminalReportPumpFailure) is { } reportPumpFailure)
             {

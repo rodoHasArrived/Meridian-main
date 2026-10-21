@@ -476,6 +476,10 @@ public static partial class SecurityMasterEndpoints
             {
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
+            catch (AppSecurityMaster.SecurityMasterConcurrencyException ex)
+            {
+                return VersionConflict(ex, jsonOptions);
+            }
         })
         .WithName("AmendSecurityMasterTermBlock").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AmendSecurityTermBlockRequest>("application/json")
@@ -483,6 +487,7 @@ public static partial class SecurityMasterEndpoints
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
@@ -626,17 +631,24 @@ public static partial class SecurityMasterEndpoints
                 return Results.NotFound();
             }
 
-            var detail = await service
-                .AmendPreferredEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
-                .ConfigureAwait(false);
-
-            return Results.Json(detail, jsonOptions);
+            try
+            {
+                var detail = await service
+                    .AmendPreferredEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(detail, jsonOptions);
+            }
+            catch (AppSecurityMaster.SecurityMasterConcurrencyException ex)
+            {
+                return VersionConflict(ex, jsonOptions);
+            }
         })
         .WithName("AmendSecurityMasterPreferredEquityTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AmendPreferredEquityTermsRequest>("application/json")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
@@ -687,17 +699,24 @@ public static partial class SecurityMasterEndpoints
                 return Results.NotFound();
             }
 
-            var detail = await service
-                .AmendConvertibleEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
-                .ConfigureAwait(false);
-
-            return Results.Json(detail, jsonOptions);
+            try
+            {
+                var detail = await service
+                    .AmendConvertibleEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(detail, jsonOptions);
+            }
+            catch (AppSecurityMaster.SecurityMasterConcurrencyException ex)
+            {
+                return VersionConflict(ex, jsonOptions);
+            }
         })
         .WithName("AmendSecurityMasterConvertibleEquityTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Accepts<AmendConvertibleEquityTermsRequest>("application/json")
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
@@ -1249,15 +1268,23 @@ public static partial class SecurityMasterEndpoints
             if (existing is null)
                 return Results.NotFound();
 
-            var detail = await service
-                .AmendPreferredEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
-                .ConfigureAwait(false);
-            return Results.Json(detail, jsonOptions);
+            try
+            {
+                var detail = await service
+                    .AmendPreferredEquityTermsAsync(securityId, request with { UpdatedBy = ResolveActor(context) }, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(detail, jsonOptions);
+            }
+            catch (AppSecurityMaster.SecurityMasterConcurrencyException ex)
+            {
+                return VersionConflict(ex, jsonOptions);
+            }
         })
         .WithName("PatchSecurityPreferredTerms").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
@@ -1364,6 +1391,16 @@ public static partial class SecurityMasterEndpoints
             : $"'{request.Resolution}' action from the shared conflict queue by {resolvedBy}.";
         return (chosenWinnerSource, reason);
     }
+
+    /// <summary>
+    /// Stale expected version on a governed term amend. Mirrors the workbench 409 shape so clients
+    /// can refetch at the current version and replay the operator's edit.
+    /// </summary>
+    private static IResult VersionConflict(AppSecurityMaster.SecurityMasterConcurrencyException ex, JsonSerializerOptions jsonOptions)
+        => Results.Json(
+            new { error = "version-conflict", currentVersion = ex.CurrentVersion },
+            jsonOptions,
+            statusCode: StatusCodes.Status409Conflict);
 
     /// <summary>
     /// The single source of actor identity for Security Master writes. Every mutation route stamps

@@ -74,7 +74,7 @@ public sealed class PostgresSecurityMasterPricingHistoryTests(SecurityMasterData
         var date = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
         await store.RecordRawPriceAsync(new(id, "source", 98m, date, "operator", SecurityPriceUnit.PercentOfPar));
         await store.UpsertHierarchyAsync(new(id, "account-a", [new(1, "source", "Source", 30)], date, "operator"));
-        var query = Substitute.For<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>();
+        var query = Substitute.For<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
         query.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(new SecurityDetailDto(
             id, "Bond", SecurityStatusDto.Active, "Price test", "USD",
             JsonSerializer.SerializeToElement(new { currency = "USD" }), JsonSerializer.SerializeToElement(new { }),
