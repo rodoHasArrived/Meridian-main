@@ -807,6 +807,116 @@ public static partial class SecurityMasterEndpoints
         .Produces(StatusCodes.Status404NotFound);
 
         /// <summary>
+        /// The underlying graph around a security: the securities and named references it depends on
+        /// (derived from its terms and declared through this API), the instruments that depend on it,
+        /// and the references that resolve to no Security Master record yet.
+        /// </summary>
+        group.MapGet(UiApiRoutes.SecurityMasterUnderlyings, async (
+            Guid securityId,
+            DateTimeOffset? asOfUtc,
+            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityUnderlyingGraphStore graphStore,
+            CancellationToken ct) =>
+        {
+            var security = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
+            if (security is null)
+            {
+                return Results.NotFound();
+            }
+
+            var asOf = asOfUtc ?? DateTimeOffset.UtcNow;
+            var underlyings = (await graphStore.GetUnderlyingsAsync(securityId, ct).ConfigureAwait(false))
+                .Where(link => link.IsActiveAt(asOf))
+                .ToArray();
+            var dependents = (await graphStore.GetDependentsAsync(securityId, ct).ConfigureAwait(false))
+                .Where(link => link.IsActiveAt(asOf))
+                .ToArray();
+            var gaps = new List<string>();
+            foreach (var link in underlyings)
+            {
+                if (!link.IsResolved)
+                {
+                    gaps.Add($"{link.Role}: '{link.Reference}' names no Security Master record.");
+                }
+                else if (await queryService.GetByIdAsync(link.UnderlyingSecurityId!.Value, ct).ConfigureAwait(false) is null)
+                {
+                    gaps.Add($"{link.Role}: security {link.UnderlyingSecurityId:D} is not in the Security Master.");
+                }
+            }
+
+            return Results.Json(new SecurityUnderlyingGraphDto(securityId, asOf, underlyings, dependents, gaps), jsonOptions);
+        })
+        .WithName("GetSecurityMasterUnderlyings").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
+        .Produces<SecurityUnderlyingGraphDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
+        /// Declares an underlying link (a basket constituent with its weight, a collateral asset, a
+        /// reference obligation) with its own validity window. The link id is derived from the
+        /// security, role and target, so re-declaring the same edge updates it.
+        /// </summary>
+        group.MapPost(UiApiRoutes.SecurityMasterUnderlyings, async (
+            Guid securityId,
+            DeclareSecurityUnderlyingLinkRequest request,
+            HttpContext context,
+            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityUnderlyingGraphStore graphStore,
+            CancellationToken ct) =>
+        {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+            if (request.SecurityId != securityId)
+                return Results.BadRequest(new { error = "SecurityId in body must match the route." });
+            if (await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false) is null)
+                return Results.NotFound();
+
+            try
+            {
+                var link = await graphStore
+                    .DeclareAsync(request with { CreatedBy = ResolveActor(context) }, ct)
+                    .ConfigureAwait(false);
+                return Results.Json(link, jsonOptions);
+            }
+            catch (ArgumentException exception)
+            {
+                return Results.BadRequest(new { error = exception.Message });
+            }
+        })
+        .WithName("DeclareSecurityMasterUnderlying").RequirePermission(UserPermission.ModifySecurityMaster)
+        .Produces<SecurityUnderlyingLinkDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>Removes a declared underlying link. Derived links follow the terms and cannot be removed here.</summary>
+        group.MapDelete(UiApiRoutes.SecurityMasterUnderlyingLink, async (
+            Guid securityId,
+            Guid linkId,
+            HttpContext context,
+            [FromServices] ISecurityUnderlyingGraphStore graphStore,
+            CancellationToken ct) =>
+        {
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+
+            return await graphStore.RemoveDeclaredAsync(securityId, linkId, ct).ConfigureAwait(false)
+                ? Results.NoContent()
+                : Results.NotFound();
+        })
+        .WithName("RemoveSecurityMasterUnderlying").RequirePermission(UserPermission.ModifySecurityMaster)
+        .Produces(StatusCodes.Status204NoContent)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(RequireModifySecurityMasterPermission);
+
+        /// <summary>
         /// Records a new corporate action event for a security (dividend, split, merger, etc.).
         /// </summary>
         /// <remarks>
