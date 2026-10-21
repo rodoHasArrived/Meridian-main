@@ -188,7 +188,7 @@ public sealed partial class IBBrokerageGateway :
             return;
 
         await _client.DisconnectAsync(ct).ConfigureAwait(false);
-        EndSession(forgetAccounts: true);
+        EndSession(forgetAccounts: true, lost: false);
         _connected = false;
 
         _logger.LogInformation("IB brokerage disconnected");

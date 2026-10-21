@@ -26,7 +26,8 @@ public sealed partial class IBBrokerageGatewayTests
             client.RaiseManagedAccounts("DU123456");
 
         Connection(sut).ScopeIdentity.Should().Be("paper:DU123456", "the restored session reported its accounts");
-        Connection(sut).ConnectionGeneration.Should().Be(generation + 2, "losing and restoring each end a session");
+        Connection(sut).ConnectionGeneration.Should().Be(generation + 1,
+            "the loss ended the session; the restoration that follows it continues the session the loss began");
     }
 
     [Fact]

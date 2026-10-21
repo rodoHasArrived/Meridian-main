@@ -232,6 +232,24 @@ public sealed partial class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task RecoveryDuringAutomaticReconnect_BeforeRestoredIsRaised_KeepsItsRouteCurrent()
+    {
+        var cancelled = new List<int>();
+        var client = RecoveryClient(c => c.RaiseOpenOrder(RecoverableOpenOrder()), cancelled);
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        var recovery = (IBrokerageOrderRecoveryGateway)sut;
+        client.RaiseConnectionLost();
+        // The transport is usable and the accounts re-reported before ConnectionRestored is raised.
+        client.RaiseManagedAccounts("DU123456");
+        (await recovery.GetOrderForRecoveryAsync("client-1")).Should().NotBeNull();
+        client.RaiseConnectionRestored();
+
+        (await sut.CancelOrderAsync("client-1")).OrderStatus.Should().Be(OrderStatus.Cancelled);
+        cancelled.Should().Equal([7001], "the route recovered in the restored session is current, not stale");
+    }
+
+    [Fact]
     public async Task StaleRouteCleanup_RacingARecoveryOfADifferentClientOrder_RefusesTheResolvedAlias()
     {
         var cancelled = new List<int>();

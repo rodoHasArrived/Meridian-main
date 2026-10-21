@@ -51,18 +51,36 @@ public sealed partial class IBBrokerageGateway
             .Select(account => account.Trim())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-    // The client can drop and re-establish the transport on its own. Either edge ends the session
-    // that any in-flight recovery evidence belongs to; only the loss forgets the accounts.
-    private void OnConnectionLost(object? sender, EventArgs e) => EndSession(forgetAccounts: true);
+    // The client can drop and re-establish the transport on its own. The loss ends the session
+    // that any in-flight recovery evidence belongs to and forgets the accounts. The client marks
+    // the transport connected (and may re-report the accounts) before it raises ConnectionRestored,
+    // so a recovery can complete in that gap: its session is the one the loss already began, and
+    // the restored event must not end it again or that fresh route would be refused as stale. Only
+    // a restoration not preceded by an observed loss ends a session of its own.
+    private void OnConnectionLost(object? sender, EventArgs e) => EndSession(forgetAccounts: true, lost: true);
 
-    private void OnConnectionRestored(object? sender, EventArgs e) => EndSession(forgetAccounts: false);
+    private void OnConnectionRestored(object? sender, EventArgs e)
+    {
+        lock (_sessionGate)
+        {
+            if (_sessionEndedByLoss)
+            {
+                _sessionEndedByLoss = false;
+                return;
+            }
+        }
+        EndSession(forgetAccounts: false, lost: false);
+    }
 
-    private void EndSession(bool forgetAccounts)
+    private bool _sessionEndedByLoss;
+
+    private void EndSession(bool forgetAccounts, bool lost)
     {
         lock (_sessionGate)
         {
             if (forgetAccounts)
                 _verifiedAccounts = NoVerifiedAccounts;
+            _sessionEndedByLoss = lost;
             Interlocked.Increment(ref _connectionEpoch);
             ForgetOwedOpenOrdersEnds();
         }
