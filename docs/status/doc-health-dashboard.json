@@ -1022,7 +1022,7 @@
     },
     {
       "path": "docs/adr/019-production-support-matrix-and-deployment-posture.md",
-      "line_count": 209,
+      "line_count": 233,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2430,7 +2430,7 @@
     },
     {
       "path": "docs/engineering/production-certification-evidence-chain.md",
-      "line_count": 616,
+      "line_count": 632,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5822,7 +5822,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1098,
+      "line_count": 1121,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5870,7 +5870,7 @@
     },
     {
       "path": "src/Meridian.DataIntegration/README.md",
-      "line_count": 403,
+      "line_count": 431,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

@@ -32,6 +32,17 @@ public sealed record MeridianDeploymentPostureDeclaration(MeridianDeploymentPost
 /// </summary>
 public sealed record MeridianDataProvenanceDeclaration(DataProvenance Provenance);
 
+/// <summary>
+/// Explicit override of the detected host platform consulted by the ADR-019 platform fail-closed
+/// (<see cref="ProductionServiceRegistrationPolicy.ResolveHostPlatform"/>). Hosts never declare it;
+/// tests do, so the production-posture refusal is deterministic on every CI operating system. The
+/// last declaration wins.
+/// </summary>
+internal sealed record MeridianHostPlatformDeclaration(
+    bool IsWindows,
+    System.Runtime.InteropServices.Architecture Architecture,
+    string Description);
+
 public static class MeridianDeploymentPostureServiceCollectionExtensions
 {
     /// <summary>
@@ -58,6 +69,27 @@ public static class MeridianDeploymentPostureServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         services.AddSingleton(new MeridianDataProvenanceDeclaration(provenance));
+        return services;
+    }
+
+    /// <summary>
+    /// Overrides the host platform the ADR-019 platform fail-closed evaluates. Test seam only: a
+    /// declared platform replaces <see cref="OperatingSystem.IsWindows"/> and
+    /// <see cref="System.Runtime.InteropServices.RuntimeInformation.OSArchitecture"/> for this
+    /// collection, so a production posture can be proven to refuse on Linux and compose on Windows
+    /// regardless of the machine running the test. The last declaration wins.
+    /// </summary>
+    internal static IServiceCollection DeclareMeridianHostPlatform(
+        this IServiceCollection services,
+        bool isWindows,
+        System.Runtime.InteropServices.Architecture architecture,
+        string? description = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.AddSingleton(new MeridianHostPlatformDeclaration(
+            isWindows,
+            architecture,
+            description ?? (isWindows ? "Windows (declared)" : "non-Windows (declared)")));
         return services;
     }
 }

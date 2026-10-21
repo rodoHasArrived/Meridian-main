@@ -86,13 +86,7 @@ public sealed class IndexSubscriptionService
             );
         }
 
-        var cfg = _configStore.Load();
-        var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
-            .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
-
         var defaults = request.Defaults ?? new TemplateSubscriptionDefaults();
-        var subscribed = new List<string>();
-        var skipped = new List<string>();
 
         // Filter components
         var componentsToProcess = components.Components.AsEnumerable();
@@ -115,35 +109,43 @@ public sealed class IndexSubscriptionService
             componentsToProcess = componentsToProcess.Take(request.MaxComponents.Value);
         }
 
-        if (request.ReplaceExisting)
+        var (subscribed, skipped) = await _configStore.UpdateAsync(cfg =>
         {
-            existingSymbols.Clear();
-        }
+            var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
+                .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
 
-        foreach (var component in componentsToProcess)
-        {
-            if (existingSymbols.ContainsKey(component.Symbol) && !request.ReplaceExisting)
+            var subscribed = new List<string>();
+            var skipped = new List<string>();
+
+            if (request.ReplaceExisting)
             {
-                skipped.Add(component.Symbol);
-                continue;
+                existingSymbols.Clear();
             }
 
-            var symbolConfig = new SymbolConfig(
-                Symbol: component.Symbol,
-                SubscribeTrades: defaults.SubscribeTrades,
-                SubscribeDepth: defaults.SubscribeDepth,
-                DepthLevels: defaults.DepthLevels,
-                SecurityType: defaults.SecurityType,
-                Exchange: defaults.Exchange,
-                Currency: defaults.Currency
-            );
+            foreach (var component in componentsToProcess)
+            {
+                if (existingSymbols.ContainsKey(component.Symbol) && !request.ReplaceExisting)
+                {
+                    skipped.Add(component.Symbol);
+                    continue;
+                }
 
-            existingSymbols[component.Symbol] = symbolConfig;
-            subscribed.Add(component.Symbol);
-        }
+                var symbolConfig = new SymbolConfig(
+                    Symbol: component.Symbol,
+                    SubscribeTrades: defaults.SubscribeTrades,
+                    SubscribeDepth: defaults.SubscribeDepth,
+                    DepthLevels: defaults.DepthLevels,
+                    SecurityType: defaults.SecurityType,
+                    Exchange: defaults.Exchange,
+                    Currency: defaults.Currency
+                );
 
-        var next = cfg with { Symbols = existingSymbols.Values.ToArray() };
-        await _configStore.SaveAsync(next);
+                existingSymbols[component.Symbol] = symbolConfig;
+                subscribed.Add(component.Symbol);
+            }
+
+            return (cfg with { Symbols = existingSymbols.Values.ToArray() }, (subscribed, skipped));
+        }, ct);
 
         _log.Information(
             "Subscribed to {Count} components of index {IndexId}, skipped {Skipped}",
@@ -179,19 +181,20 @@ public sealed class IndexSubscriptionService
             );
         }
 
-        var cfg = _configStore.Load();
         var indexSymbols = new HashSet<string>(
             components.Components.Select(c => c.Symbol),
             StringComparer.OrdinalIgnoreCase);
 
-        var remaining = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
-            .Where(s => !indexSymbols.Contains(s.Symbol))
-            .ToArray();
+        var removed = await _configStore.UpdateAsync(cfg =>
+        {
+            var remaining = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
+                .Where(s => !indexSymbols.Contains(s.Symbol))
+                .ToArray();
 
-        var removed = (cfg.Symbols?.Length ?? 0) - remaining.Length;
+            var removed = (cfg.Symbols?.Length ?? 0) - remaining.Length;
 
-        var next = cfg with { Symbols = remaining };
-        await _configStore.SaveAsync(next);
+            return (cfg with { Symbols = remaining }, removed);
+        }, ct);
 
         _log.Information("Unsubscribed from {Count} components of index {IndexId}", removed, indexId);
 

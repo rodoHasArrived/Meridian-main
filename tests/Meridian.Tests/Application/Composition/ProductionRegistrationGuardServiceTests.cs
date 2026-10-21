@@ -1,3 +1,5 @@
+using OSArchitecture = System.Runtime.InteropServices.Architecture;
+using System.Runtime.InteropServices;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Contracts.Operations;
@@ -18,7 +20,7 @@ public sealed class ProductionRegistrationGuardServiceTests
         // (and its inline Validate call) has already run.
         using var host = BuildHost(services =>
         {
-            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            DeclareProductionApiOnSupportedPlatform(services);
             services.AddProductionRegistrationGuard();
             services.AddSingleton<ITestStore, InMemoryTestStore>();
         });
@@ -37,7 +39,7 @@ public sealed class ProductionRegistrationGuardServiceTests
         // started -- until hosted-service startup got round to refusing it. The descriptor scan
         // that decides this resolves nothing, so it belongs in front of the window.
         var services = new ServiceCollection();
-        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        DeclareProductionApiOnSupportedPlatform(services);
         services.AddProductionRegistrationGuard();
         services.AddSingleton<ITestStore, InMemoryTestStore>();
         await using var provider = services.BuildServiceProvider();
@@ -56,7 +58,7 @@ public sealed class ProductionRegistrationGuardServiceTests
         // appearing. If the preflight ever started resolving singletons, this composition would
         // refuse here instead of behind the window, and an operator would be left with nothing.
         var services = new ServiceCollection();
-        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        DeclareProductionApiOnSupportedPlatform(services);
         services.AddProductionRegistrationGuard();
         services.AddSingleton<ITestStore>(_ => throw new InvalidOperationException("cannot construct"));
         await using var provider = services.BuildServiceProvider();
@@ -83,7 +85,7 @@ public sealed class ProductionRegistrationGuardServiceTests
         // the WPF shell's tolerant catch went on swallowing exactly the bypass that change closes.
         using var host = BuildHost(services =>
         {
-            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            DeclareProductionApiOnSupportedPlatform(services);
             services.AddProductionRegistrationGuard();
             services.AddSingleton<ITestStore>(_ => throw new InvalidOperationException("cannot construct"));
         });
@@ -103,7 +105,7 @@ public sealed class ProductionRegistrationGuardServiceTests
         // singleton and reject by the actual runtime type.
         using var host = BuildHost(services =>
         {
-            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            DeclareProductionApiOnSupportedPlatform(services);
             services.AddProductionRegistrationGuard();
             services.AddSingleton<ITestStore>(_ => new InMemoryTestStore());
         });
@@ -119,7 +121,7 @@ public sealed class ProductionRegistrationGuardServiceTests
     {
         using var host = BuildHost(services =>
         {
-            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            DeclareProductionApiOnSupportedPlatform(services);
             services.AddProductionRegistrationGuard();
             services.AddSingleton<ITestStore>(_ => new ProcessLocalTestStore());
         });
@@ -135,7 +137,7 @@ public sealed class ProductionRegistrationGuardServiceTests
     {
         using var host = BuildHost(services =>
         {
-            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            DeclareProductionApiOnSupportedPlatform(services);
             services.AddProductionRegistrationGuard();
             services.AddSingleton<ITestStore, DurableTestStore>();
             services.AddSingleton<ISecondaryTestStore>(_ => new DurableSecondaryTestStore());
@@ -203,7 +205,7 @@ public sealed class ProductionRegistrationGuardServiceTests
     {
         using var host = BuildHost(services =>
         {
-            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            DeclareProductionApiOnSupportedPlatform(services);
             services.AddProductionRegistrationGuard();
             services.AddSingleton<ITestStore>(_ => throw new InvalidDataException("broken factory"));
         });
@@ -254,6 +256,7 @@ public sealed class ProductionRegistrationGuardServiceTests
         {
             services.DeclareMeridianDeploymentPosture(local
                 ? MeridianDeploymentPosture.LocalWorkstation : MeridianDeploymentPosture.ProductionApi);
+            services.DeclareMeridianHostPlatform(isWindows: true, OSArchitecture.X64, "Windows 11 x64 (test)");
             services.AddProductionRegistrationGuard();
             services.AddSingleton<IHostedService>(worker);
             // Register after the guard, with a second safe binding under the same key. Validation
@@ -280,7 +283,7 @@ public sealed class ProductionRegistrationGuardServiceTests
     {
         using var host = BuildHost(services =>
         {
-            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            DeclareProductionApiOnSupportedPlatform(services);
             services.AddProductionRegistrationGuard();
             AddStoreFactory(services, lifetime, keyed, () => new DurableTestStore());
         });
@@ -298,6 +301,7 @@ public sealed class ProductionRegistrationGuardServiceTests
         {
             services.DeclareMeridianDeploymentPosture(local
                 ? MeridianDeploymentPosture.LocalWorkstation : MeridianDeploymentPosture.ProductionApi);
+            services.DeclareMeridianHostPlatform(isWindows: true, OSArchitecture.X64, "Windows 11 x64 (test)");
             services.AddProductionRegistrationGuard();
             services.AddKeyedSingleton<ITestStore>(KeyedService.AnyKey,
                 (_, key) => Equals(key, "unapproved-account") ? new InMemoryTestStore() : new DurableTestStore());
@@ -317,7 +321,7 @@ public sealed class ProductionRegistrationGuardServiceTests
         {
             var stores = new List<DurableAsyncTestStore>();
             var services = new ServiceCollection();
-            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            DeclareProductionApiOnSupportedPlatform(services);
             services.AddProductionRegistrationGuard();
             AddStoreFactory(services, lifetime, keyed, () =>
             {
@@ -345,7 +349,7 @@ public sealed class ProductionRegistrationGuardServiceTests
     {
         var store = new DurableAsyncTestStore();
         var services = new ServiceCollection();
-        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        DeclareProductionApiOnSupportedPlatform(services);
         services.AddProductionRegistrationGuard();
         AddStoreFactory(services, ServiceLifetime.Singleton, keyed, () => store);
         await using (var provider = services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true }))
@@ -365,7 +369,7 @@ public sealed class ProductionRegistrationGuardServiceTests
         using var cancellation = new CancellationTokenSource();
         var store = new DurableAsyncTestStore();
         var services = new ServiceCollection();
-        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        DeclareProductionApiOnSupportedPlatform(services);
         services.AddProductionRegistrationGuard();
         services.AddScoped<ITestStore>(_ =>
         {
@@ -385,7 +389,7 @@ public sealed class ProductionRegistrationGuardServiceTests
     {
         using var host = BuildHost(services =>
         {
-            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+            DeclareProductionApiOnSupportedPlatform(services);
             services.AddProductionRegistrationGuard();
             AddStoreFactory(services, ServiceLifetime.Scoped, keyed, () => null!);
         });
@@ -406,6 +410,101 @@ public sealed class ProductionRegistrationGuardServiceTests
         });
         await host.StartAsync();
         await host.StopAsync();
+    }
+
+    [Fact]
+    public async Task Preflight_ProductionPostureOnLinux_RefusesBeforeAnyShell()
+    {
+        // ADR-019 platform fail-closed: a Production posture off Windows is refused by the
+        // descriptor-only guard, so no shell window and no factory resolution ever happens on a
+        // host where the credential vault would silently select the adjacent-AES-key protection.
+        using var quiet = new ProductionEnvironmentQuietScope();
+        var services = new ServiceCollection();
+        DeclareProductionApiOnLinux(services);
+        services.AddProductionRegistrationGuard();
+        services.AddSingleton<ITestStore, DurableTestStore>();
+        await using var provider = services.BuildServiceProvider();
+
+        var preflight = async () => await StartupRefusalPreflight.RunAsync(provider);
+
+        var refusal = await preflight.Should().ThrowAsync<StartupRefusedException>();
+        refusal.Which.Message.Should().Contain("rejected the host platform for posture 'ProductionApi'")
+            .And.Contain("Linux 6.18 (test)")
+            .And.Contain("ADR-019")
+            .And.Contain("local-aes-gcm");
+    }
+
+    [Fact]
+    public async Task StartAsync_ProductionPostureOnLinux_RefusesBeforeWorkersStart()
+    {
+        using var quiet = new ProductionEnvironmentQuietScope();
+        var worker = new StartProbe();
+        using var host = BuildHost(services =>
+        {
+            DeclareProductionApiOnLinux(services);
+            services.AddProductionRegistrationGuard();
+            services.AddSingleton<IHostedService>(worker);
+            services.AddSingleton<ITestStore, DurableTestStore>();
+        });
+
+        var start = () => host.StartAsync();
+
+        (await start.Should().ThrowAsync<StartupRefusedException>())
+            .Which.Message.Should().Contain("rejected the host platform");
+        worker.StartCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task StartAsync_ProductionPostureOnLinux_WithProhibitedBinding_NamesBothBindingAndPlatform()
+    {
+        using var quiet = new ProductionEnvironmentQuietScope();
+        using var host = BuildHost(services =>
+        {
+            DeclareProductionApiOnLinux(services);
+            services.AddProductionRegistrationGuard();
+            services.AddSingleton<ITestStore, InMemoryTestStore>();
+        });
+
+        var start = () => host.StartAsync();
+
+        var refusal = await start.Should().ThrowAsync<StartupRefusedException>();
+        refusal.Which.Message.Should().Contain("rejected non-production DI registrations")
+            .And.Contain("InMemoryTestStore")
+            .And.Contain("rejected the host platform");
+    }
+
+    [Fact]
+    public async Task StartAsync_LocalWorkstationPostureOnLinux_IsNotPlatformGated()
+    {
+        using var quiet = new ProductionEnvironmentQuietScope();
+        using var host = BuildHost(services =>
+        {
+            services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+            services.DeclareMeridianHostPlatform(isWindows: false, OSArchitecture.X64, "Linux 6.18 (test)");
+            services.AddProductionRegistrationGuard();
+            services.AddSingleton<ITestStore, DurableTestStore>();
+        });
+
+        await host.StartAsync();
+        await host.StopAsync();
+    }
+
+    [Fact]
+    public async Task Preflight_PackagedLocalWorkstationOnLinux_RefusesBeforeAnyShell()
+    {
+        using var quiet = new ProductionEnvironmentQuietScope();
+        using var packaged = new EnvironmentVariableScope("MDC_PACKAGED_BUILD", "true");
+        var services = new ServiceCollection();
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.LocalWorkstation);
+        services.DeclareMeridianHostPlatform(isWindows: false, OSArchitecture.X64, "Linux (test)");
+        services.AddProductionRegistrationGuard();
+        services.AddSingleton<ITestStore, DurableTestStore>();
+        await using var provider = services.BuildServiceProvider();
+
+        var preflight = async () => await StartupRefusalPreflight.RunAsync(provider);
+
+        (await preflight.Should().ThrowAsync<StartupRefusedException>())
+            .Which.Message.Should().Contain("LocalWorkstation (packaged build MDC_PACKAGED_BUILD=true)");
     }
 
     private static void AddStoreFactory(IServiceCollection services, ServiceLifetime lifetime, bool keyed, Func<ITestStore> factory)
@@ -432,6 +531,23 @@ public sealed class ProductionRegistrationGuardServiceTests
             return Task.CompletedTask;
         }
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Declares the production posture on a host inside the ADR-019 platform envelope, so these tests
+    /// exercise binding validation deterministically on Linux CI as well as on Windows. The platform
+    /// refusal itself is covered by the <c>*_OnLinux_*</c> tests below.
+    /// </summary>
+    private static void DeclareProductionApiOnSupportedPlatform(IServiceCollection services)
+    {
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        services.DeclareMeridianHostPlatform(isWindows: true, OSArchitecture.X64, "Windows 11 x64 (test)");
+    }
+
+    private static void DeclareProductionApiOnLinux(IServiceCollection services)
+    {
+        services.DeclareMeridianDeploymentPosture(MeridianDeploymentPosture.ProductionApi);
+        services.DeclareMeridianHostPlatform(isWindows: false, OSArchitecture.X64, "Linux 6.18 (test)");
     }
 
     private static IHost BuildHost(Action<IServiceCollection> configure)

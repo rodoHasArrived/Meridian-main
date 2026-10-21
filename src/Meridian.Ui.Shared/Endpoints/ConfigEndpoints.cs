@@ -119,13 +119,10 @@ public static class ConfigEndpoints
         // Update data source
         group.MapPost(UiApiRoutes.ConfigDataSource, async (ConfigStore store, DataSourceRequest req) =>
         {
-            var cfg = store.Load();
-
             if (!Enum.TryParse<DataSourceKind>(req.DataSource, ignoreCase: true, out var ds))
                 return Results.BadRequest("Invalid DataSource. Use 'IB' or 'Alpaca'.");
 
-            var next = cfg with { DataSource = ds };
-            await store.SaveAsync(next);
+            await store.UpdateAsync(cfg => cfg with { DataSource = ds });
 
             return Results.Ok();
         }).WithName("UpdateDataSource")
@@ -137,9 +134,8 @@ public static class ConfigEndpoints
         // Update Alpaca settings
         group.MapPost(UiApiRoutes.ConfigAlpaca, async (ConfigStore store, AlpacaOptionsDto alpaca) =>
         {
-            var cfg = store.Load();
-            var next = cfg with { Alpaca = alpaca.ToDomain() };
-            await store.SaveAsync(next);
+            var alpacaDomain = alpaca.ToDomain();
+            await store.UpdateAsync(cfg => cfg with { Alpaca = alpacaDomain });
             return Results.Ok();
         }).WithName("UpdateAlpaca")
         .WithDescription("Updates Alpaca provider connection settings.")
@@ -150,7 +146,6 @@ public static class ConfigEndpoints
         // Update storage settings
         group.MapPost(UiApiRoutes.ConfigStorage, async (ConfigStore store, StorageSettingsRequest req) =>
         {
-            var cfg = store.Load();
             var storage = new StorageConfig(
                 NamingConvention: req.NamingConvention ?? "BySymbol",
                 DatePartition: req.DatePartition ?? "Daily",
@@ -162,13 +157,12 @@ public static class ConfigEndpoints
             if (sanitizedRoot is null)
                 return Results.BadRequest("Invalid DataRoot: must be a relative path without traversal sequences.");
 
-            var next = cfg with
+            await store.UpdateAsync(cfg => cfg with
             {
                 DataRoot = sanitizedRoot,
                 Compress = req.Compress,
                 Storage = storage
-            };
-            await store.SaveAsync(next);
+            });
             return Results.Ok();
         }).WithName("UpdateStorage")
         .WithDescription("Updates storage settings including root path, naming convention, and compression.")
@@ -182,17 +176,17 @@ public static class ConfigEndpoints
             if (string.IsNullOrWhiteSpace(symbol.Symbol))
                 return Results.BadRequest("Symbol is required.");
 
-            var cfg = store.Load();
+            await store.UpdateAsync(cfg =>
+            {
+                var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+                var idx = list.FindIndex(s => string.Equals(s.Symbol, symbol.Symbol, StringComparison.OrdinalIgnoreCase));
+                if (idx >= 0)
+                    list[idx] = symbol;
+                else
+                    list.Add(symbol);
 
-            var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
-            var idx = list.FindIndex(s => string.Equals(s.Symbol, symbol.Symbol, StringComparison.OrdinalIgnoreCase));
-            if (idx >= 0)
-                list[idx] = symbol;
-            else
-                list.Add(symbol);
-
-            var next = cfg with { Symbols = list.ToArray() };
-            await store.SaveAsync(next);
+                return cfg with { Symbols = list.ToArray() };
+            });
 
             return Results.Ok();
         }).WithName("UpsertSymbol")
@@ -204,11 +198,12 @@ public static class ConfigEndpoints
         // Delete symbol
         group.MapDelete(UiApiRoutes.ConfigSymbols + "/{symbol}", async (ConfigStore store, string symbol) =>
         {
-            var cfg = store.Load();
-            var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
-            list.RemoveAll(s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
-            var next = cfg with { Symbols = list.ToArray() };
-            await store.SaveAsync(next);
+            await store.UpdateAsync(cfg =>
+            {
+                var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+                list.RemoveAll(s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
+                return cfg with { Symbols = list.ToArray() };
+            });
             return Results.Ok();
         }).WithName("DeleteConfigSymbol")
         .WithDescription("Removes a symbol from the monitoring configuration.")
@@ -228,9 +223,8 @@ public static class ConfigEndpoints
         // Update derivatives configuration
         group.MapPost(UiApiRoutes.ConfigDerivatives, async (ConfigStore store, DerivativesConfigDto derivatives) =>
         {
-            var cfg = store.Load();
-            var next = cfg with { Derivatives = derivatives.ToDomain() };
-            await store.SaveAsync(next);
+            var derivativesDomain = derivatives.ToDomain();
+            await store.UpdateAsync(cfg => cfg with { Derivatives = derivativesDomain });
             return Results.Ok();
         }).WithName("UpdateDerivatives")
         .WithDescription("Updates the derivatives trading configuration.")
