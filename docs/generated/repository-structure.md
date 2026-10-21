@@ -11842,6 +11842,7 @@ Meridian-main
 │   │   │   ├── QuantScriptTemplateCatalogServiceTests.cs
 │   │   │   ├── RetentionAssuranceServiceTests.cs
 │   │   │   ├── RunMatServiceTests.cs
+│   │   │   ├── SetupWizardConfigurationLockTests.cs
 │   │   │   ├── SetupWizardStateServiceTests.cs
 │   │   │   ├── SingleInstanceServiceTests.cs
 │   │   │   ├── StatusServiceTests.cs
