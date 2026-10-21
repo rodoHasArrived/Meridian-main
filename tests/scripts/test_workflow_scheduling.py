@@ -61,6 +61,17 @@ class WorkflowSchedulingTests(unittest.TestCase):
             "${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}",
         )
 
+    def test_meridian_manual_validation_cannot_be_cancelled_by_push(self) -> None:
+        concurrency = load_workflow("meridian-ci")["concurrency"]
+        self.assertEqual(
+            concurrency["group"],
+            "${{ github.workflow }}-meridian-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'latest' }}",
+        )
+        self.assertEqual(
+            concurrency["cancel-in-progress"],
+            "${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}",
+        )
+
     def test_manual_jobs_wait_for_identity_and_preserve_running_validation(self) -> None:
         for name, job_name in MANUAL_JOBS.items():
             with self.subTest(workflow=name):

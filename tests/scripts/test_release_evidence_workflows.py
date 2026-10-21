@@ -123,7 +123,9 @@ jobs:
         self.assertIn("--project desktop-installer", workflow)
         self.assertIn("--output artifacts/release/${{ matrix.runtime }}/desktop-installer-${{ matrix.runtime }}-release-evidence.json", workflow)
         self.assertIn("verify-release-promotion.py", workflow)
-        self.assertIn("files: artifacts/publish-release/*", workflow)
+        self.assertIn("publish-certified-release.py --root artifacts/publish-release", workflow)
+        self.assertIn("publish-certified-release.py --prepare-resume --root artifacts/publish-release", workflow)
+        self.assertNotIn("softprops/action-gh-release", workflow)
 
     def test_payload_consumers_resolve_approval_before_building_and_record_receipt(self) -> None:
         consumers = (

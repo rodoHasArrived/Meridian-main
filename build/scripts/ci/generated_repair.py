@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import html
 import importlib.util
 import io
 import json
@@ -21,6 +22,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
+from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 
 WORKFLOW = ".github/workflows/generated-repair.yml"
@@ -28,7 +30,12 @@ POLICY = "build/scripts/maintained-generation-outputs.json"
 MAX_RETRIES = 2
 MAX_ARTIFACT = 64 * 1024 * 1024
 REPAIR_MARKER = "Meridian-Generated-Repair: true"
-TITLE = re.compile(r"generated-repair pr=([1-9][0-9]*) head=([a-f0-9]{40}) base=([a-f0-9]{40}) attempt=([0-2]) root=([a-f0-9]{40})\Z")
+DISPATCH_INPUTS = ("pr_number", "head_sha", "base_sha", "attempt", "root_sha")
+TITLE = re.compile(
+    r"generated-repair-v2 pr=([1-9][0-9]*) head=([a-f0-9]{40}) base=([a-f0-9]{40}) "
+    r"attempt=([0-2]) root=([a-f0-9]{40}) workflow_sha=([a-f0-9]{40}) "
+    r"ref=(refs/(?:heads|tags)/[A-Za-z0-9_./-]+)\Z"
+)
 # Changes to discovery, execution, dependency installation, or authorization get
 # a downloadable patch. They cannot change the trusted publisher's contract.
 MANUAL_PREFIXES = (".github/", "build/", "scripts/", ".codex/skills/", ".agents/skills/")
@@ -192,29 +199,61 @@ def recreate_merge(root: Path, head: str, base: str) -> str:
             git(root, "worktree", "remove", "--force", str(scratch))
 
 
-def parse_request(title: str) -> dict:
+def parse_run_metadata(title: str) -> dict:
     match = TITLE.fullmatch(title)
     if not match:
-        raise RepairError("Run title does not contain a valid immutable repair request")
-    pr, head, base, attempt, original = match.groups()
-    return {"pr_number": int(pr), "head_sha": head, "base_sha": base,
-            "attempt": int(attempt), "root_sha": original}
+        raise RepairError("Run title lacks valid v2 repair provenance; dispatch a new run after upgrading the workflow")
+    pr, head, base, attempt, original, execution, execution_ref = match.groups()
+    return {"request": {"pr_number": int(pr), "head_sha": head, "base_sha": base,
+                        "attempt": int(attempt), "root_sha": original},
+            "workflow_execution_sha": execution, "execution_ref": execution_ref}
 
 
-def verify_source_run(run: dict, expected_id: int, expected_attempt: int, repository: str,
-                      default_branch: str) -> dict:
+def parse_request(title: str) -> dict:
+    # Execution evidence belongs to the run, never the dispatch inputs.
+    return parse_run_metadata(title)["request"]
+
+
+def verify_run_identity(run: dict, expected_id: int, expected_attempt: int, repository: str) -> dict:
+    """Validate server-owned run identity before classifying an unsupported PR."""
     if (run.get("id") != expected_id or run.get("run_attempt") != expected_attempt
             or run.get("path") != WORKFLOW or run.get("status") != "completed"
             or run.get("event") not in {"pull_request_target", "workflow_dispatch"}
             or run.get("repository", {}).get("full_name") != repository):
         raise RepairError("Source run identity/event/path/attempt is not authorized")
-    request = parse_request(run.get("display_title", ""))
-    if run["event"] == "pull_request_target" and run.get("head_sha") != request["base_sha"]:
-        raise RepairError("Target run is not bound to its base SHA")
-    if run["event"] == "workflow_dispatch" and (run.get("head_branch") != default_branch
+    return parse_request(run.get("display_title", ""))
+
+
+def verify_source_run(run: dict, expected_id: int, expected_attempt: int, repository: str,
+                      default_branch: str) -> dict:
+    request = verify_run_identity(run, expected_id, expected_attempt, repository)
+    if run["event"] != "workflow_dispatch":
+        raise RepairError("Target events can request trusted generation but cannot authorize candidate publication")
+    metadata = parse_run_metadata(run["display_title"])
+    if (run.get("head_branch") != default_branch
             or run.get("head_repository", {}).get("full_name") != repository):
-        raise RepairError("Retries must be dispatched on the default branch of this repository")
+        raise RepairError("Generation must be dispatched on the default branch of this repository")
+    if (run.get("head_sha") != metadata["workflow_execution_sha"]
+            or metadata["execution_ref"] != f"refs/heads/{default_branch}"):
+        raise RepairError("Dispatch is not bound to its default-branch workflow execution SHA and ref")
     return request
+
+
+def eligibility(pr: dict, repository: str, default_branch: str) -> dict | None:
+    """Unsupported targets never reach candidate execution or publication."""
+    if pr.get("state") != "open" or pr.get("merged", False):
+        reason = "Pull request is closed or already merged"
+    elif (pr.get("base", {}).get("repo", {}).get("full_name") != repository
+          or pr.get("base", {}).get("ref") != default_branch):
+        reason = "Automatic repair supports pull requests targeting the repository default branch only"
+    elif pr.get("head", {}).get("repo") is None:
+        reason = "Pull request source repository is unavailable"
+    elif (pr["head"]["repo"]["full_name"] == repository and pr["head"]["ref"] == default_branch):
+        reason = "Automatic repair cannot write the default branch"
+    else:
+        return None
+    return {"status": "ineligible", "outcome": "ineligible", "reason": reason,
+            "next_action": "Use the local generated-merge recovery procedure for the intended base; no remote write was attempted."}
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -321,16 +360,37 @@ def loop_suppressed(root: Path, request: dict) -> bool:
 
 def inspect(root: Path, api: GitHub, run_id: int, run_attempt: int, default_branch: str) -> dict:
     run = api.get(f"/actions/runs/{run_id}/attempts/{run_attempt}")
-    request = verify_source_run(run, run_id, run_attempt, api.repository, default_branch)
-    # A dispatch on a different workflow revision cannot forge its own title.
-    git(root, "fetch", "--no-tags", "origin", run["head_sha"])
-    if git(root, "show", f"{run['head_sha']}:{WORKFLOW}") != (root / WORKFLOW).read_bytes():
-        raise RepairError("Source workflow differs from the trusted publisher revision")
+    request = verify_run_identity(run, run_id, run_attempt, api.repository)
     pr = api.get(f"/pulls/{request['pr_number']}")
+    unsupported = eligibility(pr, api.repository, default_branch)
+    if unsupported:
+        return dict(unsupported, request=request)
+    if pr["head"]["repo"] is None or pr["head"]["repo"]["full_name"] != api.repository:
+        return {"status": "manual", "outcome": "ineligible", "request": request,
+                "reason": "Fork PR: automatic branch writes are unavailable",
+                "next_action": "Inspect the generation report; when available, use its repair.patch with docs/engineering/generated-merge-recovery.md."}
+    if run["event"] == "pull_request_target":
+        # REST target-run head_sha identifies the PR head, not workflow code.
+        # A feature-base workflow can also forge a title before retargeting.
+        # Therefore a target event may only request a new trusted default-branch
+        # dispatch. Its title and artifacts can never authorize a branch write.
+        request = dict(request, head_sha=pr["head"]["sha"], base_sha=pr["base"]["sha"],
+                       attempt=0, root_sha=pr["head"]["sha"])
+        fetch_pr(root, request["pr_number"], request["head_sha"], request["base_sha"])
+        if loop_suppressed(root, request):
+            return {"status": "noop", "reason": "Repair commit already retriggered authoritative CI; suppress a bot loop"}
+        return {"status": "retry", "outcome": "trusted-generation-requested", "request": request,
+                "reason": "Target event requests fresh generation on the trusted default branch",
+                "next_action": "Dispatch attempt 0 on the default branch; only that run's independently verified candidate can proceed to publication."}
+    # Only server-bound default-branch dispatches reach candidate processing.
+    verify_source_run(run, run_id, run_attempt, api.repository, default_branch)
+    metadata = parse_run_metadata(run["display_title"])
+    execution = metadata["workflow_execution_sha"]
+    git(root, "fetch", "--no-tags", "origin", execution)
+    if git(root, "show", f"{execution}:{WORKFLOW}") != (root / WORKFLOW).read_bytes():
+        raise RepairError("Source workflow differs from the trusted publisher revision")
     if not request_current(pr, request, api.repository, default_branch):
         return stale_result(pr, request, api.repository, default_branch)
-    if pr["head"]["repo"] is None or pr["head"]["repo"]["full_name"] != api.repository:
-        return {"status": "manual", "reason": "Fork PR: download repair.patch and apply it on the contributor branch"}
     if pr["head"]["ref"] == default_branch:
         raise RepairError("Never write the protected/default branch")
     fetch_pr(root, request["pr_number"], request["head_sha"], request["base_sha"])
@@ -341,9 +401,11 @@ def inspect(root: Path, api: GitHub, run_id: int, run_attempt: int, default_bran
     manual = [name for name in changed if name in MANUAL_FILES or name.startswith(MANUAL_PREFIXES)]
     if manual:
         return {"status": "manual", "reason": "Generator, dependency, or policy changes require manual repair",
-                "manual_paths": manual}
+                "manual_paths": manual, "request": request}
     if run.get("conclusion") != "success":
-        return {"status": "manual", "reason": "Generation failed; inspect the repair report and logs"}
+        return {"status": "manual", "outcome": "failed", "request": request,
+                "reason": "Generation failed; inspect the repair report and logs",
+                "next_action": f"Read Generated Repair run {run_id}, attempt {run_attempt}; resolve its reported paths/modules before retrying."}
     artifacts = api.get(f"/actions/runs/{run_id}/artifacts?per_page=100")["artifacts"]
     name = f"generated-repair-{run_id}-{run_attempt}"
     matches = [item for item in artifacts if item["name"] == name and not item.get("expired")]
@@ -369,28 +431,56 @@ def inspect(root: Path, api: GitHub, run_id: int, run_attempt: int, default_bran
     if candidate == git(root, "rev-parse", f"{request['head_sha']}^{{tree}}").decode().strip():
         return {"status": "noop", "reason": "Pinned branch already has the generated result"}
     return {"status": "ready", "reason": "Validated generated repair and deterministic base merge",
-            "request": request, "branch": pr["head"]["ref"], "tree_sha": candidate}
+            "request": request, "branch": pr["head"]["ref"], "tree_sha": candidate,
+            "workflow_execution_sha": execution, "execution_ref": metadata["execution_ref"],
+            "workflow_ref": f"{api.repository}/{WORKFLOW}@{metadata['execution_ref']}",
+            "workflow_ref_derived": True}
 
 
 def write_outputs(result: dict, path: Path) -> None:
+    # Keep legacy status values for workflow routing; outcome is the stable
+    # operational taxonomy, not a claim that repaired-revision CI has passed.
+    result.setdefault("schema_version", 1)
+    result.setdefault("outcome", {"manual": "review-required", "retry": "stale-retry"}.get(
+        result["status"], result["status"]))
+    next_actions = {
+        "review-required": "Review the listed paths/modules and use docs/engineering/generated-merge-recovery.md; do not refresh all review hashes.",
+        "stale-retry": "Discard stale evidence; the publisher requests a bounded generation retry for the new revisions.",
+        "published": "Wait for authoritative required checks on commit_sha; publication alone is not CI success.",
+        "noop": "No repair is needed; use the authoritative checks on the current revision.",
+        "ready": "The trusted publisher must recheck revisions before an App-authenticated ordinary push.",
+        "failed": "Inspect the run diagnostics and correct the failure; no validation bypass is permitted.",
+        "refreshed": "Inspect backlog and dispatched counts; later scans drain remaining eligible requests.",
+        "trusted-generation-requested": "Inspect the fresh default-branch generation run; its candidate must pass provenance, scope, and current-ref validation before any branch write.",
+    }
+    result.setdefault("next_action", next_actions.get(result["outcome"], "Inspect the generation report."))
+    for name, variable in (("workflow_run_id", "GITHUB_RUN_ID"), ("run_attempt", "GITHUB_RUN_ATTEMPT"),
+                           ("source_run_id", "SOURCE_RUN_ID"), ("source_run_attempt", "SOURCE_RUN_ATTEMPT")):
+        if os.environ.get(variable, "").isdigit():
+            result.setdefault(name, int(os.environ[variable]))
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     if os.environ.get("GITHUB_OUTPUT"):
         with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
             output.write(f"status={result['status']}\n")
-    summary = f"Generated repair: {result['status']}. {result.get('reason', '')}\n"
+    summary = (f"Generated repair: {result['outcome']}. {result.get('reason', '')}\n\n"
+               f"Next action: {result['next_action']}\n")
+    if result.get("manual_paths"):
+        summary += "\nPaths requiring review:\n" + "\n".join(f"- {path}" for path in result["manual_paths"]) + "\n"
     print(summary)
     if os.environ.get("GITHUB_STEP_SUMMARY"):
         with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as output:
-            output.write(summary)
+            output.write(html.escape(summary))
 
 
 def dispatch_retry(api: GitHub, request: dict, default_branch: str) -> None:
+    if set(request) != set(DISPATCH_INPUTS):
+        raise RepairError("Dispatch request must contain exactly the five supported inputs")
     if not 0 <= request["attempt"] <= MAX_RETRIES:
         raise RepairError("Retry attempt is out of bounds")
     api.request("POST", "/actions/workflows/generated-repair.yml/dispatches", {
         "ref": default_branch,
-        "inputs": {key: str(value) for key, value in request.items()},
+        "inputs": {key: str(request[key]) for key in DISPATCH_INPUTS},
     })
 
 
@@ -399,6 +489,20 @@ def publish(root: Path, api: GitHub, prepared: dict, default_branch: str) -> dic
         return prepared
     request = prepared["request"]
     pr = api.get(f"/pulls/{request['pr_number']}")
+    if prepared.get("outcome") == "trusted-generation-requested":
+        unsupported = eligibility(pr, api.repository, default_branch)
+        if unsupported:
+            return dict(unsupported, request=request)
+        if pr["head"]["repo"]["full_name"] != api.repository:
+            return {"status": "manual", "outcome": "ineligible", "request": request,
+                    "reason": "Fork PR: automatic dispatch and branch writes are unavailable"}
+        # The target event is only a wake-up. A head/base race before the first
+        # trusted generation does not spend the bounded stale-output retry budget.
+        request = dict(request, head_sha=pr["head"]["sha"], base_sha=pr["base"]["sha"],
+                       attempt=0, root_sha=pr["head"]["sha"])
+        dispatch_retry(api, request, default_branch)
+        return dict(prepared, request=request, reason="Dispatched fresh generation on the trusted default branch",
+                    next_action="Inspect the fresh default-branch run; only its verified candidate can proceed to publication and required CI.")
     if not request_current(pr, request, api.repository, default_branch):
         result = stale_result(pr, request, api.repository, default_branch)
         if result["status"] == "retry":
@@ -460,11 +564,22 @@ def prepare_generation(root: Path, api: GitHub, run_id: int, default_branch: str
     run = api.get(f"/actions/runs/{run_id}")
     request = parse_request(run["display_title"])
     pr = api.get(f"/pulls/{request['pr_number']}")
+    unsupported = eligibility(pr, api.repository, default_branch)
+    if unsupported:
+        result = dict(unsupported, request=request)
+        write_outputs(result, output)
+        return result
     if not request_current(pr, request, api.repository, default_branch):
         raise RepairError("Generation request is stale; publisher will dispatch a bounded retry")
     fetch_pr(root, request["pr_number"], request["head_sha"], request["base_sha"])
     if loop_suppressed(root, request):
         result = {"status": "noop", "reason": "Repair commit detected; CI validates it without another repair"}
+    elif (run.get("event") == "pull_request_target"
+          and pr["head"]["repo"]["full_name"] == api.repository
+          and os.environ.get("TRUSTED_DISPATCH_CONFIGURED", "").lower() == "true"):
+        result = {"status": "request", "outcome": "trusted-generation-requested", "request": request,
+                  "reason": "Same-repository target event delegates generation to a default-branch dispatch",
+                  "next_action": "The publisher will request trusted generation; this target run does not generate a publishable candidate."}
     else:
         result = {"status": "generate", "reason": "Pinned PR and base revisions fetched", "request": request}
     if os.environ.get("GITHUB_OUTPUT"):
@@ -514,14 +629,20 @@ def refresh(api: GitHub, default_branch: str, limit: int = 10) -> dict:
                          "attempt": 0, "root_sha": head})
     for request in eligible[:limit]:
         dispatch_retry(api, request, default_branch)
+    # These are observed waiting pairs, not PR creation dates or inferred ages.
+    # Repeated receipts let metrics establish a lower bound on continuous wait.
+    waiting = [{key: item[key] for key in ("pr_number", "head_sha", "base_sha")}
+               for item in eligible[limit:]]
     return {"status": "refreshed", "dispatched": len(eligible[:limit]), "backlog": max(0, len(eligible) - limit),
+            "observed_at": datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+            "waiting_requests": waiting,
             "reason": f"Dispatched {len(eligible[:limit])} stale PRs; backlog {max(0, len(eligible) - limit)}; "
                       f"{skipped} head/base pairs already requested. Daily/manual refresh drains the backlog."}
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("prepare", "inspect", "publish", "refresh"))
+    parser.add_argument("command", choices=("prepare", "inspect", "publish", "refresh", "artifact-only"))
     parser.add_argument("--repo", type=Path, default=Path.cwd())
     parser.add_argument("--repository", default=os.environ.get("GITHUB_REPOSITORY"))
     parser.add_argument("--default-branch", default="main")
@@ -530,6 +651,13 @@ def main() -> int:
     parser.add_argument("--result", type=Path, required=True)
     args = parser.parse_args()
     try:
+        if args.command == "artifact-only":
+            result = json.loads(args.result.read_text(encoding="utf-8")) if args.result.exists() else {}
+            result.update(status="manual", outcome="configuration-missing",
+                          reason="Automatic publication/refresh is not configured; generation evidence remains available.",
+                          next_action="A repository administrator must configure the generated-repair environment and repository-scoped App described in docs/engineering/ci-cd-optimization.md.")
+            write_outputs(result, args.result)
+            return 0
         api = GitHub(args.repository, os.environ["GH_TOKEN"])
         if args.command == "refresh":
             write_outputs(refresh(api, args.default_branch), args.result)
@@ -539,10 +667,17 @@ def main() -> int:
             write_outputs(inspect(args.repo.resolve(), api, args.run_id, args.run_attempt, args.default_branch), args.result)
         else:
             prepared = json.loads(args.result.read_text(encoding="utf-8"))
-            write_outputs(publish(args.repo.resolve(), api, prepared, args.default_branch), args.result)
+            result = publish(args.repo.resolve(), api, prepared, args.default_branch)
+            # Preserve the inspected source evidence when publication creates a
+            # new outcome dictionary. These fields never become dispatch inputs.
+            for name in ("request", "source_run_id", "source_run_attempt",
+                         "workflow_execution_sha", "execution_ref", "workflow_ref", "workflow_ref_derived"):
+                if name in prepared:
+                    result.setdefault(name, prepared[name])
+            write_outputs(result, args.result)
         return 0
     except (RepairError, OSError, ValueError, KeyError, zipfile.BadZipFile) as exc:
-        write_outputs({"status": "manual", "reason": str(exc)}, args.result)
+        write_outputs({"status": "failed", "reason": str(exc)}, args.result)
         return 1
 
 

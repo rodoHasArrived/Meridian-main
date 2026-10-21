@@ -2,7 +2,7 @@
 
 **Status:** canonical-registry
 **Owner:** core-team
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-10-20
 
 This directory maps Meridian source code to plain-English module ownership,
 roadmap traceability, TODOs, diagrams, and validation commands.
@@ -56,3 +56,22 @@ Source and README hashes use LF-normalized UTF-8 content and ordinal repository-
 path ordering, so Windows and Linux checkouts produce the same reviewed baseline. Non-UTF-8 files
 retain byte-for-byte hashing. A changed hash after that normalization still requires review;
 refresh only the reviewed module entries with `validate-doc-hashes.py --write-module <MODULE_ID>`.
+
+The version 2 reviewed manifest fingerprints handwritten README content, retaining the exact
+registered `source-roadmap-traceability` and `source-todos` markers while excluding their generated
+bodies. The validator independently compares those bodies with the source renderer's output.
+Generated-only block changes therefore require regeneration without inventing a new documentation
+review; source and handwritten-prose changes still require review. Missing, duplicate, reversed,
+or mismatched module markers fail validation.
+
+Older version 1 baselines remain readable. Migration is explicit:
+
+```sh
+python build/scripts/docs/validate-doc-hashes.py --check-readme-migration --summary
+python build/scripts/docs/validate-doc-hashes.py --migrate-reviewed-readmes --summary
+```
+
+Migration first proves each full README still matches its accepted version 1 fingerprint. It
+preserves every accepted source hash, including stale source hashes, and refuses unmatched
+README evidence. Mixed-version merge parents require an explicit migration before reconciliation;
+never refresh all hashes merely to resolve that version mismatch.
