@@ -1,7 +1,7 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Contracts.SecurityMaster;
 
@@ -232,7 +232,7 @@ public static class SecurityUnderlyingLinkDeriver
             target?.ToString("D") ?? string.Empty,
             reference?.Trim().ToUpperInvariant() ?? string.Empty,
             source.ToString());
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(Namespace.ToString("D") + "|" + identity));
+        var hash = Sha256Digest.ComputeBytesUtf8(Namespace.ToString("D") + "|" + identity);
         var bytes = new byte[16];
         Array.Copy(hash, bytes, 16);
         // Mark as a name-based (version 5 style) GUID so it is never mistaken for a random one.
