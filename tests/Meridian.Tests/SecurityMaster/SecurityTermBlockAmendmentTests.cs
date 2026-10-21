@@ -102,6 +102,32 @@ public sealed class SecurityTermBlockAmendmentTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task AmendTermBlockAsync_StaleExpectedVersion_RejectsBeforeBuildingThePatch()
+    {
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        store.GetProjectionAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns(CreateProjection(securityId, "ConvertiblePreferred", Guid.NewGuid()));
+        var service = CreateService(eventStore, snapshotStore, store);
+
+        var act = () => service.AmendTermBlockAsync(securityId, "preferredTerms", new AmendSecurityTermBlockRequest(
+            ExpectedVersion: 6,
+            Block: JsonSerializer.SerializeToElement(new { dividendRate = 6.25m, dividendType = "Fixed" }),
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            SourceSystem: "test",
+            UpdatedBy: "codex",
+            SourceRecordId: null,
+            Reason: "edit based on an older version"));
+
+        var thrown = await act.Should().ThrowAsync<SecurityMasterConcurrencyException>();
+        thrown.Which.ExpectedVersion.Should().Be(6);
+        thrown.Which.CurrentVersion.Should().Be(7);
+        await eventStore.DidNotReceiveWithAnyArgs().AppendAsync(default, default, default!, default);
+    }
+
     private static SecurityMasterService CreateService(
         ISecurityMasterEventStore eventStore,
         ISecurityMasterSnapshotStore snapshotStore,

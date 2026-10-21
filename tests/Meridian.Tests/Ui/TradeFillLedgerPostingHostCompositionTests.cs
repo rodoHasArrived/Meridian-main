@@ -197,9 +197,10 @@ public sealed class TradeFillLedgerPostingHostCompositionTests
 
             await using (var provider = services.BuildServiceProvider())
             {
-                provider.GetRequiredService<IOrderManager>()
+                var oms = provider.GetRequiredService<IOrderManager>()
                     .Should()
-                    .BeOfType<OrderManagementSystem>();
+                    .BeOfType<OrderManagementSystem>().Subject;
+                await oms.StartAsync();
 
                 await WaitUntilAsync(
                     async () => (await fallbackStore.LoadPendingAsync()).Count == 0,

@@ -1980,6 +1980,7 @@ Meridian-main
 │   │   │   ├── next-work-determination-2026-10-04.md
 │   │   │   ├── next-work-determination-2026-10-05.md
 │   │   │   ├── next-work-determination-2026-10-16.md
+│   │   │   ├── next-work-determination-2026-10-20.md
 │   │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   │   ├── production-readiness-backlog-2026-08.md
 │   │   │   ├── README.md
@@ -3994,7 +3995,6 @@ Meridian-main
 │   │   │   │   └── StartupValidationRunner.cs
 │   │   │   ├── AssetOperationsStartup.cs
 │   │   │   ├── BankingStartup.cs
-│   │   │   ├── CircuitBreakerCallbackRouter.cs
 │   │   │   ├── CompositionConfiguration.cs
 │   │   │   ├── DatabaseMigrationReadinessReceipt.cs
 │   │   │   ├── DefaultProviderSetupHandlerRegistration.cs
@@ -4053,6 +4053,7 @@ Meridian-main
 │   │   │   ├── PostgresDirectLendingQueryService.cs
 │   │   │   └── PostgresDirectLendingService.cs
 │   │   ├── FundStructure
+│   │   │   ├── FundStructureProjector.cs
 │   │   │   ├── FundStructureTenantAttribution.cs
 │   │   │   ├── FundStructureTenantBackfillPlanner.cs
 │   │   │   ├── FundStructureTenantBackfillRunner.cs
@@ -4172,7 +4173,6 @@ Meridian-main
 │   │   │   ├── IMultiAssetCoverageInvalidator.cs
 │   │   │   ├── IPeriodAwareRestatementResolver.cs
 │   │   │   ├── ISecurityMasterConflictAuthorityPolicy.cs
-│   │   │   ├── ISecurityMasterQueryService.cs
 │   │   │   ├── ISecurityMasterRevisionPublishedHandler.cs
 │   │   │   ├── ISecurityMasterRevisionStore.cs
 │   │   │   ├── ISecurityMasterWorkbenchCommandService.cs
@@ -4192,7 +4192,6 @@ Meridian-main
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── SecurityMasterConflictDetection.cs
 │   │   │   ├── SecurityMasterConflictService.cs
-│   │   │   ├── SecurityMasterContractAliases.cs
 │   │   │   ├── SecurityMasterCostBasisAdjustmentService.cs
 │   │   │   ├── SecurityMasterCsvParser.cs
 │   │   │   ├── SecurityMasterDataQualityService.cs
@@ -5110,6 +5109,7 @@ Meridian-main
 │   │   │   ├── IPaperSessionStore.cs
 │   │   │   ├── JsonlFilePaperSessionStore.cs
 │   │   │   ├── OrderLifecycleManager.cs
+│   │   │   ├── OrderManagementHostedService.cs
 │   │   │   ├── PaperSessionOptions.cs
 │   │   │   ├── PaperSessionPersistenceService.cs
 │   │   │   ├── PaperTradingPortfolio.cs
@@ -5130,6 +5130,7 @@ Meridian-main
 │   │   ├── BrokerageServiceRegistration.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── GlobalUsings.SecurityMasterConcerns.cs
+│   │   ├── IOrderManagementLifecycle.cs
 │   │   ├── IRiskValidator.cs
 │   │   ├── ISecurityMasterGate.cs
 │   │   ├── Meridian.Execution.csproj
@@ -5142,6 +5143,9 @@ Meridian-main
 │   │   ├── OrderManagementSystem.ExecutionReportSubscriptions.cs
 │   │   ├── OrderManagementSystem.FillIdentity.cs
 │   │   ├── OrderManagementSystem.KillSwitch.cs
+│   │   ├── OrderManagementSystem.Lifecycle.cs
+│   │   ├── OrderManagementSystem.Modifications.cs
+│   │   ├── OrderManagementSystem.PendingAmendments.cs
 │   │   ├── OrderManagementSystem.Recovery.cs
 │   │   ├── OrderManagementSystem.Retention.cs
 │   │   ├── OrderManagementSystem.RiskOutcomes.cs
@@ -5159,17 +5163,20 @@ Meridian-main
 │   │   ├── BracketOrderMetadata.cs
 │   │   ├── BrokerageConfiguration.cs
 │   │   ├── BrokerageOrderPlacementGate.cs
+│   │   ├── BrokerageRequestNotSentException.cs
 │   │   ├── BrokerageValidationEvaluator.cs
 │   │   ├── BrokerNotionalMetadata.cs
 │   │   ├── CanonicalTaxLotAdapter.cs
 │   │   ├── ExecutionOrderMetadataPolicy.cs
 │   │   ├── IBrokerageAccountSync.cs
 │   │   ├── IBrokerageGateway.cs
+│   │   ├── IBrokerageOrderAmendmentRecoveryGateway.cs
 │   │   ├── IBrokerageOrderRecoveryGateway.cs
 │   │   ├── IBrokeragePositionSync.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IExecutionGatewayModeProvider.cs
 │   │   ├── IExplicitOrderCancellationGateway.cs
+│   │   ├── IExplicitOrderModificationGateway.cs
 │   │   ├── IFaceValueOrderSizingGateway.cs
 │   │   ├── INotionalOrderSizingGateway.cs
 │   │   ├── IOrderManager.cs
@@ -5494,6 +5501,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaAssetStreamAdapters.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.Cancellation.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.cs
+│   │   │   │   ├── AlpacaBrokerageGateway.Modifications.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.PortfolioSync.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.Recovery.cs
 │   │   │   │   ├── AlpacaConstants.cs
@@ -9410,6 +9418,7 @@ Meridian-main
 │   │   ├── EnvironmentDesignerServiceTests.cs
 │   │   ├── FakeFundStructureStore.cs
 │   │   ├── FundStructurePolicyServiceTests.cs
+│   │   ├── FundStructureProjectionContractTests.cs
 │   │   ├── FundStructureScopeContractTests.cs
 │   │   ├── FundStructureSetupWorkflowServiceTests.cs
 │   │   ├── FundStructureStoreTenantContractTests.cs
@@ -10093,6 +10102,7 @@ Meridian-main
 │   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── HostStartupLifecycleTests.cs
 │   │   │   │   ├── HostTenantScopeCompositionTests.cs
+│   │   │   │   ├── HttpClientFeatureRegistrationTests.cs
 │   │   │   │   ├── InstanceCompositionConfigurationTests.cs
 │   │   │   │   ├── LedgerFeatureRegistrationTests.cs
 │   │   │   │   ├── LegacySnapshotStartupTests.cs
@@ -10270,6 +10280,7 @@ Meridian-main
 │   │   │   ├── ProjectReferenceGraph.cs
 │   │   │   ├── ProjectReferenceGraphTests.cs
 │   │   │   ├── SecurityAssetClassLiteralRatchetTests.cs
+│   │   │   ├── SecurityMasterContractOwnershipTests.cs
 │   │   │   └── VendorNeutralDomainTests.cs
 │   │   ├── AssetOperations
 │   │   │   ├── AccountCashForecastTests.cs
@@ -10494,8 +10505,13 @@ Meridian-main
 │   │   │   ├── LogSanitizerTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OmsGovernedBrokerageOrderGatewayTests.cs
+│   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.cs
+│   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.Outcomes.cs
+│   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.RejectedSuccessor.cs
+│   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.Validation.cs
 │   │   │   ├── OrderManagementSystemDurableHandoffOrderingTests.cs
 │   │   │   ├── OrderManagementSystemGovernanceTests.cs
+│   │   │   ├── OrderManagementSystemLifecycleTests.cs
 │   │   │   ├── OrderManagementSystemReportStreamTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
 │   │   │   ├── PaperExecutionGatewayLotSizeTests.cs
@@ -10515,6 +10531,7 @@ Meridian-main
 │   │   │   ├── PortfolioStatePositionTrackerTests.cs
 │   │   │   ├── PositionLotSelectorTests.cs
 │   │   │   ├── RiskValidationResultTests.cs
+│   │   │   ├── RobinhoodHostedSynchronizationTests.cs
 │   │   │   ├── SessionTcaReporterTests.cs
 │   │   │   ├── TradeFillHandoffFailureStoreConcurrencyTests.cs
 │   │   │   ├── TradierExecutionReconciliationTests.cs
@@ -10634,8 +10651,14 @@ Meridian-main
 │   │   │   │   │       ├── polygon-recorded-session-spy-etf.json
 │   │   │   │   │       └── polygon-recorded-session-tsla-opening-cross.json
 │   │   │   │   ├── AlpacaAssetStreamRoutingTests.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.Amendments.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PortfolioRecovery.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.PreDispatch.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementConfirmation.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTerms.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.ReplacementTrail.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.SendBoundary.cs
 │   │   │   │   ├── AlpacaConnectionReadinessTests.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
@@ -10645,6 +10668,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
 │   │   │   │   ├── AlpacaStreamDiagnosticsTests.cs
 │   │   │   │   ├── AlpacaSymbolSearchProviderTests.cs
+│   │   │   │   ├── AlpacaTradeUpdateHashCompatibilityTests.cs
 │   │   │   │   ├── AlpacaTradeUpdatesClientTests.cs
 │   │   │   │   ├── AlphaVantageCorporateActionProviderTests.cs
 │   │   │   │   ├── AlphaVantageHistoricalDataProviderTests.cs
@@ -10666,7 +10690,12 @@ Meridian-main
 │   │   │   │   ├── FreeProviderContractTests.cs
 │   │   │   │   ├── HistoricalDataProviderContractTests.cs
 │   │   │   │   ├── IBApiVersionValidatorTests.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.AmendmentRaces.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.OperationConflict.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.Operations.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.PositionIdentity.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.PreDispatch.cs
 │   │   │   │   ├── IBDataServicesTests.cs
 │   │   │   │   ├── IBHistoricalProviderContractTests.cs
 │   │   │   │   ├── IBMarketDataClientContractTests.cs
@@ -11001,6 +11030,7 @@ Meridian-main
 │   │   │   │   └── SecurityMasterWorkbenchCommandServiceTests.cs
 │   │   │   ├── AlternativeAssetLotTests.cs
 │   │   │   ├── AssetOperationsProjectionRoundTripTests.cs
+│   │   │   ├── BondProjectionGoldenTests.cs
 │   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
 │   │   │   ├── CorporateActionAccountingMigrationTests.cs
 │   │   │   ├── CorporateActionAccountingPostgresRoundTripTests.cs
@@ -11357,6 +11387,7 @@ Meridian-main
 │   │   ├── SymbolSearch
 │   │   │   ├── OpenFigiClientAmbiguityTests.cs
 │   │   │   ├── OpenFigiClientTests.cs
+│   │   │   ├── OpenFigiSymbolResolverTests.cs
 │   │   │   └── SymbolSearchServiceTests.cs
 │   │   ├── Tenancy
 │   │   │   ├── AuthoritativeScopeFanOutServiceTests.cs

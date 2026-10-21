@@ -150,7 +150,7 @@ public sealed class SecurityAssetClassRegistryCoverageTests
 
         bond.LotUnit.Should().Be(SecurityLotUnitKind.FaceValue);
         bond.CashFlowBehavior.Should().Be(SecurityCashFlowBehavior.ContractualSchedule);
-        bond.ProjectionKind.Should().Be(SecurityTermsProjectionKind.Specialized);
+        bond.ProjectionKind.Should().Be(SecurityTermsProjectionKind.Declarative);
         bond.SupportsSchemaDrivenCreate.Should().BeTrue();
         bond.Fields.Select(static field => field.Key).Should().Equal(SecurityAssetTermsSchema.Fields("Bond").Select(static field => field.Key));
         SecurityAssetClassRegistry.Get("MBS").AssetClass.Should().Be("StructuredCredit", "aliases resolve through the catalog");

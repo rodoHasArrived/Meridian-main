@@ -38,6 +38,7 @@ public sealed class RiskIntegrationTests
                 operatorControls: controls,
                 auditTrail: auditTrail,
                 portfolioState: portfolio);
+            await oms.StartAsync();
 
             var result = await oms.PlaceOrderAsync(new OrderRequest
             {
@@ -90,6 +91,7 @@ public sealed class RiskIntegrationTests
                 gateway,
                 NullLogger<OrderManagementSystem>.Instance,
                 operatorControls: controls);
+            await oms.StartAsync();
 
             var result = await oms.PlaceOrderAsync(new OrderRequest
             {

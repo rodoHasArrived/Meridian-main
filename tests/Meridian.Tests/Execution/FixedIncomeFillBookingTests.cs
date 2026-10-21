@@ -95,6 +95,7 @@ public sealed class FixedIncomeFillBookingTests
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
             tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -128,6 +129,7 @@ public sealed class FixedIncomeFillBookingTests
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
             tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
@@ -259,6 +261,7 @@ public sealed class FixedIncomeFillBookingTests
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio,
             tradeEventPublisher: publisher);
+        await oms.StartAsync();
 
         // A market order carrying a simulated observation via LimitPrice, per the paper
         // gateway's documented pricing contract.

@@ -226,7 +226,7 @@ public sealed class SecurityMasterClosePriceServiceTests
         RetainForRead(store, new(hydrated, approved.Approval));
         store.ClearReceivedCalls();
         var restarted = new SecurityMasterPricingService(store,
-            Substitute.For<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(), NullLogger<SecurityMasterPricingService>.Instance);
+            Substitute.For<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(), NullLogger<SecurityMasterPricingService>.Instance);
         (await restarted.ApproveClosePriceSetAsync(Approve(draft))).Should().BeEquivalentTo(approved);
         await store.DidNotReceive().GetRawPricesAsync(Arg.Any<Guid>(), Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>());
         await restarted.Invoking(s => s.ApproveClosePriceSetAsync(Approve(draft) with { Rationale = "Replace review" }))
@@ -345,7 +345,7 @@ public sealed class SecurityMasterClosePriceServiceTests
     private static (SecurityMasterPricingService, ISecurityMasterPricingStore) BuildService(string scenario = "fresh")
     {
         var store = Substitute.For<ISecurityMasterPricingStore>();
-        var query = Substitute.For<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>();
+        var query = Substitute.For<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>();
         query.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new SecurityDetailDto(
             SecurityId, "Bond", SecurityStatusDto.Active, "Close test", "USD", JsonSerializer.SerializeToElement(new { }),
             JsonSerializer.SerializeToElement(new { }), [], [], 1, Close.AddDays(-10), null));

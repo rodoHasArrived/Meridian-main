@@ -281,7 +281,7 @@ public static class CorporateActionTypeDescriptorCatalog
             DisplayName: "Maturity redemption",
             Description: "Principal is redeemed at scheduled maturity at a price expressed as percent of par.",
             Aliases: ["Redemption", "REDM", "MaturityRedemption", "Maturity"],
-            ValidSecurityMasterAssetClasses: ["Bond", "TreasuryBill", "CertificateOfDeposit", "CommercialPaper", "StructuredCredit"],
+            ValidSecurityMasterAssetClasses: ["Bond", "TreasuryBill", "CertificateOfDeposit", "CommercialPaper", "StructuredCredit", "StructuredNote"],
             RequiredFields: [CorporateActionField.RedemptionPricePercentOfPar],
             AdjustmentBehavior: CorporateActionAdjustmentBehavior.None,
             LedgerPostingKind: CorporateActionLedgerPostingKind.RedemptionMemo,

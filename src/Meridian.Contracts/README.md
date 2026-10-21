@@ -16,6 +16,13 @@ and journal/line identities. Generated amount source evidence additionally carri
 `SourceScope` and `SourceSubjectId`, so historical opening-balance support preserves its own posted
 period while the shared proof drawer and guarded source route remain bound to the selected report.
 
+`SecurityMaster/ISecurityMasterQueryService.cs` is the single query contract for application,
+browser, WPF, reporting, and QuantScript consumers. The former Application interface has been
+removed; source consumers must import `Meridian.Contracts.SecurityMaster`. Configured and
+unconfigured hosts register this same contract once, so caller-supplied implementations also reach
+application validation and pricing consumers. Query signatures, retained-history semantics, and
+serialized payloads are unchanged.
+
 `LoanPortfolioSummaryDto.CurrencyTotals` carries separately denominated lending and collateral
 balances. `TotalCurrency` identifies a single-currency scalar summary; mixed-currency legacy
 scalar totals are `null`. These amounts do not imply an FX conversion. Loan currency and status

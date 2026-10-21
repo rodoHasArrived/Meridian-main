@@ -1,9 +1,7 @@
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
-// Fully qualified at each use: Meridian.Contracts.SecurityMaster also declares an
-// ISecurityMasterQueryService, so importing that namespace here would make the name ambiguous.
-using SecurityAssetClassCatalog = Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog;
 
 namespace Meridian.Ui.Shared.Services;
 

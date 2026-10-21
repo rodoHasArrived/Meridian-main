@@ -207,6 +207,11 @@ This module owns the browser UI source for operator workflows. Keep shared contr
 logic in `src/Meridian.Ui.Shared` or `src/Meridian.Ui.Services` when the same behavior is consumed
 by desktop or host surfaces.
 
+The PRD-109 contract parity gate enforces portfolio and position ownership scope, portfolio
+accounting policy and source provenance, and the execution mode on fill and attribution summaries.
+Keep the TypeScript declarations aligned with `StrategyRunReadModels.cs`; nullable source
+references remain nullable, while required policy and mode fields must also be present in fixtures.
+
 The browser workstation visual system is light-first and aligned to the Meridian Design System's
 Institutional Ops palette: paper canvas, white cards, near-black masthead/status chrome, hairline
 borders, shallow shadows, Segoe UI body/display type, and Cascadia/JetBrains Mono data text. Keep

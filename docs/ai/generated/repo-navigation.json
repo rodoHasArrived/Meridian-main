@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-10-07T18:21:09Z",
+  "generatedAt": "2026-10-20T08:15:52Z",
   "generatorVersion": "1.0",
-  "repositoryRoot": "Meridian-consolidation-publish",
+  "repositoryRoot": "Meridian-main",
   "subsystems": [
     {
       "id": "host-shell",
@@ -2444,324 +2444,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Consolidation.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-07T17:17:54Z",
-      "lastCommit": "baeea857d",
-      "lastSummary": "Preserve canonical consolidation header and posting lineage",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Consolidation/ConsolidationService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-07T17:17:54Z",
-      "lastCommit": "baeea857d",
-      "lastSummary": "Preserve canonical consolidation header and posting lineage",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ConsolidationWorkbenchService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T17:17:54Z",
-      "lastCommit": "baeea857d",
-      "lastSummary": "Preserve canonical consolidation header and posting lineage",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Ledger/AccountingPolicyService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-07T16:51:14Z",
-      "lastCommit": "405dc1f3f",
-      "lastSummary": "Close consolidation policy, review and correction edge cases",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Contracts/Ledger/ConsolidationDtos.cs",
+      "path": "src/Meridian.Application/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-07T16:51:14Z",
-      "lastCommit": "405dc1f3f",
-      "lastSummary": "Close consolidation policy, review and correction edge cases",
-      "touches": 2
+      "lastModified": "2026-10-20T08:15:36Z",
+      "lastCommit": "ebe59f45d",
+      "lastSummary": "Extract shared fund-structure query projections",
+      "touches": 24
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Consolidation.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T16:51:14Z",
-      "lastCommit": "405dc1f3f",
-      "lastSummary": "Close consolidation policy, review and correction edge cases",
-      "touches": 2
+      "path": "src/Meridian.Execution/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-20T08:15:36Z",
+      "lastCommit": "19d59dd7b",
+      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
+      "touches": 12
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Consolidation.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T16:51:14Z",
-      "lastCommit": "405dc1f3f",
-      "lastSummary": "Close consolidation policy, review and correction edge cases",
-      "touches": 2
+      "path": "src/Meridian.Strategies/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-20T08:15:36Z",
+      "lastCommit": "19d59dd7b",
+      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
+      "touches": 8
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T16:51:14Z",
-      "lastCommit": "405dc1f3f",
-      "lastSummary": "Close consolidation policy, review and correction edge cases",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.consolidation-panel.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T16:51:14Z",
-      "lastCommit": "405dc1f3f",
-      "lastSummary": "Close consolidation policy, review and correction edge cases",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/types/consolidation.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T16:51:14Z",
-      "lastCommit": "405dc1f3f",
-      "lastSummary": "Close consolidation policy, review and correction edge cases",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Contracts/Ledger/LedgerBookDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-07T16:51:14Z",
-      "lastCommit": "405dc1f3f",
-      "lastSummary": "Close consolidation policy, review and correction edge cases",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Ledger/AccountingJournalDraftService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-07T16:51:14Z",
-      "lastCommit": "405dc1f3f",
-      "lastSummary": "Close consolidation policy, review and correction edge cases",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ConsolidationChartValidation.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T16:51:14Z",
-      "lastCommit": "405dc1f3f",
-      "lastSummary": "Close consolidation policy, review and correction edge cases",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Consolidation/PostgresConsolidationPostingAuthority.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-07T16:17:55Z",
-      "lastCommit": "4c039f269",
-      "lastSummary": "Apply canonical formatting to consolidation authority leases",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/FundStructure/PostgresFundStructureStore.Consolidation.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-07T16:17:55Z",
-      "lastCommit": "4c039f269",
-      "lastSummary": "Apply canonical formatting to consolidation authority leases",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T16:14:31Z",
-      "lastCommit": "309c05f8e",
-      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
-      "touches": 30
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-07T16:14:31Z",
-      "lastCommit": "309c05f8e",
-      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
+      "path": "src/Meridian.Execution/OrderManagementSystem.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-20T08:15:36Z",
+      "lastCommit": "19d59dd7b",
+      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
       "touches": 4
     },
     {
-      "path": "src/Meridian.FinancialOperations/Consolidation/ConsolidationPerimeterResolver.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-07T16:14:31Z",
-      "lastCommit": "309c05f8e",
-      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
-      "touches": 3
+      "path": "src/Meridian.Strategies/Live/LiveTradingEngine.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-20T08:15:36Z",
+      "lastCommit": "19d59dd7b",
+      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
+      "touches": 4
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T16:14:31Z",
-      "lastCommit": "309c05f8e",
-      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.Validation.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-07T16:14:31Z",
-      "lastCommit": "309c05f8e",
-      "lastSummary": "Close consolidation review gaps and refresh schema contracts",
+      "path": "src/Meridian.Execution/BrokerageServiceRegistration.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-20T08:15:36Z",
+      "lastCommit": "19d59dd7b",
+      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-07T15:53:01Z",
-      "lastCommit": "963a1e2d3",
-      "lastSummary": "Retain consolidation ownership and policy authority through commit",
-      "touches": 22
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-07T15:53:01Z",
-      "lastCommit": "963a1e2d3",
-      "lastSummary": "Retain consolidation ownership and policy authority through commit",
-      "touches": 16
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-07T15:53:01Z",
-      "lastCommit": "963a1e2d3",
-      "lastSummary": "Retain consolidation ownership and policy authority through commit",
-      "touches": 15
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T15:53:01Z",
-      "lastCommit": "963a1e2d3",
-      "lastSummary": "Retain consolidation ownership and policy authority through commit",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-07T15:53:01Z",
-      "lastCommit": "963a1e2d3",
-      "lastSummary": "Retain consolidation ownership and policy authority through commit",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-07T15:53:01Z",
-      "lastCommit": "963a1e2d3",
-      "lastSummary": "Retain consolidation ownership and policy authority through commit",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/IConsolidationPostingAuthority.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-07T15:53:01Z",
-      "lastCommit": "963a1e2d3",
-      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "path": "src/Meridian.Execution/IOrderManagementLifecycle.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-20T08:15:36Z",
+      "lastCommit": "19d59dd7b",
+      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Storage/Ledger/LedgerStoreExtensions.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-07T15:53:01Z",
-      "lastCommit": "963a1e2d3",
-      "lastSummary": "Retain consolidation ownership and policy authority through commit",
+      "path": "src/Meridian.Execution/Meridian.Execution.csproj",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-20T08:15:36Z",
+      "lastCommit": "19d59dd7b",
+      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagementSystem.Lifecycle.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-20T08:15:36Z",
+      "lastCommit": "19d59dd7b",
+      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Execution/Services/OrderManagementHostedService.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-20T08:15:36Z",
+      "lastCommit": "19d59dd7b",
+      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/FundStructure/FundStructureProjector.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-20T08:15:36Z",
+      "lastCommit": "ebe59f45d",
+      "lastSummary": "Extract shared fund-structure query projections",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-20T08:15:36Z",
+      "lastCommit": "ebe59f45d",
+      "lastSummary": "Extract shared fund-structure query projections",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/FundStructure/PostgresFundStructureService.Tenancy.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-20T08:15:36Z",
+      "lastCommit": "ebe59f45d",
+      "lastSummary": "Extract shared fund-structure query projections",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/FundStructure/PostgresFundStructureService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-20T08:15:36Z",
+      "lastCommit": "ebe59f45d",
+      "lastSummary": "Extract shared fund-structure query projections",
       "touches": 1
     },
     {
       "path": "src/Meridian.Contracts/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-07T08:23:42-07:00",
-      "lastCommit": "9f51f515f",
-      "lastSummary": "Implement W10 two-entity consolidation slice",
-      "touches": 15
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 48
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:23:42-07:00",
-      "lastCommit": "9f51f515f",
-      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 17
+    },
+    {
+      "path": "src/Meridian.Infrastructure/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 13
+    },
+    {
+      "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
       "touches": 10
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/types.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:23:42-07:00",
-      "lastCommit": "9f51f515f",
-      "lastSummary": "Implement W10 two-entity consolidation slice",
-      "touches": 7
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterQueryService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 5
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.MutationRecovery.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:23:42-07:00",
-      "lastCommit": "9f51f515f",
-      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "path": "src/Meridian.Contracts/SecurityMaster/ISecurityMasterQueryService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
       "touches": 3
     },
     {
-      "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs",
+      "path": "src/Meridian.Ui/dashboard/src/types/workstation-6.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Wpf/Features/Strategy/StrategyFeatureModule.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-07T08:23:42-07:00",
-      "lastCommit": "9f51f515f",
-      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/portfolio-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/Composition/Features/HttpClientFeatureRegistration.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Composition/HostStartup.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/Composition/ServiceCompositionRoot.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/DirectLending/LoanAccountingProjector.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-07T08:23:42-07:00",
-      "lastCommit": "9f51f515f",
-      "lastSummary": "Implement W10 two-entity consolidation slice",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Lifecycle.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:23:42-07:00",
-      "lastCommit": "9f51f515f",
-      "lastSummary": "Implement W10 two-entity consolidation slice",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:23:42-07:00",
-      "lastCommit": "9f51f515f",
-      "lastSummary": "Implement W10 two-entity consolidation slice",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/finance-standard-pages-screen.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:23:42-07:00",
-      "lastCommit": "9f51f515f",
-      "lastSummary": "Implement W10 two-entity consolidation slice",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/finance-standard-pages-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-07T08:23:42-07:00",
-      "lastCommit": "9f51f515f",
-      "lastSummary": "Implement W10 two-entity consolidation slice",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Entities/FundStructure/FundStructurePolicyService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-07T08:23:42-07:00",
-      "lastCommit": "9f51f515f",
-      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Entities/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-07T08:23:42-07:00",
-      "lastCommit": "9f51f515f",
-      "lastSummary": "Implement W10 two-entity consolidation slice",
+      "path": "src/Meridian.Infrastructure/Http/SharedResiliencePolicies.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
       "touches": 1
+    },
+    {
+      "path": "src/Meridian.QuantScript/Api/QuantDataContext.cs",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/MultiAssetCoverageReadService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types/workstation-5.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian/UiServer.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-20T08:15:24Z",
+      "lastCommit": "8c517f05a",
+      "lastSummary": "Consolidate shared contracts and isolate HTTP circuit-breaker callbacks",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-20T03:07:24Z",
+      "lastCommit": "e81afb965",
+      "lastSummary": "Report pre-send amendment failures as not sent and keep rejected successors on original terms",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Execution.Sdk/README.md",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-20T03:07:24Z",
+      "lastCommit": "e81afb965",
+      "lastSummary": "Report pre-send amendment failures as not sent and keep rejected successors on original terms",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagementSystem.Recovery.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-20T03:07:24Z",
+      "lastCommit": "e81afb965",
+      "lastSummary": "Report pre-send amendment failures as not sent and keep rejected successors on original terms",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Execution/OrderManagementSystem.PendingAmendments.cs",
+      "subsystem": "Execution, Risk, and Strategies",
+      "lastModified": "2026-10-20T03:07:24Z",
+      "lastCommit": "e81afb965",
+      "lastSummary": "Report pre-send amendment failures as not sent and keep rejected successors on original terms",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageGateway.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-10-20T03:07:24Z",
+      "lastCommit": "e81afb965",
+      "lastSummary": "Report pre-send amendment failures as not sent and keep rejected successors on original terms",
+      "touches": 5
     }
   ],
   "recentChangesWindowDays": 14,

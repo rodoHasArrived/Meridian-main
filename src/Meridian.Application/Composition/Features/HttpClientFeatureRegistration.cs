@@ -13,16 +13,20 @@ internal sealed class HttpClientFeatureRegistration : IServiceFeatureRegistratio
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
         // Register all named HttpClient configurations with Polly policies.
-        services.AddMarketDataHttpClientsTracked((name, state, error) =>
+        services.AddMarketDataHttpClientsTracked(serviceProvider =>
         {
-            var circuitBreakerState = state switch
+            var statusService = serviceProvider.GetService<CircuitBreakerStatusService>();
+            return (name, state, error) =>
             {
-                "Open" => CircuitBreakerState.Open,
-                "HalfOpen" => CircuitBreakerState.HalfOpen,
-                _ => CircuitBreakerState.Closed
-            };
+                var circuitBreakerState = state switch
+                {
+                    "Open" => CircuitBreakerState.Open,
+                    "HalfOpen" => CircuitBreakerState.HalfOpen,
+                    _ => CircuitBreakerState.Closed
+                };
 
-            CircuitBreakerCallbackRouter.Notify(name, circuitBreakerState, error);
+                statusService?.RecordStateTransition(name, circuitBreakerState, error);
+            };
         });
 
         return services;

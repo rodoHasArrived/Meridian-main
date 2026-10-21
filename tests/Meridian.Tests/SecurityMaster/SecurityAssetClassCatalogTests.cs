@@ -33,6 +33,66 @@ public sealed class SecurityAssetClassCatalogTests
         descriptor.AmortizesTowardPar.Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData("Equity", "Equity")]
+    [InlineData(" bond ", "Bond")]
+    [InlineData("us_equity", "Equity")]
+    [InlineData("us_option", "Option")]
+    [InlineData("Treasury Bond", "Bond")]
+    [InlineData("Treasury Bill", "TreasuryBill")]
+    [InlineData("Private Credit Loan", "DirectLoan")]
+    [InlineData("Corporate Bond", "Bond")]
+    [InlineData("mbs", "StructuredCredit")]
+    public void TryResolveLabel_ResolvesProviderLabelsThroughCatalogNamesAndAliases(string label, string expected)
+    {
+        SecurityAssetClassCatalog.TryResolveLabel(label, out var descriptor).Should().BeTrue();
+
+        descriptor!.AssetClass.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("Common Stock")]
+    [InlineData("Fixed Income")]
+    [InlineData("stockbroker")]
+    [InlineData("Equity Option")]
+    public void TryResolveLabel_LeavesUnknownAndAmbiguousLabelsUnresolved(string? label)
+    {
+        SecurityAssetClassCatalog.TryResolveLabel(label, out var descriptor).Should().BeFalse();
+
+        descriptor.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData("Common Stock", SecurityAssetClassLabelResolution.Unresolved)]
+    [InlineData("Fixed Income", SecurityAssetClassLabelResolution.Unresolved)]
+    [InlineData("Equity Option", SecurityAssetClassLabelResolution.Ambiguous)]
+    [InlineData("Bond / Equity", SecurityAssetClassLabelResolution.Ambiguous)]
+    [InlineData("Structured Credit Equity", SecurityAssetClassLabelResolution.Ambiguous)]
+    [InlineData("Structured Credit Loan", SecurityAssetClassLabelResolution.Ambiguous)]
+    [InlineData("Structured Credit", SecurityAssetClassLabelResolution.Resolved)]
+    [InlineData("Treasury Bond", SecurityAssetClassLabelResolution.Resolved)]
+    public void ResolveLabel_TellsAnAmbiguousLabelFromAnUnknownOne(string label, SecurityAssetClassLabelResolution expected)
+    {
+        // A caller may classify an unknown label from another source; an ambiguous one has already
+        // been judged by the catalog and must not be re-decided by a looser source.
+        SecurityAssetClassCatalog.ResolveLabel(label, out var descriptor).Should().Be(expected);
+
+        (descriptor is not null).Should().Be(expected == SecurityAssetClassLabelResolution.Resolved);
+    }
+
+    [Fact]
+    public void TryGet_DistinguishesUnknownInputFromTheUnknownDescriptor()
+    {
+        SecurityAssetClassCatalog.TryGet("NotAClass", out _).Should().BeFalse();
+        SecurityAssetClassCatalog.TryGet(null, out _).Should().BeFalse();
+        SecurityAssetClassCatalog.TryGet("Loan", out var loan).Should().BeTrue();
+
+        loan!.AssetClass.Should().Be("DirectLoan");
+    }
+
     [Fact]
     public void Templates_HaveExactDeclaredBindings_AndUnrealizedIsNeverSale()
     {

@@ -74,7 +74,13 @@ public enum ExecutionReportType
     Cancelled,
     Rejected,
     Modified,
-    Expired
+    Expired,
+    /// <summary>The cancellation was refused; OrderStatus describes the actual order.</summary>
+    CancelRejected,
+    /// <summary>The amendment was refused; OrderStatus describes the actual order.</summary>
+    ModificationRejected,
+    /// <summary>The amendment may have reached the broker and requires reconciliation.</summary>
+    ModificationPending
 }
 
 /// <summary>Request to place a new order.</summary>
@@ -183,6 +189,25 @@ public sealed record ExecutionReport
     public string? GatewayOrderId { get; init; }
     /// <summary>The client-provided order ID from the original <see cref="OrderRequest"/>.</summary>
     public string? ClientOrderId { get; init; }
+    /// <summary>Broker identity superseded by this replacement, when explicitly reported.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ReplacesOrderId { get; init; }
+    /// <summary>Provisional successor identity; it is not yet the active broker order.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? CandidateGatewayOrderId { get; init; }
+    /// <summary>Provisional client/ref identity, distinct from the broker order namespace.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? CandidateClientOrderId { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? OrderLimitPrice { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? OrderStopPrice { get; init; }
+    /// <summary>Both order prices (including absent prices) are authoritative broker terms.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public bool HasOrderTerms { get; init; }
+    /// <summary>FillPrice is a snapshot's cumulative average, rather than the latest fill price.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public bool FillPriceIsCumulativeAverage { get; init; }
     public OptionContractIdentity? OptionContract { get; init; }
     public IReadOnlyList<OrderLeg>? Legs { get; init; }
     public ExecutionDiagnostics? Diagnostics { get; init; }

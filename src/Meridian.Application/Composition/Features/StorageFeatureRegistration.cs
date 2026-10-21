@@ -339,8 +339,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
             services.AddSingleton<ISecurityMasterAmender>(sp => (ISecurityMasterAmender)sp.GetRequiredService<ISecurityMasterService>());
             services.AddSingleton<SecurityMasterQueryService>();
-            services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
-            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
+            services.AddSingleton<ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<ISecurityMasterCorporateActionCommandService, SecurityMasterCorporateActionCommandService>();
             services.AddSingleton<ISecurityValidationService, SecurityValidationService>();
             services.AddSingleton<ICorporateActionCommandService, CorporateActionCommandService>();
@@ -456,8 +455,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         // Register null/stub implementations as fallbacks when Security Master is not configured.
         // These ensure that ASP.NET Core Minimal API routing initialises correctly (unregistered
         // service parameters cause startup crashes) while returning sensible empty / error responses.
-        services.TryAddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService, NullSecurityMasterQueryService>();
-        services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService, NullSecurityMasterQueryService>();
+        services.TryAddSingleton<ISecurityMasterQueryService, NullSecurityMasterQueryService>();
         services.TryAddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, NullSecurityMasterService>();
         services.TryAddSingleton<ISecurityMasterCorporateActionCommandService, NullSecurityMasterCorporateActionCommandService>();
         services.TryAddSingleton<IBondReferenceService, NullBondReferenceService>();
