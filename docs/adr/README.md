@@ -26,8 +26,8 @@ record at its stated date.
 | --- | --- |
 | [017: Modular Operational Monolith](017-modular-operational-monolith.md) | Accepted |
 | [018: Declarative Statement Mapping Profiles](018-declarative-statement-mapping-profiles.md) | Accepted |
-| [019: Production Support Matrix and Typed Deployment Posture](019-production-support-matrix-and-deployment-posture.md) | Proposed; core-team sign-off pending |
-| [020: Local Lifecycle Control Plane](020-lifecycle-control-plane.md) | Proposed |
+| [019: Production Support Matrix and Typed Deployment Posture](019-production-support-matrix-and-deployment-posture.md) | Accepted (core-team sign-off 2026-10-20) |
+| [020: Local Lifecycle Control Plane](020-lifecycle-control-plane.md) | Accepted (core-team sign-off 2026-10-20) |
 | [021: Verified Operation Outcomes and Operational Case History](021-verified-operation-outcomes-and-case-history.md) | Proposed |
 | [022: Canonical Asset-Class Homes](022-canonical-asset-class-homes.md) | Accepted |
 | [023: Host-Wide Provider Credential Ownership](023-host-wide-provider-credential-ownership.md) | Proposed; implementation plan |
