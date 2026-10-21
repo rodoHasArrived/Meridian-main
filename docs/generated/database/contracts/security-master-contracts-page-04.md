@@ -2,11 +2,13 @@
 
 # `security-master-contracts` data objects - page 4 of 5
 
-Objects 241-320 of 332. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 333. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityFieldProvenanceOrigins["SecurityFieldProvenanceOrigins"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityFieldProvenanceRecord["SecurityFieldProvenanceRecord"] {
         +DateTimeOffset? AsOf
         +decimal? Confidence
@@ -456,18 +458,6 @@ classDiagram
         +string Code
         +string Message
     }
-    class Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto["StructuredCreditReclassificationCandidateDto"] {
-        +IReadOnlyList~StructuredCreditReclassificationBlockerDto~ Blockers
-        +JsonElement DerivedAssetSpecificTerms
-        +string DisplayName
-        +StructuredCreditReclassificationDisposition Disposition
-        +string PrimaryIdentifierKind
-        +string PrimaryIdentifierValue
-        +string? ProposedKind
-        +Guid SecurityId
-        +string SourceAssetClass
-        +string SourceLabel
-    }
     Meridian_Contracts_SecurityMaster_SecurityForwardCurve --> Meridian_Contracts_SecurityMaster_SecurityForwardCurvePoint
     Meridian_Contracts_SecurityMaster_SecurityIdentifierDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlow --> Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowKind
@@ -505,5 +495,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg
-    Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationBlockerDto
 ```

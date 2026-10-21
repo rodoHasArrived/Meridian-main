@@ -7,6 +7,7 @@ using Meridian.Contracts.Tenancy;
 using Meridian.Entities.FundStructure;
 using Meridian.Storage.FundStructure;
 using static Meridian.Contracts.Text.TextPrimitives;
+using static Meridian.Application.FundStructure.FundStructureProjector;
 
 namespace Meridian.Application.FundStructure;
 
@@ -714,22 +715,7 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         var sharedDataAccess = await GetSharedDataAccessAsync(ct).ConfigureAwait(false);
         var visibleAccounts = AttachSharedDataAccess(
             await GetVisibleAccountsAsync(query.ActiveOnly, asOf, tenantScoped, ct).ConfigureAwait(false), sharedDataAccess);
-        var filtered = FilterForOrganizationScope(snap, visibleAccounts, query.OrganizationId, query.BusinessId, query.ActiveOnly, asOf);
-        var enrichedPortfolios = AttachSharedDataAccess(filtered.InvestmentPortfolios, sharedDataAccess);
-
-        var nodes = BuildNodes(filtered)
-            .Where(n => query.NodeId is null || n.NodeId == query.NodeId.Value)
-            .Where(n => query.NodeKind is null || n.Kind == query.NodeKind.Value)
-            .ToList();
-        var nodeIds = nodes.Select(static n => n.NodeId).ToHashSet();
-
-        return new OrganizationStructureGraphDto(
-            filtered.Organizations, filtered.Businesses, filtered.Clients, filtered.Funds,
-            filtered.Sleeves, filtered.Vehicles, filtered.Entities, enrichedPortfolios,
-            filtered.Accounts, nodes,
-            filtered.OwnershipLinks.Where(l => nodeIds.Contains(l.ParentNodeId) && nodeIds.Contains(l.ChildNodeId)).ToList(),
-            filtered.Assignments.Where(a => nodeIds.Contains(a.NodeId)).ToList(),
-            sharedDataAccess);
+        return FundStructureProjector.ProjectOrganizationStructure(snap, visibleAccounts, query, asOf, sharedDataAccess);
     }
 
     public async Task<FundStructureGraphDto> GetFundStructureGraphAsync(
@@ -743,51 +729,7 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         var snap = tenantScoped.ToStructureSnapshot();
         var asOf = query.AsOf ?? DateTimeOffset.UtcNow;
         var visibleAccounts = await GetVisibleAccountsAsync(query.ActiveOnly, asOf, tenantScoped, ct).ConfigureAwait(false);
-        var activeLinks = FilterVisible(snap.OwnershipLinks, query.ActiveOnly, asOf, static l => (l.EffectiveFrom, l.EffectiveTo));
-        var activeAssignments = FilterVisible(snap.Assignments, query.ActiveOnly, asOf, static a => (a.EffectiveFrom, a.EffectiveTo));
-        var funds = FilterVisible(snap.Funds, query.ActiveOnly, asOf, static f => (f.EffectiveFrom, f.EffectiveTo));
-        if (query.FundId.HasValue)
-            funds = funds.Where(f => f.FundId == query.FundId.Value).ToList();
-
-        var fundIds = funds.Select(static f => f.FundId).ToHashSet();
-        var sleeves = FilterVisible(snap.Sleeves, query.ActiveOnly, asOf, static s => (s.EffectiveFrom, s.EffectiveTo))
-            .Where(s => fundIds.Contains(s.FundId)).ToList();
-        var sleeveIds = sleeves.Select(static s => s.SleeveId).ToHashSet();
-        var vehicles = FilterVisible(snap.Vehicles, query.ActiveOnly, asOf, static v => (v.EffectiveFrom, v.EffectiveTo))
-            .Where(v => fundIds.Contains(v.FundId)).ToList();
-        var vehicleIds = vehicles.Select(static v => v.VehicleId).ToHashSet();
-        var portfolioIds = FilterVisible(snap.InvestmentPortfolios, query.ActiveOnly, asOf, static p => (p.EffectiveFrom, p.EffectiveTo))
-            .Where(p => (p.FundId.HasValue && fundIds.Contains(p.FundId.Value))
-                     || (p.SleeveId.HasValue && sleeveIds.Contains(p.SleeveId.Value))
-                     || (p.VehicleId.HasValue && vehicleIds.Contains(p.VehicleId.Value)))
-            .Select(static p => p.InvestmentPortfolioId).ToHashSet();
-        var entityIds = vehicles.Select(static v => v.LegalEntityId)
-            .Concat(funds.SelectMany(static f => f.EntityIds)).ToHashSet();
-        var accounts = visibleAccounts.Where(a =>
-            (a.FundId.HasValue && fundIds.Contains(a.FundId.Value))
-            || (a.SleeveId.HasValue && sleeveIds.Contains(a.SleeveId.Value))
-            || (a.VehicleId.HasValue && vehicleIds.Contains(a.VehicleId.Value))
-            || (a.EntityId.HasValue && entityIds.Contains(a.EntityId.Value))
-            || IsAccountLinkedToAny(a.AccountId, fundIds, activeLinks)
-            || IsAccountLinkedToAny(a.AccountId, sleeveIds, activeLinks)
-            || IsAccountLinkedToAny(a.AccountId, vehicleIds, activeLinks)
-            || IsAccountLinkedToAny(a.AccountId, portfolioIds, activeLinks)).ToList();
-        var entities = FilterVisible(snap.Entities, query.ActiveOnly, asOf, static e => (e.EffectiveFrom, e.EffectiveTo))
-            .Where(e => entityIds.Contains(e.EntityId) || IsEntityLinkedToScope(e.EntityId, fundIds, activeLinks)).ToList();
-
-        var scope = new StructureScope([], [], [], funds, sleeves, vehicles, entities, [], accounts, activeLinks, activeAssignments);
-        var nodes = BuildNodes(scope)
-            .Where(n => n.Kind is FundStructureNodeKindDto.Fund or FundStructureNodeKindDto.Sleeve
-                or FundStructureNodeKindDto.Vehicle or FundStructureNodeKindDto.Entity or FundStructureNodeKindDto.Account)
-            .Where(n => query.NodeId is null || n.NodeId == query.NodeId.Value)
-            .Where(n => query.NodeKind is null || n.Kind == query.NodeKind.Value)
-            .ToList();
-        var nodeIds = nodes.Select(static n => n.NodeId).ToHashSet();
-
-        return new FundStructureGraphDto(
-            nodes,
-            activeLinks.Where(l => nodeIds.Contains(l.ParentNodeId) && nodeIds.Contains(l.ChildNodeId)).ToList(),
-            activeAssignments.Where(a => nodeIds.Contains(a.NodeId)).ToList());
+        return FundStructureProjector.ProjectFundStructureGraph(snap, visibleAccounts, query, asOf);
     }
 
     public async Task<AdvisoryStructureViewDto?> GetAdvisoryViewAsync(
@@ -803,45 +745,7 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         var sharedDataAccess = await GetSharedDataAccessAsync(ct).ConfigureAwait(false);
         var accounts = AttachSharedDataAccess(
             await GetVisibleAccountsAsync(query.ActiveOnly, asOf, tenantScoped, ct).ConfigureAwait(false), sharedDataAccess);
-        var activeLinks = FilterVisible(snap.OwnershipLinks, query.ActiveOnly, asOf, static l => (l.EffectiveFrom, l.EffectiveTo));
-
-        var business = FilterVisible(snap.Businesses, query.ActiveOnly, asOf, static b => (b.EffectiveFrom, b.EffectiveTo))
-            .FirstOrDefault(b => b.BusinessId == query.BusinessId);
-        if (business is null)
-            return null;
-        if (query.OrganizationId.HasValue && business.OrganizationId != query.OrganizationId.Value)
-            return null;
-
-        var organization = FilterVisible(snap.Organizations, query.ActiveOnly, asOf, static o => (o.EffectiveFrom, o.EffectiveTo))
-            .FirstOrDefault(o => o.OrganizationId == business.OrganizationId);
-        if (organization is null)
-            return null;
-
-        var clients = FilterVisible(snap.Clients, query.ActiveOnly, asOf, static c => (c.EffectiveFrom, c.EffectiveTo))
-            .Where(c => c.BusinessId == business.BusinessId)
-            .Where(c => query.ClientId is null || c.ClientId == query.ClientId.Value).ToList();
-        var portfolios = FilterVisible(snap.InvestmentPortfolios, query.ActiveOnly, asOf, static p => (p.EffectiveFrom, p.EffectiveTo))
-            .Where(p => p.BusinessId == business.BusinessId)
-            .Where(IsAdvisoryPortfolio)
-            .Where(p => query.InvestmentPortfolioId is null || p.InvestmentPortfolioId == query.InvestmentPortfolioId.Value)
-            .ToList();
-        var enrichedPortfolios = AttachSharedDataAccess(portfolios, sharedDataAccess);
-
-        var clientViews = clients.Select(client =>
-        {
-            var clientPortfolios = enrichedPortfolios.Where(p => p.ClientId == client.ClientId).ToList();
-            var portfolioIds = clientPortfolios.Select(static p => p.InvestmentPortfolioId).ToHashSet();
-            var clientAccounts = GetScopeAccounts(accounts, activeLinks, [], [], [], [], portfolioIds).ToList();
-            return new AdvisoryClientViewDto(client, clientPortfolios, clientAccounts);
-        }).ToList();
-
-        var unassignedPortfolios = enrichedPortfolios.Where(p => p.ClientId is null).ToList();
-        var assignedAccountIds = clientViews.SelectMany(static v => v.Accounts).Select(static a => a.AccountId).ToHashSet();
-        var unassignedAccounts = GetScopeAccounts(accounts, activeLinks, [], [], [], [],
-                unassignedPortfolios.Select(static p => p.InvestmentPortfolioId).ToHashSet())
-            .Where(a => !assignedAccountIds.Contains(a.AccountId)).ToList();
-
-        return new AdvisoryStructureViewDto(organization, business, clientViews, unassignedPortfolios, unassignedAccounts, sharedDataAccess);
+        return FundStructureProjector.ProjectAdvisoryView(snap, accounts, query, asOf, sharedDataAccess);
     }
 
     public async Task<FundOperatingViewDto?> GetFundOperatingViewAsync(
@@ -857,86 +761,7 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         var sharedDataAccess = await GetSharedDataAccessAsync(ct).ConfigureAwait(false);
         var accounts = AttachSharedDataAccess(
             await GetVisibleAccountsAsync(query.ActiveOnly, asOf, tenantScoped, ct).ConfigureAwait(false), sharedDataAccess);
-        var activeLinks = FilterVisible(snap.OwnershipLinks, query.ActiveOnly, asOf, static l => (l.EffectiveFrom, l.EffectiveTo));
-
-        var business = FilterVisible(snap.Businesses, query.ActiveOnly, asOf, static b => (b.EffectiveFrom, b.EffectiveTo))
-            .FirstOrDefault(b => b.BusinessId == query.BusinessId);
-        if (business is null)
-            return null;
-        if (query.OrganizationId.HasValue && business.OrganizationId != query.OrganizationId.Value)
-            return null;
-
-        var organization = FilterVisible(snap.Organizations, query.ActiveOnly, asOf, static o => (o.EffectiveFrom, o.EffectiveTo))
-            .FirstOrDefault(o => o.OrganizationId == business.OrganizationId);
-        if (organization is null)
-            return null;
-
-        var funds = FilterVisible(snap.Funds, query.ActiveOnly, asOf, static f => (f.EffectiveFrom, f.EffectiveTo))
-            .Where(f => f.BusinessId == business.BusinessId)
-            .Where(f => query.FundId is null || f.FundId == query.FundId.Value).ToList();
-        var fundIds = funds.Select(static f => f.FundId).ToHashSet();
-        var allSleeves = FilterVisible(snap.Sleeves, query.ActiveOnly, asOf, static s => (s.EffectiveFrom, s.EffectiveTo))
-            .Where(s => fundIds.Contains(s.FundId))
-            .Where(s => query.SleeveId is null || s.SleeveId == query.SleeveId.Value).ToList();
-        var allVehicles = FilterVisible(snap.Vehicles, query.ActiveOnly, asOf, static v => (v.EffectiveFrom, v.EffectiveTo))
-            .Where(v => fundIds.Contains(v.FundId))
-            .Where(v => query.VehicleId is null || v.VehicleId == query.VehicleId.Value).ToList();
-        var allPortfolios = FilterVisible(snap.InvestmentPortfolios, query.ActiveOnly, asOf, static p => (p.EffectiveFrom, p.EffectiveTo))
-            .Where(p => p.BusinessId == business.BusinessId)
-            .Where(IsFundPortfolio)
-            .Where(p => query.InvestmentPortfolioId is null || p.InvestmentPortfolioId == query.InvestmentPortfolioId.Value)
-            .ToList();
-        var enrichedPortfolios = AttachSharedDataAccess(allPortfolios, sharedDataAccess);
-        var entities = FilterVisible(snap.Entities, query.ActiveOnly, asOf, static e => (e.EffectiveFrom, e.EffectiveTo))
-            .ToDictionary(static e => e.EntityId);
-
-        var fundSlices = new List<FundOperatingSliceDto>();
-        foreach (var fund in funds)
-        {
-            var sleeves = allSleeves.Where(s => s.FundId == fund.FundId).ToList();
-            var vehicles = allVehicles.Where(v => v.FundId == fund.FundId).ToList();
-            var directPortfolios = enrichedPortfolios
-                .Where(p => p.FundId == fund.FundId && p.SleeveId is null && p.VehicleId is null).ToList();
-            var directAccounts = GetScopeAccounts(accounts, activeLinks,
-                    fund.EntityIds.ToHashSet(), [fund.FundId], [], [],
-                    directPortfolios.Select(static p => p.InvestmentPortfolioId).ToHashSet())
-                .Where(a => a.SleeveId is null && a.VehicleId is null).ToList();
-
-            var sleeveSlices = sleeves.Select(sleeve =>
-            {
-                var portfolios = enrichedPortfolios.Where(p => p.SleeveId == sleeve.SleeveId).ToList();
-                var sleeveAccounts = GetScopeAccounts(accounts, activeLinks, [], [], [sleeve.SleeveId], [],
-                    portfolios.Select(static p => p.InvestmentPortfolioId).ToHashSet()).ToList();
-                return new FundSleeveOperatingViewDto(sleeve, portfolios, sleeveAccounts);
-            }).ToList();
-
-            var vehicleSlices = vehicles.Select(vehicle =>
-            {
-                var portfolios = enrichedPortfolios.Where(p => p.VehicleId == vehicle.VehicleId).ToList();
-                var vehicleAccounts = GetScopeAccounts(accounts, activeLinks,
-                    [vehicle.LegalEntityId], [], [], [vehicle.VehicleId],
-                    portfolios.Select(static p => p.InvestmentPortfolioId).ToHashSet()).ToList();
-                entities.TryGetValue(vehicle.LegalEntityId, out var entity);
-                return new VehicleOperatingViewDto(vehicle, entity, portfolios, vehicleAccounts);
-            }).ToList();
-
-            fundSlices.Add(new FundOperatingSliceDto(fund, directPortfolios, directAccounts, sleeveSlices, vehicleSlices));
-        }
-
-        var assignedPortfolioIds = fundSlices.SelectMany(static s => s.InvestmentPortfolios)
-            .Concat(fundSlices.SelectMany(static s => s.Sleeves).SelectMany(static s => s.InvestmentPortfolios))
-            .Concat(fundSlices.SelectMany(static s => s.Vehicles).SelectMany(static v => v.InvestmentPortfolios))
-            .Select(static p => p.InvestmentPortfolioId).ToHashSet();
-        var unassignedPortfolios = enrichedPortfolios.Where(p => !assignedPortfolioIds.Contains(p.InvestmentPortfolioId)).ToList();
-        var assignedAccountIds = fundSlices.SelectMany(static s => s.Accounts)
-            .Concat(fundSlices.SelectMany(static s => s.Sleeves).SelectMany(static s => s.Accounts))
-            .Concat(fundSlices.SelectMany(static s => s.Vehicles).SelectMany(static v => v.Accounts))
-            .Select(static a => a.AccountId).ToHashSet();
-        var unassignedAccounts = GetScopeAccounts(accounts, activeLinks, [], [], [], [],
-                unassignedPortfolios.Select(static p => p.InvestmentPortfolioId).ToHashSet())
-            .Where(a => !assignedAccountIds.Contains(a.AccountId)).ToList();
-
-        return new FundOperatingViewDto(organization, business, fundSlices, unassignedPortfolios, unassignedAccounts, sharedDataAccess);
+        return FundStructureProjector.ProjectFundOperatingView(snap, accounts, query, asOf, sharedDataAccess);
     }
 
     public async Task<AccountingStructureViewDto> GetAccountingViewAsync(
@@ -952,67 +777,7 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
         var sharedDataAccess = await GetSharedDataAccessAsync(ct).ConfigureAwait(false);
         var visibleAccounts = AttachSharedDataAccess(
             await GetVisibleAccountsAsync(query.ActiveOnly, asOf, tenantScoped, ct).ConfigureAwait(false), sharedDataAccess);
-        var scoped = FilterForOrganizationScope(snap, visibleAccounts, query.OrganizationId, query.BusinessId, query.ActiveOnly, asOf);
-
-        var portfolios = scoped.InvestmentPortfolios
-            .Where(p => query.ClientId is null || p.ClientId == query.ClientId.Value)
-            .Where(p => query.FundId is null || p.FundId == query.FundId.Value)
-            .Where(p => query.SleeveId is null || p.SleeveId == query.SleeveId.Value)
-            .Where(p => query.VehicleId is null || p.VehicleId == query.VehicleId.Value)
-            .Where(p => query.InvestmentPortfolioId is null || p.InvestmentPortfolioId == query.InvestmentPortfolioId.Value)
-            .ToList();
-        portfolios = AttachSharedDataAccess(portfolios, sharedDataAccess).ToList();
-        var accountScope = BuildAccountingAccountScope(scoped, portfolios);
-        var accounts = scoped.Accounts
-            .Where(a => query.LedgerReference is null || string.Equals(a.LedgerReference, query.LedgerReference, StringComparison.OrdinalIgnoreCase))
-            .Where(a => IsAccountInAccountingScope(a, query, accountScope, scoped.OwnershipLinks))
-            .ToList();
-
-        var organization = query.OrganizationId.HasValue
-            ? scoped.Organizations.FirstOrDefault(o => o.OrganizationId == query.OrganizationId.Value)
-            : scoped.Organizations.FirstOrDefault();
-        var business = query.BusinessId.HasValue
-            ? scoped.Businesses.FirstOrDefault(b => b.BusinessId == query.BusinessId.Value)
-            : scoped.Businesses.FirstOrDefault();
-
-        var portfolioById = portfolios.ToDictionary(static p => p.InvestmentPortfolioId);
-        var ledgerAssignments = LedgerGroupingRules.BuildLedgerAssignments(scoped.Assignments);
-        var ledgerGroups = accounts
-            .GroupBy(a => LedgerGroupingRules.ResolveLedgerGroupId(a, ledgerAssignments))
-            .Select(group =>
-            {
-                var accountIds = group.Select(static a => a.AccountId).ToList();
-                var relatedPortfolioIds = group
-                    .Select(a => TryParseGuid(a.PortfolioId, out var pid) ? pid : Guid.Empty)
-                    .Where(static pid => pid != Guid.Empty)
-                    .Concat(scoped.OwnershipLinks
-                        .Where(link => accountIds.Contains(link.ChildNodeId) && portfolioById.ContainsKey(link.ParentNodeId))
-                        .Select(static link => link.ParentNodeId))
-                    .Distinct().ToList();
-                var relatedPortfolios = relatedPortfolioIds
-                    .Where(portfolioById.ContainsKey)
-                    .Select(pid => portfolioById[pid]).ToList();
-                return new LedgerGroupSummaryDto(
-                    group.Key, group.Key.Value, accountIds, relatedPortfolioIds,
-                    relatedPortfolios.Where(static p => p.ClientId.HasValue).Select(static p => p.ClientId!.Value).Distinct().ToList(),
-                    group.Where(static a => a.FundId.HasValue).Select(static a => a.FundId!.Value)
-                        .Concat(relatedPortfolios.Where(static p => p.FundId.HasValue).Select(static p => p.FundId!.Value)).Distinct().ToList(),
-                    group.Where(static a => a.SleeveId.HasValue).Select(static a => a.SleeveId!.Value)
-                        .Concat(relatedPortfolios.Where(static p => p.SleeveId.HasValue).Select(static p => p.SleeveId!.Value)).Distinct().ToList(),
-                    group.Where(static a => a.VehicleId.HasValue).Select(static a => a.VehicleId!.Value)
-                        .Concat(relatedPortfolios.Where(static p => p.VehicleId.HasValue).Select(static p => p.VehicleId!.Value)).Distinct().ToList(),
-                    SharedDataAccess: sharedDataAccess);
-            })
-            .OrderBy(static g => g.DisplayName).ToList();
-
-        return new AccountingStructureViewDto(
-            organization,
-            business,
-            portfolios,
-            accounts,
-            ledgerGroups,
-            sharedDataAccess,
-            scoped.Assignments);
+        return FundStructureProjector.ProjectAccountingView(snap, visibleAccounts, query, asOf, sharedDataAccess);
     }
 
     public async Task<GovernanceCashFlowViewDto?> GetCashFlowViewAsync(
@@ -1650,224 +1415,4 @@ public sealed partial class PostgresFundStructureService : IFundStructureService
             ? null
             : await _sharedDataAccessService.GetSharedDataAccessAsync(ct).ConfigureAwait(false);
 
-    private static IReadOnlyList<AccountSummaryDto> AttachSharedDataAccess(
-        IReadOnlyList<AccountSummaryDto> accounts, FundStructureSharedDataAccessDto? sda) =>
-        sda is null || accounts.Count == 0 ? accounts : accounts.Select(a => a with { SharedDataAccess = sda }).ToList();
-
-    private static IReadOnlyList<InvestmentPortfolioSummaryDto> AttachSharedDataAccess(
-        IReadOnlyList<InvestmentPortfolioSummaryDto> portfolios, FundStructureSharedDataAccessDto? sda) =>
-        sda is null || portfolios.Count == 0 ? portfolios : portfolios.Select(p => p with { SharedDataAccess = sda }).ToList();
-
-    private static IReadOnlyList<T> FilterVisible<T>(IReadOnlyList<T> source, bool activeOnly, DateTimeOffset asOf,
-        Func<T, (DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo)> selector) where T : notnull =>
-        source.Where(item => { var w = selector(item); return IsVisible(true, w.EffectiveFrom, w.EffectiveTo, activeOnly, asOf); }).ToList();
-
-    private static bool IsVisible(bool isActive, DateTimeOffset effectiveFrom, DateTimeOffset? effectiveTo, bool activeOnly, DateTimeOffset asOf)
-    {
-        if (activeOnly && !isActive)
-            return false;
-        if (effectiveFrom > asOf)
-            return false;
-        if (effectiveTo.HasValue && effectiveTo.Value < asOf)
-            return false;
-        return true;
-    }
-
-    private static bool IsAdvisoryPortfolio(InvestmentPortfolioSummaryDto p) =>
-        p.ClientId.HasValue || (!p.FundId.HasValue && !p.SleeveId.HasValue && !p.VehicleId.HasValue);
-
-    private static bool IsFundPortfolio(InvestmentPortfolioSummaryDto p) =>
-        p.FundId.HasValue || p.SleeveId.HasValue || p.VehicleId.HasValue;
-
-    private static StructureScope FilterForOrganizationScope(
-        StructureSnapshot snapshot, IReadOnlyList<AccountSummaryDto> accounts,
-        Guid? organizationId, Guid? businessId, bool activeOnly, DateTimeOffset asOf)
-    {
-        var organizations = FilterVisible(snapshot.Organizations, activeOnly, asOf, static o => (o.EffectiveFrom, o.EffectiveTo));
-        var businesses = FilterVisible(snapshot.Businesses, activeOnly, asOf, static b => (b.EffectiveFrom, b.EffectiveTo));
-        var clients = FilterVisible(snapshot.Clients, activeOnly, asOf, static c => (c.EffectiveFrom, c.EffectiveTo));
-        var funds = FilterVisible(snapshot.Funds, activeOnly, asOf, static f => (f.EffectiveFrom, f.EffectiveTo));
-        var sleeves = FilterVisible(snapshot.Sleeves, activeOnly, asOf, static s => (s.EffectiveFrom, s.EffectiveTo));
-        var vehicles = FilterVisible(snapshot.Vehicles, activeOnly, asOf, static v => (v.EffectiveFrom, v.EffectiveTo));
-        var entities = FilterVisible(snapshot.Entities, activeOnly, asOf, static e => (e.EffectiveFrom, e.EffectiveTo));
-        var portfolios = FilterVisible(snapshot.InvestmentPortfolios, activeOnly, asOf, static p => (p.EffectiveFrom, p.EffectiveTo));
-        var activeLinks = FilterVisible(snapshot.OwnershipLinks, activeOnly, asOf, static l => (l.EffectiveFrom, l.EffectiveTo));
-        var activeAssignments = FilterVisible(snapshot.Assignments, activeOnly, asOf, static a => (a.EffectiveFrom, a.EffectiveTo));
-
-        if (businessId.HasValue)
-            businesses = businesses.Where(b => b.BusinessId == businessId.Value).ToList();
-        if (organizationId.HasValue)
-            organizations = organizations.Where(o => o.OrganizationId == organizationId.Value).ToList();
-
-        var orgIds = organizations.Select(static o => o.OrganizationId).ToHashSet();
-        businesses = businesses.Where(b => orgIds.Count == 0 || orgIds.Contains(b.OrganizationId)).ToList();
-        var bizIds = businesses.Select(static b => b.BusinessId).ToHashSet();
-
-        clients = clients.Where(c => bizIds.Contains(c.BusinessId)).ToList();
-        funds = funds.Where(f => f.BusinessId.HasValue && bizIds.Contains(f.BusinessId.Value)).ToList();
-        var fundIds = funds.Select(static f => f.FundId).ToHashSet();
-        sleeves = sleeves.Where(s => fundIds.Contains(s.FundId)).ToList();
-        var sleeveIds = sleeves.Select(static s => s.SleeveId).ToHashSet();
-        vehicles = vehicles.Where(v => fundIds.Contains(v.FundId)).ToList();
-        var vehicleIds = vehicles.Select(static v => v.VehicleId).ToHashSet();
-        portfolios = portfolios.Where(p => bizIds.Contains(p.BusinessId)).ToList();
-        var portfolioIds = portfolios.Select(static p => p.InvestmentPortfolioId).ToHashSet();
-        var entityIds = vehicles.Select(static v => v.LegalEntityId)
-            .Concat(funds.SelectMany(static f => f.EntityIds))
-            .Concat(portfolios.Where(static p => p.EntityId.HasValue).Select(static p => p.EntityId!.Value))
-            .Concat(accounts.Where(static a => a.EntityId.HasValue).Select(static a => a.EntityId!.Value))
-            .ToHashSet();
-        entities = entities.Where(e =>
-            entityIds.Contains(e.EntityId)
-            || activeLinks.Any(link => link.ChildNodeId == e.EntityId
-                && (bizIds.Contains(link.ParentNodeId) || fundIds.Contains(link.ParentNodeId)
-                    || vehicleIds.Contains(link.ParentNodeId) || portfolioIds.Contains(link.ParentNodeId))))
-            .ToList();
-
-        var scopedAccounts = GetScopeAccounts(accounts, activeLinks,
-            entities.Select(static e => e.EntityId).ToHashSet(), fundIds, sleeveIds, vehicleIds, portfolioIds).ToList();
-        var accountIds = scopedAccounts.Select(static a => a.AccountId).ToHashSet();
-        var nodeIds = orgIds.Concat<Guid>(bizIds)
-            .Concat(clients.Select(static c => c.ClientId))
-            .Concat(fundIds).Concat(sleeveIds).Concat(vehicleIds)
-            .Concat(entities.Select(static e => e.EntityId))
-            .Concat(portfolioIds).Concat(accountIds).ToHashSet();
-        activeLinks = activeLinks.Where(l => nodeIds.Contains(l.ParentNodeId) && nodeIds.Contains(l.ChildNodeId)).ToList();
-        activeAssignments = activeAssignments.Where(a => nodeIds.Contains(a.NodeId)).ToList();
-
-        return new StructureScope(organizations, businesses, clients, funds, sleeves, vehicles,
-            entities, portfolios, scopedAccounts, activeLinks, activeAssignments);
-    }
-
-    private static IReadOnlyList<FundStructureNodeDto> BuildNodes(StructureScope scope) =>
-        scope.Organizations.Select(static o => new FundStructureNodeDto(o.OrganizationId, FundStructureNodeKindDto.Organization, o.Code, o.Name, o.Description, o.IsActive, o.EffectiveFrom, o.EffectiveTo))
-            .Concat(scope.Businesses.Select(static b => new FundStructureNodeDto(b.BusinessId, FundStructureNodeKindDto.Business, b.Code, b.Name, b.Description, b.IsActive, b.EffectiveFrom, b.EffectiveTo)))
-            .Concat(scope.Clients.Select(static c => new FundStructureNodeDto(c.ClientId, FundStructureNodeKindDto.Client, c.Code, c.Name, c.Description, c.IsActive, c.EffectiveFrom, c.EffectiveTo)))
-            .Concat(scope.Funds.Select(static f => new FundStructureNodeDto(f.FundId, FundStructureNodeKindDto.Fund, f.Code, f.Name, f.Description, f.IsActive, f.EffectiveFrom, f.EffectiveTo)))
-            .Concat(scope.Sleeves.Select(static s => new FundStructureNodeDto(s.SleeveId, FundStructureNodeKindDto.Sleeve, s.Code, s.Name, s.Mandate, s.IsActive, s.EffectiveFrom, s.EffectiveTo)))
-            .Concat(scope.Vehicles.Select(static v => new FundStructureNodeDto(v.VehicleId, FundStructureNodeKindDto.Vehicle, v.Code, v.Name, v.Description, v.IsActive, v.EffectiveFrom, v.EffectiveTo)))
-            .Concat(scope.Entities.Select(static e => new FundStructureNodeDto(e.EntityId, FundStructureNodeKindDto.Entity, e.Code, e.Name, e.Description, e.IsActive, e.EffectiveFrom, e.EffectiveTo)))
-            .Concat(scope.InvestmentPortfolios.Select(static p => new FundStructureNodeDto(p.InvestmentPortfolioId, FundStructureNodeKindDto.InvestmentPortfolio, p.Code, p.Name, p.Description, p.IsActive, p.EffectiveFrom, p.EffectiveTo)))
-            .Concat(scope.Accounts.Select(static a => new FundStructureNodeDto(a.AccountId, FundStructureNodeKindDto.Account, a.AccountCode, a.DisplayName, a.Institution, a.IsActive, a.EffectiveFrom, a.EffectiveTo)))
-            .ToList();
-
-    private static IEnumerable<AccountSummaryDto> GetScopeAccounts(
-        IEnumerable<AccountSummaryDto> accounts, IReadOnlyList<OwnershipLinkDto> links,
-        IReadOnlyCollection<Guid> entityIds, IReadOnlyCollection<Guid> fundIds,
-        IReadOnlyCollection<Guid> sleeveIds, IReadOnlyCollection<Guid> vehicleIds,
-        IReadOnlyCollection<Guid> portfolioIds)
-    {
-        var entitySet = entityIds as ISet<Guid> ?? entityIds.ToHashSet();
-        var fundSet = fundIds as ISet<Guid> ?? fundIds.ToHashSet();
-        var sleeveSet = sleeveIds as ISet<Guid> ?? sleeveIds.ToHashSet();
-        var vehicleSet = vehicleIds as ISet<Guid> ?? vehicleIds.ToHashSet();
-        var portfolioSet = portfolioIds as ISet<Guid> ?? portfolioIds.ToHashSet();
-        var scopeNodeIds = entitySet.Concat<Guid>(fundSet).Concat(sleeveSet).Concat(vehicleSet).Concat(portfolioSet).ToHashSet();
-        return accounts.Where(a =>
-            (a.EntityId.HasValue && entitySet.Contains(a.EntityId.Value))
-            || (a.FundId.HasValue && fundSet.Contains(a.FundId.Value))
-            || (a.SleeveId.HasValue && sleeveSet.Contains(a.SleeveId.Value))
-            || (a.VehicleId.HasValue && vehicleSet.Contains(a.VehicleId.Value))
-            || (TryParseGuid(a.PortfolioId, out var pid) && portfolioSet.Contains(pid))
-            || links.Any(link => link.ChildNodeId == a.AccountId && scopeNodeIds.Contains(link.ParentNodeId)))
-            .DistinctBy(static a => a.AccountId);
-    }
-
-    private static bool IsAccountLinkedToAny(Guid accountId, IReadOnlyCollection<Guid> parentIds, IReadOnlyList<OwnershipLinkDto> links) =>
-        links.Any(link => link.ChildNodeId == accountId && parentIds.Contains(link.ParentNodeId));
-
-    private static bool IsEntityLinkedToScope(Guid entityId, IReadOnlyCollection<Guid> parentIds, IReadOnlyList<OwnershipLinkDto> links) =>
-        links.Any(link => link.ChildNodeId == entityId && parentIds.Contains(link.ParentNodeId));
-
-    private static bool TryParseGuid(string? value, out Guid guid) => Guid.TryParse(value, out guid);
-
-    private static AccountingAccountScope BuildAccountingAccountScope(StructureScope scoped, IReadOnlyList<InvestmentPortfolioSummaryDto> portfolios)
-    {
-        var portfolioIds = portfolios.Select(static p => p.InvestmentPortfolioId).ToHashSet();
-        var fundIds = scoped.Funds.Select(static f => f.FundId).ToHashSet();
-        var sleeveIds = scoped.Sleeves.Select(static s => s.SleeveId).ToHashSet();
-        var vehicleIds = scoped.Vehicles.Select(static v => v.VehicleId).ToHashSet();
-        var scopedEntityIds = scoped.Entities.Select(static e => e.EntityId).ToHashSet();
-        var entityParentIds = scoped.Businesses.Select(static b => b.BusinessId)
-            .Concat<Guid>(fundIds).Concat(sleeveIds).Concat(vehicleIds).Concat(portfolioIds).ToHashSet();
-        var entityIds = scoped.Funds.SelectMany(static f => f.EntityIds)
-            .Concat(scoped.Vehicles.Select(static v => v.LegalEntityId))
-            .Concat(portfolios.Where(static p => p.EntityId.HasValue).Select(static p => p.EntityId!.Value))
-            .Concat(scoped.OwnershipLinks
-                .Where(link => scopedEntityIds.Contains(link.ChildNodeId) && entityParentIds.Contains(link.ParentNodeId))
-                .Select(static link => link.ChildNodeId))
-            .ToHashSet();
-        return new AccountingAccountScope(entityIds, fundIds, sleeveIds, vehicleIds, portfolioIds);
-    }
-
-    private static bool IsAccountInAccountingScope(AccountSummaryDto account, AccountingStructureQuery query,
-        AccountingAccountScope scope, IReadOnlyList<OwnershipLinkDto> ownershipLinks)
-    {
-        if (IsAccountLinkedToAccountingPortfolios(account, scope.PortfolioIds, ownershipLinks))
-            return true;
-        if (HasAccountingAccountScopeFilter(query))
-            return MatchesDirectAccountingAccountFilters(account, query);
-        return IsAccountInAccountingBusinessScope(account, scope, ownershipLinks);
-    }
-
-    private static bool IsAccountLinkedToAccountingPortfolios(AccountSummaryDto a, IReadOnlyCollection<Guid> portfolioIds, IReadOnlyList<OwnershipLinkDto> links) =>
-        (TryParseGuid(a.PortfolioId, out var pid) && portfolioIds.Contains(pid)) || IsAccountLinkedToAny(a.AccountId, portfolioIds, links);
-
-    private static bool HasAccountingAccountScopeFilter(AccountingStructureQuery q) =>
-        q.ClientId.HasValue || q.FundId.HasValue || q.SleeveId.HasValue || q.VehicleId.HasValue || q.InvestmentPortfolioId.HasValue;
-
-    private static bool MatchesDirectAccountingAccountFilters(AccountSummaryDto a, AccountingStructureQuery q)
-    {
-        if (q.ClientId.HasValue || q.InvestmentPortfolioId.HasValue)
-            return false;
-        var hasDirect = q.FundId.HasValue || q.SleeveId.HasValue || q.VehicleId.HasValue;
-        return hasDirect && MatchOpt(a.FundId, q.FundId) && MatchOpt(a.SleeveId, q.SleeveId) && MatchOpt(a.VehicleId, q.VehicleId);
-    }
-
-    private static bool MatchOpt(Guid? value, Guid? filter) => !filter.HasValue || value == filter.Value;
-
-    private static bool IsAccountInAccountingBusinessScope(AccountSummaryDto a, AccountingAccountScope scope, IReadOnlyList<OwnershipLinkDto> links) =>
-        (a.EntityId.HasValue && scope.EntityIds.Contains(a.EntityId.Value))
-        || (a.FundId.HasValue && scope.FundIds.Contains(a.FundId.Value))
-        || (a.SleeveId.HasValue && scope.SleeveIds.Contains(a.SleeveId.Value))
-        || (a.VehicleId.HasValue && scope.VehicleIds.Contains(a.VehicleId.Value))
-        || IsAccountLinkedToAccountingPortfolios(a, scope.PortfolioIds, links)
-        || IsAccountLinkedToAny(a.AccountId, scope.EntityIds, links)
-        || IsAccountLinkedToAny(a.AccountId, scope.FundIds, links)
-        || IsAccountLinkedToAny(a.AccountId, scope.SleeveIds, links)
-        || IsAccountLinkedToAny(a.AccountId, scope.VehicleIds, links);
-
-    // ── Private records ───────────────────────────────────────────────────────
-
-    private sealed record StructureSnapshot(
-        IReadOnlyList<OrganizationSummaryDto> Organizations,
-        IReadOnlyList<BusinessSummaryDto> Businesses,
-        IReadOnlyList<ClientSummaryDto> Clients,
-        IReadOnlyList<FundSummaryDto> Funds,
-        IReadOnlyList<SleeveSummaryDto> Sleeves,
-        IReadOnlyList<VehicleSummaryDto> Vehicles,
-        IReadOnlyList<LegalEntitySummaryDto> Entities,
-        IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios,
-        IReadOnlyList<OwnershipLinkDto> OwnershipLinks,
-        IReadOnlyList<FundStructureAssignmentDto> Assignments);
-
-    private sealed record StructureScope(
-        IReadOnlyList<OrganizationSummaryDto> Organizations,
-        IReadOnlyList<BusinessSummaryDto> Businesses,
-        IReadOnlyList<ClientSummaryDto> Clients,
-        IReadOnlyList<FundSummaryDto> Funds,
-        IReadOnlyList<SleeveSummaryDto> Sleeves,
-        IReadOnlyList<VehicleSummaryDto> Vehicles,
-        IReadOnlyList<LegalEntitySummaryDto> Entities,
-        IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios,
-        IReadOnlyList<AccountSummaryDto> Accounts,
-        IReadOnlyList<OwnershipLinkDto> OwnershipLinks,
-        IReadOnlyList<FundStructureAssignmentDto> Assignments);
-
-    private sealed record AccountingAccountScope(
-        IReadOnlySet<Guid> EntityIds,
-        IReadOnlySet<Guid> FundIds,
-        IReadOnlySet<Guid> SleeveIds,
-        IReadOnlySet<Guid> VehicleIds,
-        IReadOnlySet<Guid> PortfolioIds);
 }

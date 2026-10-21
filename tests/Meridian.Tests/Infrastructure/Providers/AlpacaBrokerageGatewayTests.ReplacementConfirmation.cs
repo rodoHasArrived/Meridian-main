@@ -49,6 +49,7 @@ public sealed partial class AlpacaBrokerageGatewayTests
         await gateway.ConnectAsync();
         await using var oms = new OrderManagementSystem(new SimulatedAlpaca(gateway), NullLogger<OrderManagementSystem>.Instance,
             portfolioState: new PaperTradingPortfolio(100_000m));
+        await oms.StartAsync();
         (await oms.PlaceOrderAsync(new OrderRequest
         {
             ClientOrderId = "local",
@@ -157,6 +158,7 @@ public sealed partial class AlpacaBrokerageGatewayTests
         await using var gateway = CreateSut(handler);
         await gateway.ConnectAsync();
         await using var oms = new OrderManagementSystem(new SimulatedAlpaca(gateway), NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
         (await oms.PlaceOrderAsync(new OrderRequest
         {
             ClientOrderId = "local",
@@ -225,6 +227,7 @@ public sealed partial class AlpacaBrokerageGatewayTests
         await using var gateway = CreateSut(handler);
         await gateway.ConnectAsync();
         await using var oms = new OrderManagementSystem(new SimulatedAlpaca(gateway), NullLogger<OrderManagementSystem>.Instance);
+        await oms.StartAsync();
         (await oms.PlaceOrderAsync(new OrderRequest
         {
             ClientOrderId = "local",
@@ -318,6 +321,7 @@ public sealed partial class AlpacaBrokerageGatewayTests
         var publisher = new AmendmentPublisher();
         await using var oms = new OrderManagementSystem(new SimulatedAlpaca(gateway), NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio, tradeEventPublisher: publisher);
+        await oms.StartAsync();
         (await oms.PlaceOrderAsync(new OrderRequest
         {
             ClientOrderId = "local",

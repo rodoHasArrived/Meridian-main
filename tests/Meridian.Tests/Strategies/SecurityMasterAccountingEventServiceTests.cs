@@ -196,6 +196,38 @@ public sealed class SecurityMasterAccountingEventServiceTests
         factorEvent.EvidenceLinks.Should().Equal("factor-evidence-1");
     }
 
+    [Theory]
+    [InlineData("CertificateOfDeposit")]
+    [InlineData("Mbs")]
+    [InlineData("AssetBackedSecurity")]
+    [InlineData("FixedIncome")]
+    public void Generate_ClassesTheCatalogPlacesInTheSlice_AreAccepted(string assetClass)
+    {
+        var service = new SecurityMasterAccountingEventService();
+
+        var result = service.Generate(CreateRequest(security: CreateFixedCouponSecurity(assetClass)));
+
+        result.Issues.Should().NotContain(issue => issue.Code == "SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT");
+    }
+
+    [Theory]
+    [InlineData("Loan")]
+    [InlineData("AmortizingLoan")]
+    [InlineData("DirectLoan")]
+    [InlineData("Equity")]
+    public void Generate_ClassesOutsideTheCatalogSlice_AreReportedUnsupported(string assetClass)
+    {
+        // Direct loans resolve through the catalog (Loan and AmortizingLoan are its aliases) to a
+        // class with no accounting instrument class: they have their own projector and must not be
+        // accrued here as if they were bonds, however a feed spells them.
+        var service = new SecurityMasterAccountingEventService();
+
+        var result = service.Generate(CreateRequest(security: CreateFixedCouponSecurity(assetClass)));
+
+        result.Issues.Should().ContainSingle(issue => issue.Code == "SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT");
+        result.ExpectedEvents.Should().BeEmpty();
+    }
+
     [Fact]
     public void Generate_FactorBasedSecurityWithoutSchedule_ShouldReturnMissingFactorScheduleIssue()
     {
@@ -715,6 +747,24 @@ public sealed class SecurityMasterAccountingEventServiceTests
         projector.Requests.Select(static request => request.PositionVersion).Should().Equal(7, 8);
         projector.Requests.Select(static request => request.ExpectedPositionVersion).Should().Equal(7, 8);
     }
+
+    private static SecurityMasterAccountingSecurity CreateFixedCouponSecurity(string assetClass)
+        => new(
+            BondSecurityId,
+            "BOND1",
+            assetClass,
+            "USD",
+            new SecurityFixedIncomeTerms(
+                CouponRate: 0.06m,
+                CouponType: "Fixed",
+                DayCountConvention: "ACT/365",
+                PaymentFrequencyPerYear: 2,
+                IssueDate: new DateOnly(2025, 1, 1),
+                NextCouponDate: new DateOnly(2026, 1, 31),
+                MaturityDate: new DateOnly(2030, 1, 1),
+                AccrualStartDate: new DateOnly(2026, 1, 1),
+                CurrentFactor: 1m),
+            new SecurityAccountingRule("AvailableForSale", "GAAP"));
 
     private static SecurityMasterAccountingEventRequest CreateRequest(
         SecurityMasterAccountingSecurity? security = null,

@@ -67,11 +67,18 @@ internal sealed record AccountCashReconciliationDocument(
     int SchemaVersion,
     IReadOnlyList<AccountCashReconciliationRun> Runs,
     IReadOnlyList<AccountCashReconciliationCase> Cases);
+/// <summary>Legacy single-file layout, read only for the lossless split into scope files.</summary>
 internal sealed record AccountCashReconciliationEnvelope(string ContentHash, AccountCashReconciliationDocument Document);
+internal sealed record AccountCashReconciliationScopeEnvelope(string ContentHash, AccountCashReconciliationScope Scope, AccountCashReconciliationDocument Document);
+internal sealed record AccountCashReconciliationScopeIndex(int SchemaVersion, string ContentHash, AccountCashReconciliationScope[] Scopes);
 
 [JsonSerializable(typeof(AccountCashReconciliationRequest))]
 [JsonSerializable(typeof(AccountCashReconciliationRun))]
 [JsonSerializable(typeof(AccountCashReconciliationEnvelope))]
+[JsonSerializable(typeof(AccountCashReconciliationScopeEnvelope))]
+[JsonSerializable(typeof(AccountCashReconciliationScopeIndex))]
+[JsonSerializable(typeof(AccountCashReconciliationScope))]
+[JsonSerializable(typeof(AccountCashReconciliationScope[]))]
 [JsonSerializable(typeof(AccountCashReconciliationDocument))]
 [JsonSerializable(typeof(AccountCashComparison[]))]
 [JsonSerializable(typeof(string[]))]

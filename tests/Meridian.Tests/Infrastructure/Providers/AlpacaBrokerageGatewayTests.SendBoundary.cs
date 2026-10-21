@@ -42,6 +42,7 @@ public sealed partial class AlpacaBrokerageGatewayTests
         await gateway.ConnectAsync();
         await using var oms = new OrderManagementSystem(new SimulatedAlpaca(gateway), NullLogger<OrderManagementSystem>.Instance,
             portfolioState: new PaperTradingPortfolio(100_000m));
+        await oms.StartAsync();
         (await oms.PlaceOrderAsync(new OrderRequest
         {
             ClientOrderId = "local",

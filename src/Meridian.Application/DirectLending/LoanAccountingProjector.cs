@@ -8,7 +8,7 @@ using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
 using LedgerAccount = Meridian.Ledger.LedgerAccount;
 using LedgerAccountType = Meridian.Ledger.LedgerAccountType;
-using SecurityMasterQueryService = Meridian.Application.SecurityMaster.ISecurityMasterQueryService;
+using SecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Application.DirectLending;
 
