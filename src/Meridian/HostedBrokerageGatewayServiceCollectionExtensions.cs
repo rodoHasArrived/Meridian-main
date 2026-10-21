@@ -1,4 +1,5 @@
 using Meridian.Storage.Archival;
+using Meridian.Application.Composition;
 using Meridian.Core.IO;
 using Meridian.Execution;
 using Meridian.Execution.Sdk;
@@ -76,7 +77,12 @@ internal static class HostedBrokerageGatewayServiceCollectionExtensions
             return new RobinhoodBrokerageGateway(httpClientFactory, logger);
         });
         services.AddBrokerageGateway("robinhood", sp => sp.GetRequiredService<RobinhoodBrokerageGateway>());
-        services.TryAddSingleton(_ => RobinhoodReadOnlyBrokerageOptions.FromEnvironment());
+        var configuration = CompositionConfiguration.Resolve(services);
+        services.TryAddSingleton(sp =>
+        {
+            var authority = sp.GetService<CompositionConfiguration>() ?? configuration;
+            return RobinhoodReadOnlyBrokerageOptions.FromConfiguration(name => authority[name]);
+        });
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageAccountCatalog, RobinhoodReadOnlyBrokerageSyncAdapter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokeragePortfolioSync, RobinhoodReadOnlyBrokerageSyncAdapter>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBrokerageActivitySync, RobinhoodReadOnlyBrokerageSyncAdapter>());

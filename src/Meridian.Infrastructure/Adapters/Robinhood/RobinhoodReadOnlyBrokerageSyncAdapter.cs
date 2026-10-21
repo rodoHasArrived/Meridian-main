@@ -13,12 +13,25 @@ public sealed record RobinhoodReadOnlyBrokerageOptions(
     string ActivityEndpointTemplate,
     string DisplayName = "Robinhood read-only")
 {
-    public static RobinhoodReadOnlyBrokerageOptions FromEnvironment() => new(
-        AccessToken: Environment.GetEnvironmentVariable("ROBINHOOD_BROKERAGE_ACCESS_TOKEN") ?? string.Empty,
-        AccountsEndpoint: Environment.GetEnvironmentVariable("ROBINHOOD_BROKERAGE_ACCOUNTS_ENDPOINT") ?? string.Empty,
-        PortfolioEndpointTemplate: Environment.GetEnvironmentVariable("ROBINHOOD_BROKERAGE_PORTFOLIO_ENDPOINT_TEMPLATE") ?? string.Empty,
-        ActivityEndpointTemplate: Environment.GetEnvironmentVariable("ROBINHOOD_BROKERAGE_ACTIVITY_ENDPOINT_TEMPLATE") ?? string.Empty,
-        DisplayName: Environment.GetEnvironmentVariable("ROBINHOOD_BROKERAGE_DISPLAY_NAME") ?? "Robinhood read-only");
+    /// <summary>When supplied, the current host-owned token is read for each request, including revocation.</summary>
+    public Func<string?>? AccessTokenProvider { get; init; }
+
+    public static RobinhoodReadOnlyBrokerageOptions FromEnvironment()
+        => FromConfiguration(Environment.GetEnvironmentVariable);
+
+    public static RobinhoodReadOnlyBrokerageOptions FromConfiguration(Func<string, string?> getValue)
+    {
+        ArgumentNullException.ThrowIfNull(getValue);
+        return new(
+            AccessToken: string.Empty,
+            AccountsEndpoint: getValue("ROBINHOOD_BROKERAGE_ACCOUNTS_ENDPOINT") ?? string.Empty,
+            PortfolioEndpointTemplate: getValue("ROBINHOOD_BROKERAGE_PORTFOLIO_ENDPOINT_TEMPLATE") ?? string.Empty,
+            ActivityEndpointTemplate: getValue("ROBINHOOD_BROKERAGE_ACTIVITY_ENDPOINT_TEMPLATE") ?? string.Empty,
+            DisplayName: getValue("ROBINHOOD_BROKERAGE_DISPLAY_NAME") ?? "Robinhood read-only")
+        {
+            AccessTokenProvider = () => getValue("ROBINHOOD_BROKERAGE_ACCESS_TOKEN")
+        };
+    }
 }
 
 /// <summary>
@@ -91,14 +104,15 @@ public sealed class RobinhoodReadOnlyBrokerageSyncAdapter :
     private async Task<T> GetJsonAsync<T>(string endpoint, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        if (string.IsNullOrWhiteSpace(_options.AccessToken))
+        var accessToken = _options.AccessTokenProvider is { } getToken ? getToken() : _options.AccessToken;
+        if (string.IsNullOrWhiteSpace(accessToken))
         {
             throw new InvalidOperationException("ROBINHOOD_BROKERAGE_ACCESS_TOKEN is required for read-only Robinhood brokerage sync.");
         }
 
         using var client = _httpClientFactory.CreateClient(nameof(RobinhoodReadOnlyBrokerageSyncAdapter));
         using var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.AccessToken);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {

@@ -14,6 +14,34 @@ public sealed class AlpacaSymbolSearchProviderTests
     private const string KeyId = "test-alpaca-key";
     private const string SecretKey = "test-alpaca-secret";
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Requests_IncludeBothAuthenticationHeaders_AfterCredentialInitialization(bool details)
+    {
+        using var handler = new StubHttpMessageHandler(request =>
+        {
+            request.Headers.GetValues("APCA-API-KEY-ID").Should().Equal(KeyId);
+            request.Headers.GetValues("APCA-API-SECRET-KEY").Should().Equal(SecretKey);
+            request.Headers.Accept.Select(header => header.MediaType).Should().Equal("application/json");
+            request.RequestUri!.AbsolutePath.Should().Be(details ? "/v2/assets/AAPL" : "/v2/assets");
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(details
+                    ? "{\"symbol\":\"AAPL\",\"name\":\"Apple\",\"tradable\":true}"
+                    : "[{\"symbol\":\"AAPL\",\"name\":\"Apple\",\"tradable\":true}]")
+            };
+        });
+        using var httpClient = new HttpClient(handler);
+        using var provider = new AlpacaSymbolSearchProvider(KeyId, SecretKey, httpClient);
+
+        if (details)
+            (await provider.GetDetailsAsync(new Meridian.Contracts.Domain.SymbolId("AAPL"))).Should().NotBeNull();
+        else
+            (await provider.SearchAsync("AAPL", 1, CancellationToken.None)).Should().ContainSingle();
+        handler.CallCount.Should().Be(1);
+    }
+
     [Fact]
     public async Task SearchAsync_WithoutAssetType_RequestsOnlyEquities()
     {

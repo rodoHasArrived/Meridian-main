@@ -760,7 +760,15 @@ Core workstation host. Do not introduce a second listener or independent monitor
   `Meridian.Contracts.Services`; Application keeps the current Security Master, price, and
   backfill accessibility implementation, in-memory/PostgreSQL service implementations, and
   composition wiring. Local JSON and in-memory fund-structure state
-  stores live in `Meridian.Storage.FundStructure` instead of Application. The PostgreSQL-backed service now supports the same shared
+  stores live in `Meridian.Storage.FundStructure` instead of Application.
+  `FundStructureProjector` owns the pure organization graph, compatibility fund graph,
+  advisory, fund operating, and accounting views for both implementations. Services capture
+  copied structure collections before asynchronous reads, resolve visible accounts and shared
+  metadata, and pass an explicit as-of time to the projector. PostgreSQL tenant scoping stays
+  at the service boundary; projection never reads persistence or mutates command state.
+  `FundStructureProjectionContractTests` exercises these views, effective windows, enrichment,
+  and snapshot isolation across both implementations.
+  The PostgreSQL-backed service now supports the same shared
   governance cash-flow projection path as the local JSON/in-memory service, using stored
   structure rows plus fund-account snapshots, bank-statement rows, assignment metadata, and
   optional Security Master economic rules for realized/projected cash-flow evidence.
@@ -833,6 +841,10 @@ Core workstation host. Do not introduce a second listener or independent monitor
   definitions, and alert-runbook registries live in `Meridian.Platform.Monitoring`; shared alert and health-check contracts live
   in `Meridian.Core.Monitoring`; runtime error ring-buffer diagnostics and system-health snapshots
   live in `Meridian.Platform.Diagnostics`.
+  Named HTTP circuit breakers resolve their transition callback and policy from the owning
+  service provider. Status tracking requires no post-build router initialization; independent
+  hosts retain separate breaker state and dashboards, including when built from the same
+  service registrations.
 - `Http/` - core host-facing runtime services such as `ConfigStore` and status response
   generation. ASP.NET endpoint adapter extensions for packaging, archive maintenance, and
   data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`. `BackfillCoordinator` lives

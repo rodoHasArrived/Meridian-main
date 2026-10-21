@@ -29,7 +29,7 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
     internal const string TestSecuritySymbol = "DL-TEST";
 
     private static readonly ITransactionalLedgerJournalStore _noOpLedgerJournalStore = new InMemoryNoOpLedgerJournalStore();
-    private static readonly Meridian.Application.SecurityMaster.ISecurityMasterQueryService _securityMasterQueryService =
+    private static readonly Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService _securityMasterQueryService =
         new DeterministicSecurityMasterQueryService();
 
     private readonly PostgresTestServer _server;
@@ -211,7 +211,7 @@ internal sealed class DirectLendingPostgresTestDatabase : IAsyncDisposable
     }
 
     private sealed class DeterministicSecurityMasterQueryService :
-        Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+        Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService
     {
         private static readonly SecurityDetailDto TestSecurity = new(
             SecurityId: TestSecurityId,

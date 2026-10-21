@@ -58,9 +58,11 @@ public sealed class PostgresReferenceProjectionReaderTests
     {
         var reader = new PostgresReferenceProjectionReader(Options);
 
-        // Bond and Option are the specialized writers; CustomAsset is profile-governed.
-        reader.Invoking(r => r.SelectSql("Bond", "")).Should().Throw<ArgumentException>().WithMessage("*Bond*");
+        // Option is the one remaining specialized writer; CustomAsset is profile-governed. Bond now
+        // has a descriptor whose parent table carries no display name or currency in its spine.
+        reader.Invoking(r => r.SelectSql("Option", "")).Should().Throw<ArgumentException>().WithMessage("*Option*");
         reader.Invoking(r => r.SelectSql("CustomAsset", "")).Should().Throw<ArgumentException>();
+        reader.SelectSql("Bond", "").Should().StartWith("select security_id, issuer_name, ").And.NotContain("display_name");
         reader.Invoking(r => r.SelectChildSql("DirectLoan", "direct_loan_waterfall_projection", ""))
             .Should().Throw<ArgumentException>().WithMessage("*direct_loan_waterfall_projection*");
     }

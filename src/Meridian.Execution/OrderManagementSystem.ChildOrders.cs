@@ -71,6 +71,7 @@ public sealed partial class OrderManagementSystem
             if (!string.IsNullOrWhiteSpace(child.OrderId))
             {
                 _orderBrokerIds[childOrderId] = child.OrderId;
+                _brokerOrderAliases.TryAdd(child.OrderId, childOrderId);
             }
 
             // The same per-order side tables the parent got at registration, so child fills book
