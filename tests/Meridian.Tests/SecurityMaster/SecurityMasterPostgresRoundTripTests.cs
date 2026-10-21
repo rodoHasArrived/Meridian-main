@@ -1261,4 +1261,88 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
         command.Parameters.AddWithValue("alias_id", aliasId);
         return await command.ExecuteScalarAsync();
     }
+
+    /// <summary>
+    /// Two securities claiming one non-primary ticker over overlapping windows resolve by a total
+    /// order: the claim that became valid most recently wins, and equal claims fall back to the
+    /// security id, so the lookup never depends on physical row order.
+    /// </summary>
+    [SecurityMasterDatabaseFact]
+    public async Task GetByIdentifierAsync_ResolvesCompetingClaimsDeterministically()
+    {
+        var eventStore = new PostgresSecurityMasterEventStore(_fixture.Options, NullLogger<PostgresSecurityMasterEventStore>.Instance);
+        var snapshotStore = new PostgresSecurityMasterSnapshotStore(_fixture.Options);
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            _fixture.Options,
+            NullLogger<SecurityMasterService>.Instance);
+
+        var sharedTicker = "RCY" + Guid.NewGuid().ToString("N")[..6].ToUpperInvariant();
+        var now = DateTimeOffset.UtcNow;
+        var lowId = Guid.Parse("00000000-0000-0000-0000-00000000aaaa");
+        var highId = Guid.Parse("00000000-0000-0000-0000-00000000bbbb");
+        var tieBreakerLow = Guid.Parse("00000000-0000-0000-0000-00000000cccc");
+        var tieBreakerHigh = Guid.Parse("00000000-0000-0000-0000-00000000dddd");
+        var tieTicker = "TIE" + Guid.NewGuid().ToString("N")[..6].ToUpperInvariant();
+
+        // The older claim (valid from -10d) belongs to the HIGHER id; the newer claim (valid from -1d)
+        // to the LOWER id, so neither "lowest id" nor "insertion order" alone explains the result.
+        await CreateWithTickersAsync(service, highId, $"{sharedTicker}-OLD", (sharedTicker, now.AddDays(-10)));
+        await CreateWithTickersAsync(service, lowId, $"{sharedTicker}-NEW", (sharedTicker, now.AddDays(-1)));
+        await CreateWithTickersAsync(service, tieBreakerHigh, $"{tieTicker}-H", (tieTicker, now.AddDays(-5)));
+        await CreateWithTickersAsync(service, tieBreakerLow, $"{tieTicker}-L", (tieTicker, now.AddDays(-5)));
+
+        var current = await store.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, sharedTicker, null, now, includeInactive: false);
+        current.Should().NotBeNull();
+        current!.SecurityId.Should().Be(lowId, "the claim that became valid most recently wins while both are valid");
+
+        var beforeNewClaim = await store.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, sharedTicker, null, now.AddDays(-3), includeInactive: false);
+        beforeNewClaim.Should().NotBeNull();
+        beforeNewClaim!.SecurityId.Should().Be(highId, "only the older claim was valid then");
+
+        var tied = await store.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, tieTicker, null, now, includeInactive: false);
+        tied.Should().NotBeNull();
+        tied!.SecurityId.Should().Be(tieBreakerLow, "equal claims fall back to the lowest security id");
+    }
+
+    private static async Task CreateWithTickersAsync(
+        SecurityMasterService service,
+        Guid securityId,
+        string primaryTicker,
+        params (string Ticker, DateTimeOffset ValidFrom)[] sharedTickers)
+    {
+        var validFrom = DateTimeOffset.UtcNow.AddDays(-30);
+        var identifiers = new List<SecurityIdentifierDto>
+        {
+            new(SecurityIdentifierKind.Ticker, primaryTicker, true, validFrom, null, null)
+        };
+        identifiers.AddRange(sharedTickers.Select(claim =>
+            new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, claim.Ticker, false, claim.ValidFrom, null, null)));
+
+        await service.CreateAsync(new CreateSecurityRequest(
+            securityId,
+            "Equity",
+            JsonSerializer.SerializeToElement(new
+            {
+                displayName = primaryTicker,
+                currency = "USD",
+                countryOfRisk = "US",
+                issuerName = primaryTicker,
+                exchange = "XNAS",
+                lotSize = 1,
+                tickSize = 0.01m
+            }),
+            JsonSerializer.SerializeToElement(new { shareClass = "Common" }),
+            identifiers,
+            validFrom,
+            "test",
+            "codex",
+            null,
+            "create competing ticker claims"));
+    }
 }
