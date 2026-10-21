@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 5
 
-Objects 81-160 of 333. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 337. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -349,11 +349,16 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_FaceValueLot["FaceValueLot"] {
         +DateOnly AcquiredDate
         +decimal BookedFactor
+        +decimal CurrentFactor
         +string LotId
         +decimal OriginalFace
         +decimal ParBasis
         +decimal PricePercentOfPar
         +Guid SecurityId
+    }
+    class Meridian_Contracts_SecurityMaster_FaceValueLotFactorPaydown["FaceValueLotFactorPaydown"] {
+        +FaceValueLot Lot
+        +decimal PrincipalPaydown
     }
     class Meridian_Contracts_SecurityMaster_FundUnitLot["FundUnitLot"] {
         +DateOnly AcquiredDate
@@ -435,6 +440,14 @@ classDiagram
         +decimal Multiplier
         +SecurityLotUnitKind UnitKind
     }
+    class Meridian_Contracts_SecurityMaster_NotionalLot["NotionalLot"] {
+        +decimal CurrentNotional
+        +DateOnly EffectiveDate
+        +string LotId
+        +decimal OriginalNotional
+        +Guid SecurityId
+        +decimal UpfrontPayment
+    }
     class Meridian_Contracts_SecurityMaster_OfferCorporateActionTerms["OfferCorporateActionTerms"] {
         +string EventType
         +DateOnly? ExpiryDate
@@ -462,24 +475,6 @@ classDiagram
         +IReadOnlyList~string~? RemoveKeys
         +IReadOnlyDictionary~string__string~? SetValues
     }
-    class Meridian_Contracts_SecurityMaster_PayloadCorporateActionTerms["PayloadCorporateActionTerms"] {
-        +string EventType
-        +JsonElement? Payload
-    }
-    class Meridian_Contracts_SecurityMaster_PostCorporateActionCaseAccountingRequestDto["PostCorporateActionCaseAccountingRequestDto"] {
-        +string Actor
-        +Guid ApprovalId
-        +CorporateActionAccountingDecisionAuthorityDto? Authority
-        +Guid CaseId
-        +string CompanyId
-        +string? CorrelationId
-        +long ExpectedVersion
-        +string IdempotencyKey
-        +Guid ProjectionId
-        +string Reason
-        +CorporateActionCaseScopeDto? ScopeAssertion
-        +string TenantId
-    }
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto
     Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto --> Meridian_Contracts_SecurityMaster_CorporateActionProviderReleaseStatusDto
@@ -502,9 +497,10 @@ classDiagram
     Meridian_Contracts_SecurityMaster_EdgarSecurityDataRecord --> Meridian_Contracts_SecurityMaster_EdgarFundHolding
     Meridian_Contracts_SecurityMaster_ExchangeCorporateActionTerms --> Meridian_Contracts_SecurityMaster_CorporateActionTerms
     Meridian_Contracts_SecurityMaster_FaceValueLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
+    Meridian_Contracts_SecurityMaster_FaceValueLotFactorPaydown --> Meridian_Contracts_SecurityMaster_FaceValueLot
     Meridian_Contracts_SecurityMaster_FundUnitLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
     Meridian_Contracts_SecurityMaster_InMemorySecurityForwardCurveProvider --> Meridian_Contracts_SecurityMaster_ISecurityForwardCurveProvider
     Meridian_Contracts_SecurityMaster_IssuerFactSnapshot --> Meridian_Contracts_SecurityMaster_EdgarXbrlFact
+    Meridian_Contracts_SecurityMaster_NotionalLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
     Meridian_Contracts_SecurityMaster_OfferCorporateActionTerms --> Meridian_Contracts_SecurityMaster_CorporateActionTerms
-    Meridian_Contracts_SecurityMaster_PayloadCorporateActionTerms --> Meridian_Contracts_SecurityMaster_CorporateActionTerms
 ```
