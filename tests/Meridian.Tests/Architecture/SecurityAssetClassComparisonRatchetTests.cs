@@ -23,14 +23,16 @@ public sealed class SecurityAssetClassComparisonRatchetTests
 {
     private const string SourceOfTruth = "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs";
 
-    // Repository-relative, forward-slash path → comparisons still carried, by design. The two
-    // entries compare a value that merely shares a spelling with a catalog class and is not a
-    // Security Master asset class: a designer trade cell's "instrument" vocabulary (Equity/ETF,
-    // the live engine's routing boundary) and a NetSuite account type ("Equity" as in retained
-    // earnings). Neither has a catalog fact to read.
+    // Repository-relative, forward-slash path → comparisons still carried, by design. Each entry
+    // compares a value that merely shares a spelling with a catalog class and is not a Security
+    // Master asset class: a NetSuite account type ("Equity" as in retained earnings), an OpenFIGI
+    // market sector ("Equity" as the vendor's instrument family) and a designer trade cell's
+    // "instrument" vocabulary (Equity/ETF, the live engine's routing boundary). None has a catalog
+    // fact to read.
     private static readonly IReadOnlyDictionary<string, int> KnownComparisonSites = new Dictionary<string, int>(StringComparer.Ordinal)
     {
         ["src/Meridian.DataIntegration/AccountingSystem/NetSuiteAccountingProvider.cs"] = 1,
+        ["src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiSymbolResolver.cs"] = 1,
         ["src/Meridian.Strategies/Live/Designer/DesignerStrategyPlan.cs"] = 1,
     };
 
@@ -73,23 +75,23 @@ public sealed class SecurityAssetClassComparisonRatchetTests
         KnownComparisonSites.Keys.Should().NotContain(SourceOfTruth, "the catalog is the source, not a comparison site");
     }
 
+    [Theory]
+    [InlineData("if (string.Equals(SecurityAssetClassCatalog.GetOrDefault(assetClass).AssetClass, \"Repo\", StringComparison.Ordinal)) { }", ".cs", 1)]
+    [InlineData("var x = assetClass == \"Bond\" || other != \"Equity\";", ".cs", 2)]
+    [InlineData("if (\"Swap\" == security.AssetClass) { }", ".cs", 1)]
+    [InlineData("if (assetClass.Equals(\"Option\", StringComparison.OrdinalIgnoreCase)) { }", ".cs", 1)]
+    [InlineData("var assetClass = \"Bond\"; const string Name = \"Equity\";", ".cs", 0)]
+    [InlineData("payload.AssetClass == \"us_option\"", ".cs", 0)]
+    [InlineData("mappings.Where(m => string.Equals(m.Ticker?.Trim(), symbol, StringComparison.OrdinalIgnoreCase) && (exchange is null || string.Equals(m.Exchange, exchange)) && (m.Name, \"Equity\") is var _);", ".cs", 0)]
+    [InlineData("if security.AssetClass = \"Bond\" then 1 else 0", ".fs", 1)]
+    [InlineData("{ AssetClassName = \"Equity\"; Other = 1 }", ".fs", 0)]
+    public void Counter_RecognisesComparisons_AndIgnoresAssignmentsAndVendorSpellings(string source, string extension, int expected)
+        => CountComparisons(source, extension).Should().Be(expected);
+
     private static IReadOnlyDictionary<string, int> CountAssetClassComparisons()
     {
         var root = FindRepositoryRoot();
         var sourceRoot = Path.Combine(root, "src");
-        var names = string.Join("|", SecurityAssetClassCatalog.AssetClasses.Select(Regex.Escape));
-        // C#: x == "Bond", x != "Bond", "Bond" == x, string.Equals(x, "Bond", …), x.Equals("Bond").
-        // A single "=" is an assignment in C#, so it is not matched there.
-        var csharp = new Regex(
-            "(?:==|!=)\\s*\"(?:" + names + ")\""
-            + "|\"(?:" + names + ")\"\\s*(?:==|!=)"
-            + "|Equals\\((?:[^,()\"]+,\\s*)?\"(?:" + names + ")\"",
-            RegexOptions.CultureInvariant);
-        // F#: a qualified operand compared with = or <> (x.AssetClass = "Bond"). An unqualified
-        // "AssetClassName = \"Bond\"" is a record field in a dispatch table, held by its parity test.
-        var fsharp = new Regex(
-            "\\.\\w+\\s*(?:=|<>)\\s*\"(?:" + names + ")\"",
-            RegexOptions.CultureInvariant);
 
         var counts = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (var file in Directory.EnumerateFiles(sourceRoot, "*.*", SearchOption.AllDirectories))
@@ -106,7 +108,7 @@ public sealed class SecurityAssetClassComparisonRatchetTests
                 continue;
             }
 
-            var matches = (extension == ".fs" ? fsharp : csharp).Matches(File.ReadAllText(file)).Count;
+            var matches = CountComparisons(File.ReadAllText(file), extension);
             if (matches > 0)
             {
                 counts[relative] = matches;
@@ -115,6 +117,25 @@ public sealed class SecurityAssetClassComparisonRatchetTests
 
         return counts;
     }
+
+    private static readonly string Names = string.Join("|", SecurityAssetClassCatalog.AssetClasses.Select(Regex.Escape));
+
+    // C#: x == "Bond", x != "Bond", "Bond" == x, string.Equals(<any operand, nested calls included>,
+    // "Bond", …), x.Equals("Bond", …). A single "=" is an assignment in C#, so it is not matched.
+    private static readonly Regex CSharpComparison = new(
+        "(?:==|!=)\\s*\"(?:" + Names + ")\""
+        + "|\"(?:" + Names + ")\"\\s*(?:==|!=)"
+        + "|Equals\\((?:(?:[^;\"()]|\\([^;\"()]*\\))*?,\\s*)?\"(?:" + Names + ")\"",
+        RegexOptions.CultureInvariant);
+
+    // F#: a qualified operand compared with = or <> (x.AssetClass = "Bond"). An unqualified
+    // "AssetClassName = \"Bond\"" is a record field in a dispatch table, held by its parity test.
+    private static readonly Regex FSharpComparison = new(
+        "\\.\\w+\\s*(?:=|<>)\\s*\"(?:" + Names + ")\"",
+        RegexOptions.CultureInvariant);
+
+    private static int CountComparisons(string source, string extension)
+        => (extension == ".fs" ? FSharpComparison : CSharpComparison).Matches(source).Count;
 
     private static string FindRepositoryRoot()
     {

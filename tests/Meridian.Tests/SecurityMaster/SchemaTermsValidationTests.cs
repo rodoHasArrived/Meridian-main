@@ -134,6 +134,81 @@ public sealed class SchemaTermsValidationTests
         schemaOnly.Validate(new SecurityValidationContext(record, EvaluatedAt)).Should().BeEmpty();
     }
 
+    [Fact]
+    public void ProfileBackedClass_ReadsItsResolvedTermsUnderProfileFields()
+    {
+        // A governed profile reclassified to PrivateFundInterest keeps the profile envelope and the
+        // resolved class's terms under profileFields; the schema rule reads them there, as the
+        // hand-written rules do, so a valid record gets no required-field errors.
+        var schemaOnly = new SchemaTermsAssetClassValidator("PrivateFundInterest");
+        var required = SecurityAssetTermsSchema.Fields("PrivateFundInterest").Where(static f => f.Required).ToArray();
+        required.Should().NotBeEmpty();
+
+        var profileFields = required.ToDictionary(static f => f.Key, static f => ValidValueFor(f));
+        var terms = new Dictionary<string, object?>
+        {
+            ["customProfileId"] = "private-fund-interest",
+            ["profileVersion"] = 1,
+            ["profileFields"] = profileFields
+        };
+
+        var issues = schemaOnly.Validate(Context("PrivateFundInterest", terms));
+
+        issues.Should().NotContain(static i => i.Code == SchemaTermsAssetClassValidator.RequiredCode);
+        issues.Should().NotContain(static i => i.Code == SchemaTermsAssetClassValidator.TypeCode);
+    }
+
+    [Fact]
+    public void HandWrittenWarning_DoesNotSuppressASchemaError()
+    {
+        // StructuredCredit's schedule-backing rule warns on the same field the schema rule rejects
+        // for type; the warning stays and the blocking error is kept.
+        Registry.TryGetValidator("StructuredCredit", out var validator).Should().BeTrue();
+
+        var issues = validator.Validate(Context("StructuredCredit", new Dictionary<string, object?>
+        {
+            ["tranche"] = "A1",
+            ["collateralType"] = "RMBS",
+            ["originalFace"] = 1_000_000m,
+            ["couponOrIndex"] = "SOFR+120",
+            ["factorSchedule"] = "trustee report 2026-09",
+            ["factorScheduleEntries"] = "not-an-array"
+        }));
+
+        issues.Should().Contain(static i => i.Code == "SM_STRUCTURED_CREDIT_FACTOR_ENTRIES_MISSING" && i.Severity == SecurityValidationSeverityDto.Warning);
+        issues.Should().Contain(static i => i.Code == SchemaTermsAssetClassValidator.TypeCode
+                                            && i.Severity == SecurityValidationSeverityDto.Error
+                                            && i.AffectedFields.Contains("assetSpecificTerms.factorScheduleEntries"));
+    }
+
+    [Fact]
+    public void IntegerFields_MatchTheCodecs32BitRange()
+    {
+        var schemaOnly = new SchemaTermsAssetClassValidator("PrivateFundInterest");
+
+        var tooLarge = schemaOnly.Validate(Context("PrivateFundInterest", new Dictionary<string, object?> { ["vintage"] = 3_000_000_000L }));
+        var fits = schemaOnly.Validate(Context("PrivateFundInterest", new Dictionary<string, object?> { ["vintage"] = 2021 }));
+
+        tooLarge.Should().Contain(static i => i.Code == SchemaTermsAssetClassValidator.TypeCode && i.AffectedFields.Contains("assetSpecificTerms.vintage"));
+        fits.Should().NotContain(static i => i.Code == SchemaTermsAssetClassValidator.TypeCode && i.AffectedFields.Contains("assetSpecificTerms.vintage"));
+    }
+
+    private static object ValidValueFor(SecurityAssetTermField field)
+        => field.IsDiscriminant
+            ? field.AllowedValues[0]
+            : field.Type switch
+            {
+                SecurityAssetTermFieldType.String => "value",
+                SecurityAssetTermFieldType.Decimal => 1.5m,
+                SecurityAssetTermFieldType.Integer => 2021,
+                SecurityAssetTermFieldType.Boolean => true,
+                SecurityAssetTermFieldType.Date => "2026-01-15",
+                SecurityAssetTermFieldType.Guid => Guid.NewGuid().ToString(),
+                SecurityAssetTermFieldType.Array => Array.Empty<object>(),
+                SecurityAssetTermFieldType.Object => new Dictionary<string, object?>(),
+                _ => "value"
+            };
+
     private static SecurityValidationContext Context(string assetClass, Dictionary<string, object?> terms)
         => new(Record(assetClass, JsonSerializer.SerializeToElement(terms)), EvaluatedAt);
 

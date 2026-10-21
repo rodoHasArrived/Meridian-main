@@ -45,7 +45,7 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
         var issues = new List<SecurityValidationIssueDto>();
         foreach (var field in _fields)
         {
-            var issue = ValidateField(field, terms);
+            var issue = ValidateField(field, terms, AssetClass);
             if (issue is not null)
             {
                 issues.Add(issue);
@@ -55,10 +55,10 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
         return issues;
     }
 
-    private static SecurityValidationIssueDto? ValidateField(SecurityAssetTermField field, JsonElement terms)
+    private static SecurityValidationIssueDto? ValidateField(SecurityAssetTermField field, JsonElement terms, string assetClass)
     {
         var path = $"assetSpecificTerms.{field.Key}";
-        if (!TryGetUnderKeyOrAlias(terms, field, out var value) || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+        if (!TryGetUnderKeyOrAlias(terms, field, assetClass, out var value) || value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
         {
             return field.Required
                 ? SecurityValidationIssueFactory.Create(
@@ -99,16 +99,19 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
         return null;
     }
 
-    private static bool TryGetUnderKeyOrAlias(JsonElement terms, SecurityAssetTermField field, out JsonElement value)
+    // A profile-backed class (a governed profile reclassified to a first-class kind) keeps its
+    // resolved terms under profileFields; the profile-aware reader looks there after the outer
+    // object, the same way the hand-written rules read.
+    private static bool TryGetUnderKeyOrAlias(JsonElement terms, SecurityAssetTermField field, string assetClass, out JsonElement value)
     {
-        if (JsonValidationReader.TryGetProperty(terms, field.Key, out value))
+        if (JsonValidationReader.TryGetAssetTermProperty(terms, field.Key, assetClass, out value))
         {
             return true;
         }
 
         foreach (var alias in field.Aliases)
         {
-            if (JsonValidationReader.TryGetProperty(terms, alias, out value))
+            if (JsonValidationReader.TryGetAssetTermProperty(terms, alias, assetClass, out value))
             {
                 return true;
             }
@@ -123,7 +126,8 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
         {
             SecurityAssetTermFieldType.String => value.ValueKind == JsonValueKind.String,
             SecurityAssetTermFieldType.Decimal => value.ValueKind == JsonValueKind.Number && value.TryGetDecimal(out _),
-            SecurityAssetTermFieldType.Integer => value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out _),
+            // The codecs and projections read integers with TryGetInt32, so the schema rule matches them.
+            SecurityAssetTermFieldType.Integer => value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out _),
             SecurityAssetTermFieldType.Boolean => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
             SecurityAssetTermFieldType.Date => value.ValueKind == JsonValueKind.String && IsDate(value.GetString()),
             SecurityAssetTermFieldType.Guid => value.ValueKind == JsonValueKind.String && Guid.TryParse(value.GetString(), out _),
@@ -165,7 +169,8 @@ internal sealed class SchemaTermsAssetClassValidator : ISecurityAssetClassValida
 /// <summary>
 /// Composes the schema-generated rules with a class's hand-written validator. The hand-written
 /// rules run first and keep their codes; a schema issue on a field the hand-written validator has
-/// already reported is dropped, so a field is reported once whichever rule set saw it first.
+/// already reported at the same or a higher severity is dropped, so a field is reported once
+/// whichever rule set saw it first. A hand-written warning never suppresses a schema error.
 /// </summary>
 internal sealed class SchemaBackedAssetClassValidator : ISecurityAssetClassValidator
 {
@@ -189,12 +194,23 @@ internal sealed class SchemaBackedAssetClassValidator : ISecurityAssetClassValid
             return issues;
         }
 
-        var reported = new HashSet<string>(
-            issues.SelectMany(static issue => issue.AffectedFields),
-            StringComparer.OrdinalIgnoreCase);
+        var reported = new Dictionary<string, SecurityValidationSeverityDto>(StringComparer.OrdinalIgnoreCase);
+        foreach (var issue in issues)
+        {
+            foreach (var field in issue.AffectedFields)
+            {
+                if (!reported.TryGetValue(field, out var severity) || severity < issue.Severity)
+                {
+                    reported[field] = issue.Severity;
+                }
+            }
+        }
+
         foreach (var issue in _schema.Validate(context))
         {
-            if (!issue.AffectedFields.Any(reported.Contains))
+            var alreadyReported = issue.AffectedFields.Any(field =>
+                reported.TryGetValue(field, out var severity) && severity >= issue.Severity);
+            if (!alreadyReported)
             {
                 issues.Add(issue);
             }
