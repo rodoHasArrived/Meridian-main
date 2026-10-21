@@ -20,7 +20,8 @@ public sealed record FaceValueLot : IUnitizedLot
         decimal originalFace,
         decimal pricePercentOfPar,
         decimal bookedFactor = 1m,
-        decimal parBasis = 100m)
+        decimal parBasis = 100m,
+        decimal? currentFactor = null)
     {
         if (string.IsNullOrWhiteSpace(lotId))
             throw new ArgumentException("Face-value lot identifier must not be null or whitespace.", nameof(lotId));
@@ -34,6 +35,8 @@ public sealed record FaceValueLot : IUnitizedLot
             throw new ArgumentOutOfRangeException(nameof(bookedFactor), bookedFactor, "Booked factor must be in (0, 1].");
         if (parBasis <= 0m)
             throw new ArgumentOutOfRangeException(nameof(parBasis), parBasis, "Par basis must be positive.");
+        if (currentFactor is { } current && current is <= 0m or > 1m)
+            throw new ArgumentOutOfRangeException(nameof(currentFactor), currentFactor, "Current factor must be in (0, 1].");
 
         LotId = lotId.Trim();
         SecurityId = securityId;
@@ -42,12 +45,17 @@ public sealed record FaceValueLot : IUnitizedLot
         PricePercentOfPar = pricePercentOfPar;
         BookedFactor = bookedFactor;
         ParBasis = parBasis;
+        CurrentFactor = currentFactor ?? bookedFactor;
     }
 
     public string LotId { get; }
 
-    /// <summary>A face-value lot is the face-denominated case of the shared lot shape.</summary>
-    decimal IUnitizedLot.Quantity => OriginalFace;
+    /// <summary>
+    /// A face-value lot is the face-denominated case of the shared lot shape. Its quantity is the
+    /// face outstanding under the factor the lot currently carries, so a lot that has absorbed a
+    /// principal paydown reports the reduced face without any caller applying the factor again.
+    /// </summary>
+    decimal IUnitizedLot.Quantity => FaceOutstanding;
 
     SecurityLotUnitKind IUnitizedLot.UnitKind => SecurityLotUnitKind.FaceValue;
 
@@ -66,6 +74,23 @@ public sealed record FaceValueLot : IUnitizedLot
 
     /// <summary>Pool factor already reflected in <see cref="OriginalFace"/> when the lot was booked (1 = original face).</summary>
     public decimal BookedFactor { get; }
+
+    /// <summary>
+    /// Pool factor the lot currently carries. It starts at <see cref="BookedFactor"/> and moves with
+    /// each principal paydown applied through <see cref="ApplyFactor"/>, so the paydown factor lives
+    /// inside the lot rather than being re-applied by each consumer.
+    /// </summary>
+    public decimal CurrentFactor { get; }
+
+    /// <summary>
+    /// Face at a factor of one: the lot's original face restated from the factor it was booked at.
+    /// This is the face a factor paydown scales (principal = par face × factor decline), and the one
+    /// the Security Master's factor history is expressed against.
+    /// </summary>
+    public decimal ParFace => OriginalFace / BookedFactor;
+
+    /// <summary>Face outstanding under <see cref="CurrentFactor"/>.</summary>
+    public decimal FaceOutstanding => CurrentFace(CurrentFactor);
 
     /// <summary>
     /// The quote basis <see cref="PricePercentOfPar"/> is expressed against: 100 for the bond
@@ -91,6 +116,28 @@ public sealed record FaceValueLot : IUnitizedLot
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(currentFactor);
         return OriginalFace * currentFactor / BookedFactor;
+    }
+
+    /// <summary>The same lot carrying <paramref name="currentFactor"/> as its current pool factor.</summary>
+    public FaceValueLot WithFactor(decimal currentFactor)
+        => new(LotId, SecurityId, AcquiredDate, OriginalFace, PricePercentOfPar, BookedFactor, ParBasis, currentFactor);
+
+    /// <summary>
+    /// Applies a factor decline to the lot: the restated lot carries <paramref name="newFactor"/>
+    /// and the principal paid down is the face released by the decline, <see cref="ParFace"/> ×
+    /// (<see cref="CurrentFactor"/> − <paramref name="newFactor"/>), the same arithmetic the
+    /// factor-paydown projection posts. A factor equal to the current one releases no principal; a
+    /// higher factor is a restatement, not a paydown, and is refused.
+    /// </summary>
+    public FaceValueLotFactorPaydown ApplyFactor(decimal newFactor)
+    {
+        if (newFactor is <= 0m or > 1m)
+            throw new ArgumentOutOfRangeException(nameof(newFactor), newFactor, "Factor must be in (0, 1].");
+        if (newFactor > CurrentFactor)
+            throw new ArgumentOutOfRangeException(nameof(newFactor), newFactor, $"A factor above the lot's current factor {CurrentFactor} is a restatement, not a paydown; use WithFactor.");
+
+        var principal = ParFace * (CurrentFactor - newFactor);
+        return new FaceValueLotFactorPaydown(WithFactor(newFactor), principal);
     }
 
     /// <summary>
@@ -707,3 +754,8 @@ public sealed record FaceValueLot : IUnitizedLot
         return price + discount;
     }
 }
+
+/// <summary>The outcome of applying a factor decline to a <see cref="FaceValueLot"/>.</summary>
+/// <param name="Lot">The lot restated to the new factor.</param>
+/// <param name="PrincipalPaydown">Principal released by the decline, in currency units of face.</param>
+public sealed record FaceValueLotFactorPaydown(FaceValueLot Lot, decimal PrincipalPaydown);
