@@ -403,6 +403,60 @@ public sealed class ProviderCredentialAuditDurabilityTests : IDisposable
         (await File.ReadAllLinesAsync(_auditPath)).Should().HaveCount(auditBefore.Length + 1);
     }
 
+    [Fact]
+    public async Task Replay_EarlierDeferredIntent_SurvivesALaterPublication_WhileTheAuditLogIsUnavailable()
+    {
+        // An intent whose publication landed but whose audit append and commit marker both failed stays
+        // journaled as an intent. A later mutation while the audit log is still unavailable must not
+        // replace the only proof that intent needs; once the log recovers, both records are owed.
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(SaveRequest("alpaca", "k", "s"));
+        var generation = (await store.GetStatusAsync("alpaca")).AuditMetadata["credentialGeneration"];
+        var auditBefore = await File.ReadAllLinesAsync(_auditPath);
+        await File.WriteAllTextAsync(_pendingPath, JournalLine("intent", "provider-save", "alpaca", generation,
+            "{\"timestamp\":\"2026-10-20T00:00:00+00:00\",\"providerId\":\"alpaca\",\"action\":\"save\",\"actor\":\"recovered\"}",
+            await LastPublicationIdAsync()) + "\n");
+
+        BlockAuditLog();
+        await store.SaveAsync(SaveRequest("polygon", "k2", "s2"));
+        UnblockAuditLog();
+        await File.WriteAllLinesAsync(_auditPath, auditBefore);
+
+        var replayed = await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync();
+
+        replayed.Should().Be(2, "the earlier proven intent and the later committed record are both owed");
+        var audit = await File.ReadAllLinesAsync(_auditPath);
+        audit.Should().HaveCount(auditBefore.Length + 2);
+        audit.Should().ContainSingle(line => line.Contains("\"actor\":\"recovered\""));
+        audit.Should().ContainSingle(line => line.Contains("\"providerId\":\"polygon\""));
+        File.Exists(_pendingPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Replay_UnprovenIntent_GainsNothingFromALaterPublication()
+    {
+        // A later publication carries forward only receipts the vault already held, so an intent whose
+        // own write never landed is still discarded after other mutations commit around it.
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(SaveRequest("alpaca", "k", "s"));
+        var auditBefore = await File.ReadAllLinesAsync(_auditPath);
+        await File.WriteAllTextAsync(_pendingPath, JournalLine("intent", "provider-save", "alpaca", "never-committed-generation",
+            "{\"timestamp\":\"2026-10-20T00:00:00+00:00\",\"providerId\":\"alpaca\",\"action\":\"save\",\"actor\":\"ghost\"}",
+            Guid.NewGuid().ToString("N")) + "\n");
+
+        BlockAuditLog();
+        await store.SaveAsync(SaveRequest("polygon", "k2", "s2"));
+        UnblockAuditLog();
+        await File.WriteAllLinesAsync(_auditPath, auditBefore);
+
+        var replayed = await new FileProviderCredentialStore(_root).ReplayPendingAuditAsync();
+
+        replayed.Should().Be(1, "only the later committed record is owed");
+        var audit = await File.ReadAllLinesAsync(_auditPath);
+        audit.Should().NotContain(line => line.Contains("\"actor\":\"ghost\""));
+        File.Exists(_pendingPath).Should().BeFalse();
+    }
+
     private static string OAuthJournalLine(string provider, string digest, string record, string publicationId)
         => $"{{\"phase\":\"intent\",\"providerId\":\"{provider}\",\"action\":\"oauth-save\",\"check\":{{\"kind\":\"oauth-save\",\"key\":\"{provider}\",\"credentialGeneration\":null,\"verifiedAt\":null,\"tokenDigest\":\"{digest}\",\"publicationId\":\"{publicationId}\"}},\"record\":{record}}}";
 

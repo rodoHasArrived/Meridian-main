@@ -510,6 +510,18 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         // by the publication it caused, never by state that happened to exist before it.
         var operationId = Guid.NewGuid().ToString("N");
         auditLine = StampOperationId(auditLine, operationId);
+        // Receipts for earlier publications whose audit is still owed ride forward on this
+        // publication, so a later mutation never replaces the only proof an earlier intent needs.
+        // Only receipts the current vault already holds are carried: an intent whose own write never
+        // landed gains nothing from a later publication.
+        var receipts = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var outstanding in journal)
+        {
+            if (!outstanding.Malformed && outstanding.Check.PublicationId is { } retained && vault.HoldsPublication(retained))
+                receipts.Add(retained);
+        }
+        receipts.Add(operationId);
+        vault.PublicationReceipts = receipts;
         vault.LastPublicationId = operationId;
         check = check with { PublicationId = operationId };
         var entry = PendingAuditEntry.Intent(providerId, action, check, auditLine);
@@ -811,14 +823,16 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         string Kind, string Key, string? CredentialGeneration, DateTimeOffset? VerifiedAt, string? TokenDigest = null, string? PublicationId = null)
     {
         /// <summary>
-        /// An intent is proven only by the publication it caused: the vault's publication marker must
-        /// equal this intent's id, and the kind-specific state must match. A pre-existing state (an
+        /// An intent is proven only by the publication it caused: the vault must hold this intent's
+        /// publication receipt. For the latest publication the kind-specific state must also match;
+        /// a receipt retained across later publications proves on its own, because a later
+        /// publication only carries forward receipts the vault already held. A pre-existing state (an
         /// already-absent key, an older token) never satisfies an intent whose write did not land.
         /// </summary>
         public bool IsSatisfiedBy(ProviderCredentialVault vault)
             => PublicationId is not null
-               && string.Equals(vault.LastPublicationId, PublicationId, StringComparison.Ordinal)
-               && IsStateConsistentWith(vault);
+               && vault.HoldsPublication(PublicationId)
+               && (!string.Equals(vault.LastPublicationId, PublicationId, StringComparison.Ordinal) || IsStateConsistentWith(vault));
 
         private bool IsStateConsistentWith(ProviderCredentialVault vault) => Kind switch
         {
@@ -1901,7 +1915,18 @@ public sealed class FileProviderCredentialStore : IScopedProviderCredentialStore
         /// pre-existing state (an already-absent key, an older token) that the intent did not create.
         /// </summary>
         public string? LastPublicationId { get; set; }
+        /// <summary>
+        /// Publication receipts still needed by journaled audit records: the latest publication plus
+        /// every earlier one whose audit append is still owed. A later publication carries them
+        /// forward, so it cannot erase the proof an earlier intent relies on; receipts drop out once
+        /// their journal line is gone.
+        /// </summary>
+        public HashSet<string> PublicationReceipts { get; set; } = new(StringComparer.Ordinal);
         public Dictionary<string, ProviderCredentialVaultRecord> Providers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public bool HoldsPublication(string publicationId)
+            => string.Equals(LastPublicationId, publicationId, StringComparison.Ordinal)
+               || PublicationReceipts.Contains(publicationId);
         public Dictionary<string, OAuthToken> OAuthTokens { get; set; } = new(StringComparer.Ordinal);
         public Dictionary<string, ScopedOAuthVaultRecord> ScopedOAuthTokens { get; set; } = new(StringComparer.Ordinal);
         public HashSet<string> LegacyImportedProviderIds { get; set; } = new(StringComparer.OrdinalIgnoreCase);

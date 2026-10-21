@@ -80,7 +80,9 @@ present or absent) and appends it only when the vault proves the mutation landed
 a warning otherwise; a vault write that throws removes its intent again. Every mutation stamps the vault with its
 own operation id as the publication marker, and an intent is proven only when the vault carries that
 marker and the kind-specific state matches: a pre-existing absence or an older token never proves an
-intent whose write did not land. An OAuth save intent additionally carries a SHA-256 digest of the
+intent whose write did not land. The vault also retains publication receipts for every journaled
+record still owed, carried forward only when the vault already held them, so a later mutation cannot
+erase the proof an earlier deferred intent needs while the audit log stays unavailable. An OAuth save intent additionally carries a SHA-256 digest of the
 replacement token (never the token), so an older token under the same key cannot prove a rotation. Once the primary vault generation is published the
 mutation is committed even if the recovery-generation write or a journal write fails: such failures
 keep the record journaled as owed and surface only through the deferred contract, never as a failed
