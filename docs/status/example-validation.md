@@ -8,8 +8,8 @@
 
 | Metric | Count |
 |--------|------:|
-| Total code blocks | 1106 |
-| Valid | 639 |
+| Total code blocks | 1107 |
+| Valid | 640 |
 | Invalid | 0 |
 | Skipped | 467 |
 
@@ -18,7 +18,7 @@
 | Language | Total | Valid | Invalid | Skipped |
 |----------|------:|------:|--------:|--------:|
 | `(none)` | 121 | 0 | 0 | 121 |
-| `bash` | 235 | 235 | 0 | 0 |
+| `bash` | 236 | 236 | 0 | 0 |
 | `cpp` | 1 | 0 | 0 | 1 |
 | `csharp` | 305 | 305 | 0 | 0 |
 | `csv` | 1 | 0 | 0 | 1 |
@@ -129,7 +129,7 @@ No invalid code examples found.
 | `docs/engineering/plans/desktop-workstation-screen-blueprint.md` | 1 |
 | `docs/engineering/plans/god-file-burn-down-plan.md` | 6 |
 | `docs/engineering/plans/wpf-web-ui-alignment-plan.md` | 1 |
-| `docs/engineering/production-certification-evidence-chain.md` | 2 |
+| `docs/engineering/production-certification-evidence-chain.md` | 3 |
 | `docs/engineering/web-development.md` | 3 |
 | `docs/examples/agent-improvement-loop/README.md` | 1 |
 | `docs/generated/README.md` | 1 |

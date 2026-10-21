@@ -159,17 +159,18 @@ public static class SymbolEndpoints
             if (string.IsNullOrWhiteSpace(upper) || !s_symbolPattern.IsMatch(upper))
                 return Results.BadRequest(new { success = false, symbol = upper, error = "Invalid symbol format" });
 
-            var cfg = store.Load();
-            var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+            var outcome = await store.UpdateAsync<IResult?>(cfg =>
+            {
+                var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
 
-            if (list.Any(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase)))
-                return Results.Json(new { success = false, symbol = upper, error = $"Symbol '{upper}' is already in the watchlist" }, jsonOptions);
+                if (list.Any(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase)))
+                    return (cfg, Results.Json(new { success = false, symbol = upper, error = $"Symbol '{upper}' is already in the watchlist" }, jsonOptions));
 
-            list.Add(new SymbolConfig(Symbol: upper, SubscribeTrades: true, SubscribeDepth: true, DepthLevels: 10));
-            var next = cfg with { Symbols = list.ToArray() };
-            await store.SaveAsync(next);
+                list.Add(new SymbolConfig(Symbol: upper, SubscribeTrades: true, SubscribeDepth: true, DepthLevels: 10));
+                return (cfg with { Symbols = list.ToArray() }, null);
+            });
 
-            return Results.Json(new { success = true, symbol = upper }, jsonOptions);
+            return outcome ?? Results.Json(new { success = true, symbol = upper }, jsonOptions);
         })
         .WithName("AddSymbols").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)
@@ -180,16 +181,17 @@ public static class SymbolEndpoints
         group.MapPost(UiApiRoutes.SymbolRemove, async (string symbol, ConfigStore store) =>
         {
             var upper = symbol.Trim().ToUpperInvariant();
-            var cfg = store.Load();
-            var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
-            var removed = list.RemoveAll(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase));
+            var outcome = await store.UpdateAsync<IResult?>(cfg =>
+            {
+                var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+                var removed = list.RemoveAll(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase));
 
-            if (removed == 0)
-                return Results.NotFound(new { success = false, symbol = upper, error = $"Symbol '{upper}' not found" });
+                if (removed == 0)
+                    return (cfg, Results.NotFound(new { success = false, symbol = upper, error = $"Symbol '{upper}' not found" }));
 
-            var next = cfg with { Symbols = list.ToArray() };
-            await store.SaveAsync(next);
-            return Results.Json(new { success = true, symbol = upper }, jsonOptions);
+                return (cfg with { Symbols = list.ToArray() }, null);
+            });
+            return outcome ?? Results.Json(new { success = true, symbol = upper }, jsonOptions);
         })
         .WithName("RemoveSymbol").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)
@@ -306,16 +308,17 @@ public static class SymbolEndpoints
         // POST /api/symbols/{symbol}/archive — archive a symbol (remove from monitoring, keep data)
         group.MapPost(UiApiRoutes.SymbolArchive, async (string symbol, ConfigStore store) =>
         {
-            var cfg = store.Load();
-            var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
-            var removed = list.RemoveAll(s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
+            var outcome = await store.UpdateAsync<IResult?>(cfg =>
+            {
+                var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+                var removed = list.RemoveAll(s => string.Equals(s.Symbol, symbol, StringComparison.OrdinalIgnoreCase));
 
-            if (removed == 0)
-                return Results.NotFound(new { error = $"Symbol '{symbol}' not found" });
+                if (removed == 0)
+                    return (cfg, Results.NotFound(new { error = $"Symbol '{symbol}' not found" }));
 
-            var next = cfg with { Symbols = list.ToArray() };
-            await store.SaveAsync(next);
-            return Results.Ok(new { archived = symbol, message = "Symbol removed from monitoring. Historical data is preserved." });
+                return (cfg with { Symbols = list.ToArray() }, null);
+            });
+            return outcome ?? Results.Ok(new { archived = symbol, message = "Symbol removed from monitoring. Historical data is preserved." });
         })
         .WithName("ArchiveSymbol").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)
@@ -328,33 +331,34 @@ public static class SymbolEndpoints
             if (req.Symbols is null || req.Symbols.Length == 0)
                 return Results.BadRequest(new { added = 0, skipped = 0, errors = new[] { "At least one symbol is required" } });
 
-            var cfg = store.Load();
-            var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
-            var added = new List<string>();
-            var skipped = new List<string>();
-            var errors = new List<string>();
-
-            foreach (var sym in req.Symbols)
+            var (added, skipped, errors) = await store.UpdateAsync(cfg =>
             {
-                var upper = sym?.Trim().ToUpperInvariant() ?? "";
-                if (string.IsNullOrWhiteSpace(upper) || !s_symbolPattern.IsMatch(upper))
+                var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+                var addedSymbols = new List<string>();
+                var skippedSymbols = new List<string>();
+                var validationErrors = new List<string>();
+
+                foreach (var sym in req.Symbols)
                 {
-                    errors.Add($"'{sym}' is not a valid symbol");
-                    continue;
+                    var upper = sym?.Trim().ToUpperInvariant() ?? "";
+                    if (string.IsNullOrWhiteSpace(upper) || !s_symbolPattern.IsMatch(upper))
+                    {
+                        validationErrors.Add($"'{sym}' is not a valid symbol");
+                        continue;
+                    }
+
+                    if (list.Any(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        skippedSymbols.Add(upper);
+                        continue;
+                    }
+
+                    list.Add(new SymbolConfig(Symbol: upper, SubscribeTrades: true, SubscribeDepth: true, DepthLevels: 10));
+                    addedSymbols.Add(upper);
                 }
 
-                if (list.Any(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase)))
-                {
-                    skipped.Add(upper);
-                    continue;
-                }
-
-                list.Add(new SymbolConfig(Symbol: upper, SubscribeTrades: true, SubscribeDepth: true, DepthLevels: 10));
-                added.Add(upper);
-            }
-
-            var next = cfg with { Symbols = list.ToArray() };
-            await store.SaveAsync(next);
+                return (cfg with { Symbols = list.ToArray() }, (addedSymbols, skippedSymbols, validationErrors));
+            });
             return Results.Json(new { added = added.Count, skipped = skipped.Count, errors }, jsonOptions);
         })
         .WithName("BulkAddSymbols").RequirePermission(UserPermission.ModifyConfig)
@@ -368,14 +372,15 @@ public static class SymbolEndpoints
             if (req.Symbols is null || req.Symbols.Length == 0)
                 return Results.BadRequest(new { error = "At least one symbol is required" });
 
-            var cfg = store.Load();
-            var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
             var toRemove = new HashSet<string>(req.Symbols.Select(s => s.Trim().ToUpperInvariant()), StringComparer.OrdinalIgnoreCase);
-            var removed = list.Where(s => toRemove.Contains(s.Symbol)).Select(s => s.Symbol).ToList();
-            list.RemoveAll(s => toRemove.Contains(s.Symbol));
+            var removed = await store.UpdateAsync(cfg =>
+            {
+                var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+                var removedSymbols = list.Where(s => toRemove.Contains(s.Symbol)).Select(s => s.Symbol).ToList();
+                list.RemoveAll(s => toRemove.Contains(s.Symbol));
 
-            var next = cfg with { Symbols = list.ToArray() };
-            await store.SaveAsync(next);
+                return (cfg with { Symbols = list.ToArray() }, removedSymbols);
+            });
             return Results.Json(new { removed, count = removed.Count }, jsonOptions);
         })
         .WithName("BulkRemoveSymbols").RequirePermission(UserPermission.ModifyConfig)
@@ -413,41 +418,42 @@ public static class SymbolEndpoints
             if (req.Operations is null || req.Operations.Length == 0)
                 return Results.BadRequest(new { error = "At least one operation is required" });
 
-            var cfg = store.Load();
-            var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
-            var results = new List<object>();
-
-            foreach (var op in req.Operations)
+            var results = await store.UpdateAsync(cfg =>
             {
-                var upper = op.Symbol?.Trim().ToUpperInvariant() ?? "";
-                switch (op.Action?.ToLowerInvariant())
+                var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+                var operationResults = new List<object>();
+
+                foreach (var op in req.Operations)
                 {
-                    case "add":
-                        if (!string.IsNullOrWhiteSpace(upper) && s_symbolPattern.IsMatch(upper) &&
-                            !list.Any(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            list.Add(new SymbolConfig(Symbol: upper));
-                            results.Add(new { symbol = upper, action = "add", success = true });
-                        }
-                        else
-                        {
-                            results.Add(new { symbol = upper, action = "add", success = false, reason = "invalid or duplicate" });
-                        }
-                        break;
+                    var upper = op.Symbol?.Trim().ToUpperInvariant() ?? "";
+                    switch (op.Action?.ToLowerInvariant())
+                    {
+                        case "add":
+                            if (!string.IsNullOrWhiteSpace(upper) && s_symbolPattern.IsMatch(upper) &&
+                                !list.Any(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                list.Add(new SymbolConfig(Symbol: upper));
+                                operationResults.Add(new { symbol = upper, action = "add", success = true });
+                            }
+                            else
+                            {
+                                operationResults.Add(new { symbol = upper, action = "add", success = false, reason = "invalid or duplicate" });
+                            }
+                            break;
 
-                    case "remove":
-                        var removed = list.RemoveAll(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase));
-                        results.Add(new { symbol = upper, action = "remove", success = removed > 0 });
-                        break;
+                        case "remove":
+                            var removed = list.RemoveAll(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase));
+                            operationResults.Add(new { symbol = upper, action = "remove", success = removed > 0 });
+                            break;
 
-                    default:
-                        results.Add(new { symbol = upper, action = op.Action, success = false, reason = "unknown action" });
-                        break;
+                        default:
+                            operationResults.Add(new { symbol = upper, action = op.Action, success = false, reason = "unknown action" });
+                            break;
+                    }
                 }
-            }
 
-            var next = cfg with { Symbols = list.ToArray() };
-            await store.SaveAsync(next);
+                return (cfg with { Symbols = list.ToArray() }, operationResults);
+            });
             return Results.Json(new { results }, jsonOptions);
         })
         .WithName("BatchSymbolOperations").RequirePermission(UserPermission.ModifyConfig)
@@ -465,12 +471,6 @@ public static class SymbolEndpoints
             if (!s_symbolPattern.IsMatch(upper))
                 return Results.BadRequest(new { error = $"Invalid symbol format: {req.Symbol}" });
 
-            var cfg = store.Load();
-            var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
-
-            if (list.Any(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase)))
-                return Results.BadRequest(new { error = $"Symbol '{upper}' already configured" });
-
             var symbolConfig = new SymbolConfig(
                 Symbol: upper,
                 SubscribeTrades: req.SubscribeTrades,
@@ -480,11 +480,18 @@ public static class SymbolEndpoints
                 Currency: req.Currency ?? "USD"
             );
 
-            list.Add(symbolConfig);
-            var next = cfg with { Symbols = list.ToArray() };
-            await store.SaveAsync(next);
+            var outcome = await store.UpdateAsync<IResult?>(cfg =>
+            {
+                var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
 
-            return Results.Created($"/api/symbols/{upper}", new SymbolUniverseResponse(
+                if (list.Any(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase)))
+                    return (cfg, Results.BadRequest(new { error = $"Symbol '{upper}' already configured" }));
+
+                list.Add(symbolConfig);
+                return (cfg with { Symbols = list.ToArray() }, null);
+            });
+
+            return outcome ?? Results.Created($"/api/symbols/{upper}", new SymbolUniverseResponse(
                 Symbol: upper,
                 Configured: true,
                 Status: "Configured"
@@ -499,42 +506,43 @@ public static class SymbolEndpoints
         group.MapPost(UiApiRoutes.SymbolUpdate, async (string symbol, ConfigStore store, SymbolUniverseRequest req) =>
         {
             var upper = symbol.Trim().ToUpperInvariant();
-            var cfg = store.Load();
-            var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
-            var idx = list.FindIndex(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase));
+            var outcome = await store.UpdateAsync<IResult?>(cfg =>
+            {
+                var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+                var idx = list.FindIndex(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase));
 
-            if (idx < 0)
-                return Results.NotFound(new { error = $"Symbol '{symbol}' not found" });
+                if (idx < 0)
+                    return (cfg, Results.NotFound(new { error = $"Symbol '{symbol}' not found" }));
 
-            var existing = list[idx];
-            var updated = new SymbolConfig(
-                Symbol: upper,
-                SubscribeTrades: req.SubscribeTrades,
-                SubscribeDepth: req.SubscribeDepth,
-                DepthLevels: req.DepthLevels,
-                SecurityType: existing.SecurityType,
-                Exchange: req.Exchange ?? existing.Exchange,
-                Currency: req.Currency ?? existing.Currency,
-                PrimaryExchange: existing.PrimaryExchange,
-                LocalSymbol: existing.LocalSymbol,
-                TradingClass: existing.TradingClass,
-                ConId: existing.ConId,
-                InstrumentType: existing.InstrumentType,
-                LiquidityProfile: existing.LiquidityProfile,
-                UseRelaxedValidation: existing.UseRelaxedValidation,
-                Strike: existing.Strike,
-                Right: existing.Right,
-                LastTradeDateOrContractMonth: existing.LastTradeDateOrContractMonth,
-                OptionStyle: existing.OptionStyle,
-                Multiplier: existing.Multiplier,
-                UnderlyingSymbol: existing.UnderlyingSymbol
-            );
+                var existing = list[idx];
+                var updated = new SymbolConfig(
+                    Symbol: upper,
+                    SubscribeTrades: req.SubscribeTrades,
+                    SubscribeDepth: req.SubscribeDepth,
+                    DepthLevels: req.DepthLevels,
+                    SecurityType: existing.SecurityType,
+                    Exchange: req.Exchange ?? existing.Exchange,
+                    Currency: req.Currency ?? existing.Currency,
+                    PrimaryExchange: existing.PrimaryExchange,
+                    LocalSymbol: existing.LocalSymbol,
+                    TradingClass: existing.TradingClass,
+                    ConId: existing.ConId,
+                    InstrumentType: existing.InstrumentType,
+                    LiquidityProfile: existing.LiquidityProfile,
+                    UseRelaxedValidation: existing.UseRelaxedValidation,
+                    Strike: existing.Strike,
+                    Right: existing.Right,
+                    LastTradeDateOrContractMonth: existing.LastTradeDateOrContractMonth,
+                    OptionStyle: existing.OptionStyle,
+                    Multiplier: existing.Multiplier,
+                    UnderlyingSymbol: existing.UnderlyingSymbol
+                );
 
-            list[idx] = updated;
-            var next = cfg with { Symbols = list.ToArray() };
-            await store.SaveAsync(next);
+                list[idx] = updated;
+                return (cfg with { Symbols = list.ToArray() }, null);
+            });
 
-            return Results.Ok(new SymbolUniverseResponse(
+            return outcome ?? Results.Ok(new SymbolUniverseResponse(
                 Symbol: upper,
                 Configured: true,
                 Status: "Updated"
@@ -549,16 +557,17 @@ public static class SymbolEndpoints
         group.MapDelete(UiApiRoutes.SymbolDelete, async (string symbol, ConfigStore store) =>
         {
             var upper = symbol.Trim().ToUpperInvariant();
-            var cfg = store.Load();
-            var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
-            var removed = list.RemoveAll(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase));
+            var outcome = await store.UpdateAsync<IResult?>(cfg =>
+            {
+                var list = (cfg.Symbols ?? Array.Empty<SymbolConfig>()).ToList();
+                var removed = list.RemoveAll(s => string.Equals(s.Symbol, upper, StringComparison.OrdinalIgnoreCase));
 
-            if (removed == 0)
-                return Results.NotFound(new { error = $"Symbol '{symbol}' not found" });
+                if (removed == 0)
+                    return (cfg, Results.NotFound(new { error = $"Symbol '{symbol}' not found" }));
 
-            var next = cfg with { Symbols = list.ToArray() };
-            await store.SaveAsync(next);
-            return Results.Ok(new { deleted = upper, message = "Symbol removed from monitoring" });
+                return (cfg with { Symbols = list.ToArray() }, null);
+            });
+            return outcome ?? Results.Ok(new { deleted = upper, message = "Symbol removed from monitoring" });
         })
         .WithName("DeleteSymbol").RequirePermission(UserPermission.ModifyConfig)
         .Produces(200)

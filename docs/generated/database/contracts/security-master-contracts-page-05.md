@@ -2,11 +2,33 @@
 
 # `security-master-contracts` data objects - page 5 of 5
 
-Objects 321-333 of 333. References crossing pages remain available in the dependency manifest.
+Objects 321-337 of 337. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness["StructuredCashFlowStaleness"] {
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms["StructuredCashFlowTerms"] {
+        +decimal? CouponRate
+        +decimal? CurrentFactor
+        +string? DayCountConvention
+        +StructuredCashFlowTerms Empty
+        +IReadOnlyList~StructuredFactorScheduleEntry~ FactorSchedule
+        +decimal? InflationBaseIndexValue
+        +string? InflationIndex
+        +decimal? InflationIndexRatio
+        +DateOnly? IssueDate
+        +IReadOnlyList~StructuredCashFlowLeg~? Legs
+        +DateOnly? MaturityDate
+        +string? PaymentFrequency
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowTermsResolver["StructuredCashFlowTermsResolver"] {
+    }
+    class Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationBlockerDto["StructuredCreditReclassificationBlockerDto"] {
+        +string Code
+        +string Message
+    }
     class Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto["StructuredCreditReclassificationCandidateDto"] {
         +IReadOnlyList~StructuredCreditReclassificationBlockerDto~ Blockers
         +JsonElement DerivedAssetSpecificTerms
@@ -126,6 +148,10 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredPrincipalScheduleEntry
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredStepCouponEntry
+    Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationBlockerDto
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationDisposition
     Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationReportDto --> Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationCandidateDto
 ```
