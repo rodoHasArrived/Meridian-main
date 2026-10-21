@@ -686,24 +686,29 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
             }
         }, ct);
 
-        await RefreshChecksumSidecarAsync(filePath, ct);
-
         _log.Information(
             "Truncate repair salvaged {ValidCount} lines and quarantined {RejectedCount} corrupt lines for {FilePath}",
             validCount, rejectedLines.Count, filePath);
+        if (!await SalvageReproducesRetainedChecksumAsync(filePath, ct))
+        {
+            _log.Warning(
+                "Truncate repair of {FilePath} removed corrupt lines, but the remaining records do not reproduce the retained checksum; the mismatch is left for restoration",
+                filePath);
+        }
         return true;
     }
 
-    // A repaired file's bytes changed; a stale sha256 sidecar would report the repair itself as
-    // corruption on the next health check, permanently. Rewrite it in sha256sum format.
-    private async Task RefreshChecksumSidecarAsync(string filePath, CancellationToken ct)
+    // A sidecar retains the checksum of the file as published. Salvage removes only lines that
+    // never parsed, so a file published intact and then damaged by an appended tail reproduces
+    // its checksum once the tail is gone. If it does not, parseable records were altered too:
+    // rewriting the sidecar would bless them, so it is left as is and the mismatch stays visible.
+    private async Task<bool> SalvageReproducesRetainedChecksumAsync(string filePath, CancellationToken ct)
     {
         var sidecarPath = filePath + ".sha256";
         if (!File.Exists(sidecarPath))
-            return;
-
-        var checksum = await ComputeChecksumAsync(filePath, ct);
-        await AtomicFileWriter.WriteAsync(sidecarPath, $"{checksum}  {Path.GetFileName(filePath)}", ct);
+            return true;
+        var expected = (await File.ReadAllTextAsync(sidecarPath, ct)).Split(' ', 2)[0].Trim();
+        return string.Equals(expected, await ComputeChecksumAsync(filePath, ct), StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<string?> MergeFilesAsync(List<FileInfo> files, DefragOptions options, CancellationToken ct)

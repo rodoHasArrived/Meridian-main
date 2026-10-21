@@ -384,6 +384,8 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
 
         File.Exists(dayFile).Should().BeFalse("the interrupted cleanup completes before the archive is extended");
         File.Exists(dayFile + ".sha256").Should().BeFalse();
+        File.Exists(dayFile + ".gz.sha256").Should().BeTrue(
+            "a committed append publishes the archive's checksum even when the interrupted compression never did");
         var replayed = new List<MarketEvent>();
         await foreach (var evt in new Meridian.Storage.Replay.JsonlReplayer(TestDataRoot).ReadEventsAsync())
             replayed.Add(evt);
@@ -392,7 +394,7 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
         var resumed = await maintenance.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false));
         resumed.Errors.Should().BeEmpty("no retained destination is left for compression to refuse");
         (await maintenance.RunHealthCheckAsync(new HealthCheckOptions(ValidateChecksums: true)))
-            .Issues.Should().NotContain(issue => issue.Type == IssueType.ChecksumMismatch);
+            .Issues.Should().NotContain(issue => issue.Type == IssueType.ChecksumMismatch || issue.Type == IssueType.MissingChecksum);
     }
 
     [Fact]

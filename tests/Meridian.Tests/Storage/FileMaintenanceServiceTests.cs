@@ -69,11 +69,13 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
     [Fact]
     public async Task RepairAsync_TruncateCorrupted_SalvagesValidTailAndQuarantinesCorruptLines()
     {
-        // The old repair stopped at the first invalid line and discarded the valid tail, and
-        // never refreshed the sidecar (so a repaired file reported ChecksumMismatch forever).
+        // The old repair stopped at the first invalid line and discarded the valid tail. The file
+        // was published intact; corrupt lines were interleaved afterwards, so the salvaged records
+        // reproduce the retained checksum.
         var dataPath = Path.Combine(TestDataRoot, "AAPL_trade_20260110.jsonl");
+        await AtomicFileWriter.WriteWithChecksumAsync(dataPath, Encoding.UTF8.GetBytes("{\"seq\":1}\n{\"seq\":2}\n"));
         var content = "{\"seq\":1}\nnot-json-1\n{\"seq\":2}\nnot-json-2\n";
-        await AtomicFileWriter.WriteWithChecksumAsync(dataPath, Encoding.UTF8.GetBytes(content));
+        await File.WriteAllTextAsync(dataPath, content);
 
         var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
         var result = await service.RepairAsync(new RepairOptions(RepairStrategy.TruncateCorrupted));
@@ -90,7 +92,28 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
         var backupPath = result.RecoveryCopies.Should().ContainSingle(path => path.StartsWith(dataPath + ".pre-repair.")).Subject;
         (await File.ReadAllTextAsync(backupPath)).Should().Be(content);
         (await AtomicFileWriter.VerifyChecksumAsync(dataPath)).Should().BeTrue(
-            "the sha256 sidecar must be refreshed to match the salvaged content");
+            "the salvaged records reproduce the retained checksum");
+    }
+
+    [Fact]
+    public async Task RepairAsync_TruncateCorrupted_AlteredRecordsBesideACorruptTail_LeaveTheChecksumMismatchUnresolved()
+    {
+        // A valid record was altered and a corrupt tail appended. Salvage removes the tail, but
+        // the remaining records no longer match the retained checksum; rewriting the sidecar over
+        // them would bless the alteration.
+        var dataPath = Path.Combine(TestDataRoot, "AAPL_trade_20260110.jsonl");
+        await AtomicFileWriter.WriteWithChecksumAsync(dataPath, Encoding.UTF8.GetBytes("{\"price\":450.0}\n"));
+        var originalSidecar = await File.ReadAllTextAsync(dataPath + ".sha256");
+        await File.WriteAllTextAsync(dataPath, "{\"price\":999.0}\nnot-json\n");
+
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        var result = await service.RepairAsync(new RepairOptions(RepairStrategy.TruncateCorrupted));
+
+        result.FilesRepaired.Should().Be(0);
+        result.Errors.Should().ContainSingle(error => error.Contains(nameof(IssueType.ChecksumMismatch)));
+        (await File.ReadAllLinesAsync(dataPath)).Where(l => !string.IsNullOrWhiteSpace(l)).Should().Equal("{\"price\":999.0}");
+        (await File.ReadAllTextAsync(dataPath + ".sha256")).Should().Be(originalSidecar, "the retained checksum is never rewritten over altered records");
+        (await AtomicFileWriter.VerifyChecksumAsync(dataPath)).Should().BeFalse();
     }
 
     [Fact]

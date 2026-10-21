@@ -818,8 +818,7 @@ public sealed class JsonlStorageSink : IStorageSink
             // Retire the archive's checksum before changing its bytes and publish a fresh one
             // after: a crash in between loses coverage rather than reporting false corruption.
             var sidecar = archive + ".sha256";
-            var hadSidecar = File.Exists(sidecar);
-            if (hadSidecar)
+            if (File.Exists(sidecar))
                 File.Delete(sidecar);
             await AtomicFileWriter.AppendAsync(archive, async stream =>
             {
@@ -828,9 +827,10 @@ public sealed class JsonlStorageSink : IStorageSink
             }, ct).ConfigureAwait(false);
             _lastWriteUtc = DateTimeOffset.UtcNow;
             // The member is committed: from here nothing may report failure, or the caller would
-            // retry (or the WAL would replay) and append the same events again.
-            if (hadSidecar)
-                await RepublishArchiveChecksumAsync(archive, sidecar).ConfigureAwait(false);
+            // retry (or the WAL would replay) and append the same events again. The checksum is
+            // published whether or not one existed before: an archive whose compression was
+            // interrupted before its sidecar was written must not stay uncovered on every append.
+            await RepublishArchiveChecksumAsync(archive, sidecar).ConfigureAwait(false);
             return true;
         }
 

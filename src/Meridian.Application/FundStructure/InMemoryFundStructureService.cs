@@ -1663,8 +1663,12 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
             .OrderByDescending(static snapshot => snapshot.AsOfDate)
             .ThenByDescending(static snapshot => snapshot.RecordedAt)
             .FirstOrDefault();
+        // A statement is evidence as of its header date. A transaction-feed delivery is a set of
+        // independently dated rows whose header date is only the latest of them, so each row is
+        // admitted by its own value date; otherwise a historical as-of view would drop every
+        // earlier row of a delivery that also carried a later one.
         var retainedBankLines = (await bankLinesTask.ConfigureAwait(false))
-            .Where(line => line.StatementDate <= asOfDate).ToArray();
+            .Where(line => (line.IsTransactionFeed == true ? line.ValueDate : line.StatementDate) <= asOfDate).ToArray();
         var authoritativeBankLines = BankStatementClosingBalanceAuthority.SelectAuthoritativeLines(retainedBankLines,
             currency, historicalStartDate, DateOnly.FromDateTime(projectionWindowEnd.AddTicks(-1).UtcDateTime))
             ?? throw new BankStatementEvidenceUnavailableException();
