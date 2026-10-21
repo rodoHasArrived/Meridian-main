@@ -63,9 +63,9 @@ internal static class SecurityEconomicDefinitionAdapter
 
         if (economic.LegacyAssetSpecificTerms is null
             && (HasPreferredClassification(economic)
-                || string.Equals(legacyAssetClass, "Equity", StringComparison.OrdinalIgnoreCase)
-                || (string.Equals(economic.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(legacyAssetClass, "PrivateCompanyEquity", StringComparison.OrdinalIgnoreCase))))
+                || SecurityAssetClassCatalog.GetOrDefault(legacyAssetClass).SupportsEquityClassification
+                || (SecurityAssetClassCatalog.GetOrDefault(economic.AssetClass).SupportsEquityClassification
+                    && !SecurityAssetClassCatalog.GetOrDefault(legacyAssetClass).SupportsProfileBackedTerms)))
         {
             // Structural Common metadata cannot establish the original equity classification, even
             // when every preferred module is absent. Also refuse incomplete imported equity whose

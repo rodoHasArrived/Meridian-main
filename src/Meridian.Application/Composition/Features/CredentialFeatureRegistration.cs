@@ -3,6 +3,8 @@ using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Application.UI;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 
 namespace Meridian.Application.Composition.Features;
 
@@ -31,6 +33,8 @@ internal sealed class CredentialFeatureRegistration : IServiceFeatureRegistratio
         services.AddSingleton<IScopedProviderCredentialStore>(sp =>
             sp.GetRequiredService<IProviderCredentialStore>() as IScopedProviderCredentialStore
             ?? throw new InvalidOperationException("Configured credential vault does not support scoped ownership."));
+
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ProviderCredentialAuditReplayHostedService>());
 
         services.AddSingleton<OAuthTokenRefreshService>(sp =>
         {

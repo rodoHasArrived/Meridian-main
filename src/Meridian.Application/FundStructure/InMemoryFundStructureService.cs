@@ -2431,7 +2431,7 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
 
         var equityBehavior = ReadObject(economic.EconomicTerms, "equityBehavior");
         if (ReadString(equityBehavior, "distributionType") is not null
-            || string.Equals(economic.AssetClass, "Equity", StringComparison.OrdinalIgnoreCase)
+            || SecurityAssetClassCatalog.GetOrDefault(economic.AssetClass).CashFlowBehavior is SecurityCashFlowBehavior.Dividends
             || string.Equals(economic.AssetClass, "Fund", StringComparison.OrdinalIgnoreCase))
         {
             return "Dividend";
