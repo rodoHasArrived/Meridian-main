@@ -1,9 +1,9 @@
 # ADR-020: Local Lifecycle Control Plane
 
-**Status:** Proposed
+**Status:** Accepted (core-team sign-off 2026-10-20, recorded as `DEC-PRD000-SUPPORT-MATRIX-001`)
 **Date:** 2026-07-17
 **Owner:** core-team
-**Reviewed:** 2026-07-19
+**Reviewed:** 2026-10-20
 **Deciders:** core-team
 **Supersedes:** —
 **Superseded by:** —
@@ -200,4 +200,4 @@ source-generated serializer context, and lifecycle-sensitive methods must propag
 
 ---
 
-*Last Updated: 2026-07-17*
+*Last Updated: 2026-10-20*

@@ -5842,6 +5842,116 @@ reads it per security.
 
 **TRUNCATE guards.** Migrations `041_security_master_governance_events_truncate_guard.sql` and asset-operations `006_asset_operations_write_events_truncate_guard.sql` add statement-level BEFORE TRUNCATE rejections to both append-only logs, each under a reviewed `migration-truncate` waiver authorized by the repository owner. PostgreSQL regression tests attempt TRUNCATE on both and verify the rows are retained.
 
+## Scheduled institutional-requirements pass — 2026-10-21
+
+The 2026-10-15 resolution pass closed the registry, versioning, projection, audit and lot-shape
+findings. This pass re-read the Security Master against the instruments the roadmap wants to
+onboard next (total return swaps, FX options, structured notes) and found five gaps that sit
+underneath all of them. Each was re-verified against `main` at `2ed48d5d`.
+
+### G1 — The notional lot is declared but no lot type implements it
+
+`SecurityLotUnitKind.Notional` is assigned to `Swap`, `CreditDefaultSwap`, `Swaption` and
+`CapFloor` (`SecurityAssetClassCatalog.cs:287, :500, :515, :528`), and the lot-unit enum documents
+it as "notional amount of an OTC derivative" (`SecurityAssetClassRegistry.cs:20-21`). Of the eight
+`IUnitizedLot` implementations, three are the typed contract lots (`FaceValueLot`, `CommitmentLot`,
+`FundUnitLot`) and five are the generic execution, backtesting and ledger lots; none is a notional
+lot. A swap position can therefore only be held as a generic quantity with `UnitKind = Notional`,
+with no owner for the facts a notional lot carries (original versus outstanding notional, an
+amortization step, an upfront payment).
+
+The face-value lot also keeps only its original face. `FaceValueLot.CurrentFace(decimal)` restates
+the face to a factor the caller passes, and the one production caller passes a constant:
+`AccountingPostingCandidateService.cs:1531` summed `faceLot.CurrentFace(1m) * openShare`. The
+constant is correct for its purpose (the factor-paydown projection scales the face at a factor of
+one by the factor decline, `FactorPaydownProjectionService.cs:94-95`), but it means the paydown
+factor lives in the position's economic state and is applied by each consumer, and no lot can say
+what face it currently holds.
+
+### G2 — OTC trades are securities, with no contract, collateral or netting model
+
+Swaps, CDS, swaptions and caps/floors are `securities` rows with asset-specific terms; there is no
+trade or contract entity distinct from the instrument, no collateral agreement (CSA) record, and no
+netting set. The only `collateral` references in source are direct-lending loan collateral and the
+paper-trading margin account. Onboarding a total return swap or an FX option as a security would
+repeat the shape that makes a cleared IRS indistinguishable from a bilateral one.
+
+### G3 — Underlying links are single id fields; structured notes describe their underlying in text
+
+The term schema links an underlying by one `underlyingId` Guid (`SecurityAssetTermsSchema.cs:252,
+:516`) and the structured-note module by an `underlyingAssetClass` string plus a free-text
+`underlyingDescription` (`:510-511`, required under the `underlying`/`referenceAsset` aliases at
+`:590`). There is no underlying or basket graph: nothing represents a basket, a weight, a
+reference obligation, or a chain (option on a future on an index), and nothing walks from an
+underlying to the instruments that reference it.
+
+### G4 — There is no valuation-model interface, and forward curves exist only in memory
+
+No interface describes "value this security as of this date with these market inputs". The only
+curve seam is `ISecurityForwardCurveProvider`, whose sole implementation is
+`InMemorySecurityForwardCurveProvider` (`SecurityForwardCurve.cs:73`, registered at
+`StorageFeatureRegistration.cs:415`); no curve is persisted, versioned or sourced.
+
+### G5 — Schedules and lifecycle events are partial, and loan logic runs on a separate engine
+
+The cash-flow projector has no holiday calendars, business-day conventions or stub periods;
+`BusinessDayConvention` appears only in bond reference DTOs and the bond projection, not in a
+shared schedule engine. Call and put schedules are projected for bonds alone
+(`IBondReferenceProjectionStore`, `BondProjectionService`). Credit events (credit-event
+determination, auction settlement) and swap lifecycle events (reset, compression, novation,
+termination) have no event types. PIK and rate resets for direct loans run in the F# aggregates
+(`Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs`) with their own schedule logic.
+
+### Smaller notes, not filed as findings
+
+- Asset-class string comparisons still exist outside the catalog: 42 `== "<Class>"` or
+  `string.Equals(x, "<Class>", …)` sites across 25 files, concentrated in
+  `SecurityMasterWorkbenchCommandService`, `SecurityValidationService`, `SecurityMasterService`,
+  `SecurityEconomicDefinitionAdapter` and `SwapProjectionService`. The registry carries the flags
+  these checks encode; they are not yet read from it, and no test flags a new string check.
+- Validation is hand-written per class and checked against the schema by coverage tests; it is
+  not generated from the schema.
+- Identifier resolution remains `order by i.is_primary desc limit 1` with no tie-breaker
+  (`PostgresSecurityMasterStore.cs:839-840`), and the alias and primary-identifier fallbacks are
+  `limit 1` with no ordering at all (`:853`, `:868`). All three honour the `valid_from`/`valid_to`
+  window; conflict detection still does not (P2, 2026-08-14, still open).
+
+### Priorities from this pass
+
+1. **One lot model keyed on the lot unit type, with a notional lot and the paydown factor inside
+   the lot.** Landed in this pass; see the resolution below.
+2. **Generate validation from the schema, replace the asset-class string checks with catalog
+   flags, and make a test flag every such string.** The registry already owns the flags; the work
+   is to read them and to add a source-scan test in the style of
+   `CanonicalRegistryCoverageSourceTests`.
+3. **Fix the audit settings, and make identifier lookup deterministic and date-aware everywhere.**
+   Add a total ordering to the three `limit 1` queries (primary, then enabled, then earliest
+   `valid_from`, then `security_id`) and bring the validity window into conflict detection.
+4. **Build the underlying/basket graph and the OTC contract and collateral model before onboarding
+   total return swaps, FX options or structured notes.** The graph is a table of
+   (instrument, underlying, role, weight, effective window); the contract model separates the
+   trade from the instrument and hangs collateral and netting off the counterparty.
+5. **One schedule engine with calendars and call/put schedules, folding in the direct-lending
+   logic, plus a per-class upgrade hook.** Calendars and conventions first, then stubs, then
+   call/put schedules for every class that declares them, then the F# PIK and reset logic moved
+   onto it.
+
+## Resolution pass — 2026-10-21 (priority 1, one lot model)
+
+| Finding | What landed |
+| --- | --- |
+| No notional lot type | `NotionalLot` implements `IUnitizedLot` as the `Notional` case: original and current notional, an optional upfront payment (its only cost), `AmortizationFactor`, `WithNotional` for a schedule step and `Amortize` for a reduction. `AlternativeAssetLotExtensions.ToLedgerTaxLot` carries the notional outstanding as a `Notional` ledger lot whose unit cost reproduces the upfront payment. |
+| The lot model is not keyed on the lot unit | `SecurityLotModel` maps every `SecurityLotUnitKind` to one `SecurityLotUnitDescriptor`: what the quantity means, the canonical typed lot that owns it (`FaceValueLot`, `NotionalLot`, `FundUnitLot`, `CommitmentLot`; none for shares, listed contracts and currency amounts), whether it tracks a paydown factor and whether it amortizes by schedule. `ForAssetClass` resolves through the registry's `LotUnit`, never through the class name. `SecurityLotModelTests` reflects over every `IUnitizedLot` in the contracts assembly and every enum case, so a new lot unit or typed lot fails until the model names it. |
+| The paydown factor is applied outside the lot | `FaceValueLot` carries `CurrentFactor` (defaults to `BookedFactor`), exposes `ParFace` (face at a factor of one) and `FaceOutstanding`, and `ApplyFactor` returns the restated lot with the principal released, `ParFace × (CurrentFactor − newFactor)`, the factor-paydown projection's arithmetic. `IUnitizedLot.Quantity` is the face outstanding, so a lot that has absorbed a paydown reports the reduced face. The posting service now reads `ParFace` instead of `CurrentFace(1m)`; the projected amounts are unchanged. |
+
+**Validation.** `NotionalLotTests`, `SecurityLotModelTests` and the extended `FaceValueLotTests`
+(new), with the existing lot, registry-coverage, posting-candidate and tax-lot-store suites.
+
+**Still open from this priority.** The ledger lot record (`LedgerTaxLotRecord`) persists
+`BookedFactor` but not a current factor, so a persisted lot is rehydrated at its booked factor and
+the position economic state remains the source of the current factor for posting. Persisting the
+current factor on the lot of record, and moving the Security Master's lot-of-record reads onto
+`SecurityLotModel`, is the next increment.
 ## Resolution pass — 2026-10-21 (priority 2, schema-generated validation and catalog flags)
 
 | Finding | What landed |

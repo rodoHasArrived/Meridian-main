@@ -22,6 +22,7 @@ GENERATED_FILES = frozenset({
     "docs/generated/workflows-overview.md",
     "docs/status/doc-health-dashboard.json",
     "docs/status/doc-health-dashboard.md",
+    "docs/status/example-validation.md",
     "docs/status/docs-automation-summary.json",
     "docs/status/docs-automation-summary.md",
     "docs/status/todo-scan-results.json",
