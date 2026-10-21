@@ -1,6 +1,6 @@
 {
   "total_files": 742,
-  "total_lines": 165233,
+  "total_lines": 165250,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -1638,7 +1638,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 5975,
+      "line_count": 5992,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
