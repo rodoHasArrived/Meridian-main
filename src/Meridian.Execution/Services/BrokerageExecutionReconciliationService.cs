@@ -37,6 +37,12 @@ public sealed class BrokerageExecutionReconciliationService
         if (recoveryGateway is null && gateway is not IBrokerageOrderAmendmentRecoveryGateway)
             return;
         orderManager.EnsureBrokerageRecoveryScope(gateway);
+        // The scope is bound once, but each lookup captures whichever session is current. Evidence
+        // read after the connection or its verified scope changed belongs to another session and
+        // must never reach the retained store under the bound scope.
+        var connection = gateway as IBrokerageConnectionState;
+        var boundGeneration = connection?.ConnectionGeneration;
+        var boundScope = connection?.ScopeIdentity;
         // Accepted or terminal acknowledgements can precede a late fill lost during an outage.
         // Re-query every retained order with possible remaining execution on explicit sync;
         // cancellation and expiry do not prove that no earlier execution arrived late.
@@ -70,6 +76,11 @@ public sealed class BrokerageExecutionReconciliationService
                     throw new InvalidDataException("Broker could not verify a retained terminal order; late-fill recovery remains unresolved.");
                 continue;
             }
+
+            if (connection is not null && (connection.ConnectionGeneration != boundGeneration
+                || !string.Equals(connection.ScopeIdentity, boundScope, StringComparison.Ordinal)))
+                throw new InvalidOperationException(
+                    "The brokerage connection or its verified scope changed during order recovery; evidence from the new session was discarded.");
 
             // The report pump may have advanced the order while the broker query was in flight.
             // Compare against the current retained state before passing evidence to the OMS.

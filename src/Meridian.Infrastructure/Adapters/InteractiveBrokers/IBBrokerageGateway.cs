@@ -400,6 +400,7 @@ public sealed partial class IBBrokerageGateway :
 
         await _openOrdersGate.WaitAsync(ct).ConfigureAwait(false);
         var requested = false;
+        var requestEpoch = 0;
         try
         {
             _openOrdersSnapshotBuffer = new ConcurrentDictionary<int, BrokerOrder>();
@@ -407,6 +408,7 @@ public sealed partial class IBBrokerageGateway :
                 TaskCreationOptions.RunContinuationsAsynchronously);
 
             var waiter = _openOrdersSnapshotWaiter;
+            requestEpoch = Volatile.Read(ref _connectionEpoch);
             _client.RequestOpenOrders();
             requested = true;
             return await waiter.Task.WaitAsync(CallbackTimeout, ct).ConfigureAwait(false);
@@ -416,8 +418,11 @@ public sealed partial class IBBrokerageGateway :
             lock (_openOrdersFence)
             {
                 // openOrderEnd carries no request id. A request abandoned before its end arrived still
-                // owes one, which must drain here rather than complete the next request early.
-                if (requested && _openOrdersSnapshotWaiter is { Task.IsCompleted: false })
+                // owes one, which must drain here rather than complete the next request early. An
+                // end owed by an earlier session never arrives in this one (the session change
+                // already forgot it), so only a request of the current session owes one.
+                if (requested && _openOrdersSnapshotWaiter is { Task.IsCompleted: false }
+                    && Volatile.Read(ref _connectionEpoch) == requestEpoch)
                     _abandonedOpenOrdersRequests++;
                 _openOrdersSnapshotWaiter = null;
                 _openOrdersSnapshotBuffer = null;
@@ -768,8 +773,10 @@ public sealed partial class IBBrokerageGateway :
             // and aliases are not the stale route's to remove.
             if (!_submittedOrders.TryGetValue(gatewayOrderId, out var current))
                 throw StaleRoute(orderId);
+            // The reinstalled route may name a different client order under this numeric id; an
+            // alias resolved before that replacement must not be sent against it.
             if (!ReferenceEquals(current, context))
-                return CurrentSessionContext(orderId, gatewayOrderId, current);
+                return Names(current, orderId) ? CurrentSessionContext(orderId, gatewayOrderId, current) : throw StaleRoute(orderId);
             _submittedOrders.TryRemove(gatewayOrderId, out _);
             foreach (var key in new[] { context.MeridianOrderId, gatewayOrderId.ToString() })
                 ((ICollection<KeyValuePair<string, int>>)_gatewayOrderIdsByExternalId)
@@ -1092,6 +1099,10 @@ public sealed partial class IBBrokerageGateway :
             _ when filled > (latest?.FilledQuantity ?? 0m) => ExecutionReportType.PartialFill,
             _ => ExecutionReportType.New
         };
+        // A status that advances the filled quantity without a new average cannot reuse the cached
+        // price: that average covered fewer shares, and carrying it forward as cumulative would price
+        // the new shares with it. The advanced fill stays unpriced until IB reports its average.
+        var fillAdvancedWithoutAverage = update.Filled > (latest?.FilledQuantity ?? 0m) && update.AverageFillPrice <= 0;
         var report = BuildExecutionReport(
             gatewayOrderId, reportType, orderStatus, context,
             context?.Symbol ?? openOrder?.Symbol ?? gatewayOrderId.ToString(),
@@ -1101,10 +1112,11 @@ public sealed partial class IBBrokerageGateway :
                 : context?.Quantity ?? openOrder?.Quantity ?? filled + update.Remaining,
             filled,
             update.Filled < (latest?.FilledQuantity ?? 0m) ? latest?.FillPrice :
-                update.AverageFillPrice > 0 ? (decimal)update.AverageFillPrice : update.LastFillPrice > 0 ? (decimal)update.LastFillPrice : latest?.FillPrice,
+                update.AverageFillPrice > 0 ? (decimal)update.AverageFillPrice : update.LastFillPrice > 0 ? (decimal)update.LastFillPrice
+                : fillAdvancedWithoutAverage ? null : latest?.FillPrice,
             update.Status, update.RejectReason, null, update.ReceivedAt,
             update.Filled < (latest?.FilledQuantity ?? 0m) ? latest!.FillPriceIsCumulativeAverage :
-                update.AverageFillPrice > 0 || (update.LastFillPrice <= 0 && latest?.FillPriceIsCumulativeAverage == true));
+                update.AverageFillPrice > 0 || (update.LastFillPrice <= 0 && !fillAdvancedWithoutAverage && latest?.FillPriceIsCumulativeAverage == true));
         // reqOpenOrders echoes orderStatus for every open order, including orders this session does not
         // track. Until recovery validates them (account, orderRef, contract and session) they are kept
         // as recovery evidence only; tracked orders and updates outside a snapshot publish as before.

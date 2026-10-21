@@ -212,6 +212,29 @@ public sealed class BrokerageExecutionReconciliationServiceTests
     }
 
     [Fact]
+    public async Task RecoverOrdersAsync_ConnectionChangesAfterScopeBinding_RefusesTheLookupsEvidence()
+    {
+        var accountId = Guid.NewGuid();
+        await using var context = new RecoveryContext([
+            CreateLocalOrder("ord-1") with { FundAccountId = accountId, Status = OrderStatus.PendingNew }
+        ]);
+        var generation = 1L;
+        ((IBrokerageConnectionState)context.Gateway).ConnectionGeneration.Returns(_ => generation);
+        context.RecoveryGateway.GetOrderForRecoveryAsync("ord-1", Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                generation++; // the broker reconnected under another session while the lookup ran
+                return Task.FromResult<ExecutionReport?>(CreateRecoveryReport("ord-1"));
+            });
+
+        var recover = () => CreateService().RecoverOrdersAsync(context.Gateway, context.OrderManager, accountId);
+
+        await recover.Should().ThrowAsync<InvalidOperationException>();
+        context.OrderManager.GetRecoveryOrders(accountId).Should().ContainSingle("evidence from another session is never applied");
+        context.OrderManager.GetOrder("ord-1")!.Status.Should().Be(OrderStatus.PendingNew);
+    }
+
+    [Fact]
     public async Task RecoverOrdersAsync_ChangedBrokerScope_RefusesBeforeLookup()
     {
         var accountId = Guid.NewGuid();

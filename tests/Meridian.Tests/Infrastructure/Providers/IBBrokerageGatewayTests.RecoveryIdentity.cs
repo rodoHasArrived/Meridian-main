@@ -91,6 +91,25 @@ public sealed partial class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task OrderRecovery_FillAdvancedWithoutANewAverage_StaysUnresolved()
+    {
+        var client = RecoveryClient(c =>
+        {
+            c.RaiseOrderStatus(new IBOrderStatusUpdate(7001, "Submitted", 2m, 8m, 100d, 100d, 1L, 1, null, null,
+                DateTimeOffset.UtcNow));
+            // Three more shares fill, reported without an average or a last price.
+            c.RaiseOrderStatus(new IBOrderStatusUpdate(7001, "Submitted", 5m, 5m, 0d, 0d, 1L, 1, null, null,
+                DateTimeOffset.UtcNow));
+            c.RaiseOpenOrder(RecoverableOpenOrder() with { FilledQuantity = 5m, Status = "Submitted" });
+        });
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+
+        (await ((IBrokerageOrderRecoveryGateway)sut).GetOrderForRecoveryAsync("client-1"))
+            .Should().BeNull("the cached average covered two shares; the five-share fill has no price of its own");
+    }
+
+    [Fact]
     public async Task Recovery_RetainedIdentityDiffersFromTheMatchedOrder_InstallsNoRoute()
     {
         var cancelled = new List<int>();

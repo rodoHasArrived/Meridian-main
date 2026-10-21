@@ -153,4 +153,75 @@ public sealed partial class IBBrokerageGatewayTests
 
         retried.Should().BeNull("a row delivered for the abandoned request is not evidence the order is still open");
     }
+
+    [Fact]
+    public async Task OpenOrdersSnapshot_RequestAbandonedAcrossASessionReset_DoesNotOweAnEndToTheNewSession()
+    {
+        var requests = 0;
+        using var abandon = new CancellationTokenSource();
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(9001),
+            OnRequestOpenOrders = c =>
+            {
+                if (++requests == 1)
+                {
+                    // The transport drops before any row or end arrives; the caller then gives up.
+                    c.RaiseConnectionLost();
+                    c.RaiseConnectionRestored();
+                    c.RaiseManagedAccounts("DU123456");
+                    abandon.Cancel();
+                    return;
+                }
+                c.RaiseOpenOrder(RecoverableOpenOrder());
+                c.RaiseOpenOrdersCompleted(); // the restored session's own end
+            }
+        };
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        var recovery = (IBrokerageOrderRecoveryGateway)sut;
+        var first = () => recovery.GetOrderForRecoveryAsync("client-1", abandon.Token);
+        await first.Should().ThrowAsync<OperationCanceledException>();
+
+        var retried = await recovery.GetOrderForRecoveryAsync("client-1");
+
+        retried.Should().NotBeNull("the earlier session's abandoned request owes nothing to this session");
+    }
+
+    [Fact]
+    public async Task StaleRouteCleanup_RacingARecoveryOfADifferentClientOrder_RefusesTheResolvedAlias()
+    {
+        var cancelled = new List<int>();
+        var sessions = 0;
+        var client = RecoveryClient(c => c.RaiseOpenOrder(sessions == 0
+            ? RecoverableOpenOrder()
+            : RecoverableOpenOrder(clientOrderId: "client-2")), cancelled);
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        var recovery = (IBrokerageOrderRecoveryGateway)sut;
+        (await recovery.GetOrderForRecoveryAsync("client-1")).Should().NotBeNull();
+        sessions++;
+        client.RaiseConnectionLost();
+        client.RaiseConnectionRestored();
+        client.RaiseManagedAccounts("DU123456");
+        var staleRouteSeen = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        sut.StaleRouteCleanupStarting = () => staleRouteSeen.TrySetResult();
+        Task<ExecutionReport>? staleCancel = null;
+        // The cancel resolves client-1's stale route and parks at the gate while the new session
+        // installs id 7001 for client-2; it must not be sent against the reinstalled route.
+        sut.RecoveryRoutesInstalling = () =>
+        {
+            if (staleCancel is not null)
+                return;
+            staleCancel = Task.Run(() => sut.CancelOrderAsync("client-1"));
+            staleRouteSeen.Task.Wait(SafetyNet).Should().BeTrue("the cancel captured the stale route");
+        };
+
+        (await recovery.GetOrderForRecoveryAsync("client-2"))!.OrderId.Should().Be("client-2");
+        var cancel = () => staleCancel!;
+        await cancel.Should().ThrowAsync<InvalidOperationException>("client-1 no longer names the order under this id");
+        cancelled.Should().BeEmpty();
+        (await sut.CancelOrderAsync("client-2")).OrderStatus.Should().Be(OrderStatus.Cancelled);
+        cancelled.Should().Equal([7001]);
+    }
 }
