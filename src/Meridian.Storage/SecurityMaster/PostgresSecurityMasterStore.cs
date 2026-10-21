@@ -836,7 +836,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
               and i.valid_from <= @as_of
               and (i.valid_to is null or i.valid_to > @as_of)
               and (@include_inactive = true or s.status = 'Active')
-            order by i.is_primary desc
+            order by i.is_primary desc, i.valid_from desc, i.security_id
             limit 1;
             """,
             $"""
@@ -850,6 +850,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
               and (a.valid_to is null or a.valid_to > @as_of)
               and a.is_enabled = true
               and (@include_inactive = true or s.status = 'Active')
+            order by a.valid_from desc, a.security_id
             limit 1;
             """,
             $"""
@@ -865,6 +866,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                     and i.identifier_kind = @identifier_kind
                     and i.normalized_identifier_value = @normalized_identifier_value)
               and (@include_inactive = true or s.status = 'Active')
+            order by s.security_id
             limit 1;
             """
         })
