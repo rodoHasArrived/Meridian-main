@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-10-14
+Snapshot date: 2026-10-20
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |

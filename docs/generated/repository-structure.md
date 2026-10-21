@@ -4023,6 +4023,7 @@ Meridian-main
 │   │   │   ├── Credentials
 │   │   │   │   ├── CredentialTestingService.cs
 │   │   │   │   ├── OAuthTokenRefreshService.cs
+│   │   │   │   ├── ProviderCredentialAuditReplayHostedService.cs
 │   │   │   │   └── ProviderCredentialResolver.cs
 │   │   │   ├── ConfigurationPipeline.cs
 │   │   │   ├── ConfigurationResolutionRules.cs
@@ -4155,6 +4156,7 @@ Meridian-main
 │   │   │   ├── Validation
 │   │   │   │   ├── AssetClassValidatorRegistry.cs
 │   │   │   │   ├── FileSecurityValidationSnapshotStore.cs
+│   │   │   │   ├── SchemaTermsAssetClassValidator.cs
 │   │   │   │   ├── SecurityMasterOptionsValidator.cs
 │   │   │   │   ├── SecurityValidationGateService.cs
 │   │   │   │   └── SecurityValidationService.cs
@@ -4676,6 +4678,7 @@ Meridian-main
 │   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── IStructuredCashFlowProvider.cs
 │   │   │   ├── LotQuantity.cs
+│   │   │   ├── NotionalLot.cs
 │   │   │   ├── OperatorOverrides.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
 │   │   │   ├── SecurityAssetClassRegistry.cs
@@ -4694,6 +4697,7 @@ Meridian-main
 │   │   │   ├── SecurityIdentifierNormalizer.cs
 │   │   │   ├── SecurityIdentifiers.cs
 │   │   │   ├── SecurityIncomeCashFlows.cs
+│   │   │   ├── SecurityLotModel.cs
 │   │   │   ├── SecurityMasterCashFlow.cs
 │   │   │   ├── SecurityMasterClosePrices.cs
 │   │   │   ├── SecurityMasterClosePricesJsonContext.cs
@@ -4920,6 +4924,7 @@ Meridian-main
 │   │   │   ├── IProviderCredentialStore.cs
 │   │   │   ├── LegacyCredentialFileMigration.cs
 │   │   │   ├── OAuthToken.cs
+│   │   │   ├── ProviderCredentialAuditDeferredException.cs
 │   │   │   ├── ProviderCredentialCatalog.cs
 │   │   │   └── ProviderSetupHandlers.cs
 │   │   ├── Etl
@@ -10134,6 +10139,7 @@ Meridian-main
 │   │   │   │   ├── OAuthTokenPersistencePermissionTests.cs
 │   │   │   │   ├── OAuthTokenRefreshFailureTests.cs
 │   │   │   │   ├── OAuthVaultRecoveryTests.cs
+│   │   │   │   ├── ProviderCredentialAuditDurabilityTests.cs
 │   │   │   │   ├── ProviderCredentialResolverTests.cs
 │   │   │   │   ├── ProviderCredentialStoreTests.cs
 │   │   │   │   ├── ScopedCredentialRecoveryTests.cs
@@ -10279,6 +10285,7 @@ Meridian-main
 │   │   │   ├── LedgerNetBalanceCentralizationTests.cs
 │   │   │   ├── ProjectReferenceGraph.cs
 │   │   │   ├── ProjectReferenceGraphTests.cs
+│   │   │   ├── SecurityAssetClassComparisonRatchetTests.cs
 │   │   │   ├── SecurityAssetClassLiteralRatchetTests.cs
 │   │   │   ├── SecurityMasterContractOwnershipTests.cs
 │   │   │   └── VendorNeutralDomainTests.cs
@@ -11060,6 +11067,7 @@ Meridian-main
 │   │   │   ├── ListingIdentityTests.cs
 │   │   │   ├── ListingMicColumnTests.cs
 │   │   │   ├── LoanIdentifierKindTests.cs
+│   │   │   ├── NotionalLotTests.cs
 │   │   │   ├── NullCorporateActionOperationsServiceTests.cs
 │   │   │   ├── NullOperatorOverridesStoreTests.cs
 │   │   │   ├── OperatorOverrideReviewRulesTests.cs
@@ -11073,7 +11081,9 @@ Meridian-main
 │   │   │   ├── ProjectionFanOutPostgresTests.cs
 │   │   │   ├── ProjectionFanOutTests.cs
 │   │   │   ├── RegistryMigratedProjectionGoldenTests.cs
+│   │   │   ├── SchemaTermsValidationTests.cs
 │   │   │   ├── SecurityAccountingInstrumentClassTests.cs
+│   │   │   ├── SecurityAssetClassBehaviorFactsTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
 │   │   │   ├── SecurityAssetClassRegistryCoverageTests.cs
@@ -11091,6 +11101,7 @@ Meridian-main
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
 │   │   │   ├── SecurityIncomeCashFlowProjectorTests.cs
+│   │   │   ├── SecurityLotModelTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
 │   │   │   ├── SecurityMasterAliasMigrationTests.cs
 │   │   │   ├── SecurityMasterAliasRecordedHistoryTests.cs
@@ -11494,6 +11505,7 @@ Meridian-main
 │   │   │   ├── ClosePublicationWorkerAuthorityTests.cs
 │   │   │   ├── CloseReadinessSubjectSourceTests.cs
 │   │   │   ├── CollateralExposureServiceTests.cs
+│   │   │   ├── ConfigServiceBaseLockTests.cs
 │   │   │   ├── CookieCsrfProtectionTests.cs
 │   │   │   ├── CorporateActionOperationsAuthorizationTests.cs
 │   │   │   ├── CorporateActionOperationsEndpointTests.cs
@@ -11853,6 +11865,7 @@ Meridian-main
 │   │   │   ├── QuantScriptTemplateCatalogServiceTests.cs
 │   │   │   ├── RetentionAssuranceServiceTests.cs
 │   │   │   ├── RunMatServiceTests.cs
+│   │   │   ├── SetupWizardConfigurationLockTests.cs
 │   │   │   ├── SetupWizardStateServiceTests.cs
 │   │   │   ├── SingleInstanceServiceTests.cs
 │   │   │   ├── StatusServiceTests.cs

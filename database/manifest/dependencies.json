@@ -9832,6 +9832,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.FaceValueLotFactorPaydown"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.FundUnitLot"
     },
     {
@@ -9971,6 +9977,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.LotQuantity"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.NotionalLot"
     },
     {
       "kind": "contract-set-member",
@@ -10571,6 +10583,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIncomeComponent"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityLotModel"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityLotUnitDescriptor"
     },
     {
       "kind": "contract-set-member",
@@ -22834,6 +22858,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.FaceValueLotFactorPaydown"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.FundUnitLot"
     },
     {
@@ -22973,6 +23003,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.LotQuantity"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.NotionalLot"
     },
     {
       "kind": "contract-set-member",
@@ -23573,6 +23609,18 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIncomeComponent"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityLotModel"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityLotUnitDescriptor"
     },
     {
       "kind": "contract-set-member",
@@ -34575,6 +34623,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.FaceValueLotFactorPaydown",
+      "target": "contract:Meridian.Contracts.SecurityMaster.FaceValueLot"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.FundUnitLot",
       "target": "contract:Meridian.Contracts.SecurityMaster.IUnitizedLot"
     },
@@ -34601,6 +34655,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.LotQuantity",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityLotUnitKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.NotionalLot",
+      "target": "contract:Meridian.Contracts.SecurityMaster.IUnitizedLot"
     },
     {
       "kind": "contract-reference",
@@ -35219,6 +35279,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityIncomeCashFlowScheduleDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIncomeCashFlowGap"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityLotUnitDescriptor",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityLotUnitKind"
     },
     {
       "kind": "contract-reference",
@@ -50999,7 +51065,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "8a1280086bbb5ebd94a416b4fcfb65cf1a566b188a29ba70804f61c6b7927954",
+  "fingerprint": "cf9b947e3204778b42b210ddb2277d8f83c7cf601a5969598270e1e107296c1e",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -60882,6 +60948,12 @@
     },
     {
       "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.FaceValueLotFactorPaydown",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.FaceValueLotFactorPaydown"
+    },
+    {
+      "classification": "record",
       "id": "contract:Meridian.Contracts.SecurityMaster.FundUnitLot",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.FundUnitLot"
@@ -61023,6 +61095,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.LotQuantity",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.LotQuantity"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.NotionalLot",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.NotionalLot"
     },
     {
       "classification": "record",
@@ -61623,6 +61701,18 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityIncomeComponent",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityIncomeComponent"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityLotModel",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityLotModel"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityLotUnitDescriptor",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityLotUnitDescriptor"
     },
     {
       "classification": "enum",
@@ -74573,11 +74663,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3327,
-    "contract_set_memberships": 4008,
-    "edges": 8474,
+    "contract_references": 3330,
+    "contract_set_memberships": 4016,
+    "edges": 8485,
     "foreign_keys": 138,
     "logical_references": 6,
-    "nodes": 4082
+    "nodes": 4086
   }
 }

@@ -4,8 +4,9 @@ using Meridian.Ledger;
 namespace Meridian.Application.SecurityMaster;
 
 /// <summary>
-/// Adapts the canonical commitment and fund-unit lots to the <see cref="LedgerTaxLot"/> shape the
-/// relief engines consume, the way <see cref="FaceValueLotExtensions"/> does for face-value lots.
+/// Adapts the canonical commitment, fund-unit and notional lots to the <see cref="LedgerTaxLot"/>
+/// shape the relief engines consume, the way <see cref="FaceValueLotExtensions"/> does for
+/// face-value lots.
 /// </summary>
 public static class AlternativeAssetLotExtensions
 {
@@ -40,6 +41,30 @@ public static class AlternativeAssetLotExtensions
         return new LedgerTaxLot(lot.LotId, lot.CommittedDate, lot.FundedAmount, unitCost: 1m, lot.SecurityId)
         {
             UnitKind = SecurityLotUnitKind.CurrencyAmount,
+            Multiplier = 1m
+        };
+    }
+
+    /// <summary>
+    /// A notional lot's quantity is the notional outstanding and its only cost is the upfront
+    /// payment, so the ledger lot carries that notional at a unit cost that reproduces
+    /// <see cref="NotionalLot.CostBasis"/> (zero for a par contract). A fully amortized lot has no
+    /// notional left to carry.
+    /// </summary>
+    public static LedgerTaxLot ToLedgerTaxLot(this NotionalLot lot)
+    {
+        ArgumentNullException.ThrowIfNull(lot);
+        if (lot.CurrentNotional <= 0m)
+            throw new InvalidOperationException($"Notional lot '{lot.LotId}' is fully amortized and has no notional to carry as a ledger lot.");
+
+        return new LedgerTaxLot(
+            lot.LotId,
+            lot.EffectiveDate,
+            lot.CurrentNotional,
+            unitCost: lot.UpfrontPayment / lot.CurrentNotional,
+            lot.SecurityId)
+        {
+            UnitKind = SecurityLotUnitKind.Notional,
             Multiplier = 1m
         };
     }
