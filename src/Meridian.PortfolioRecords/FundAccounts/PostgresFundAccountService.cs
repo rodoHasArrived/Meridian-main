@@ -207,7 +207,8 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             request.Lines.Count,
             DateTimeOffset.UtcNow,
             request.LoadedBy,
-            request.StatementRevision);
+            request.StatementRevision,
+            request.IsTransactionFeed ? true : null);
 
         await _store.InsertBankStatementBatchAsync(batch, FundAccountStatementValidation.RetainAuthority(request), ct).ConfigureAwait(false);
         return batch;

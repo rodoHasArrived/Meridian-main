@@ -481,8 +481,10 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
             replayed.Add(evt);
         replayed.Select(evt => evt.Sequence).Should().Equal(new long[] { 1, 2 }, "a committed append is never retried");
         File.Exists(dayFile + ".gz.sha256").Should().BeFalse("the stale checksum stays retired rather than misreporting corruption");
-        (await maintenance.RunHealthCheckAsync(new HealthCheckOptions(ValidateChecksums: true)))
-            .Issues.Should().NotContain(issue => issue.Type == IssueType.ChecksumMismatch);
+        var issues = (await maintenance.RunHealthCheckAsync(new HealthCheckOptions(ValidateChecksums: true))).Issues;
+        issues.Should().NotContain(issue => issue.Type == IssueType.ChecksumMismatch);
+        issues.Should().ContainSingle(issue => issue.Type == IssueType.MissingChecksum && issue.Path == dayFile + ".gz",
+            "an archive that lost its checksum coverage must not be reported healthy indefinitely");
     }
 
     private static async Task<byte[]> DecompressAsync(string path)

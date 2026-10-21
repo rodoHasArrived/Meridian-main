@@ -575,6 +575,42 @@ public abstract class FundAccountServiceContractTests
         BankStatementClosingBalanceAuthority.SelectClosingBalance(retained).Should().Be(90m);
     }
 
+    protected async Task IngestBankStatementAsync_TransactionFeedBatches_AreAdditiveAndSupersedeByLineIdentity_Core()
+    {
+        var service = CreateService();
+        var account = await service.CreateAccountAsync(MakeBankRequest());
+        var asOf = Today();
+        var firstBatch = Guid.NewGuid();
+        var coffee = MakeBankLine(firstBatch, account.AccountId, asOf, -25.10m) with { Description = "Coffee" };
+        await service.IngestBankStatementAsync(new IngestBankStatementRequest(
+            firstBatch, account.AccountId, asOf, "Plaid", null, [coffee], "sync", IsBackfill: true, IsTransactionFeed: true));
+
+        // A later incremental sync on the same day adds a transaction and corrects the first one's amount.
+        var secondBatch = Guid.NewGuid();
+        var refund = MakeBankLine(secondBatch, account.AccountId, asOf, 100m) with { Description = "Refund" };
+        var correctedCoffee = coffee with { BatchId = secondBatch, Amount = -27.10m };
+        await service.IngestBankStatementAsync(new IngestBankStatementRequest(
+            secondBatch, account.AccountId, asOf, "Plaid", null, [refund, correctedCoffee], "sync", IsBackfill: true, IsTransactionFeed: true));
+
+        var retained = await service.GetBankStatementLinesAsync(account.AccountId);
+        retained.Should().HaveCount(2);
+        retained.Should().ContainSingle(line => line.LineId == coffee.LineId)
+            .Which.Should().BeEquivalentTo(new { Amount = -27.10m, BatchId = secondBatch });
+        retained.Should().ContainSingle(line => line.LineId == refund.LineId);
+        retained.Should().OnlyContain(line => line.IsTransactionFeed == true);
+        var authoritative = BankStatementClosingBalanceAuthority.SelectAuthoritativeLines(retained);
+        authoritative.Should().NotBeNull("incremental feed deltas on one day are additive, not competing statements");
+        authoritative!.Sum(line => line.Amount).Should().Be(72.90m);
+
+        // A statement batch keeps its fail-closed identity rules.
+        var statementBatch = Guid.NewGuid();
+        var statementLine = MakeBankLine(statementBatch, account.AccountId, asOf.AddDays(1), 5m) with { ClosingBalance = 500m };
+        var statement = new IngestBankStatementRequest(statementBatch, account.AccountId, asOf.AddDays(1), "Bank", null, [statementLine], "ops");
+        await service.IngestBankStatementAsync(statement);
+        var change = () => service.IngestBankStatementAsync(statement with { Lines = [statementLine with { Amount = 6m }] });
+        await change.Should().ThrowAsync<InvalidOperationException>();
+    }
+
     protected async Task ReconcileAccountAsync_SnapshotAndPositions_ProducesMatchedRun_Core()
     {
         var service = CreateService();

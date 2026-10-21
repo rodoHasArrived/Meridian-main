@@ -1,6 +1,6 @@
 {
   "total_files": 743,
-  "total_lines": 165264,
+  "total_lines": 165267,
   "orphaned_count": 251,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2575,7 +2575,7 @@
     },
     {
       "path": "docs/generated/database/contracts/fund-governance-contracts-page-01.md",
-      "line_count": 751,
+      "line_count": 752,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2583,7 +2583,7 @@
     },
     {
       "path": "docs/generated/database/contracts/fund-governance-contracts-page-02.md",
-      "line_count": 618,
+      "line_count": 619,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2743,7 +2743,7 @@
     },
     {
       "path": "docs/generated/database/modules/fund_accounts.md",
-      "line_count": 227,
+      "line_count": 228,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

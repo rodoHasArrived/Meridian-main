@@ -370,7 +370,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "5ef0847149cf646571dc3530b0dcdffbba2952175cc724ccbaac361acaef6f98",
+  "fingerprint": "b88d70b4f769dc43e7235337e069e5bf7484d39e55209c5c2401e83a0ccfee10",
   "foreign_tables": [],
   "functions": [],
   "logical_modules": [
@@ -3496,6 +3496,22 @@
           "security_labels": [],
           "type_name": "int4",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": "false",
+          "fingerprint": "2a1bd4c8ddafb758fd9c16ccbae67a4b70351b216ec55facd57e4172f32ba362",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "transaction_feed",
+          "nullable": false,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -3565,7 +3581,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "44561ad2f39ca3bbc9a399baded5a9b34a70a521f1729dfbb950669b7d41f886",
+      "fingerprint": "1d4e739701a4efe1144b920c85ee637a1f6b32fd9d0448851ecb0c23c6a497e6",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -8251,6 +8267,22 @@
           "security_labels": [],
           "type_name": "int4",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": "false",
+          "fingerprint": "2a1bd4c8ddafb758fd9c16ccbae67a4b70351b216ec55facd57e4172f32ba362",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "transaction_feed",
+          "nullable": false,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -8320,7 +8352,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "44561ad2f39ca3bbc9a399baded5a9b34a70a521f1729dfbb950669b7d41f886",
+      "fingerprint": "1d4e739701a4efe1144b920c85ee637a1f6b32fd9d0448851ecb0c23c6a497e6",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [

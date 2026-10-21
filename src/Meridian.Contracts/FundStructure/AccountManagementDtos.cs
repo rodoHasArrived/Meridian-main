@@ -50,7 +50,8 @@ public sealed record BankStatementLineDto(
     decimal? ClosingBalance,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? LineSequence = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? StatementRevision = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateOnly? StatementAsOfDate = null)
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateOnly? StatementAsOfDate = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] bool? IsTransactionFeed = null)
 {
     public DateOnly StatementDate => StatementAsOfDate ?? ValueDate;
 
@@ -95,7 +96,8 @@ public sealed record IngestBankStatementRequest(
     IReadOnlyList<BankStatementLineDto> Lines,
     string LoadedBy,
     bool IsBackfill = false,
-    int StatementRevision = 1);
+    int StatementRevision = 1,
+    bool IsTransactionFeed = false);
 
 
 public sealed record CustodianStatementBatchDto(
@@ -117,7 +119,8 @@ public sealed record BankStatementBatchDto(
     int LineCount,
     DateTimeOffset IngestedAt,
     string LoadedBy,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? StatementRevision = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] int? StatementRevision = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] bool? IsTransactionFeed = null);
 
 /// Header record for an account-level reconciliation run.
 public sealed record AccountReconciliationRunDto(

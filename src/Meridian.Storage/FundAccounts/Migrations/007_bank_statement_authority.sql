@@ -10,3 +10,8 @@ alter table __SCHEMA__.bank_statement_line
 create unique index if not exists ux_bank_statement_source_sequence
     on __SCHEMA__.bank_statement_line (batch_id, line_sequence)
     where line_sequence is not null;
+
+-- A transaction feed (for example Plaid) delivers additive deltas, not complete statements.
+-- Its batches never compete as statements, and a later delivery of a transaction supersedes the earlier one.
+alter table __SCHEMA__.bank_statement_batch
+    add column if not exists transaction_feed boolean not null default false;

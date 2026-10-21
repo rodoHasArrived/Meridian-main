@@ -428,7 +428,8 @@ public sealed class PlaidWorkstationService : IPlaidIngestionService, IPlaidTran
                         "Plaid transactions/sync import",
                         lines,
                         actor,
-                        IsBackfill: true),
+                        IsBackfill: true,
+                        IsTransactionFeed: true),
                     ct)
                 .ConfigureAwait(false);
             total += lines.Length;

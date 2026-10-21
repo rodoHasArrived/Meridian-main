@@ -446,6 +446,20 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
                     ));
                 }
             }
+            else if (file.Name.EndsWith(".jsonl.gz", StringComparison.OrdinalIgnoreCase))
+            {
+                // Compression always publishes a sidecar with the archive, and a late append
+                // retires it before changing the bytes and republishes it after. An archive with
+                // no sidecar has lost its coverage (interrupted republish, manual removal), so
+                // later truncation or corruption would otherwise pass every health check.
+                issues.Add(new HealthIssue(
+                    Severity: IssueSeverity.Warning,
+                    Type: IssueType.MissingChecksum,
+                    Path: file.FullName,
+                    RecommendedAction: "republish_checksum",
+                    AutoRepairable: false
+                ));
+            }
         }
 
         // Check for corruption (truncated files, invalid JSON)
@@ -803,7 +817,8 @@ public enum IssueType : byte
     UnreadableFile,
     PermissionDenied,
     OrphanedFile,
-    SchemaViolation
+    SchemaViolation,
+    MissingChecksum
 }
 
 // Repair types

@@ -1114,7 +1114,7 @@
       "ordinal": null,
       "path": "src/Meridian.Storage/FundAccounts/Migrations/007_bank_statement_authority.sql",
       "schema": "fund_accounts",
-      "sha256": "657b113983e3d7f0cfc9b663a493257ea706685e684fc275e5daaa369c685fe6"
+      "sha256": "bc841f6038055ddf8b386fd2af9e2d0dcd578cb1b05a93a8e885a7b3e6a4ecfc"
     },
     {
       "filename": "001_banking.sql",
@@ -1280,7 +1280,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "b9b0787d8cd330042efecf5b128cb7fe4841d95d7f1b32ab12cbbfade6b9d35d",
+  "fingerprint": "6592626144db8bc195a35d1d9ad6aed0a3568b1348a12509849d7586a8123bd0",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {

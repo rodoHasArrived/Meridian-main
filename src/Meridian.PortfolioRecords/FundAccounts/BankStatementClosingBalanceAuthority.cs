@@ -22,13 +22,23 @@ public static class BankStatementClosingBalanceAuthority
             .Where(line => throughValueDate is null || line.ValueDate <= throughValueDate));
     }
 
-    /// <summary>Projects one complete, highest-revision batch per account/header date; competing batches remain unavailable.</summary>
+    /// <summary>
+    /// Projects one complete, highest-revision batch per account/header date; competing statement batches
+    /// remain unavailable. Transaction-feed deltas are additive and apply only to dates without a statement.
+    /// </summary>
     public static IReadOnlyList<BankStatementLineDto>? SelectAuthoritativeLines(
         IEnumerable<BankStatementLineDto> lines, string? currency = null, DateOnly? fromValueDate = null, DateOnly? throughValueDate = null)
     {
         var selected = new List<BankStatementLineDto>();
-        foreach (var statement in lines.GroupBy(static line => (line.AccountId, line.StatementDate)))
+        foreach (var group in lines.GroupBy(static line => (line.AccountId, line.StatementDate)))
         {
+            var statement = group.Where(static line => line.IsTransactionFeed != true).ToArray();
+            if (statement.Length == 0)
+            {
+                // Feed deliveries are deltas, and each transaction is retained once by its line identity.
+                selected.AddRange(group);
+                continue;
+            }
             var revision = statement.Max(static line => line.StatementRevision ?? 0);
             var candidates = statement.Where(line => (line.StatementRevision ?? 0) == revision).ToArray();
             if (!candidates.Any(line => (currency is null || string.Equals(line.Currency, currency, StringComparison.OrdinalIgnoreCase))

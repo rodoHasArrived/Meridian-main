@@ -386,7 +386,8 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             request.Lines.Count,
             DateTimeOffset.UtcNow,
             request.LoadedBy,
-            request.StatementRevision);
+            request.StatementRevision,
+            request.IsTransactionFeed ? true : null);
 
         (long Version, string Json)? snapshot = null;
         lock (_gate)
@@ -394,11 +395,13 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             var stored = RequireAccountLocked(request.AccountId);
             EnsureAllowed(stored.Summary, "ingest-bank-statement", request.IsBackfill, allowSuspended: true);
             var retained = stored.BankBatches.FirstOrDefault(existing => existing.BatchId == batch.BatchId);
+            // A feed batch's membership can shrink when a later delivery supersedes one of its transactions.
             if (retained is not null && (retained.StatementDate != batch.StatementDate
-                || (retained.StatementRevision ?? 1) != batch.StatementRevision || retained.LineCount != batch.LineCount
-                || retained.BankName != batch.BankName
-                || !stored.BankLines.Where(line => line.BatchId == batch.BatchId).Select(line => line.LineId).ToHashSet()
-                    .SetEquals(request.Lines.Select(line => line.LineId))))
+                || (retained.StatementRevision ?? 1) != batch.StatementRevision || retained.BankName != batch.BankName
+                || (retained.IsTransactionFeed ?? false) != request.IsTransactionFeed
+                || !request.IsTransactionFeed && (retained.LineCount != batch.LineCount
+                    || !stored.BankLines.Where(line => line.BatchId == batch.BatchId).Select(line => line.LineId).ToHashSet()
+                        .SetEquals(request.Lines.Select(line => line.LineId)))))
             {
                 throw new InvalidOperationException("A retained bank statement's authority cannot change; use a new batch and revision.");
             }
@@ -576,6 +579,13 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
 
         foreach (var line in incoming)
         {
+            // A transaction feed may re-deliver a transaction with corrected terms; the latest delivery wins.
+            if (line.IsTransactionFeed == true && index.TryGetValue(line.LineId, out var superseded)
+                && superseded.IsTransactionFeed == true && superseded.AccountId == line.AccountId)
+            {
+                index[line.LineId] = line;
+                continue;
+            }
             if (index.TryGetValue(line.LineId, out var retained) && (retained with
             {
                 LineSequence = retained.LineSequence ?? line.LineSequence,
@@ -604,7 +614,8 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             ? line with
             {
                 StatementRevision = line.StatementRevision ?? batch.StatementRevision ?? 1,
-                StatementAsOfDate = line.StatementAsOfDate ?? batch.StatementDate
+                StatementAsOfDate = line.StatementAsOfDate ?? batch.StatementDate,
+                IsTransactionFeed = line.IsTransactionFeed ?? batch.IsTransactionFeed
             }
             : line);
     }

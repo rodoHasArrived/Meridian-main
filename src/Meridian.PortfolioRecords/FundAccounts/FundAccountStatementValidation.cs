@@ -61,6 +61,7 @@ internal static class FundAccountStatementValidation
         {
             LineSequence = line.LineSequence ?? index + 1,
             StatementRevision = request.StatementRevision,
-            StatementAsOfDate = request.StatementDate
+            StatementAsOfDate = request.StatementDate,
+            IsTransactionFeed = request.IsTransactionFeed ? true : null
         }).ToArray();
 }

@@ -4169,7 +4169,7 @@
       ]
     }
   ],
-  "fingerprint": "7399949cdcdf7e25940c489ce3b2c90abbb97678c5e26438d8d004f0a951c1db",
+  "fingerprint": "9d5e3cf215e74be069ba7e0f7e54020ef42bc6b36d66adc01fc5d94f44917e30",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5354,7 +5354,7 @@
         "all-contracts",
         "fund-governance-contracts"
       ],
-      "fingerprint": "fffaaa08fa04d548b5094a8d1c9afef836a883a1ac47f386812c04cd85faee4b",
+      "fingerprint": "a93cfef26fa7d07d1a704e3ef1e1e1738f5e810a5db59c92388d828c89f4ed8a",
       "mapped_schemas": [
         "fund_accounts",
         "fund_structure"
@@ -121985,7 +121985,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "cbb9e1351e51534b94bf7ac6f46c395f573fa5b1a55f2cb4e2920052a4f15c64",
+      "fingerprint": "493392e3f32533bc9d2b3c43d50ab625d3517da221e67dda3fab4529eb03a298",
       "full_name": "Meridian.Contracts.FundStructure.AccountDetailsDto",
       "id": "Meridian.Contracts.FundStructure.AccountDetailsDto",
       "kind": "record",
@@ -122000,12 +122000,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.AccountDetailsDto",
       "references": [],
       "source": {
-        "line": 474,
+        "line": 477,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 474,
+          "line": 477,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -122519,65 +122519,65 @@
         {
           "explicit_value": true,
           "name": "NotLinked",
-          "source_line": 161,
+          "source_line": 164,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Linked",
-          "source_line": 162,
+          "source_line": 165,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Verified",
-          "source_line": 163,
+          "source_line": 166,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "Degraded",
-          "source_line": 164,
+          "source_line": 167,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "Revoked",
-          "source_line": 165,
+          "source_line": 168,
           "value": "4"
         },
         {
           "explicit_value": true,
           "name": "Expired",
-          "source_line": 166,
+          "source_line": 169,
           "value": "5"
         },
         {
           "explicit_value": true,
           "name": "Unauthorized",
-          "source_line": 167,
+          "source_line": 170,
           "value": "6"
         },
         {
           "explicit_value": true,
           "name": "Unsupported",
-          "source_line": 168,
+          "source_line": 171,
           "value": "7"
         },
         {
           "explicit_value": true,
           "name": "SyncPending",
-          "source_line": 169,
+          "source_line": 172,
           "value": "8"
         },
         {
           "explicit_value": true,
           "name": "SyncFailed",
-          "source_line": 170,
+          "source_line": 173,
           "value": "9"
         }
       ],
-      "fingerprint": "2f5b85e302bf71b9bd53a88a234175a7bc899f62b769687978afed3c02b533b7",
+      "fingerprint": "82610e47e422b7518691e98d0dddc093b319ea57076be5feec47e1d1f8449989",
       "full_name": "Meridian.Contracts.FundStructure.AccountProviderLinkStatusDto",
       "id": "Meridian.Contracts.FundStructure.AccountProviderLinkStatusDto",
       "kind": "enum",
@@ -122592,12 +122592,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.AccountProviderLinkStatusDto",
       "references": [],
       "source": {
-        "line": 159,
+        "line": 162,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 159,
+          "line": 162,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -122616,7 +122616,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "9230118dfa22b6d88baf446f5524c037cc205776f028ed5b9b5dceff6cec1186",
+      "fingerprint": "7110e6df8d49a9ffb3fe1048d074b4a205e19676e047838678e9c5a378259fec",
       "full_name": "Meridian.Contracts.FundStructure.AccountReadinessIssueDto",
       "id": "Meridian.Contracts.FundStructure.AccountReadinessIssueDto",
       "kind": "record",
@@ -122636,7 +122636,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 257,
+          "source_line": 260,
           "type": "Guid"
         },
         {
@@ -122651,7 +122651,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 260,
+          "source_line": 263,
           "type": "string?"
         },
         {
@@ -122662,50 +122662,6 @@
           "json_name": null,
           "key_type": null,
           "name": "Code",
-          "nullable": false,
-          "origin": "positional_parameter",
-          "raw_type": "string",
-          "source_line": 253,
-          "type": "string"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "EvidenceLink",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 262,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "default": "null",
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "ExternalAccountId",
-          "nullable": true,
-          "origin": "positional_parameter",
-          "raw_type": "string?",
-          "source_line": 259,
-          "type": "string?"
-        },
-        {
-          "collection": false,
-          "collection_kind": null,
-          "element_type": null,
-          "json_ignored": false,
-          "json_name": null,
-          "key_type": null,
-          "name": "Message",
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
@@ -122720,11 +122676,55 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
+          "name": "EvidenceLink",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 265,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ExternalAccountId",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 262,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Message",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 259,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
           "name": "ProviderId",
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 258,
+          "source_line": 261,
           "type": "string?"
         },
         {
@@ -122738,7 +122738,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountReadinessSeverityDto",
-          "source_line": 254,
+          "source_line": 257,
           "type": "AccountReadinessSeverityDto"
         },
         {
@@ -122753,7 +122753,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 261,
+          "source_line": 264,
           "type": "string?"
         },
         {
@@ -122767,7 +122767,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 255,
+          "source_line": 258,
           "type": "string"
         }
       ],
@@ -122779,12 +122779,12 @@
         "Meridian.Contracts.FundStructure.AccountReadinessSeverityDto"
       ],
       "source": {
-        "line": 252,
+        "line": 255,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 252,
+          "line": 255,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -122806,23 +122806,23 @@
         {
           "explicit_value": true,
           "name": "Info",
-          "source_line": 205,
+          "source_line": 208,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Warning",
-          "source_line": 206,
+          "source_line": 209,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Critical",
-          "source_line": 207,
+          "source_line": 210,
           "value": "2"
         }
       ],
-      "fingerprint": "6a0dd4951ec424176fb4fce831251cba7240365ec16df315b1c5d42e3045934c",
+      "fingerprint": "9381695aa8b641d7881305232db4d75066573d117a8f9c59af8dcd21af37f3b9",
       "full_name": "Meridian.Contracts.FundStructure.AccountReadinessSeverityDto",
       "id": "Meridian.Contracts.FundStructure.AccountReadinessSeverityDto",
       "kind": "enum",
@@ -122837,12 +122837,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.AccountReadinessSeverityDto",
       "references": [],
       "source": {
-        "line": 203,
+        "line": 206,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 203,
+          "line": 206,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -122861,7 +122861,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "98e2718f3c39bc653173b7082ef75fa7de67a8f72aa417bc16055a273c94cda0",
+      "fingerprint": "df3242872fd94b6c5a74e1c3364b9b28334be387d76457e5dc57357d86b22715",
       "full_name": "Meridian.Contracts.FundStructure.AccountReadinessSnapshotDto",
       "id": "Meridian.Contracts.FundStructure.AccountReadinessSnapshotDto",
       "kind": "record",
@@ -122881,7 +122881,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 266,
+          "source_line": 269,
           "type": "Guid"
         },
         {
@@ -122895,7 +122895,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 267,
+          "source_line": 270,
           "type": "DateTimeOffset"
         },
         {
@@ -122909,7 +122909,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 271,
+          "source_line": 274,
           "type": "DateTimeOffset?"
         },
         {
@@ -122923,7 +122923,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 272,
+          "source_line": 275,
           "type": "bool"
         },
         {
@@ -122937,7 +122937,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<AccountReadinessIssueDto>",
-          "source_line": 273,
+          "source_line": 276,
           "type": "IReadOnlyList<AccountReadinessIssueDto>"
         },
         {
@@ -122951,7 +122951,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 270,
+          "source_line": 273,
           "type": "DateTimeOffset?"
         },
         {
@@ -122965,7 +122965,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "AccountSyncStatusDto?",
-          "source_line": 269,
+          "source_line": 272,
           "type": "AccountSyncStatusDto?"
         },
         {
@@ -122979,7 +122979,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountProviderLinkStatusDto",
-          "source_line": 268,
+          "source_line": 271,
           "type": "AccountProviderLinkStatusDto"
         }
       ],
@@ -122993,12 +122993,12 @@
         "Meridian.Contracts.FundStructure.AccountSyncStatusDto"
       ],
       "source": {
-        "line": 265,
+        "line": 268,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 265,
+          "line": 268,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -123090,7 +123090,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "724eb59317db9fdde68dc54fe8d6da75f54152e1cc81d8a50a0bd70a1949dfc7",
+      "fingerprint": "839f03f5b35723ff3f6029f16615b1693a7790ab6b0966f8a12cb1e4e16563de",
       "full_name": "Meridian.Contracts.FundStructure.AccountReconciliationResultDto",
       "id": "Meridian.Contracts.FundStructure.AccountReconciliationResultDto",
       "kind": "record",
@@ -123110,7 +123110,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 145,
+          "source_line": 148,
           "type": "decimal?"
         },
         {
@@ -123124,7 +123124,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 142,
+          "source_line": 145,
           "type": "string"
         },
         {
@@ -123138,7 +123138,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 140,
+          "source_line": 143,
           "type": "string"
         },
         {
@@ -123152,7 +123152,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 144,
+          "source_line": 147,
           "type": "decimal?"
         },
         {
@@ -123166,7 +123166,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 141,
+          "source_line": 144,
           "type": "bool"
         },
         {
@@ -123180,7 +123180,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 147,
+          "source_line": 150,
           "type": "string"
         },
         {
@@ -123194,7 +123194,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 139,
+          "source_line": 142,
           "type": "Guid"
         },
         {
@@ -123209,7 +123209,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 149,
+          "source_line": 152,
           "type": "DateTimeOffset?"
         },
         {
@@ -123223,7 +123223,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 138,
+          "source_line": 141,
           "type": "Guid"
         },
         {
@@ -123237,7 +123237,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 143,
+          "source_line": 146,
           "type": "string"
         },
         {
@@ -123252,7 +123252,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 148,
+          "source_line": 151,
           "type": "Guid?"
         },
         {
@@ -123266,7 +123266,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 146,
+          "source_line": 149,
           "type": "decimal?"
         }
       ],
@@ -123276,12 +123276,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.AccountReconciliationResultDto",
       "references": [],
       "source": {
-        "line": 137,
+        "line": 140,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 137,
+          "line": 140,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -123300,7 +123300,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "00c5b6b50087387d63dee78b18a91906cbb6095ab22258e23476b1e1e7876d2f",
+      "fingerprint": "8684e5d6c458dfd4c12a29e7d1f5aa98ebf194347a4559f0cf28f198d762cec1",
       "full_name": "Meridian.Contracts.FundStructure.AccountReconciliationRunDto",
       "id": "Meridian.Contracts.FundStructure.AccountReconciliationRunDto",
       "kind": "record",
@@ -123320,7 +123320,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 125,
+          "source_line": 128,
           "type": "Guid"
         },
         {
@@ -123334,7 +123334,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 126,
+          "source_line": 129,
           "type": "DateOnly"
         },
         {
@@ -123348,7 +123348,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 131,
+          "source_line": 134,
           "type": "decimal"
         },
         {
@@ -123362,7 +123362,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 133,
+          "source_line": 136,
           "type": "DateTimeOffset?"
         },
         {
@@ -123376,7 +123376,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 124,
+          "source_line": 127,
           "type": "Guid"
         },
         {
@@ -123390,7 +123390,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 132,
+          "source_line": 135,
           "type": "DateTimeOffset"
         },
         {
@@ -123404,7 +123404,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 134,
+          "source_line": 137,
           "type": "string"
         },
         {
@@ -123418,7 +123418,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 127,
+          "source_line": 130,
           "type": "string"
         },
         {
@@ -123432,7 +123432,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 130,
+          "source_line": 133,
           "type": "int"
         },
         {
@@ -123446,7 +123446,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 128,
+          "source_line": 131,
           "type": "int"
         },
         {
@@ -123460,7 +123460,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 129,
+          "source_line": 132,
           "type": "int"
         }
       ],
@@ -123470,12 +123470,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.AccountReconciliationRunDto",
       "references": [],
       "source": {
-        "line": 123,
+        "line": 126,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 123,
+          "line": 126,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -124046,71 +124046,71 @@
         {
           "explicit_value": true,
           "name": "None",
-          "source_line": 188,
+          "source_line": 191,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "CredentialMissing",
-          "source_line": 189,
+          "source_line": 192,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Unauthorized",
-          "source_line": 190,
+          "source_line": 193,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "ProviderUnavailable",
-          "source_line": 191,
+          "source_line": 194,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "RateLimited",
-          "source_line": 192,
+          "source_line": 195,
           "value": "4"
         },
         {
           "explicit_value": true,
           "name": "Timeout",
-          "source_line": 193,
+          "source_line": 196,
           "value": "5"
         },
         {
           "explicit_value": true,
           "name": "Cancelled",
-          "source_line": 194,
+          "source_line": 197,
           "value": "6"
         },
         {
           "explicit_value": true,
           "name": "ValidationFailed",
-          "source_line": 195,
+          "source_line": 198,
           "value": "7"
         },
         {
           "explicit_value": true,
           "name": "Unsupported",
-          "source_line": 196,
+          "source_line": 199,
           "value": "8"
         },
         {
           "explicit_value": true,
           "name": "Duplicate",
-          "source_line": 197,
+          "source_line": 200,
           "value": "9"
         },
         {
           "explicit_value": true,
           "name": "Unknown",
-          "source_line": 198,
+          "source_line": 201,
           "value": "99"
         }
       ],
-      "fingerprint": "6c5c78483a44bbac73b916feb5d795305a86e66ebfea6beb4158c883a0d2ffc7",
+      "fingerprint": "0862b55414081f443824b15db43f2cd30b91b05ac784d3f42490d6f7eb12d5ae",
       "full_name": "Meridian.Contracts.FundStructure.AccountSyncFailureKindDto",
       "id": "Meridian.Contracts.FundStructure.AccountSyncFailureKindDto",
       "kind": "enum",
@@ -124125,12 +124125,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.AccountSyncFailureKindDto",
       "references": [],
       "source": {
-        "line": 186,
+        "line": 189,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 186,
+          "line": 189,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -124149,7 +124149,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "addd764567910891d147674c05ec8d2028c32c00c94bf78e9427604ec74b5ce9",
+      "fingerprint": "345ddd83a18a8af4dc4a820681b7527dde030bcc7a22cff049cc18706cfba049",
       "full_name": "Meridian.Contracts.FundStructure.AccountSyncHistoryEntryDto",
       "id": "Meridian.Contracts.FundStructure.AccountSyncHistoryEntryDto",
       "kind": "record",
@@ -124169,7 +124169,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 213,
+          "source_line": 216,
           "type": "Guid"
         },
         {
@@ -124183,7 +124183,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 219,
+          "source_line": 222,
           "type": "DateTimeOffset"
         },
         {
@@ -124197,7 +124197,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 214,
+          "source_line": 217,
           "type": "string"
         },
         {
@@ -124211,7 +124211,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 220,
+          "source_line": 223,
           "type": "DateTimeOffset?"
         },
         {
@@ -124225,7 +124225,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 224,
+          "source_line": 227,
           "type": "string?"
         },
         {
@@ -124239,7 +124239,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 218,
+          "source_line": 221,
           "type": "string?"
         },
         {
@@ -124253,7 +124253,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountSyncFailureKindDto",
-          "source_line": 222,
+          "source_line": 225,
           "type": "AccountSyncFailureKindDto"
         },
         {
@@ -124267,7 +124267,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 223,
+          "source_line": 226,
           "type": "string?"
         },
         {
@@ -124281,7 +124281,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 221,
+          "source_line": 224,
           "type": "DateTimeOffset?"
         },
         {
@@ -124295,7 +124295,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 227,
+          "source_line": 230,
           "type": "string?"
         },
         {
@@ -124309,7 +124309,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 217,
+          "source_line": 220,
           "type": "string?"
         },
         {
@@ -124323,7 +124323,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountProviderLinkStatusDto",
-          "source_line": 216,
+          "source_line": 219,
           "type": "AccountProviderLinkStatusDto"
         },
         {
@@ -124337,7 +124337,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 226,
+          "source_line": 229,
           "type": "string?"
         },
         {
@@ -124351,7 +124351,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 225,
+          "source_line": 228,
           "type": "string?"
         },
         {
@@ -124365,7 +124365,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 228,
+          "source_line": 231,
           "type": "int"
         },
         {
@@ -124379,7 +124379,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountSyncStatusDto",
-          "source_line": 215,
+          "source_line": 218,
           "type": "AccountSyncStatusDto"
         },
         {
@@ -124393,7 +124393,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 212,
+          "source_line": 215,
           "type": "Guid"
         },
         {
@@ -124407,7 +124407,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 229,
+          "source_line": 232,
           "type": "IReadOnlyList<string>"
         }
       ],
@@ -124421,12 +124421,12 @@
         "Meridian.Contracts.FundStructure.AccountSyncStatusDto"
       ],
       "source": {
-        "line": 211,
+        "line": 214,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 211,
+          "line": 214,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -124448,35 +124448,35 @@
         {
           "explicit_value": true,
           "name": "Pending",
-          "source_line": 177,
+          "source_line": 180,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Succeeded",
-          "source_line": 178,
+          "source_line": 181,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Degraded",
-          "source_line": 179,
+          "source_line": 182,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "Failed",
-          "source_line": 180,
+          "source_line": 183,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "Cancelled",
-          "source_line": 181,
+          "source_line": 184,
           "value": "4"
         }
       ],
-      "fingerprint": "26c66d46e1e7d927085c8224c1f3af7231531c0bab927e5ba06e7d84e6e89c94",
+      "fingerprint": "7cf93d4bff86a3d30b101be204e94b76508de497c0dd9a2feb8b5e866f1c91ce",
       "full_name": "Meridian.Contracts.FundStructure.AccountSyncStatusDto",
       "id": "Meridian.Contracts.FundStructure.AccountSyncStatusDto",
       "kind": "enum",
@@ -124491,12 +124491,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.AccountSyncStatusDto",
       "references": [],
       "source": {
-        "line": 175,
+        "line": 178,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 175,
+          "line": 178,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -125292,7 +125292,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e1fae01d75d876140e4cc3028baa3cd5b7a69874ff2aba6cd418833499d1a714",
+      "fingerprint": "1edac8a13ca7b62f8b5b6c2a3c7f47d16e691ed02d1e503085cf0c38a038f081",
       "full_name": "Meridian.Contracts.FundStructure.BankAccountDetailsDto",
       "id": "Meridian.Contracts.FundStructure.BankAccountDetailsDto",
       "kind": "record",
@@ -125312,7 +125312,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 492,
+          "source_line": 495,
           "type": "string?"
         },
         {
@@ -125326,7 +125326,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 493,
+          "source_line": 496,
           "type": "string?"
         },
         {
@@ -125340,7 +125340,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 502,
+          "source_line": 505,
           "type": "string?"
         },
         {
@@ -125354,7 +125354,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 501,
+          "source_line": 504,
           "type": "string?"
         },
         {
@@ -125368,7 +125368,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 496,
+          "source_line": 499,
           "type": "string?"
         },
         {
@@ -125382,7 +125382,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 494,
+          "source_line": 497,
           "type": "string?"
         },
         {
@@ -125396,7 +125396,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 495,
+          "source_line": 498,
           "type": "string?"
         },
         {
@@ -125410,7 +125410,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 499,
+          "source_line": 502,
           "type": "string?"
         },
         {
@@ -125424,7 +125424,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 500,
+          "source_line": 503,
           "type": "string?"
         },
         {
@@ -125438,7 +125438,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 497,
+          "source_line": 500,
           "type": "string?"
         },
         {
@@ -125452,7 +125452,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 498,
+          "source_line": 501,
           "type": "string?"
         }
       ],
@@ -125462,12 +125462,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.BankAccountDetailsDto",
       "references": [],
       "source": {
-        "line": 491,
+        "line": 494,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 491,
+          "line": 494,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -125488,7 +125488,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e77f87f4c4856cd07709faf0598eb638f45148ff3e3813c13ed6eae31d81158b",
+      "fingerprint": "d40bb36c048b397901dad5f566657e7f0fc2a820d2e5293bb8ff9601ac4d6fb6",
       "full_name": "Meridian.Contracts.FundStructure.BankAccountDetailsEnvelopeDto",
       "id": "Meridian.Contracts.FundStructure.BankAccountDetailsEnvelopeDto",
       "kind": "record",
@@ -125508,7 +125508,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BankAccountDetailsDto",
-          "source_line": 505,
+          "source_line": 508,
           "type": "BankAccountDetailsDto"
         }
       ],
@@ -125521,12 +125521,12 @@
         "Meridian.Contracts.FundStructure.BankAccountDetailsDto"
       ],
       "source": {
-        "line": 505,
+        "line": 508,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 505,
+          "line": 508,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -125545,7 +125545,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "6397ed24a405283b26915ffb8a5162497c7c38dbbf0ef9ef3dbc0fbf5a7d2525",
+      "fingerprint": "ff20085c85d8783b0733774c550360183c49ca6a9760386b2400295de2ce62d4",
       "full_name": "Meridian.Contracts.FundStructure.BankStatementBatchDto",
       "id": "Meridian.Contracts.FundStructure.BankStatementBatchDto",
       "kind": "record",
@@ -125565,7 +125565,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 114,
+          "source_line": 116,
           "type": "Guid"
         },
         {
@@ -125579,7 +125579,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 116,
+          "source_line": 118,
           "type": "string"
         },
         {
@@ -125593,7 +125593,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 113,
+          "source_line": 115,
           "type": "Guid"
         },
         {
@@ -125607,8 +125607,23 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 118,
+          "source_line": 120,
           "type": "DateTimeOffset"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsTransactionFeed",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "bool?",
+          "source_line": 123,
+          "type": "bool?"
         },
         {
           "collection": false,
@@ -125621,7 +125636,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 117,
+          "source_line": 119,
           "type": "int"
         },
         {
@@ -125635,7 +125650,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 119,
+          "source_line": 121,
           "type": "string"
         },
         {
@@ -125649,7 +125664,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 115,
+          "source_line": 117,
           "type": "DateOnly"
         },
         {
@@ -125664,7 +125679,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "int?",
-          "source_line": 120,
+          "source_line": 122,
           "type": "int?"
         }
       ],
@@ -125674,12 +125689,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.BankStatementBatchDto",
       "references": [],
       "source": {
-        "line": 112,
+        "line": 114,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 112,
+          "line": 114,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -125698,7 +125713,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "c668e0957e24f442b94bab207e334a592396aba0a760cae3494dc91ee2f36d8e",
+      "fingerprint": "9b431d3358a8caa879f42a0d1f8d94bc4456f0a66792a37093141fdb93d6f035",
       "full_name": "Meridian.Contracts.FundStructure.BankStatementLineDto",
       "id": "Meridian.Contracts.FundStructure.BankStatementLineDto",
       "kind": "record",
@@ -125790,6 +125805,21 @@
           "raw_type": "string",
           "source_line": 48,
           "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsTransactionFeed",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "bool?",
+          "source_line": 54,
+          "type": "bool?"
         },
         {
           "collection": false,
@@ -126516,7 +126546,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "5a73e24403407fd2db69f543c0a5344fc4b32709a454ee875b6a3e915a5d2e1d",
+      "fingerprint": "08d1d85e28c7a9202bda3febbf1aec0368a37bba681e609ba651fe4442b7ffd8",
       "full_name": "Meridian.Contracts.FundStructure.CashTransferDto",
       "id": "Meridian.Contracts.FundStructure.CashTransferDto",
       "kind": "record",
@@ -126536,7 +126566,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 437,
+          "source_line": 440,
           "type": "decimal"
         },
         {
@@ -126550,7 +126580,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 438,
+          "source_line": 441,
           "type": "string"
         },
         {
@@ -126564,7 +126594,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 445,
+          "source_line": 448,
           "type": "string?"
         },
         {
@@ -126578,7 +126608,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 443,
+          "source_line": 446,
           "type": "string?"
         },
         {
@@ -126592,7 +126622,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 435,
+          "source_line": 438,
           "type": "Guid?"
         },
         {
@@ -126606,7 +126636,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 442,
+          "source_line": 445,
           "type": "string?"
         },
         {
@@ -126620,7 +126650,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 440,
+          "source_line": 443,
           "type": "DateOnly?"
         },
         {
@@ -126634,7 +126664,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CashTransferStatusDto",
-          "source_line": 441,
+          "source_line": 444,
           "type": "CashTransferStatusDto"
         },
         {
@@ -126648,7 +126678,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 436,
+          "source_line": 439,
           "type": "Guid?"
         },
         {
@@ -126662,7 +126692,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 439,
+          "source_line": 442,
           "type": "DateOnly"
         },
         {
@@ -126676,7 +126706,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 434,
+          "source_line": 437,
           "type": "Guid"
         },
         {
@@ -126690,7 +126720,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 444,
+          "source_line": 447,
           "type": "string?"
         }
       ],
@@ -126702,12 +126732,12 @@
         "Meridian.Contracts.FundStructure.CashTransferStatusDto"
       ],
       "source": {
-        "line": 433,
+        "line": 436,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 433,
+          "line": 436,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -126729,35 +126759,35 @@
         {
           "explicit_value": true,
           "name": "Pending",
-          "source_line": 425,
+          "source_line": 428,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Settled",
-          "source_line": 426,
+          "source_line": 429,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Failed",
-          "source_line": 427,
+          "source_line": 430,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "Cancelled",
-          "source_line": 428,
+          "source_line": 431,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "Reversed",
-          "source_line": 429,
+          "source_line": 432,
           "value": "4"
         }
       ],
-      "fingerprint": "942295e29cde6e96120eba24674e799ec73121b5b3d028183f43b8db243a515a",
+      "fingerprint": "a63fb3c74cc3e3376bd7c639e5cfc5851602e1da7b1362e3d27f8d0c5f1ae546",
       "full_name": "Meridian.Contracts.FundStructure.CashTransferStatusDto",
       "id": "Meridian.Contracts.FundStructure.CashTransferStatusDto",
       "kind": "enum",
@@ -126772,12 +126802,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.CashTransferStatusDto",
       "references": [],
       "source": {
-        "line": 423,
+        "line": 426,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 423,
+          "line": 426,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -127052,7 +127082,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "15d331a45d5b34a22df524eaf1589bbe9c3be36be4651a2b47d4e1e5de1cede0",
+      "fingerprint": "0fa3aa71da86e7921365a90147d1a0dec082f89089391d6343623554436d3331",
       "full_name": "Meridian.Contracts.FundStructure.CollateralAgreementDto",
       "id": "Meridian.Contracts.FundStructure.CollateralAgreementDto",
       "kind": "record",
@@ -127072,7 +127102,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 413,
+          "source_line": 416,
           "type": "Guid"
         },
         {
@@ -127086,7 +127116,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 414,
+          "source_line": 417,
           "type": "string"
         },
         {
@@ -127100,7 +127130,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 412,
+          "source_line": 415,
           "type": "Guid"
         },
         {
@@ -127114,7 +127144,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 415,
+          "source_line": 418,
           "type": "string"
         },
         {
@@ -127128,7 +127158,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 416,
+          "source_line": 419,
           "type": "DateTimeOffset"
         },
         {
@@ -127142,7 +127172,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 417,
+          "source_line": 420,
           "type": "DateTimeOffset?"
         },
         {
@@ -127156,7 +127186,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 419,
+          "source_line": 422,
           "type": "string?"
         },
         {
@@ -127170,7 +127200,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 418,
+          "source_line": 421,
           "type": "string?"
         }
       ],
@@ -127180,12 +127210,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.CollateralAgreementDto",
       "references": [],
       "source": {
-        "line": 411,
+        "line": 414,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 411,
+          "line": 414,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -127207,35 +127237,35 @@
         {
           "explicit_value": true,
           "name": "Unknown",
-          "source_line": 384,
+          "source_line": 387,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Eligible",
-          "source_line": 385,
+          "source_line": 388,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Ineligible",
-          "source_line": 386,
+          "source_line": 389,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "Restricted",
-          "source_line": 387,
+          "source_line": 390,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "PendingReview",
-          "source_line": 388,
+          "source_line": 391,
           "value": "4"
         }
       ],
-      "fingerprint": "3d23f55dcc3f641c97c986c8f32b5591e1447e4a6a741cac8ef41c1a76f70287",
+      "fingerprint": "4045b9860c5d10d78f31b1e09faf41991248f2126b2b9108234072e21cc90092",
       "full_name": "Meridian.Contracts.FundStructure.CollateralEligibilityDto",
       "id": "Meridian.Contracts.FundStructure.CollateralEligibilityDto",
       "kind": "enum",
@@ -127250,12 +127280,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.CollateralEligibilityDto",
       "references": [],
       "source": {
-        "line": 382,
+        "line": 385,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 382,
+          "line": 385,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -127274,7 +127304,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "20e674615f2f67ae1d55cc42c44a472b4a4b3f8fa684132382cce67f9093e607",
+      "fingerprint": "f1dbb530e83a624864d913e54beee9e82421a08b5ffe1c47913901fa2b653ae5",
       "full_name": "Meridian.Contracts.FundStructure.CollateralPositionDto",
       "id": "Meridian.Contracts.FundStructure.CollateralPositionDto",
       "kind": "record",
@@ -127294,7 +127324,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 394,
+          "source_line": 397,
           "type": "Guid"
         },
         {
@@ -127309,7 +127339,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 408,
+          "source_line": 411,
           "type": "string?"
         },
         {
@@ -127323,7 +127353,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 393,
+          "source_line": 396,
           "type": "Guid"
         },
         {
@@ -127337,7 +127367,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 403,
+          "source_line": 406,
           "type": "decimal?"
         },
         {
@@ -127351,7 +127381,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 399,
+          "source_line": 402,
           "type": "string"
         },
         {
@@ -127365,7 +127395,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CollateralEligibilityDto",
-          "source_line": 404,
+          "source_line": 407,
           "type": "CollateralEligibilityDto"
         },
         {
@@ -127379,7 +127409,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 402,
+          "source_line": 405,
           "type": "decimal?"
         },
         {
@@ -127393,7 +127423,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 400,
+          "source_line": 403,
           "type": "bool"
         },
         {
@@ -127408,7 +127438,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 406,
+          "source_line": 409,
           "type": "string?"
         },
         {
@@ -127422,7 +127452,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 398,
+          "source_line": 401,
           "type": "decimal"
         },
         {
@@ -127436,7 +127466,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 397,
+          "source_line": 400,
           "type": "decimal"
         },
         {
@@ -127450,7 +127480,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 401,
+          "source_line": 404,
           "type": "string?"
         },
         {
@@ -127465,7 +127495,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 407,
+          "source_line": 410,
           "type": "string?"
         },
         {
@@ -127479,7 +127509,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 395,
+          "source_line": 398,
           "type": "string?"
         },
         {
@@ -127493,7 +127523,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 396,
+          "source_line": 399,
           "type": "string?"
         },
         {
@@ -127507,7 +127537,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 405,
+          "source_line": 408,
           "type": "DateTimeOffset"
         }
       ],
@@ -127519,12 +127549,12 @@
         "Meridian.Contracts.FundStructure.CollateralEligibilityDto"
       ],
       "source": {
-        "line": 392,
+        "line": 395,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 392,
+          "line": 395,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -127543,7 +127573,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "9ea0a484fcba4f4e2e4fc38cdecf9b86b3150e928a69f44c84b10db9a496c3ff",
+      "fingerprint": "9696412bb67a88be80867fd7774b02525c677f192b830cf43bcf9d3c05fb6126",
       "full_name": "Meridian.Contracts.FundStructure.CreateAccountRequest",
       "id": "Meridian.Contracts.FundStructure.CreateAccountRequest",
       "kind": "record",
@@ -127563,7 +127593,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 511,
+          "source_line": 514,
           "type": "string"
         },
         {
@@ -127577,7 +127607,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 509,
+          "source_line": 512,
           "type": "Guid"
         },
         {
@@ -127591,7 +127621,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountTypeDto",
-          "source_line": 510,
+          "source_line": 513,
           "type": "AccountTypeDto"
         },
         {
@@ -127606,7 +127636,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "BankAccountDetailsDto?",
-          "source_line": 527,
+          "source_line": 530,
           "type": "BankAccountDetailsDto?"
         },
         {
@@ -127620,7 +127650,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 513,
+          "source_line": 516,
           "type": "string"
         },
         {
@@ -127634,7 +127664,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 515,
+          "source_line": 518,
           "type": "string"
         },
         {
@@ -127649,7 +127679,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "CustodianAccountDetailsDto?",
-          "source_line": 526,
+          "source_line": 529,
           "type": "CustodianAccountDetailsDto?"
         },
         {
@@ -127663,7 +127693,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 512,
+          "source_line": 515,
           "type": "string"
         },
         {
@@ -127677,7 +127707,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 514,
+          "source_line": 517,
           "type": "DateTimeOffset"
         },
         {
@@ -127692,7 +127722,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 517,
+          "source_line": 520,
           "type": "Guid?"
         },
         {
@@ -127707,7 +127737,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 516,
+          "source_line": 519,
           "type": "Guid?"
         },
         {
@@ -127722,7 +127752,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 520,
+          "source_line": 523,
           "type": "string?"
         },
         {
@@ -127737,7 +127767,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 522,
+          "source_line": 525,
           "type": "string?"
         },
         {
@@ -127752,7 +127782,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountOperationalStatusDto",
-          "source_line": 525,
+          "source_line": 528,
           "type": "AccountOperationalStatusDto"
         },
         {
@@ -127767,7 +127797,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 521,
+          "source_line": 524,
           "type": "string?"
         },
         {
@@ -127782,7 +127812,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 524,
+          "source_line": 527,
           "type": "string?"
         },
         {
@@ -127797,7 +127827,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 518,
+          "source_line": 521,
           "type": "Guid?"
         },
         {
@@ -127812,7 +127842,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 523,
+          "source_line": 526,
           "type": "string?"
         },
         {
@@ -127827,7 +127857,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 519,
+          "source_line": 522,
           "type": "Guid?"
         }
       ],
@@ -127842,12 +127872,12 @@
         "Meridian.Contracts.FundStructure.CustodianAccountDetailsDto"
       ],
       "source": {
-        "line": 508,
+        "line": 511,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 508,
+          "line": 511,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -129295,7 +129325,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "6d94ea30c15d639fd404bd205788544491256f99f8b1a3c60fe53a033fded6b4",
+      "fingerprint": "32a991efc729fa707a54dfd3513f756940fb305c84ad42abff3f62ee35dd3b26",
       "full_name": "Meridian.Contracts.FundStructure.CustodianAccountDetailsDto",
       "id": "Meridian.Contracts.FundStructure.CustodianAccountDetailsDto",
       "kind": "record",
@@ -129315,7 +129345,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 482,
+          "source_line": 485,
           "type": "string?"
         },
         {
@@ -129329,7 +129359,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 480,
+          "source_line": 483,
           "type": "string?"
         },
         {
@@ -129343,7 +129373,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 479,
+          "source_line": 482,
           "type": "string?"
         },
         {
@@ -129357,7 +129387,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 481,
+          "source_line": 484,
           "type": "string?"
         },
         {
@@ -129371,7 +129401,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 483,
+          "source_line": 486,
           "type": "string?"
         },
         {
@@ -129385,7 +129415,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 484,
+          "source_line": 487,
           "type": "string?"
         },
         {
@@ -129399,7 +129429,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 485,
+          "source_line": 488,
           "type": "string?"
         },
         {
@@ -129413,7 +129443,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 478,
+          "source_line": 481,
           "type": "string?"
         }
       ],
@@ -129423,12 +129453,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.CustodianAccountDetailsDto",
       "references": [],
       "source": {
-        "line": 477,
+        "line": 480,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 477,
+          "line": 480,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -129449,7 +129479,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "74bae20f789cddd5ece976507a6195d00a5439f60d7907c3e39e9bc7240fa33e",
+      "fingerprint": "fe3f1845fda990868980e6ed07e430911eaaf7067efe9909ffff44115c288e54",
       "full_name": "Meridian.Contracts.FundStructure.CustodianAccountDetailsEnvelopeDto",
       "id": "Meridian.Contracts.FundStructure.CustodianAccountDetailsEnvelopeDto",
       "kind": "record",
@@ -129469,7 +129499,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CustodianAccountDetailsDto",
-          "source_line": 488,
+          "source_line": 491,
           "type": "CustodianAccountDetailsDto"
         }
       ],
@@ -129482,12 +129512,12 @@
         "Meridian.Contracts.FundStructure.CustodianAccountDetailsDto"
       ],
       "source": {
-        "line": 488,
+        "line": 491,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 488,
+          "line": 491,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -129729,7 +129759,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "52a6fd7eb71ebdca83a364144fccaa31c45376238faf21778628e01cf72ee998",
+      "fingerprint": "bcef9e4ba2b699142675c3037ae19bbee6e1ae6e8d6367b3e9712e7062f7331d",
       "full_name": "Meridian.Contracts.FundStructure.CustodianStatementBatchDto",
       "id": "Meridian.Contracts.FundStructure.CustodianStatementBatchDto",
       "kind": "record",
@@ -129749,7 +129779,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 103,
+          "source_line": 105,
           "type": "Guid"
         },
         {
@@ -129763,7 +129793,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 104,
+          "source_line": 106,
           "type": "DateOnly"
         },
         {
@@ -129777,7 +129807,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 102,
+          "source_line": 104,
           "type": "Guid"
         },
         {
@@ -129791,7 +129821,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 105,
+          "source_line": 107,
           "type": "string"
         },
         {
@@ -129805,7 +129835,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 108,
+          "source_line": 110,
           "type": "DateTimeOffset"
         },
         {
@@ -129819,7 +129849,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 107,
+          "source_line": 109,
           "type": "int"
         },
         {
@@ -129833,7 +129863,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 109,
+          "source_line": 111,
           "type": "string"
         },
         {
@@ -129847,7 +129877,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 106,
+          "source_line": 108,
           "type": "string"
         }
       ],
@@ -129857,12 +129887,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.CustodianStatementBatchDto",
       "references": [],
       "source": {
-        "line": 101,
+        "line": 103,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 101,
+          "line": 103,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -129978,7 +130008,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "379c8f26f37dc553685f44e91b1a07e1325ec58bed3c885dfd663cdb4b1d5ad6",
+      "fingerprint": "f2d56d546492aff67001f9d5b4cb856c82218c1c2d77377d2d4d802c5025aa6c",
       "full_name": "Meridian.Contracts.FundStructure.FundAccountsDto",
       "id": "Meridian.Contracts.FundStructure.FundAccountsDto",
       "kind": "record",
@@ -129998,7 +130028,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<AccountSummaryDto>",
-          "source_line": 549,
+          "source_line": 552,
           "type": "IReadOnlyList<AccountSummaryDto>"
         },
         {
@@ -130012,7 +130042,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<AccountSummaryDto>",
-          "source_line": 550,
+          "source_line": 553,
           "type": "IReadOnlyList<AccountSummaryDto>"
         },
         {
@@ -130026,7 +130056,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<AccountSummaryDto>",
-          "source_line": 548,
+          "source_line": 551,
           "type": "IReadOnlyList<AccountSummaryDto>"
         },
         {
@@ -130040,7 +130070,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 547,
+          "source_line": 550,
           "type": "Guid"
         },
         {
@@ -130054,7 +130084,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<AccountSummaryDto>",
-          "source_line": 551,
+          "source_line": 554,
           "type": "IReadOnlyList<AccountSummaryDto>"
         }
       ],
@@ -130066,12 +130096,12 @@
         "Meridian.Contracts.FundStructure.AccountSummaryDto"
       ],
       "source": {
-        "line": 546,
+        "line": 549,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 546,
+          "line": 549,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -135886,7 +135916,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "f9b2c6d9a5fb07ba3948fbc84a7ce0a3c9426c492bb88b748e3d765689c2a45a",
+      "fingerprint": "0ec1d08801bae99cc31982d29fca23cca737d78c26684d8c3bcea6a481b853fe",
       "full_name": "Meridian.Contracts.FundStructure.IngestBankStatementRequest",
       "id": "Meridian.Contracts.FundStructure.IngestBankStatementRequest",
       "kind": "record",
@@ -135906,7 +135936,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 91,
+          "source_line": 92,
           "type": "Guid"
         },
         {
@@ -135920,7 +135950,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 93,
+          "source_line": 94,
           "type": "string"
         },
         {
@@ -135934,7 +135964,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 90,
+          "source_line": 91,
           "type": "Guid"
         },
         {
@@ -135949,7 +135979,22 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 97,
+          "source_line": 98,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "false",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsTransactionFeed",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 100,
           "type": "bool"
         },
         {
@@ -135963,7 +136008,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BankStatementLineDto>",
-          "source_line": 95,
+          "source_line": 96,
           "type": "IReadOnlyList<BankStatementLineDto>"
         },
         {
@@ -135977,7 +136022,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 96,
+          "source_line": 97,
           "type": "string"
         },
         {
@@ -135991,7 +136036,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 94,
+          "source_line": 95,
           "type": "string?"
         },
         {
@@ -136005,7 +136050,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 92,
+          "source_line": 93,
           "type": "DateOnly"
         },
         {
@@ -136020,7 +136065,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 98,
+          "source_line": 99,
           "type": "int"
         }
       ],
@@ -136032,12 +136077,12 @@
         "Meridian.Contracts.FundStructure.BankStatementLineDto"
       ],
       "source": {
-        "line": 89,
+        "line": 90,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 89,
+          "line": 90,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -136056,7 +136101,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "63b6c862ad3f060ff97611810375af9aa5bc0b1362ede1d9c948f1522f62893a",
+      "fingerprint": "4c55f68de0dc2d984a5312efa7d6806c37e719f019a286181d422436794f3320",
       "full_name": "Meridian.Contracts.FundStructure.IngestCustodianStatementRequest",
       "id": "Meridian.Contracts.FundStructure.IngestCustodianStatementRequest",
       "kind": "record",
@@ -136076,7 +136121,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 79,
+          "source_line": 80,
           "type": "Guid"
         },
         {
@@ -136090,7 +136135,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 80,
+          "source_line": 81,
           "type": "DateOnly"
         },
         {
@@ -136104,7 +136149,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 78,
+          "source_line": 79,
           "type": "Guid"
         },
         {
@@ -136118,7 +136163,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 81,
+          "source_line": 82,
           "type": "string"
         },
         {
@@ -136133,7 +136178,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 86,
+          "source_line": 87,
           "type": "bool"
         },
         {
@@ -136147,7 +136192,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<CustodianPositionLineDto>",
-          "source_line": 84,
+          "source_line": 85,
           "type": "IReadOnlyList<CustodianPositionLineDto>"
         },
         {
@@ -136161,7 +136206,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 85,
+          "source_line": 86,
           "type": "string"
         },
         {
@@ -136175,7 +136220,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 83,
+          "source_line": 84,
           "type": "string?"
         },
         {
@@ -136189,7 +136234,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 82,
+          "source_line": 83,
           "type": "string"
         }
       ],
@@ -136201,12 +136246,12 @@
         "Meridian.Contracts.FundStructure.CustodianPositionLineDto"
       ],
       "source": {
-        "line": 77,
+        "line": 78,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 77,
+          "line": 78,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -138860,35 +138905,35 @@
         {
           "explicit_value": true,
           "name": "None",
-          "source_line": 291,
+          "source_line": 294,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Potential",
-          "source_line": 292,
+          "source_line": 295,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "Active",
-          "source_line": 293,
+          "source_line": 296,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "Satisfied",
-          "source_line": 294,
+          "source_line": 297,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "Waived",
-          "source_line": 295,
+          "source_line": 298,
           "value": "4"
         }
       ],
-      "fingerprint": "c555569f3c4a1d37aa621850972d61bf07d40516556cc6ccf077b1930f5260bb",
+      "fingerprint": "4202baa20dba84be40fb5fb3f6e0d0a581e8fcbf885913c329226b5535e29e26",
       "full_name": "Meridian.Contracts.FundStructure.MarginCallStatusDto",
       "id": "Meridian.Contracts.FundStructure.MarginCallStatusDto",
       "kind": "enum",
@@ -138903,12 +138948,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.MarginCallStatusDto",
       "references": [],
       "source": {
-        "line": 289,
+        "line": 292,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 289,
+          "line": 292,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -138930,41 +138975,41 @@
         {
           "explicit_value": true,
           "name": "None",
-          "source_line": 279,
+          "source_line": 282,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Cash",
-          "source_line": 280,
+          "source_line": 283,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "RegT",
-          "source_line": 281,
+          "source_line": 284,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "PortfolioMargin",
-          "source_line": 282,
+          "source_line": 285,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "House",
-          "source_line": 283,
+          "source_line": 286,
           "value": "4"
         },
         {
           "explicit_value": true,
           "name": "Unsupported",
-          "source_line": 284,
+          "source_line": 287,
           "value": "99"
         }
       ],
-      "fingerprint": "f5d002dbb8bea9134c31d90c1730e60b4f280b33479526a561713e0c80dd27a1",
+      "fingerprint": "f8551ab289c31c45460c915e4aeff578a4dd29e516ccdb3d365c95e68948307f",
       "full_name": "Meridian.Contracts.FundStructure.MarginModelTypeDto",
       "id": "Meridian.Contracts.FundStructure.MarginModelTypeDto",
       "kind": "enum",
@@ -138979,12 +139024,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.MarginModelTypeDto",
       "references": [],
       "source": {
-        "line": 277,
+        "line": 280,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 277,
+          "line": 280,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -139003,7 +139048,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "68a72cc09a9d1fcd4f8a455351909948ba35ec6bbd133a8f7f706e0e5139021d",
+      "fingerprint": "4d6f1f27fa13c38354d06549146b19423d4d5b8115073361818d38f07c1feaf6",
       "full_name": "Meridian.Contracts.FundStructure.MarginRequirementDto",
       "id": "Meridian.Contracts.FundStructure.MarginRequirementDto",
       "kind": "record",
@@ -139023,7 +139068,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 307,
+          "source_line": 310,
           "type": "string?"
         },
         {
@@ -139038,7 +139083,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 309,
+          "source_line": 312,
           "type": "string?"
         },
         {
@@ -139052,7 +139097,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 308,
+          "source_line": 311,
           "type": "decimal?"
         },
         {
@@ -139066,7 +139111,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 304,
+          "source_line": 307,
           "type": "decimal?"
         },
         {
@@ -139080,7 +139125,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 306,
+          "source_line": 309,
           "type": "bool"
         },
         {
@@ -139094,7 +139139,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 305,
+          "source_line": 308,
           "type": "decimal?"
         },
         {
@@ -139108,7 +139153,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 303,
+          "source_line": 306,
           "type": "decimal"
         },
         {
@@ -139122,7 +139167,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 302,
+          "source_line": 305,
           "type": "decimal"
         },
         {
@@ -139136,7 +139181,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 300,
+          "source_line": 303,
           "type": "string?"
         },
         {
@@ -139150,7 +139195,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 301,
+          "source_line": 304,
           "type": "string?"
         }
       ],
@@ -139160,12 +139205,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.MarginRequirementDto",
       "references": [],
       "source": {
-        "line": 299,
+        "line": 302,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 299,
+          "line": 302,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -139184,7 +139229,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "7e0cb381b3a6e639ceba0a05a4d5f5c4fc8cbdd2038092a1aa22487fd5e36a18",
+      "fingerprint": "80f0404bf7bfe22a9fa5a423aff97eecd30c9d448323d609ae6027a0b18fceda",
       "full_name": "Meridian.Contracts.FundStructure.MarginSnapshotDto",
       "id": "Meridian.Contracts.FundStructure.MarginSnapshotDto",
       "kind": "record",
@@ -139204,7 +139249,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 314,
+          "source_line": 317,
           "type": "Guid"
         },
         {
@@ -139219,7 +139264,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 342,
+          "source_line": 345,
           "type": "string?"
         },
         {
@@ -139233,7 +139278,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 336,
+          "source_line": 339,
           "type": "bool"
         },
         {
@@ -139247,7 +139292,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 323,
+          "source_line": 326,
           "type": "decimal?"
         },
         {
@@ -139261,7 +139306,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 328,
+          "source_line": 331,
           "type": "decimal?"
         },
         {
@@ -139275,7 +139320,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 334,
+          "source_line": 337,
           "type": "int"
         },
         {
@@ -139290,7 +139335,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 344,
+          "source_line": 347,
           "type": "string?"
         },
         {
@@ -139304,7 +139349,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 327,
+          "source_line": 330,
           "type": "decimal?"
         },
         {
@@ -139318,7 +139363,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 317,
+          "source_line": 320,
           "type": "string"
         },
         {
@@ -139332,7 +139377,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 326,
+          "source_line": 329,
           "type": "decimal?"
         },
         {
@@ -139346,7 +139391,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 315,
+          "source_line": 318,
           "type": "DateTimeOffset"
         },
         {
@@ -139360,7 +139405,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 322,
+          "source_line": 325,
           "type": "decimal?"
         },
         {
@@ -139375,7 +139420,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 340,
+          "source_line": 343,
           "type": "string?"
         },
         {
@@ -139390,7 +139435,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 341,
+          "source_line": 344,
           "type": "DateTimeOffset?"
         },
         {
@@ -139404,7 +139449,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 320,
+          "source_line": 323,
           "type": "decimal?"
         },
         {
@@ -139418,7 +139463,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 335,
+          "source_line": 338,
           "type": "bool"
         },
         {
@@ -139432,7 +139477,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 325,
+          "source_line": 328,
           "type": "decimal?"
         },
         {
@@ -139446,7 +139491,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 321,
+          "source_line": 324,
           "type": "decimal?"
         },
         {
@@ -139460,7 +139505,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 329,
+          "source_line": 332,
           "type": "decimal?"
         },
         {
@@ -139474,7 +139519,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "MarginCallStatusDto",
-          "source_line": 319,
+          "source_line": 322,
           "type": "MarginCallStatusDto"
         },
         {
@@ -139488,7 +139533,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 313,
+          "source_line": 316,
           "type": "Guid"
         },
         {
@@ -139502,7 +139547,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "MarginModelTypeDto",
-          "source_line": 318,
+          "source_line": 321,
           "type": "MarginModelTypeDto"
         },
         {
@@ -139516,7 +139561,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 331,
+          "source_line": 334,
           "type": "decimal?"
         },
         {
@@ -139530,7 +139575,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 333,
+          "source_line": 336,
           "type": "int"
         },
         {
@@ -139544,7 +139589,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 332,
+          "source_line": 335,
           "type": "int"
         },
         {
@@ -139558,7 +139603,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 330,
+          "source_line": 333,
           "type": "decimal?"
         },
         {
@@ -139573,7 +139618,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 339,
+          "source_line": 342,
           "type": "string?"
         },
         {
@@ -139587,7 +139632,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 316,
+          "source_line": 319,
           "type": "DateTimeOffset"
         },
         {
@@ -139601,7 +139646,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<MarginRequirementDto>",
-          "source_line": 337,
+          "source_line": 340,
           "type": "IReadOnlyList<MarginRequirementDto>"
         },
         {
@@ -139616,7 +139661,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 343,
+          "source_line": 346,
           "type": "string?"
         },
         {
@@ -139630,7 +139675,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 324,
+          "source_line": 327,
           "type": "decimal?"
         },
         {
@@ -139644,7 +139689,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 338,
+          "source_line": 341,
           "type": "IReadOnlyList<string>"
         }
       ],
@@ -139658,12 +139703,12 @@
         "Meridian.Contracts.FundStructure.MarginRequirementDto"
       ],
       "source": {
-        "line": 312,
+        "line": 315,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 312,
+          "line": 315,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -140796,7 +140841,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "6a9af7e3ad4f2035fe76b73cad5f52fc90eae213b7a16787921d3e743fa7f5a1",
+      "fingerprint": "1b14d8d7a4ad5f6385b8a026ef21f8ec26013a96d0a98688ebb7529d1f4fc44c",
       "full_name": "Meridian.Contracts.FundStructure.ReconcileAccountRequest",
       "id": "Meridian.Contracts.FundStructure.ReconcileAccountRequest",
       "kind": "record",
@@ -140816,7 +140861,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 541,
+          "source_line": 544,
           "type": "Guid"
         },
         {
@@ -140830,7 +140875,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 542,
+          "source_line": 545,
           "type": "DateOnly"
         },
         {
@@ -140844,7 +140889,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 543,
+          "source_line": 546,
           "type": "string"
         }
       ],
@@ -140854,12 +140899,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.ReconcileAccountRequest",
       "references": [],
       "source": {
-        "line": 540,
+        "line": 543,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 540,
+          "line": 543,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -140878,7 +140923,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "2950bfac682c0cfc30351b7cecc7713a844fd1c8298f1d625da9cd8d39488ad5",
+      "fingerprint": "c3c5d06232749ecf83aa5642a28ed1b38bb96a29c002b9d805a767c6dd42dbb6",
       "full_name": "Meridian.Contracts.FundStructure.RecordAccountBalanceSnapshotRequest",
       "id": "Meridian.Contracts.FundStructure.RecordAccountBalanceSnapshotRequest",
       "kind": "record",
@@ -140898,7 +140943,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 62,
+          "source_line": 63,
           "type": "Guid"
         },
         {
@@ -140913,7 +140958,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 70,
+          "source_line": 71,
           "type": "decimal?"
         },
         {
@@ -140927,7 +140972,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 63,
+          "source_line": 64,
           "type": "DateOnly"
         },
         {
@@ -140941,7 +140986,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 65,
+          "source_line": 66,
           "type": "decimal"
         },
         {
@@ -140955,7 +141000,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 64,
+          "source_line": 65,
           "type": "string"
         },
         {
@@ -140970,7 +141015,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 72,
+          "source_line": 73,
           "type": "string?"
         },
         {
@@ -140985,7 +141030,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 68,
+          "source_line": 69,
           "type": "bool"
         },
         {
@@ -141000,7 +141045,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 71,
+          "source_line": 72,
           "type": "decimal?"
         },
         {
@@ -141015,7 +141060,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 74,
+          "source_line": 75,
           "type": "decimal?"
         },
         {
@@ -141030,7 +141075,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 67,
+          "source_line": 68,
           "type": "string?"
         },
         {
@@ -141045,7 +141090,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 69,
+          "source_line": 70,
           "type": "decimal?"
         },
         {
@@ -141059,7 +141104,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 66,
+          "source_line": 67,
           "type": "string"
         },
         {
@@ -141074,7 +141119,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 73,
+          "source_line": 74,
           "type": "decimal?"
         }
       ],
@@ -141084,12 +141129,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.RecordAccountBalanceSnapshotRequest",
       "references": [],
       "source": {
-        "line": 61,
+        "line": 62,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 61,
+          "line": 62,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -141108,7 +141153,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "c15da2cfbc7ea819e17178c115d947bc38c2148a1d4b20361801d62b4d6b758e",
+      "fingerprint": "cf9dd2a725de683b57d386a019ab2d6a293c8e8dfada7b5123a9da135ea05f48",
       "full_name": "Meridian.Contracts.FundStructure.RecordAccountSyncHistoryRequest",
       "id": "Meridian.Contracts.FundStructure.RecordAccountSyncHistoryRequest",
       "kind": "record",
@@ -141128,7 +141173,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 233,
+          "source_line": 236,
           "type": "Guid"
         },
         {
@@ -141143,7 +141188,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 239,
+          "source_line": 242,
           "type": "DateTimeOffset?"
         },
         {
@@ -141157,7 +141202,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 234,
+          "source_line": 237,
           "type": "string"
         },
         {
@@ -141172,7 +141217,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 240,
+          "source_line": 243,
           "type": "DateTimeOffset?"
         },
         {
@@ -141187,7 +141232,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 244,
+          "source_line": 247,
           "type": "string?"
         },
         {
@@ -141202,7 +141247,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 238,
+          "source_line": 241,
           "type": "string?"
         },
         {
@@ -141217,7 +141262,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountSyncFailureKindDto",
-          "source_line": 242,
+          "source_line": 245,
           "type": "AccountSyncFailureKindDto"
         },
         {
@@ -141232,7 +141277,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 243,
+          "source_line": 246,
           "type": "string?"
         },
         {
@@ -141247,7 +141292,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 241,
+          "source_line": 244,
           "type": "DateTimeOffset?"
         },
         {
@@ -141262,7 +141307,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 247,
+          "source_line": 250,
           "type": "string?"
         },
         {
@@ -141277,7 +141322,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 237,
+          "source_line": 240,
           "type": "string?"
         },
         {
@@ -141292,7 +141337,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountProviderLinkStatusDto",
-          "source_line": 236,
+          "source_line": 239,
           "type": "AccountProviderLinkStatusDto"
         },
         {
@@ -141307,7 +141352,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 246,
+          "source_line": 249,
           "type": "string?"
         },
         {
@@ -141322,7 +141367,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 245,
+          "source_line": 248,
           "type": "string?"
         },
         {
@@ -141337,7 +141382,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 248,
+          "source_line": 251,
           "type": "int"
         },
         {
@@ -141351,7 +141396,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountSyncStatusDto",
-          "source_line": 235,
+          "source_line": 238,
           "type": "AccountSyncStatusDto"
         },
         {
@@ -141366,7 +141411,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 249,
+          "source_line": 252,
           "type": "IReadOnlyList<string>?"
         }
       ],
@@ -141380,12 +141425,12 @@
         "Meridian.Contracts.FundStructure.AccountSyncStatusDto"
       ],
       "source": {
-        "line": 232,
+        "line": 235,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 232,
+          "line": 235,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -141404,7 +141449,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "6db69f5c5d1b359fac96395c44dc7022c5c7194abbdea26c18028a69487bc8e2",
+      "fingerprint": "1db3c6faaf2084a5d85e6f9e06595ac9801c498ff9c16ba36dabb9ac93894fa6",
       "full_name": "Meridian.Contracts.FundStructure.RecordMarginSnapshotRequest",
       "id": "Meridian.Contracts.FundStructure.RecordMarginSnapshotRequest",
       "kind": "record",
@@ -141424,7 +141469,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 348,
+          "source_line": 351,
           "type": "Guid"
         },
         {
@@ -141439,7 +141484,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 376,
+          "source_line": 379,
           "type": "string?"
         },
         {
@@ -141454,7 +141499,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 369,
+          "source_line": 372,
           "type": "bool"
         },
         {
@@ -141469,7 +141514,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 356,
+          "source_line": 359,
           "type": "decimal?"
         },
         {
@@ -141484,7 +141529,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 361,
+          "source_line": 364,
           "type": "decimal?"
         },
         {
@@ -141499,7 +141544,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 367,
+          "source_line": 370,
           "type": "int"
         },
         {
@@ -141514,7 +141559,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 378,
+          "source_line": 381,
           "type": "string?"
         },
         {
@@ -141529,7 +141574,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 360,
+          "source_line": 363,
           "type": "decimal?"
         },
         {
@@ -141543,7 +141588,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 350,
+          "source_line": 353,
           "type": "string"
         },
         {
@@ -141558,7 +141603,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 359,
+          "source_line": 362,
           "type": "decimal?"
         },
         {
@@ -141572,7 +141617,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 349,
+          "source_line": 352,
           "type": "DateTimeOffset"
         },
         {
@@ -141587,7 +141632,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 355,
+          "source_line": 358,
           "type": "decimal?"
         },
         {
@@ -141602,7 +141647,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 373,
+          "source_line": 376,
           "type": "string?"
         },
         {
@@ -141617,7 +141662,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 375,
+          "source_line": 378,
           "type": "DateTimeOffset?"
         },
         {
@@ -141632,7 +141677,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 353,
+          "source_line": 356,
           "type": "decimal?"
         },
         {
@@ -141647,7 +141692,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 368,
+          "source_line": 371,
           "type": "bool"
         },
         {
@@ -141662,7 +141707,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 358,
+          "source_line": 361,
           "type": "decimal?"
         },
         {
@@ -141677,7 +141722,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 354,
+          "source_line": 357,
           "type": "decimal?"
         },
         {
@@ -141692,7 +141737,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 362,
+          "source_line": 365,
           "type": "decimal?"
         },
         {
@@ -141707,7 +141752,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "MarginCallStatusDto",
-          "source_line": 352,
+          "source_line": 355,
           "type": "MarginCallStatusDto"
         },
         {
@@ -141721,7 +141766,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "MarginModelTypeDto",
-          "source_line": 351,
+          "source_line": 354,
           "type": "MarginModelTypeDto"
         },
         {
@@ -141736,7 +141781,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 364,
+          "source_line": 367,
           "type": "decimal?"
         },
         {
@@ -141751,7 +141796,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 366,
+          "source_line": 369,
           "type": "int"
         },
         {
@@ -141766,7 +141811,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 365,
+          "source_line": 368,
           "type": "int"
         },
         {
@@ -141781,7 +141826,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 363,
+          "source_line": 366,
           "type": "decimal?"
         },
         {
@@ -141796,7 +141841,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 372,
+          "source_line": 375,
           "type": "string?"
         },
         {
@@ -141811,7 +141856,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 374,
+          "source_line": 377,
           "type": "DateTimeOffset?"
         },
         {
@@ -141826,7 +141871,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<MarginRequirementDto>?",
-          "source_line": 370,
+          "source_line": 373,
           "type": "IReadOnlyList<MarginRequirementDto>?"
         },
         {
@@ -141841,7 +141886,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 377,
+          "source_line": 380,
           "type": "string?"
         },
         {
@@ -141856,7 +141901,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 357,
+          "source_line": 360,
           "type": "decimal?"
         },
         {
@@ -141871,7 +141916,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>?",
-          "source_line": 371,
+          "source_line": 374,
           "type": "IReadOnlyList<string>?"
         }
       ],
@@ -141885,12 +141930,12 @@
         "Meridian.Contracts.FundStructure.MarginRequirementDto"
       ],
       "source": {
-        "line": 347,
+        "line": 350,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 347,
+          "line": 350,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -142413,7 +142458,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "eb65e9f9aa1f3a60d4fd56ed2708f7962e17beeb7200fd1cf7e77c3f769f4481",
+      "fingerprint": "c9c6d3ecb96ef2b0b94e829caacc733105ec15ce7d25ca9647c029064861c158",
       "full_name": "Meridian.Contracts.FundStructure.TransferMatchDto",
       "id": "Meridian.Contracts.FundStructure.TransferMatchDto",
       "kind": "record",
@@ -142433,7 +142478,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 465,
+          "source_line": 468,
           "type": "decimal?"
         },
         {
@@ -142447,7 +142492,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 467,
+          "source_line": 470,
           "type": "string?"
         },
         {
@@ -142461,7 +142506,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 468,
+          "source_line": 471,
           "type": "DateTimeOffset"
         },
         {
@@ -142475,7 +142520,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 463,
+          "source_line": 466,
           "type": "Guid?"
         },
         {
@@ -142489,7 +142534,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "int?",
-          "source_line": 466,
+          "source_line": 469,
           "type": "int?"
         },
         {
@@ -142503,7 +142548,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 462,
+          "source_line": 465,
           "type": "Guid"
         },
         {
@@ -142517,7 +142562,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "TransferMatchStatusDto",
-          "source_line": 464,
+          "source_line": 467,
           "type": "TransferMatchStatusDto"
         },
         {
@@ -142531,7 +142576,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 461,
+          "source_line": 464,
           "type": "Guid"
         }
       ],
@@ -142543,12 +142588,12 @@
         "Meridian.Contracts.FundStructure.TransferMatchStatusDto"
       ],
       "source": {
-        "line": 460,
+        "line": 463,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 460,
+          "line": 463,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -142570,41 +142615,41 @@
         {
           "explicit_value": true,
           "name": "Unmatched",
-          "source_line": 451,
+          "source_line": 454,
           "value": "0"
         },
         {
           "explicit_value": true,
           "name": "Matched",
-          "source_line": 452,
+          "source_line": 455,
           "value": "1"
         },
         {
           "explicit_value": true,
           "name": "DuplicateCandidate",
-          "source_line": 453,
+          "source_line": 456,
           "value": "2"
         },
         {
           "explicit_value": true,
           "name": "AmountMismatch",
-          "source_line": 454,
+          "source_line": 457,
           "value": "3"
         },
         {
           "explicit_value": true,
           "name": "DateMismatch",
-          "source_line": 455,
+          "source_line": 458,
           "value": "4"
         },
         {
           "explicit_value": true,
           "name": "ManualReview",
-          "source_line": 456,
+          "source_line": 459,
           "value": "5"
         }
       ],
-      "fingerprint": "a02817bf937eef8e719bb1e8c58dcb7e03634f0000409f0f73ef3d2156c2baff",
+      "fingerprint": "062fee4f51a89ae1575fa43a9439e2a15f7d3f87678bc4093a22b9a0c7f2661f",
       "full_name": "Meridian.Contracts.FundStructure.TransferMatchStatusDto",
       "id": "Meridian.Contracts.FundStructure.TransferMatchStatusDto",
       "kind": "enum",
@@ -142619,12 +142664,12 @@
       "qualified_name": "Meridian.Contracts.FundStructure.TransferMatchStatusDto",
       "references": [],
       "source": {
-        "line": 449,
+        "line": 452,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 449,
+          "line": 452,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -142643,7 +142688,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "36358579e5f52130124d4953b21d58a3cc27cf7c10bb5dac06b08f786cde37a7",
+      "fingerprint": "b36fcd15aa37c3015fc8ae31338c45f78f7386b8ca77af7bba1f09dd055be5c8",
       "full_name": "Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest",
       "id": "Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest",
       "kind": "record",
@@ -142663,7 +142708,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BankAccountDetailsDto",
-          "source_line": 536,
+          "source_line": 539,
           "type": "BankAccountDetailsDto"
         },
         {
@@ -142677,7 +142722,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 537,
+          "source_line": 540,
           "type": "string"
         }
       ],
@@ -142689,12 +142734,12 @@
         "Meridian.Contracts.FundStructure.BankAccountDetailsDto"
       ],
       "source": {
-        "line": 535,
+        "line": 538,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 535,
+          "line": 538,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],
@@ -142713,7 +142758,7 @@
         "fund-governance-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "19bc346b5df21c43a3d99446c2b773d670fadd864669c69a6c9810502d952347",
+      "fingerprint": "49484789b044543e21e026fc0599c638d2caeadd52133de3f40515f932718c87",
       "full_name": "Meridian.Contracts.FundStructure.UpdateCustodianAccountDetailsRequest",
       "id": "Meridian.Contracts.FundStructure.UpdateCustodianAccountDetailsRequest",
       "kind": "record",
@@ -142733,7 +142778,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "CustodianAccountDetailsDto",
-          "source_line": 531,
+          "source_line": 534,
           "type": "CustodianAccountDetailsDto"
         },
         {
@@ -142747,7 +142792,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 532,
+          "source_line": 535,
           "type": "string"
         }
       ],
@@ -142759,12 +142804,12 @@
         "Meridian.Contracts.FundStructure.CustodianAccountDetailsDto"
       ],
       "source": {
-        "line": 530,
+        "line": 533,
         "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
       },
       "sources": [
         {
-          "line": 530,
+          "line": 533,
           "path": "src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs"
         }
       ],

@@ -221,6 +221,7 @@ classDiagram
         +string BankName
         +Guid BatchId
         +DateTimeOffset IngestedAt
+        +bool? IsTransactionFeed
         +int LineCount
         +string LoadedBy
         +DateOnly StatementDate
@@ -233,12 +234,12 @@ classDiagram
         +decimal? ClosingBalance
         +string Currency
         +string Description
+        +bool? IsTransactionFeed
         +Guid LineId
         +int? LineSequence
         +string? Reference
         +DateOnly? StatementAsOfDate
         +int? StatementRevision
-        +DateOnly TransactionDate
     }
     class Meridian_Contracts_FundStructure_BeneficialOwnerSummaryDto["BeneficialOwnerSummaryDto"] {
         +DateTimeOffset? EffectiveFrom

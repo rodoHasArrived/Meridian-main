@@ -145,6 +145,7 @@ erDiagram
         timestamp_with_time_zone ingested_at
         text loaded_by
         integer statement_revision
+        boolean transaction_feed
     }
     fund_accounts_bank_statement_line {
         uuid statement_line_id PK
@@ -219,7 +220,7 @@ erDiagram
 | `account_reconciliation_breaks` | table | 13 | `result_id` | 2 | 3 | - |
 | `account_reconciliation_run` | table | 11 | `reconciliation_run_id` | 1 | 2 | - |
 | `account_sync_history` | table | 19 | `sync_history_id` | 2 | 3 | - |
-| `bank_statement_batch` | table | 9 | `batch_id` | 1 | 1 | - |
+| `bank_statement_batch` | table | 10 | `batch_id` | 1 | 1 | - |
 | `bank_statement_line` | table | 12 | `statement_line_id` | 2 | 3 | - |
 | `custodian_position_line` | table | 13 | `position_line_id` | 2 | 2 | - |
 | `custodian_statement_batch` | table | 9 | `batch_id` | 1 | 1 | - |

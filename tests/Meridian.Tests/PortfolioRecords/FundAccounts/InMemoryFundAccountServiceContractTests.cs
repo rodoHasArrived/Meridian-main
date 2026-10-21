@@ -94,6 +94,9 @@ public sealed class InMemoryFundAccountServiceContractTests : FundAccountService
     public Task IngestBankStatementAsync_RetainedBatchCannotReplaceLineIdentity() => IngestBankStatementAsync_RetainedBatchCannotReplaceLineIdentity_Core();
 
     [Fact]
+    public Task IngestBankStatementAsync_TransactionFeedBatches_AreAdditiveAndSupersedeByLineIdentity() => IngestBankStatementAsync_TransactionFeedBatches_AreAdditiveAndSupersedeByLineIdentity_Core();
+
+    [Fact]
     public Task ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak() => ReconcileAccountAsync_CashDivergingFromBankClosingBalance_ProducesCashBreak_Core();
 
     [Fact]

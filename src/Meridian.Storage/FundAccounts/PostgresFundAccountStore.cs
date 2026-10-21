@@ -592,14 +592,15 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Transaction = transaction;
             cmd.CommandText = $"""
                 INSERT INTO {Qualified("bank_statement_batch")}
-                    (batch_id, account_id, statement_date, bank_name, file_name, line_count, ingested_at, loaded_by, statement_revision)
+                    (batch_id, account_id, statement_date, bank_name, file_name, line_count, ingested_at, loaded_by, statement_revision, transaction_feed)
                 VALUES
-                    (@batch_id, @account_id, @statement_date, @bank_name, null, @line_count, @ingested_at, @loaded_by, @statement_revision)
+                    (@batch_id, @account_id, @statement_date, @bank_name, null, @line_count, @ingested_at, @loaded_by, @statement_revision, @transaction_feed)
                 ON CONFLICT (batch_id) DO UPDATE SET batch_id = EXCLUDED.batch_id
                 WHERE bank_statement_batch.account_id = EXCLUDED.account_id
                   AND bank_statement_batch.statement_date = EXCLUDED.statement_date
                   AND bank_statement_batch.statement_revision = EXCLUDED.statement_revision
-                  AND bank_statement_batch.line_count = EXCLUDED.line_count
+                  AND bank_statement_batch.transaction_feed = EXCLUDED.transaction_feed
+                  AND (EXCLUDED.transaction_feed OR bank_statement_batch.line_count = EXCLUDED.line_count)
                   AND bank_statement_batch.bank_name = EXCLUDED.bank_name
                 RETURNING (xmax = 0)
                 """;
@@ -611,12 +612,14 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Parameters.AddWithValue("ingested_at", batch.IngestedAt);
             cmd.Parameters.AddWithValue("loaded_by", batch.LoadedBy);
             cmd.Parameters.AddWithValue("statement_revision", batch.StatementRevision ?? 1);
+            cmd.Parameters.AddWithValue("transaction_feed", batch.IsTransactionFeed ?? false);
             if (await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false) is not bool inserted)
                 throw new UnauthorizedAccessException("The retained statement batch belongs to another account or has different statement authority.");
             isNewBatch = inserted;
         }
 
-        if (!isNewBatch)
+        // A feed batch's membership can shrink when a later delivery supersedes one of its transactions.
+        if (!isNewBatch && batch.IsTransactionFeed != true)
         {
             // The header row lock serializes concurrent retries through the membership check.
             await using var membership = connection.CreateCommand();
@@ -643,9 +646,24 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                     (@statement_line_id, @batch_id, @account_id, @statement_date, @value_date,
                      @amount, @currency, @transaction_type, @description, @external_reference, @running_balance, @line_sequence)
                 ON CONFLICT (statement_line_id) DO UPDATE SET
-                    line_sequence = COALESCE(bank_statement_line.line_sequence, EXCLUDED.line_sequence)
-                WHERE bank_statement_line.batch_id = EXCLUDED.batch_id
-                  AND bank_statement_line.account_id = EXCLUDED.account_id
+                    batch_id = EXCLUDED.batch_id,
+                    statement_date = EXCLUDED.statement_date,
+                    value_date = EXCLUDED.value_date,
+                    amount = EXCLUDED.amount,
+                    currency = EXCLUDED.currency,
+                    transaction_type = EXCLUDED.transaction_type,
+                    description = EXCLUDED.description,
+                    external_reference = EXCLUDED.external_reference,
+                    running_balance = EXCLUDED.running_balance,
+                    line_sequence = CASE WHEN @transaction_feed THEN EXCLUDED.line_sequence
+                        ELSE COALESCE(bank_statement_line.line_sequence, EXCLUDED.line_sequence) END
+                WHERE bank_statement_line.account_id = EXCLUDED.account_id
+                  AND (
+                  -- A transaction feed's later delivery of a transaction supersedes the earlier one.
+                  @transaction_feed AND EXISTS (
+                      SELECT 1 FROM {Qualified("bank_statement_batch")} retained
+                      WHERE retained.batch_id = bank_statement_line.batch_id AND retained.transaction_feed)
+                  OR bank_statement_line.batch_id = EXCLUDED.batch_id
                   AND bank_statement_line.statement_date = EXCLUDED.statement_date
                   AND bank_statement_line.value_date = EXCLUDED.value_date
                   AND bank_statement_line.amount = EXCLUDED.amount
@@ -655,7 +673,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                   AND bank_statement_line.external_reference IS NOT DISTINCT FROM EXCLUDED.external_reference
                   AND bank_statement_line.running_balance IS NOT DISTINCT FROM EXCLUDED.running_balance
                   AND (bank_statement_line.line_sequence IS NULL
-                       OR bank_statement_line.line_sequence IS NOT DISTINCT FROM EXCLUDED.line_sequence)
+                       OR bank_statement_line.line_sequence IS NOT DISTINCT FROM EXCLUDED.line_sequence))
                 """;
             cmd.Parameters.AddWithValue("statement_line_id", line.LineId);
             cmd.Parameters.AddWithValue("batch_id", line.BatchId);
@@ -669,6 +687,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             cmd.Parameters.AddWithValue("external_reference", (object?)line.Reference ?? DBNull.Value);
             cmd.Parameters.AddWithValue("running_balance", line.ClosingBalance.HasValue ? (object)line.ClosingBalance.Value : DBNull.Value);
             cmd.Parameters.AddWithValue("line_sequence", NpgsqlTypes.NpgsqlDbType.Integer, (object?)line.LineSequence ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("transaction_feed", batch.IsTransactionFeed ?? false);
             if (await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 0)
                 throw new InvalidOperationException("A retained bank statement line cannot change; use a new statement revision.");
         }
@@ -767,7 +786,7 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
         sb.AppendLine($"""
             SELECT l.statement_line_id, l.batch_id, l.account_id, l.statement_date, l.value_date,
                    l.amount, l.currency, l.transaction_type, l.description, l.external_reference, l.running_balance,
-                   l.line_sequence, b.statement_revision, b.statement_date AS statement_as_of_date
+                   l.line_sequence, b.statement_revision, b.statement_date AS statement_as_of_date, b.transaction_feed
             FROM {Qualified("bank_statement_line")} l
             JOIN {Qualified("bank_statement_batch")} b ON b.batch_id = l.batch_id AND b.account_id = l.account_id
             WHERE l.account_id = @account_id
@@ -804,7 +823,8 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                 ClosingBalance: reader.IsDBNull(reader.GetOrdinal("running_balance")) ? null : reader.GetDecimal(reader.GetOrdinal("running_balance")),
                 LineSequence: reader.IsDBNull(reader.GetOrdinal("line_sequence")) ? null : reader.GetInt32(reader.GetOrdinal("line_sequence")),
                 StatementRevision: reader.GetInt32(reader.GetOrdinal("statement_revision")),
-                StatementAsOfDate: reader.GetFieldValue<DateOnly>(reader.GetOrdinal("statement_as_of_date"))));
+                StatementAsOfDate: reader.GetFieldValue<DateOnly>(reader.GetOrdinal("statement_as_of_date")),
+                IsTransactionFeed: reader.GetBoolean(reader.GetOrdinal("transaction_feed")) ? true : null));
         }
         return results;
     }

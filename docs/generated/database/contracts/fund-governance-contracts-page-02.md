@@ -154,6 +154,7 @@ classDiagram
         +string BankName
         +Guid BatchId
         +bool IsBackfill
+        +bool IsTransactionFeed
         +IReadOnlyList~BankStatementLineDto~ Lines
         +string LoadedBy
         +string? Notes

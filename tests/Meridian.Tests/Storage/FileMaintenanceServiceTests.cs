@@ -48,6 +48,25 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
+    public async Task RunHealthCheckAsync_CompressedArchiveWithoutSidecar_ReportsMissingChecksum()
+    {
+        // Compression always publishes a sidecar beside the archive, so a bare archive has lost
+        // its coverage and must not pass as healthy; an open plain day file never had one.
+        var archivePath = Path.Combine(TestDataRoot, "SPY_trade_20260110.jsonl.gz");
+        await using (var gzip = new System.IO.Compression.GZipStream(File.Create(archivePath), System.IO.Compression.CompressionLevel.Fastest))
+            await gzip.WriteAsync(Encoding.UTF8.GetBytes("{\"price\":450.0}\n"));
+        await File.WriteAllTextAsync(Path.Combine(TestDataRoot, "SPY_trade_20260111.jsonl"), "{\"price\":451.0}\n");
+
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        var report = await service.RunHealthCheckAsync(new HealthCheckOptions(
+            ValidateChecksums: true,
+            IdentifyCorruption: false));
+
+        report.Issues.Should().ContainSingle(i => i.Type == IssueType.MissingChecksum).Which.Path.Should().Be(archivePath);
+        report.Issues.Should().NotContain(i => i.Type == IssueType.ChecksumMismatch);
+    }
+
+    [Fact]
     public async Task RepairAsync_TruncateCorrupted_SalvagesValidTailAndQuarantinesCorruptLines()
     {
         // The old repair stopped at the first invalid line and discarded the valid tail, and

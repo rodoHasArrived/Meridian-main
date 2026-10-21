@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "afb5c32d7a83aeeb1c0613b062404f8d5fc3663c74afe5bcfa0aa7052097c52b",
+  "database_fingerprint": "b68588799dde5a0f2d107acba4170b74adfa865a1a9bb53e893a93ac811ec5dd",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -10447,6 +10447,10 @@
     {
       "fingerprint": "e8ef2a02b5c80babde0a3038d786efba238beef2113cdfdc1f21fd031707a6cf",
       "object": "column:fund_accounts.bank_statement_batch.statement_revision"
+    },
+    {
+      "fingerprint": "2a1bd4c8ddafb758fd9c16ccbae67a4b70351b216ec55facd57e4172f32ba362",
+      "object": "column:fund_accounts.bank_statement_batch.transaction_feed"
     },
     {
       "fingerprint": "c6305039fc4ab129f5dc7621d0af22b8d78cbb80f3d3be2cddb642ec1c6f8da6",
@@ -28053,7 +28057,7 @@
       "object": "schema:banking"
     },
     {
-      "fingerprint": "5ef0847149cf646571dc3530b0dcdffbba2952175cc724ccbaac361acaef6f98",
+      "fingerprint": "b88d70b4f769dc43e7235337e069e5bf7484d39e55209c5c2401e83a0ccfee10",
       "object": "schema:fund_accounts"
     },
     {
@@ -28221,7 +28225,7 @@
       "object": "table:fund_accounts.account_sync_history"
     },
     {
-      "fingerprint": "44561ad2f39ca3bbc9a399baded5a9b34a70a521f1729dfbb950669b7d41f886",
+      "fingerprint": "1d4e739701a4efe1144b920c85ee637a1f6b32fd9d0448851ecb0c23c6a497e6",
       "object": "table:fund_accounts.bank_statement_batch"
     },
     {
@@ -44056,7 +44060,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "5ef0847149cf646571dc3530b0dcdffbba2952175cc724ccbaac361acaef6f98",
+      "fingerprint": "b88d70b4f769dc43e7235337e069e5bf7484d39e55209c5c2401e83a0ccfee10",
       "foreign_tables": [],
       "functions": [],
       "logical_modules": [
@@ -47182,6 +47186,22 @@
               "security_labels": [],
               "type_name": "int4",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "boolean",
+              "default": "false",
+              "fingerprint": "2a1bd4c8ddafb758fd9c16ccbae67a4b70351b216ec55facd57e4172f32ba362",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "transaction_feed",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "bool",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -47251,7 +47271,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "44561ad2f39ca3bbc9a399baded5a9b34a70a521f1729dfbb950669b7d41f886",
+          "fingerprint": "1d4e739701a4efe1144b920c85ee637a1f6b32fd9d0448851ecb0c23c6a497e6",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -51937,6 +51957,22 @@
               "security_labels": [],
               "type_name": "int4",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "boolean",
+              "default": "false",
+              "fingerprint": "2a1bd4c8ddafb758fd9c16ccbae67a4b70351b216ec55facd57e4172f32ba362",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "transaction_feed",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "bool",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -52006,7 +52042,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "44561ad2f39ca3bbc9a399baded5a9b34a70a521f1729dfbb950669b7d41f886",
+          "fingerprint": "1d4e739701a4efe1144b920c85ee637a1f6b32fd9d0448851ecb0c23c6a497e6",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [

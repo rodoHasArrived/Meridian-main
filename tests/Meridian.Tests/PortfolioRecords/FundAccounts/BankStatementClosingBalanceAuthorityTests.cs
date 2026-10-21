@@ -36,6 +36,28 @@ public sealed class BankStatementClosingBalanceAuthorityTests
     }
 
     [Fact]
+    public void SelectAuthoritativeLines_TransactionFeedDeltasOnOneDate_AreAdditiveNotCompeting()
+    {
+        var first = Line(90m) with { IsTransactionFeed = true, ClosingBalance = null };
+        var second = first with { LineId = Guid.NewGuid(), BatchId = Guid.NewGuid(), Amount = 20m };
+        var selected = BankStatementClosingBalanceAuthority.SelectAuthoritativeLines([second, first]);
+
+        selected.Should().BeEquivalentTo([first, second]);
+        BankStatementClosingBalanceAuthority.SelectClosingBalance([second, first]).Should().BeNull("feed deltas carry no closing balance");
+    }
+
+    [Fact]
+    public void SelectAuthoritativeLines_StatementOnTheSameDate_SupersedesFeedDeltas()
+    {
+        var delta = Line(90m) with { IsTransactionFeed = true, ClosingBalance = null };
+        var statement = Line(100m) with { AccountId = delta.AccountId, StatementRevision = 1, LineSequence = 1 };
+        var selected = BankStatementClosingBalanceAuthority.SelectAuthoritativeLines([delta, statement]);
+
+        selected.Should().Equal(statement);
+        BankStatementClosingBalanceAuthority.SelectClosingBalance([delta, statement]).Should().Be(100m);
+    }
+
+    [Fact]
     public void SelectLatestLine_UsesRevisionAndSourceOrdinalForBackdatedFinalRow()
     {
         var line = Line(90m) with { StatementAsOfDate = new(2026, 10, 7), StatementRevision = 1, LineSequence = 99 };

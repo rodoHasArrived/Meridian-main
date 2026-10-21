@@ -835,7 +835,7 @@ public sealed class JsonlStorageSink : IStorageSink
         }
 
         // Best effort and uncancellable. On failure the sidecar stays retired, so health checks
-        // report a missing checksum rather than corruption of committed bytes.
+        // report IssueType.MissingChecksum for the archive rather than corruption of committed bytes.
         private async Task RepublishArchiveChecksumAsync(string archive, string sidecar)
         {
             try
