@@ -329,7 +329,7 @@
                                                        Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                        FontSize="12"
                                                        Margin="0,0,12,0" />
-                                            <TextBlock Text="{Binding AssetProfileProjectedFieldCount, StringFormat={}{0} projected}"
+                                            <TextBlock Text="{Binding AssetProfileProjectedFieldCount, StringFormat={}{0} declared projected}"
                                                        Foreground="{StaticResource ConsoleTextMutedBrush}"
                                                        FontSize="12" />
                                         </StackPanel>

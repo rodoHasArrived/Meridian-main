@@ -443,6 +443,15 @@ public static class HttpClientConfiguration
     public static IServiceCollection AddMarketDataHttpClientsTracked(
         this IServiceCollection services,
         Action<string, string, string?> onStateChanged)
+        => services.AddMarketDataHttpClientsTracked(_ => onStateChanged);
+
+    /// <summary>
+    /// Registers named clients with circuit-breaker callbacks resolved from each owning
+    /// service provider. No post-build callback initialization is required.
+    /// </summary>
+    public static IServiceCollection AddMarketDataHttpClientsTracked(
+        this IServiceCollection services,
+        Func<IServiceProvider, Action<string, string, string?>> onStateChanged)
     {
         // Default client
         services.AddHttpClient(HttpClientNames.Default)

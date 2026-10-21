@@ -401,9 +401,14 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
     }
 
     private static OrderManagementSystem CreateRecoveryOms(IBrokerageGateway gateway, string path,
-        BrokerageConfiguration? configuration = null) => new(gateway, NullLogger<OrderManagementSystem>.Instance,
+        BrokerageConfiguration? configuration = null)
+    {
+        var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
             brokerageConfiguration: configuration, recoveryStore: new FileBrokerageOrderRecoveryStore(path, "alpaca"),
             portfolioState: new PaperTradingPortfolio(100_000m));
+        oms.StartAsync().GetAwaiter().GetResult();
+        return oms;
+    }
 
     private static OrderRequest RecoveryRequest() => new()
     {
