@@ -1,5 +1,6 @@
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using static Meridian.Execution.OrderManagement.OrderRiskSizingPolicy;
 
 namespace Meridian.Execution;
 
@@ -21,7 +22,7 @@ public sealed partial class OrderManagementSystem
                 StopPrice = modification.NewStopPrice ?? original.StopPrice,
                 RoutedNotional = ResolveAmendedRoutedNotional(original, modification)
             };
-            _orderBrokerIds.TryGetValue(orderId, out var brokerId);
+            _brokerIdentities.TryGetActiveId(orderId, out var brokerId);
             var pending = new PendingOrderAmendment(original, proposed, brokerId) { ProposedTrail = modification.NewTrail };
             if (!_pendingModificationOrderIds.TryAdd(orderId, pending))
                 throw new InvalidOperationException("An earlier amendment requires broker reconciliation.");
@@ -110,20 +111,11 @@ public sealed partial class OrderManagementSystem
 
     private void SavePendingAmendment(string orderId)
     {
-        if (!_dispatchedOrderIds.ContainsKey(orderId))
+        if (!_recoveryJournal.IsDispatched(orderId))
             return;
         var pending = GetPendingAmendmentForRecovery(orderId);
-        _orderBrokerIds.TryGetValue(orderId, out var brokerId);
-        _recoveryStore?.Save(new RetainedBrokerageOrder(_orders[orderId], brokerId, pending is not null)
-        {
-            BrokerOrderAliases = GetBrokerOrderAliases(orderId),
-            RequiresAmendmentRecovery = pending is not null,
-            PendingAmendment = pending
-        });
-        if (pending is not null)
-            _recoveryOrderIds[orderId] = 0;
-        else
-            _recoveryOrderIds.TryRemove(orderId, out _);
+        _brokerIdentities.TryGetActiveId(orderId, out var brokerId);
+        _recoveryJournal.SavePendingAmendment(_orders[orderId], brokerId, GetBrokerOrderAliases(orderId), pending);
     }
 
     private static OrderState ApplyAmendmentTerms(OrderState current, OrderState terms) => current with

@@ -5096,6 +5096,19 @@ Meridian-main
 │   │   │   ├── IFxRateProvider.cs
 │   │   │   ├── InMemoryFxRateProvider.cs
 │   │   │   └── MultiCurrencyCashBalance.cs
+│   │   ├── OrderManagement
+│   │   │   ├── AccountingHandoffCoordinator.cs
+│   │   │   ├── BrokerageOrderCheckpointEvidence.cs
+│   │   │   ├── BrokerageOrderRecoveryJournal.cs
+│   │   │   ├── ExecutionFailureState.cs
+│   │   │   ├── ExecutionReportHub.cs
+│   │   │   ├── OrderAdmissionPolicy.cs
+│   │   │   ├── OrderAuditMetadata.cs
+│   │   │   ├── OrderBrokerIdentityIndex.cs
+│   │   │   ├── OrderExecutionAudit.cs
+│   │   │   ├── OrderFillContext.cs
+│   │   │   ├── OrderFillProcessor.cs
+│   │   │   └── OrderRiskSizingPolicy.cs
 │   │   ├── PaperMatching
 │   │   │   ├── PaperMarketObservation.cs
 │   │   │   ├── PaperOrderMatchingPolicy.cs
@@ -5138,8 +5151,6 @@ Meridian-main
 │   │   ├── IRiskValidator.cs
 │   │   ├── ISecurityMasterGate.cs
 │   │   ├── Meridian.Execution.csproj
-│   │   ├── OrderManagementSystem.AccountingHandoff.cs
-│   │   ├── OrderManagementSystem.Audit.cs
 │   │   ├── OrderManagementSystem.BrokerageLimits.cs
 │   │   ├── OrderManagementSystem.Cancellation.cs
 │   │   ├── OrderManagementSystem.ChildOrders.cs
@@ -10477,18 +10488,21 @@ Meridian-main
 │   │   │   │   └── TaxLotAccountingTests.cs
 │   │   │   ├── MultiCurrency
 │   │   │   │   └── InMemoryFxRateProviderTests.cs
+│   │   │   ├── AccountingHandoffCoordinatorTests.cs
 │   │   │   ├── AlpacaStreamedFillLoopTests.cs
 │   │   │   ├── BrokerageExecutionAdmissionLimitTests.cs
 │   │   │   ├── BrokerageExecutionReconciliationServiceTests.cs
 │   │   │   ├── BrokerageExecutionRegistrationRecoveryTests.cs
 │   │   │   ├── BrokerageGatewayAdapterTests.cs
 │   │   │   ├── BrokerageOrderPlacementGateTests.cs
+│   │   │   ├── BrokerageOrderRecoveryJournalTests.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.Retention.cs
 │   │   │   ├── BrokerageValidationEvaluatorTests.cs
 │   │   │   ├── DurableFillDeliveryBoundaryTests.cs
 │   │   │   ├── ExecutionAuditTrailServiceTests.cs
 │   │   │   ├── ExecutionOrderMetadataPolicyTests.cs
+│   │   │   ├── ExecutionReportHubTests.cs
 │   │   │   ├── FileBrokerageOrderRecoveryStoreTests.cs
 │   │   │   ├── FixedIncomeFillBookingTests.cs
 │   │   │   ├── HostedBrokerageGatewayRegistrationTests.cs
@@ -10499,6 +10513,9 @@ Meridian-main
 │   │   │   ├── LogSanitizerTests.cs
 │   │   │   ├── MultiAccountPaperTradingPortfolioTests.cs
 │   │   │   ├── OmsGovernedBrokerageOrderGatewayTests.cs
+│   │   │   ├── OrderAdmissionPolicyTests.cs
+│   │   │   ├── OrderBrokerIdentityIndexTests.cs
+│   │   │   ├── OrderFillProcessorTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.Outcomes.cs
 │   │   │   ├── OrderManagementSystemAmendmentRecoveryTests.RejectedSuccessor.cs
@@ -10507,7 +10524,9 @@ Meridian-main
 │   │   │   ├── OrderManagementSystemGovernanceTests.cs
 │   │   │   ├── OrderManagementSystemLifecycleTests.cs
 │   │   │   ├── OrderManagementSystemReportStreamTests.cs
+│   │   │   ├── OrderManagementSystemSubscriptionFailureTests.cs
 │   │   │   ├── OrderManagementSystemTests.cs
+│   │   │   ├── OrderRiskSizingPolicyTests.cs
 │   │   │   ├── PaperExecutionGatewayLotSizeTests.cs
 │   │   │   ├── PaperFillEnvelopeRegressionTests.cs
 │   │   │   ├── PaperGatewayLiveFeedPricingTests.cs
