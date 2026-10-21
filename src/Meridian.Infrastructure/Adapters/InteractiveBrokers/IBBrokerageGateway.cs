@@ -741,6 +741,13 @@ public sealed partial class IBBrokerageGateway :
             ? tracked
             : null;
 
+    // An id this session does not track but an earlier session recovered. Its callbacks describe
+    // whatever order the reused id now names: they are recovery evidence only and never publish,
+    // or the OMS would map the numeric id back to the retained order they no longer describe.
+    private bool IsStaleRecoveredId(int gatewayOrderId)
+        => _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) && tracked.RecoveredFromSnapshot
+            && tracked.RecoveryEpoch != Volatile.Read(ref _connectionEpoch);
+
     // A cached report describes the order the id named when it was recorded. Only an order this
     // process submitted keeps its reports across a session change; for a recovered or untracked
     // id a report from an earlier session may belong to an unrelated order and is not evidence.
@@ -1053,6 +1060,7 @@ public sealed partial class IBBrokerageGateway :
     {
         var gatewayOrderId = update.OrderId;
         var context = TrackedContext(gatewayOrderId);
+        var staleRecovered = context is null && IsStaleRecoveredId(gatewayOrderId);
         var latest = CurrentSessionReport(gatewayOrderId, context);
         _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
         _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
@@ -1077,7 +1085,12 @@ public sealed partial class IBBrokerageGateway :
             !IsTerminalOrderStatus(orderStatus))
             orderStatus = OrderStatus.PendingCancel;
 
-        if (_openOrders.TryGetValue(gatewayOrderId, out var openOrder))
+        // The live open-order entry of a stale recovered id is the earlier session's; the new
+        // session's order is described by its own snapshot row, never by refreshing that entry.
+        _openOrders.TryGetValue(gatewayOrderId, out var openOrder);
+        if (staleRecovered)
+            openOrder = null;
+        if (openOrder is not null)
         {
             var refreshed = openOrder with { FilledQuantity = filled, Status = orderStatus };
             if (IsTerminalOrderStatus(orderStatus))
@@ -1123,6 +1136,11 @@ public sealed partial class IBBrokerageGateway :
         // reqOpenOrders echoes orderStatus for every open order, including orders this session does not
         // track. Until recovery validates them (account, orderRef, contract and session) they are kept
         // as recovery evidence only; tracked orders and updates outside a snapshot publish as before.
+        if (staleRecovered)
+        {
+            RecordLatestReport(report);
+            return;
+        }
         if (context is null && _openOrdersSnapshotBuffer is not null)
             RecordLatestReport(report);
         else
@@ -1147,6 +1165,10 @@ public sealed partial class IBBrokerageGateway :
 
         var gatewayOrderId = update.OrderId;
         var context = TrackedContext(gatewayOrderId);
+        // The execution belongs to whatever order the reused id now names; recovery in the current
+        // session reads its fills from the snapshot and status evidence, not from this stream.
+        if (context is null && IsStaleRecoveredId(gatewayOrderId))
+            return;
         _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
         _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
         var latest = CurrentSessionReport(gatewayOrderId, context);
@@ -1289,7 +1311,7 @@ public sealed partial class IBBrokerageGateway :
         decimal? filledQuantity = null,
         decimal? averageFillPrice = null)
     {
-        _latestOrderReports.TryGetValue(gatewayOrderId, out var latest);
+        var latest = CurrentSessionReport(gatewayOrderId, context);
         var filled = Math.Max(latest?.FilledQuantity ?? 0m, filledQuantity ?? 0m);
         var orderQuantity = pending.Kind == PendingOrderOperationKind.Cancel &&
             _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment) && amendment.ProposedContext is { } proposed

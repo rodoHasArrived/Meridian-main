@@ -250,6 +250,76 @@ public sealed partial class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task StatusForAReusedGatewayId_IsNeverPublishedAgainstTheEarlierSessionsOrder()
+    {
+        var client = RecoveryClient(c => c.RaiseOpenOrder(RecoverableOpenOrder()));
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        (await ((IBrokerageOrderRecoveryGateway)sut).GetOrderForRecoveryAsync("client-1")).Should().NotBeNull();
+        client.RaiseConnectionLost();
+        client.RaiseConnectionRestored();
+        client.RaiseManagedAccounts("DU123456");
+
+        // The new session's unrelated order under id 7001 fills; this is not client-1's fill.
+        client.RaiseOrderStatus(new IBOrderStatusUpdate(7001, "Filled", 10m, 0m, 100d, 100d, 1L, 1, null, null,
+            DateTimeOffset.UtcNow));
+        client.RaiseExecution(new IBExecutionUpdate(7001, "AAPL", "BOT", 10m, 100d, 10m, 100d, "exec-new-session",
+            "DU123456", "SMART", 1L, null, DateTimeOffset.UtcNow));
+
+        using var reportTimeout = new CancellationTokenSource(TimeSpan.FromMilliseconds(400));
+        var read = () => ReadUntilAsync(sut.StreamExecutionReportsAsync(reportTimeout.Token),
+            report => report.GatewayOrderId == "7001", reportTimeout.Token);
+        await read.Should().ThrowAsync<OperationCanceledException>("callbacks for a stale recovered id are evidence only");
+    }
+
+    [Fact]
+    public async Task ManagedAccountsChangingAfterVerification_EndsTheSessionOfRoutesRecoveredUnderThem()
+    {
+        var cancelled = new List<int>();
+        var client = RecoveryClient(c => c.RaiseOpenOrder(RecoverableOpenOrder()), cancelled);
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        (await ((IBrokerageOrderRecoveryGateway)sut).GetOrderForRecoveryAsync("client-1")).Should().NotBeNull();
+        var generation = sut.ConnectionGeneration;
+
+        client.RaiseManagedAccounts("DU999999"); // another login's accounts, with no transport edge
+
+        sut.ConnectionGeneration.Should().NotBe(generation);
+        var cancel = () => sut.CancelOrderAsync("client-1");
+        await cancel.Should().ThrowAsync<InvalidOperationException>("the route was recovered under the earlier scope");
+        cancelled.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task RefusedCancelOfAReRecoveredOrder_DoesNotAttachTheEarlierSessionsFill()
+    {
+        var sessions = 0;
+        var client = RecoveryClient(c =>
+        {
+            c.RaiseOpenOrder(RecoverableOpenOrder() with { FilledQuantity = sessions == 0 ? 2m : 0m, Status = "Submitted" });
+            if (sessions == 0)
+                c.RaiseOrderStatus(new IBOrderStatusUpdate(7001, "Submitted", 2m, 8m, 100d, 100d, 1L, 1, null, null,
+                    DateTimeOffset.UtcNow));
+        });
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        var recovery = (IBrokerageOrderRecoveryGateway)sut;
+        (await recovery.GetOrderForRecoveryAsync("client-1"))!.FilledQuantity.Should().Be(2m);
+        sessions++;
+        client.RaiseConnectionLost();
+        client.RaiseConnectionRestored();
+        client.RaiseManagedAccounts("DU123456");
+        (await recovery.GetOrderForRecoveryAsync("client-1"))!.FilledQuantity.Should().Be(0m, "the new session reports no fill");
+        client.OnCancelOrder = (c, id) => c.RaiseError(new IBApiError(id, 10148, "Cancellation refused", null));
+
+        var refused = await sut.CancelOrderAsync("client-1");
+
+        refused.ReportType.Should().Be(ExecutionReportType.CancelRejected);
+        refused.FilledQuantity.Should().Be(0m, "the earlier session's partial fill is not this session's evidence");
+        refused.FillPrice.Should().BeNull();
+    }
+
+    [Fact]
     public async Task StaleRouteCleanup_RacingARecoveryOfADifferentClientOrder_RefusesTheResolvedAlias()
     {
         var cancelled = new List<int>();

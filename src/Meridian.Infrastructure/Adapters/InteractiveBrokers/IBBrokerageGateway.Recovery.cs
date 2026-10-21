@@ -45,11 +45,26 @@ public sealed partial class IBBrokerageGateway
         ? $"{(ExecutionMode == Meridian.Execution.Sdk.ExecutionMode.Live ? "live" : "paper")}:{string.Join(',', accounts.Order(StringComparer.OrdinalIgnoreCase))}"
         : null;
 
+    // The first report of a session (after a loss forgot the accounts) verifies the scope. A later
+    // report naming a different set is another login's scope without a transport edge: routes
+    // recovered under the earlier set must not stay current, so it ends the session too.
     private void OnManagedAccountsReceived(object? sender, IReadOnlyList<string> accounts)
-        => _verifiedAccounts = accounts
+    {
+        var verified = accounts
             .Where(account => !string.IsNullOrWhiteSpace(account))
             .Select(account => account.Trim())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        lock (_sessionGate)
+        {
+            var changed = _verifiedAccounts.Count > 0 && !_verifiedAccounts.SetEquals(verified);
+            _verifiedAccounts = verified;
+            if (changed)
+            {
+                Interlocked.Increment(ref _connectionEpoch);
+                ForgetOwedOpenOrdersEnds();
+            }
+        }
+    }
 
     // The client can drop and re-establish the transport on its own. The loss ends the session
     // that any in-flight recovery evidence belongs to and forgets the accounts. The client marks
