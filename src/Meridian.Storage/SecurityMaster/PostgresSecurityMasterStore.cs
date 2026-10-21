@@ -566,7 +566,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         SecurityProjectionRecord record,
         CancellationToken ct)
     {
-        if (!string.Equals(record.AssetClass, "Option", StringComparison.OrdinalIgnoreCase) ||
+        if (SecurityAssetClassCatalog.GetOrDefault(record.AssetClass).ProjectionKind != SecurityTermsProjectionKind.Specialized ||
             !TryBuildOptionProjection(record, out var projection))
         {
             await DeleteOptionProjectionTablesAsync(connection, transaction, record.SecurityId, ct).ConfigureAwait(false);

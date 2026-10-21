@@ -82,20 +82,21 @@ public static class FailoverEndpoints
 
             return await EndpointHelpers.GuardAsync(async () =>
             {
-                var cfg = store.Load();
-                var dataSources = cfg.DataSources ?? new DataSourcesConfig();
-
-                var next = cfg with
+                await store.UpdateAsync(cfg =>
                 {
-                    DataSources = dataSources with
+                    var dataSources = cfg.DataSources ?? new DataSourcesConfig();
+
+                    return cfg with
                     {
-                        EnableFailover = req.EnableFailover,
-                        HealthCheckIntervalSeconds = req.HealthCheckIntervalSeconds,
-                        AutoRecover = req.AutoRecover,
-                        FailoverTimeoutSeconds = req.FailoverTimeoutSeconds
-                    }
-                };
-                await store.SaveAsync(next, ct).ConfigureAwait(false);
+                        DataSources = dataSources with
+                        {
+                            EnableFailover = req.EnableFailover,
+                            HealthCheckIntervalSeconds = req.HealthCheckIntervalSeconds,
+                            AutoRecover = req.AutoRecover,
+                            FailoverTimeoutSeconds = req.FailoverTimeoutSeconds
+                        }
+                    };
+                }, ct).ConfigureAwait(false);
 
                 return Results.Ok();
             },
@@ -172,10 +173,6 @@ public static class FailoverEndpoints
 
             return await EndpointHelpers.GuardAsync(async () =>
             {
-                var cfg = store.Load();
-                var dataSources = cfg.DataSources ?? new DataSourcesConfig();
-                var rules = (dataSources.FailoverRules ?? Array.Empty<FailoverRuleConfig>()).ToList();
-
                 var id = string.IsNullOrWhiteSpace(req.Id) ? Guid.NewGuid().ToString("N") : req.Id;
                 var rule = new FailoverRuleConfig(
                     Id: id,
@@ -187,14 +184,19 @@ public static class FailoverEndpoints
                     MaxLatencyMs: req.MaxLatencyMs
                 );
 
-                var idx = rules.FindIndex(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase));
-                if (idx >= 0)
-                    rules[idx] = rule;
-                else
-                    rules.Add(rule);
+                await store.UpdateAsync(cfg =>
+                {
+                    var dataSources = cfg.DataSources ?? new DataSourcesConfig();
+                    var rules = (dataSources.FailoverRules ?? Array.Empty<FailoverRuleConfig>()).ToList();
 
-                var next = cfg with { DataSources = dataSources with { FailoverRules = rules.ToArray() } };
-                await store.SaveAsync(next, ct).ConfigureAwait(false);
+                    var idx = rules.FindIndex(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase));
+                    if (idx >= 0)
+                        rules[idx] = rule;
+                    else
+                        rules.Add(rule);
+
+                    return cfg with { DataSources = dataSources with { FailoverRules = rules.ToArray() } };
+                }, ct).ConfigureAwait(false);
 
                 return Results.Ok(new { id });
             },
@@ -218,18 +220,19 @@ public static class FailoverEndpoints
         {
             return await EndpointHelpers.GuardAsync(async () =>
             {
-                var cfg = store.Load();
-                var dataSources = cfg.DataSources ?? new DataSourcesConfig();
-                var rules = (dataSources.FailoverRules ?? Array.Empty<FailoverRuleConfig>()).ToList();
+                var outcome = await store.UpdateAsync<IResult?>(cfg =>
+                {
+                    var dataSources = cfg.DataSources ?? new DataSourcesConfig();
+                    var rules = (dataSources.FailoverRules ?? Array.Empty<FailoverRuleConfig>()).ToList();
 
-                var removed = rules.RemoveAll(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase)) > 0;
-                if (!removed)
-                    return ApiProblemDetails.NotFound(context, "The requested failover rule was not found.");
+                    var removed = rules.RemoveAll(r => string.Equals(r.Id, id, StringComparison.OrdinalIgnoreCase)) > 0;
+                    if (!removed)
+                        return (cfg, ApiProblemDetails.NotFound(context, "The requested failover rule was not found."));
 
-                var next = cfg with { DataSources = dataSources with { FailoverRules = rules.ToArray() } };
-                await store.SaveAsync(next, ct).ConfigureAwait(false);
+                    return (cfg with { DataSources = dataSources with { FailoverRules = rules.ToArray() } }, null);
+                }, ct).ConfigureAwait(false);
 
-                return Results.Ok();
+                return outcome ?? Results.Ok();
             },
             "The failover rule could not be deleted.",
             loggerFactory.CreateLogger(nameof(FailoverEndpoints)),

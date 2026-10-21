@@ -1525,10 +1525,11 @@ public sealed class AccountingPostingCandidateService :
                 return null;
             }
 
-            // CurrentFace(1) restates the lot's face from the factor it was booked at to a factor of
-            // 1; the store reconstructs the open share at the event effective date.
+            // The projection scales the par face (face at a factor of one) by the factor decline, so
+            // the lot supplies its par face and the factor is applied once, by the projection; the
+            // store reconstructs the open share at the event effective date.
             var openShare = lot.OpenQuantity / lot.OriginalQuantity;
-            heldFace += faceLot.CurrentFace(1m) * openShare;
+            heldFace += faceLot.ParFace * openShare;
         }
 
         if (heldFace <= 0m)
