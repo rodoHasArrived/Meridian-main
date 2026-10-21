@@ -20,7 +20,7 @@ not change the tracker's release-gate semantics; the tracker stays authoritative
 | --- | --- | --- | --- | --- |
 | `PRD-000` | Core-team approval of ADR-019/ADR-020; clean installed publish/start/update/rollback receipts from the release commit | ADR-019 and ADR-020 are complete and implementation-linked; posture guard, lifecycle control plane, and receipts have focused proof | **Signed 2026-10-20** (`DEC-PRD000-SUPPORT-MATRIX-001`); ADR-019 now also requires and implements a non-Windows platform fail-closed | **Signed-tag receipts** from the `v0.1.0-rc.1` run once the owner pushes the tag (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
 | `PRD-013` | Successful `web-workstation`/`win-x64` hosted `Publish Smoke` run attached to the release commit | Workflow starts the exact published artifact with required auth and dedicated PostgreSQL, then fetches startup/health/shell/assets. Eight hosted attempts drove out the full defect chain (publish contract, PostgreSQL discovery, elevated initdb ACLs, exit mutex affinity, unbounded pg_ctl pipe drain, first-boot budgets, lifecycle-bridge DI); every fix is receipt-evidenced | **First green run exists:** [run #15 / 30347353295](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30347353295) on candidate `d64506650` (2026-07-28) — publish, install, supervised dedicated-database startup, and all endpoint probes passed | Re-dispatch on the frozen release commit and keep that run link here |
-| `PRD-014` | Protected signing secret, native Windows ARM64 runner, prior release artifact, green tag workflow | Installer release creates SHA-256 checksums, SPDX SBOMs, GitHub attestations; tag release blocks on N-1 install/launch/update/repair/rollback/uninstall receipts for x64 and ARM64 | None yet: `v0.1.0-rc.1` on `a9d470c3` was decided 2026-10-20 but the tag push from the agent session was refused (HTTP 403, branch-scoped credential); the tag run's `eligibility` job fails closed until the signing secrets exist | **Provision `MDC_SIGNING_CERT_PFX_BASE64` / `MDC_SIGNING_CERT_PASSWORD` in `desktop-release-signing`, then push `v0.1.0-rc.1` on `a9d470c3`** (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
+| `PRD-014` | Protected signing secret, native Windows ARM64 runner, prior release artifact, green tag workflow | Installer release creates SHA-256 checksums, SPDX SBOMs, GitHub attestations; tag release blocks on N-1 install/launch/update/repair/rollback/uninstall receipts for x64 and ARM64 | `v0.1.0-rc.1` pushed 2026-10-21 on `c51c5d8d` (merge of PR #3239); [tag run 39630903593](https://github.com/rodoHasArrived/Meridian-main/actions/runs/39630903593) failed closed at eligibility with `signing-secrets-unavailable` (both signing secrets empty); nothing built or published | **Provision `MDC_SIGNING_CERT_PFX_BASE64` / `MDC_SIGNING_CERT_PASSWORD` in `desktop-release-signing`, then re-run the tag workflow on `v0.1.0-rc.1`** (see [PRD-014 activation](#prd-014-signing-secret-and-arm64-runner-activation)) |
 | `PRD-015` | Dated release-commit `production-recovery-drill-*` artifact, bound verification/reconciliation/acceptance evidence, and a separate independently evaluated receipt with `objectiveStatus: proven` under RPO 3600s/RTO 7200s | Schema-version-2 producer separates `backupDurationSeconds`/`restoreDurationSeconds` from objective measurements and records verified-point/loss milestones. The standalone validator recomputes point age and declared-loss-to-acceptance time; automation supplies no reconciliation or operator acceptance. | Green candidate archive round-trip receipts exist, including [first all-green certification run #19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on `b3bd557876523b81a2791f4bfd814647035f389a`. Historical receipts prove archive operations/state probes only; no accepted recovery-objective evidence is recorded. | **Complete recovery and record operations-owner acceptance/review** on the frozen release commit; the row stays evidence-gated (see [PRD-015 review](#prd-015-recovery-drill-operator-review)) |
 | `PRD-016` | Green hosted `Production Certification` run on the release commit; repository administrator activates it as a required release check | The workflow runs deterministic PostgreSQL integrations with Cobertura coverage, a zero-skip TRX gate, post-test schema capture, and NuGet/npm scans. Candidate `b3bd557876523b81a2791f4bfd814647035f389a` completed the ordered harness repair without narrowing either integration filter | **First all-green candidate run:** [#19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on 2026-08-05 — `Meridian.Tests` 781/0/0, Direct Lending 7/0/0, zero-skip aggregate 788/0/0 with `certifiable: true`, and all four jobs green. The successful post-test schema capture produced header-only table and migration-ledger inventories after teardown, proving cleanup rather than substantive migrated-schema coverage | Re-dispatch on the frozen release commit, then **required-check activation** by a repository administrator (see [PRD-016 activation](#prd-016-required-check-activation)) |
 | `PRD-017` | Local docs/hash validators and the hosted documentation evidence job green on the final candidate commit | `run-docs-automation.py --profile core` plus drift rejection runs inside `Production Certification` | The same-commit documentation job passed in [run #19 / 30967937407](https://github.com/rodoHasArrived/Meridian-main/actions/runs/30967937407) on candidate `b3bd557876523b81a2791f4bfd814647035f389a` | None beyond keeping the frozen release commit drift-free (agent-runnable; commands below) |
@@ -152,24 +152,32 @@ drain/flush ordering, and lifecycle receipts.
    with a reason instead of failing closed. A failed release query stays fatal, so this cannot be
    mistaken for a missing predecessor. From the second release onward the N-1 artifact is required
    again, and is produced by the first release.
-4. **Decided 2026-10-20, push outstanding:** the RC tag is `v0.1.0-rc.1` on `a9d470c3`, the commit with the ten-workflow green receipt. The agent session's branch-scoped GitHub credential could not push a tag (HTTP 403), so the repository owner runs, after step 1:
+4. **Tagged 2026-10-21:** `v0.1.0-rc.1` is on `c51c5d8d2cab537cb422408f175587b59938c8a5`, the
+   merge commit of [PR #3239](https://github.com/rodoHasArrived/Meridian-main/pull/3239) on
+   `main`, pushed by the repository owner (the agent session's branch-scoped credential returned
+   HTTP 403 for tag refs). The 2026-10-20 determination had chosen `a9d470c3` for its ten-workflow
+   green receipt; the owner moved the target to the merge commit so the candidate contains the
+   controls it certifies (ADR-019/ADR-020 signatures, the platform fail-closed guard, the
+   concurrent-configuration lock shared with the WPF shell, and the credential-audit journal), which
+   is the same-commit evidence the previous entry said a later candidate would need. The receipt
+   trade-off is therefore reversed: `c51c5d8d` carries the controls, and its own green receipt is
+   the `Meridian CI` run on the merge plus the tag run below rather than a pre-existing
+   ten-workflow push receipt. The tag fired
+   [Desktop Installer Release run 39630903593](https://github.com/rodoHasArrived/Meridian-main/actions/runs/39630903593);
+   its `validate-release-eligibility` outcome is recorded in the PRD-014 row above and in the
+   paragraph that follows. Drive that run to green; its install/launch/update/repair/rollback/
+   uninstall receipts for x64 and ARM64 are the PRD-014 evidence.
 
-   ```bash
-   git fetch origin main
-   git tag -a v0.1.0-rc.1 a9d470c3 -m "Meridian v0.1.0-rc.1 release candidate"
-   git push origin v0.1.0-rc.1
-   ```
-
-   Note the trade-off this records: `a9d470c3` is the commit that holds the ten-workflow green
-   receipt, and the determination chose it for that reason, but the ADR signatures, the platform
-   fail-closed, the concurrent-configuration protection and the credential-audit journal land in
-   the change that records this decision, after `a9d470c3`. Same-commit evidence for those controls
-   therefore needs a later candidate (`v0.1.0-rc.2` or the stable tag) cut from a `main` head that
-   contains them and carries its own green receipt; the `rc.1` receipts certify the envelope as it
-   stood at `a9d470c3`. Push the release tag (`v*`) on the frozen release commit and drive
-   `desktop-installer-packaging` to green; the tag run's install/launch/update/repair/
-   rollback/uninstall receipts for x64 and ARM64 are the PRD-014 evidence. Record the run link
-   here.
+   **Run 39630903593 outcome (2026-10-21 16:02 UTC):** `validate-release-eligibility` failed
+   closed at "Validate signing prerequisites before builds" with
+   `Release signing prerequisite failed (signing-secrets-unavailable); inspect the protected
+   desktop-release-signing environment.` Both `MDC_SIGNING_CERT_PFX_BASE64` and
+   `MDC_SIGNING_CERT_PASSWORD` were empty, so no build, certification or publish job ran; the
+   non-secret readiness evidence is retained as artifact `release-signing-readiness-39630903593-1`.
+   This is the documented fail-closed behaviour, not a defect. The remaining administrator action
+   is unchanged: provision both secrets in `desktop-release-signing`, then re-run
+   `Desktop Installer Release` on `v0.1.0-rc.1` (re-run the failed run or dispatch the workflow on
+   the tag). The tag itself stays where it is.
 
 The consumer EXE has an additional mandatory certification gate. After human governance review
 of the workflow changes, run a signed rehearsal on the reviewed commit. Retain
