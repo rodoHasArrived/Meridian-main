@@ -4334,7 +4334,6 @@ Meridian-main
 │   │   ├── BatchBacktestService.cs
 │   │   ├── CorporateActionAdjustmentService.cs
 │   │   ├── GlobalUsings.cs
-│   │   ├── GlobalUsings.SecurityMasterConcerns.cs
 │   │   ├── ICorporateActionAdjustmentService.cs
 │   │   ├── Meridian.Backtesting.csproj
 │   │   ├── MeridianNativeBacktestStudioEngine.cs
@@ -4684,6 +4683,7 @@ Meridian-main
 │   │   │   ├── ISecurityTradingParametersQueryService.cs
 │   │   │   ├── IStructuredCashFlowProvider.cs
 │   │   │   ├── LotQuantity.cs
+│   │   │   ├── NotionalLot.cs
 │   │   │   ├── OperatorOverrides.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
 │   │   │   ├── SecurityAssetClassRegistry.cs
@@ -4702,6 +4702,7 @@ Meridian-main
 │   │   │   ├── SecurityIdentifierNormalizer.cs
 │   │   │   ├── SecurityIdentifiers.cs
 │   │   │   ├── SecurityIncomeCashFlows.cs
+│   │   │   ├── SecurityLotModel.cs
 │   │   │   ├── SecurityMasterCashFlow.cs
 │   │   │   ├── SecurityMasterClosePrices.cs
 │   │   │   ├── SecurityMasterClosePricesJsonContext.cs
@@ -5136,7 +5137,6 @@ Meridian-main
 │   │   │   └── TaxLotSelectors.cs
 │   │   ├── BrokerageServiceRegistration.cs
 │   │   ├── GlobalUsings.cs
-│   │   ├── GlobalUsings.SecurityMasterConcerns.cs
 │   │   ├── IOrderManagementLifecycle.cs
 │   │   ├── IRiskValidator.cs
 │   │   ├── ISecurityMasterGate.cs
@@ -6789,7 +6789,6 @@ Meridian-main
 │   │   │   ├── JsonlStrategyDesignRepository.cs
 │   │   │   └── StrategyRunStore.cs
 │   │   ├── GlobalUsings.cs
-│   │   ├── GlobalUsings.SecurityMasterConcerns.cs
 │   │   ├── Meridian.Strategies.csproj
 │   │   └── README.md
 │   ├── Meridian.Ui
@@ -9358,7 +9357,6 @@ Meridian-main
 │   │   ├── FillModelExpansionTests.cs
 │   │   ├── FillModelTests.cs
 │   │   ├── GlobalUsings.cs
-│   │   ├── GlobalUsings.SecurityMasterConcerns.cs
 │   │   ├── LedgerQueryTests.cs
 │   │   ├── LotLevelTrackingTests.cs
 │   │   ├── MarketImpactFillModelTests.cs
@@ -11056,6 +11054,7 @@ Meridian-main
 │   │   │   ├── ListingIdentityTests.cs
 │   │   │   ├── ListingMicColumnTests.cs
 │   │   │   ├── LoanIdentifierKindTests.cs
+│   │   │   ├── NotionalLotTests.cs
 │   │   │   ├── NullCorporateActionOperationsServiceTests.cs
 │   │   │   ├── NullOperatorOverridesStoreTests.cs
 │   │   │   ├── OperatorOverrideReviewRulesTests.cs
@@ -11087,6 +11086,7 @@ Meridian-main
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
 │   │   │   ├── SecurityIncomeCashFlowProjectorTests.cs
+│   │   │   ├── SecurityLotModelTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
 │   │   │   ├── SecurityMasterAliasMigrationTests.cs
 │   │   │   ├── SecurityMasterAliasRecordedHistoryTests.cs
