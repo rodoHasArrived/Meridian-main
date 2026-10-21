@@ -218,7 +218,7 @@ public static class OpenLotAmortization
         if (FirstTerm(sources, ["currentFactor", "factor"]) is { } ownedFactor && ownedFactor.ValueKind != JsonValueKind.Null
             && OwnedDecimal(sources, ["currentFactor", "factor"]) is null)
             throw new ArgumentException("Amortization requires valid owned principal-factor authority; malformed factors cannot receive defaults.");
-        if (assetClass == "Bond")
+        if (SecurityAssetClassCatalog.GetOrDefault(assetClass).CarriesBondCouponStructure)
         {
             var couponType = OwnedString(sources, ["couponType", "couponKind"]);
             if (couponType is not ("Fixed" or "ZeroCoupon")

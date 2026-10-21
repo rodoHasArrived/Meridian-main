@@ -138,8 +138,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         string? proposedValue,
         JsonElement? proposedReplacementRoot)
     {
-        if (string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(projection.AssetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase))
+        if (SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass).RequiresGovernedProfile)
         {
             // A CustomAsset overlay is governed by the pinned profile alone; there is no resolved
             // kind whose invariants could tighten the profile's declared field rules.

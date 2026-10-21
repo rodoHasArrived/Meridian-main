@@ -376,8 +376,7 @@ public sealed class MultiAssetCoverageReadService : IMultiAssetCoverageReadServi
             {
                 // Normalize vendor spellings onto the canonical catalog name; an unrecognized class
                 // is still the record's own declared value, so it is kept rather than dropped.
-                var descriptor = SecurityAssetClassCatalog.GetOrDefault(detail.AssetClass);
-                declaredAssetClasses[securityId] = descriptor.AssetClass == "Unknown"
+                declaredAssetClasses[securityId] = !SecurityAssetClassCatalog.TryGet(detail.AssetClass, out var descriptor)
                     ? detail.AssetClass.Trim()
                     : descriptor.AssetClass;
             }

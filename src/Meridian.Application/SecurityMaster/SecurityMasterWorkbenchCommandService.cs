@@ -1000,8 +1000,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         }
 
         if (projection is null
-            || string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(projection.AssetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase)
+            || SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass).RequiresGovernedProfile
             || (projection.AssetSpecificTerms is { ValueKind: JsonValueKind.Object } profileProbe
                 && profileProbe.TryGetProperty("customProfileId", out var profileId)
                 && profileId.ValueKind == JsonValueKind.String
@@ -1609,8 +1608,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 // schedules. Clears still pass (they remove overlay junk), and genuine CustomAsset
                 // records keep dynamic pass-through.
                 if (!isClear
-                    && !string.Equals(currentProjection!.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(currentProjection.AssetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase))
+                    && !SecurityAssetClassCatalog.GetOrDefault(currentProjection!.AssetClass).RequiresGovernedProfile)
                 {
                     throw new ArgumentException(
                         $"Path '{canonicalFieldPath}' edits beneath '{rootSegment}', which the pinned profile does not " +
