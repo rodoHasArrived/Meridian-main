@@ -1,3 +1,4 @@
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 
 namespace Meridian.Execution;
@@ -155,9 +156,17 @@ public sealed partial class OrderManagementSystem
     {
         if (!_recoveryJournal.IsDispatched(orderId) || !_orders.TryGetValue(orderId, out var state))
             return;
-        _brokerIdentities.TryGetActiveId(orderId, out var brokerOrderId);
-        _recoveryJournal.CheckpointProcessed(state, report, observedRecoveryVersion,
-            brokerOrderId, GetBrokerOrderAliases(orderId), GetPendingAmendmentForRecovery(orderId));
+        // Submit acknowledgments do not hold the shared report gate. Sample these owners at
+        // the journal's lock boundary so a wait cannot overwrite a newer amendment or alias.
+        var brokerIdentities = _brokerIdentities;
+        var pendingAmendments = _pendingModificationOrderIds;
+        _recoveryJournal.CheckpointProcessed(state, report, observedRecoveryVersion, () =>
+        {
+            var hasPendingAmendment = pendingAmendments.ContainsKey(orderId);
+            brokerIdentities.TryGetActiveId(orderId, out var brokerOrderId);
+            return new BrokerageOrderCheckpointEvidence(brokerOrderId, brokerIdentities.GetAliases(orderId),
+                hasPendingAmendment, pendingAmendments.GetValueOrDefault(orderId));
+        });
     }
 
     /// <summary>Applies broker-proven recovery evidence through the ordinary idempotent fill path.</summary>

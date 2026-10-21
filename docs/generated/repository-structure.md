@@ -5095,6 +5095,7 @@ Meridian-main
 │   │   │   └── MultiCurrencyCashBalance.cs
 │   │   ├── OrderManagement
 │   │   │   ├── AccountingHandoffCoordinator.cs
+│   │   │   ├── BrokerageOrderCheckpointEvidence.cs
 │   │   │   ├── BrokerageOrderRecoveryJournal.cs
 │   │   │   ├── ExecutionFailureState.cs
 │   │   │   ├── ExecutionReportHub.cs

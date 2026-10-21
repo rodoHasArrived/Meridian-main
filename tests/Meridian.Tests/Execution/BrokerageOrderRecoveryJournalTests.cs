@@ -10,6 +10,106 @@ namespace Meridian.Tests.Execution;
 public sealed class BrokerageOrderRecoveryJournalTests
 {
     [Fact]
+    public async Task CheckpointProcessed_WaitsForRecoveryLock_ReadsNewAmendmentAndBrokerIdentityAfterAdmission()
+    {
+        using var directory = new StoreDirectory();
+        var store = directory.CreateStore();
+        var journal = new BrokerageOrderRecoveryJournal(store);
+        var identities = new OrderBrokerIdentityIndex();
+        var amendments = new ConcurrentDictionary<string, PendingOrderAmendment>(StringComparer.Ordinal);
+        var acknowledged = State();
+        var otherOrder = State() with { OrderId = "other-order" };
+        identities.Confirm(acknowledged.OrderId, "broker-1");
+        journal.RetainDispatch(acknowledged, "broker-1", ["broker-1"]);
+        journal.RetainDispatch(otherOrder, null, []);
+        var acknowledgmentVersion = journal.CaptureVersion(acknowledged.OrderId);
+        var lockEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var releaseLock = new ManualResetEventSlim();
+        using var evidenceRead = new ManualResetEventSlim();
+        var blocker = Task.Run(() => journal.CheckpointProcessed(otherOrder, Report(otherOrder), 0, () =>
+        {
+            lockEntered.TrySetResult();
+            if (!releaseLock.Wait(TimeSpan.FromSeconds(30)))
+                throw new TimeoutException("Checkpoint test did not release the recovery lock.");
+            return new BrokerageOrderCheckpointEvidence(null, [], false, null);
+        }));
+        var acknowledgmentFinished = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var acknowledgment = new Thread(() =>
+        {
+            try
+            {
+                journal.CheckpointProcessed(acknowledged, Report(acknowledged), acknowledgmentVersion, () =>
+                {
+                    evidenceRead.Set();
+                    var hasPending = amendments.ContainsKey(acknowledged.OrderId);
+                    identities.TryGetActiveId(acknowledged.OrderId, out var brokerId);
+                    return new BrokerageOrderCheckpointEvidence(brokerId, identities.GetAliases(acknowledged.OrderId),
+                        hasPending, amendments.GetValueOrDefault(acknowledged.OrderId));
+                });
+                acknowledgmentFinished.TrySetResult();
+            }
+            catch (Exception failure)
+            {
+                acknowledgmentFinished.TrySetException(failure);
+            }
+        })
+        { IsBackground = true };
+        var started = false;
+        var pending = new PendingOrderAmendment(acknowledged, acknowledged with { Quantity = 20m }, "broker-1")
+        { CandidateBrokerOrderId = "broker-2" };
+        try
+        {
+            await lockEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            acknowledgment.Start();
+            started = true;
+            // This dedicated thread performs no other waits. Observe actual monitor contention,
+            // or catch an incorrectly early evidence read, without relying on a scheduling delay.
+            SpinWait.SpinUntil(() => evidenceRead.IsSet
+                || (acknowledgment.ThreadState & System.Threading.ThreadState.WaitSleepJoin) != 0,
+                TimeSpan.FromSeconds(5)).Should().BeTrue();
+            evidenceRead.IsSet.Should().BeFalse("checkpoint evidence must be read after entering the recovery lock");
+
+            amendments[acknowledged.OrderId] = pending;
+            identities.Confirm(acknowledged.OrderId, "broker-2");
+            journal.SavePendingAmendment(acknowledged, "broker-2", identities.GetAliases(acknowledged.OrderId), pending);
+            store.Load().Single(item => item.State.OrderId == acknowledged.OrderId).PendingAmendment.Should().Be(pending);
+        }
+        finally
+        {
+            releaseLock.Set();
+            await blocker.WaitAsync(TimeSpan.FromSeconds(5));
+            if (started)
+                await acknowledgmentFinished.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+
+        var retained = directory.CreateStore().Load().Single(item => item.State.OrderId == acknowledged.OrderId);
+        retained.BrokerOrderId.Should().Be("broker-2");
+        retained.BrokerOrderAliases.Should().Equal("broker-1", "broker-2");
+        retained.PendingAmendment.Should().Be(pending);
+        retained.RequiresAmendmentRecovery.Should().BeTrue();
+        retained.RequiresRecovery.Should().BeTrue();
+        journal.RequiresRecovery(acknowledged.OrderId).Should().BeTrue();
+    }
+
+    [Fact]
+    public void CheckpointProcessed_PendingFlagOutlivesSnapshotRead_PreservesObservedUncertainty()
+    {
+        using var directory = new StoreDirectory();
+        var journal = new BrokerageOrderRecoveryJournal(directory.CreateStore());
+        var state = State();
+        journal.RetainDispatch(state, "broker-1", ["broker-1"]);
+
+        journal.CheckpointProcessed(state, Report(state), 0,
+            () => new BrokerageOrderCheckpointEvidence("broker-1", ["broker-1"], true, null));
+
+        var retained = directory.CreateStore().Load().Should().ContainSingle().Which;
+        retained.PendingAmendment.Should().BeNull();
+        retained.RequiresAmendmentRecovery.Should().BeTrue();
+        retained.RequiresRecovery.Should().BeTrue();
+        journal.RequiresRecovery(state.OrderId).Should().BeTrue();
+    }
+
+    [Fact]
     public void CheckpointProcessed_NewerRecoveryVersion_PersistsFillWithoutClearingUncertainty()
     {
         using var directory = new StoreDirectory();
@@ -22,7 +122,7 @@ public sealed class BrokerageOrderRecoveryJournalTests
         // after the disconnect marks newer uncertainty. Its fill is still a valid watermark.
         journal.RequireRecovery(accepted.OrderId);
         var partial = accepted with { FilledQuantity = 4m, AverageFillPrice = 101m, Status = OrderStatus.PartiallyFilled };
-        journal.CheckpointProcessed(partial, Report(partial), reportVersion, "broker-1", ["broker-1"], null);
+        journal.CheckpointProcessed(partial, Report(partial), reportVersion, Evidence("broker-1", ["broker-1"]));
 
         journal.RequiresRecovery(accepted.OrderId).Should().BeTrue();
         var reopened = new BrokerageOrderRecoveryJournal(directory.CreateStore());
@@ -33,7 +133,7 @@ public sealed class BrokerageOrderRecoveryJournalTests
 
         // Evidence begun at the current version may now reconcile that uncertainty.
         journal.CheckpointProcessed(partial, Report(partial), journal.CaptureVersion(accepted.OrderId),
-            "broker-1", ["broker-1"], null);
+            Evidence("broker-1", ["broker-1"]));
         journal.RequiresRecovery(accepted.OrderId).Should().BeFalse();
         directory.CreateStore().Load().Should().ContainSingle().Which.RequiresRecovery.Should().BeFalse();
     }
@@ -49,7 +149,7 @@ public sealed class BrokerageOrderRecoveryJournalTests
         var inFlightFill = accepted with { FilledQuantity = 4m, Status = OrderStatus.PartiallyFilled };
 
         journal.CheckpointProcessed(inFlightFill, Report(accepted), journal.CaptureVersion(accepted.OrderId),
-            "broker-1", ["broker-1"], null);
+            Evidence("broker-1", ["broker-1"]));
 
         store.Load().Should().ContainSingle().Which.State.FilledQuantity.Should().Be(0m);
         journal.RequiresRecovery(accepted.OrderId).Should().BeTrue();
@@ -74,7 +174,7 @@ public sealed class BrokerageOrderRecoveryJournalTests
         journal.RetainDispatch(original, "broker-1", ["broker-1"]);
 
         journal.CheckpointProcessed(original, Report(original) with { ReportType = ExecutionReportType.ModificationPending },
-            journal.CaptureVersion(original.OrderId), "broker-1", ["broker-1"], pending);
+            journal.CaptureVersion(original.OrderId), Evidence("broker-1", ["broker-1"], pending));
 
         var restored = new BrokerageOrderRecoveryJournal(directory.CreateStore()).Restore("alpaca");
         var retained = restored.Orders.Should().ContainSingle().Which;
@@ -111,7 +211,7 @@ public sealed class BrokerageOrderRecoveryJournalTests
         var filled = accepted with { FilledQuantity = 10m, Status = OrderStatus.Filled };
 
         var checkpoint = () => journal.CheckpointProcessed(filled, Report(filled),
-            journal.CaptureVersion(accepted.OrderId), "broker-1", ["broker-1"], null);
+            journal.CaptureVersion(accepted.OrderId), Evidence("broker-1", ["broker-1"]));
 
         AssertStorageFailure(checkpoint);
         journal.RequiresRecovery(accepted.OrderId).Should().BeTrue();
@@ -128,7 +228,7 @@ public sealed class BrokerageOrderRecoveryJournalTests
         var journal = new BrokerageOrderRecoveryJournal(store);
         var accepted = State();
         journal.RetainDispatch(accepted, "broker-1", ["broker-1"]);
-        journal.CheckpointProcessed(accepted, Report(accepted), 0, "broker-1", ["broker-1"], null);
+        journal.CheckpointProcessed(accepted, Report(accepted), 0, Evidence("broker-1", ["broker-1"]));
         var version = journal.CaptureVersion(accepted.OrderId);
         directory.BlockWrites();
 
@@ -170,7 +270,7 @@ public sealed class BrokerageOrderRecoveryJournalTests
         var journal = new BrokerageOrderRecoveryJournal(directory.CreateStore());
         var candidate = State() with { FilledQuantity = 10m, Status = OrderStatus.Filled };
         journal.RetainDispatch(candidate, "broker-2", ["broker-1", "broker-2"]);
-        journal.CheckpointProcessed(candidate, Report(candidate), 0, "broker-2", ["broker-1", "broker-2"], null);
+        journal.CheckpointProcessed(candidate, Report(candidate), 0, Evidence("broker-2", ["broker-1", "broker-2"]));
         var replacement = candidate with { LastUpdatedAt = DateTimeOffset.UtcNow.AddMinutes(1) };
         var orders = new ConcurrentDictionary<string, OrderState>(StringComparer.Ordinal)
         { [candidate.OrderId] = replacement };
@@ -208,7 +308,7 @@ public sealed class BrokerageOrderRecoveryJournalTests
         var journal = new BrokerageOrderRecoveryJournal(store);
         var candidate = State() with { FilledQuantity = 10m, Status = OrderStatus.Filled };
         journal.RetainDispatch(candidate, "broker-1", ["broker-1"]);
-        journal.CheckpointProcessed(candidate, Report(candidate), 0, "broker-1", ["broker-1"], null);
+        journal.CheckpointProcessed(candidate, Report(candidate), 0, Evidence("broker-1", ["broker-1"]));
         journal.RequireRecovery(candidate.OrderId);
         var removalAttempted = false;
 
@@ -229,7 +329,7 @@ public sealed class BrokerageOrderRecoveryJournalTests
         var journal = new BrokerageOrderRecoveryJournal(store);
         var candidate = State() with { FilledQuantity = 10m, Status = OrderStatus.Filled };
         journal.RetainDispatch(candidate, "broker-1", ["broker-1"]);
-        journal.CheckpointProcessed(candidate, Report(candidate), 0, "broker-1", ["broker-1"], null);
+        journal.CheckpointProcessed(candidate, Report(candidate), 0, Evidence("broker-1", ["broker-1"]));
         directory.BlockWrites();
         var removalAttempted = false;
 
@@ -262,6 +362,10 @@ public sealed class BrokerageOrderRecoveryJournalTests
         journal.IsDispatched(state.OrderId).Should().BeTrue();
         journal.RequiresRecovery(state.OrderId).Should().Be(requiresRecovery);
     }
+
+    private static Func<BrokerageOrderCheckpointEvidence> Evidence(
+        string? brokerOrderId, string[] aliases, PendingOrderAmendment? pending = null) =>
+        () => new BrokerageOrderCheckpointEvidence(brokerOrderId, aliases, pending is not null, pending);
 
     private static void AssertStorageFailure(Action action)
     {

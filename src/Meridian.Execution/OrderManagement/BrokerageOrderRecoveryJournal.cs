@@ -73,13 +73,17 @@ internal sealed class BrokerageOrderRecoveryJournal(FileBrokerageOrderRecoverySt
             return _versions.GetValueOrDefault(orderId);
     }
 
+    /// <summary>
+    /// Reads current broker/amendment evidence only after acquiring the recovery-state lock.
+    /// A submit acknowledgment can wait here while another operation persists newer evidence.
+    /// The reader must synchronously inspect those owners only; it must not mutate, await, or
+    /// enter another journal operation. It is invoked during this call and never retained.
+    /// </summary>
     internal void CheckpointProcessed(
         OrderState state,
         ExecutionReport report,
         long observedRecoveryVersion,
-        string? brokerOrderId,
-        string[] aliases,
-        PendingOrderAmendment? pendingAmendment)
+        Func<BrokerageOrderCheckpointEvidence> readEvidence)
     {
         if (!IsDispatched(state.OrderId)
             || report.FilledQuantity < state.FilledQuantity
@@ -87,15 +91,16 @@ internal sealed class BrokerageOrderRecoveryJournal(FileBrokerageOrderRecoverySt
             return;
         lock (_sync)
         {
-            var requiresAmendmentRecovery = pendingAmendment is not null
+            var evidence = readEvidence();
+            var requiresAmendmentRecovery = evidence.HasPendingAmendment
                 || report.ReportType is ExecutionReportType.ModificationPending;
             var requiresRecovery = requiresAmendmentRecovery
                 || observedRecoveryVersion != _versions.GetValueOrDefault(state.OrderId);
-            store?.Save(new RetainedBrokerageOrder(state, brokerOrderId, requiresRecovery)
+            store?.Save(new RetainedBrokerageOrder(state, evidence.BrokerOrderId, requiresRecovery)
             {
-                BrokerOrderAliases = aliases,
+                BrokerOrderAliases = evidence.BrokerOrderAliases,
                 RequiresAmendmentRecovery = requiresAmendmentRecovery,
-                PendingAmendment = pendingAmendment
+                PendingAmendment = evidence.PendingAmendment
             });
             SetRecoveryRequired(state.OrderId, requiresRecovery);
         }
