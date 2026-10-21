@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Contracts.SecurityMaster;
 
@@ -224,9 +225,9 @@ public static class OtcContractRules
     public static UpsertOtcMasterAgreementRequest Normalize(UpsertOtcMasterAgreementRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var counterparty = RequireText(request.Counterparty, "A master agreement must name the counterparty.");
-        var ourEntity = RequireText(request.OurEntity, "A master agreement must name the fund's legal entity.");
-        var lei = Trim(request.CounterpartyLei);
+        var counterparty = NormalizeOptional(request.Counterparty) ?? throw new ArgumentException("A master agreement must name the counterparty.");
+        var ourEntity = NormalizeOptional(request.OurEntity) ?? throw new ArgumentException("A master agreement must name the fund's legal entity.");
+        var lei = NormalizeOptional(request.CounterpartyLei);
         if (lei is not null && lei.Length != 20)
             throw new ArgumentException("A Legal Entity Identifier is 20 characters.", nameof(request));
         return request with
@@ -234,8 +235,8 @@ public static class OtcContractRules
             Counterparty = counterparty,
             CounterpartyLei = lei?.ToUpperInvariant(),
             OurEntity = ourEntity,
-            GoverningLaw = Trim(request.GoverningLaw),
-            Notes = Trim(request.Notes),
+            GoverningLaw = NormalizeOptional(request.GoverningLaw),
+            Notes = NormalizeOptional(request.Notes),
             UpdatedBy = Actor(request.UpdatedBy)
         };
     }
@@ -256,15 +257,15 @@ public static class OtcContractRules
             throw new ArgumentException("A rounding amount must be positive.", nameof(request));
         if (request.TerminationDate is { } termination && termination < request.EffectiveDate)
             throw new ArgumentException("A collateral agreement cannot terminate before it takes effect.", nameof(request));
-        var frequency = RequireText(request.ValuationFrequency, "A collateral agreement states how often exposure is valued.");
+        var frequency = NormalizeOptional(request.ValuationFrequency) ?? throw new ArgumentException("A collateral agreement states how often exposure is valued.");
 
         var eligible = new List<OtcEligibleCollateralDto>();
         foreach (var item in request.EligibleCollateral ?? [])
         {
-            var description = RequireText(item.Description, "Eligible collateral must be described.");
+            var description = NormalizeOptional(item.Description) ?? throw new ArgumentException("Eligible collateral must be described.");
             if (item.HaircutPercent is < 0m or > 100m)
                 throw new ArgumentException($"The haircut on '{description}' must be between 0 and 100 percent.", nameof(request));
-            eligible.Add(new OtcEligibleCollateralDto(description, Trim(item.AssetClass), item.HaircutPercent));
+            eligible.Add(new OtcEligibleCollateralDto(description, NormalizeOptional(item.AssetClass), item.HaircutPercent));
         }
 
         return request with
@@ -272,7 +273,7 @@ public static class OtcContractRules
             Currency = currency,
             ValuationFrequency = frequency,
             EligibleCollateral = eligible,
-            Notes = Trim(request.Notes),
+            Notes = NormalizeOptional(request.Notes),
             UpdatedBy = Actor(request.UpdatedBy)
         };
     }
@@ -284,8 +285,8 @@ public static class OtcContractRules
             throw new ArgumentException("A netting set sits under a master agreement.", nameof(request));
         return request with
         {
-            Name = RequireText(request.Name, "A netting set must be named."),
-            Notes = Trim(request.Notes),
+            Name = NormalizeOptional(request.Name) ?? throw new ArgumentException("A netting set must be named."),
+            Notes = NormalizeOptional(request.Notes),
             UpdatedBy = Actor(request.UpdatedBy)
         };
     }
@@ -305,10 +306,10 @@ public static class OtcContractRules
             throw new ArgumentException("A contract cannot terminate before it takes effect.", nameof(request));
         return request with
         {
-            ExternalTradeId = Trim(request.ExternalTradeId),
+            ExternalTradeId = NormalizeOptional(request.ExternalTradeId),
             NotionalCurrency = RequireCurrency(request.NotionalCurrency),
-            ConfirmationReference = Trim(request.ConfirmationReference),
-            Notes = Trim(request.Notes),
+            ConfirmationReference = NormalizeOptional(request.ConfirmationReference),
+            Notes = NormalizeOptional(request.Notes),
             UpdatedBy = Actor(request.UpdatedBy)
         };
     }
@@ -324,18 +325,13 @@ public static class OtcContractRules
     public static bool IsClosed(OtcContractStatus status)
         => status is OtcContractStatus.Terminated or OtcContractStatus.Novated or OtcContractStatus.Matured;
 
-    private static string RequireText(string? value, string message)
-        => string.IsNullOrWhiteSpace(value) ? throw new ArgumentException(message) : value.Trim();
-
     private static string RequireCurrency(string? value)
     {
-        var currency = Trim(value);
+        var currency = NormalizeOptional(value);
         if (currency is null || currency.Length != 3 || !currency.All(char.IsAsciiLetter))
             throw new ArgumentException("A currency is a three-letter ISO code.");
         return currency.ToUpperInvariant();
     }
-
-    private static string? Trim(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string Actor(string? value) => string.IsNullOrWhiteSpace(value) ? "unknown" : value.Trim();
 }
