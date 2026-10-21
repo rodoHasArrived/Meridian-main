@@ -169,3 +169,11 @@ decisions:
       - W11-SHADOW-001
       - W11-PACK-001
       - W11-EXEC-001
+  - id: DEC-PRD000-SUPPORT-MATRIX-001
+    title: Ratify ADR-019/ADR-020 v1 local-workstation production envelope
+    status: accepted
+    decided_on: 2026-10-20
+    owner_lane: Runtime Host and Architecture
+    summary: "Core-team sign-off on the ADR-019 support matrix and typed deployment posture and the ADR-020 lifecycle control plane, authorized by the repository owner on 2026-10-20. This is the PRD-000 signed support matrix artifact; container, systemd, remote ProductionApi, multi-node topologies and every non-Windows host stay experimental and fail closed - the production posture guard now refuses them from the service collection with a diagnostic naming the platform-bound bindings, and the ADR-019 matrix reads Windows 11 (x64 and ARM64) so it matches the PRD-014 installer receipts. The PRD-000 completion-evidence amendment recorded in ADR-019 section 1 is ratified. The PRD-002 clause protecting non-Windows vault keys with a keyring or KMS is a scope-out under this matrix, not v1 work. The ~1 GB consumer Meridian-Setup.exe (both architectures plus PostgreSQL) is accepted for the v0.1.0-rc line. Release candidate v0.1.0-rc.1 is to be tagged on a9d470c3, the commit carrying the ten-workflow green push receipt recorded in docs/product/plans/next-work-determination-2026-10-20.md; the agent session that recorded this decision could not push the tag (its GitHub credential is scoped to branch refs and the push returned HTTP 403), so the repository owner pushes it. Provisioning MDC_SIGNING_CERT_PFX_BASE64 and MDC_SIGNING_CERT_PASSWORD in the desktop-release-signing environment is the other administrator action outstanding before the tag run can publish. No row moves to done and no release is certified by this decision."
+    related_roadmap_items:
+      - W7-LIVE-001

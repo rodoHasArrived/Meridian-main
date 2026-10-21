@@ -174,9 +174,18 @@ configuration cannot be replaced by an empty default ownership model. Failed rea
 Connection and binding upsert/deletion and preset application use `ConfigStore.UpdateRequiredAsync` to hold a shared sidecar file
 lock across the required read, ownership validation and atomic write. Separate store instances cannot
 lose each other's connection additions or deletions. Waiting operations honor cancellation and re-read
-ownership after acquiring the lock. Whole-configuration saves and capability override writes take the
-same lock; callers that prepare whole-configuration snapshots before acquisition still need conversion
-to transactional updates to prevent stale snapshot replacement. External editors do not honor this lock.
+ownership after acquiring the lock. Every section-level configuration mutation (config, provider,
+failover, symbol, subscription and provider-extended endpoints; the subscription services; provider
+module setup) uses `ConfigStore.UpdateAsync`, which loads the document inside that lock, applies the
+synchronous mutator and writes atomically, so concurrent writers editing different sections cannot drop
+each other's change (PRD-002 "concurrent configuration writes"). An edit through `UpdateAsync` fails
+closed on a corrupt or JSON-null file instead of replacing it with defaults. `ConfigStore.SaveAsync`
+remains whole-document replacement, last writer wins, reserved for callers that own the entire document:
+the CLI `SaveConfigAsync` path and the setup wizard's generated output. Capability override writes take
+the same lock, and so does the WPF shell: `ConfigServiceBase` runs every section-level mutation through a
+locked read-modify-write whose lease the shell's `ConfigService` takes from `ConfigStore.AcquireWriteLeaseAsync`,
+so the installed two-process workstation shares one lock across both clients. External editors do not honor
+this lock.
 Certification persistence re-reads configuration inside the transaction after the runner completes.
 Deleted, ambiguous or changed connections and results naming another connection are refused without
 writing certification state. Unrelated concurrent connection changes are retained. This compares the
@@ -385,8 +394,15 @@ Core workstation host. Do not introduce a second listener or independent monitor
   Both encrypted generations retain the import before the source is renamed and erased; interrupted cleanup
   resumes without parsing erased bytes. Failed initialization can be retried on the same service instance,
   and a failed refresh-loop start can be stopped and restarted. Unreadable evidence fails closed. After an audit failure the cache
-  reloads the committed token or evicts it if recovery is unavailable. Disposal never rewrites a cached
-  token snapshot. Non-Windows key protection and credential scoping remain open PRD-002 requirements.
+  reloads the committed token or evicts it if recovery is unavailable; that failure is now
+  `ProviderCredentialAuditDeferredException` (an `IOException` whose `VaultCommitted` is true); a remote
+  refresh whose only failure is that deferred audit is reported as `Success` with `AuditDeferred` set, so
+  callers never retry a rotation the provider already honoured, and the
+  owed audit record is journaled in the vault's `provider-credentials.audit.pending.jsonl` for replay by
+  `ProviderCredentialAuditReplayHostedService` at startup or by the next vault mutation. Disposal never
+  rewrites a cached token snapshot. Production postures fail closed off Windows (ADR-019 platform guard),
+  so the non-Windows local key file is a scope-out rather than an open PRD-002 clause; browser, WPF,
+  setup and default-runtime credential ownership remain open PRD-002 requirements.
   Provider plugin assembly loading and `DataSourceRegistry` discovery now live in
   ProviderSdk; Application and WPF consume the loader instead of keeping reflection-based provider
   discovery in Application services. Default provider setup handlers are registered through one
@@ -848,7 +864,14 @@ Core workstation host. Do not introduce a second listener or independent monitor
   application down -- so a governance refusal raised as a bare `InvalidOperationException` is
   indistinguishable from it and gets swallowed by the same tolerance. `ProductionRegistrationGuardService`
   and `ProductionServiceRegistrationPolicy` raise this type for every ADR-019 refusal, including the
-  unconstructible-factory case found during final-graph validation. It derives from
+  unconstructible-factory case found during final-graph validation and the platform fail-closed: a
+  production composition, or a packaged/customer `LocalWorkstation` composition (the shipped
+  topology), on a non-Windows host is refused by the descriptor-only half with a diagnostic
+  naming the posture, the detected OS and architecture, and the platform-bound bindings (`dpapi-current-user`
+  to `local-aes-gcm` vault protection, the lifecycle protected secret store) that would otherwise
+  silently degrade. Architecture and Windows version are reported, not refused (PRD-014 certifies x64 and ARM64; the
+  Windows 11 row is enforced by the installer lane, not this guard). Tests pin the platform through the
+  internal `DeclareMeridianHostPlatform` declaration. It derives from
   `InvalidOperationException`, so existing catches and assertions naming that type keep matching; the
   added type only lets a host that wants to escalate do so. Hosts decide through
   `Meridian.Ui.Shared.Services.HostStartupEscalation.IsRefusal`.

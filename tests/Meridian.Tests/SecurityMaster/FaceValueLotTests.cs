@@ -218,4 +218,71 @@ public sealed class FaceValueLotTests
                 DayCountConvention.Thirty360, Maturity, midLife, 5m)
             .Should().Be(lot.ConstantYieldAmortizedBasisAsOf(DayCountConvention.Thirty360, Maturity, midLife, 5m));
     }
+
+    [Fact]
+    public void CurrentFactor_DefaultsToTheBookedFactor_SoFaceOutstandingIsTheOriginalFace()
+    {
+        var lot = new FaceValueLot("lot-1", SecurityId, new DateOnly(2026, 1, 1), originalFace: 850_000m, pricePercentOfPar: 101m, bookedFactor: 0.85m);
+
+        lot.CurrentFactor.Should().Be(0.85m);
+        lot.ParFace.Should().Be(1_000_000m, "the face at a factor of one");
+        lot.FaceOutstanding.Should().Be(850_000m);
+        ((IUnitizedLot)lot).Quantity.Should().Be(850_000m, "a lot that has not moved reports its booked face");
+    }
+
+    [Fact]
+    public void ApplyFactor_ReleasesParFaceTimesTheFactorDecline_AndTheLotCarriesTheNewFactor()
+    {
+        var lot = new FaceValueLot("lot-1", SecurityId, new DateOnly(2026, 1, 1), originalFace: 850_000m, pricePercentOfPar: 101m, bookedFactor: 0.85m);
+
+        var paydown = lot.ApplyFactor(0.80m);
+
+        paydown.PrincipalPaydown.Should().Be(50_000m, "par face 1,000,000 × (0.85 − 0.80), the factor-paydown projection's arithmetic");
+        paydown.Lot.CurrentFactor.Should().Be(0.80m);
+        paydown.Lot.FaceOutstanding.Should().Be(800_000m);
+        ((IUnitizedLot)paydown.Lot).Quantity.Should().Be(800_000m, "the factor is applied inside the lot");
+        paydown.Lot.BookedFactor.Should().Be(0.85m, "the acquisition-time convention is preserved");
+        paydown.Lot.OriginalFace.Should().Be(850_000m);
+        paydown.Lot.CostBasis.Should().Be(lot.CostBasis, "a paydown does not restate the acquisition cost");
+        lot.CurrentFactor.Should().Be(0.85m, "lots are immutable");
+    }
+
+    [Fact]
+    public void ApplyFactor_SameFactor_ReleasesNothing()
+    {
+        var lot = new FaceValueLot("lot-1", SecurityId, new DateOnly(2026, 1, 1), 1_000m, 100m, bookedFactor: 0.5m);
+
+        lot.ApplyFactor(0.5m).PrincipalPaydown.Should().Be(0m);
+    }
+
+    [Fact]
+    public void ApplyFactor_RefusesAnUpwardFactor_ButWithFactorRestatesIt()
+    {
+        var lot = new FaceValueLot("lot-1", SecurityId, new DateOnly(2026, 1, 1), 1_000m, 100m, bookedFactor: 0.5m);
+
+        lot.Invoking(l => l.ApplyFactor(0.6m)).Should().Throw<ArgumentOutOfRangeException>();
+        lot.Invoking(l => l.ApplyFactor(0m)).Should().Throw<ArgumentOutOfRangeException>();
+        lot.WithFactor(0.6m).FaceOutstanding.Should().Be(1_200m);
+    }
+
+    [Fact]
+    public void ChainedPaydowns_TieToASingleRestatement()
+    {
+        var lot = new FaceValueLot("lot-1", SecurityId, new DateOnly(2026, 1, 1), 1_000_000m, 100m);
+
+        var first = lot.ApplyFactor(0.9m);
+        var second = first.Lot.ApplyFactor(0.7m);
+
+        (first.PrincipalPaydown + second.PrincipalPaydown).Should().Be(300_000m);
+        second.Lot.FaceOutstanding.Should().Be(lot.CurrentFace(0.7m));
+    }
+
+    [Fact]
+    public void Constructor_RefusesAnOutOfRangeCurrentFactor()
+    {
+        FluentActions.Invoking(() => new FaceValueLot("lot-1", SecurityId, new DateOnly(2026, 1, 1), 1_000m, 100m, currentFactor: 0m))
+            .Should().Throw<ArgumentOutOfRangeException>();
+        FluentActions.Invoking(() => new FaceValueLot("lot-1", SecurityId, new DateOnly(2026, 1, 1), 1_000m, 100m, currentFactor: 1.5m))
+            .Should().Throw<ArgumentOutOfRangeException>();
+    }
 }
