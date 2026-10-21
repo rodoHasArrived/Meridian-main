@@ -5841,3 +5841,25 @@ reads it per security.
 | UI edit forms are not built from the schema | The browser and WPF passport editors build their term picker and value controls from `/api/security-master/asset-classes/{assetClass}`. |
 
 **TRUNCATE guards.** Migrations `041_security_master_governance_events_truncate_guard.sql` and asset-operations `006_asset_operations_write_events_truncate_guard.sql` add statement-level BEFORE TRUNCATE rejections to both append-only logs, each under a reviewed `migration-truncate` waiver authorized by the repository owner. PostgreSQL regression tests attempt TRUNCATE on both and verify the rows are retained.
+
+## Resolution pass — 2026-10-21 (priority 2, schema-generated validation and catalog flags)
+
+| Finding | What landed |
+| --- | --- |
+| Validation is hand-written per class | `SchemaTermsAssetClassValidator` generates, for every class with a term schema, the presence rule for each required field (under its key or an alias), the JSON-type rule for each declared field and the vocabulary rule for each closed discriminant that does not carry undeclared values verbatim. `SchemaBackedAssetClassValidator` composes it with the class's hand-written validator in `AssetClassValidatorRegistry.CreateDefault`: the hand-written rules run first and keep their codes, and a schema issue on a field they already reported is dropped, so a field is reported once. The hand-written validators now carry only the semantic rules the schema cannot express. `SchemaTermsValidationTests` holds every class to it: every required field is enforced, every declared field rejects the wrong type, aliases satisfy a required field, and verbatim vocabularies stay readable. |
+| Asset-class string checks outside the catalog | Forty-one comparisons in twenty-five files across the application, contracts, storage, instruments, strategies, WPF and shared-UI layers now read a declared fact. Existing facts cover most: `RequiresGovernedProfile` (the workbench's profile-field paths), `CashFlowBehavior` (`SwapLegs` for the swap projection, `FinancingInterest` for the repo start and end dates, `Dividends` for the fund-structure income kind), `ProjectionKind` (`Specialized` for the option projection write), `LotUnit` and `LotMultiplierTermKey` (the workbench's contract-multiplier requirement) and `TryGet` (the two "Unknown" probes and operational readiness). Five new descriptor facts carry the rest: `RequiresProfileReference` (CustomAsset), `SupportsEquityClassification` (Equity: the preferred and convertible term reads and amendments, the economic replay refusals, the WPF classification default), `CarriesBondCouponStructure` (Bond: the coupon round-trip guard, bond operations, bullet amortization), `UsesOccOptionSymbols` (Option, Warrant) and `QuotesRatesAsFractions` (Deposit). `SecurityAssetClassBehaviorFactsTests` pins each fact to exactly the classes the sites named. |
+| No test flags a new string check | `SecurityAssetClassComparisonRatchetTests` scans `src/**` for `== "<Class>"`, `!= "<Class>"`, `string.Equals(x, "<Class>", …)`, `x.Equals("<Class>", …)` and the F# `x.Y = "<Class>"` against every catalog class name. The allowlist names the two files whose compared value only shares a spelling with a class (a designer trade cell's instrument vocabulary, a NetSuite account type), with the count each carries, and may only shrink. |
+
+**Behaviour changes to confirm.** The workbench's contract-multiplier requirement follows the
+catalog's multiplier declaration: it now applies to Commodity (which declares `contractSize`)
+and no longer to Swap (which declares no multiplier). The economic-replay refusal for equity
+treats any profile-backed legacy class the way it treated `PrivateCompanyEquity`.
+
+**Validation.** `SchemaTermsValidationTests`, `SecurityAssetClassBehaviorFactsTests`,
+`SecurityAssetClassComparisonRatchetTests` (new) and the architecture, Security Master, asset
+operations, fund structure, designer, open-lot, swap, EDGAR and coverage suites.
+
+**Still open from this priority.** The hand-written validators still restate some presence
+rules the schema now generates (the schema rule yields to them); retiring those duplicates is a
+cleanup, not a behaviour change. Validation of array-element shapes (`ElementFields`) is not yet
+generated.
