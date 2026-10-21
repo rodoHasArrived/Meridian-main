@@ -425,4 +425,31 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
         using var reader = new StreamReader(holder);
         (await reader.ReadToEndAsync()).Should().Be("original");
     }
+
+    // ReplaceAsync renames the existing destination aside before moving the temp file in; both
+    // moves must wait for a briefly held handle the same way the overwrite rename does.
+    [Fact]
+    public async Task ReplaceAsync_WaitsForABrieflyHeldDestinationHandleOnWindows()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var path = Path.Combine(TestDataRoot, "replace-held.txt");
+        await File.WriteAllTextAsync(path, "original");
+        var holder = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        var release = Task.Run(async () =>
+        {
+            await Task.Delay(150);
+            await holder.DisposeAsync();
+        });
+
+        await AtomicFileWriter.ReplaceAsync(path, "updated", keepBackup: true);
+
+        await release;
+        (await File.ReadAllTextAsync(path)).Should().Be("updated");
+        (await File.ReadAllTextAsync(path + ".bak")).Should().Be("original");
+        Directory.EnumerateFiles(TestDataRoot, ".replace-held.txt.*.tmp").Should().BeEmpty();
+    }
 }

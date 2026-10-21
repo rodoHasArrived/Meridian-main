@@ -541,7 +541,7 @@ public static partial class AtomicFileWriter
                 {
                     File.Delete(backupPath);
                 }
-                File.Move(destinationPath, backupPath);
+                await MoveWithRetryAsync(destinationPath, backupPath, overwrite: false);
 
                 // Make the backup rename durable before the destination is overwritten, so a
                 // crash mid-sequence can never leave both the original and its backup missing.
@@ -549,7 +549,7 @@ public static partial class AtomicFileWriter
             }
 
             // Move temp to destination
-            File.Move(tempPath, destinationPath);
+            await MoveWithRetryAsync(tempPath, destinationPath, overwrite: false);
 
             // Sync directory (post-commit: non-cancellable)
             await SyncCommittedDirectoryAsync(directory!);
@@ -569,7 +569,7 @@ public static partial class AtomicFileWriter
             {
                 try
                 {
-                    File.Move(backupPath, destinationPath);
+                    MoveWithRetry(backupPath, destinationPath, overwrite: false);
                 }
                 catch (Exception restoreException)
                 {
@@ -599,12 +599,18 @@ public static partial class AtomicFileWriter
                 || (exception is IOException io && (io.HResult & 0xffff) is 32 or 33));
 
     private static void MoveIntoPlace(string tempPath, string destinationPath)
+        => MoveWithRetry(tempPath, destinationPath, overwrite: true);
+
+    private static Task MoveIntoPlaceAsync(string tempPath, string destinationPath)
+        => MoveWithRetryAsync(tempPath, destinationPath, overwrite: true);
+
+    private static void MoveWithRetry(string sourcePath, string destinationPath, bool overwrite)
     {
         for (var attempt = 1; ; attempt++)
         {
             try
             {
-                File.Move(tempPath, destinationPath, overwrite: true);
+                File.Move(sourcePath, destinationPath, overwrite);
                 return;
             }
             catch (Exception exception) when (attempt < ReplaceAttempts && IsTransientReplaceFailure(exception))
@@ -616,13 +622,13 @@ public static partial class AtomicFileWriter
 
     // Post-commit-decision step: the temp file is complete and durable, so a caller cancellation is
     // deliberately not observed here; the lock timeout and the bounded attempt count limit the wait.
-    private static async Task MoveIntoPlaceAsync(string tempPath, string destinationPath)
+    private static async Task MoveWithRetryAsync(string sourcePath, string destinationPath, bool overwrite)
     {
         for (var attempt = 1; ; attempt++)
         {
             try
             {
-                File.Move(tempPath, destinationPath, overwrite: true);
+                File.Move(sourcePath, destinationPath, overwrite);
                 return;
             }
             catch (Exception exception) when (attempt < ReplaceAttempts && IsTransientReplaceFailure(exception))
