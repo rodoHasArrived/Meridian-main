@@ -235,6 +235,25 @@ public sealed class BrokerageExecutionReconciliationServiceTests
     }
 
     [Fact]
+    public async Task RecoverOrdersAsync_ReferenceMatchingGateway_ReceivesTheBoundGenerationWithTheLookup()
+    {
+        var accountId = Guid.NewGuid();
+        await using var context = new RecoveryContext([
+            CreateLocalOrder("ord-1") with { FundAccountId = accountId, Status = OrderStatus.PendingNew }
+        ], retainedRecovery: true);
+        ((IBrokerageConnectionState)context.Gateway).ConnectionGeneration.Returns(7L);
+        var scoped = (IBrokerageRetainedOrderRecoveryGateway)context.Gateway;
+        scoped.GetOrderForRecoveryAsync("ord-1", Arg.Any<OrderState>(), 7L, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<ExecutionReport?>(CreateRecoveryReport("ord-1")));
+
+        await CreateService().RecoverOrdersAsync(context.Gateway, context.OrderManager, accountId);
+
+        await scoped.Received(1).GetOrderForRecoveryAsync("ord-1", Arg.Is<OrderState>(o => o.OrderId == "ord-1"), 7L, Arg.Any<CancellationToken>());
+        await scoped.DidNotReceive().GetOrderForRecoveryAsync("ord-1", Arg.Any<CancellationToken>());
+        context.OrderManager.GetRecoveryOrders(accountId).Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task RecoverOrdersAsync_ChangedBrokerScope_RefusesBeforeLookup()
     {
         var accountId = Guid.NewGuid();
@@ -550,9 +569,11 @@ public sealed class BrokerageExecutionReconciliationServiceTests
     {
         private readonly string _directory = Path.Combine(Path.GetTempPath(), $"meridian-recovery-reconcile-{Guid.NewGuid():N}");
 
-        public RecoveryContext(IReadOnlyList<OrderState> retainedOrders)
+        public RecoveryContext(IReadOnlyList<OrderState> retainedOrders, bool retainedRecovery = false)
         {
-            Gateway = Substitute.For<IBrokerageGateway, IBrokerageOrderRecoveryGateway, IBrokerageConnectionState>();
+            Gateway = retainedRecovery
+                ? Substitute.For<IBrokerageGateway, IBrokerageRetainedOrderRecoveryGateway, IBrokerageConnectionState>()
+                : Substitute.For<IBrokerageGateway, IBrokerageOrderRecoveryGateway, IBrokerageConnectionState>();
             Gateway.GatewayId.Returns("alpaca");
             ((IBrokerageConnectionState)Gateway).ScopeIdentity.Returns("alpaca:paper:test-account");
             var reports = Channel.CreateUnbounded<ExecutionReport>();

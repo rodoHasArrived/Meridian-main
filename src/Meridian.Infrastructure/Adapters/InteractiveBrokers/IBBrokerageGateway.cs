@@ -913,9 +913,9 @@ public sealed partial class IBBrokerageGateway :
         // A refused amendment describes the operation, not rejection of the working order.
         // Keep the last confirmed request until IB echoes the amended terms.
         var refusedOperation = pending?.Kind == PendingOrderOperationKind.Cancel ? pending : amendment;
-        if (refusedOperation is not null && status == OrderStatus.Rejected)
+        if (refusedOperation is not null && status == OrderStatus.Rejected && context is not null)
         {
-            RejectPendingOperation(gatewayOrderId, refusedOperation, context!, update.RejectReason ?? update.Status,
+            RejectPendingOperation(gatewayOrderId, refusedOperation, context, update.RejectReason ?? update.Status,
                 update.FilledQuantity);
             return;
         }
@@ -969,7 +969,10 @@ public sealed partial class IBBrokerageGateway :
                 snapshot[gatewayOrderId] = brokerOrder;
         }
 
-        if (pending is null && amendment is null)
+        // An id this session does not track (or tracks only through a route from an earlier
+        // session) can describe another login's order: it feeds the snapshot above, never an
+        // operation still pending for the id. That operation is refused or times out instead.
+        if (context is null || pending is null && amendment is null)
             return;
         if (!amendmentConfirmed && pending?.Kind == PendingOrderOperationKind.Cancel)
         {

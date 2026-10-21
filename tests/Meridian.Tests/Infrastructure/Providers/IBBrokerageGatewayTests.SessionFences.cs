@@ -189,6 +189,29 @@ public sealed partial class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task RecoveredRouteCancel_RejectedAfterASessionChange_DoesNotFaultTheCallbackPath()
+    {
+        var client = RecoveryClient(c => c.RaiseOpenOrder(RecoverableOpenOrder()));
+        client.OnCancelOrder = (c, id) =>
+        {
+            // The session changes while the cancel is in flight; IB then reports the old id as inactive.
+            c.RaiseConnectionLost();
+            c.RaiseConnectionRestored();
+            c.RaiseManagedAccounts("DU123456");
+            c.RaiseOpenOrder(RecoverableOpenOrder() with { Status = "Inactive", RejectReason = "session changed" });
+        };
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        (await ((IBrokerageOrderRecoveryGateway)sut).GetOrderForRecoveryAsync("client-1")).Should().NotBeNull();
+        using var giveUp = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
+
+        var cancel = () => sut.CancelOrderAsync("client-1", giveUp.Token);
+
+        // The stale callback is ignored rather than faulting the callback path; the cancel stays unconfirmed.
+        (await cancel.Should().ThrowAsync<Exception>()).Which.Should().NotBeOfType<NullReferenceException>();
+    }
+
+    [Fact]
     public async Task StaleRouteCleanup_RacingARecoveryOfADifferentClientOrder_RefusesTheResolvedAlias()
     {
         var cancelled = new List<int>();

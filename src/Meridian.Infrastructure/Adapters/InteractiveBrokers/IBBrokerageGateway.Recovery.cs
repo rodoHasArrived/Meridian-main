@@ -77,13 +77,21 @@ public sealed partial class IBBrokerageGateway
 
     /// <inheritdoc />
     public Task<ExecutionReport?> GetOrderForRecoveryAsync(string clientOrderId, CancellationToken ct = default)
-        => RecoverFromOpenOrdersAsync(clientOrderId, null, null, ct);
+        => RecoverFromOpenOrdersAsync(clientOrderId, null, null, null, ct);
 
-    /// <inheritdoc />
+    /// <summary>Recovery with the retained order's identity but no generation guard.</summary>
     public Task<ExecutionReport?> GetOrderForRecoveryAsync(string clientOrderId, OrderState retainedOrder, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(retainedOrder);
-        return RecoverFromOpenOrdersAsync(clientOrderId, retainedOrder, null, ct);
+        return RecoverFromOpenOrdersAsync(clientOrderId, retainedOrder, null, null, ct);
+    }
+
+    /// <inheritdoc />
+    public Task<ExecutionReport?> GetOrderForRecoveryAsync(
+        string clientOrderId, OrderState retainedOrder, long expectedConnectionGeneration, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(retainedOrder);
+        return RecoverFromOpenOrdersAsync(clientOrderId, retainedOrder, null, expectedConnectionGeneration, ct);
     }
 
     /// <inheritdoc />
@@ -92,7 +100,17 @@ public sealed partial class IBBrokerageGateway
     {
         ArgumentNullException.ThrowIfNull(retainedOrder);
         ArgumentNullException.ThrowIfNull(amendment);
-        return RecoverFromOpenOrdersAsync(clientOrderId, retainedOrder, amendment, ct);
+        return RecoverFromOpenOrdersAsync(clientOrderId, retainedOrder, amendment, null, ct);
+    }
+
+    /// <inheritdoc />
+    public Task<ExecutionReport?> GetAmendmentForRecoveryAsync(
+        string clientOrderId, OrderState retainedOrder, PendingOrderAmendment amendment, long expectedConnectionGeneration,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(retainedOrder);
+        ArgumentNullException.ThrowIfNull(amendment);
+        return RecoverFromOpenOrdersAsync(clientOrderId, retainedOrder, amendment, expectedConnectionGeneration, ct);
     }
 
     /// <summary>
@@ -102,12 +120,17 @@ public sealed partial class IBBrokerageGateway
     /// from the snapshot; absence proves nothing, so it and any ambiguous match stay unresolved.
     /// </summary>
     private async Task<ExecutionReport?> RecoverFromOpenOrdersAsync(
-        string clientOrderId, OrderState? retainedOrder, PendingOrderAmendment? amendment, CancellationToken ct)
+        string clientOrderId, OrderState? retainedOrder, PendingOrderAmendment? amendment, long? expectedEpoch, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(clientOrderId);
         ObjectDisposedException.ThrowIf(_disposed, this);
         EnsureConnected();
         var epoch = Volatile.Read(ref _connectionEpoch);
+        // The caller bound its recovery scope under a generation. A later session is another
+        // login's; refusing before the lookup means nothing of it is read, let alone installed.
+        if (expectedEpoch is { } expected && expected != epoch)
+            throw new InvalidOperationException(
+                "The IB connection changed after the recovery scope was bound; no evidence from the current session was applied.");
         // The broker-verified accounts for this session. An orderRef is only unique within an
         // account, so a snapshot from another login or environment must never match.
         var verifiedAccounts = _verifiedAccounts;
@@ -139,6 +162,13 @@ public sealed partial class IBBrokerageGateway
 
         // Only a report from this session can describe this session's order (see CurrentSessionReport).
         var latest = CurrentSessionReport(gatewayOrderId, TrackedContext(gatewayOrderId));
+        // The row was copied at openOrderEnd; a fill or terminal status arriving after it is cached
+        // but not in the row. Combining the newer quantity with the row's status would recover a
+        // completed order as working, so evidence that advanced past the row stays unresolved
+        // until the next snapshot describes the order consistently.
+        if (latest is not null && (latest.FilledQuantity != order.FilledQuantity
+            || IsTerminalOrderStatus(latest.OrderStatus) != IsTerminalOrderStatus(order.Status)))
+            return Current(null);
         var filled = Math.Max(order.FilledQuantity, latest?.FilledQuantity ?? 0m);
         var fillPrice = latest?.FillPrice;
         // A status callback can carry only the last fill price; relabelling it as the cumulative

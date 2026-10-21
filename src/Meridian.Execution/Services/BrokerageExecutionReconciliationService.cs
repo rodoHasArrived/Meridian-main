@@ -61,11 +61,16 @@ public sealed class BrokerageExecutionReconciliationService
             var pendingAmendment = orderManager.GetPendingAmendmentForRecovery(order.OrderId);
             if (pendingAmendment is null && recoveryGateway is null)
                 continue;
-            var report = pendingAmendment is not null && gateway is IBrokerageOrderAmendmentRecoveryGateway amendmentRecovery
-                ? await amendmentRecovery.GetAmendmentForRecoveryAsync(order.OrderId, order, pendingAmendment, ct).ConfigureAwait(false)
-                : recoveryGateway is null ? null
-                : recoveryGateway is IBrokerageRetainedOrderRecoveryGateway retainedRecovery
-                    ? await retainedRecovery.GetOrderForRecoveryAsync(order.OrderId, order, ct).ConfigureAwait(false)
+            // A gateway that matches by client reference takes the bound generation with the lookup,
+            // so a session change refuses the lookup before it installs anything; the check after
+            // the lookup remains for gateways that match by broker identity.
+            var report = connection is not null && gateway is IBrokerageRetainedOrderRecoveryGateway scopedRecovery
+                ? pendingAmendment is not null
+                    ? await scopedRecovery.GetAmendmentForRecoveryAsync(order.OrderId, order, pendingAmendment, boundGeneration!.Value, ct).ConfigureAwait(false)
+                    : await scopedRecovery.GetOrderForRecoveryAsync(order.OrderId, order, boundGeneration!.Value, ct).ConfigureAwait(false)
+                : pendingAmendment is not null && gateway is IBrokerageOrderAmendmentRecoveryGateway amendmentRecovery
+                    ? await amendmentRecovery.GetAmendmentForRecoveryAsync(order.OrderId, order, pendingAmendment, ct).ConfigureAwait(false)
+                    : recoveryGateway is null ? null
                     : await recoveryGateway.GetOrderForRecoveryAsync(order.OrderId, ct).ConfigureAwait(false);
             if (report is null)
             {

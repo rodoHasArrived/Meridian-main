@@ -136,14 +136,14 @@
       "path": "src/Meridian.Execution",
       "readme": "src/Meridian.Execution/README.md",
       "readme_hash": "efecca823624fe344a3fd3e095f39ae51c1fad18e01a4fece0283f11c4144226",
-      "source_hash": "ecc44db74da2f80236a1590c89149d57d399d44d5d30d65548900fe868f97d78"
+      "source_hash": "a0be7fea4019383f79a1424ae7e0035c56124ceaee4ca28117c1a9ff30278113"
     },
     {
       "id": "SRC-EXECUTION-SDK",
       "path": "src/Meridian.Execution.Sdk",
       "readme": "src/Meridian.Execution.Sdk/README.md",
       "readme_hash": "0ce4e87515780529027bf4aa93ea333038141d5523ccdb7494958cf3adf7f76b",
-      "source_hash": "f9750755c7ecb771ab7a12c88190ab27178f72da6fd8049949e94ebce428ad4b"
+      "source_hash": "a60183401116d50bcf315fb58656ec1add1356887dda67237e1140b5d106748d"
     },
     {
       "id": "SRC-FSHARP",
@@ -192,7 +192,7 @@
       "path": "src/Meridian.Infrastructure",
       "readme": "src/Meridian.Infrastructure/README.md",
       "readme_hash": "3c3d52cc87903c9974658d2429c0515f37a99aa959542db449e81e41f4066274",
-      "source_hash": "e671c40c0ae55a7a265cde976ea1ae81de3b794842dbdcc8a705ed4e35d4c81c"
+      "source_hash": "4256e848aa93650db270fd649a2b952d8e0e37c54144f1bc77717347b5c540ea"
     },
     {
       "id": "SRC-LAUNCHER",

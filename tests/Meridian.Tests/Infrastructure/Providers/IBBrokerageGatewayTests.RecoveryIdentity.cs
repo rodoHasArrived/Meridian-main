@@ -110,6 +110,50 @@ public sealed partial class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task OrderRecovery_FillArrivingAfterTheSnapshotEnd_StaysUnresolved()
+    {
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(9001),
+            OnRequestOpenOrders = c =>
+            {
+                c.RaiseOpenOrder(RecoverableOpenOrder());
+                c.RaiseOpenOrdersCompleted();
+                // The order fills right after the end; the captured row still says it is working.
+                c.RaiseOrderStatus(new IBOrderStatusUpdate(7001, "Filled", 10m, 0m, 100d, 100d, 1L, 1, null, null,
+                    DateTimeOffset.UtcNow));
+            }
+        };
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+
+        (await ((IBrokerageOrderRecoveryGateway)sut).GetOrderForRecoveryAsync("client-1"))
+            .Should().BeNull("the cached fill advanced past the captured row; the next snapshot describes the order");
+    }
+
+    [Fact]
+    public async Task Recovery_ExpectedGenerationDiffers_RefusesBeforeInstallingAnyRoute()
+    {
+        var cancelled = new List<int>();
+        var client = RecoveryClient(c => c.RaiseOpenOrder(RecoverableOpenOrder()), cancelled);
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        var scoped = (IBrokerageRetainedOrderRecoveryGateway)sut;
+        var stale = sut.ConnectionGeneration - 1;
+        var amendment = new PendingOrderAmendment(RecoveryOriginal, RecoveryOriginal with { Quantity = 20m }, "7001");
+
+        var order = () => scoped.GetOrderForRecoveryAsync("client-1", RecoveryOriginal, stale);
+        await order.Should().ThrowAsync<InvalidOperationException>("the scope was bound under another session");
+        var amend = () => scoped.GetAmendmentForRecoveryAsync("client-1", RecoveryOriginal, amendment, stale);
+        await amend.Should().ThrowAsync<InvalidOperationException>();
+        var cancel = () => sut.CancelOrderAsync("client-1");
+        await cancel.Should().ThrowAsync<InvalidOperationException>("nothing was installed");
+        cancelled.Should().BeEmpty();
+
+        (await scoped.GetOrderForRecoveryAsync("client-1", RecoveryOriginal, sut.ConnectionGeneration)).Should().NotBeNull();
+    }
+
+    [Fact]
     public async Task Recovery_RetainedIdentityDiffersFromTheMatchedOrder_InstallsNoRoute()
     {
         var cancelled = new List<int>();
@@ -121,7 +165,7 @@ public sealed partial class IBBrokerageGatewayTests
 
         (await ((IBrokerageOrderAmendmentRecoveryGateway)sut).GetAmendmentForRecoveryAsync("client-1", retained, amendment))
             .Should().BeNull("the orderRef matched a different instrument");
-        (await ((IBrokerageRetainedOrderRecoveryGateway)sut).GetOrderForRecoveryAsync("client-1", retained))
+        (await sut.GetOrderForRecoveryAsync("client-1", retained))
             .Should().BeNull();
 
         var cancel = () => sut.CancelOrderAsync("client-1");
