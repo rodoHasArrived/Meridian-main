@@ -5973,3 +5973,20 @@ operations, fund structure, designer, open-lot, swap, EDGAR and coverage suites.
 rules the schema now generates (the schema rule yields to them); retiring those duplicates is a
 cleanup, not a behaviour change. Validation of array-element shapes (`ElementFields`) is not yet
 generated.
+
+## Resolution pass — 2026-10-21 (priority 3, deterministic and date-aware identifier lookup)
+
+| Finding | What landed |
+| --- | --- |
+| Identifier resolution has no total order | The three `ResolveSecurityIdAsync` queries in `PostgresSecurityMasterStore` now order before `limit 1`: identifier claims by `is_primary desc, valid_from desc, security_id`; alias claims by `valid_from desc, security_id`; the legacy primary-identifier fallback by `security_id`. Among claims valid at the lookup instant, the one that became valid most recently wins, and equal claims fall back to the lowest security id, so the result never depends on physical row order. `SecurityMasterPostgresRoundTripTests.GetByIdentifierAsync_ResolvesCompetingClaimsDeterministically` creates two securities claiming one ticker over overlapping windows and holds the lookup to that order at two instants, plus a same-instant tie. |
+| Dated callers resolve identifiers at "now" | Callers that carry a business instant pass it as `asOfUtc`, so a ticker that moved between securities resolves to the one that carried it then: the backtest engine's universe pre-resolution and tick-size resolution (the end of the replay window), the reconciliation engine's security lookups (the run's `AsOf`) and the automated journal producers' ticker fallback (the production `AsOf`). Callers with no business instant (subscription validation, the validation gate, paper trading, QuantScript hints, EDGAR ingest, reporting lookups that already pass their own `asOfUtc`) keep resolving on current knowledge. |
+
+**Not landed: "audit settings".** The pass that set this priority named "fix the audit settings"
+without a referent, and no setting, option or finding in this review carries that name: the
+2026-10-15 audit-gap resolution closed the governance-event, independent-review, alias and
+direct-write findings, and the still-open P1 (self-asserted provenance and caller-selected
+`EffectiveFrom` on the write surface) is a write-surface change, not a setting. That item needs its
+owner to say which setting is meant before it can be fixed.
+
+**Validation.** The PostgreSQL round-trip suite (including the new determinism test) against a
+disposable PostgreSQL 16, and the reconciliation, automated-journal and backtest suites.
