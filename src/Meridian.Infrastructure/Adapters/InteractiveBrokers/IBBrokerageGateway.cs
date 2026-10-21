@@ -29,7 +29,7 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 public sealed partial class IBBrokerageGateway :
     IBrokerageGateway,
     IExecutionGatewayModeProvider,
-    IBrokerageOrderRecoveryGateway,
+    IBrokerageRetainedOrderRecoveryGateway,
     IBrokerageOrderAmendmentRecoveryGateway,
     IBrokerageConnectionState,
     IBrokerageAccountCatalog,
@@ -46,6 +46,8 @@ public sealed partial class IBBrokerageGateway :
     private readonly ConcurrentDictionary<string, int> _gatewayOrderIdsByExternalId = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<int, BrokerOrder> _openOrders = new();
     private readonly ConcurrentDictionary<int, ExecutionReport> _latestOrderReports = new();
+    // The connection epoch each cached report was recorded in; see CurrentSessionReport.
+    private readonly ConcurrentDictionary<int, int> _latestOrderReportEpochs = new();
     private readonly ConcurrentDictionary<int, string> _openOrderAccounts = new();
     private readonly ConcurrentDictionary<int, string> _openOrderSecurityTypes = new();
     private readonly ConcurrentDictionary<string, IBExecutionUpdate> _executions = new(StringComparer.Ordinal);
@@ -702,7 +704,8 @@ public sealed partial class IBBrokerageGateway :
     private (int GatewayOrderId, SubmittedOrderContext Context) ResolveOrder(string orderId)
     {
         if (_gatewayOrderIdsByExternalId.TryGetValue(orderId, out var gatewayOrderId) &&
-            _submittedOrders.TryGetValue(gatewayOrderId, out var context))
+            _submittedOrders.TryGetValue(gatewayOrderId, out var context) &&
+            Names(context, orderId))
         {
             return (gatewayOrderId, CurrentSessionContext(orderId, gatewayOrderId, context));
         }
@@ -715,6 +718,37 @@ public sealed partial class IBBrokerageGateway :
 
         throw new InvalidOperationException(
             $"Order '{orderId}' is unknown to the IB brokerage gateway. Submit the order before modifying or cancelling it.");
+    }
+
+    // A numeric gateway id can be recovered for a different client order than the one an alias
+    // was registered for; the alias then names an unrelated order and must not route to it.
+    private static bool Names(SubmittedOrderContext context, string orderId)
+        => string.Equals(orderId, context.MeridianOrderId, StringComparison.Ordinal)
+            || string.Equals(orderId, context.ClientOrderId, StringComparison.Ordinal)
+            || string.Equals(orderId, context.GatewayOrderId.ToString(), StringComparison.Ordinal);
+
+    // A context recovered from an earlier session's snapshot describes that session's order. A
+    // later login can reuse the numeric id for an unrelated order, so callbacks never read a stale
+    // recovered context; the callback's own identity is used instead.
+    private SubmittedOrderContext? TrackedContext(int gatewayOrderId)
+        => _submittedOrders.TryGetValue(gatewayOrderId, out var tracked)
+            && (!tracked.RecoveredFromSnapshot || tracked.RecoveryEpoch == Volatile.Read(ref _connectionEpoch))
+            ? tracked
+            : null;
+
+    // A cached report describes the order the id named when it was recorded. Only an order this
+    // process submitted keeps its reports across a session change; for a recovered or untracked
+    // id a report from an earlier session may belong to an unrelated order and is not evidence.
+    private ExecutionReport? CurrentSessionReport(int gatewayOrderId, SubmittedOrderContext? context)
+    {
+        if (!_latestOrderReports.TryGetValue(gatewayOrderId, out var latest))
+            return null;
+        if (context is { RecoveredFromSnapshot: false })
+            return latest;
+        return _latestOrderReportEpochs.TryGetValue(gatewayOrderId, out var epoch)
+            && epoch == Volatile.Read(ref _connectionEpoch)
+            ? latest
+            : null;
     }
 
     /// <summary>
@@ -862,10 +896,10 @@ public sealed partial class IBBrokerageGateway :
             _openOrderAccounts[gatewayOrderId] = update.Account.Trim();
         _openOrderSecurityTypes[gatewayOrderId] = update.SecurityType ?? string.Empty;
 
-        var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
+        var context = TrackedContext(gatewayOrderId);
         _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
         _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
-        _latestOrderReports.TryGetValue(gatewayOrderId, out var latest);
+        var latest = CurrentSessionReport(gatewayOrderId, context);
         var status = IBCanonicalPayloadMapper.MapOrderStatus(update.Status, update.FilledQuantity,
             Math.Max(update.Quantity - update.FilledQuantity, 0m), update.RejectReason, update.Metadata);
 
@@ -991,6 +1025,9 @@ public sealed partial class IBBrokerageGateway :
             if (_abandonedOpenOrdersRequests > 0)
             {
                 _abandonedOpenOrdersRequests--;
+                // IB answers requests in order, so every row buffered before this owed end was the
+                // abandoned request's; the current request's own rows all follow it.
+                _openOrdersSnapshotBuffer?.Clear();
                 return;
             }
             _openOrdersSnapshotWaiter?.TrySetResult(
@@ -1005,8 +1042,8 @@ public sealed partial class IBBrokerageGateway :
     private void OnOrderStatusReceived(object? sender, IBOrderStatusUpdate update)
     {
         var gatewayOrderId = update.OrderId;
-        var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
-        _latestOrderReports.TryGetValue(gatewayOrderId, out var latest);
+        var context = TrackedContext(gatewayOrderId);
+        var latest = CurrentSessionReport(gatewayOrderId, context);
         _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
         _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
         var filled = Math.Max(update.Filled, latest?.FilledQuantity ?? 0m);
@@ -1094,10 +1131,10 @@ public sealed partial class IBBrokerageGateway :
             _executions[update.ExecutionId] = update;
 
         var gatewayOrderId = update.OrderId;
-        var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
+        var context = TrackedContext(gatewayOrderId);
         _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
         _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
-        _latestOrderReports.TryGetValue(gatewayOrderId, out var latest);
+        var latest = CurrentSessionReport(gatewayOrderId, context);
         var staleFill = update.CumulativeQuantity < (latest?.FilledQuantity ?? 0m);
         var cumulativeQuantity = Math.Max(update.CumulativeQuantity, latest?.FilledQuantity ?? 0m);
         var orderQuantity = amendment?.ProposedContext is { } proposed
@@ -1279,8 +1316,10 @@ public sealed partial class IBBrokerageGateway :
 
     private void RecordLatestReport(ExecutionReport report)
     {
-        if (int.TryParse(report.GatewayOrderId, out var gatewayOrderId))
-            _latestOrderReports[gatewayOrderId] = report;
+        if (!int.TryParse(report.GatewayOrderId, out var gatewayOrderId))
+            return;
+        _latestOrderReportEpochs[gatewayOrderId] = Volatile.Read(ref _connectionEpoch);
+        _latestOrderReports[gatewayOrderId] = report;
     }
 
     private void PublishReport(ExecutionReport report)

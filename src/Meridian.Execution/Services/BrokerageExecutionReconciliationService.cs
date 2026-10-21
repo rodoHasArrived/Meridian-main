@@ -57,7 +57,10 @@ public sealed class BrokerageExecutionReconciliationService
                 continue;
             var report = pendingAmendment is not null && gateway is IBrokerageOrderAmendmentRecoveryGateway amendmentRecovery
                 ? await amendmentRecovery.GetAmendmentForRecoveryAsync(order.OrderId, order, pendingAmendment, ct).ConfigureAwait(false)
-                : recoveryGateway is null ? null : await recoveryGateway.GetOrderForRecoveryAsync(order.OrderId, ct).ConfigureAwait(false);
+                : recoveryGateway is null ? null
+                : recoveryGateway is IBrokerageRetainedOrderRecoveryGateway retainedRecovery
+                    ? await retainedRecovery.GetOrderForRecoveryAsync(order.OrderId, order, ct).ConfigureAwait(false)
+                    : await recoveryGateway.GetOrderForRecoveryAsync(order.OrderId, ct).ConfigureAwait(false);
             if (report is null)
             {
                 // A terminal local order is absent from both open books, so a missing lookup

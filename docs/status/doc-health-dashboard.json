@@ -1,6 +1,6 @@
 {
   "total_files": 742,
-  "total_lines": 165249,
+  "total_lines": 165254,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -2854,7 +2854,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12302,
+      "line_count": 12304,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5902,7 +5902,7 @@
     },
     {
       "path": "src/Meridian.Execution.Sdk/README.md",
-      "line_count": 136,
+      "line_count": 139,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

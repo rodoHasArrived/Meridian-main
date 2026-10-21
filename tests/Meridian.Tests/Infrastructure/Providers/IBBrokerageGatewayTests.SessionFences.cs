@@ -107,6 +107,7 @@ public sealed partial class IBBrokerageGatewayTests
                 }
                 c.RaiseOpenOrder(RecoverableOpenOrder(7001));
                 c.RaiseOpenOrdersCompleted(); // the late end owed to the abandoned first request
+                c.RaiseOpenOrder(RecoverableOpenOrder(7001)); // the retry's own snapshot
                 c.RaiseOpenOrder(RecoverableOpenOrder(7002)); // a second order claiming the same orderRef
                 c.RaiseOpenOrdersCompleted();
             }
@@ -120,5 +121,36 @@ public sealed partial class IBBrokerageGatewayTests
         var retried = await recovery.GetOrderForRecoveryAsync("client-1");
 
         retried.Should().BeNull("two orders share the orderRef; a partial snapshot must not make it look unique");
+    }
+
+    [Fact]
+    public async Task OpenOrdersSnapshot_LateRowsOfAnAbandonedRequest_AreNotTheRetrysSnapshot()
+    {
+        var requests = 0;
+        using var abandon = new CancellationTokenSource();
+        var client = new FakeIbBrokerageClient
+        {
+            OnRequestNextValidId = c => c.RaiseNextValidId(9001),
+            OnRequestOpenOrders = c =>
+            {
+                if (++requests == 1)
+                {
+                    abandon.Cancel(); // the caller gives up before any row or end arrives
+                    return;
+                }
+                c.RaiseOpenOrder(RecoverableOpenOrder(7001)); // the abandoned request's late row
+                c.RaiseOpenOrdersCompleted(); // and its late end
+                c.RaiseOpenOrdersCompleted(); // the retry's own snapshot is empty: the order is gone
+            }
+        };
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        var recovery = (IBrokerageOrderRecoveryGateway)sut;
+        var first = () => recovery.GetOrderForRecoveryAsync("client-1", abandon.Token);
+        await first.Should().ThrowAsync<OperationCanceledException>();
+
+        var retried = await recovery.GetOrderForRecoveryAsync("client-1");
+
+        retried.Should().BeNull("a row delivered for the abandoned request is not evidence the order is still open");
     }
 }

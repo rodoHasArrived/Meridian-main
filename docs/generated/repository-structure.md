@@ -5177,6 +5177,7 @@ Meridian-main
 │   │   ├── IBrokerageOrderAmendmentRecoveryGateway.cs
 │   │   ├── IBrokerageOrderRecoveryGateway.cs
 │   │   ├── IBrokeragePositionSync.cs
+│   │   ├── IBrokerageRetainedOrderRecoveryGateway.cs
 │   │   ├── IExecutionGateway.cs
 │   │   ├── IExecutionGatewayModeProvider.cs
 │   │   ├── IExplicitOrderCancellationGateway.cs
@@ -10693,6 +10694,7 @@ Meridian-main
 │   │   │   │   ├── IBBrokerageGatewayTests.PreDispatch.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.Recovery.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.RecoveryEvidence.cs
+│   │   │   │   ├── IBBrokerageGatewayTests.RecoveryIdentity.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.RecoveryScope.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.SessionFences.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.SessionRaces.cs

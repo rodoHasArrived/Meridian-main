@@ -77,7 +77,14 @@ public sealed partial class IBBrokerageGateway
 
     /// <inheritdoc />
     public Task<ExecutionReport?> GetOrderForRecoveryAsync(string clientOrderId, CancellationToken ct = default)
-        => RecoverFromOpenOrdersAsync(clientOrderId, null, ct);
+        => RecoverFromOpenOrdersAsync(clientOrderId, null, null, ct);
+
+    /// <inheritdoc />
+    public Task<ExecutionReport?> GetOrderForRecoveryAsync(string clientOrderId, OrderState retainedOrder, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(retainedOrder);
+        return RecoverFromOpenOrdersAsync(clientOrderId, retainedOrder, null, ct);
+    }
 
     /// <inheritdoc />
     public Task<ExecutionReport?> GetAmendmentForRecoveryAsync(
@@ -85,7 +92,7 @@ public sealed partial class IBBrokerageGateway
     {
         ArgumentNullException.ThrowIfNull(retainedOrder);
         ArgumentNullException.ThrowIfNull(amendment);
-        return RecoverFromOpenOrdersAsync(clientOrderId, amendment, ct);
+        return RecoverFromOpenOrdersAsync(clientOrderId, retainedOrder, amendment, ct);
     }
 
     /// <summary>
@@ -95,7 +102,7 @@ public sealed partial class IBBrokerageGateway
     /// from the snapshot; absence proves nothing, so it and any ambiguous match stay unresolved.
     /// </summary>
     private async Task<ExecutionReport?> RecoverFromOpenOrdersAsync(
-        string clientOrderId, PendingOrderAmendment? amendment, CancellationToken ct)
+        string clientOrderId, OrderState? retainedOrder, PendingOrderAmendment? amendment, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(clientOrderId);
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -117,6 +124,12 @@ public sealed partial class IBBrokerageGateway
         if (amendment?.OriginalBrokerOrderId is { Length: > 0 } brokerId
             && !string.Equals(brokerId, order.OrderId, StringComparison.Ordinal))
             return Current(null);
+        // An orderRef match alone is not the retained order: a coincidence of reference, quantity
+        // and prices on a different instrument or side must not install a cancellation route for it.
+        if (retainedOrder is not null
+            && (!string.Equals(retainedOrder.Symbol, order.Symbol, StringComparison.OrdinalIgnoreCase)
+                || retainedOrder.Side != order.Side || retainedOrder.Type != order.Type))
+            return Current(null);
         // Rebuilding a derivative context from the snapshot would lose contract detail that a
         // later amendment or cancellation needs; leave those for manual reconciliation.
         // An unreported security type is not evidence of a stock either.
@@ -124,13 +137,17 @@ public sealed partial class IBBrokerageGateway
             || !string.Equals(securityType, "STK", StringComparison.OrdinalIgnoreCase))
             return Current(null);
 
-        _latestOrderReports.TryGetValue(gatewayOrderId, out var latest);
+        // Only a report from this session can describe this session's order (see CurrentSessionReport).
+        var latest = CurrentSessionReport(gatewayOrderId, TrackedContext(gatewayOrderId));
         var filled = Math.Max(order.FilledQuantity, latest?.FilledQuantity ?? 0m);
         var fillPrice = latest?.FillPrice;
         // A status callback can carry only the last fill price; relabelling it as the cumulative
-        // average would misstate every booked fill, so it stays unresolved.
+        // average would misstate every booked fill, so it stays unresolved. The average must also
+        // cover exactly the recovered quantity: an average over fewer shares than the snapshot
+        // reports filled would price the remainder with it.
         if (filled < 0m || filled > order.Quantity
-            || filled > 0m && (fillPrice is not > 0m || latest?.FillPriceIsCumulativeAverage != true))
+            || filled > 0m && (latest is null || fillPrice is not > 0m || !latest.FillPriceIsCumulativeAverage
+                || latest.FilledQuantity != filled))
             return Current(null);
 
         var reportType = order.Status == OrderStatus.PartiallyFilled ? ExecutionReportType.PartialFill : ExecutionReportType.New;
@@ -174,10 +191,22 @@ public sealed partial class IBBrokerageGateway
             // A route recovered in an earlier session is refreshed; a context this process submitted
             // is never replaced by snapshot terms.
             var recovered = context with { RecoveryEpoch = epoch };
-            _submittedOrders.AddOrUpdate(gatewayOrderId, recovered,
-                (_, existing) => existing.RecoveredFromSnapshot ? recovered : existing);
-            _gatewayOrderIdsByExternalId[clientOrderId] = gatewayOrderId;
-            _gatewayOrderIdsByExternalId[gatewayOrderId.ToString()] = gatewayOrderId;
+            var installed = _submittedOrders.AddOrUpdate(gatewayOrderId, recovered, (_, existing) =>
+            {
+                if (!existing.RecoveredFromSnapshot)
+                    return existing;
+                // The id now names a different client order: the replaced route's alias must not
+                // resolve to it, or cancelling the old order would cancel the new one.
+                if (!string.Equals(existing.MeridianOrderId, recovered.MeridianOrderId, StringComparison.Ordinal))
+                    ((ICollection<KeyValuePair<string, int>>)_gatewayOrderIdsByExternalId)
+                        .Remove(new KeyValuePair<string, int>(existing.MeridianOrderId, gatewayOrderId));
+                return recovered;
+            });
+            if (ReferenceEquals(installed, recovered))
+            {
+                _gatewayOrderIdsByExternalId[clientOrderId] = gatewayOrderId;
+                _gatewayOrderIdsByExternalId[gatewayOrderId.ToString()] = gatewayOrderId;
+            }
         }
         return report;
 
