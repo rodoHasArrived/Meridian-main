@@ -68,9 +68,11 @@ public static class StructuredCashFlowTermsResolver
 
         var sources = EnumerateTermSources(security).ToArray();
 
+        // A financing trade (repo) has a start and an end date rather than an issue and a maturity.
+        var isFinancing = SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CashFlowBehavior == SecurityCashFlowBehavior.FinancingInterest;
         return new StructuredCashFlowTerms(
-            MaturityDate: SecurityTermReader.ReadDate(sources, string.Equals(SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).AssetClass, "Repo", StringComparison.Ordinal) ? ["endDate", .. MaturityAliases] : MaturityAliases),
-            IssueDate: SecurityTermReader.ReadDate(sources, string.Equals(SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).AssetClass, "Repo", StringComparison.Ordinal) ? ["startDate", .. IssueAliases] : IssueAliases),
+            MaturityDate: SecurityTermReader.ReadDate(sources, isFinancing ? ["endDate", .. MaturityAliases] : MaturityAliases),
+            IssueDate: SecurityTermReader.ReadDate(sources, isFinancing ? ["startDate", .. IssueAliases] : IssueAliases),
             PrincipalFace: SecurityTermReader.ReadDecimal(sources, PrincipalFaceAliases),
             CurrentFactor: SecurityTermReader.ReadDecimal(sources, CurrentFactorAliases),
             CouponRate: ResolveCouponRate(security.AssetClass, sources),
