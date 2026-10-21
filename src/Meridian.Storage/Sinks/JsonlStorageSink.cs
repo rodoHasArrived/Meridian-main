@@ -797,15 +797,21 @@ public sealed class JsonlStorageSink : IStorageSink
         // conflicting representations of one archive. Returns false when no archive applies.
         // Copy-on-write costs O(archive size) per call; that is acceptable only because scheduled
         // compression selects closed partition periods, so this path serves rare late writes.
+        // Bounded by the copy of one archive plus a competing appender's; a holder wedged longer
+        // than this is a storage fault to surface, not contention to wait out.
+        private static readonly TimeSpan ArchiveAppendLockTimeout = TimeSpan.FromMinutes(5);
+
         private async Task<bool> TryAppendToPublishedArchiveAsync(Func<Stream, Task> writePlain, CancellationToken ct)
         {
             var archive = _path + ".gz";
             if (_compressed || !File.Exists(archive))
                 return false;
 
-            // Another sink instance may be appending to the same archive; serialize the whole
-            // read-copy-replace and re-check, since that appender may have changed the state.
+            // Another sink instance, in this process or another sharing the data root, may be
+            // appending to the same archive; serialize the whole read-copy-replace (the in-process
+            // fence, then the OS lock) and re-check, since that appender may have changed the state.
             using var appendLease = await JsonlWriteFence.EnterArchiveAppendAsync(archive, ct).ConfigureAwait(false);
+            await using var processLease = await ArchiveAppendLock.AcquireAsync(archive, ArchiveAppendLockTimeout, ct).ConfigureAwait(false);
             if (!File.Exists(archive))
                 return false;
             // A crash between gzip publication and source deletion leaves both complete, equal

@@ -451,6 +451,40 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
     }
 
     [Fact]
+    public async Task ArchiveAppend_WaitsForAnotherProcessHoldingTheArchiveLock()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await first.AppendAsync(CreateTestEvent("AAPL", 1, ClosedDay));
+            await first.FlushAsync();
+        }
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl").Should().ContainSingle().Subject;
+        await AtomicFileWriter.WriteAsync(dayFile + ".sha256",
+            $"{Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(dayFile))).ToLowerInvariant()}  {Path.GetFileName(dayFile)}");
+        (await new FileMaintenanceService(options).CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false))).Success.Should().BeTrue();
+        var archive = dayFile + ".gz";
+        // Another process holds the archive's lock exactly as an appender would: an exclusive open handle.
+        var otherProcess = new FileStream(ArchiveAppendLock.PathFor(archive), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+
+        await using var second = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions);
+        await second.AppendAsync(CreateTestEvent("AAPL", 2, ClosedDay));
+        var flush = second.FlushAsync();
+        (await Task.WhenAny(flush, Task.Delay(TimeSpan.FromMilliseconds(400)))).Should().NotBeSameAs(flush,
+            "the append must wait for the other process rather than copy the archive underneath it");
+        otherProcess.Dispose();
+        await flush.WaitAsync(TimeSpan.FromSeconds(10));
+
+        var replayed = new List<MarketEvent>();
+        await foreach (var evt in new Meridian.Storage.Replay.JsonlReplayer(TestDataRoot).ReadEventsAsync())
+            replayed.Add(evt);
+        replayed.Select(evt => evt.Sequence).Should().Equal(1, 2);
+        // The lock is released with the append; the file itself stays and carries no state.
+        using var reacquired = new FileStream(ArchiveAppendLock.PathFor(archive), FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+    }
+
+    [Fact]
     public async Task ChecksumRepublishFailureAfterCommittedAppend_ReportsSuccessAndWritesOnce()
     {
         var options = new StorageOptions { RootPath = TestDataRoot };

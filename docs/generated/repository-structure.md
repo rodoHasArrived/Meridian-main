@@ -6229,6 +6229,7 @@ Meridian-main
 │   ├── Meridian.Storage
 │   │   ├── Archival
 │   │   │   ├── ArchivalStorageService.cs
+│   │   │   ├── ArchiveAppendLock.cs
 │   │   │   ├── AtomicFileWriter.cs
 │   │   │   ├── AtomicFileWriterAdapter.cs
 │   │   │   ├── CompressionProfileManager.cs
