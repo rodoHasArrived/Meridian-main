@@ -212,6 +212,26 @@ public sealed partial class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task ErrorForAReusedGatewayId_NeverRejectsTheEarlierSessionsRecoveredOrder()
+    {
+        var client = RecoveryClient(c => c.RaiseOpenOrder(RecoverableOpenOrder()));
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        (await ((IBrokerageOrderRecoveryGateway)sut).GetOrderForRecoveryAsync("client-1")).Should().NotBeNull();
+        client.RaiseConnectionLost();
+        client.RaiseConnectionRestored();
+        client.RaiseManagedAccounts("DU123456");
+
+        // The new session rejects whatever order now carries id 7001; client-1 is not that order.
+        client.RaiseError(new IBApiError(7001, 201, "Order rejected - reason: insufficient margin", null));
+
+        using var reportTimeout = new CancellationTokenSource(TimeSpan.FromMilliseconds(400));
+        var read = () => ReadUntilAsync(sut.StreamExecutionReportsAsync(reportTimeout.Token),
+            report => report.OrderId == "client-1" && report.ReportType == ExecutionReportType.Rejected, reportTimeout.Token);
+        await read.Should().ThrowAsync<OperationCanceledException>("no rejection is published for the earlier session's order");
+    }
+
+    [Fact]
     public async Task StaleRouteCleanup_RacingARecoveryOfADifferentClientOrder_RefusesTheResolvedAlias()
     {
         var cancelled = new List<int>();

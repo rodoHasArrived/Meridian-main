@@ -1221,12 +1221,14 @@ public sealed partial class IBBrokerageGateway :
             return;
         }
 
-        if (error.RequestId < 0 || !_submittedOrders.TryGetValue(error.RequestId, out var context))
+        // An id tracked only through an earlier session's recovered route may now be another
+        // login's order; its errors are not evidence about the retained order (see TrackedContext).
+        if (error.RequestId < 0 || TrackedContext(error.RequestId) is not { } context)
             return;
 
         if (error.ErrorCode == 202)
         {
-            _latestOrderReports.TryGetValue(error.RequestId, out var latest);
+            var latest = CurrentSessionReport(error.RequestId, context);
             OnOrderStatusReceived(sender, new IBOrderStatusUpdate(error.RequestId, "Cancelled",
                 latest?.FilledQuantity ?? 0m, 0m, (double)(latest?.FillPrice ?? 0m), 0d,
                 0L, _client.ClientId, null, null, DateTimeOffset.UtcNow));
@@ -1258,7 +1260,7 @@ public sealed partial class IBBrokerageGateway :
             return;
         }
 
-        _latestOrderReports.TryGetValue(error.RequestId, out var previous);
+        var previous = CurrentSessionReport(error.RequestId, context);
         var report = BuildExecutionReport(
             error.RequestId,
             ExecutionReportType.Rejected,
