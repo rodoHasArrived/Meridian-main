@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-10-07
+**Reviewed:** 2026-10-21
 
 This map gives maintainers a quick layer-oriented view of Meridian.
 
@@ -65,9 +65,11 @@ flowchart LR
   hardcoding workflow state in React components.
 - Browser workstation work and WPF desktop workstation work are two active co-equal operator UI lanes over shared contracts; WPF's current focus is web-UI parity (`W8-WPF-PARITY-001`).
 - Browser surfaces and retained WPF compatibility should consume shared DTOs, services, and route definitions for accounting, reporting, private-capital, and identity workflows instead of duplicating business rules.
-- Security Master query and command contracts are owned by `Meridian.Contracts.SecurityMaster`.
-  Application implementations, host registration, and workstation callers use that single contract;
-  Application does not declare a parallel query interface.
+- Security Master query, command, resolver and live-position adjustment contracts are owned by
+  `Meridian.Contracts.SecurityMaster`. Execution and Backtesting have no Application project
+  reference. Identity, trading parameters and corporate actions have narrow query interfaces;
+  the aggregate query inherits them for existing callers. Application owns implementations and
+  deprecated compatibility bridges, with no parallel query interface.
 - Design tokens and shared UI patterns should come from the Meridian Design
   System or local shared dashboard primitives, not one-off screen styling.
 

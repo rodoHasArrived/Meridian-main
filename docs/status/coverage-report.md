@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**1530 / 9579** items documented (**16.0%**) &mdash; Grade: **F**
+**1536 / 9585** items documented (**16.0%**) &mdash; Grade: **F**
 
 ```text
 [===-----------------] 16.0%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1441 | 9090 | 15.9% | F |
+| Public Classes / Interfaces | 1447 | 9096 | 15.9% | F |
 | API Endpoints | 88 | 335 | 26.3% | F |
 | Configuration Options | 1 | 143 | 0.7% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -200,7 +200,7 @@
 | `ADR-010` | `src/Meridian.Application/Services/ConnectivityProbeService.cs:16` |
 | `ADR-006` | `src/Meridian.Domain/Collectors/OptionDataCollector.cs:15` |
 | `ADR-015` | `src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs:29` |
-| `ADR-013` | `src/Meridian.Execution/OrderManagementSystem.cs:22` |
+| `ADR-013` | `src/Meridian.Execution/OrderManagementSystem.cs:21` |
 | `ADR-004` | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:40` |
 | `ADR-005` | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:41` |
 | `ADR-014` | `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodOptionsChainProvider.cs:45` |

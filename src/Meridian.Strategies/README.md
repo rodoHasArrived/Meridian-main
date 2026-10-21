@@ -11,6 +11,9 @@ last_reviewed: 2026-08-03
 
 # src/Meridian.Strategies
 
+Security Master consumers import the shared Contracts interfaces. Strategies does not inherit
+an Application dependency through Execution.
+
 Portfolio position read models carry shared mark-freshness assessments. A position snapshot timestamp is not a mark observation date: when historical mark provenance is absent, the projection reports review required rather than treating the snapshot as current valuation evidence.
 
 ## Reconciliation source lineage

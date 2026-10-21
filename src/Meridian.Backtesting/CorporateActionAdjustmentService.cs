@@ -1,8 +1,8 @@
-using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Instruments.AssetOperations;
-using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
+using ILivePositionCorporateActionAdjuster = Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster;
+using PositionCorporateActionAdjustment = Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment;
 
 namespace Meridian.Backtesting;
 
@@ -12,13 +12,13 @@ namespace Meridian.Backtesting;
 /// </summary>
 public sealed class CorporateActionAdjustmentService : ICorporateActionAdjustmentService, ILivePositionCorporateActionAdjuster
 {
-    private readonly Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService _queryService;
+    private readonly ISecurityCorporateActionsQueryService _queryService;
     private readonly ISecurityResolver _resolver;
     private readonly ILogger<CorporateActionAdjustmentService> _logger;
     private readonly IFactorPaydownProjectionService _factorPaydownProjector;
 
     public CorporateActionAdjustmentService(
-        Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService,
+        ISecurityCorporateActionsQueryService queryService,
         ISecurityResolver resolver,
         ILogger<CorporateActionAdjustmentService> logger,
         IFactorPaydownProjectionService? factorPaydownProjector = null)

@@ -1,6 +1,4 @@
 using FluentAssertions;
-using Meridian.Application.SecurityMaster;
-using Meridian.Application.SecurityMaster.CorporateActions;
 using Meridian.Backtesting;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;

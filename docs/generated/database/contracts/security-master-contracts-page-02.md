@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 5
 
-Objects 81-160 of 337. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 343. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -375,9 +375,15 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_IHistoricalSymbolTimelineResolver["IHistoricalSymbolTimelineResolver"] {
     }
+    class Meridian_Contracts_SecurityMaster_ILivePositionCorporateActionAdjuster["ILivePositionCorporateActionAdjuster"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityCorporateActionsQueryService["ISecurityCorporateActionsQueryService"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityCoverageSymbolSource["ISecurityCoverageSymbolSource"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityForwardCurveProvider["ISecurityForwardCurveProvider"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityIdentityQueryService["ISecurityIdentityQueryService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterAmender["ISecurityMasterAmender"] {
     }
@@ -398,6 +404,10 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_ISecurityMasterService["ISecurityMasterService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterStructuredCreditReclassificationService["ISecurityMasterStructuredCreditReclassificationService"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityResolver["ISecurityResolver"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ISecurityTradingParametersQueryService["ISecurityTradingParametersQueryService"] {
     }
     class Meridian_Contracts_SecurityMaster_IStructuredCashFlowProvider["IStructuredCashFlowProvider"] {
     }
@@ -440,41 +450,6 @@ classDiagram
         +decimal Multiplier
         +SecurityLotUnitKind UnitKind
     }
-    class Meridian_Contracts_SecurityMaster_NotionalLot["NotionalLot"] {
-        +decimal CurrentNotional
-        +DateOnly EffectiveDate
-        +string LotId
-        +decimal OriginalNotional
-        +Guid SecurityId
-        +decimal UpfrontPayment
-    }
-    class Meridian_Contracts_SecurityMaster_OfferCorporateActionTerms["OfferCorporateActionTerms"] {
-        +string EventType
-        +DateOnly? ExpiryDate
-        +bool? IsPartial
-        +bool? IsVoluntary
-        +decimal? OfferPricePerUnit
-    }
-    class Meridian_Contracts_SecurityMaster_OperatorOverrideDecisionRequest["OperatorOverrideDecisionRequest"] {
-        +string? Comment
-        +SecurityOverrideApprovalStatusDto Decision
-    }
-    class Meridian_Contracts_SecurityMaster_OperatorOverridesDto["OperatorOverridesDto"] {
-        +SecurityOverrideApprovalStatusDto ApprovalStatus
-        +IReadOnlyList~SecurityOverrideAuditEntryDto~ AuditTrail
-        +string? ReasonCode
-        +DateTimeOffset? ReviewedAt
-        +string? ReviewedBy
-        +Guid SecurityId
-        +DateTimeOffset UpdatedAt
-        +string UpdatedBy
-        +IReadOnlyDictionary~string__string~ Values
-    }
-    class Meridian_Contracts_SecurityMaster_OperatorOverridesPatchRequest["OperatorOverridesPatchRequest"] {
-        +string? ReasonCode
-        +IReadOnlyList~string~? RemoveKeys
-        +IReadOnlyDictionary~string__string~? SetValues
-    }
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto
     Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto --> Meridian_Contracts_SecurityMaster_CorporateActionProviderReleaseStatusDto
@@ -499,8 +474,9 @@ classDiagram
     Meridian_Contracts_SecurityMaster_FaceValueLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
     Meridian_Contracts_SecurityMaster_FaceValueLotFactorPaydown --> Meridian_Contracts_SecurityMaster_FaceValueLot
     Meridian_Contracts_SecurityMaster_FundUnitLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
+    Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityCorporateActionsQueryService
+    Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityIdentityQueryService
+    Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityTradingParametersQueryService
     Meridian_Contracts_SecurityMaster_InMemorySecurityForwardCurveProvider --> Meridian_Contracts_SecurityMaster_ISecurityForwardCurveProvider
     Meridian_Contracts_SecurityMaster_IssuerFactSnapshot --> Meridian_Contracts_SecurityMaster_EdgarXbrlFact
-    Meridian_Contracts_SecurityMaster_NotionalLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
-    Meridian_Contracts_SecurityMaster_OfferCorporateActionTerms --> Meridian_Contracts_SecurityMaster_CorporateActionTerms
 ```

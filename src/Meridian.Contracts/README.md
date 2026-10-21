@@ -6,17 +6,22 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-21
 ---
 
 # src/Meridian.Contracts
 
-`SecurityMaster/ISecurityMasterQueryService.cs` is the single query contract for application,
-browser, WPF, reporting, and QuantScript consumers. The former Application interface has been
-removed; source consumers must import `Meridian.Contracts.SecurityMaster`. Configured and
-unconfigured hosts register this same contract once, so caller-supplied implementations also reach
-application validation and pricing consumers. Query signatures, retained-history semantics, and
-serialized payloads are unchanged.
+`Meridian.Contracts.SecurityMaster` owns `ISecurityResolver`, the identity, trading-parameter and
+corporate-action query interfaces, and `ILivePositionCorporateActionAdjuster` with its result record.
+Execution and Backtesting consume these contracts without referencing Application. The aggregate
+`ISecurityMasterQueryService` inherits the three query interfaces, so existing query implementations
+continue to serve callers that need the full surface. The former Application query interface remains
+removed. Query signatures, retained-history semantics, and serialized payloads are unchanged.
+
+Configured and unconfigured Application hosts expose their aggregate query through the narrow
+interfaces while preserving caller-supplied registrations. Deprecated Application resolver and
+position-adjuster contracts bridge older hosts and custom implementations to these canonical types;
+new consumers should import `Meridian.Contracts.SecurityMaster`.
 
 `LoanPortfolioSummaryDto.CurrencyTotals` carries separately denominated lending and collateral
 balances. `TotalCurrency` identifies a single-currency scalar summary; mixed-currency legacy
@@ -1817,6 +1822,7 @@ on the lot.
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
 dotnet build src/Meridian.Contracts/Meridian.Contracts.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ProviderCatalogCompositionTests" --logger "console;verbosity=normal"
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~LeaseManagerTests|FullyQualifiedName~ClusterCoordinatorServiceTests|FullyQualifiedName~SplitBrainDetectorTests|FullyQualifiedName~SubscriptionOrchestratorCoordinationTests|FullyQualifiedName~IngestionJobServiceCoordinationTests|FullyQualifiedName~DiagnosticsEndpointsTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false

@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "5cafd4c3acdedd9e14e97ebdd036538f124dfcb596c93ac6a7e2501bb03e69cc",
+      "fingerprint": "5e75fa55561d35c6ae64d4c3f5ffd4887ac0572f429d53c5b287931b72099a8c",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -1655,11 +1655,14 @@
         "Meridian.Contracts.SecurityMaster.ICorporateActionOperationsService",
         "Meridian.Contracts.SecurityMaster.IDataVendorEntitlementService",
         "Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver",
+        "Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster",
         "Meridian.Contracts.SecurityMaster.InMemorySecurityForwardCurveProvider",
         "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptor",
         "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog",
+        "Meridian.Contracts.SecurityMaster.ISecurityCorporateActionsQueryService",
         "Meridian.Contracts.SecurityMaster.ISecurityCoverageSymbolSource",
         "Meridian.Contracts.SecurityMaster.ISecurityForwardCurveProvider",
+        "Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterAmender",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterCashFlowService",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterCorporateActionCommandService",
@@ -1670,6 +1673,8 @@
         "Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterService",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService",
+        "Meridian.Contracts.SecurityMaster.ISecurityResolver",
+        "Meridian.Contracts.SecurityMaster.ISecurityTradingParametersQueryService",
         "Meridian.Contracts.SecurityMaster.IssuerFactSnapshot",
         "Meridian.Contracts.SecurityMaster.IStructuredCashFlowProvider",
         "Meridian.Contracts.SecurityMaster.IUnitizedLot",
@@ -1680,6 +1685,7 @@
         "Meridian.Contracts.SecurityMaster.OperatorOverridesDto",
         "Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest",
         "Meridian.Contracts.SecurityMaster.PayloadCorporateActionTerms",
+        "Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment",
         "Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto",
         "Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto",
         "Meridian.Contracts.SecurityMaster.PricingHierarchyEntryDto",
@@ -3828,7 +3834,7 @@
       "directories": [
         "src/Meridian.Contracts/SecurityMaster"
       ],
-      "fingerprint": "146acc5f6dcf3f8598bbf557adf1af5f2bef6d512997a4e52bf873ebf384ca16",
+      "fingerprint": "cbff86e7d4429ba43aa1f4aaaadcce468bcba382939e0f8227c4054eb0afd12a",
       "id": "security-master-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.SecurityMaster"
@@ -3970,11 +3976,14 @@
         "Meridian.Contracts.SecurityMaster.ICorporateActionOperationsService",
         "Meridian.Contracts.SecurityMaster.IDataVendorEntitlementService",
         "Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver",
+        "Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster",
         "Meridian.Contracts.SecurityMaster.InMemorySecurityForwardCurveProvider",
         "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptor",
         "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog",
+        "Meridian.Contracts.SecurityMaster.ISecurityCorporateActionsQueryService",
         "Meridian.Contracts.SecurityMaster.ISecurityCoverageSymbolSource",
         "Meridian.Contracts.SecurityMaster.ISecurityForwardCurveProvider",
+        "Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterAmender",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterCashFlowService",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterCorporateActionCommandService",
@@ -3985,6 +3994,8 @@
         "Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterService",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService",
+        "Meridian.Contracts.SecurityMaster.ISecurityResolver",
+        "Meridian.Contracts.SecurityMaster.ISecurityTradingParametersQueryService",
         "Meridian.Contracts.SecurityMaster.IssuerFactSnapshot",
         "Meridian.Contracts.SecurityMaster.IStructuredCashFlowProvider",
         "Meridian.Contracts.SecurityMaster.IUnitizedLot",
@@ -3995,6 +4006,7 @@
         "Meridian.Contracts.SecurityMaster.OperatorOverridesDto",
         "Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest",
         "Meridian.Contracts.SecurityMaster.PayloadCorporateActionTerms",
+        "Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment",
         "Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto",
         "Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto",
         "Meridian.Contracts.SecurityMaster.PricingHierarchyEntryDto",
@@ -4177,7 +4189,7 @@
       ]
     }
   ],
-  "fingerprint": "c161072af386eebffb55548e3fcd97f0d9b567bcaca7a9acd8c1965c164f829f",
+  "fingerprint": "994e9a879c09560c20ab147ad5d9e8a875141c94f3c912cd401c992c39222b16",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6182,7 +6194,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "a0fa137b5890dec76f9001fb130a6f00b233a3643afeb7a208af47bf67af9c1a",
+      "fingerprint": "1e27caaf2340c244315bf494f521f6871a97d98563f21b680715681620b43e6d",
       "mapped_schemas": [
         "security_master"
       ],
@@ -6324,11 +6336,14 @@
         "Meridian.Contracts.SecurityMaster.ICorporateActionOperationsService",
         "Meridian.Contracts.SecurityMaster.IDataVendorEntitlementService",
         "Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver",
+        "Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster",
         "Meridian.Contracts.SecurityMaster.InMemorySecurityForwardCurveProvider",
         "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptor",
         "Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorCatalog",
+        "Meridian.Contracts.SecurityMaster.ISecurityCorporateActionsQueryService",
         "Meridian.Contracts.SecurityMaster.ISecurityCoverageSymbolSource",
         "Meridian.Contracts.SecurityMaster.ISecurityForwardCurveProvider",
+        "Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterAmender",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterCashFlowService",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterCorporateActionCommandService",
@@ -6339,6 +6354,8 @@
         "Meridian.Contracts.SecurityMaster.ISecurityMasterRuntimeStatus",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterService",
         "Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService",
+        "Meridian.Contracts.SecurityMaster.ISecurityResolver",
+        "Meridian.Contracts.SecurityMaster.ISecurityTradingParametersQueryService",
         "Meridian.Contracts.SecurityMaster.IssuerFactSnapshot",
         "Meridian.Contracts.SecurityMaster.IStructuredCashFlowProvider",
         "Meridian.Contracts.SecurityMaster.IUnitizedLot",
@@ -6349,6 +6366,7 @@
         "Meridian.Contracts.SecurityMaster.OperatorOverridesDto",
         "Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest",
         "Meridian.Contracts.SecurityMaster.PayloadCorporateActionTerms",
+        "Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment",
         "Meridian.Contracts.SecurityMaster.PostCorporateActionCaseAccountingRequestDto",
         "Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto",
         "Meridian.Contracts.SecurityMaster.PricingHierarchyEntryDto",
@@ -231669,6 +231687,44 @@
       "type_parameters": []
     },
     {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "9c3a3c6a2a605f5aa9bc4243306b75c682f066d45aaf885c640085832db56392",
+      "full_name": "Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster",
+      "id": "Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster",
+      "kind": "interface",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ILivePositionCorporateActionAdjuster",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster",
+      "references": [],
+      "source": {
+        "line": 21,
+        "path": "src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs"
+      },
+      "sources": [
+        {
+          "line": 21,
+          "path": "src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
       "base_types": [
         "ISecurityForwardCurveProvider"
       ],
@@ -232096,6 +232152,44 @@
         "security-master-contracts"
       ],
       "enum_members": [],
+      "fingerprint": "9d3c7e72edea6315fa831f2b756358fcf1a62615f6ba5b4d29be7a2b5bb90c5c",
+      "full_name": "Meridian.Contracts.SecurityMaster.ISecurityCorporateActionsQueryService",
+      "id": "Meridian.Contracts.SecurityMaster.ISecurityCorporateActionsQueryService",
+      "kind": "interface",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ISecurityCorporateActionsQueryService",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.ISecurityCorporateActionsQueryService",
+      "references": [],
+      "source": {
+        "line": 6,
+        "path": "src/Meridian.Contracts/SecurityMaster/ISecurityCorporateActionsQueryService.cs"
+      },
+      "sources": [
+        {
+          "line": 6,
+          "path": "src/Meridian.Contracts/SecurityMaster/ISecurityCorporateActionsQueryService.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
       "fingerprint": "8732b07bffe8bc43a00dade2d57500d0b6e0b6ca017e1a6e93a237615dd1b0da",
       "full_name": "Meridian.Contracts.SecurityMaster.ISecurityCoverageSymbolSource",
       "id": "Meridian.Contracts.SecurityMaster.ISecurityCoverageSymbolSource",
@@ -232155,6 +232249,44 @@
         {
           "line": 64,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "93ab0ec8f7de8e2d3dcde587c9524a6c5c3e6292e9cd612f025d65139a11b1bd",
+      "full_name": "Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService",
+      "id": "Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService",
+      "kind": "interface",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ISecurityIdentityQueryService",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService",
+      "references": [],
+      "source": {
+        "line": 6,
+        "path": "src/Meridian.Contracts/SecurityMaster/ISecurityIdentityQueryService.cs"
+      },
+      "sources": [
+        {
+          "line": 6,
+          "path": "src/Meridian.Contracts/SecurityMaster/ISecurityIdentityQueryService.cs"
         }
       ],
       "type_parameters": []
@@ -232350,7 +232482,11 @@
       "type_parameters": []
     },
     {
-      "base_types": [],
+      "base_types": [
+        "ISecurityIdentityQueryService",
+        "ISecurityTradingParametersQueryService",
+        "ISecurityCorporateActionsQueryService"
+      ],
       "classification": "service_contract",
       "containing_type": null,
       "contract_sets": [
@@ -232362,7 +232498,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "4d9dcdae6ba8f6b81aec45d18de2a047ce8557337848d300ebd411203cc2d0f5",
+      "fingerprint": "520a0a075cd21350821d74fca7f586928d879933b73de35b270d0e33c3991843",
       "full_name": "Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService",
       "id": "Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService",
       "kind": "interface",
@@ -232374,7 +232510,11 @@
       "namespace": "Meridian.Contracts.SecurityMaster",
       "partial": false,
       "qualified_name": "Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService",
-      "references": [],
+      "references": [
+        "Meridian.Contracts.SecurityMaster.ISecurityCorporateActionsQueryService",
+        "Meridian.Contracts.SecurityMaster.ISecurityIdentityQueryService",
+        "Meridian.Contracts.SecurityMaster.ISecurityTradingParametersQueryService"
+      ],
       "source": {
         "line": 3,
         "path": "src/Meridian.Contracts/SecurityMaster/ISecurityMasterQueryService.cs"
@@ -232535,6 +232675,82 @@
         {
           "line": 56,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "194c9ea097a6c1a7bc55b2b66c5d4b8ffd48d001cd9573e02edb3645d81ea680",
+      "full_name": "Meridian.Contracts.SecurityMaster.ISecurityResolver",
+      "id": "Meridian.Contracts.SecurityMaster.ISecurityResolver",
+      "kind": "interface",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ISecurityResolver",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.ISecurityResolver",
+      "references": [],
+      "source": {
+        "line": 6,
+        "path": "src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs"
+      },
+      "sources": [
+        {
+          "line": 6,
+          "path": "src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "e19c1ffd51693f6b16db69f595e05498782e7f24265fd1d8e8907603955420a4",
+      "full_name": "Meridian.Contracts.SecurityMaster.ISecurityTradingParametersQueryService",
+      "id": "Meridian.Contracts.SecurityMaster.ISecurityTradingParametersQueryService",
+      "kind": "interface",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ISecurityTradingParametersQueryService",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.ISecurityTradingParametersQueryService",
+      "references": [],
+      "source": {
+        "line": 6,
+        "path": "src/Meridian.Contracts/SecurityMaster/ISecurityTradingParametersQueryService.cs"
+      },
+      "sources": [
+        {
+          "line": 6,
+          "path": "src/Meridian.Contracts/SecurityMaster/ISecurityTradingParametersQueryService.cs"
         }
       ],
       "type_parameters": []
@@ -233618,6 +233834,143 @@
         {
           "line": 199,
           "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "2f665c347874d38140f09b1ad95182b185ea62dc6877e39356182f5f5e964e5f",
+      "full_name": "Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment",
+      "id": "Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ActionCount",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 10,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AdjustedCostBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 9,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AdjustedQuantity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 7,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "AdjustedTotalCostBasis",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "decimal?",
+          "source_line": 17,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OriginalCostBasis",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 8,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "OriginalQuantity",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 6,
+          "type": "decimal"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Ticker",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 5,
+          "type": "string"
+        }
+      ],
+      "name": "PositionCorporateActionAdjustment",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment",
+      "references": [],
+      "source": {
+        "line": 4,
+        "path": "src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs"
+      },
+      "sources": [
+        {
+          "line": 4,
+          "path": "src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs"
         }
       ],
       "type_parameters": []

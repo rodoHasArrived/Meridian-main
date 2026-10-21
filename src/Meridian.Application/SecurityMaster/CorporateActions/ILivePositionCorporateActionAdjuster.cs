@@ -1,8 +1,10 @@
+using CanonicalAdjustment = Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment;
+using CanonicalAdjuster = Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster;
+
 namespace Meridian.Application.SecurityMaster.CorporateActions;
 
-/// <summary>
-/// Result of applying corporate-action adjustments to a live open position.
-/// </summary>
+/// <summary>Compatibility result for callers using the former Application-owned contract.</summary>
+[Obsolete("Use Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment.")]
 public sealed record PositionCorporateActionAdjustment(
     string Ticker,
     decimal OriginalQuantity,
@@ -10,44 +12,23 @@ public sealed record PositionCorporateActionAdjustment(
     decimal OriginalCostBasis,
     decimal AdjustedCostBasis,
     int ActionCount)
-{
-    /// <summary>
-    /// Exact remaining carrying basis when the adjuster supports the retained-basis overload.
-    /// Null identifies a legacy result that supplies only an average unit quote.
-    /// </summary>
-    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
-    public decimal? AdjustedTotalCostBasis { get; init; }
-}
+    : CanonicalAdjustment(Ticker, OriginalQuantity, AdjustedQuantity, OriginalCostBasis, AdjustedCostBasis, ActionCount);
 
 /// <summary>
-/// Adjusts an open live position's quantity and cost basis to account for stock splits and
-/// dividends that occurred between <c>positionOpenedAt</c> and <c>asOf</c>.
-/// Implemented by <c>CorporateActionAdjustmentService</c> in <c>Meridian.Backtesting</c>.
+/// Compatibility contract. Existing implementations also satisfy the canonical contract;
+/// both overloads preserve the implementation's exact carrying-basis evidence.
 /// </summary>
-public interface ILivePositionCorporateActionAdjuster
+[Obsolete("Use Meridian.Contracts.SecurityMaster.ILivePositionCorporateActionAdjuster.")]
+public interface ILivePositionCorporateActionAdjuster : CanonicalAdjuster
 {
-    /// <summary>
-    /// Returns an adjusted <see cref="PositionCorporateActionAdjustment"/> for the given position.
-    /// If no corporate actions are found or the symbol cannot be resolved, returns an adjustment
-    /// with the original values unchanged.
-    /// </summary>
-    /// <param name="ticker">Ticker symbol of the security.</param>
-    /// <param name="quantity">Current position quantity (positive for long, negative for short).</param>
-    /// <param name="costBasis">Current average cost basis per share.</param>
-    /// <param name="positionOpenedAt">Timestamp when the position was first opened (UTC).</param>
-    /// <param name="ct">Cancellation token.</param>
-    Task<PositionCorporateActionAdjustment> AdjustPositionAsync(
+    new Task<PositionCorporateActionAdjustment> AdjustPositionAsync(
         string ticker,
         decimal quantity,
         decimal costBasis,
         DateTimeOffset positionOpenedAt,
         CancellationToken ct = default);
 
-    /// <summary>
-    /// Adjusts retained total carrying basis without reconstructing it from a rounded unit quote.
-    /// Legacy implementers keep their original behavior and return no exact total-basis evidence.
-    /// </summary>
-    Task<PositionCorporateActionAdjustment> AdjustPositionAsync(
+    new Task<PositionCorporateActionAdjustment> AdjustPositionAsync(
         string ticker,
         decimal quantity,
         decimal costBasis,
@@ -55,4 +36,14 @@ public interface ILivePositionCorporateActionAdjuster
         DateTimeOffset positionOpenedAt,
         CancellationToken ct = default)
         => AdjustPositionAsync(ticker, quantity, costBasis, positionOpenedAt, ct);
+
+    async Task<CanonicalAdjustment> CanonicalAdjuster.AdjustPositionAsync(
+        string ticker, decimal quantity, decimal costBasis, DateTimeOffset positionOpenedAt, CancellationToken ct)
+        => await AdjustPositionAsync(ticker, quantity, costBasis, positionOpenedAt, ct).ConfigureAwait(false);
+
+    async Task<CanonicalAdjustment> CanonicalAdjuster.AdjustPositionAsync(
+        string ticker, decimal quantity, decimal costBasis, decimal totalCostBasis,
+        DateTimeOffset positionOpenedAt, CancellationToken ct)
+        => await AdjustPositionAsync(ticker, quantity, costBasis, totalCostBasis, positionOpenedAt, ct)
+            .ConfigureAwait(false);
 }
