@@ -53,7 +53,7 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
                 return null;
             }
 
-            detail = string.Equals(security.AssetClass, "Bond", StringComparison.OrdinalIgnoreCase)
+            detail = SecurityAssetClassCatalog.GetOrDefault(security.AssetClass).CarriesBondCouponStructure
                 ? await BuildBondOperationsAsync(security, ct).ConfigureAwait(false)
                 : _obligationProjectionService.ProjectFromSecurityMaster(security);
         }

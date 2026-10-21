@@ -301,7 +301,7 @@ public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterO
         SecurityMasterOperationalEvidenceSnapshot? evidenceSnapshot)
     {
         var hasValidator = _assetClassValidators.TryGetValidator(spec.AssetClass, out _);
-        var hasCatalogDescriptor = SecurityAssetClassCatalog.GetOrDefault(spec.AssetClass).AssetClass != "Unknown";
+        var hasCatalogDescriptor = SecurityAssetClassCatalog.TryGet(spec.AssetClass, out _);
         // GetProfiles() already applies write-time governance: Approved OR Superseded versions
         // whose effective window covers today. A Superseded predecessor stays THE selectable
         // version while its future-dated replacement waits to activate, so re-filtering to
