@@ -19,12 +19,15 @@ public static class SecurityMasterContractRegistrationExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddSingleton<ISecurityIdentityQueryService>(sp =>
-            sp.GetRequiredService<ISecurityMasterQueryService>());
-        services.TryAddSingleton<ISecurityTradingParametersQueryService>(sp =>
-            sp.GetRequiredService<ISecurityMasterQueryService>());
-        services.TryAddSingleton<ISecurityCorporateActionsQueryService>(sp =>
-            sp.GetRequiredService<ISecurityMasterQueryService>());
+        if (services.Any(descriptor => descriptor.ServiceType == typeof(ISecurityMasterQueryService)))
+        {
+            services.TryAddSingleton<ISecurityIdentityQueryService>(sp =>
+                sp.GetRequiredService<ISecurityMasterQueryService>());
+            services.TryAddSingleton<ISecurityTradingParametersQueryService>(sp =>
+                sp.GetRequiredService<ISecurityMasterQueryService>());
+            services.TryAddSingleton<ISecurityCorporateActionsQueryService>(sp =>
+                sp.GetRequiredService<ISecurityMasterQueryService>());
+        }
 
         if (services.Any(descriptor => descriptor.ServiceType == typeof(ISecurityResolver)))
         {

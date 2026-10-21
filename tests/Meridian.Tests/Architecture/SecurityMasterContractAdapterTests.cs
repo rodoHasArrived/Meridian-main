@@ -14,6 +14,18 @@ public sealed class SecurityMasterContractAdapterTests
     private static readonly Guid SecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly DateTimeOffset OpenedAt = new(2026, 1, 5, 12, 0, 0, TimeSpan.Zero);
 
+    [Fact]
+    public void ResolverOnlyHost_DoesNotAdvertiseUnavailableQueryContracts()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<ISecurityResolver>(new RecordingResolver());
+
+        services.AddSecurityMasterContractAdapters();
+
+        services.Select(descriptor => descriptor.ServiceType).Should().NotContain(
+            [typeof(ISecurityIdentityQueryService), typeof(ISecurityTradingParametersQueryService), typeof(ISecurityCorporateActionsQueryService)]);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
