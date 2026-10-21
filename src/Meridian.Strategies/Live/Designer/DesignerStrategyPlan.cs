@@ -1,4 +1,5 @@
 using System.Globalization;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Strategies.Live.Designer;
@@ -555,7 +556,9 @@ internal sealed class DesignerStrategyPlan
         var assetClass = parameters is not null && parameters.TryGetValue("assetClass", out var declaredAssetClass)
             ? declaredAssetClass
             : string.Empty;
-        if (!string.Equals(assetClass, "Equity", StringComparison.OrdinalIgnoreCase)
+        var isListedEquity = SecurityAssetClassCatalog.TryGet(assetClass, out var declared)
+            && declared is { LotUnit: SecurityLotUnitKind.Shares, CashFlowBehavior: SecurityCashFlowBehavior.Dividends };
+        if (!isListedEquity
             && !string.Equals(assetClass, "ETF", StringComparison.OrdinalIgnoreCase))
         {
             failureReason =
