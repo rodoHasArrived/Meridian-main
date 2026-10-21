@@ -207,7 +207,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             return Convert(economicTerms);
         }
 
-        if (string.Equals(assetClass, "Equity", StringComparison.OrdinalIgnoreCase))
+        if (SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsEquityClassification)
         {
             // Structural CommonEquity/CommonShare metadata also labels legacy preferred equity.
             // Absence of preferred modules therefore cannot establish Common classification.

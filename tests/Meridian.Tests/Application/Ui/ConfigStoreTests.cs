@@ -305,6 +305,94 @@ public sealed class ConfigStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task UpdateAsync_TwoInterleavedWriters_BothEditsSurvive()
+    {
+        // PRD-002 concurrent configuration writes: writer A is paused inside its mutator (holding the
+        // lock); writer B, on a separate store instance, must not complete until A releases, and
+        // neither edit may be lost. A Load()+SaveAsync pair on B would have overwritten A's symbol.
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        await File.WriteAllTextAsync(path, "{}");
+        using var aEntered = new ManualResetEventSlim();
+        using var aRelease = new ManualResetEventSlim();
+
+        var writerA = Task.Run(() => new ConfigStore(path).UpdateAsync(cfg =>
+        {
+            aEntered.Set();
+            aRelease.Wait(TimeSpan.FromSeconds(30)).Should().BeTrue();
+            return cfg with { Symbols = [.. cfg.Symbols ?? [], new SymbolConfig("AAA", SubscribeTrades: true)] };
+        }));
+        aEntered.Wait(TimeSpan.FromSeconds(30)).Should().BeTrue();
+        var writerB = Task.Run(() => new ConfigStore(path).UpdateAsync(cfg =>
+            cfg with { Symbols = [.. cfg.Symbols ?? [], new SymbolConfig("BBB", SubscribeTrades: true)] }));
+        await Task.Delay(200);
+        writerB.IsCompleted.Should().BeFalse("B must wait for A's lock instead of writing a stale snapshot");
+
+        aRelease.Set();
+        await Task.WhenAll(writerA, writerB);
+
+        new ConfigStore(path).LoadRequired().Symbols!.Select(symbol => symbol.Symbol)
+            .Should().BeEquivalentTo(["AAA", "BBB"]);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_MissingFile_StartsFromDefaultConfigAndCreatesFile()
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+
+        var added = await new ConfigStore(path).UpdateAsync(cfg =>
+            (cfg with { Symbols = [new SymbolConfig("SPY", SubscribeTrades: true)] }, cfg.Symbols is null));
+
+        added.Should().BeTrue("a missing file starts from the default configuration, matching Load()");
+        File.Exists(path).Should().BeTrue();
+        new ConfigStore(path).LoadRequired().Symbols.Should().ContainSingle(symbol => symbol.Symbol == "SPY");
+    }
+
+    [Theory]
+    [InlineData("{")]
+    [InlineData("null")]
+    public async Task UpdateAsync_CorruptFile_ThrowsAndPreservesBytes(string body)
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        await File.WriteAllTextAsync(path, body);
+
+        var act = () => new ConfigStore(path).UpdateAsync(cfg => cfg with { Symbols = [] });
+
+        await act.Should().ThrowAsync<Exception>("an edit never replaces a corrupt authoritative document with defaults");
+        (await File.ReadAllTextAsync(path)).Should().Be(body);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_UnchangedReference_DoesNotRewriteFile()
+    {
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        await File.WriteAllTextAsync(path, "{}");
+        var before = await File.ReadAllBytesAsync(path);
+        var stamp = File.GetLastWriteTimeUtc(path);
+
+        var result = await new ConfigStore(path).UpdateAsync(cfg => (cfg, "no-op"));
+
+        result.Should().Be("no-op");
+        (await File.ReadAllBytesAsync(path)).Should().Equal(before);
+        File.GetLastWriteTimeUtc(path).Should().Be(stamp);
+    }
+
+    [Fact]
+    public async Task SaveAsync_RemainsWholeSnapshotReplacement()
+    {
+        // Reserved for the CLI save and wizard output, which own the entire document.
+        var path = Path.Combine(CreateTempDirectory(), "appsettings.json");
+        var store = new ConfigStore(path);
+        await store.UpdateAsync(cfg => cfg with { Symbols = [new SymbolConfig("AAA", SubscribeTrades: true)] });
+        var stale = store.LoadRequired();
+        await store.UpdateAsync(cfg => cfg with { Symbols = [.. cfg.Symbols!, new SymbolConfig("BBB", SubscribeTrades: true)] });
+
+        await store.SaveAsync(stale with { Symbols = [new SymbolConfig("CCC", SubscribeTrades: true)] });
+
+        store.LoadRequired().Symbols!.Select(symbol => symbol.Symbol).Should().BeEquivalentTo(["CCC"],
+            "whole-snapshot replacement is last-writer-wins by design");
+    }
+
+    [Fact]
     public void DefaultConstructor_UsesAncestorConfigDirectoryWhenPresent()
     {
         var repositoryRoot = CreateTempDirectory();

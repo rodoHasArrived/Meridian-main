@@ -234,37 +234,7 @@ public sealed class SetupWizardStateService : ISetupWizardStateService
                 Directory.CreateDirectory(storageLocation);
             }
 
-            var configDirectory = Path.GetDirectoryName(_firstRunService.ConfigFilePath);
-            if (!string.IsNullOrWhiteSpace(configDirectory))
-            {
-                Directory.CreateDirectory(configDirectory);
-            }
-
-            JsonNode rootNode;
-            if (File.Exists(_firstRunService.ConfigFilePath))
-            {
-                var json = await File.ReadAllTextAsync(_firstRunService.ConfigFilePath, ct).ConfigureAwait(false);
-                rootNode = JsonNode.Parse(json) ?? new JsonObject();
-            }
-            else
-            {
-                rootNode = new JsonObject();
-            }
-
-            rootNode["DataSource"] = provider;
-            rootNode["DataRoot"] = storageLocation;
-
-            var storageNode = rootNode["Storage"] as JsonObject ?? new JsonObject();
-            storageNode.Remove("BaseDirectory");
-            storageNode.Remove("baseDirectory");
-            rootNode["Storage"] = storageNode;
-
-            var backfillNode = rootNode["Backfill"] as JsonObject ?? new JsonObject();
-            backfillNode["DefaultProvider"] = provider;
-            rootNode["Backfill"] = backfillNode;
-
-            var output = rootNode.ToJsonString(AppConfigJsonOptions.Write);
-            await File.WriteAllTextAsync(_firstRunService.ConfigFilePath, output, ct).ConfigureAwait(false);
+            await WriteConfigurationUnderLeaseAsync(_firstRunService.ConfigFilePath, provider, storageLocation, ct).ConfigureAwait(false);
 
             return new SetupWizardSaveResult(true, "Configuration saved.");
         }
@@ -272,6 +242,50 @@ public sealed class SetupWizardStateService : ISetupWizardStateService
         {
             return new SetupWizardSaveResult(false, $"Failed to save configuration: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Applies the wizard's provider and storage selection to the shared configuration file as one
+    /// read-modify-write under the host's cross-process configuration lock (the <c>.lock</c> sidecar
+    /// <c>ConfigStore.UpdateAsync</c> and the shell's <c>ConfigService</c> hold), written atomically so a
+    /// browser-host mutation and a wizard save never interleave or expose a truncated document
+    /// (PRD-002 concurrent configuration writes).
+    /// </summary>
+    internal static async Task WriteConfigurationUnderLeaseAsync(string configFilePath, string provider, string storageLocation, CancellationToken ct)
+    {
+        var configDirectory = Path.GetDirectoryName(configFilePath);
+        if (!string.IsNullOrWhiteSpace(configDirectory))
+        {
+            Directory.CreateDirectory(configDirectory);
+        }
+
+        using var lease = await new Meridian.Application.UI.ConfigStore(configFilePath).AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
+
+        JsonNode rootNode;
+        if (File.Exists(configFilePath))
+        {
+            var json = await File.ReadAllTextAsync(configFilePath, ct).ConfigureAwait(false);
+            rootNode = JsonNode.Parse(json) ?? new JsonObject();
+        }
+        else
+        {
+            rootNode = new JsonObject();
+        }
+
+        rootNode["DataSource"] = provider;
+        rootNode["DataRoot"] = storageLocation;
+
+        var storageNode = rootNode["Storage"] as JsonObject ?? new JsonObject();
+        storageNode.Remove("BaseDirectory");
+        storageNode.Remove("baseDirectory");
+        rootNode["Storage"] = storageNode;
+
+        var backfillNode = rootNode["Backfill"] as JsonObject ?? new JsonObject();
+        backfillNode["DefaultProvider"] = provider;
+        rootNode["Backfill"] = backfillNode;
+
+        var output = rootNode.ToJsonString(AppConfigJsonOptions.Write);
+        await Meridian.Storage.Archival.AtomicFileWriter.WriteAsync(configFilePath, output, ct).ConfigureAwait(false);
     }
 
     public void SaveApiKeys(string nasdaqDataLinkApiKey, string openFigiApiKey)

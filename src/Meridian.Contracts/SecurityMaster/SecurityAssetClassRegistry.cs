@@ -252,7 +252,7 @@ public static class SecurityAssetClassRegistry
     /// approved profile's fields instead.
     /// </summary>
     public static bool SupportsSchemaDrivenCreate(SecurityAssetClassDefinition definition)
-        => !string.Equals(definition.AssetClass, "CustomAsset", StringComparison.Ordinal);
+        => !definition.Descriptor.RequiresProfileReference;
 
     /// <summary>The wire form of a definition.</summary>
     public static SecurityAssetClassDefinitionDto ToDto(SecurityAssetClassDefinition definition)

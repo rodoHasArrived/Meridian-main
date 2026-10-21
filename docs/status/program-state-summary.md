@@ -2,11 +2,11 @@
 
 This file is generated from `docs/roadmap/data/program-state.yml` and `docs/roadmap/data/roadmap-items.yml`.
 
-Snapshot date: 2026-09-26
+Snapshot date: 2026-10-20
 
 | ID | Wave | Title | Workspaces | Status | Health | Priority | Owner Lane | Evidence Posture | Last Reviewed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| W1-DATA-001 | W1 | Provider trust gate and data confidence baseline | Data | done | green | critical | Data Confidence and Validation | complete | 2026-05-20 |
+| W1-DATA-001 | W1 | Provider trust gate and data confidence baseline | Data | done | green | critical | Data Confidence and Validation | complete | 2026-09-28 |
 | W2-PROMO-001 | W2 | Paper promotion evidence and operator acceptance | Strategy; Trading | done | green | high | Execution and Fund Accounts | complete | 2026-05-28 |
 | W2-TRD-001 | W2 | Paper trading cockpit reliability | Trading | done | green | critical | Execution and Fund Accounts | complete | 2026-05-28 |
 | W3-CONT-001 | W3 | Research to paper continuity | Strategy; Trading | done | green | high | Strategy Analytics | complete | 2026-05-28 |
@@ -31,23 +31,29 @@ Snapshot date: 2026-09-26
 | W9-REPORT-005 | W9 | Client-grade PDF/XLSX exports and partners-capital statement | Reporting; Accounting | accepted | green | high | Accounting and Ledger | complete | 2026-08-29 |
 | W9-NAV-006 | W9 | Unitized NAV and real fee, waterfall, and capital-call economics | Accounting; Portfolio | accepted | green | high | Accounting and Ledger | complete | 2026-08-29 |
 | W9-SAFETY-007 | W9 | Kill-switch cancel-all and fat-finger, notional, and collar rules | Trading; Settings | accepted | green | high | Execution and Fund Accounts | complete | 2026-09-23 |
-| W9-GOV-008 | W9 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | Settings; Accounting | in_progress | green | high | Platform Security and Governance | in_progress | 2026-08-29 |
-| W9-INGEST-009 | W9 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | Accounting; Data | in_progress | green | high | Accounting and Ledger | in_progress | 2026-09-25 |
+| W9-GOV-008 | W9 | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit | Settings; Accounting | accepted | green | high | Platform Security and Governance | complete | 2026-10-18 |
+| W9-INGEST-009 | W9 | Institutional file ingestion (camt.053/BAI2) and sided reconciliation matcher | Accounting; Data | accepted | green | high | Accounting and Ledger | complete | 2026-10-18 |
 | W9-ASSET-010 | W9 | Asset Accounting Event Spine and atomic lot posting | Accounting; Portfolio; Reporting | done | green | critical | Accounting and Ledger | complete | 2026-07-28 |
-| W9-CORPACT-011 | W9 | Durable corporate action case processing and accounting projection | Accounting; Portfolio; Data | ready_for_acceptance | green | high | Accounting and Ledger | implementation_complete | 2026-09-22 |
+| W9-CORPACT-011 | W9 | Durable corporate action case processing and accounting projection | Accounting; Portfolio; Data | accepted | green | high | Accounting and Ledger | complete | 2026-10-19 |
 | W10-DEBT-001 | W10 | God-file burn-down against the file-size ratchet | - | planned | green | medium | Workstation Shell and UX | planned_evidence | 2026-08-29 |
 | W10-MARK-001 | W10 | Fail-closed stale-mark policy and mark-age surfacing | Accounting; Portfolio | in_progress | green | high | Accounting and Ledger | in_progress | 2026-09-23 |
 | W10-RECON-001 | W10 | Durable break lineage identity and run-over-run break diff | Accounting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
-| W10-PROV-001 | W10 | Ledger-amount evidence subject and shared proof drawer | Accounting; Reporting; Portfolio | planned | green | high | Workstation Shell and UX | planned_evidence | 2026-07-31 |
+| W10-PROV-001 | W10 | Ledger-amount evidence subject and shared proof drawer | Accounting; Reporting; Portfolio | in_progress | green | high | Workstation Shell and UX | in_progress | 2026-10-02 |
 | W10-RECON-002 | W10 | Break clustering and bulk-resolution activation | Accounting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
-| W10-JRNL-001 | W10 | Durable recurring journal schedules and draft runner | Accounting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
+| W10-JRNL-001 | W10 | Durable recurring journal schedules and draft runner | Accounting | in_progress | green | high | Accounting and Ledger | in_progress | 2026-10-01 |
 | W10-TAX-001 | W10 | Tax character, wash-sale, and lot-relief operator surface | Accounting; Portfolio | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
 | W10-SEAM-001 | W10 | Unified close-readiness projection behind one shared contract | Accounting; Reporting | in_progress | green | high | Workstation Shell and UX | in_progress | 2026-09-23 |
 | W10-RECON-003 | W10 | Unified tolerance model and what-if replay workbench | Accounting; Settings | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-07-31 |
 | W10-RECON-004 | W10 | Operator-taught match rules with promotion gate | Accounting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-07-31 |
 | W10-PERF-001 | W10 | Portfolio and investor return measurement | Portfolio; Reporting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-07-31 |
 | W10-CONSOL-001 | W10 | Intercompany elimination on consolidated ledger views | Accounting; Reporting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-07-31 |
-| W10-LOT-002 | W10 | Security-identified open-lot convergence | Accounting; Portfolio; Reporting | in_progress | green | critical | Accounting and Ledger | in_progress | 2026-09-23 |
+| W10-LOT-002 | W10 | Security-identified open-lot convergence | Accounting; Portfolio; Reporting | in_progress | green | critical | Accounting and Ledger | in_progress | 2026-10-13 |
+| W11-PASSPORT-001 | W11 | Number Passport contract across amount surfaces | Accounting; Reporting; Portfolio | planned | green | high | Workstation Shell and UX | planned_evidence | 2026-10-16 |
+| W11-COVER-001 | W11 | Verified Coverage measurement and operator surface | Accounting; Reporting | planned | green | high | Accounting and Ledger | planned_evidence | 2026-10-16 |
+| W11-STAKE-001 | W11 | Governed stakeholder verification access on delivered packages | Reporting; Settings | planned | green | medium | Platform Security and Governance | planned_evidence | 2026-10-16 |
+| W11-SHADOW-001 | W11 | Shadow-mode onboarding with opening-balance reconciliation | Data; Accounting | planned | green | medium | Data Confidence and Validation | planned_evidence | 2026-10-16 |
+| W11-PACK-001 | W11 | Governed contract-pack lifecycle on the Security Master asset-class registry | Data; Accounting | planned | green | medium | Accounting and Ledger | planned_evidence | 2026-10-16 |
+| W11-EXEC-001 | W11 | Trading and Execution bounded-context ownership | Trading; Strategy | planned | green | low | Execution and Fund Accounts | planned_evidence | 2026-10-16 |
 
 ## Source Contract
 

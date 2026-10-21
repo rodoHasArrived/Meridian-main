@@ -3911,12 +3911,11 @@ public sealed class SecurityMasterWorkbenchQueryService : ISecurityMasterWorkben
         return missingFields;
     }
 
+    // A contract multiplier is a trading fact exactly where the catalog sizes lots in contracts or
+    // declares a multiplier term (listed options, futures, warrants, commodity contracts).
     private static bool RequiresContractMultiplier(string? assetClass)
-        => assetClass is not null &&
-           (assetClass.Equals("Option", StringComparison.OrdinalIgnoreCase)
-            || assetClass.Equals("Future", StringComparison.OrdinalIgnoreCase)
-            || assetClass.Equals("Swap", StringComparison.OrdinalIgnoreCase)
-            || assetClass.Equals("Warrant", StringComparison.OrdinalIgnoreCase));
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass) is { } descriptor
+           && (descriptor.LotUnit == SecurityLotUnitKind.Contracts || descriptor.LotMultiplierTermKey is not null);
 
     private static string FormatFieldLabel(string? fieldPath)
     {
