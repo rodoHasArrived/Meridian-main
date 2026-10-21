@@ -186,12 +186,12 @@ classDiagram
         +string AssetClass
         +IReadOnlyList~string~? AssetOperationsCapabilities
         +IReadOnlyList~string~? AssetPackIds
+        +bool CarriesBondCouponStructure
         +SecurityCashFlowBehavior CashFlowBehavior
         +IReadOnlyList~InstrumentType~? InstrumentTypes
         +string? LotMultiplierTermKey
         +SecurityLotUnitKind LotUnit
         +IReadOnlyList~SecurityIdentifierKind~ PreferredIdentifierKinds
-        +SecurityTermsProjectionKind ProjectionKind
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassLabelResolution["SecurityAssetClassLabelResolution"] {
     }
