@@ -872,7 +872,7 @@ public sealed class AssetObligationProjectionService
             return null;
         }
 
-        return string.Equals(SecurityAssetClassCatalog.GetOrDefault(assetClass).AssetClass, "Deposit", StringComparison.Ordinal)
+        return SecurityAssetClassCatalog.GetOrDefault(assetClass).QuotesRatesAsFractions
                && rate <= 1m
             ? rate * 100m
             : rate;

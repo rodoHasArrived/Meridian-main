@@ -29,6 +29,7 @@ public static class SecurityAssetClassCatalog
     [
         new(
             AssetClass: "Equity",
+            SupportsEquityClassification: true,
             AssetPackIds: ["public-equity-etf"],
             InstrumentTypes: [InstrumentType.Equity],
             LotUnit: SecurityLotUnitKind.Shares,
@@ -53,6 +54,7 @@ public static class SecurityAssetClassCatalog
             SupportsIdentifierOnlyImport: true),
         new(
             AssetClass: "Option",
+            UsesOccOptionSymbols: true,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.FuturesOption],
             LotUnit: SecurityLotUnitKind.Contracts,
@@ -87,6 +89,7 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "Bond",
+            CarriesBondCouponStructure: true,
             AssetPackIds: ["fixed-income"],
             SupportsCanonicalBulletAmortization: true,
             InstrumentTypes: [InstrumentType.Bond],
@@ -127,6 +130,7 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "Deposit",
+            QuotesRatesAsFractions: true,
             AssetPackIds: ["cash-bank"],
             InstrumentTypes: [InstrumentType.Deposit],
             LotUnit: SecurityLotUnitKind.FaceValue,
@@ -264,6 +268,7 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true),
         new(
             AssetClass: "CustomAsset",
+            RequiresProfileReference: true,
             AssetPackIds: ["controlled-other-asset"],
             RequiresGovernedProfile: true,
             LotUnit: SecurityLotUnitKind.Units,
@@ -452,6 +457,7 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "Warrant",
+            UsesOccOptionSymbols: true,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.Warrant],
             LotUnit: SecurityLotUnitKind.Contracts,
@@ -914,8 +920,27 @@ public sealed record SecurityAssetClassDescriptor(
     IReadOnlyList<InstrumentType>? InstrumentTypes = null,
     IReadOnlyList<string>? AssetPackIds = null,
     bool SupportsCanonicalBulletAmortization = false,
-    bool RequiresGovernedProfile = false)
+    bool RequiresGovernedProfile = false,
+    bool RequiresProfileReference = false,
+    bool SupportsEquityClassification = false,
+    bool CarriesBondCouponStructure = false,
+    bool UsesOccOptionSymbols = false,
+    bool QuotesRatesAsFractions = false)
 {
+    /// <summary>
+    /// The catalog facts below replace per-site asset-class name checks. Each is a declared
+    /// behaviour one or more classes opt into, so a consumer asks the descriptor instead of
+    /// spelling a class name: <see cref="RequiresProfileReference"/> (the record must pin an
+    /// approved custom profile), <see cref="SupportsEquityClassification"/> (terms carry the
+    /// equity <c>classification</c> discriminant with preferred and convertible blocks),
+    /// <see cref="CarriesBondCouponStructure"/> (terms carry the bond coupon structure and bullet
+    /// amortization conventions), <see cref="UsesOccOptionSymbols"/> (OCC option symbols are a
+    /// valid identifier) and <see cref="QuotesRatesAsFractions"/> (a rate at or below one is a
+    /// fraction, not a percent).
+    /// </summary>
+    public bool HasDeclaredBehaviorFacts
+        => RequiresProfileReference || SupportsEquityClassification || CarriesBondCouponStructure || UsesOccOptionSymbols || QuotesRatesAsFractions;
+
     /// <summary>
     /// Whether positions are held as face-value lots (par-denominated quantity). Derived from
     /// <see cref="LotUnit"/>; there is no separately maintained flag to drift from it.

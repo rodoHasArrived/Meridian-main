@@ -1,6 +1,6 @@
 {
   "total_files": 742,
-  "total_lines": 165218,
+  "total_lines": 165243,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
@@ -1638,7 +1638,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 5971,
+      "line_count": 5992,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2854,7 +2854,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12292,
+      "line_count": 12296,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

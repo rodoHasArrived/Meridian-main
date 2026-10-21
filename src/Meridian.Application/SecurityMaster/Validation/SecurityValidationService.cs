@@ -277,7 +277,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
     }
 
     private static bool IsProfileBackedRecord(SecurityProjectionRecord record)
-        => string.Equals(record.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
+        => SecurityAssetClassCatalog.GetOrDefault(record.AssetClass).RequiresProfileReference
            || (record.AssetSpecificTerms.ValueKind == JsonValueKind.Object
                && record.AssetSpecificTerms.TryGetProperty("customProfileId", out var customProfileId)
                && customProfileId.ValueKind == JsonValueKind.String
@@ -382,8 +382,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
             }
 
             if (identifier.Kind == SecurityIdentifierKind.OccOptionSymbol
-                && !string.Equals(record.AssetClass, "Option", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(record.AssetClass, "Warrant", StringComparison.OrdinalIgnoreCase))
+                && !SecurityAssetClassCatalog.GetOrDefault(record.AssetClass).UsesOccOptionSymbols)
             {
                 issues.Add(SecurityValidationIssueFactory.Create(
                     SecurityValidationSeverityDto.Warning,

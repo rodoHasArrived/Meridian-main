@@ -403,8 +403,9 @@ public sealed class EdgarIngestOrchestrator : IEdgarIngestOrchestrator
         IReadOnlyList<SecurityIdentifierDto> identifiers,
         DateTimeOffset now)
     {
-        var assetClass = IsMutualFundAssociation(association) ? "OtherSecurity" : "Equity";
-        var assetTerms = assetClass == "OtherSecurity"
+        var isMutualFund = IsMutualFundAssociation(association);
+        var assetClass = isMutualFund ? "OtherSecurity" : "Equity";
+        var assetTerms = isMutualFund
             ? JsonSerializer.SerializeToElement(
                 new Dictionary<string, object?>
                 {

@@ -142,7 +142,7 @@ public sealed class SecurityMasterCsvParser
         if (assetClass is null)
         {
             var importable = string.Join(", ", SecurityAssetClassCatalog.IdentifierOnlyImportableAssetClasses);
-            error = SecurityAssetClassCatalog.GetOrDefault(assetClassInput).AssetClass == "Unknown"
+            error = !SecurityAssetClassCatalog.TryGet(assetClassInput, out _)
                 ? $"Row {rowNumber}: Unknown AssetClass '{assetClassInput}'. Importable values: {importable}"
                 : $"Row {rowNumber}: AssetClass '{assetClassInput}' requires asset-specific terms that a CSV " +
                   $"import cannot supply. Importable values: {importable}";

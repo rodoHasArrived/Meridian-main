@@ -381,7 +381,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
             [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
             [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion,
-            ["classification"] = string.Equals(assetClass, "Equity", StringComparison.OrdinalIgnoreCase) ? "Common" : null
+            ["classification"] = SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsEquityClassification ? "Common" : null
         });
 
     private static string ReadJsonString(JsonElement element, string propertyName)
