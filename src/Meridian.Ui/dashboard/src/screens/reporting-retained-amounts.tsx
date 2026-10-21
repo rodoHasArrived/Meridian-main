@@ -76,6 +76,11 @@ export function ReportingRetainedAmountsPanel({ run }: { run: Pick<GovernedRepor
         ) : current.bindings.length === 0 ? (
           <StatusBanner role="status" tone="warning" title="Report amount proof blocked" detail="No retained amount bindings are available for this report. Generated values cannot acquire evidence from live balances." />
         ) : (
+          <>
+          {current.bindings.some((binding) => binding.proofAvailable !== true) ? (
+            <StatusBanner role="status" tone="info" title="Amount proof needs ledger report access"
+              detail="You can review these retained balances. Opening their supporting evidence requires ledger report access." />
+          ) : null}
           <div className="overflow-x-auto">
             <table className="w-full text-sm" aria-label="Retained report account balances">
               <thead className="border-b border-border text-xs text-muted-foreground">
@@ -86,7 +91,9 @@ export function ReportingRetainedAmountsPanel({ run }: { run: Pick<GovernedRepor
                   <tr key={binding.amountId} className="border-b border-border/60 align-top">
                     <th scope="row" className="px-3 py-3 text-left font-medium">{binding.label}</th>
                     <td className="px-3 py-3 text-right">
-                      <Button type="button" size="sm" variant="ghost" className="whitespace-nowrap font-mono underline underline-offset-4"
+                      {binding.proofAvailable !== true ? (
+                        <span className="whitespace-nowrap font-mono">{formatAmountWithCode(binding.amount, binding.currency)}</span>
+                      ) : <Button type="button" size="sm" variant="ghost" className="whitespace-nowrap font-mono underline underline-offset-4"
                         aria-label={`Inspect ${binding.label} balance ${formatAmountWithCode(binding.amount, binding.currency)}`}
                         onClick={() => setSelected({ key: scopeKey, amount: {
                           subjectId: binding.subjectId, amount: binding.amount, currency: binding.currency,
@@ -96,7 +103,7 @@ export function ReportingRetainedAmountsPanel({ run }: { run: Pick<GovernedRepor
                           journalEntryIds: binding.journalEntryIds, ledgerEntryIds: binding.ledgerEntryIds
                         } })}>
                         {formatAmountWithCode(binding.amount, binding.currency)}
-                      </Button>
+                      </Button>}
                     </td>
                     <td className="min-w-[16rem] px-3 py-3">
                       <TechnicalDetails label={`${pluralizeCount(binding.journalEntryIds.length, "journal entry", { plural: "journal entries" })} · ${pluralizeCount(binding.ledgerEntryIds.length, "ledger entry", { plural: "ledger entries" })}`}>
@@ -112,6 +119,7 @@ export function ReportingRetainedAmountsPanel({ run }: { run: Pick<GovernedRepor
               </tbody>
             </table>
           </div>
+          </>
         )}
         <LedgerAmountProofDrawer selection={selection} onClose={() => setSelected(null)} />
       </CardContent>

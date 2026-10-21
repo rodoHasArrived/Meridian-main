@@ -11,4 +11,6 @@ export interface ReportLedgerAmountBinding {
   journalEntryIds: string[];
   ledgerEntryIds: string[];
   sourceSnapshotHash: string;
+  /** Server-owned: whether this caller may open the amount's proof. Absent means denied. */
+  proofAvailable?: boolean;
 }

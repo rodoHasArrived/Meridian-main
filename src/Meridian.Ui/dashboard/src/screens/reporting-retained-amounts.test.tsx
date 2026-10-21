@@ -22,7 +22,8 @@ const run: Pick<GovernedReportingRun, "runId" | "scope" | "snapshot"> = {
 const binding: ReportLedgerAmountBinding = {
   amountId: "account-cash", subjectId: "report:run-1:account-cash", label: "Cash", amount: 250, currency: "USD",
   scope: { tenantId: "tenant-1", companyId: "company-1", fundProfileId: "fund-1", ledgerBookId: "book-1", periodId: "period-1" },
-  journalEntryIds: ["22222222-2222-2222-2222-222222222222"], ledgerEntryIds: ["33333333-3333-3333-3333-333333333333"], sourceSnapshotHash: "a".repeat(64)
+  journalEntryIds: ["22222222-2222-2222-2222-222222222222"], ledgerEntryIds: ["33333333-3333-3333-3333-333333333333"], sourceSnapshotHash: "a".repeat(64),
+  proofAvailable: true
 };
 const selection: LedgerAmountSelection = { subjectId: binding.subjectId, amount: 250, currency: "USD", label: "Cash report balance",
   tenantId: "tenant-1", companyId: "company-1",
@@ -56,6 +57,16 @@ describe("retained report amounts", () => {
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(amount).toHaveFocus();
+  });
+
+  it.each([false, undefined])("shows balances without a proof action when proofAvailable is %s", async (proofAvailable) => {
+    vi.mocked(getReportAmountBindings).mockResolvedValue([{ ...binding, proofAvailable }]);
+    const { container } = render(<ReportingRetainedAmountsPanel run={run} />);
+    expect(await screen.findByText("250.00 USD")).toBeVisible();
+    expect(screen.getByText("Amount proof needs ledger report access")).toBeVisible();
+    expect(screen.queryByRole("button", { name: /^Inspect/ })).not.toBeInTheDocument();
+    expect(getLedgerAmountProof).not.toHaveBeenCalled();
+    expect((await axe(container)).violations).toEqual([]);
   });
 
   it.each(["tenantId", "companyId", "fundProfileId", "ledgerBookId", "periodId"] as const)("blocks a foreign binding %s before exposing its amount", async (field) => {

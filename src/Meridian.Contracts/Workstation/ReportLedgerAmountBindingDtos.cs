@@ -17,4 +17,11 @@ public sealed record ReportLedgerAmountBindingDto(
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? SourceSnapshotHash { get; init; }
+
+    /// <summary>
+    /// Server-owned answer to whether the current caller may open this amount's proof. Set only on
+    /// API responses; retained bindings leave it null, and clients treat an absent value as denied.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? ProofAvailable { get; init; }
 }

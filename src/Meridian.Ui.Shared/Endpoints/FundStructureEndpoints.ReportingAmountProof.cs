@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,11 @@ public static partial class FundStructureEndpoints
                 _ = await coordinator.GetAsync(id, caller, ct).ConfigureAwait(false);
                 var service = context.RequestServices.GetService<ReportLedgerAmountProvenanceService>()
                     ?? throw new NotSupportedException("Generated report amount proof is unavailable.");
-                return service.List(id, BuildReportAccessQueryContext(context));
+                // Proof opens through the evidence route, which also requires ledger-report access.
+                var proofAvailable = EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewLedgerReports,
+                    UserPermission.ManageLedgerReports, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance);
+                return service.List(id, BuildReportAccessQueryContext(context))
+                    .Select(amount => amount with { ProofAvailable = proofAvailable }).ToArray();
             },
             static (amounts, _) => amounts, StatusCodes.Status200OK, jsonOptions);
 }

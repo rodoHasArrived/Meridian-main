@@ -436,6 +436,7 @@ public sealed class ReportLedgerAmountProvenanceTests
         var amounts = await allowed.GetTestClient().GetFromJsonAsync<ReportLedgerAmountBindingDto[]>(
             fixture.AmountsRoute + "?tenantId=foreign&companyId=foreign", Json);
         amounts!.Single(item => item.Label == "Cash").Amount.Should().Be(100m);
+        amounts.Should().OnlyContain(item => item.ProofAvailable == true);
         var packet = await allowed.GetTestClient().GetFromJsonAsync<EvidencePacketDto>(fixture.PacketRoute, Json);
         packet!.LedgerAmount!.Status.Should().Be(EvidenceStatusDto.Ready);
         var openingRoute = packet.LedgerAmount.Evidence.Single(item => item.EvidenceId == "opening-source").Route!;
@@ -446,7 +447,10 @@ public sealed class ReportLedgerAmountProvenanceTests
         (await denied.GetTestClient().GetAsync(fixture.PacketRoute)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
         (await denied.GetTestClient().GetAsync(openingRoute)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
         await using var reportingOnly = await fixture.CreateAppAsync(UserPermission.ViewReporting);
-        (await reportingOnly.GetTestClient().GetAsync(fixture.AmountsRoute)).StatusCode.Should().Be(HttpStatusCode.OK);
+        var reportingAmounts = await reportingOnly.GetTestClient().GetFromJsonAsync<ReportLedgerAmountBindingDto[]>(
+            fixture.AmountsRoute, Json);
+        reportingAmounts.Should().NotBeEmpty()
+            .And.OnlyContain(item => item.ProofAvailable == false, "the proof route requires ledger-report access");
         (await reportingOnly.GetTestClient().GetAsync(fixture.PacketRoute)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
         (await reportingOnly.GetTestClient().GetAsync(openingRoute)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
         await using var foreign = await fixture.CreateAppAsync(UserPermission.ViewReporting, "company-beta");
