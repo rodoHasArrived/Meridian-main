@@ -5973,3 +5973,37 @@ operations, fund structure, designer, open-lot, swap, EDGAR and coverage suites.
 rules the schema now generates (the schema rule yields to them); retiring those duplicates is a
 cleanup, not a behaviour change. Validation of array-element shapes (`ElementFields`) is not yet
 generated.
+
+## Resolution pass — 2026-10-21 (priority 3, deterministic and date-aware identifier lookup)
+
+| Finding | What landed |
+| --- | --- |
+| Identifier resolution has no total order | The three `ResolveSecurityIdAsync` queries in `PostgresSecurityMasterStore` now order before `limit 1`: identifier claims by `is_primary desc, valid_from desc, security_id`; alias claims by `valid_from desc, security_id`; the legacy primary-identifier fallback by `security_id`. Among claims valid at the lookup instant, the one that became valid most recently wins, and equal claims fall back to the lowest security id, so the result never depends on physical row order. `SecurityMasterPostgresRoundTripTests.GetByIdentifierAsync_ResolvesCompetingClaimsDeterministically` creates two securities claiming one ticker over overlapping windows and holds the lookup to that order at two instants, plus a same-instant tie. |
+| Dated callers resolve identifiers at "now" | Callers that carry a business instant pass it as `asOfUtc`, so a ticker that moved between securities resolves to the one that carried it then: the backtest engine's universe pre-resolution and tick-size resolution (the end of the replay window), the reconciliation engine's security lookups (the run's `AsOf`) and the automated journal producers' ticker fallback (the production `AsOf`). Callers with no business instant (subscription validation, the validation gate, paper trading, QuantScript hints, EDGAR ingest, reporting lookups that already pass their own `asOfUtc`) keep resolving on current knowledge. |
+
+**Not landed: "audit settings".** The pass that set this priority named "fix the audit settings"
+without a referent, and no setting, option or finding in this review carries that name: the
+2026-10-15 audit-gap resolution closed the governance-event, independent-review, alias and
+direct-write findings, and the still-open P1 (self-asserted provenance and caller-selected
+`EffectiveFrom` on the write surface) is a write-surface change, not a setting. That item needs its
+owner to say which setting is meant before it can be fixed.
+
+**Validation.** The PostgreSQL round-trip suite (including the new determinism test) against a
+disposable PostgreSQL 16, and the reconciliation, automated-journal and backtest suites.
+
+## Resolution pass — 2026-10-21 (priority 4, first increment: the underlying graph)
+
+| Finding | What landed |
+| --- | --- |
+| Underlying links are single id fields; structured notes describe their underlying in free text; nothing walks from an underlying to the instruments that reference it | The underlying graph: `security_underlying_links` (migration 049) holds one edge per row from an instrument to the security it depends on, or to the reference text its terms name, in a stated role (`Underlying`, `ReferenceEntity`, `ReferenceObligation`, `Index`, `BasketConstituent`, `Collateral`) with a weight and a validity window. **Derived** edges are rewritten from the terms on every projection write, in the projection transaction (`SecurityUnderlyingLinkDeriver` reads the keys the term schema declares: `underlyingId` resolves; `referenceEntity`, `referenceObligation`, `floatingIndex`, `referenceIndex`, `inflationIndex`, `indexName`, `couponOrIndex` and `underlyingDescription` record the name), so the graph follows the terms. **Declared** edges (basket constituents with weights, collateral, reference obligations) are written through `ISecurityUnderlyingGraphStore` with their own window and a deterministic id, so re-declaring an edge updates it. `GET /api/security-master/{id}/underlyings` returns the instrument's underlyings, the instruments that depend on it (the reverse walk, indexed on the target) and the gaps: references that name no record and targets that are not in the Security Master. `POST` declares an edge, `DELETE …/{linkId}` removes a declared one. |
+
+**Not yet landed from this priority.** The OTC contract and collateral model (a trade or
+contract entity distinct from the instrument, collateral agreements, netting sets) is the next
+increment. A structured note's free-text underlying still enters the graph as an unresolved
+reference; resolving it to a record is an operator action through the declare endpoint until an
+ingest maps it.
+
+**Validation.** `SecurityUnderlyingLinkDeriverTests`, `SecurityUnderlyingLinksMigrationTests`,
+`SecurityUnderlyingEndpointsTests` (new), `SecurityUnderlyingGraphPostgresTests` (new; derived
+edges follow a re-pointed option, declared edges beside derived ones, reverse walk, removal rules
+and refusals) against a disposable PostgreSQL 16, with the Security Master round-trip suite.

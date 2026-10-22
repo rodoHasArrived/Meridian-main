@@ -378,6 +378,8 @@ public static class UiApiRoutes
     public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
     public const string SecurityMasterIncomeCashFlows = "/api/security-master/{securityId:guid}/income-cash-flows";
     public const string SecurityMasterFactorHistory = "/api/security-master/{securityId:guid}/factor-history";
+    public const string SecurityMasterUnderlyings = "/api/security-master/{securityId:guid}/underlyings";
+    public const string SecurityMasterUnderlyingLink = "/api/security-master/{securityId:guid}/underlyings/{linkId:guid}";
     public const string SecurityMasterCorporateActionsIngest = "/api/security-master/corporate-actions/ingest";
     public const string SecurityMasterCorporateActionsInbox = "/api/security-master/corporate-actions/inbox";
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";

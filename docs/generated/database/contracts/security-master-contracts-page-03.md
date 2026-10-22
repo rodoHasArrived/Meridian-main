@@ -2,11 +2,27 @@
 
 # `security-master-contracts` data objects - page 3 of 5
 
-Objects 161-240 of 337. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 344. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_OperatorOverridesDto["OperatorOverridesDto"] {
+        +SecurityOverrideApprovalStatusDto ApprovalStatus
+        +IReadOnlyList~SecurityOverrideAuditEntryDto~ AuditTrail
+        +string? ReasonCode
+        +DateTimeOffset? ReviewedAt
+        +string? ReviewedBy
+        +Guid SecurityId
+        +DateTimeOffset UpdatedAt
+        +string UpdatedBy
+        +IReadOnlyDictionary~string__string~ Values
+    }
+    class Meridian_Contracts_SecurityMaster_OperatorOverridesPatchRequest["OperatorOverridesPatchRequest"] {
+        +string? ReasonCode
+        +IReadOnlyList~string~? RemoveKeys
+        +IReadOnlyDictionary~string__string~? SetValues
+    }
     class Meridian_Contracts_SecurityMaster_PayloadCorporateActionTerms["PayloadCorporateActionTerms"] {
         +string EventType
         +JsonElement? Payload
@@ -537,14 +553,6 @@ classDiagram
         +IReadOnlyList~SecurityFactorHistoryPoint~ Points
         +Guid SecurityId
     }
-    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint["SecurityFactorHistoryPoint"] {
-        +DateOnly AsOfDate
-        +Guid? CorpActId
-        +decimal Factor
-        +SecurityFactorSource Source
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryProjector["SecurityFactorHistoryProjector"] {
-    }
     Meridian_Contracts_SecurityMaster_SecurityAliasDto --> Meridian_Contracts_SecurityMaster_SecurityAliasScope
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermField
@@ -590,7 +598,5 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto
     Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityAliasDto
     Meridian_Contracts_SecurityMaster_SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
-    Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict
-    Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
 ```
