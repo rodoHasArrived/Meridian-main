@@ -820,6 +820,66 @@ erDiagram
         numeric strike
         text put_call
     }
+    security_master_otc_collateral_agreements {
+        uuid collateral_agreement_id PK
+        uuid master_agreement_id FK
+        text currency
+        numeric_28_10_ threshold_ours
+        numeric_28_10_ threshold_theirs
+        numeric_28_10_ minimum_transfer_amount
+        numeric_28_10_ independent_amount
+        numeric_28_10_ rounding_amount
+        text valuation_frequency
+        jsonb eligible_collateral
+        date effective_date
+        date termination_date
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_contracts {
+        uuid contract_id PK
+        uuid security_id FK
+        uuid netting_set_id FK
+        text external_trade_id
+        text direction
+        numeric_28_10_ notional
+        text notional_currency
+        date trade_date
+        date effective_date
+        date termination_date
+        text status
+        text confirmation_reference
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_master_agreements {
+        uuid agreement_id PK
+        text counterparty
+        text counterparty_lei
+        text our_entity
+        uuid our_entity_id
+        text agreement_type
+        date agreement_date
+        text governing_law
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_netting_sets {
+        uuid netting_set_id PK
+        uuid master_agreement_id FK
+        uuid collateral_agreement_id FK
+        text name
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
     security_master_other_security_projection {
         uuid security_id PK
         text display_name
@@ -1550,6 +1610,10 @@ erDiagram
     security_master_option_contract_projection ||--o{ security_master_option_alias_projection : "option_alias_projection_contract_symbol_fkey"
     security_master_option_contract_projection ||--o{ security_master_option_lifecycle_projection : "option_lifecycle_projection_contract_symbol_fkey"
     security_master_option_contract_projection ||--o{ security_master_option_series_projection : "option_series_projection_contract_symbol_fkey"
+    security_master_otc_collateral_agreements ||--o{ security_master_otc_netting_sets : "otc_netting_sets_collateral_agreement_id_fkey"
+    security_master_otc_master_agreements ||--o{ security_master_otc_collateral_agreements : "otc_collateral_agreements_master_agreement_id_fkey"
+    security_master_otc_master_agreements ||--o{ security_master_otc_netting_sets : "otc_netting_sets_master_agreement_id_fkey"
+    security_master_otc_netting_sets ||--o{ security_master_otc_contracts : "otc_contracts_netting_set_id_fkey"
     security_master_projected_cash_flow ||--o{ security_master_reconciliation_result : "reconciliation_result_projected_flow_id_fkey"
     security_master_projection_run ||--o{ security_master_projected_cash_flow : "projected_cash_flow_projection_run_id_fkey"
     security_master_projection_run ||--o{ security_master_projection_run : "projection_run_supersedes_projection_run_id_fkey"
@@ -1568,6 +1632,7 @@ erDiagram
     security_master_securities ||--o{ security_master_fxspot_projection : "fxspot_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_underlying_security_id_fkey"
+    security_master_securities ||--o{ security_master_otc_contracts : "otc_contracts_security_id_fkey"
     security_master_securities ||--o{ security_master_security_alias_revisions : "security_alias_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_aliases : "security_aliases_security_id_fkey"
     security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
