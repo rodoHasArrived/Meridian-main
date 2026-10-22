@@ -1,11 +1,11 @@
 {
   "total_files": 743,
-  "total_lines": 165480,
+  "total_lines": 165523,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 306,
-  "average_lines": 222.7,
+  "average_lines": 222.8,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -3374,7 +3374,7 @@
     },
     {
       "path": "docs/product/plans/next-work-determination-2026-10-22.md",
-      "line_count": 151,
+      "line_count": 194,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

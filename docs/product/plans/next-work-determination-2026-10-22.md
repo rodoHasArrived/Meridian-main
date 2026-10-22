@@ -118,6 +118,48 @@ The 26 hand-written conflicts span 13 paths, the largest being
 review PRs) and `database/manifest/*.json` (10 across four files). Nothing in the queue is blocked by
 a real disagreement about code.
 
+## New: `main` carries stale reviewed UI hashes, and it fails the repair automation on every non-UI PR
+
+Found by this document's own pull request. `Generated Repair` (`generated-repair.yml`, the
+`pull_request_target` sandbox, not the Publisher) fails on a docs-only PR with
+`status: review_required`, `conflicts: []` and `changed_paths: []`. The two modules it names are:
+
+```text
+SRC-UI            Merged module/README differs from the selected reviewed entry
+SRC-UI-DASHBOARD  Merged module/README differs from the selected reviewed entry
+```
+
+**The drift is on `main`, not on the branch.** Running the repository's own validator against a
+clean checkout of `52c1a6fe` reproduces it exactly:
+
+```text
+$ python3 build/scripts/docs/validate-doc-hashes.py --summary
+documentation hash validation: 2 error(s), 0 warning(s)
+ERROR: src/Meridian.Ui: source hash drift; update docs or rerun hash manifest after review
+ERROR: src/Meridian.Ui/dashboard: source hash drift; update docs or rerun hash manifest after review
+```
+
+`52c1a6fe` rebuilt the workstation bundle and regenerated `ui-api-routes.generated.ts`; the reviewed
+entries in `docs/source/generated/source-hash-manifest.json` were refreshed before that final
+rebuild rather than after it, so the manifest records the pre-rebuild tree.
+
+Two consequences, and the second is the ranking one:
+
+- **Any PR that does not itself touch `src/Meridian.Ui/**` inherits the failure and cannot clear
+  it.** A branch whose `src/` tree object is byte-identical to the base produces a merged tree whose
+  UI modules are the base's, so the mismatch is structurally untouchable from such a PR. Both
+  docs-only PRs opened against this base today — #3258 at 16:04 UTC and #3259 at 16:24 UTC — failed
+  this check; the UI-touching PRs #3206 and #3257, which refresh the hashes themselves, passed.
+- **It takes the repair sandbox offline for exactly the PRs that need it most.** The sandbox exits
+  before generating anything (`generation: null`), so the queue's generated-conflict load — 96% of
+  which this same automation is supposed to clear — gets no patch on any docs-only or
+  backend-only PR while the manifest stays stale.
+
+The fix is one command plus a genuine review of the two modules
+(`validate-doc-hashes.py --write-module SRC-UI --write-module SRC-UI-DASHBOARD`). It belongs to a PR
+that touches the UI modules, because refreshing a *reviewed*-hash entry asserts that someone
+reviewed that tree; a prioritization document is the wrong place to make that claim.
+
 ## Carried, verified unchanged
 
 The two `verify-workflows` races are **still unfixed on day six**: `tests/scripts` has 321
@@ -136,6 +178,7 @@ not green once, and that is a weaker position than it looks.
 | **P0** | **Give `Production Certification` a tag trigger**, or decouple `production`/`smoke` from `needs: eligibility` | Carried from 2026-10-21 unchanged. Without it a tag yields certification evidence only if signing succeeds first, which is why `rc.1` minted nothing |
 | **P1** | **Land #3232, then run the resolver across the queue** | **96% of 682 conflicts are already in the resolver's scope** and need no new code. The publisher has never succeeded in 474+ runs. This is the single highest-leverage delivery item in the program |
 | **P1** | **Stop the bundle churn at source** — a merge driver for `src/Meridian.Ui/wwwroot/workstation/`, or regenerate-on-merge | **541 conflicts, 79% of the tax, one directory.** Four determinations have ranked a generic `.gitattributes` item; this is the specific target. `.gitattributes` already has `eol` rules for exactly these paths and no merge strategy |
+| **P1** | **Refresh the `SRC-UI` / `SRC-UI-DASHBOARD` reviewed hashes on `main`** | `main` is stale against its own `validate-doc-hashes.py`, which fails `Generated Repair` on every PR that does not touch the UI modules — taking the repair sandbox offline for precisely the docs-only and backend-only PRs whose generated conflicts it exists to clear |
 | **P1** | **Fix the two `verify-workflows` races** | Day six, unchanged: 321 call sites, zero `ignore_cleanup_errors`. The RC's gate needs to be re-runnable, not green once |
 | **P2** | **Resolve the determination backlog: merge #3249 and #3170; close #3197, #3207, #3223** | Five open ranking documents. #3249 is current and correct; #3170 carries a written fix for the dangling certification-evidence anchor. The other three were written against premises that have since changed twice |
 
