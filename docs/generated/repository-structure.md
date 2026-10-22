@@ -1981,6 +1981,7 @@ Meridian-main
 │   │   │   ├── next-work-determination-2026-10-05.md
 │   │   │   ├── next-work-determination-2026-10-16.md
 │   │   │   ├── next-work-determination-2026-10-20.md
+│   │   │   ├── next-work-determination-2026-10-22.md
 │   │   │   ├── product-roadmap-priorities-2026-07.md
 │   │   │   ├── production-readiness-backlog-2026-08.md
 │   │   │   ├── README.md
