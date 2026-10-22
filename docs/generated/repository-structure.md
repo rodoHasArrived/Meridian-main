@@ -4714,6 +4714,7 @@ Meridian-main
 │   │   │   ├── SecurityTermConventions.cs
 │   │   │   ├── SecurityTermReader.cs
 │   │   │   ├── SecurityTermsEnvelope.cs
+│   │   │   ├── SecurityUnderlyingGraph.cs
 │   │   │   ├── SecurityValidationDtos.cs
 │   │   │   ├── StructuredCashFlowTerms.cs
 │   │   │   └── StructuredCashFlowTermsResolver.cs
@@ -6578,7 +6579,8 @@ Meridian-main
 │   │   │   │   ├── 045_structured_credit_typed_tranche_terms.sql
 │   │   │   │   ├── 046_otc_derivative_terms_projections.sql
 │   │   │   │   ├── 047_rate_option_and_note_terms_projections.sql
-│   │   │   │   └── 048_security_master_listing_mic.sql
+│   │   │   │   ├── 048_security_master_listing_mic.sql
+│   │   │   │   └── 049_security_underlying_links.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -6635,6 +6637,7 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterStore.IdentifierCandidates.cs
 │   │   │   ├── PostgresSecurityMasterStore.PostingAuthority.cs
 │   │   │   ├── PostgresSecurityMasterStore.TermsProjection.cs
+│   │   │   ├── PostgresSecurityUnderlyingGraphStore.cs
 │   │   │   ├── PostgresStructuredCreditReferenceProjectionStore.cs
 │   │   │   ├── PostgresSwapReferenceProjectionStore.cs
 │   │   │   ├── SecurityAliasSnapshot.cs
@@ -11159,6 +11162,9 @@ Meridian-main
 │   │   │   ├── SecurityTermConventionTests.cs
 │   │   │   ├── SecurityTermsProjectionRegistryTests.cs
 │   │   │   ├── SecurityTermsVersioningTests.cs
+│   │   │   ├── SecurityUnderlyingGraphPostgresTests.cs
+│   │   │   ├── SecurityUnderlyingLinkDeriverTests.cs
+│   │   │   ├── SecurityUnderlyingLinksMigrationTests.cs
 │   │   │   ├── SecurityValidationServiceTests.cs
 │   │   │   ├── SpecializedProjectionGoldenTests.cs
 │   │   │   ├── SwapLegRoundTripTests.cs
@@ -11618,6 +11624,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterReconciliationSlaPolicyProviderTests.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationEndpointsTests.cs
+│   │   │   ├── SecurityMasterUnderlyingEndpointsTests.cs
 │   │   │   ├── SecurityMasterValidationEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchOptionsBindingTests.cs

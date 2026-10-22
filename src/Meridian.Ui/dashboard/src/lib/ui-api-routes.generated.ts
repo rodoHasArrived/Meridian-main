@@ -313,6 +313,8 @@ export const UI_API_ROUTES = {
   SecurityMasterCorporateActions: "/api/security-master/{securityId:guid}/corporate-actions",
   SecurityMasterIncomeCashFlows: "/api/security-master/{securityId:guid}/income-cash-flows",
   SecurityMasterFactorHistory: "/api/security-master/{securityId:guid}/factor-history",
+  SecurityMasterUnderlyings: "/api/security-master/{securityId:guid}/underlyings",
+  SecurityMasterUnderlyingLink: "/api/security-master/{securityId:guid}/underlyings/{linkId:guid}",
   SecurityMasterCorporateActionsIngest: "/api/security-master/corporate-actions/ingest",
   SecurityMasterCorporateActionsInbox: "/api/security-master/corporate-actions/inbox",
   SecurityMasterCorporateActionsInboxApply: "/api/security-master/corporate-actions/inbox/apply",

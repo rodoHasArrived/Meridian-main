@@ -2,7 +2,7 @@
 
 # `security_master` schema
 
-- Relations: 115
+- Relations: 116
 - Functions/procedures: 7
 - Triggers: 15
 - Row-level security policies: 0
@@ -1242,6 +1242,20 @@ erDiagram
         timestamp_with_time_zone snapshot_timestamp
         jsonb payload
     }
+    security_master_security_underlying_links {
+        uuid link_id PK
+        uuid security_id FK
+        text role
+        uuid underlying_security_id
+        text reference_text
+        numeric_28_10_ weight
+        timestamp_with_time_zone valid_from
+        timestamp_with_time_zone valid_to
+        text source
+        text notes
+        text created_by
+        timestamp_with_time_zone created_at
+    }
     security_master_security_workbench_generations {
         uuid security_id PK
         bigint generation
@@ -1575,6 +1589,7 @@ erDiagram
     security_master_securities ||--o{ security_master_security_pricing_hierarchy : "security_pricing_hierarchy_security_id_fkey"
     security_master_securities ||--o{ security_master_security_pricing_hierarchy_history : "security_pricing_hierarchy_history_security_id_fkey"
     security_master_securities ||--o{ security_master_security_raw_prices : "security_raw_prices_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_underlying_links : "security_underlying_links_security_id_fkey"
     security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_approvals : "security_close_price_approvals_snapshot_id_fkey"
     security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_snapshots : "security_close_price_snapshot_corrects_snapshot_id_account_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_position_report_line : "servicer_position_report_line_servicer_report_batch_id_fkey"
@@ -1686,6 +1701,7 @@ erDiagram
 | `security_pricing_hierarchy_history` | table | 6 | `security_id`, `account_id`, `as_of` | 1 | 1 | Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection. |
 | `security_raw_prices` | table | 7 | `security_id`, `source_id`, `price_as_of` | 1 | 2 | - |
 | `security_snapshots` | table | 4 | `security_id` | 0 | 1 | - |
+| `security_underlying_links` | table | 12 | `link_id` | 1 | 3 | The underlying graph: one edge per row from an instrument to the security or named reference it depends on, in a stated role, with its validity window. Derived rows follow the terms; declared rows are governed through the graph API. |
 | `security_workbench_generations` | table | 2 | `security_id` | 0 | 1 | - |
 | `servicer_position_report_line` | table | 14 | `servicer_report_line_id` | 2 | 2 | - |
 | `servicer_report_batch` | table | 12 | `servicer_report_batch_id` | 0 | 1 | - |
