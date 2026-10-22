@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-10
-**Review history:** resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-10-22
+**Review history:** scheduled institutional-requirements pass 2026-10-22; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -6007,3 +6007,75 @@ ingest maps it.
 `SecurityUnderlyingEndpointsTests` (new), `SecurityUnderlyingGraphPostgresTests` (new; derived
 edges follow a re-pointed option, declared edges beside derived ones, reverse walk, removal rules
 and refusals) against a disposable PostgreSQL 16, with the Security Master round-trip suite.
+
+## Scheduled institutional-requirements pass — 2026-10-22
+
+Re-verified against `main` at `52c1a6fe`. The 2026-10-21 priorities 1–3 landed as described above,
+and the underlying graph (priority 4, first increment) is in. Conflict detection now compares
+claims by validity window (`SecurityMasterConflictDetection.cs:213-217`), so the long-open P2
+(2026-08-14) is closed. The write surface stamps `UpdatedBy`/`CreatedBy` from the authenticated
+actor (`SecurityMasterEndpoints.cs:1517`); `SourceSystem` and `EffectiveFrom` stay caller-supplied
+by design, which narrows P1 (2026-08-28) to those two fields.
+
+### Re-verified as still open
+
+- **G2 — no OTC contract, collateral or netting model.** No trade/contract entity, CSA or netting
+  set exists in `src/`.
+- **G4 — no valuation-model interface; curves are in memory only.** `InMemorySecurityForwardCurveProvider`
+  remains the only `ISecurityForwardCurveProvider` (`StorageFeatureRegistration.cs:416`).
+- **G5 — no shared schedule engine.** `BusinessDayConvention` still appears only in the bond DTOs,
+  bond projection and F# term modules; there are no holiday calendars, and direct-lending PIK and
+  resets still run in the F# servicing aggregate.
+- **Lot of record at the booked factor.** `LedgerTaxLotRecord` persists `BookedFactor` and no
+  current factor (`ILedgerJournalStore.cs:376-420`).
+- **Option is still a specialized projection and CustomAsset still has none** (`SecurityTermsProjectionRegistry.cs:390-391`).
+
+### H1 — The underlying-graph deriver keeps its own key list, and it misses swap-leg indices
+
+`SecurityUnderlyingLinkDeriver`'s summary says each reference field is "read by the key the term
+schema declares … rather than a second copy of the field list", but the keys are two hard-coded
+arrays (`SecurityUnderlyingGraph.cs:123-132`), and `SecurityAssetTermField` has no attribute that
+marks a field as an underlying or reference. Nothing ties the two together, so they have already
+diverged:
+
+- `Swap.legs[].index` (`SecurityAssetTermsSchema.cs:621`) is an element field; the deriver reads
+  only the top-level object and `profileFields`, so a floating-leg swap — and every total return
+  swap onboarded the same way — derives no `Index` edge. The deriver tests cover CDS, bond,
+  option, structured note and custom asset, not swaps.
+- `Commitment.collateral` (`SecurityAssetTermsSchema.cs:493`) names collateral, and
+  `SecurityUnderlyingRole.Collateral` exists, but no derived key maps to it.
+- Each role reads with `SecurityTermReader.ReadString`, which returns the first non-empty key, so
+  a record carrying two keys under one role (`floatingIndex` and `inflationIndex`) records one edge.
+
+The fix is the one the registry already uses for conventions: declare the role on the field
+(`SecurityAssetTermField.UnderlyingRole`, including element fields), derive from the schema, and
+add a coverage test that every field declaring a role produces an edge.
+
+### H2 — Declared graph edges are mutated in place with no governance event
+
+`PostgresSecurityUnderlyingGraphStore.DeclareAsync` upserts by deterministic id, so re-declaring an
+edge overwrites its weight, window and notes; `RemoveDeclaredAsync` hard-deletes the row and records
+no actor (`PostgresSecurityUnderlyingGraphStore.cs:47-95`). Neither appends to
+`security_governance_events`. Declared edges are the operator-owned half of the graph — basket
+weights, collateral, reference-obligation resolution — so a basket reweighting or a removed
+collateral link leaves no history, against the 2026-10-15 priority-5 rule that alias, override and
+direct writes all append a governance event in the writing transaction. Derived edges are fine:
+they are recomputed from audited terms in the projection transaction.
+
+Derived links also stamp `CreatedAt` with the record's `EffectiveFrom` (`SecurityUnderlyingGraph.cs:219`),
+so the field reports valid time, not when the edge was written.
+
+### Priorities from this pass
+
+1. **Audit declared graph edges (H2).** Append `UnderlyingLinkDeclared`/`UnderlyingLinkRemoved`
+   governance events, with previous and new values and the actor, in the write transaction; take
+   the actor on DELETE. Small, and it should land before operators start entering baskets.
+2. **Make the graph schema-driven (H1).** Declare underlying roles on term fields (element fields
+   included), derive from them, and guard it with a coverage test; this closes the swap-leg and
+   commitment-collateral gaps.
+3. **OTC contract, collateral and netting model (G2)** — the remaining increment of the 2026-10-21
+   priority 4, now able to hang collateral off the graph's `Collateral` role.
+4. **One schedule engine with calendars (G5)**, then persisted, versioned curves behind a
+   valuation-model seam (G4).
+5. **Persist the current factor on the lot of record** and move lot-of-record reads onto
+   `SecurityLotModel`.
