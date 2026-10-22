@@ -10,6 +10,9 @@ public static class SecurityGovernanceStreams
     public const string OperatorOverrides = "OperatorOverrides";
     public const string Aliases = "Aliases";
     public const string ProjectionRebuild = "ProjectionRebuild";
+
+    /// <summary>Declared underlying-graph links: declaration, amendment and removal (migration 051).</summary>
+    public const string UnderlyingGraph = "UnderlyingGraph";
 }
 
 /// <summary>One recorded governance event.</summary>

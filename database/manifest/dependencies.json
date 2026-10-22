@@ -35403,6 +35403,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermField",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldDefinitionDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermEditorKind"
     },
@@ -51665,7 +51671,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "d61a468b9afd90992c23ff9f3e3ad93261e00c83c06768aac94c645678d4542a",
+  "fingerprint": "95655fcb22f59662c7e54f29fb5b3c278f3bec2da137073d0641d178c3220b70",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -75620,9 +75626,9 @@
     }
   ],
   "summary": {
-    "contract_references": 3344,
+    "contract_references": 3345,
     "contract_set_memberships": 4061,
-    "edges": 8584,
+    "edges": 8585,
     "foreign_keys": 144,
     "logical_references": 6,
     "nodes": 4152

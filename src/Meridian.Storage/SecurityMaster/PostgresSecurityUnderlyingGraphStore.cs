@@ -5,7 +5,8 @@ namespace Meridian.Storage.SecurityMaster;
 
 /// <summary>
 /// PostgreSQL store for the underlying graph (<c>security_underlying_links</c>). Declared links are
-/// written here; derived links are written by <see cref="PostgresSecurityMasterStore"/> inside the
+/// written here, each change appending to <c>security_governance_events</c> in the same
+/// transaction; derived links are written by <see cref="PostgresSecurityMasterStore"/> inside the
 /// projection transaction (see <see cref="SecurityUnderlyingLinkWriter"/>), so both read from one
 /// table.
 /// </summary>
@@ -75,23 +76,82 @@ public sealed class PostgresSecurityUnderlyingGraphStore : ISecurityUnderlyingGr
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+
+        // Declarations of one edge are serialized so the event records the state it replaced.
+        await SecurityUnderlyingLinkWriter.LockLinkAsync(connection, transaction, link.LinkId, ct).ConfigureAwait(false);
+        var previous = await SecurityUnderlyingLinkWriter.ReadByIdAsync(connection, transaction, _options.Schema, link.LinkId, ct).ConfigureAwait(false);
+        var changes = previous is null ? [] : SecurityUnderlyingLinkWriter.ChangedFields(previous, link);
+        if (previous is not null && changes.Count == 0)
+        {
+            await transaction.CommitAsync(ct).ConfigureAwait(false);
+            return previous;
+        }
+
         await SecurityUnderlyingLinkWriter.UpsertAsync(connection, transaction, _options.Schema, link, ct).ConfigureAwait(false);
+        await PostgresSecurityGovernanceEventLog.AppendAsync(
+            connection,
+            transaction,
+            _options.Schema,
+            link.SecurityId,
+            SecurityGovernanceStreams.UnderlyingGraph,
+            previous is null ? SecurityUnderlyingLinkWriter.DeclaredEvent : SecurityUnderlyingLinkWriter.AmendedEvent,
+            link.CreatedBy,
+            link.CreatedAt,
+            new
+            {
+                link = SecurityUnderlyingLinkWriter.Describe(link),
+                previous = previous is null ? null : SecurityUnderlyingLinkWriter.Describe(previous),
+                changes
+            },
+            ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return link;
     }
 
-    public async Task<bool> RemoveDeclaredAsync(Guid securityId, Guid linkId, CancellationToken ct = default)
+    public async Task<bool> RemoveDeclaredAsync(Guid securityId, Guid linkId, string removedBy, CancellationToken ct = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(removedBy);
+
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        await using var command = connection.CreateCommand();
-        command.CommandText =
-            $"""
-            delete from {_options.Schema}.security_underlying_links
-            where link_id = @link_id and security_id = @security_id and source = 'Declared';
-            """;
-        command.Parameters.AddWithValue("link_id", linkId);
-        command.Parameters.AddWithValue("security_id", securityId);
-        return await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 1;
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await SecurityUnderlyingLinkWriter.LockLinkAsync(connection, transaction, linkId, ct).ConfigureAwait(false);
+
+        SecurityUnderlyingLinkDto? removed;
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText =
+                $"""
+                delete from {_options.Schema}.security_underlying_links
+                where link_id = @link_id and security_id = @security_id and source = 'Declared'
+                returning {SecurityUnderlyingLinkWriter.Columns};
+                """;
+            command.Parameters.AddWithValue("link_id", linkId);
+            command.Parameters.AddWithValue("security_id", securityId);
+            await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            removed = await reader.ReadAsync(ct).ConfigureAwait(false) ? SecurityUnderlyingLinkWriter.ReadLink(reader) : null;
+        }
+
+        if (removed is null)
+        {
+            await transaction.RollbackAsync(ct).ConfigureAwait(false);
+            return false;
+        }
+
+        // The row is gone; the governance log keeps what was removed and who removed it.
+        await PostgresSecurityGovernanceEventLog.AppendAsync(
+            connection,
+            transaction,
+            _options.Schema,
+            securityId,
+            SecurityGovernanceStreams.UnderlyingGraph,
+            SecurityUnderlyingLinkWriter.RemovedEvent,
+            removedBy,
+            DateTimeOffset.UtcNow,
+            new { link = SecurityUnderlyingLinkWriter.Describe(removed) },
+            ct).ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return true;
     }
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)
@@ -113,6 +173,83 @@ public sealed class PostgresSecurityUnderlyingGraphStore : ISecurityUnderlyingGr
 /// </summary>
 internal static class SecurityUnderlyingLinkWriter
 {
+    /// <summary>Governance event types recorded on the <see cref="SecurityGovernanceStreams.UnderlyingGraph"/> stream.</summary>
+    public const string DeclaredEvent = "UnderlyingLinkDeclared";
+    public const string AmendedEvent = "UnderlyingLinkAmended";
+    public const string RemovedEvent = "UnderlyingLinkRemoved";
+
+    /// <summary>The graph table's columns, in the order <see cref="ReadLink"/> reads them.</summary>
+    public const string Columns =
+        "link_id, security_id, role, underlying_security_id, reference_text, weight, " +
+        "valid_from, valid_to, source, notes, created_by, created_at";
+
+    /// <summary>Serializes writers of one link for the rest of the transaction.</summary>
+    public static async Task LockLinkAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid linkId, CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "select pg_advisory_xact_lock(hashtextextended(@lock_scope, 0));";
+        command.Parameters.AddWithValue("lock_scope", "security-underlying-link:" + linkId.ToString("D"));
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    public static async Task<SecurityUnderlyingLinkDto?> ReadByIdAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        string schema,
+        Guid linkId,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"select {Columns} from {schema}.security_underlying_links where link_id = @link_id;";
+        command.Parameters.AddWithValue("link_id", linkId);
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        return await reader.ReadAsync(ct).ConfigureAwait(false) ? ReadLink(reader) : null;
+    }
+
+    /// <summary>
+    /// The declared facts a re-declaration of the same edge changes, compared at the precision the
+    /// table stores (microsecond timestamps, ten weight decimals) so a value that round-trips
+    /// unchanged is never reported as an amendment. The edge's identity (security, role, target,
+    /// reference) is fixed by the link id.
+    /// </summary>
+    public static IReadOnlyList<string> ChangedFields(SecurityUnderlyingLinkDto stored, SecurityUnderlyingLinkDto declared)
+    {
+        var changes = new List<string>();
+        if (RoundWeight(stored.Weight) != RoundWeight(declared.Weight))
+            changes.Add("weight");
+        if (ToMicroseconds(stored.ValidFrom) != ToMicroseconds(declared.ValidFrom))
+            changes.Add("validFrom");
+        if (ToMicroseconds(stored.ValidTo) != ToMicroseconds(declared.ValidTo))
+            changes.Add("validTo");
+        if (!string.Equals(stored.Notes, declared.Notes, StringComparison.Ordinal))
+            changes.Add("notes");
+        return changes;
+    }
+
+    /// <summary>The link as a governance payload records it.</summary>
+    public static object Describe(SecurityUnderlyingLinkDto link) => new
+    {
+        linkId = link.LinkId,
+        securityId = link.SecurityId,
+        role = link.Role.ToString(),
+        underlyingSecurityId = link.UnderlyingSecurityId,
+        reference = link.Reference,
+        weight = link.Weight,
+        validFrom = link.ValidFrom,
+        validTo = link.ValidTo,
+        notes = link.Notes,
+        declaredBy = link.CreatedBy,
+        declaredAt = link.CreatedAt
+    };
+
+    private static decimal? RoundWeight(decimal? weight)
+        => weight is { } value ? decimal.Round(value, 10, MidpointRounding.AwayFromZero) : null;
+
+    private static long? ToMicroseconds(DateTimeOffset? value)
+        => value is { } instant ? instant.UtcTicks / (TimeSpan.TicksPerMillisecond / 1000) : null;
+
     /// <summary>
     /// Replaces the derived links of <paramref name="record"/> with those its terms state now.
     /// Declared links are untouched. Runs inside the projection transaction so the graph and the
@@ -191,8 +328,7 @@ internal static class SecurityUnderlyingLinkWriter
         command.Transaction = transaction;
         command.CommandText =
             $"""
-            select link_id, security_id, role, underlying_security_id, reference_text, weight,
-                   valid_from, valid_to, source, notes, created_by, created_at
+            select {Columns}
             from {schema}.security_underlying_links
             {whereClause}
             order by source, role, valid_from, link_id;
@@ -203,21 +339,25 @@ internal static class SecurityUnderlyingLinkWriter
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
-            links.Add(new SecurityUnderlyingLinkDto(
-                reader.GetGuid(0),
-                reader.GetGuid(1),
-                Enum.Parse<SecurityUnderlyingRole>(reader.GetString(2)),
-                reader.IsDBNull(3) ? null : reader.GetGuid(3),
-                reader.IsDBNull(4) ? null : reader.GetString(4),
-                reader.IsDBNull(5) ? null : reader.GetDecimal(5),
-                new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(6), DateTimeKind.Utc)),
-                reader.IsDBNull(7) ? null : new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(7), DateTimeKind.Utc)),
-                Enum.Parse<SecurityUnderlyingLinkSource>(reader.GetString(8)),
-                reader.IsDBNull(9) ? null : reader.GetString(9),
-                reader.GetString(10),
-                new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(11), DateTimeKind.Utc))));
+            links.Add(ReadLink(reader));
         }
 
         return links;
     }
+
+    /// <summary>Reads one link from a row selected or returned with <see cref="Columns"/>.</summary>
+    public static SecurityUnderlyingLinkDto ReadLink(NpgsqlDataReader reader)
+        => new(
+            reader.GetGuid(0),
+            reader.GetGuid(1),
+            Enum.Parse<SecurityUnderlyingRole>(reader.GetString(2)),
+            reader.IsDBNull(3) ? null : reader.GetGuid(3),
+            reader.IsDBNull(4) ? null : reader.GetString(4),
+            reader.IsDBNull(5) ? null : reader.GetDecimal(5),
+            new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(6), DateTimeKind.Utc)),
+            reader.IsDBNull(7) ? null : new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(7), DateTimeKind.Utc)),
+            Enum.Parse<SecurityUnderlyingLinkSource>(reader.GetString(8)),
+            reader.IsDBNull(9) ? null : reader.GetString(9),
+            reader.GetString(10),
+            new DateTimeOffset(DateTime.SpecifyKind(reader.GetDateTime(11), DateTimeKind.Utc)));
 }

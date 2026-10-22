@@ -179,6 +179,18 @@ public sealed record SecurityAssetTermField(
         => this with { Role = SecurityAssetTermRole.Operational };
 
     /// <summary>
+    /// The role the field's value plays in the underlying graph, or <see langword="null"/> when the
+    /// field names nothing the instrument depends on. <see cref="SecurityUnderlyingLinkDeriver"/>
+    /// builds the derived graph from these declarations alone: a value that is a security id links
+    /// to that record, any other text is recorded as an unresolved reference.
+    /// </summary>
+    public SecurityUnderlyingRole? UnderlyingRole { get; init; }
+
+    /// <summary>Declares the field a reference the underlying graph links in <paramref name="role"/>.</summary>
+    public SecurityAssetTermField LinksUnderlying(SecurityUnderlyingRole role)
+        => this with { UnderlyingRole = role };
+
+    /// <summary>
     /// True when <paramref name="value"/> satisfies this field's convention (or it declares none).
     /// Blank values are left to the required/optional rules.
     /// </summary>
@@ -249,7 +261,7 @@ public static class SecurityAssetTermsSchema
             ],
             ["Option"] =
             [
-                Req("underlyingId", SecurityAssetTermFieldType.Guid),
+                Req("underlyingId", SecurityAssetTermFieldType.Guid).LinksUnderlying(SecurityUnderlyingRole.Underlying),
                 // The F# option command rejects anything but Put/Call; declaring the vocabulary moves
                 // the same rejection onto the edit surface and the write-mode codec. OptionTerms
                 // holds it as a plain string, so an odd value already in a row re-serializes intact
@@ -291,7 +303,7 @@ public static class SecurityAssetTermsSchema
                 // named structure owns (floatingIndex, the step schedule, the inflation block).
                 OptOneOf("couponType", "Fixed", "Floating", "ZeroCoupon", "Step", "InflationLinked"),
                 Opt("couponRate", SecurityAssetTermFieldType.Decimal),
-                Opt("floatingIndex", SecurityAssetTermFieldType.String),
+                Opt("floatingIndex", SecurityAssetTermFieldType.String).LinksUnderlying(SecurityUnderlyingRole.Index),
                 Opt("spreadBps", SecurityAssetTermFieldType.Decimal),
                 Opt("capRate", SecurityAssetTermFieldType.Decimal),
                 Opt("floorRate", SecurityAssetTermFieldType.Decimal),
@@ -300,7 +312,7 @@ public static class SecurityAssetTermsSchema
                 // otherwise. These are what make StepRate/FixedToFloat/InflationLinked subclasses
                 // computable rather than labels.
                 Opt("stepSchedule", SecurityAssetTermFieldType.Array),
-                Opt("inflationIndex", SecurityAssetTermFieldType.String),
+                Opt("inflationIndex", SecurityAssetTermFieldType.String).LinksUnderlying(SecurityUnderlyingRole.Index),
                 Opt("inflationBaseIndexValue", SecurityAssetTermFieldType.Decimal),
                 Opt("inflationIndexRatio", SecurityAssetTermFieldType.Decimal),
                 Opt("dayCount", SecurityAssetTermFieldType.String, "dayCountConvention").WithConvention(SecurityTermConventionKind.DayCount),
@@ -411,7 +423,7 @@ public static class SecurityAssetTermsSchema
             [
                 Req("borrower", SecurityAssetTermFieldType.String),
                 Opt("maturity", SecurityAssetTermFieldType.Date),
-                Opt("referenceIndex", SecurityAssetTermFieldType.String),
+                Opt("referenceIndex", SecurityAssetTermFieldType.String).LinksUnderlying(SecurityUnderlyingRole.Index),
                 Opt("spreadBps", SecurityAssetTermFieldType.Decimal),
                 Opt("currentCouponRate", SecurityAssetTermFieldType.Decimal),
                 Opt("resetFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.PaymentFrequency),
@@ -426,7 +438,9 @@ public static class SecurityAssetTermsSchema
                 Req("collateralType", SecurityAssetTermFieldType.String),
                 Req("originalFace", SecurityAssetTermFieldType.Decimal),
                 Opt("currentFactor", SecurityAssetTermFieldType.Decimal),
-                Req("couponOrIndex", SecurityAssetTermFieldType.String),
+                // A fixed coupon or a floating index name in one free-text field; the graph records
+                // it as an index reference until the field is split.
+                Req("couponOrIndex", SecurityAssetTermFieldType.String).LinksUnderlying(SecurityUnderlyingRole.Index),
                 // Free-text trustee or servicer report pointer: the evidence lineage the paydown
                 // projector requires for typed factor rows. Operational, not economic: no cash-flow
                 // or accounting math reads it. The dated schedule is factorScheduleEntries.
@@ -490,7 +504,7 @@ public static class SecurityAssetTermsSchema
                 Req("effectiveDate", SecurityAssetTermFieldType.Date),
                 Opt("expiryDate", SecurityAssetTermFieldType.Date),
                 Opt("feeRate", SecurityAssetTermFieldType.Decimal),
-                Opt("collateral", SecurityAssetTermFieldType.String),
+                Opt("collateral", SecurityAssetTermFieldType.String).LinksUnderlying(SecurityUnderlyingRole.Collateral),
                 Req("covenants", SecurityAssetTermFieldType.Array)
             ],
             ["Commodity"] =
@@ -508,12 +522,12 @@ public static class SecurityAssetTermsSchema
             ["Cfd"] =
             [
                 Req("underlyingAssetClass", SecurityAssetTermFieldType.String),
-                Opt("underlyingDescription", SecurityAssetTermFieldType.String),
+                Opt("underlyingDescription", SecurityAssetTermFieldType.String).LinksUnderlying(SecurityUnderlyingRole.Underlying),
                 Opt("leverage", SecurityAssetTermFieldType.Decimal)
             ],
             ["Warrant"] =
             [
-                Req("underlyingId", SecurityAssetTermFieldType.Guid),
+                Req("underlyingId", SecurityAssetTermFieldType.Guid).LinksUnderlying(SecurityUnderlyingRole.Underlying),
                 Req("warrantType", SecurityAssetTermFieldType.String),
                 Opt("strike", SecurityAssetTermFieldType.Decimal),
                 Opt("expiry", SecurityAssetTermFieldType.Date),
@@ -542,8 +556,8 @@ public static class SecurityAssetTermsSchema
             ],
             ["CreditDefaultSwap"] =
             [
-                Req("referenceEntity", SecurityAssetTermFieldType.String),
-                Opt("referenceObligation", SecurityAssetTermFieldType.String),
+                Req("referenceEntity", SecurityAssetTermFieldType.String).LinksUnderlying(SecurityUnderlyingRole.ReferenceEntity),
+                Opt("referenceObligation", SecurityAssetTermFieldType.String).LinksUnderlying(SecurityUnderlyingRole.ReferenceObligation),
                 ReqOneOf("protectionSide", "Buy", "Sell").WithVerbatimUndeclaredValue(),
                 Req("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount"),
                 Req("fixedCouponBps", SecurityAssetTermFieldType.Decimal, "couponBps", "runningSpreadBps"),
@@ -555,7 +569,7 @@ public static class SecurityAssetTermsSchema
                 Opt("restructuringClause", SecurityAssetTermFieldType.String, "docClause"),
                 Opt("upfrontPoints", SecurityAssetTermFieldType.Decimal),
                 Opt("recoveryRateAssumption", SecurityAssetTermFieldType.Decimal, "recoveryRate"),
-                Opt("indexName", SecurityAssetTermFieldType.String)
+                Opt("indexName", SecurityAssetTermFieldType.String).LinksUnderlying(SecurityUnderlyingRole.Index)
             ],
             ["Swaption"] =
             [
@@ -566,7 +580,7 @@ public static class SecurityAssetTermsSchema
                 Opt("underlyingEffectiveDate", SecurityAssetTermFieldType.Date),
                 Req("underlyingMaturityDate", SecurityAssetTermFieldType.Date),
                 Req("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount"),
-                Opt("floatingIndex", SecurityAssetTermFieldType.String, "index", "referenceIndex"),
+                Opt("floatingIndex", SecurityAssetTermFieldType.String, "index", "referenceIndex").LinksUnderlying(SecurityUnderlyingRole.Index),
                 Opt("fixedLegPaymentFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.CouponFrequency),
                 Opt("fixedLegDayCount", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.DayCount),
                 Opt("settlementType", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.SettlementMethod)
@@ -574,7 +588,7 @@ public static class SecurityAssetTermsSchema
             ["CapFloor"] =
             [
                 ReqOneOf("capFloorType", "Cap", "Floor", "Collar").WithVerbatimUndeclaredValue(),
-                Req("referenceIndex", SecurityAssetTermFieldType.String, "index", "floatingIndex"),
+                Req("referenceIndex", SecurityAssetTermFieldType.String, "index", "floatingIndex").LinksUnderlying(SecurityUnderlyingRole.Index),
                 Opt("capStrike", SecurityAssetTermFieldType.Decimal, "capRate"),
                 Opt("floorStrike", SecurityAssetTermFieldType.Decimal, "floorRate"),
                 Req("notional", SecurityAssetTermFieldType.Decimal, "notionalAmount"),
@@ -587,7 +601,7 @@ public static class SecurityAssetTermsSchema
             ["StructuredNote"] =
             [
                 Req("issuerName", SecurityAssetTermFieldType.String, "issuer"),
-                Req("underlyingDescription", SecurityAssetTermFieldType.String, "underlying", "referenceAsset"),
+                Req("underlyingDescription", SecurityAssetTermFieldType.String, "underlying", "referenceAsset").LinksUnderlying(SecurityUnderlyingRole.Underlying),
                 Req("maturity", SecurityAssetTermFieldType.Date, "maturityDate"),
                 Opt("issueDate", SecurityAssetTermFieldType.Date),
                 Opt("denomination", SecurityAssetTermFieldType.Decimal, "par", "faceAmount"),
@@ -618,7 +632,7 @@ public static class SecurityAssetTermsSchema
                 Req("legType", SecurityAssetTermFieldType.String, "rateType", "type"),
                 Req("currency", SecurityAssetTermFieldType.String),
                 Opt("direction", SecurityAssetTermFieldType.String, "payReceive", "payOrReceive", "side"),
-                Opt("index", SecurityAssetTermFieldType.String, "indexName", "referenceIndex"),
+                Opt("index", SecurityAssetTermFieldType.String, "indexName", "referenceIndex").LinksUnderlying(SecurityUnderlyingRole.Index),
                 Opt("fixedRate", SecurityAssetTermFieldType.Decimal, "rate", "couponRate"),
                 Opt("spreadBps", SecurityAssetTermFieldType.Decimal),
                 Opt("currentIndexRate", SecurityAssetTermFieldType.Decimal, "lastFixing", "currentRate", "indexRate"),
@@ -630,6 +644,16 @@ public static class SecurityAssetTermsSchema
                 Opt("notionalSchedule", SecurityAssetTermFieldType.Array, "amortizationSchedule"),
                 // Dated {resetDate, fixingRate} resets of a floating leg, with the fixing once observed.
                 Opt("resetSchedule", SecurityAssetTermFieldType.Array, "fixings")
+            ],
+            // The conversion terms a convertible or convertible-preferred equity carries (the F#
+            // ConvertibleTerms record): the security it converts into, and at what ratio.
+            ["Equity.convertibleTerms"] =
+            [
+                Req("underlyingSecurityId", SecurityAssetTermFieldType.Guid).LinksUnderlying(SecurityUnderlyingRole.Underlying),
+                Req("conversionRatio", SecurityAssetTermFieldType.Decimal),
+                Opt("conversionPrice", SecurityAssetTermFieldType.Decimal),
+                Opt("conversionStartDate", SecurityAssetTermFieldType.Date),
+                Opt("conversionEndDate", SecurityAssetTermFieldType.Date)
             ]
         };
 

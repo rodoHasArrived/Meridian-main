@@ -102,12 +102,81 @@ public sealed class SecurityUnderlyingGraphPostgresTests : IClassFixture<Securit
 
         (await graph.GetDependentsAsync(constituentA)).Should().ContainSingle();
 
-        (await graph.RemoveDeclaredAsync(noteId, a.LinkId)).Should().BeTrue();
-        (await graph.RemoveDeclaredAsync(noteId, a.LinkId)).Should().BeFalse("already removed");
+        (await graph.RemoveDeclaredAsync(noteId, a.LinkId, "casey")).Should().BeTrue();
+        (await graph.RemoveDeclaredAsync(noteId, a.LinkId, "casey")).Should().BeFalse("already removed");
         var derived = links.Single(static l => l.Source == SecurityUnderlyingLinkSource.Derived);
-        (await graph.RemoveDeclaredAsync(noteId, derived.LinkId)).Should().BeFalse("derived links follow the terms");
+        (await graph.RemoveDeclaredAsync(noteId, derived.LinkId, "casey")).Should().BeFalse("derived links follow the terms");
         (await graph.GetUnderlyingsAsync(noteId)).Should().HaveCount(2);
     }
+
+    [SecurityMasterDatabaseFact]
+    public async Task DeclaredLinkChanges_AreRecordedAsGovernanceEvents_WithTheActorAndTheReplacedState()
+    {
+        var (service, _) = Build();
+        var graph = new PostgresSecurityUnderlyingGraphStore(_fixture.Options);
+        var governance = new PostgresSecurityGovernanceEventLog(_fixture.Options);
+        var noteId = Guid.NewGuid();
+        var constituent = Guid.NewGuid();
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+        await CreateAsync(service, noteId, "StructuredNote", new
+        {
+            issuerName = "Bank",
+            underlyingDescription = "Custom basket",
+            maturity = "2030-01-01"
+        });
+        (await GraphEventsAsync(governance, noteId)).Should().BeEmpty("derived links follow the terms, which the event stream already records");
+
+        var declared = await graph.DeclareAsync(new DeclareSecurityUnderlyingLinkRequest(noteId, SecurityUnderlyingRole.BasketConstituent, constituent, null, 0.6m, from, null, "initial weight", "casey"));
+        var amended = await graph.DeclareAsync(new DeclareSecurityUnderlyingLinkRequest(noteId, SecurityUnderlyingRole.BasketConstituent, constituent, null, 0.65m, from, null, "rebalanced", "jordan"));
+
+        // Re-entering the edge exactly as stored is not a change: nothing is written or recorded,
+        // and the stored declaration (with its actor) comes back.
+        var unchanged = await graph.DeclareAsync(new DeclareSecurityUnderlyingLinkRequest(noteId, SecurityUnderlyingRole.BasketConstituent, constituent, null, 0.65m, from, null, "rebalanced", "morgan"));
+        unchanged.CreatedBy.Should().Be("jordan");
+        unchanged.Weight.Should().Be(0.65m);
+
+        (await graph.RemoveDeclaredAsync(noteId, declared.LinkId, "riley")).Should().BeTrue();
+        (await graph.RemoveDeclaredAsync(noteId, declared.LinkId, "riley")).Should().BeFalse();
+
+        var events = await GraphEventsAsync(governance, noteId);
+        events.Select(static e => e.EventType).Should().Equal("UnderlyingLinkDeclared", "UnderlyingLinkAmended", "UnderlyingLinkRemoved");
+        events.Select(static e => e.Actor).Should().Equal("casey", "jordan", "riley");
+
+        var first = events[0].Payload;
+        first.GetProperty("link").GetProperty("linkId").GetGuid().Should().Be(declared.LinkId);
+        first.GetProperty("link").GetProperty("role").GetString().Should().Be("BasketConstituent");
+        first.GetProperty("link").GetProperty("underlyingSecurityId").GetGuid().Should().Be(constituent);
+        first.GetProperty("link").GetProperty("weight").GetDecimal().Should().Be(0.6m);
+        first.GetProperty("previous").ValueKind.Should().Be(JsonValueKind.Null);
+
+        var change = events[1].Payload;
+        change.GetProperty("previous").GetProperty("weight").GetDecimal().Should().Be(0.6m);
+        change.GetProperty("previous").GetProperty("notes").GetString().Should().Be("initial weight");
+        change.GetProperty("previous").GetProperty("declaredBy").GetString().Should().Be("casey");
+        change.GetProperty("link").GetProperty("weight").GetDecimal().Should().Be(0.65m);
+        change.GetProperty("changes").EnumerateArray().Select(static c => c.GetString()).Should().Equal("weight", "notes");
+        amended.LinkId.Should().Be(declared.LinkId);
+
+        var removal = events[2].Payload.GetProperty("link");
+        removal.GetProperty("linkId").GetGuid().Should().Be(declared.LinkId);
+        removal.GetProperty("weight").GetDecimal().Should().Be(0.65m, "the removal keeps the state that was removed");
+        removal.GetProperty("declaredBy").GetString().Should().Be("jordan");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task RemoveDeclared_RequiresAnActor()
+    {
+        var graph = new PostgresSecurityUnderlyingGraphStore(_fixture.Options);
+
+        await graph.Invoking(g => g.RemoveDeclaredAsync(Guid.NewGuid(), Guid.NewGuid(), " "))
+            .Should().ThrowAsync<ArgumentException>();
+    }
+
+    private static async Task<SecurityGovernanceEvent[]> GraphEventsAsync(PostgresSecurityGovernanceEventLog governance, Guid securityId)
+        => (await governance.GetForSecurityAsync(securityId))
+            .Where(static e => e.Stream == SecurityGovernanceStreams.UnderlyingGraph)
+            .ToArray();
 
     [SecurityMasterDatabaseFact]
     public async Task Declare_RefusesInvalidLinks()

@@ -284,6 +284,13 @@ dashboard, and WPF.
 field names and types. Codec tests compare this nested contract with persisted terms and the
 cash-flow reader so a top-level `legs` array alone cannot conceal missing leg economics.
 
+A term field that names something the instrument depends on declares its role with
+`LinksUnderlying` (`SecurityAssetTermField.UnderlyingRole`): an underlying, reference entity or
+obligation, index or collateral, at the top level or inside an element shape (a swap leg's `index`,
+`Equity.convertibleTerms.underlyingSecurityId`). `SecurityUnderlyingLinkDeriver` builds the derived
+underlying graph from those declarations alone, one link per field, and
+`SecurityUnderlyingRoleCoverageTests` fails on a reference-shaped field that declares no role.
+
 This module owns stable transport payloads, compatibility-safe DTOs, and shared schema objects.
 Consumers depend on contracts; contracts should not depend on host, UI, application orchestration,
 or provider implementations.

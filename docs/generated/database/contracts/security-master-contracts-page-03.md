@@ -465,6 +465,7 @@ classDiagram
         +bool Required
         +SecurityAssetTermRole Role
         +SecurityAssetTermFieldType Type
+        +SecurityUnderlyingRole? UnderlyingRole
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto["SecurityAssetTermFieldDefinitionDto"] {
         +IReadOnlyList~string~ Aliases
