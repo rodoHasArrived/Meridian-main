@@ -85,8 +85,15 @@ disposal and tax-history projection also refuse short direction, preventing asse
 opening-age tax rules from silently certifying a short cover.
 
 Security Master migration `040_security_master_governance_events.sql` adds the append-only
-`security_governance_events` log (streams `OperatorOverrides`, `Aliases`, `ProjectionRebuild`);
-triggers refuse update and delete, and migration `041_security_master_governance_events_truncate_guard.sql` adds a statement-level BEFORE TRUNCATE rejection. Override patches and decisions, alias revisions and
+`security_governance_events` log (streams `OperatorOverrides`, `Aliases`, `ProjectionRebuild`,
+`UnderlyingLinks`);
+triggers refuse update and delete, and migration `041_security_master_governance_events_truncate_guard.sql` adds a statement-level BEFORE TRUNCATE rejection. Declared underlying-link creation, redeclaration and removal retain full previous/new snapshots and
+actors in that log in the same transaction as the link change. Migration
+`050_security_underlying_link_governance.sql` extends the stream check without changing retained
+events or their append-only guards; historical link events are not backfilled.
+A per-link transaction lock serializes
+predecessor reads, including first declarations, and an event-append failure rolls back the mutation.
+Override patches and decisions, alias revisions and
 projection batch rebuilds append in the same transaction as the change, and an override reviewer
 cannot approve values they staged. The event store and projection store join
 `PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap,

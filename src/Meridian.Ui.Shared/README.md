@@ -11,6 +11,10 @@ last_reviewed: 2026-10-06
 
 # src/Meridian.Ui.Shared
 
+Declared Security Master underlying-link removal passes the authenticated actor to the graph store.
+The store retains the removed link in the transactional governance event so deletion remains
+attributable through the shared governance-event read surface.
+
 Late-adjustment review requires the authenticated operator's built-in role or named role profile
 to match the review role retained on the adjustment's materiality policy, alongside ledger mutation
 permission and an independent requester/reviewer. Administrative mutation permission does not
