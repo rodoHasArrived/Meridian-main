@@ -223,6 +223,7 @@ public static class SecurityAssetClassCatalog
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond),
         new(
             AssetClass: "Repo",
+            TradesAsBilateralContract: true,
             AssetPackIds: ["fixed-income"],
             InstrumentTypes: [InstrumentType.Repo],
             LotUnit: SecurityLotUnitKind.FaceValue,
@@ -287,6 +288,7 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true),
         new(
             AssetClass: "Swap",
+            TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.Swap],
             LotUnit: SecurityLotUnitKind.Notional,
@@ -443,6 +445,7 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "Cfd",
+            TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             InstrumentTypes: [InstrumentType.CFD],
             LotUnit: SecurityLotUnitKind.Units,
@@ -476,6 +479,7 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "FxForward",
+            TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.CurrencyAmount,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
@@ -489,6 +493,7 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "NonDeliverableForward",
+            TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.CurrencyAmount,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
@@ -502,6 +507,7 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "CreditDefaultSwap",
+            TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.Notional,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
@@ -517,6 +523,7 @@ public static class SecurityAssetClassCatalog
             RequiresMaturity: true),
         new(
             AssetClass: "Swaption",
+            TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.Notional,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
@@ -530,6 +537,7 @@ public static class SecurityAssetClassCatalog
             ]),
         new(
             AssetClass: "CapFloor",
+            TradesAsBilateralContract: true,
             AssetPackIds: ["derivatives-fx"],
             LotUnit: SecurityLotUnitKind.Notional,
             CashFlowBehavior: SecurityCashFlowBehavior.None,
@@ -925,7 +933,8 @@ public sealed record SecurityAssetClassDescriptor(
     bool SupportsEquityClassification = false,
     bool CarriesBondCouponStructure = false,
     bool UsesOccOptionSymbols = false,
-    bool QuotesRatesAsFractions = false)
+    bool QuotesRatesAsFractions = false,
+    bool TradesAsBilateralContract = false)
 {
     /// <summary>
     /// The catalog facts below replace per-site asset-class name checks. Each is a declared
@@ -936,10 +945,12 @@ public sealed record SecurityAssetClassDescriptor(
     /// <see cref="CarriesBondCouponStructure"/> (terms carry the bond coupon structure and bullet
     /// amortization conventions), <see cref="UsesOccOptionSymbols"/> (OCC option symbols are a
     /// valid identifier) and <see cref="QuotesRatesAsFractions"/> (a rate at or below one is a
-    /// fraction, not a percent).
+    /// fraction, not a percent) and <see cref="TradesAsBilateralContract"/> (positions are
+    /// bilateral contracts against a counterparty under a master agreement, so the instrument
+    /// carries <c>OtcContractDto</c> records rather than exchange-traded lots).
     /// </summary>
     public bool HasDeclaredBehaviorFacts
-        => RequiresProfileReference || SupportsEquityClassification || CarriesBondCouponStructure || UsesOccOptionSymbols || QuotesRatesAsFractions;
+        => RequiresProfileReference || SupportsEquityClassification || CarriesBondCouponStructure || UsesOccOptionSymbols || QuotesRatesAsFractions || TradesAsBilateralContract;
 
     /// <summary>
     /// Whether positions are held as face-value lots (par-denominated quantity). Derived from

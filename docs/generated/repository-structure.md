@@ -4680,6 +4680,7 @@ Meridian-main
 │   │   │   ├── LotQuantity.cs
 │   │   │   ├── NotionalLot.cs
 │   │   │   ├── OperatorOverrides.cs
+│   │   │   ├── OtcContracts.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
 │   │   │   ├── SecurityAssetClassRegistry.cs
 │   │   │   ├── SecurityAssetPackRegistry.cs
@@ -6578,7 +6579,8 @@ Meridian-main
 │   │   │   │   ├── 046_otc_derivative_terms_projections.sql
 │   │   │   │   ├── 047_rate_option_and_note_terms_projections.sql
 │   │   │   │   ├── 048_security_master_listing_mic.sql
-│   │   │   │   └── 049_security_underlying_links.sql
+│   │   │   │   ├── 049_security_underlying_links.sql
+│   │   │   │   └── 050_otc_contracts.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -6621,6 +6623,7 @@ Meridian-main
 │   │   │   ├── PostgresMoneyMarketFundReferenceProjectionStore.cs
 │   │   │   ├── PostgresOperatorOverridesStore.cs
 │   │   │   ├── PostgresOptionReferenceProjectionStore.cs
+│   │   │   ├── PostgresOtcContractStore.cs
 │   │   │   ├── PostgresReferenceProjectionReader.cs
 │   │   │   ├── PostgresSecurityFieldProvenanceStore.cs
 │   │   │   ├── PostgresSecurityMasterCashFlowStore.cs
@@ -8142,6 +8145,7 @@ Meridian-main
 │   │   │   ├── SecureReportingDistributionEndpoints.cs
 │   │   │   ├── SecurityMasterEndpoints.CorporateActionOperations.cs
 │   │   │   ├── SecurityMasterEndpoints.cs
+│   │   │   ├── SecurityMasterEndpoints.OtcContracts.cs
 │   │   │   ├── StatusEndpoints.cs
 │   │   │   ├── StorageEndpoints.cs
 │   │   │   ├── StorageQualityEndpoints.cs
@@ -11061,6 +11065,9 @@ Meridian-main
 │   │   │   ├── NullCorporateActionOperationsServiceTests.cs
 │   │   │   ├── NullOperatorOverridesStoreTests.cs
 │   │   │   ├── OperatorOverrideReviewRulesTests.cs
+│   │   │   ├── OtcContractRulesTests.cs
+│   │   │   ├── OtcContractsMigrationTests.cs
+│   │   │   ├── OtcContractsPostgresTests.cs
 │   │   │   ├── PostgresOperatorOverridesStoreTests.cs
 │   │   │   ├── PostgresReferenceProjectionReaderTests.cs
 │   │   │   ├── PostgresSecurityMasterClosePriceTests.cs
@@ -11613,6 +11620,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterInstrumentPassportTests.cs
 │   │   │   ├── SecurityMasterLegacyConflictActionTests.cs
 │   │   │   ├── SecurityMasterOperatorOverrideDecisionEndpointsTests.cs
+│   │   │   ├── SecurityMasterOtcContractEndpointsTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterReconciliationSlaPolicyProviderTests.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationEndpointsTests.cs
