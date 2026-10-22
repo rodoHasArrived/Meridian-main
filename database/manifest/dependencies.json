@@ -9736,6 +9736,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.EconomicTermsSchema"
     },
     {
@@ -9935,6 +9941,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityUnderlyingGraphStore"
     },
     {
       "kind": "contract-set-member",
@@ -10853,6 +10865,36 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDeriver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkSource"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
     },
     {
       "kind": "contract-set-member",
@@ -22756,6 +22798,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.EconomicTermsSchema"
     },
     {
@@ -22955,6 +23003,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityUnderlyingGraphStore"
     },
     {
       "kind": "contract-set-member",
@@ -23873,6 +23927,36 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDeriver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkSource"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
     },
     {
       "kind": "contract-set-member",
@@ -34563,6 +34647,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.EdgarFactsRecord",
       "target": "contract:Meridian.Contracts.SecurityMaster.EdgarXbrlFact"
     },
@@ -35399,6 +35489,24 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecuritySummaryDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkSource"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
     },
     {
       "kind": "contract-reference",
@@ -49419,6 +49527,55 @@
       "target": "database:security_master.security_raw_prices.price_unit"
     },
     {
+      "constraint": "security_underlying_links_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.security_underlying_links",
+      "target": "database:security_master.securities"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_underlying_links_security_id_fkey on security_master.security_underlying_links",
+      "target": "database:security_master.securities.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_underlying_links_security_id_fkey on security_master.security_underlying_links",
+      "target": "database:security_master.securities_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_underlying_links_source_check on security_master.security_underlying_links",
+      "target": "database:security_master.security_underlying_links.source"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_underlying_links_target_check on security_master.security_underlying_links",
+      "target": "database:security_master.security_underlying_links.reference_text"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_underlying_links_target_check on security_master.security_underlying_links",
+      "target": "database:security_master.security_underlying_links.underlying_security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_underlying_links_window_check on security_master.security_underlying_links",
+      "target": "database:security_master.security_underlying_links.valid_from"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_underlying_links_window_check on security_master.security_underlying_links",
+      "target": "database:security_master.security_underlying_links.valid_to"
+    },
+    {
       "kind": "normal",
       "label": "",
       "source": "database:security_master.security_workbench_generations_generation_check on security_master.security_workbench_generations",
@@ -50973,6 +51130,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_underlying_links"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_workbench_generations"
     },
     {
@@ -51097,7 +51260,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "bf08af968cd888b1b1f96310b28c48eeeac3a2795d7e59cb58eea0e9afd38aa4",
+  "fingerprint": "5f46f6cd6eaccb44fd2cc4a9e693e0bf1eca57e8ca03ee435ed3d5207a3b845c",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -60883,6 +61046,12 @@
       "label": "Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.EconomicTermsSchema",
       "kind": "contract-type",
@@ -61085,6 +61254,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.ISecurityMasterStructuredCreditReclassificationService"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ISecurityUnderlyingGraphStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ISecurityUnderlyingGraphStore"
     },
     {
       "classification": "service_contract",
@@ -62003,6 +62178,36 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDeriver",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDeriver"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkSource",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkSource"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
     },
     {
       "classification": "dto",
@@ -74440,6 +74645,57 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.security_underlying_links",
+      "kind": "database-table",
+      "label": "security_master.security_underlying_links",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_underlying_links.reference_text",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links.reference_text"
+    },
+    {
+      "id": "database:security_master.security_underlying_links.source",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links.source"
+    },
+    {
+      "id": "database:security_master.security_underlying_links.underlying_security_id",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links.underlying_security_id"
+    },
+    {
+      "id": "database:security_master.security_underlying_links.valid_from",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links.valid_from"
+    },
+    {
+      "id": "database:security_master.security_underlying_links.valid_to",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links.valid_to"
+    },
+    {
+      "id": "database:security_master.security_underlying_links_security_id_fkey on security_master.security_underlying_links",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links_security_id_fkey on security_master.security_underlying_links"
+    },
+    {
+      "id": "database:security_master.security_underlying_links_source_check on security_master.security_underlying_links",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links_source_check on security_master.security_underlying_links"
+    },
+    {
+      "id": "database:security_master.security_underlying_links_target_check on security_master.security_underlying_links",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links_target_check on security_master.security_underlying_links"
+    },
+    {
+      "id": "database:security_master.security_underlying_links_window_check on security_master.security_underlying_links",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links_window_check on security_master.security_underlying_links"
+    },
+    {
       "id": "database:security_master.security_workbench_generations",
       "kind": "database-table",
       "label": "security_master.security_workbench_generations",
@@ -74739,11 +74995,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3328,
-    "contract_set_memberships": 4015,
-    "edges": 8490,
-    "foreign_keys": 140,
+    "contract_references": 3332,
+    "contract_set_memberships": 4029,
+    "edges": 8517,
+    "foreign_keys": 141,
     "logical_references": 6,
-    "nodes": 4095
+    "nodes": 4112
   }
 }

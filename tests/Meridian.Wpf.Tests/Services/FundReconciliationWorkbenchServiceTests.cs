@@ -178,13 +178,14 @@ public sealed class FundReconciliationWorkbenchServiceTests
         await context.FundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
             context.AccountId, asOf, "USD", 700m, "test", "test", SecuritiesMarketValue: 250m));
         var broken = await context.FundAccountService.ReconcileAccountAsync(new ReconcileAccountRequest(context.AccountId, asOf, "test"));
+        // The operator opened the run while it was the latest; the detail is read live when opened.
+        var snapshot = await context.Service.GetSnapshotAsync("alpha-fund");
+        var runRow = snapshot.RunRows.Single(row => row.ReconciliationRunId == broken.ReconciliationRunId);
         await context.FundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
             context.AccountId, asOf, "USD", 750m, "test", "test", SecuritiesMarketValue: 250m));
         await context.FundAccountService.ReconcileAccountAsync(new ReconcileAccountRequest(context.AccountId, asOf, "test"));
         var results = await context.FundAccountService.GetReconciliationResultsAsync(broken.ReconciliationRunId);
         var resolved = results.Should().ContainSingle(result => !result.IsMatch && result.ResolvedAt != null).Subject;
-        var snapshot = await context.Service.GetSnapshotAsync("alpha-fund");
-        var runRow = snapshot.RunRows.Single(row => row.ReconciliationRunId == broken.ReconciliationRunId);
 
         var detail = await context.Service.GetRunDetailAsync(runRow, "USD");
 
