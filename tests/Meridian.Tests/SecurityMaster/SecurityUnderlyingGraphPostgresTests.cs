@@ -13,6 +13,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// when the terms change, declared edges live beside them with their own window, and the reverse
 /// walk finds every instrument that names a security.
 /// </summary>
+[Trait("Category", "Integration")]
 public sealed class SecurityUnderlyingGraphPostgresTests : IClassFixture<SecurityMasterDatabaseFixture>
 {
     private readonly SecurityMasterDatabaseFixture _fixture;
