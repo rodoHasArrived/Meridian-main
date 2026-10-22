@@ -57,7 +57,7 @@ public sealed class SecurityUnderlyingRoleCoverageTests
     public static TheoryData<string, string> ProfileFieldSpellings()
     {
         var data = new TheoryData<string, string>();
-        foreach (var marked in RoleMarkedFields().Where(static marked => marked.Container is null))
+        foreach (var marked in RoleMarkedFields())
         {
             foreach (var spelling in Spellings(marked.Field))
             {
@@ -114,6 +114,7 @@ public sealed class SecurityUnderlyingRoleCoverageTests
         links.Should().ContainSingle().Which.UnderlyingSecurityId.Should().Be(Target);
     }
 
+    /// <summary>Every role-marked spelling, element-shape fields included, links when a profile carries it.</summary>
     [Theory]
     [MemberData(nameof(ProfileFieldSpellings))]
     public void ProfileFields_SpelledLikeADeclaredReference_LinkInTheDeclaredRole(string path, string spelling)

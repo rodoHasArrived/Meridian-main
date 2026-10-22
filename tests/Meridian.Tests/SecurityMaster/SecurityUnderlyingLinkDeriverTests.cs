@@ -90,6 +90,21 @@ public sealed class SecurityUnderlyingLinkDeriverTests
     }
 
     [Fact]
+    public void ProfileBackedTerms_LinkAnUnderlyingSecurityIdUnderProfileFields()
+    {
+        // underlyingSecurityId is declared only inside an element shape (an equity's conversion
+        // terms); a profile field with that spelling still links.
+        var links = SecurityUnderlyingLinkDeriver.Derive(Record("CustomAsset", new
+        {
+            customProfileId = "equity-linked-note",
+            profileVersion = 1,
+            profileFields = new { underlyingSecurityId = Underlying }
+        }));
+
+        links.Should().ContainSingle().Which.UnderlyingSecurityId.Should().Be(Underlying);
+    }
+
+    [Fact]
     public void Swap_LinksEveryLegsFloatingIndex_UnderAnyDeclaredSpelling()
     {
         var links = SecurityUnderlyingLinkDeriver.Derive(Record("Swap", new

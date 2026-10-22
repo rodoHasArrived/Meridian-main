@@ -12,6 +12,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// when the terms change, declared edges live beside them with their own window, and the reverse
 /// walk finds every instrument that names a security.
 /// </summary>
+[Trait("Category", "Integration")]
 public sealed class SecurityUnderlyingGraphPostgresTests : IClassFixture<SecurityMasterDatabaseFixture>
 {
     private readonly SecurityMasterDatabaseFixture _fixture;
@@ -165,6 +166,43 @@ public sealed class SecurityUnderlyingGraphPostgresTests : IClassFixture<Securit
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task DeclaredLinkEvents_RecordTheRowAsStored()
+    {
+        var (service, _) = Build();
+        var graph = new PostgresSecurityUnderlyingGraphStore(_fixture.Options);
+        var governance = new PostgresSecurityGovernanceEventLog(_fixture.Options);
+        var commitmentId = Guid.NewGuid();
+        var from = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+        await CreateAsync(service, commitmentId, "CommitmentGuarantee", new
+        {
+            counterparty = "Bank",
+            committedAmount = 1_000_000m,
+            effectiveDate = "2026-01-01",
+            covenants = Array.Empty<object>()
+        });
+
+        // A reference is one edge whatever its case, so the second spelling amends the first; the
+        // table keeps the first spelling and rounds the weight to ten decimals.
+        var declared = await graph.DeclareAsync(new DeclareSecurityUnderlyingLinkRequest(commitmentId, SecurityUnderlyingRole.Collateral, null, "Pledged Receivables", 0.123456789012345m, from, null, null, "casey"));
+        var amended = await graph.DeclareAsync(new DeclareSecurityUnderlyingLinkRequest(commitmentId, SecurityUnderlyingRole.Collateral, null, "PLEDGED RECEIVABLES", 0.123456789012345m, from, from.AddYears(1), null, "jordan"));
+
+        declared.Reference.Should().Be("Pledged Receivables");
+        declared.Weight.Should().Be(0.1234567890m);
+        amended.LinkId.Should().Be(declared.LinkId);
+        amended.Reference.Should().Be("Pledged Receivables", "the stored row keeps its first spelling");
+
+        var stored = (await graph.GetUnderlyingsAsync(commitmentId)).Single(l => l.LinkId == declared.LinkId);
+        amended.Should().BeEquivalentTo(stored);
+
+        var events = await GraphEventsAsync(governance, commitmentId);
+        events.Select(static e => e.EventType).Should().Equal("UnderlyingLinkDeclared", "UnderlyingLinkAmended");
+        events[1].Payload.GetProperty("link").GetProperty("reference").GetString().Should().Be("Pledged Receivables");
+        events[1].Payload.GetProperty("link").GetProperty("weight").GetDecimal().Should().Be(0.1234567890m);
+        events[1].Payload.GetProperty("changes").EnumerateArray().Select(static c => c.GetString()).Should().Equal("validTo");
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task RemoveDeclared_RequiresAnActor()
     {
         var graph = new PostgresSecurityUnderlyingGraphStore(_fixture.Options);
@@ -235,5 +273,25 @@ public sealed class SecurityUnderlyingGraphPostgresTests : IClassFixture<Securit
             "codex",
             null,
             "create for the underlying graph"));
+    }
+}
+
+/// <summary>The declared-link amendment check, at the precision the graph table stores.</summary>
+[Trait("Category", "Unit")]
+public sealed class SecurityUnderlyingLinkWriterTests
+{
+    [Fact]
+    public void ChangedFields_ComparesAtTheStoredPrecision_OnBothSidesOfThePostgresEpoch()
+    {
+        var link = new SecurityUnderlyingLinkDto(Guid.NewGuid(), Guid.NewGuid(), SecurityUnderlyingRole.Collateral, Guid.NewGuid(), null, 0.5m,
+            new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero), null, SecurityUnderlyingLinkSource.Declared, null, "casey", DateTimeOffset.UnixEpoch);
+
+        // Npgsql truncates toward 2000-01-01: an instant five ticks before it is stored as the epoch,
+        // and one five ticks after it as well.
+        SecurityUnderlyingLinkWriter.ChangedFields(link, link with { ValidFrom = link.ValidFrom.AddTicks(-5) }).Should().BeEmpty();
+        SecurityUnderlyingLinkWriter.ChangedFields(link, link with { ValidFrom = link.ValidFrom.AddTicks(5) }).Should().BeEmpty();
+        SecurityUnderlyingLinkWriter.ChangedFields(link, link with { Weight = 0.50000000004m }).Should().BeEmpty();
+        SecurityUnderlyingLinkWriter.ChangedFields(link, link with { ValidFrom = link.ValidFrom.AddTicks(-10) }).Should().Equal("validFrom");
+        SecurityUnderlyingLinkWriter.ChangedFields(link, link with { Weight = 0.6m, Notes = "rebalanced" }).Should().Equal("weight", "notes");
     }
 }

@@ -88,24 +88,29 @@ public sealed class PostgresSecurityUnderlyingGraphStore : ISecurityUnderlyingGr
         }
 
         await SecurityUnderlyingLinkWriter.UpsertAsync(connection, transaction, _options.Schema, link, ct).ConfigureAwait(false);
+
+        // The event and the caller see the row as stored: the table keeps the first spelling of a
+        // reference and rounds weights and timestamps to its own precision.
+        var stored = await SecurityUnderlyingLinkWriter.ReadByIdAsync(connection, transaction, _options.Schema, link.LinkId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Declared underlying link '{link.LinkId}' was not stored.");
         await PostgresSecurityGovernanceEventLog.AppendAsync(
             connection,
             transaction,
             _options.Schema,
-            link.SecurityId,
+            stored.SecurityId,
             SecurityGovernanceStreams.UnderlyingGraph,
             previous is null ? SecurityUnderlyingLinkWriter.DeclaredEvent : SecurityUnderlyingLinkWriter.AmendedEvent,
-            link.CreatedBy,
-            link.CreatedAt,
+            stored.CreatedBy,
+            stored.CreatedAt,
             new
             {
-                link = SecurityUnderlyingLinkWriter.Describe(link),
+                link = SecurityUnderlyingLinkWriter.Describe(stored),
                 previous = previous is null ? null : SecurityUnderlyingLinkWriter.Describe(previous),
                 changes
             },
             ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
-        return link;
+        return stored;
     }
 
     public async Task<bool> RemoveDeclaredAsync(Guid securityId, Guid linkId, string removedBy, CancellationToken ct = default)
@@ -247,8 +252,12 @@ internal static class SecurityUnderlyingLinkWriter
     private static decimal? RoundWeight(decimal? weight)
         => weight is { } value ? decimal.Round(value, 10, MidpointRounding.AwayFromZero) : null;
 
+    // Npgsql writes timestamptz as whole microseconds from the PostgreSQL epoch, truncating toward
+    // it, so the comparison counts from the same epoch (an instant before 2000 truncates upward).
+    private static readonly long PostgresEpochTicks = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;
+
     private static long? ToMicroseconds(DateTimeOffset? value)
-        => value is { } instant ? instant.UtcTicks / (TimeSpan.TicksPerMillisecond / 1000) : null;
+        => value is { } instant ? (instant.UtcTicks - PostgresEpochTicks) / TimeSpan.TicksPerMicrosecond : null;
 
     /// <summary>
     /// Replaces the derived links of <paramref name="record"/> with those its terms state now.

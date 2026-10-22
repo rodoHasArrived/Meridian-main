@@ -132,9 +132,9 @@ public interface ISecurityUnderlyingGraphStore
 /// </summary>
 /// <remarks>
 /// Profile-backed terms carry their dynamic fields under <c>profileFields</c>, governed by a
-/// profile version the schema does not describe. Those are read against every key the schema
-/// marks on any class, in the role it marks it, so a profile field spelled like a declared
-/// reference links the same way.
+/// profile version the schema does not describe. Those are read against every spelling the schema
+/// marks on any class (top-level or in an element shape), in the role it marks it, so a profile
+/// field spelled like a declared reference links the same way.
 /// </remarks>
 public static class SecurityUnderlyingLinkDeriver
 {
@@ -143,11 +143,12 @@ public static class SecurityUnderlyingLinkDeriver
     private const string ProfileFieldsKey = "profileFields";
 
     /// <summary>
-    /// Every spelling (key or alias) of every role-marked top-level field in the schema, once per
-    /// spelling and role, for reading profile fields.
+    /// Every spelling (key or alias) of every role-marked field in the schema, top-level or in an
+    /// element shape, once per spelling and role, for reading profile fields.
     /// </summary>
     private static readonly IReadOnlyList<SecurityAssetTermField> ProfileReferenceFields = SecurityAssetTermsSchema.AssetClasses
-        .SelectMany(SecurityAssetTermsSchema.Fields)
+        .SelectMany(static assetClass => SecurityAssetTermsSchema.Fields(assetClass)
+            .SelectMany(field => SecurityAssetTermsSchema.ElementFields(assetClass, field.Key).Prepend(field)))
         .Where(static field => field.UnderlyingRole is not null)
         .SelectMany(static field => KeyAndAliases(field).Select(spelling => field with { Key = spelling, Aliases = [] }))
         .DistinctBy(static field => (field.Key.ToUpperInvariant(), field.UnderlyingRole))
