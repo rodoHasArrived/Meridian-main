@@ -106,8 +106,8 @@ public interface ISecurityUnderlyingGraphStore
     /// <summary>Declares (or re-declares) a link; the returned link carries the stored id and timestamps.</summary>
     Task<SecurityUnderlyingLinkDto> DeclareAsync(DeclareSecurityUnderlyingLinkRequest request, CancellationToken ct = default);
 
-    /// <summary>Removes a declared link. Derived links cannot be removed; they follow the terms.</summary>
-    Task<bool> RemoveDeclaredAsync(Guid securityId, Guid linkId, CancellationToken ct = default);
+    /// <summary>Removes a declared link and records the actor. Derived links cannot be removed; they follow the terms.</summary>
+    Task<bool> RemoveDeclaredAsync(Guid securityId, Guid linkId, string actor, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -119,33 +119,26 @@ public static class SecurityUnderlyingLinkDeriver
 {
     private static readonly Guid Namespace = Guid.Parse("4c7a1c0e-8e2d-4a7e-9c0b-6d1b2f3a4e5f");
 
-    /// <summary>Term keys read into a resolved <see cref="SecurityUnderlyingRole.Underlying"/> link (a Guid).</summary>
-    private static readonly string[] UnderlyingIdKeys = ["underlyingId", "underlyingSecurityId"];
-
-    /// <summary>Term keys read into an unresolved reference, by role.</summary>
-    private static readonly (SecurityUnderlyingRole Role, string[] Keys)[] ReferenceKeys =
-    [
-        (SecurityUnderlyingRole.Underlying, ["underlyingDescription", "underlying", "referenceAsset"]),
-        (SecurityUnderlyingRole.ReferenceEntity, ["referenceEntity"]),
-        (SecurityUnderlyingRole.ReferenceObligation, ["referenceObligation"]),
-        (SecurityUnderlyingRole.Index, ["floatingIndex", "referenceIndex", "inflationIndex", "indexName", "couponOrIndex"])
-    ];
-
     /// <summary>The links the record's terms state, in a stable order.</summary>
     public static IReadOnlyList<SecurityUnderlyingLinkDto> Derive(SecurityProjectionRecord record)
     {
         ArgumentNullException.ThrowIfNull(record);
-        return Derive(record.SecurityId, record.AssetSpecificTerms, record.EffectiveFrom, record.EffectiveTo);
+        return Derive(record.SecurityId, record.AssetClass, record.AssetSpecificTerms, record.EffectiveFrom, record.EffectiveTo);
     }
 
     /// <summary>The links the detail's terms state, in a stable order.</summary>
     public static IReadOnlyList<SecurityUnderlyingLinkDto> Derive(SecurityDetailDto detail)
     {
         ArgumentNullException.ThrowIfNull(detail);
-        return Derive(detail.SecurityId, detail.AssetSpecificTerms, detail.EffectiveFrom, detail.EffectiveTo);
+        return Derive(detail.SecurityId, detail.AssetClass, detail.AssetSpecificTerms, detail.EffectiveFrom, detail.EffectiveTo);
     }
 
-    private static IReadOnlyList<SecurityUnderlyingLinkDto> Derive(Guid securityId, JsonElement terms, DateTimeOffset validFrom, DateTimeOffset? validTo)
+    private static IReadOnlyList<SecurityUnderlyingLinkDto> Derive(
+        Guid securityId,
+        string assetClass,
+        JsonElement terms,
+        DateTimeOffset validFrom,
+        DateTimeOffset? validTo)
     {
         if (terms.ValueKind != JsonValueKind.Object)
         {
@@ -155,36 +148,118 @@ public static class SecurityUnderlyingLinkDeriver
         var sources = SecurityTermReader.TryGetProperty(terms, "profileFields", out var profileFields) && profileFields.ValueKind == JsonValueKind.Object
             ? new[] { terms, profileFields }
             : [terms];
-
         var links = new List<SecurityUnderlyingLinkDto>();
         var seen = new HashSet<Guid>();
 
-        var underlyingId = ReadGuid(sources, UnderlyingIdKeys);
-        if (underlyingId is { } target && target != securityId)
+        if (SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresProfileReference)
         {
-            Add(links, seen, securityId, SecurityUnderlyingRole.Underlying, target, null, null, validFrom, validTo);
+            // A custom profile has dynamic fields rather than a fixed class schema. Preserve the
+            // existing reference-field fallback using the reference declarations of the term schema,
+            // so adding a relationship still requires one role declaration, never another key list.
+            foreach (var schemaClass in SecurityAssetTermsSchema.AssetClasses)
+            {
+                DeriveFields(schemaClass, sources, SecurityAssetTermsSchema.Fields(schemaClass), "");
+            }
         }
-
-        foreach (var (role, keys) in ReferenceKeys)
+        else
         {
-            var reference = SecurityTermReader.ReadString(sources, keys);
-            if (string.IsNullOrWhiteSpace(reference))
-            {
-                continue;
-            }
-
-            // A reference that is itself a security id resolves; anything else is recorded as text.
-            if (Guid.TryParse(reference.Trim(), out var referencedId) && referencedId != Guid.Empty && referencedId != securityId)
-            {
-                Add(links, seen, securityId, role, referencedId, null, null, validFrom, validTo);
-            }
-            else
-            {
-                Add(links, seen, securityId, role, null, reference.Trim(), null, validFrom, validTo);
-            }
+            DeriveFields(assetClass, sources, SecurityAssetTermsSchema.Fields(assetClass), "");
         }
 
         return links;
+
+        void DeriveFields(
+            string schemaClass,
+            IReadOnlyList<JsonElement> fieldSources,
+            IReadOnlyList<SecurityAssetTermField> fields,
+            string parentPath)
+        {
+            foreach (var field in fields)
+            {
+                if (field.UnderlyingRole is { } role && ReadReference(fieldSources, field) is { } reference)
+                {
+                    if (Guid.TryParse(reference, out var referencedId))
+                    {
+                        if (referencedId != Guid.Empty && referencedId != securityId)
+                        {
+                            Add(links, seen, securityId, role, referencedId, null, null, validFrom, validTo);
+                        }
+                    }
+                    else if (field.Type != SecurityAssetTermFieldType.Guid)
+                    {
+                        Add(links, seen, securityId, role, null, reference, null, validFrom, validTo);
+                    }
+                }
+
+                if (field.Type is not (SecurityAssetTermFieldType.Array or SecurityAssetTermFieldType.Object))
+                {
+                    continue;
+                }
+
+                var fieldPath = string.IsNullOrEmpty(parentPath) ? field.Key : parentPath + "." + field.Key;
+                var elementFields = SecurityAssetTermsSchema.ElementFields(schemaClass, fieldPath);
+                if (elementFields.Count == 0 || ReadContainer(fieldSources, field) is not { } container)
+                {
+                    continue;
+                }
+
+                if (container.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var element in container.EnumerateArray())
+                    {
+                        if (element.ValueKind == JsonValueKind.Object)
+                        {
+                            DeriveFields(schemaClass, [element], elementFields, fieldPath);
+                        }
+                    }
+                }
+                else
+                {
+                    DeriveFields(schemaClass, [container], elementFields, fieldPath);
+                }
+            }
+        }
+    }
+
+    private static string? ReadReference(IReadOnlyList<JsonElement> sources, SecurityAssetTermField field)
+    {
+        foreach (var source in sources)
+        {
+            foreach (var key in new[] { field.Key }.Concat(field.Aliases).Concat(field.UnderlyingAliases))
+            {
+                if (!SecurityTermReader.TryGetProperty(source, key, out var value) || value.ValueKind != JsonValueKind.String)
+                {
+                    continue;
+                }
+
+                var reference = value.GetString()?.Trim();
+                if (!string.IsNullOrWhiteSpace(reference)
+                    && (field.Type != SecurityAssetTermFieldType.Guid
+                        || (Guid.TryParse(reference, out var parsed) && parsed != Guid.Empty)))
+                {
+                    return reference;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static JsonElement? ReadContainer(IReadOnlyList<JsonElement> sources, SecurityAssetTermField field)
+    {
+        var expectedKind = field.Type == SecurityAssetTermFieldType.Array ? JsonValueKind.Array : JsonValueKind.Object;
+        foreach (var source in sources)
+        {
+            foreach (var key in new[] { field.Key }.Concat(field.Aliases))
+            {
+                if (SecurityTermReader.TryGetProperty(source, key, out var value) && value.ValueKind == expectedKind)
+                {
+                    return value;
+                }
+            }
+        }
+
+        return null;
     }
 
     private static void Add(
@@ -239,24 +314,5 @@ public static class SecurityUnderlyingLinkDeriver
         bytes[7] = (byte)((bytes[7] & 0x0F) | 0x50);
         bytes[8] = (byte)((bytes[8] & 0x3F) | 0x80);
         return new Guid(bytes);
-    }
-
-    private static Guid? ReadGuid(IEnumerable<JsonElement> sources, string[] keys)
-    {
-        foreach (var source in sources)
-        {
-            foreach (var key in keys)
-            {
-                if (SecurityTermReader.TryGetProperty(source, key, out var value)
-                    && value.ValueKind == JsonValueKind.String
-                    && Guid.TryParse(value.GetString(), out var parsed)
-                    && parsed != Guid.Empty)
-                {
-                    return parsed;
-                }
-            }
-        }
-
-        return null;
     }
 }

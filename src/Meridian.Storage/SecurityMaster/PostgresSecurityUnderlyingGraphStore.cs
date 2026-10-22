@@ -75,15 +75,48 @@ public sealed class PostgresSecurityUnderlyingGraphStore : ISecurityUnderlyingGr
 
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        // Lock the identity even when no row exists yet. Concurrent first declarations must
+        // observe the committed predecessor before recording their before/after snapshots.
+        await LockDeclaredLinkAsync(connection, transaction, link.LinkId, ct).ConfigureAwait(false);
+        var previous = (await SecurityUnderlyingLinkWriter.ReadAsync(
+            connection, transaction, _options.Schema, "where link_id = @id", link.LinkId, ct).ConfigureAwait(false))
+            .SingleOrDefault();
+        link = link with { CreatedAt = DateTimeOffset.UtcNow };
         await SecurityUnderlyingLinkWriter.UpsertAsync(connection, transaction, _options.Schema, link, ct).ConfigureAwait(false);
+        var current = (await SecurityUnderlyingLinkWriter.ReadAsync(
+            connection, transaction, _options.Schema, "where link_id = @id", link.LinkId, ct).ConfigureAwait(false))
+            .Single();
+        await PostgresSecurityGovernanceEventLog.AppendAsync(
+            connection,
+            transaction,
+            _options.Schema,
+            link.SecurityId,
+            SecurityGovernanceStreams.UnderlyingLinks,
+            previous is null ? "DeclaredLinkCreated" : "DeclaredLinkRedeclared",
+            link.CreatedBy,
+            current.CreatedAt,
+            new { previous, @new = current },
+            ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
-        return link;
+        return current;
     }
 
-    public async Task<bool> RemoveDeclaredAsync(Guid securityId, Guid linkId, CancellationToken ct = default)
+    public async Task<bool> RemoveDeclaredAsync(Guid securityId, Guid linkId, string actor, CancellationToken ct = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(actor);
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(ct).ConfigureAwait(false);
+        await LockDeclaredLinkAsync(connection, transaction, linkId, ct).ConfigureAwait(false);
+        var previous = (await SecurityUnderlyingLinkWriter.ReadAsync(
+            connection, transaction, _options.Schema, "where link_id = @id", linkId, ct).ConfigureAwait(false))
+            .SingleOrDefault();
+        if (previous is null || previous.SecurityId != securityId || previous.Source != SecurityUnderlyingLinkSource.Declared)
+        {
+            return false;
+        }
+
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText =
             $"""
             delete from {_options.Schema}.security_underlying_links
@@ -91,7 +124,34 @@ public sealed class PostgresSecurityUnderlyingGraphStore : ISecurityUnderlyingGr
             """;
         command.Parameters.AddWithValue("link_id", linkId);
         command.Parameters.AddWithValue("security_id", securityId);
-        return await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false) == 1;
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        await PostgresSecurityGovernanceEventLog.AppendAsync(
+            connection,
+            transaction,
+            _options.Schema,
+            securityId,
+            SecurityGovernanceStreams.UnderlyingLinks,
+            "DeclaredLinkRemoved",
+            actor,
+            DateTimeOffset.UtcNow,
+            new { previous, @new = (SecurityUnderlyingLinkDto?)null },
+            ct).ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return true;
+    }
+
+    private async Task LockDeclaredLinkAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid linkId,
+        CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = "select pg_advisory_xact_lock(hashtextextended(@scope, 0));";
+        // SQL uses unquoted identifiers, so schema case variants address the same table.
+        command.Parameters.AddWithValue("scope", $"{_options.Schema.ToLowerInvariant()}.security_underlying_links/{linkId:D}");
+        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)

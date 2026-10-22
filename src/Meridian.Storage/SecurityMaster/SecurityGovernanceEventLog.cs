@@ -9,6 +9,7 @@ public static class SecurityGovernanceStreams
 {
     public const string OperatorOverrides = "OperatorOverrides";
     public const string Aliases = "Aliases";
+    public const string UnderlyingLinks = "UnderlyingLinks";
     public const string ProjectionRebuild = "ProjectionRebuild";
 }
 

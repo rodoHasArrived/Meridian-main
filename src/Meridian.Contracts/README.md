@@ -280,6 +280,11 @@ dashboard, and WPF.
 
 ## Layer responsibility
 
+`SecurityAssetTermField.UnderlyingRole` declares graph lineage alongside each reference term.
+`SecurityUnderlyingLinkDeriver` traverses the class schema, including array element fields, and
+retains distinct references sharing a role. Swap leg indices and commitment collateral therefore
+participate in lineage; aliases select a value for one field rather than suppressing other fields.
+
 `SecurityAssetTermsSchema.ElementFields("Swap", "legs")` declares the serialized swap-leg
 field names and types. Codec tests compare this nested contract with persisted terms and the
 cash-flow reader so a top-level `legs` array alone cannot conceal missing leg economics.

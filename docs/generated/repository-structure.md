@@ -6578,7 +6578,8 @@ Meridian-main
 │   │   │   │   ├── 046_otc_derivative_terms_projections.sql
 │   │   │   │   ├── 047_rate_option_and_note_terms_projections.sql
 │   │   │   │   ├── 048_security_master_listing_mic.sql
-│   │   │   │   └── 049_security_underlying_links.sql
+│   │   │   │   ├── 049_security_underlying_links.sql
+│   │   │   │   └── 050_security_underlying_link_governance.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs

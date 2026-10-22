@@ -113,6 +113,12 @@
       "rule_id": "migration-drop-object",
       "reason": "Requires independent human schema/storage review. DROP INDEX IF EXISTS immediately precedes CREATE INDEX for the same three tax_lots/tax_lot_policies index names in one transaction, replacing coalesce(financial_account_id, '') with lower(coalesce(financial_account_id, '')) so storage uniqueness and lookups agree with LedgerAccount's case-insensitive FinancialAccountId equality. No table, column, row or value is removed or rewritten; a leading DO block raises before any DDL when retained rows already collide under the case-insensitive key, naming the conflicting group and row counts for operator resolution. Follows the ledger set's drop/recreate reapply idiom (drift policy: reapply). Hosted PostgreSQL execution of the duplicate-label, cross-case lookup and populated pre-check tests is required before release.",
       "review_after": "2027-04-17"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/050_security_underlying_link_governance.sql",
+      "rule_id": "migration-drop-table-member",
+      "reason": "Requires independent human schema/storage review. Replaces only security_governance_events_stream_check transactionally with a strict superset admitting UnderlyingLinks. Every existing governance stream stays valid, retained events are untouched, and update/delete/truncate guards remain intact. The migration runner rolls back failed DDL together with its checksum receipt; declared-link PostgreSQL tests exercise the new stream and audit-append rollback. This permits a failed-upgrade rollback, not removal of retained underlying-link events.",
+      "review_after": "2027-04-22"
     }
   ],
   "removed_migrations": [

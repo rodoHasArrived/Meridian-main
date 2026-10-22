@@ -904,7 +904,7 @@ public static partial class SecurityMasterEndpoints
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            return await graphStore.RemoveDeclaredAsync(securityId, linkId, ct).ConfigureAwait(false)
+            return await graphStore.RemoveDeclaredAsync(securityId, linkId, ResolveActor(context), ct).ConfigureAwait(false)
                 ? Results.NoContent()
                 : Results.NotFound();
         })
