@@ -6118,3 +6118,166 @@ method fails exactly where the oracle does at the end of the date range.
 `DirectLendingTermsHashCharacterizationTests` with its F# twin (new), with the existing Security
 Master cash-flow, asset-operations, cash-ladder, direct-lending, `FaceValueLot`, architecture and
 term-schema round-trip suites.
+
+## Scheduled institutional-requirements pass — 2026-10-23
+
+Source snapshot: `6ca5515b` (main after #3262, the schedule kernel). Seven earlier scheduled passes
+are still open and unmerged (#3188, #3196, #3220, #3234, #3240, #3247, #3258). This pass checked
+its candidates against their diffs as well as against `main`, and files only what none of them
+records. Items those PRs already carry are listed at the end, not re-filed.
+
+### Verdict
+
+The architecture is not yet uniformly extensible, but the gaps are narrowing. The single-registry
+direction holds. Projection writes, schema-generated validation, the lot model keyed on the lot
+unit, the underlying graph, OTC contracts and the schedule kernel all landed this week, and each
+one is protected by a test that stops it from regressing (a ratchet or coverage test). The new
+findings are all in governance and audit, not in the asset model. Two of them let an edit reach
+the golden record without the controls a deployment has switched on.
+
+### I1 — The governed-amendment gate is enforced only at HTTP, so the desktop editor bypasses it (HIGH)
+
+`RequireGovernedTermAmendments` is read in exactly one place,
+`SecurityMasterEndpoints.cs:1569`. `SecurityMasterService.AmendTermsAsync`
+(`SecurityMasterService.cs:76`) does not check it.
+
+The WPF editor calls the service in process:
+
+- `SecurityMasterEditViewModel.cs:330` calls `_service.AmendTermsAsync`, and `:298` calls
+  `CreateAsync`.
+- The page's `EditVm.SaveCommand` is wired to that editor (`SecurityMasterPage.xaml:415`).
+
+The editor checks that the user may edit (P5, closed on 2026-08-28) but not whether governance is
+on. A deployment that turns on maker-checker therefore still allows one desktop user to amend
+common terms and asset-specific terms, with no reviewer, as `SourceSystem: "WPF-UI"`.
+
+**Fix:** enforce the option inside the application service, the one seam both clients share.
+Alternatively, route the WPF save through the workbench routes the passport editor already calls
+(`WorkstationSecurityMasterApiClient.cs:114-150`).
+
+### I2 — An approved field edit is merged against the record as it is at publish time, not the version it was drafted on (HIGH)
+
+`ApprovedFieldEditCanonicalMergeHandler` builds its amend with
+`ExpectedVersion: projection.Version`, read when the publish event is handled
+(`ApprovedFieldEditCanonicalMergeHandler.cs:172`). `SecurityMasterRevisionRecord` stores no base
+version (`ISecurityMasterRevisionStore.cs:69-82`).
+
+Suppose an ingest or another approved edit changes the field after the draft and before the
+publish. The publish then overwrites it with the older proposal and raises no conflict. This is
+the lost update that E1 (#3188) closed for direct term-block amends, still open on the governed
+path.
+
+Two related weaknesses in the same handler:
+
+- **Attribution.** The amend records `UpdatedBy: evt.Actor` (`:179`), the publisher. The maker and
+  the checker are on the revision but not on the canonical event.
+- **Silent non-merge.** An approved edit nested deeper than the handler's modelled shapes stays
+  overlay-only, and the only signal is an Information log (`:130-138`). The revision reads as
+  published, but the golden record is unchanged.
+
+**Fix:**
+
+1. Capture the projection version on the revision when it is drafted.
+2. At merge, refuse the merge, or reopen the revision, if that field changed after the captured
+   version.
+3. Carry the maker and approver into the amend's `Reason` or `SourceRecordId` lineage.
+4. Make an unmergeable approval a terminal, visible revision state instead of a log line.
+
+### I3 — Serialization outside the source-generated context on audit and workbench paths (MEDIUM)
+
+These calls use reflection-based serialization with no `SecurityMasterJsonContext`:
+
+- `SecurityGovernanceEventLog.cs:80` serializes the governance event payload, typed as `object`
+  (`:58`), with `JsonSerializer.Serialize(payload)` and no options. The payload therefore has no
+  stable contract and no version, and its property naming follows the runtime type.
+- `SecurityMasterWorkbenchCommandService.cs:1046` and
+  `SecurityMasterWorkbenchCommandService.ProfileFieldValidation.cs:163` round-trip the terms
+  envelope with `SerializeToElement(envelope)`.
+- `PostgresOperatorOverridesStore.cs:11`, `PostgresSecurityMasterPricingStore.cs:12`,
+  `PostgresSecurityMasterQualityReportStore.cs:9` and `PostgresCorporateActionOperationsStore.cs:21`
+  each declare their own options with no type resolver, and they use different naming policies.
+
+The OTC contract, underlying-graph, corporate-action case and pricing-hierarchy types are not in
+the context. This is a serialization-compatibility risk on the tables an auditor reads, and it
+conflicts with the repository's source-generated JSON guardrail.
+
+**Fix:**
+
+1. Give the governance event log a typed, versioned payload union.
+2. Register the remaining Security Master types in the context.
+3. Add an architecture test that rejects `JsonSerializer.*` calls without context options under
+   `**/SecurityMaster/**`.
+
+### I4 — Identifier normalization exists four times, and the F# copy is weaker (MEDIUM)
+
+There are four normalizers for identifier values:
+
+| Copy | Location | What it does |
+| --- | --- | --- |
+| F# `SecurityIdentifier.normalizeValue` | `SecurityIdentifiers.fs:54` | Trims and upper-cases only |
+| C# `SecurityIdentifierNormalizer` | `SecurityIdentifierNormalizer.cs:57-80` | Strips punctuation per identifier kind |
+| SQL backfill | `016_security_master_normalized_identifier_lookup.sql` | Normalizes the stored lookup column |
+| F# check-digit validators | `SecurityIdentifiers.fs` | Their own trim and upper-case |
+
+The F# duplicate-identifier invariant counts duplicates by the weak copy
+(`SecurityMasterCommands.fs:532-537`). A command that carries the same ISIN in dashed and plain
+form therefore passes the domain check. It is caught later, if at all, by the C# path or the
+database.
+
+The F# `validateLei` (`SecurityIdentifiers.fs:177-192`) moves the first four characters to the
+end before the MOD 97 check. That is the IBAN procedure. ISO 17442 checks all 20 characters as
+they are written. The function has no callers, so it has caused no wrong verdict yet, but it is a
+trap for the next caller.
+
+**Fix:** make `SecurityIdentifierNormalizer` the only normalizer and check-digit authority. Have
+F# call it through interop, or delete the F# copies and validate at the C# boundary. Pin the SQL
+backfill against it with a parity test.
+
+### Re-verified as still open (filed in earlier passes, not re-filed)
+
+- **`security_events` has no append-only trigger** (H2, #3247). The only writes to it outside the
+  event store are the 039 backfill updates (`039_…payload_version.sql:14, :26`). A guard migration
+  numbered after 039 is unblocked.
+- **WPF `RequiresContractMultiplier` substring match** (E3/E6, #3196). The match is at
+  `SecurityMasterViewModel.cs:4263-4266`. It still misses `Swaption`, `Warrant`, `Cfd` and
+  `Commodity`. The equality ratchet (`SecurityAssetClassComparisonRatchetTests`) does not scan
+  `Contains`, `StartsWith` or `EndsWith`, and this is the only such site in `src/**`.
+- **Browser `ASSET_CLASS_OPTIONS`** (C7). The list is still hand-coded with non-catalog names
+  (`security-details-tracker.view-model.ts:137`). Browser creation offers only `CustomAsset`, with
+  a literal `schemaVersion: 3` (`settings-screen.tsx:2612-2622`).
+- **Field-provenance rows are upserted and deleted in place, and snapshot reads skip the version
+  check** (E4, #3188).
+- **Forward curves are in memory only, and no valuation-model interface exists** (G4). Only
+  `InMemorySecurityForwardCurveProvider` exists (`SecurityForwardCurve.cs:73`).
+- **No `IBusinessDayCalendarSource` is registered in DI** (G5, increment 5 of 12).
+- **Every builder writes the F# `CallSchedule` and `PutSchedule` empty**
+  (`SecurityMasterLegacyUpgrade.fs:144-147`, and three more sites).
+- **`LedgerTaxLotRecord` persists `BookedFactor` but no current factor**
+  (`ILedgerJournalStore.cs:404`).
+- **The per-class terms upcaster is not landed.** Only StructuredCredit is at terms version 2, so
+  terms evolution stays additive-only until increment 2 of the schedule plan lands.
+
+### Smaller notes, not filed
+
+- **Read-side duplication.** 13 per-class `I*ReferenceProjectionStore` and Postgres reader pairs
+  remain, each with a hand-written `MapRow`. The 18 classes that only the registry projects have
+  no typed reader. The descriptor-driven `PostgresReferenceProjectionReader` could absorb them.
+- **Duplicated form model.** The browser's passport form model
+  (`security-passport-schema-fields.view-model.ts:43-89`) is a hand port of
+  `SecurityAssetTermFormModel.cs:19-55`, and no contract test keeps the two in step.
+- **Overrides.** `OperatorOverridesDto` has no expiry, and override patches have no version check.
+
+### Priorities from this pass
+
+1. **Enforce `RequireGovernedTermAmendments` in `SecurityMasterService` (I1).** This is a small
+   change that closes a control bypass on a co-equal client.
+2. **Version-check the governed merge and carry maker and approver lineage (I2).**
+3. **Make the audit stores tamper-evident and contract-typed:** the `security_events` trigger
+   (H2, #3247) and the typed governance payload (I3) together.
+4. **One identifier normalizer (I4).**
+5. **Continue the schedule-kernel increments 2–5.** This is the remaining structural blocker for
+   callable bonds, floating-rate notes with resets, and PIK loans.
+
+**Validation.** This pass is review only. No source changed. Each citation was read at
+`6ca5515b`. The unmerged review PRs listed above were diffed against `main` so that this pass
+files no duplicate findings.
