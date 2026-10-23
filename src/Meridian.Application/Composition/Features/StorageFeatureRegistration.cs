@@ -389,12 +389,11 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterImportService, SecurityMasterImportService>();
             services.AddSingleton<ISecurityMasterIngestStatusService>(sp => (ISecurityMasterIngestStatusService)sp.GetRequiredService<ISecurityMasterImportService>());
 
-            // Migrate-on-read upcaster pipeline for asset-specific-terms payloads, shared by the
-            // projection store (queryable schema_version column + read normalization). Registering the
-            // composed pipeline (v0 stamping + cross-family economic-terms v2 -> v1 flattening) rather
-            // than the bare v0->current upcaster keeps the store's schema_version promotion consistent
-            // with the mapping guard: a v2 economic-terms document is flattened to the accepted legacy
-            // version instead of being promoted as an unsupported version the guard would reject.
+            // The composed migrate-on-read pipeline (v0 stamping + cross-family economic-terms v2 -> v1 flattening)
+            // for callers that resolve upcasters through the ISchemaUpcaster<T> seam; nothing in this composition
+            // resolves it today. The projection store derives schema_version from the stored blob
+            // (PostgresSecurityMasterStore.UpsertProjectionAsync) and readers call SecurityAssetSpecificTermsUpcasterChain
+            // directly. Per-class terms-version upgrades belong to SecurityAssetClassTermsUpgrader, not this pipeline.
             services.AddSingleton<
                 Meridian.Contracts.Schema.ISchemaUpcaster<Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms>,
                 Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline>();

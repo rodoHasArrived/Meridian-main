@@ -191,6 +191,26 @@ public sealed record SecurityAssetTermField(
         => this with { UnderlyingRole = role };
 
     /// <summary>
+    /// The asset-class terms version (<see cref="SecurityAssetClassDescriptor.TermsVersion"/>) that
+    /// introduced this field; 1 for every field the class carried before per-class versioning. A
+    /// payload stamped with an earlier version never carries it. The committed manifests under
+    /// <c>tests/fixtures/security-master/terms-versions</c> are checked against it: a field must first
+    /// appear in the manifest of this version.
+    /// </summary>
+    public int SinceTermsVersion { get; init; } = SecurityTermsEnvelope.DefaultAssetClassTermsVersion;
+
+    /// <summary>
+    /// Declares the terms version that introduced the field. Like <see cref="WithConvention"/> and
+    /// <see cref="AsOperational"/> it is a single-member <c>with</c>, so it composes with every other
+    /// modifier in any order.
+    /// </summary>
+    public SecurityAssetTermField Since(int termsVersion)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(termsVersion, SecurityTermsEnvelope.DefaultAssetClassTermsVersion);
+        return this with { SinceTermsVersion = termsVersion };
+    }
+
+    /// <summary>
     /// True when <paramref name="value"/> satisfies this field's convention (or it declares none).
     /// Blank values are left to the required/optional rules.
     /// </summary>
@@ -453,16 +473,17 @@ public static class SecurityAssetTermsSchema
                 Opt("maturity", SecurityAssetTermFieldType.Date),
                 // Typed tranche terms (asset-class terms version 2): the securitisation family,
                 // capital-structure position, loss attachment/detachment, collateral-pool statistics
-                // and the CLO period dates. All optional, so a version-1 payload reads unchanged.
-                Opt("structuredCreditKind", SecurityAssetTermFieldType.String),
-                Opt("seniority", SecurityAssetTermFieldType.String),
-                Opt("attachmentPoint", SecurityAssetTermFieldType.Decimal),
-                Opt("detachmentPoint", SecurityAssetTermFieldType.Decimal),
-                Opt("weightedAverageCoupon", SecurityAssetTermFieldType.Decimal),
-                Opt("weightedAverageMaturityMonths", SecurityAssetTermFieldType.Integer),
-                Opt("weightedAverageLoanAgeMonths", SecurityAssetTermFieldType.Integer),
-                Opt("reinvestmentPeriodEnd", SecurityAssetTermFieldType.Date),
-                Opt("nonCallPeriodEnd", SecurityAssetTermFieldType.Date)
+                // and the CLO period dates. All optional, so a version-1 payload reads unchanged;
+                // tagged .Since(2) so the committed version manifests place them in version 2.
+                Opt("structuredCreditKind", SecurityAssetTermFieldType.String).Since(2),
+                Opt("seniority", SecurityAssetTermFieldType.String).Since(2),
+                Opt("attachmentPoint", SecurityAssetTermFieldType.Decimal).Since(2),
+                Opt("detachmentPoint", SecurityAssetTermFieldType.Decimal).Since(2),
+                Opt("weightedAverageCoupon", SecurityAssetTermFieldType.Decimal).Since(2),
+                Opt("weightedAverageMaturityMonths", SecurityAssetTermFieldType.Integer).Since(2),
+                Opt("weightedAverageLoanAgeMonths", SecurityAssetTermFieldType.Integer).Since(2),
+                Opt("reinvestmentPeriodEnd", SecurityAssetTermFieldType.Date).Since(2),
+                Opt("nonCallPeriodEnd", SecurityAssetTermFieldType.Date).Since(2)
             ],
             ["PrivateFundInterest"] =
             [

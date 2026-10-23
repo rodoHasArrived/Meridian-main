@@ -1,0 +1,45 @@
+{
+  "assetClass": "RealEstateHolding",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "addressOrMarket",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "appraisalValue",
+          "type": "Decimal",
+          "required": true
+        },
+        {
+          "key": "debtStack",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "ownershipPercent",
+          "type": "Decimal",
+          "required": true
+        },
+        {
+          "key": "propertyType",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "sponsor",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "valuationDate",
+          "type": "Date",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

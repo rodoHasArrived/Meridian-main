@@ -1,0 +1,80 @@
+{
+  "assetClass": "CreditDefaultSwap",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "dayCount",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "effectiveDate",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "fixedCouponBps",
+          "type": "Decimal",
+          "required": true
+        },
+        {
+          "key": "indexName",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "maturityDate",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "notional",
+          "type": "Decimal",
+          "required": true
+        },
+        {
+          "key": "paymentFrequency",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "protectionSide",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "recoveryRateAssumption",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "referenceEntity",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "referenceObligation",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "restructuringClause",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "seniority",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "upfrontPoints",
+          "type": "Decimal",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

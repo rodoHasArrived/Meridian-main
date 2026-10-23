@@ -31,7 +31,8 @@ record at its stated date.
 | [021: Verified Operation Outcomes and Operational Case History](021-verified-operation-outcomes-and-case-history.md) | Proposed |
 | [022: Canonical Asset-Class Homes](022-canonical-asset-class-homes.md) | Accepted |
 | [023: Host-Wide Provider Credential Ownership](023-host-wide-provider-credential-ownership.md) | Proposed; implementation plan |
-| [024: Terms Payload Format and Version Policy](024-terms-payload-format-and-version-policy.md) | Accepted; shape-rule retirement pending backfill evidence |
+| [024: Terms Payload Format and Version Policy](024-terms-payload-format-and-version-policy.md) | Accepted; per-class terms upgrade hook implemented 2026-10-23; shape-rule retirement pending backfill evidence |
+| [025: Contractual Schedule Kernel and Business-Day Calendar Seam](025-contractual-schedule-kernel.md) | Proposed; kernel and calendar seam implemented, consumer moves planned |
 
 Use the [ADR template](_template.md) to author a new decision, retain its approval status, and
 separate existing implementation evidence from planned work.

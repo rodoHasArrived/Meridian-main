@@ -60,11 +60,15 @@ stored family was not queryable, and nothing recorded the policy that lets the s
 | Migration | `src/Meridian.Storage/SecurityMaster/Migrations/042_security_master_terms_format_column.sql` | `terms_format` column, backfill, check constraint |
 | Store | `src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs` | Writes `terms_format`; refuses unknown formats |
 | Writers | `src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs`, `src/Meridian.Application/SecurityMaster/EdgarIngestOrchestrator.cs`, `src/Meridian.FSharp/Interop.SecurityMaster.fs`, `src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs` | Flat writers that stamp the envelope |
-| Validation | `src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs` | Format rules |
-| Tests | `tests/Meridian.Tests/SecurityMaster/SecurityTermsVersioningTests.cs`, `tests/Meridian.Tests/SecurityMaster/SecurityValidationServiceTests.cs`, `tests/Meridian.Tests/SecurityMaster/SecurityMasterPostgresRoundTripTests.cs` | Stamping, SQL/code parity, column round trip |
+| Validation | `src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs` | Format rules; the informational terms-version notice |
+| Upgrade hook | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrader.cs` | Runs a class's declared steps on read; identity steps return the stored payload itself |
+| Upgrade steps | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassTermsUpgrade.cs` | Identity and transform steps declared on `SecurityAssetClassDescriptor.TermsUpgrades` |
+| Version manifests | `tests/fixtures/security-master/terms-versions` | Committed per-class key sets for every terms version |
+| Tests | `tests/Meridian.Tests/SecurityMaster/SecurityTermsVersioningTests.cs`, `tests/Meridian.Tests/SecurityMaster/SecurityValidationServiceTests.cs`, `tests/Meridian.Tests/SecurityMaster/SecurityMasterPostgresRoundTripTests.cs`, `tests/Meridian.Tests/SecurityMaster/SecurityAssetClassTermsHistoryTests.cs`, `tests/Meridian.Tests/SecurityMaster/SecurityAssetClassTermsUpgraderTests.cs` | Stamping, SQL/code parity, column round trip, version history, upgrade hook |
 
-Items 1–4 are implemented. Item 5 (retiring the shape rule and the reserved value) is proposed and
-waits on the backfill evidence described above.
+Items 1–4 are implemented; decision 3's upcaster is `SecurityAssetClassTermsUpgrader` (2026-10-23).
+Item 5 (retiring the shape rule and the reserved value) is proposed and waits on the backfill
+evidence described above.
 
 ## Rationale
 
@@ -130,6 +134,8 @@ SecurityTermsEnvelope.StampFlat(json, assetClass);
 SecurityTermsEnvelope.ResolveFormat(payload);
 // Store: the column is derived from the payload, never from the post-upcast result.
 PostgresSecurityMasterStore.ResolveStorableTermsFormat(record);
+// Readers: an older per-class terms version upgrades on read; identity steps return the payload unchanged.
+SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, payload);
 ```
 
 ### Runtime Verification
@@ -141,6 +147,14 @@ PostgresSecurityMasterStore.ResolveStorableTermsFormat(record);
   (PostgreSQL integration lane).
 - `SecurityAssetSpecificTermsUpcasterChainTests` — no accepted flat version equals
   `EconomicTermsSchema.Current`.
+- `SecurityAssetClassTermsHistoryTests` — every catalog class has a committed manifest for versions
+  1 to its `TermsVersion`, the latest manifest equals the live schema, each field's `.Since(n)` is
+  the first version that lists it, steps are contiguous, and an identity step is legal for the
+  manifest diff it spans.
+- `SecurityAssetClassTermsUpgraderTests` and `SecurityAssetClassTermsUpgradeWiringTests` — an
+  identity step returns the stored element itself, a transform step returns a new payload stamped at
+  the current version, everything outside the flat codec passes through, and a version-1
+  StructuredCredit payload reads exactly as its version-2 twin on every wired read path.
 - Verify paths in the Implementation Links table from the repository root:
 
 ```bash
@@ -157,7 +171,7 @@ This command verifies referenced files and directories exist; it does not valida
 
 ---
 
-*Last Updated: 2026-10-17*
+*Last Updated: 2026-10-23*
 
 ## Applications
 
@@ -172,4 +186,52 @@ This command verifies referenced files and directories exist; it does not valida
   statistics from the `structuredProduct` module and gives an IO or PO strip its kind back from the
   module's `isInterestOnly` / `isPrincipalOnly` flags; any other family is not carried by the
   economic document and stays absent rather than guessed.
-
+- **Per-class terms upgrade hook (2026-10-23).** Decision 3's upcaster now has a home.
+  `SecurityAssetClassDescriptor.TermsUpgrades` declares one step per terms version, each an identity
+  or a transform (`SecurityAssetClassTermsUpgrade`), and `SecurityAssetClassTermsUpgrader` runs them
+  on read. It acts only on flat-codec objects (`schemaVersion` 1 or absent, flat by tag or shape, no
+  `customProfileId` or `profileFields`) stamped from version 1 up to, but not including, the class's
+  current version, and passes everything else through. It never refuses a payload: refusing a newer
+  stamp stays with `EnsureReadableAsAssetSpecificTerms`. It throws only when a class's declared steps
+  or one of its transforms are defective. Identity steps return the stored element itself, and a
+  transform returns a new in-memory payload stamped at the current version. Stored blobs, the
+  `schema_version` and `terms_format` columns, event and snapshot blobs are never rewritten.
+  - **Wired read paths.** The hook runs in the mapping decoder (after the read guard), the
+    economic-definition adapter's retained-terms branch, the structured cash-flow resolver and the
+    Security Master cash-flow factor-date walk, the obligation projection's Security Master terms
+    wrapper, the relational projection decoder, and the class validators.
+  - **StructuredCredit.** The 2026-10-18 identity claim above is now declared and checked. The nine
+    version-2 fields are tagged `.Since(2)`, the step `Identity(1)` is declared, and the committed
+    manifests show the version-1 → 2 diff adds only optional keys.
+  - **Manifests.** The manifests under `tests/fixtures/security-master/terms-versions` are
+    append-only history: a committed version is never edited. Only review enforces that, since the
+    guard compares the live schema with the latest version alone. A class evolves by bumping its
+    `TermsVersion`, tagging new fields `.Since(n)` and declaring the step; the guard then writes the
+    new version for review.
+  - **Backlog signal.** `SM_ASSET_CLASS_TERMS_VERSION_BEHIND` (Info) reports a flat row with an
+    integer `schemaVersion` stamped, or unstamped and so read as, below its class's terms version.
+    It never blocks. `SecurityValidationGateService` drops informational issues before a workflow
+    gate decides, snapshots or hands the report on, so validation snapshots omit them by design.
+    The Security Master workbench counts only non-informational issues in its trust posture, and the
+    WPF Security Master screen counts the same way in its validation status and coverage summary.
+    The notice appears in the validation report itself (`GET /api/security-master/{id}/validation`
+    and the issue lists in both workstations).
+  - **Precondition for the first transform step.** Every reader of stored flat terms must be wired
+    to the hook, or shown unaffected, before any class declares a transform. Unwired today:
+    `PortfolioCashLadderEngine` and `SwapProjectionService`, `SecurityMasterDataQualityService`,
+    `SecurityMasterWorkbenchQueryService`, the F# readers, the Strategies
+    `SecurityMasterAccountingEventSourceAdapter` (factor schedule and current factor from retained
+    legacy terms), `PostgresSecurityMasterStore.TryBuildOptionProjection`, persisted Asset Operations
+    payloads walked by `AssetObligationProjectionService.BuildProjectedObligationEvents`, and the
+    raw-payload comparisons in `OpenLotAmortizationContinuation` and the conflict detection.
+    `SecurityMasterQueryService.GetByIdAsync` returns the stored detail while the as-of reads go
+    through the hooked adapter, so the two would differ. The adapter's output is persisted: the
+    rebuild orchestrator's full warm, incremental replay and asset-class rebuild upsert it. Only the
+    asset-class rebuild has a production caller today. A transformed payload would therefore reach
+    `securities.asset_specific_terms` on a rebuild, and on every boot if a startup warm were wired.
+    Before the first transform, either accept that the projection is a derived read model, or move
+    the hook below the cache. A transform must leave a payload already in its target shape unchanged,
+    because an unstamped create, amend or import request reads as version 1. The hook's domain
+    already excludes the payloads the mapping treats as profile-backed (`customProfileId`) or reads
+    through `profileFields`, so a transform never rewrites an outer object whose terms the reader
+    takes from elsewhere.

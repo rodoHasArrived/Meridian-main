@@ -259,6 +259,9 @@ internal static class SecurityMasterMapping
     private static SecurityKind ToSecurityKind(string assetClass, JsonElement json, SecurityKindMappingMode mode = SecurityKindMappingMode.Read)
     {
         EnsureSupportedAssetSchemaVersion(assetClass, json);
+        // The guard sees the stored or submitted payload; the decoder reads it at the class's current
+        // terms version (ADR-024). Identity steps return the same element.
+        json = SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, json);
         var terms = ResolveAssetTermsJson(json);
 
         var kind = assetClass switch

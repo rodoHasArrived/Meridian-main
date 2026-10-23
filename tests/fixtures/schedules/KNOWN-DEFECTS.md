@@ -1,0 +1,48 @@
+# Contractual-Schedule Known-Defect Registry
+
+Each defect below is pinned by a **characterization test** carrying
+`[Trait("Category", "KnownDefect")]`: the test asserts today's defective behavior so CI stays
+green, and carries a `// TARGET:` comment stating the correct behavior. When a fix lands, the
+characterization test fails — the fix PR must flip the assertion to the target expectation and
+update this registry in the same PR.
+
+The schedule kernel ([ADR-025](../../../docs/adr/025-contractual-schedule-kernel.md)) applies
+corrected semantics only to records that declare schedule conventions. A record that declares
+nothing keeps its legacy output, so for most entries below the target is reached for declaring
+records first and the pin stays in force for undeclared records. Flipping an undeclared record's
+default needs data evidence, owner approval and an engine-version bump; until then the pin is the
+contract.
+
+Run the pinned suites alone:
+
+```bash
+dotnet test tests/Meridian.Tests -c Release /p:EnableWindowsTargeting=true --filter "Category=KnownDefect"
+dotnet test tests/Meridian.FSharp.Tests -c Release /p:EnableWindowsTargeting=true --filter "Category=KnownDefect"
+dotnet test tests/Meridian.FundStructure.Tests -c Release /p:EnableWindowsTargeting=true --filter "Category=KnownDefect"
+```
+
+`T0` below is the first day of the month after the test runs (UTC). The Security Master service
+reads the wall clock for its as-of date, so its pins anchor on `T0` rather than a fixed date.
+
+| ID | Location | Current behavior (pinned) | Target behavior | Owning increment | Pinned by |
+|----|----------|---------------------------|-----------------|------------------|-----------|
+| SCH-DEF-001 | `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs` (`ResolvePaymentFrequencyPerYear`) and its copy in `src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs` | `AtMaturity` has no months-per-period, so the cadence reader falls through to its default of 1 payment a year. Security Master: issue `T0`, maturity `T0`+36M, par 1000, coupon 5, 30/360 projects 3 rows at `T0`+12M, +24M and +36M, each with interest 50.0000, and principal 1000 on the last. Asset operations: issue 2026-01-15, maturity 2029-01-15, 5%, par 100, 30/360 projects coupons of 5.0000 on 2027-01-15, 2028-01-15 and 2029-01-15 | One Term period. Security Master: one row at `T0`+36M with interest 150.0000. Asset operations: one coupon of 15.0000 | 5 (Security Master engine) and 6 (asset operations), for declaring records only; undeclared records wait on the default-flip decision | `SecurityMasterCashFlowServiceTests` (schedule characterization partial), `AssetOperationsBondScheduleCharacterizationTests` |
+| SCH-DEF-002 | `src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs` (bond projection loop) | Each period end is the previous end plus the tenor, so a month-end anchor drifts. Issue 2026-01-31, maturity 2027-01-31, quarterly, fixed coupon 4, par 100, 30/360: coupon rows due 2026-04-30, 07-30, 10-30 and 2027-01-30, each 1.0000; no coupon row for the stub 2027-01-30 to 01-31, because 30/360 counts it as 0 days and zero coupons are suppressed; maturity principal 100 on 2027-01-31 | Coupons due 2026-04-30, 07-31, 10-31 and 2027-01-31 | 6, for declaring records only. Increment 3 moves this loop onto the kernel's compounded mode with the pin intact | `AssetOperationsBondScheduleCharacterizationTests` |
+| SCH-DEF-003 | `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs` (`NormalizeAnnualRate`) | A coupon at or below 1 is read as a fraction. Coupon 0.5, quarterly, par 100, 30/360, maturity `T0`+12M: each quarter's interest is 12.5000. Asset operations reads the same coupon as a percent and pays 0.1250 for a full 30/360 quarter (contrast pin) | 0.1250 per quarter in the Security Master engine, from a declared coupon unit | 5 (declared `couponRateUnit` in the Security Master engine) and 6 (asset operations), for declaring records only; undeclared records wait on the default-flip decision | `SecurityMasterCashFlowServiceTests` (schedule characterization partial); contrast pin in `AssetOperationsBondScheduleCharacterizationTests` |
+| SCH-DEF-004 | `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs` (period-less `DayCountConventions.Fraction` calls) | Act/Act ICMA and Business/252 degrade without period or calendar context. `ACT/ACT ICMA`, semiannual, par 100, coupon 5, issue `T0`: row 1's interest equals `RoundCash(100 × 0.05 × Fraction(ActualActualIsda, T0, T0+6M))` and is not 2.5000. With `BUS/252`, row 1 equals `RoundCash(5 × actualDays / 365)` | ICMA row 1 pays 2.5000; Business/252 counts business days over 252 | 5 (declared mode computes through the schedule day count), for declaring records only; undeclared records wait on the default-flip decision | `SecurityMasterCashFlowServiceTests` (schedule characterization partial) |
+| SCH-DEF-005 | `src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs` (`BuildProjectedFlows`) | Periods are compounded from the projection as-of date, and every basis except Act/365F divides by 360. As-of 2026-01-31, maturity 2026-12-31, monthly, Actual/Actual ISDA, fixed 0.08 on 1,000,000: 12 interest rows due 02-28, 03-28, … 12-28, then 12-31; row 1 (28 days) is 6,222.22; row 12 (3 days) is 666.67; bullet principal of 1,000,000 on 2026-12-31. A floating loan with no rate reset projects 0.00 | Row 1 under ISDA is 6,136.99. A floating loan with no rate reset is blocked | 10 (opt-in `dl-engine-v2`). Loans on `dl-engine-v1` stay pinned | `PostgresDirectLendingProjectionCharacterizationTests` |
+| SCH-DEF-006 | `src/Meridian.FSharp/Domain/DirectLending.fs` (`accrualFractionForDay`), reached from `ServicingAggregate.postDailyAccrual` | 30/360 accrues per calendar day over 360. `CalculateDailyAccrualAmountForDate(1_000_000m, 0.06m, 2, 2026-01-31)` is `1_000_000m × 0.06m × (1m / 360m)` (166.66666666666666666666666800 in decimal, 166.67 after rounding); posting every day of January 2026 (fixed 6%, Thirty360) posts 31 × 166.67 = 5,166.77 | Accrual formula v2, period-to-date with residual carry: 5,000.00 in total for January, with 31 January posting 0.00 | 11 (accrual formula v2, opt-in per loan). Loans on formula v1 stay pinned | `Meridian.FSharp.Tests` (F#) |
+| SCH-DEF-007 | `src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs` (`TryAdvanceByFrequency`) | Each projected date is the previous one plus the tenor, so a month-end anchor drifts. First projected date 2026-01-31, payment frequency `Monthly`, window [2026-01-01, 2026-07-01): 01-31, 02-28, 03-28, 04-28, 05-28, 06-28 | 01-31, 02-28, 03-31, 04-30, 05-31, 06-30 | None assigned. Increment 3 moves this stepping onto the kernel's compounded mode with the pin intact; the fix waits on the default-flip decision | `Meridian.FundStructure.Tests` |
+| SCH-DEF-008 | `src/Meridian.FSharp.DirectLending.Aggregates/ContractAggregate.fs` (`amendTerms`, `activateLoan`) | The servicing state is rebuilt positionally and the trailing members fall back to their defaults. `ActivateLoan` on servicing with `IsPikToggled = true` and one collateral item returns `IsPikToggled = false` and no collateral | Both are preserved (the fix also passes the unamortized discount and premium through) | 11(a), a defect fix for every loan | `Meridian.FSharp.Tests` (F#) |
+| SCH-DEF-009 | `src/Meridian.Instruments/AssetOperations/PortfolioCashLadderEngine.cs` (`SelectEarlyCallDates`) | The early-call probe reads `callDate`, then `mandatoryPutDate`, then `preRefundDate`. A bond with a mandatory put date inside the window and no call date is redeemed at par on that date as if called, and later rows are dropped | Separate issuer-call and put scenarios driven by declared call and put schedules | 8, for declared schedules. The scalar fallback for undeclared bonds stays pinned pending the decision on mandatory put and pre-refund dates | `PortfolioCashLadderScheduleCharacterizationTests` |
+| SCH-DEF-010 | `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs` (`BuildPaymentPeriods`) | The issue-anchored walk evaluates the grid date that closes the schedule. When that date lies past 9999-12-31, which happens for a far-dated or perpetual-sentinel maturity off the grid, `DateOnly.AddMonths` throws and the projection fails. Issue `T0`, maturity 9999-12-31, quarterly: `GetProjectionAsync` throws `ArgumentOutOfRangeException`. The kernel itself closes such a schedule at maturity; the wiring re-evaluates the closing date to keep the legacy failure | The projection returns a bounded schedule or is blocked with a reason; it never throws | 5 (declared mode), for declaring records; undeclared records wait on the default-flip decision | `SecurityMasterCashFlowServiceTests` (schedule characterization partial); `LegacyOracleFidelityTests` (end-of-range theory) |
+
+## Golden fixtures
+
+`golden/face-value-lot-constant-yield.json` holds 576 `FaceValueLot.ConstantYieldAmortizedBasisAsOf`
+values (payments per year {1, 2, 4, 12} × conventions {Thirty360, ActualActualIcma,
+ThirtyE360Isda, Actual365} × three acquisition shapes × prices {98.5, 100, 101.25} × four as-of
+dates), stored as invariant decimal strings and compared by `FaceValueLotGoldenTests` with exact
+equality. It is not a defect pin: it freezes governed calculation output before increment 12
+moves `FaceValueLot`'s coupon-date generators onto the kernel. A missing or mismatched fixture
+writes `face-value-lot-constant-yield.received.json` to the test output and fails; it never skips.

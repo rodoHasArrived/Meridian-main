@@ -50,7 +50,8 @@ public static class SecurityTermsEnvelope
 
     /// <summary>
     /// The asset-class terms contract version a flat payload was written against
-    /// (<see cref="SecurityAssetClassDescriptor.TermsVersion"/>). Absent means version 1.
+    /// (<see cref="SecurityAssetClassDescriptor.TermsVersion"/>). Absent means version 1. An older
+    /// version is read through <see cref="SecurityAssetClassTermsUpgrader"/>.
     /// </summary>
     public const string AssetClassTermsVersionKey = "assetClassTermsVersion";
 
@@ -139,8 +140,19 @@ public static class SecurityTermsEnvelope
     /// stamping is idempotent. Non-object JSON is returned unchanged.
     /// </summary>
     public static string StampFlat(string json, string assetClass)
+        => StampFlat(json, SecurityAssetClassCatalog.GetTermsVersion(assetClass));
+
+    /// <summary>
+    /// <see cref="StampFlat(string, string)"/> with an explicit asset-class terms version: the stamping
+    /// routine every flat writer and the upgrade hook's transform path share
+    /// (<see cref="SecurityAssetClassTermsUpgrader"/>). The envelope keys go immediately after
+    /// <c>schemaVersion</c> when the document carries one, and last otherwise; keys the document
+    /// already carries are replaced, so stamping is idempotent. Non-object JSON is returned unchanged.
+    /// </summary>
+    public static string StampFlat(string json, int assetClassTermsVersion)
     {
         ArgumentNullException.ThrowIfNull(json);
+        ArgumentOutOfRangeException.ThrowIfLessThan(assetClassTermsVersion, DefaultAssetClassTermsVersion);
         if (JsonNode.Parse(json) is not JsonObject source)
         {
             return json;
@@ -151,7 +163,7 @@ public static class SecurityTermsEnvelope
         void WriteEnvelope()
         {
             stamped[FormatKey] = SecurityTermsFormats.Flat;
-            stamped[AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion;
+            stamped[AssetClassTermsVersionKey] = assetClassTermsVersion;
             wroteEnvelope = true;
         }
 
@@ -195,7 +207,7 @@ public static class SecurityTermsEnvelope
                 "asset-specific-terms format; route it through SecurityAssetSpecificTermsUpcasterChain before reading.");
         }
 
-        var supported = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion;
+        var supported = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
         var declaredVersion = ResolveAssetClassTermsVersion(payload);
         if (declaredVersion > supported || declaredVersion < DefaultAssetClassTermsVersion)
         {
