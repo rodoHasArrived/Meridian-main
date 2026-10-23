@@ -58,6 +58,43 @@ public sealed class BankStatementClosingBalanceAuthorityTests
     }
 
     [Fact]
+    public void SelectAuthoritativeLines_FeedTransactionOnAStatementDate_IsSupersededWhateverItsDeliveryDate()
+    {
+        var account = Guid.NewGuid();
+        var october8 = new DateOnly(2026, 10, 8);
+        var october9 = new DateOnly(2026, 10, 9);
+        var statement = Line(500m) with
+        {
+            AccountId = account,
+            TransactionDate = october8,
+            ValueDate = october8,
+            StatementAsOfDate = october8,
+            Amount = -40m
+        };
+        // One Plaid delivery carried the October 8 transaction and an October 9 one, so its header is October 9.
+        var delivery = Guid.NewGuid();
+        BankStatementLineDto Feed(DateOnly posted, decimal amount) => Line(0m) with
+        {
+            BatchId = delivery,
+            AccountId = account,
+            TransactionDate = posted,
+            ValueDate = posted,
+            StatementAsOfDate = october9,
+            Amount = amount,
+            ClosingBalance = null,
+            IsTransactionFeed = true
+        };
+        var duplicate = Feed(october8, -40m);
+        var later = Feed(october9, -15m);
+
+        var authoritative = BankStatementClosingBalanceAuthority.SelectAuthoritativeLines([statement, duplicate, later]);
+
+        authoritative.Should().NotBeNull();
+        authoritative!.Should().BeEquivalentTo([statement, later],
+            "the October 8 statement supersedes the feed copy of its own transaction");
+    }
+
+    [Fact]
     public void SelectLatestLine_FeedBatchesOnOneDate_DoNotCompareTheirRestartingSequences()
     {
         // Two deliveries on one date each number their rows from 1.

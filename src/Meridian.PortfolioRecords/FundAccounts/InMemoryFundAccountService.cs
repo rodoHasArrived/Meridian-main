@@ -395,8 +395,9 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             var stored = RequireAccountLocked(request.AccountId);
             EnsureAllowed(stored.Summary, "ingest-bank-statement", request.IsBackfill, allowSuspended: true);
             var retained = stored.BankBatches.FirstOrDefault(existing => existing.BatchId == batch.BatchId);
-            // A feed batch's membership can shrink when a later delivery supersedes one of its transactions.
-            if (retained is not null && (retained.StatementDate != batch.StatementDate
+            // A feed batch's membership can shrink when a later delivery supersedes one of its transactions,
+            // and its header date is delivery metadata that moves when a redelivery re-dates a transaction.
+            if (retained is not null && (!request.IsTransactionFeed && retained.StatementDate != batch.StatementDate
                 || (retained.StatementRevision ?? 1) != batch.StatementRevision || retained.BankName != batch.BankName
                 || (retained.IsTransactionFeed ?? false) != request.IsTransactionFeed
                 || !request.IsTransactionFeed && (retained.LineCount != batch.LineCount
@@ -409,6 +410,14 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             if (retained is null)
             {
                 stored.BankBatches.Add(batch);
+            }
+            else if (request.IsTransactionFeed && retained.StatementDate != batch.StatementDate)
+            {
+                stored.BankBatches[stored.BankBatches.IndexOf(retained)] = retained with
+                {
+                    StatementDate = batch.StatementDate,
+                    LineCount = batch.LineCount
+                };
             }
             snapshot = CaptureSnapshotLocked();
         }

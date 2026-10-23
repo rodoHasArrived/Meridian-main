@@ -317,6 +317,38 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
+    public async Task ReplayOpeningAcrossCompressionAndALateAppend_ReadsTheExtendedArchive()
+    {
+        var path = await CreateSourceAsync();
+        var late = Serialize(BuildTrade(99)) + "\n";
+        var extended = await File.ReadAllTextAsync(path) + late;
+        JsonlArchiveFiles.AfterSourceOpenedForTest = opened =>
+        {
+            if (opened != path)
+                return;
+            JsonlArchiveFiles.AfterSourceOpenedForTest = null;
+            // Between replay's two opens, compression publishes and deletes the source, and a late
+            // append extends the published archive.
+            using (var archive = File.Create(path + ".gz"))
+            using (var gzip = new GZipStream(archive, CompressionLevel.Fastest))
+                gzip.Write(Encoding.UTF8.GetBytes(extended));
+            File.Delete(path);
+        };
+        try
+        {
+            await using var opened = await JsonlArchiveFiles.OpenReadAsync(path, CancellationToken.None);
+            opened.Name.Should().Be(path + ".gz");
+            await using var gzip = new GZipStream(opened, CompressionMode.Decompress);
+            using var reader = new StreamReader(gzip);
+            (await reader.ReadToEndAsync()).Should().Be(extended, "the later generation is the only representation left");
+        }
+        finally
+        {
+            JsonlArchiveFiles.AfterSourceOpenedForTest = null;
+        }
+    }
+
+    [Fact]
     public async Task WithdrawnGzipPath_ReplaysTheSurvivingSource()
     {
         var path = await CreateSourceAsync();

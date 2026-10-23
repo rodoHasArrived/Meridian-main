@@ -575,6 +575,29 @@ public abstract class FundAccountServiceContractTests
         BankStatementClosingBalanceAuthority.SelectClosingBalance(retained).Should().Be(90m);
     }
 
+    protected async Task IngestBankStatementAsync_TransactionFeedRedelivery_MovesItsHeaderDate_Core()
+    {
+        var service = CreateService();
+        var account = await service.CreateAccountAsync(MakeBankRequest());
+        var asOf = Today();
+        var earlier = asOf.AddDays(-1);
+        var batchId = Guid.NewGuid();
+        var coffee = MakeBankLine(batchId, account.AccountId, earlier, -25.10m) with { Description = "Coffee" };
+        var rent = MakeBankLine(batchId, account.AccountId, earlier, -900m) with { Description = "Rent" };
+        await service.IngestBankStatementAsync(new IngestBankStatementRequest(
+            batchId, account.AccountId, earlier, "Plaid", null, [coffee, rent], "sync", IsBackfill: true, IsTransactionFeed: true));
+
+        // The same transactions, so the same batch identity, with one re-dated: the delivery's header date moves.
+        var redatedRent = rent with { TransactionDate = asOf, ValueDate = asOf };
+        var redeliver = () => service.IngestBankStatementAsync(new IngestBankStatementRequest(
+            batchId, account.AccountId, asOf, "Plaid", null, [coffee, redatedRent], "sync", IsBackfill: true, IsTransactionFeed: true));
+
+        await redeliver.Should().NotThrowAsync("a corrected feed delivery must not stall the sync cursor");
+        var retained = await service.GetBankStatementLinesAsync(account.AccountId);
+        retained.Should().HaveCount(2);
+        retained.Should().ContainSingle(line => line.LineId == rent.LineId).Which.ValueDate.Should().Be(asOf);
+    }
+
     protected async Task IngestBankStatementAsync_TransactionFeedBatches_AreAdditiveAndSupersedeByLineIdentity_Core()
     {
         var service = CreateService();

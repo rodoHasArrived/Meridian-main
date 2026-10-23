@@ -33,7 +33,11 @@ public static class BankStatementClosingBalanceAuthority
         IEnumerable<BankStatementLineDto> lines, string? currency = null, DateOnly? fromValueDate = null, DateOnly? throughValueDate = null)
     {
         var selected = new List<BankStatementLineDto>();
-        foreach (var group in lines.GroupBy(static line => (line.AccountId, line.StatementDate)))
+        // A feed delivery's header date is the latest date it happened to carry, so a feed transaction
+        // belongs to the date it posted on. The complete statement for that date supersedes it, however
+        // the transactions were grouped into deliveries.
+        foreach (var group in lines.GroupBy(static line =>
+                     (line.AccountId, Date: line.IsTransactionFeed == true ? line.TransactionDate : line.StatementDate)))
         {
             var statement = group.Where(static line => line.IsTransactionFeed != true).ToArray();
             if (statement.Length == 0)

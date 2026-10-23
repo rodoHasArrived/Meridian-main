@@ -54,6 +54,15 @@ internal static class JsonlArchiveFiles
     /// resolve to gzip after cleanup. If both survive, prove payload equivalence before any
     /// event is emitted; conflicting evidence fails closed and neither copy is changed.
     /// </summary>
+    // Test seam: runs after the plain source is opened and before the archive is, for one path.
+    private static readonly AsyncLocal<Action<string>?> s_afterSourceOpened = new();
+
+    internal static Action<string>? AfterSourceOpenedForTest
+    {
+        get => s_afterSourceOpened.Value;
+        set => s_afterSourceOpened.Value = value;
+    }
+
     internal static async Task<FileStream> OpenReadAsync(string path, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
@@ -61,6 +70,20 @@ internal static class JsonlArchiveFiles
         if (!requestedGzip && !path.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
             return Open(path);
 
+        // The two representations are opened one after the other. Compression can delete the source
+        // and a late append can extend the published archive in between, so the archive legitimately
+        // holds more than the retained source. That is a later generation, not conflicting evidence:
+        // once the source is gone the archive is the only representation, so resolve again.
+        for (var attempt = 1; ; attempt++)
+        {
+            var resolved = await TryOpenOneGenerationAsync(path, requestedGzip, finalAttempt: attempt == 3, ct).ConfigureAwait(false);
+            if (resolved is not null)
+                return resolved;
+        }
+    }
+
+    private static async Task<FileStream?> TryOpenOneGenerationAsync(string path, bool requestedGzip, bool finalAttempt, CancellationToken ct)
+    {
         var sourcePath = requestedGzip ? path[..^3] : path;
         var gzipPath = requestedGzip ? path : path + ".gz";
         FileStream? source = null;
@@ -68,6 +91,8 @@ internal static class JsonlArchiveFiles
         try
         {
             source = TryOpen(sourcePath);
+            if (source is not null)
+                s_afterSourceOpened.Value?.Invoke(sourcePath);
             compressed = TryOpen(gzipPath);
             if (source is null && compressed is null)
                 throw new FileNotFoundException("No representation remains for the JSONL archive.", path);
@@ -79,7 +104,15 @@ internal static class JsonlArchiveFiles
                 {
                     var compressedDigest = await Sha256Digest.ComputeAsync(gzip, ct).ConfigureAwait(false);
                     if (!Sha256Digest.FixedEquals(sourceDigest, compressedDigest))
+                    {
+                        if (!finalAttempt && !File.Exists(sourcePath))
+                        {
+                            source.Dispose();
+                            compressed.Dispose();
+                            return null;
+                        }
                         throw new IOException($"Conflicting JSONL archive representations: {sourcePath}");
+                    }
                 }
                 source.Position = 0;
                 compressed.Position = 0;

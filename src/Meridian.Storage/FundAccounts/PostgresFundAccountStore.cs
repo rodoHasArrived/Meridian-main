@@ -595,9 +595,13 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
                     (batch_id, account_id, statement_date, bank_name, file_name, line_count, ingested_at, loaded_by, statement_revision, transaction_feed)
                 VALUES
                     (@batch_id, @account_id, @statement_date, @bank_name, null, @line_count, @ingested_at, @loaded_by, @statement_revision, @transaction_feed)
-                ON CONFLICT (batch_id) DO UPDATE SET batch_id = EXCLUDED.batch_id
+                ON CONFLICT (batch_id) DO UPDATE SET batch_id = EXCLUDED.batch_id,
+                    -- A feed delivery's header date is metadata that moves when a redelivery re-dates a
+                    -- transaction; a complete statement's date is authority and never changes.
+                    statement_date = CASE WHEN EXCLUDED.transaction_feed THEN EXCLUDED.statement_date
+                        ELSE bank_statement_batch.statement_date END
                 WHERE bank_statement_batch.account_id = EXCLUDED.account_id
-                  AND bank_statement_batch.statement_date = EXCLUDED.statement_date
+                  AND (EXCLUDED.transaction_feed OR bank_statement_batch.statement_date = EXCLUDED.statement_date)
                   AND bank_statement_batch.statement_revision = EXCLUDED.statement_revision
                   AND bank_statement_batch.transaction_feed = EXCLUDED.transaction_feed
                   AND (EXCLUDED.transaction_feed OR bank_statement_batch.line_count = EXCLUDED.line_count)
