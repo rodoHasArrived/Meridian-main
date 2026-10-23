@@ -53,8 +53,6 @@ public sealed class SchedulePeriodRollingRatchetTests
         ["src/Meridian.Application/DirectLending/InMemoryDirectLendingService.Workflows.cs"] = 1,
         // TryAdvanceByFrequency (monthly, quarterly, semiannual and annual).
         ["src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs"] = 4,
-        // BuildPaymentPeriods, until it delegates to ScheduleSpec.IssueAnchoredForward.
-        ["src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs"] = 1,
     };
 
     // Repository-relative path → single date offsets that are not period rolls and stay by design.

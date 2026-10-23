@@ -6029,3 +6029,92 @@ agreements, a CSA, a netting set and two contracts on one swap round-trip, confi
 version, termination closes the contract, and contracts on an equity, on an unknown instrument,
 in an unknown netting set, or margined under another master's CSA are refused) against a
 disposable PostgreSQL 16, with the Security Master round-trip and underlying-graph suites.
+
+## Resolution pass — 2026-10-23 (priority 5, first increment: the schedule kernel and calendar seam)
+
+| Finding | What landed |
+| --- | --- |
+| Schedules are built eight ways, with no holiday calendars, business-day conventions or stub periods (G5) | The contractual schedule kernel ([ADR-025](../adr/025-contractual-schedule-kernel.md)): `ScheduleGenerator.Generate(ScheduleSpec)` in `Meridian.Contracts.SecurityMaster.Schedules`, pure (no clock, no I/O, no DI). It generates forward or backward on an anchored or compounded grid, with an anchor-day, fixed-day, end-of-month or IMM roll; short, long or refused stubs; explicit first and last regular dates; separate accrual, effective-date, termination-date and payment adjustments; and a payment lag in business days. Each `SchedulePeriod` carries its unadjusted dates, its adjusted accrual dates, its payment date, its kind and its unadjusted day-count reference periods. Data problems come back as typed failures, dates outside a calendar's coverage as diagnostics, and every result names the kernel version (`contractual-schedule-kernel-v1`) and the calendars it used with their content hashes. `SecurityMasterCashFlowService.BuildPaymentPeriods` keeps its signature and delegates to `ScheduleSpec.IssueAnchoredForward`, so the single-stream, contractual and per-leg walks run on the kernel with unchanged output. The other seven generators are untouched. |
+| No business-day calendar is reachable from the schedule generators | `Meridian.Contracts.Calendars`: `IBusinessDayCalendar` (id, content hash, coverage), `HolidayBusinessDayCalendar`, `JointBusinessDayCalendar`, the `WEEKENDS` built-in, the five `BusinessDayConvention` values with `BusinessDayAdjustment`, the roll, add and signed-count operations (mirroring `IAccountingCalendar`), and `IBusinessDayCalendarSource` with `StaticBusinessDayCalendarSource`, which resolves the ids it is asked for or refuses and never falls back to weekends only. No source is registered in DI. |
+| Act/Act ICMA and Business/252 degrade to Act/Act ISDA and Actual/365 without period or calendar context | `DayCountConventions.TryFraction` and `Fraction(convention, start, end, DayCountPeriodContext)` refuse ICMA without periods per year and covering reference periods, and Business/252 without a business-day predicate, instead of degrading; 30E/360 ISDA applies the maturity carve-out at the termination date; every other convention returns exactly the period-less result. `ScheduleDayCount` builds the context from a generated period. The existing overloads are unchanged, and nothing in production calls the new one yet. |
+| Nothing gives a schedule period a stable identity; asset-operations flow ids are random on every read | `SchedulePeriodId.Derive(scopeId, streamKey, period)`: a name-based GUID over a fixed namespace, the consumer's scope, the stream and the unadjusted start and end, derived the way `SecurityUnderlyingGraph.LinkId` is, plus `PeriodKey`. A calendar, convention or lag change never re-keys a period. Nothing consumes it yet. |
+| No proof that a shared engine reproduces today's output, and nothing stops another generator from appearing | A characterization corpus. Verbatim test-side copies of all eight generators, with the private Security Master and `FaceValueLot` generators also checked against their copies by reflection; exhaustive grids prove the issue-anchored and compounded modes equal to them over 173,712 schedules and the backward and regular-only modes equal to `FaceValueLot` over 127,136 cases; public-seam pins carry the known defects SCH-DEF-001 to 010 ([registry](../../tests/fixtures/schedules/KNOWN-DEFECTS.md)); a 576-value golden grid freezes `FaceValueLot`'s constant-yield output; and the direct-lending terms hash is pinned in C# and F#. `SchedulePeriodRollingRatchetTests` holds the remaining period rolls at their counts and may only shrink: `FaceValueLot.cs` 2, `AssetOperationsReadService.cs` 1, `AssetObligationProjectionService.cs` 4, `PostgresDirectLendingCommandService.cs` 1, `InMemoryDirectLendingService.Workflows.cs` 1 and `InMemoryFundStructureService.cs` 4, plus the interest-only end offset in `DirectLending.fs` 1. |
+
+**Corrections to G5.** Two statements in G5 overstated what the code had.
+
+- G5 says `BusinessDayConvention` "appears only in bond reference DTOs and the bond projection". No
+  business-day convention type or field exists in the bond reference DTOs (`BondReferenceDtos.cs`)
+  or the bond projection (`BondProjectionService`, `IBondReferenceProjectionStore`). The bond
+  accrual convention carries `HolidayCalendarId` and `SettlementCycleDays`, which the projection
+  passes through and nothing uses for schedule dates. Before this pass the only business-day
+  convention in source was the untyped F# string `AccrualTerms.BusinessDayConvention`
+  (`SecurityTermModules.fs:85`), which `SecurityEconomicDefinitionAdapter.cs:193` emits when present
+  and no source writer populates.
+- G5 says call and put schedules "are projected for bonds alone". No call or put schedule is
+  projected for any class. The bond reference projection carries scalar dates only: `CallDate` and
+  `IsCallable`, plus `MandatoryPutDate` and `PreRefundDate` (`BondLifecycleDto`,
+  `BondReferenceDtos.cs:33-48`). The F# economic call module declares `CallSchedule` and
+  `PutSchedule` lists (`SecurityTermModules.fs:124, :127`), and every economic-definition builder
+  writes them empty (`SecurityMasterLegacyUpgrade.fs:144-147, :230-233, :272-275, :320-323`).
+
+**Not yet landed from this priority.** Eleven increments follow, each behind its own proof:
+
+2. A per-class terms upgrade hook declared on the asset-class descriptor, identity-only today and
+   checked against committed per-class terms-version manifests, with an Info-level validation issue
+   for flat rows stamped below their class's terms version.
+3. The asset-operations bond loop, the obligation timeline and the fund-structure stepping move onto
+   the kernel's compounded mode with bit-identical output, and the two copies of the coupon
+   frequency parser merge into one.
+4. Schedule terms, expand step: a `scheduleConventions` block (business-day convention, payment
+   calendars, payment lag, roll, regular dates, direction, stub policy, coupon unit and coupon cash
+   basis) and call and put schedules with notice periods become readable before any node writes
+   them.
+5. Schedule terms, contract step: the terms versions rise, a file-backed calendar source is
+   registered, one `ScheduleSpecFactory` maps resolved terms to specs by descriptor fact, and the
+   Security Master engine follows declared conventions for declaring records. An unresolvable
+   calendar blocks the projection. Deploy precondition: every node runs increment 4 first.
+6. Asset-operations fixed-income flows of issue-dated bonds get stable ids from `SchedulePeriodId`
+   and the `fixed-income-cash-flow-projection-v2` stamp, and declaring records get declared conventions in
+   the cash ladder.
+7. The schedule book in both workstations is built from engine output.
+8. Declared call and put schedules drive new redemption scenarios, the cash ladder's early call, the
+   obligation timeline and the schedule book.
+9. Credit-event and rate-fixing corporate-action types, kernel reset and fixing dates, and expected
+   lifecycle events generated from the schedule.
+10. Direct-lending projections on the kernel: legacy parity first, then an opt-in `dl-engine-v2`.
+11. Direct-lending servicing on the kernel: an opt-in accrual formula v2 with residual carry, PIK
+    and scheduled resets, and the contract-aggregate fix for SCH-DEF-008.
+12. `FaceValueLot`'s coupon-date generators delegate to the kernel, last and only if the golden grid
+    stays bit-identical; the ratchet reaches its end state.
+
+Corrected semantics reach only records that declare schedule conventions. Records that declare
+nothing keep their legacy output, and SCH-DEF-001 to 004 and 007 stay pinned for them until an
+owner-approved, data-evidenced default flip. Calendar data governance is open.
+
+**Behaviour changes: none.** `IssueAnchoredForward` is proven equal to a verbatim copy of the
+legacy period roll over 173,712 schedules, and all 25 `SecurityMasterCashFlowServiceTests` run
+unchanged. No persisted shape, API shape, term schema, terms version, engine-version string or DI
+registration changes; the new public Contracts types refresh the schema-control contracts
+manifest, with no migration. One edge, on a path no caller reaches: the `periodMonths` guard in
+`BuildPaymentPeriods` now throws when the method is called, not when its result is enumerated. Both
+callers pass `Math.Max(1, …)`, so it cannot fire.
+
+The kernel treats a grid date past 9999-12-31 as an overshoot and closes at maturity, where the
+legacy loop's `AddMonths` threw `ArgumentOutOfRangeException`. That input is reachable: no validator
+caps a maturity, so a far-dated or perpetual-sentinel bond off the grid (9999-12-31 on a
+first-of-month quarterly schedule) used to fail its projection. To keep that behaviour,
+`BuildPaymentPeriods` re-evaluates the closing grid date after generation and throws exactly as
+before. The failure is pinned as SCH-DEF-010, and `LegacyOracleFidelityTests` proves the wired
+method fails exactly where the oracle does at the end of the date range.
+
+**Validation.** `BusinessDayCalendarTests`, `BusinessDayAdjustmentTests`, `ScheduleGeneratorTests`,
+`ScheduleAdjustmentTests`, `SchedulePeriodIdTests`, `DayCountConventionsPeriodContextTests`,
+`ScheduleDayCountTests`, `ScheduleKernelLegacyParityTests`, `LegacyOracleFidelityTests`,
+`FaceValueLotGoldenTests`, `SchedulePeriodRollingRatchetTests`, the KnownDefect pins
+(`AssetOperationsBondScheduleCharacterizationTests`,
+`PortfolioCashLadderScheduleCharacterizationTests`,
+`PostgresDirectLendingProjectionCharacterizationTests`, the schedule characterization partial of
+`SecurityMasterCashFlowServiceTests`, and the F# and fund-structure pins) and
+`DirectLendingTermsHashCharacterizationTests` with its F# twin (new), with the existing Security
+Master cash-flow, asset-operations, cash-ladder, direct-lending, `FaceValueLot`, architecture and
+term-schema round-trip suites.
