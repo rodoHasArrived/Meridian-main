@@ -2800,6 +2800,60 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Calendars.BusinessDayAdjustment"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Calendars.BusinessDayCalendars"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Calendars.BusinessDayConvention"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Calendars.CalendarCoverage"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Calendars.HolidayBusinessDayCalendar"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Calendars.IBusinessDayCalendar"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Calendars.IBusinessDayCalendarSource"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Calendars.JointBusinessDayCalendar"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Catalog.CanonicalSymbolAliasDefinition"
     },
     {
@@ -9730,6 +9784,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DayCountPeriodContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DayCountReferencePeriod"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest"
     },
     {
@@ -10180,6 +10246,126 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodId"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses"
     },
     {
@@ -10235,6 +10421,18 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassRegistry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassTermsUpgrade"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassTermsUpgrader"
     },
     {
       "kind": "contract-set-member",
@@ -10937,6 +11135,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsUpgradeKind"
     },
     {
       "kind": "contract-set-member",
@@ -22894,6 +23098,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DayCountPeriodContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DayCountReferencePeriod"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest"
     },
     {
@@ -23344,6 +23560,126 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodId"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses"
     },
     {
@@ -23399,6 +23735,18 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassRegistry"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassTermsUpgrade"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassTermsUpgrader"
     },
     {
       "kind": "contract-set-member",
@@ -24101,6 +24449,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsUpgradeKind"
     },
     {
       "kind": "contract-set-member",
@@ -27143,6 +27497,54 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest",
       "target": "contract:Meridian.Contracts.Workstation.OperationsActionOriginDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Calendars.BusinessDayAdjustment",
+      "target": "contract:Meridian.Contracts.Calendars.BusinessDayConvention"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Calendars.BusinessDayAdjustment",
+      "target": "contract:Meridian.Contracts.Calendars.IBusinessDayCalendar"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Calendars.BusinessDayCalendars",
+      "target": "contract:Meridian.Contracts.Calendars.IBusinessDayCalendar"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Calendars.HolidayBusinessDayCalendar",
+      "target": "contract:Meridian.Contracts.Calendars.CalendarCoverage"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Calendars.HolidayBusinessDayCalendar",
+      "target": "contract:Meridian.Contracts.Calendars.IBusinessDayCalendar"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Calendars.JointBusinessDayCalendar",
+      "target": "contract:Meridian.Contracts.Calendars.CalendarCoverage"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Calendars.JointBusinessDayCalendar",
+      "target": "contract:Meridian.Contracts.Calendars.IBusinessDayCalendar"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource",
+      "target": "contract:Meridian.Contracts.Calendars.IBusinessDayCalendarSource"
     },
     {
       "kind": "contract-reference",
@@ -34845,6 +35247,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.DayCountPeriodContext",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DayCountReferencePeriod"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
     },
@@ -35103,6 +35511,114 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DayCountReferencePeriod"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec",
+      "target": "contract:Meridian.Contracts.Calendars.BusinessDayAdjustment"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor",
+      "target": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAliasScope"
     },
@@ -35158,6 +35674,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassTermsUpgrade"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDescriptor",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBehavior"
     },
     {
@@ -35183,6 +35705,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassRegistry",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassDefinition"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassTermsUpgrade",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsUpgradeKind"
     },
     {
       "kind": "contract-reference",
@@ -51683,7 +52211,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "9722501bda3ae24010d5f02d8ab3d8fb377a43b191f7f09f3da43929efc7509a",
+  "fingerprint": "f7d8688244a3c2709243b7adffacc900e119a602300000a71265798b39f529bf",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -54531,6 +55059,60 @@
       "id": "contract:Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Calendars.BusinessDayAdjustment",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Calendars.BusinessDayAdjustment"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Calendars.BusinessDayCalendars",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Calendars.BusinessDayCalendars"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Calendars.BusinessDayConvention",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Calendars.BusinessDayConvention"
+    },
+    {
+      "classification": "record_struct",
+      "id": "contract:Meridian.Contracts.Calendars.CalendarCoverage",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Calendars.CalendarCoverage"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Calendars.HolidayBusinessDayCalendar",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Calendars.HolidayBusinessDayCalendar"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Calendars.IBusinessDayCalendar",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Calendars.IBusinessDayCalendar"
+    },
+    {
+      "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Calendars.IBusinessDayCalendarSource",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Calendars.IBusinessDayCalendarSource"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Calendars.JointBusinessDayCalendar",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Calendars.JointBusinessDayCalendar"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource"
     },
     {
       "classification": "record",
@@ -61463,6 +62045,18 @@
       "label": "Meridian.Contracts.SecurityMaster.DayCountConventions"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.DayCountPeriodContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.DayCountPeriodContext"
+    },
+    {
+      "classification": "record_struct",
+      "id": "contract:Meridian.Contracts.SecurityMaster.DayCountReferencePeriod",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.DayCountReferencePeriod"
+    },
+    {
       "classification": "request",
       "id": "contract:Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest",
       "kind": "contract-type",
@@ -61913,6 +62507,126 @@
       "label": "Meridian.Contracts.SecurityMaster.ResolveSecurityRequest"
     },
     {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode"
+    },
+    {
+      "classification": "result",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodId",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodId"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind"
+    },
+    {
+      "classification": "record_struct",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy"
+    },
+    {
+      "classification": "struct",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses",
       "kind": "contract-type",
@@ -61971,6 +62685,18 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassRegistry",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityAssetClassRegistry"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassTermsUpgrade",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetClassTermsUpgrade"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassTermsUpgrader",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetClassTermsUpgrader"
     },
     {
       "classification": "record",
@@ -62673,6 +63399,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsUpgradeKind",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityTermsUpgradeKind"
     },
     {
       "classification": "dto",
@@ -75644,11 +76376,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3346,
-    "contract_set_memberships": 4062,
-    "edges": 8587,
+    "contract_references": 3375,
+    "contract_set_memberships": 4121,
+    "edges": 8675,
     "foreign_keys": 144,
     "logical_references": 6,
-    "nodes": 4153
+    "nodes": 4187
   }
 }

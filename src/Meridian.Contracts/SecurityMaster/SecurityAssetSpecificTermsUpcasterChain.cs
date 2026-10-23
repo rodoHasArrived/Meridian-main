@@ -221,7 +221,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         using var buffer = new MemoryStream();
         using (var writer = new Utf8JsonWriter(buffer))
         {
-            WriteFlatEnvelope(writer, SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion);
+            WriteFlatEnvelope(writer, SecurityAssetClassCatalog.GetTermsVersion(assetClass));
 
             foreach (var mapping in mappings)
             {

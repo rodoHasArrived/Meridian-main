@@ -1,0 +1,50 @@
+{
+  "assetClass": "NonDeliverableForward",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "baseCurrency",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "fixingDate",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "fixingSource",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "forwardRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "notional",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "quoteCurrency",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "settlementCurrency",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "valueDate",
+          "type": "Date",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "assetClass": "Commodity",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "commodityType",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "contractSize",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "denomination",
+          "type": "String",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

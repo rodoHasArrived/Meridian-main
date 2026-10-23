@@ -1367,6 +1367,7 @@ Meridian-main
 │   │   ├── 022-canonical-asset-class-homes.md
 │   │   ├── 023-host-wide-provider-credential-ownership.md
 │   │   ├── 024-terms-payload-format-and-version-policy.md
+│   │   ├── 025-contractual-schedule-kernel.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
@@ -1765,6 +1766,8 @@ Meridian-main
 │   ├── domain
 │   │   ├── account-oversight-evidence.md
 │   │   ├── brokerage-account-snapshot.md
+│   │   ├── business-day-calendar.md
+│   │   ├── contractual-schedule.md
 │   │   ├── corporate-action-case.md
 │   │   ├── fund-event.md
 │   │   ├── intercompany-consolidation.md
@@ -4446,6 +4449,15 @@ Meridian-main
 │   │   │   └── BacktestPreflightDtos.cs
 │   │   ├── Banking
 │   │   │   └── BankingModels.cs
+│   │   ├── Calendars
+│   │   │   ├── BusinessDayAdjustment.cs
+│   │   │   ├── BusinessDayCalendars.cs
+│   │   │   ├── BusinessDayConvention.cs
+│   │   │   ├── CalendarCoverage.cs
+│   │   │   ├── HolidayBusinessDayCalendar.cs
+│   │   │   ├── IBusinessDayCalendar.cs
+│   │   │   ├── IBusinessDayCalendarSource.cs
+│   │   │   └── JointBusinessDayCalendar.cs
 │   │   ├── Catalog
 │   │   │   ├── DirectoryIndex.cs
 │   │   │   ├── ICanonicalSymbolRegistry.cs
@@ -4646,6 +4658,17 @@ Meridian-main
 │   │   │   ├── EventSchema.cs
 │   │   │   └── ISchemaUpcaster.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── Schedules
+│   │   │   │   ├── ScheduleDayCount.cs
+│   │   │   │   ├── ScheduleGenerationResult.cs
+│   │   │   │   ├── ScheduleGenerator.Adjustment.cs
+│   │   │   │   ├── ScheduleGenerator.cs
+│   │   │   │   ├── ScheduleGenerator.Validation.cs
+│   │   │   │   ├── SchedulePeriod.cs
+│   │   │   │   ├── SchedulePeriodId.cs
+│   │   │   │   ├── ScheduleRoll.cs
+│   │   │   │   ├── ScheduleSpec.cs
+│   │   │   │   └── ScheduleTenor.cs
 │   │   │   ├── CommitmentLot.cs
 │   │   │   ├── CorporateActionCaseAccountingContracts.cs
 │   │   │   ├── CorporateActionEconomicFingerprint.cs
@@ -4661,6 +4684,7 @@ Meridian-main
 │   │   │   ├── CorporateActionTypeDescriptorCatalog.cs
 │   │   │   ├── DataVendorEntitlement.cs
 │   │   │   ├── DayCountConventions.cs
+│   │   │   ├── DayCountPeriodContext.cs
 │   │   │   ├── EdgarReferenceDtos.cs
 │   │   │   ├── FaceValueLot.cs
 │   │   │   ├── FundUnitLot.cs
@@ -4683,6 +4707,8 @@ Meridian-main
 │   │   │   ├── OtcContracts.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
 │   │   │   ├── SecurityAssetClassRegistry.cs
+│   │   │   ├── SecurityAssetClassTermsUpgrade.cs
+│   │   │   ├── SecurityAssetClassTermsUpgrader.cs
 │   │   │   ├── SecurityAssetPackRegistry.cs
 │   │   │   ├── SecurityAssetProfiles.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcaster.cs
@@ -9354,6 +9380,44 @@ Meridian-main
 │   │   │   │   └── servicer-personal-loans-2026-06-04.csv
 │   │   │   ├── generate_mixed_credit_status_set.py
 │   │   │   └── mixed-credit-status-set.json
+│   │   ├── schedules
+│   │   │   ├── golden
+│   │   │   │   └── face-value-lot-constant-yield.json
+│   │   │   └── KNOWN-DEFECTS.md
+│   │   ├── security-master
+│   │   │   └── terms-versions
+│   │   │       ├── Bond.json
+│   │   │       ├── CapFloor.json
+│   │   │       ├── CashSweep.json
+│   │   │       ├── CertificateOfDeposit.json
+│   │   │       ├── Cfd.json
+│   │   │       ├── CommercialPaper.json
+│   │   │       ├── CommitmentGuarantee.json
+│   │   │       ├── Commodity.json
+│   │   │       ├── CreditDefaultSwap.json
+│   │   │       ├── CryptoCurrency.json
+│   │   │       ├── CustomAsset.json
+│   │   │       ├── Deposit.json
+│   │   │       ├── DirectLoan.json
+│   │   │       ├── Equity.json
+│   │   │       ├── Future.json
+│   │   │       ├── FxForward.json
+│   │   │       ├── FxSpot.json
+│   │   │       ├── InvestmentFund.json
+│   │   │       ├── MoneyMarketFund.json
+│   │   │       ├── NonDeliverableForward.json
+│   │   │       ├── Option.json
+│   │   │       ├── OtherSecurity.json
+│   │   │       ├── PrivateCompanyEquity.json
+│   │   │       ├── PrivateFundInterest.json
+│   │   │       ├── RealEstateHolding.json
+│   │   │       ├── Repo.json
+│   │   │       ├── StructuredCredit.json
+│   │   │       ├── StructuredNote.json
+│   │   │       ├── Swap.json
+│   │   │       ├── Swaption.json
+│   │   │       ├── TreasuryBill.json
+│   │   │       └── Warrant.json
 │   │   └── security-instrument-explorer-parity.json
 │   ├── Meridian.Backtesting.Tests
 │   │   ├── AdvancedCarryDecisionEngineTests.cs
@@ -9409,6 +9473,7 @@ Meridian-main
 │   │   ├── CashFlowProjectorTests.fs
 │   │   ├── DeterministicInvariantTests.fs
 │   │   ├── DirectLendingInteropTests.fs
+│   │   ├── DirectLendingScheduleCharacterizationTests.fs
 │   │   ├── DomainTests.fs
 │   │   ├── FundEconomicsTests.fs
 │   │   ├── LedgerKernelTests.fs
@@ -9438,6 +9503,7 @@ Meridian-main
 │   │   ├── GlobalUsings.SecurityMasterConcerns.cs
 │   │   ├── GovernanceSharedDataAccessServiceTests.cs
 │   │   ├── InMemoryFundStructureServiceTests.cs
+│   │   ├── InMemoryFundStructureServiceTests.ScheduleCharacterization.cs
 │   │   ├── LedgerGroupingRulesTests.cs
 │   │   └── Meridian.FundStructure.Tests.csproj
 │   ├── Meridian.Lifecycle.Tests
@@ -10166,7 +10232,9 @@ Meridian-main
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   ├── DirectLendingOutboxFailureTests.cs
 │   │   │   │   ├── DirectLendingServicerStatementServiceTests.cs
-│   │   │   │   └── PostgresDirectLendingCommandServiceTests.cs
+│   │   │   │   ├── DirectLendingTermsHashCharacterizationTests.cs
+│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.cs
+│   │   │   │   └── PostgresDirectLendingProjectionCharacterizationTests.cs
 │   │   │   ├── FundStructure
 │   │   │   │   ├── FundStructureTenantAttributionTests.cs
 │   │   │   │   ├── FundStructureTenantBackfillCommandTests.cs
@@ -10284,6 +10352,7 @@ Meridian-main
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.cs
+│   │   │   ├── SecurityMasterCashFlowServiceTests.ScheduleCharacterization.cs
 │   │   │   ├── StructuredCashFlowLedgerBridgeTests.cs
 │   │   │   └── StructuredCashFlowTermsResolverTests.cs
 │   │   ├── Architecture
@@ -10292,6 +10361,7 @@ Meridian-main
 │   │   │   ├── LedgerNetBalanceCentralizationTests.cs
 │   │   │   ├── ProjectReferenceGraph.cs
 │   │   │   ├── ProjectReferenceGraphTests.cs
+│   │   │   ├── SchedulePeriodRollingRatchetTests.cs
 │   │   │   ├── SecurityAssetClassComparisonRatchetTests.cs
 │   │   │   ├── SecurityAssetClassLiteralRatchetTests.cs
 │   │   │   ├── SecurityMasterContractOwnershipTests.cs
@@ -10308,6 +10378,7 @@ Meridian-main
 │   │   │   ├── AssetAcquisitionLotPostgresRoundTripTests.cs
 │   │   │   ├── AssetAmortizationPostgresRoundTripTests.cs
 │   │   │   ├── AssetObligationProjectionServiceTests.cs
+│   │   │   ├── AssetOperationsBondScheduleCharacterizationTests.cs
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
 │   │   │   ├── AssetOperationsReferenceProjectionServiceTests.cs
@@ -10329,9 +10400,13 @@ Meridian-main
 │   │   │   ├── OpenLotSuccessorTests.cs
 │   │   │   ├── PortfolioCashLadderEngineTests.cs
 │   │   │   ├── PortfolioCashLadderReadServiceTests.cs
+│   │   │   ├── PortfolioCashLadderScheduleCharacterizationTests.cs
 │   │   │   └── RetainedEvidenceIdentityValidatorTests.cs
 │   │   ├── Backtesting
 │   │   │   └── PluginBacktestStrategyLiveSourceTests.cs
+│   │   ├── Calendars
+│   │   │   ├── BusinessDayAdjustmentTests.cs
+│   │   │   └── BusinessDayCalendarTests.cs
 │   │   ├── CertificatesOfDeposit
 │   │   │   └── CertificateOfDepositProjectionServiceTests.cs
 │   │   ├── Commodities
@@ -11030,6 +11105,18 @@ Meridian-main
 │   │   ├── Scripts
 │   │   │   └── ProductionRecoveryScriptTests.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── Schedules
+│   │   │   │   ├── DayCountConventionsPeriodContextTests.cs
+│   │   │   │   ├── LegacyOracleFidelityTests.cs
+│   │   │   │   ├── LegacyScheduleOracles.cs
+│   │   │   │   ├── ScheduleAdjustmentTests.cs
+│   │   │   │   ├── ScheduleDayCountTests.cs
+│   │   │   │   ├── ScheduleGeneratorTests.Backward.cs
+│   │   │   │   ├── ScheduleGeneratorTests.cs
+│   │   │   │   ├── ScheduleGeneratorTests.RollsAndEdges.cs
+│   │   │   │   ├── ScheduleKernelLegacyParityTests.cs
+│   │   │   │   ├── ScheduleParityGrids.cs
+│   │   │   │   └── SchedulePeriodIdTests.cs
 │   │   │   ├── Workbench
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.cs
 │   │   │   │   ├── InMemorySecurityMasterRevisionStoreTests.cs
@@ -11067,6 +11154,7 @@ Meridian-main
 │   │   │   ├── CorporateActionTypeDescriptorCatalogTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── DayCountConventionsTests.cs
+│   │   │   ├── FaceValueLotGoldenTests.cs
 │   │   │   ├── FaceValueLotOddPeriodTests.cs
 │   │   │   ├── FaceValueLotTests.cs
 │   │   │   ├── ForwardCurveCashFlowTests.cs
@@ -11098,6 +11186,9 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
 │   │   │   ├── SecurityAssetClassRegistryCoverageTests.cs
 │   │   │   ├── SecurityAssetClassSurfaceParityTests.cs
+│   │   │   ├── SecurityAssetClassTermsHistoryTests.cs
+│   │   │   ├── SecurityAssetClassTermsUpgraderTests.cs
+│   │   │   ├── SecurityAssetClassTermsUpgradeWiringTests.cs
 │   │   │   ├── SecurityAssetProfileGovernanceServiceTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterChainTests.cs
 │   │   │   ├── SecurityAssetSpecificTermsUpcasterPipelineTests.cs
@@ -11177,6 +11268,7 @@ Meridian-main
 │   │   │   ├── SecurityUnderlyingGraphPostgresTests.cs
 │   │   │   ├── SecurityUnderlyingLinkDeriverTests.cs
 │   │   │   ├── SecurityUnderlyingLinksMigrationTests.cs
+│   │   │   ├── SecurityValidationGateServiceTests.cs
 │   │   │   ├── SecurityValidationServiceTests.cs
 │   │   │   ├── SpecializedProjectionGoldenTests.cs
 │   │   │   ├── SwapLegRoundTripTests.cs

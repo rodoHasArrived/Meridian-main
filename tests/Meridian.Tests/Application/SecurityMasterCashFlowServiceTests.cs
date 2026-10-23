@@ -9,7 +9,7 @@ using SecurityMasterQueryContract = Meridian.Contracts.SecurityMaster.ISecurityM
 
 namespace Meridian.Tests.Application;
 
-public sealed class SecurityMasterCashFlowServiceTests
+public sealed partial class SecurityMasterCashFlowServiceTests
 {
     [Fact]
     public async Task GetProjectionAsync_CalculatedBullet_ShouldGenerateCouponAndMaturityScheduleFromRetainedTerms()

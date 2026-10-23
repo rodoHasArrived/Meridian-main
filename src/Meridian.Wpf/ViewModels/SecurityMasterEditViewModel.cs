@@ -380,7 +380,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         {
             ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
             [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
-            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsVersion,
+            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = SecurityAssetClassCatalog.GetTermsVersion(assetClass),
             ["classification"] = SecurityAssetClassCatalog.GetOrDefault(assetClass).SupportsEquityClassification ? "Common" : null
         });
 

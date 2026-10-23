@@ -361,6 +361,27 @@ accepts older numeric status payloads; persisted queue records already use text 
   Data vendor entitlement payloads carry optional client, account, fund-profile, security, and
   operator metadata scope so the shared Instrument Passport operating model can identify the
   most-specific applicable vendor/data-type control without browser-only or WPF-only rules.
+  `DayCountConventions` is the single day-count engine; its `TryFraction`/`Fraction` overloads
+  that take a `DayCountPeriodContext` (ICMA reference periods and frequency, termination date,
+  business-day predicate) refuse when a convention's context is missing instead of degrading.
+- `SecurityMaster/Schedules/` - the contractual schedule kernel (`ScheduleGenerator`, kernel
+  version `contractual-schedule-kernel-v1`). A pure, deterministic `ScheduleSpec` →
+  `ScheduleGenerationResult` generator: anchored or compounded grids, forward or backward
+  generation, anchor-day/fixed-day/end-of-month/IMM rolls, short/long/require-regular stub
+  policies, explicit first and last regular dates, business-day adjustment of accrual and payment
+  dates, and FpML-style payment lags. Every data problem is a typed `ScheduleFailure`, not an
+  exception. Each `SchedulePeriod` keeps its unadjusted dates (its identity and its ICMA reference
+  periods), adjusted accrual dates and payment date; `SchedulePeriodId` derives a deterministic
+  GUID from the unadjusted dates within a consumer-chosen scope and stream, and `ScheduleDayCount`
+  dispatches period day counts through `DayCountConventions`. `ScheduleSpec.IssueAnchoredForward`,
+  `CompoundedForward` and `BackwardFromTermination` name the legacy generator modes.
+- `Calendars/` - the business-day calendar seam: `IBusinessDayCalendar` (id, content hash,
+  coverage), `HolidayBusinessDayCalendar` (weekend mask plus holidays, versioned and
+  SHA-256 content-hashed through `Sha256Digest`), `JointBusinessDayCalendar`, the built-in
+  `BusinessDayCalendars.WeekendsOnly` (`WEEKENDS`) and the shared roll, add and count extensions,
+  `BusinessDayConvention` with `BusinessDayAdjustment`, and `IBusinessDayCalendarSource` with the
+  in-memory `StaticBusinessDayCalendarSource`. A source never falls back to weekends-only for an
+  unknown id. Calendars are pure: no clock and no I/O.
 - `Backfill/` - shared historical backfill run-result and per-symbol completeness signal payloads
   published under `Meridian.Contracts.Backfill`.
 - `Coordination/` - shared cluster lease, leadership, scheduled-work ownership, subscription
