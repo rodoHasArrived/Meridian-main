@@ -13,6 +13,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// netting set. Contracts are refused on instruments the catalog does not trade bilaterally, and
 /// closed contracts are history.
 /// </summary>
+[Trait("Category", "Integration")]
 public sealed class OtcContractsPostgresTests : IClassFixture<SecurityMasterDatabaseFixture>
 {
     private static readonly DateOnly Trade = new(2026, 3, 2);
