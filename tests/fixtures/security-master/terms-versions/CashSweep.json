@@ -1,0 +1,35 @@
+{
+  "assetClass": "CashSweep",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "programName",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "sweepFrequency",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "sweepVehicleType",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "targetAccountType",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "yieldRate",
+          "type": "Decimal",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

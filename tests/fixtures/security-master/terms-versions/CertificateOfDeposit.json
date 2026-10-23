@@ -1,0 +1,35 @@
+{
+  "assetClass": "CertificateOfDeposit",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "callableDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "couponRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "dayCount",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "issuerName",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "maturity",
+          "type": "Date",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

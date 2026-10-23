@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Meridian.FundStructure.Tests;
 
-public sealed class InMemoryFundStructureServiceTests
+public sealed partial class InMemoryFundStructureServiceTests
 {
     [Fact]
     public async Task FundAccountService_PersistsAccountsAndBalanceSnapshotsAcrossRestart()

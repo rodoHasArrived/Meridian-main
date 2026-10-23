@@ -343,8 +343,16 @@ public static class SecurityAssetClassCatalog
             AmortizesTowardPar: true,
             // Version 2 added the typed tranche terms (structuredCreditKind, seniority, attachment and
             // detachment points, WAC/WAM/WALA, CLO period dates); every addition is optional, so a
-            // version-1 payload reads unchanged and needs no field transformation (ADR-024).
+            // version-1 payload reads unchanged and needs no field transformation (ADR-024). The
+            // identity step below records it, and SecurityAssetClassTermsHistoryTests checks it
+            // against the committed manifests.
             TermsVersion: 2,
+            TermsUpgrades:
+            [
+                SecurityAssetClassTermsUpgrade.Identity(
+                    fromVersion: 1,
+                    rationale: "Version 2 added nine optional typed tranche terms and changed no version-1 term, so a version-1 payload reads them as unset (ADR-024, 2026-10-18).")
+            ],
             SupportsProfileBackedTerms: true,
             Aliases: ["MortgageBacked", "MortgageBackedSecurity", "MBS", "AssetBacked", "AssetBackedSecurity", "ABS"],
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity),
@@ -726,6 +734,17 @@ public static class SecurityAssetClassCatalog
         => GetOrDefault(assetClass).AssetOperationsCapabilities ?? AssetOperationsCapabilitySet.IdentityOnly;
 
     /// <summary>
+    /// The asset-class terms version a writer stamps onto a new flat payload of the class
+    /// (<see cref="SecurityTermsEnvelope.AssetClassTermsVersionKey"/>): the descriptor's
+    /// <see cref="SecurityAssetClassDescriptor.TermsVersion"/>, or 1 for an unknown or blank class.
+    /// Hand-built envelope writers and <see cref="SecurityTermsEnvelope.StampFlat(string, string)"/>
+    /// take the version here rather than off the descriptor, so the version a node writes has one
+    /// accessor. <see cref="SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms"/> also reads its
+    /// newest accepted version here until a separate readable-version accessor exists.
+    /// </summary>
+    public static int GetTermsVersion(string? assetClass) => GetOrDefault(assetClass).TermsVersion;
+
+    /// <summary>
     /// The asset classes that declare an Asset Operations capability set of their own, rather than
     /// falling through to <see cref="AssetOperationsCapabilitySet.IdentityOnly"/>. Every declared
     /// set adds LifecycleState, ProjectedCashFlows, ActualActivity, Reconciliation, LedgerProjection
@@ -818,6 +837,17 @@ public static class SecurityAssetClassCatalog
     }
 }
 
+/// <summary>
+/// Outcome of <see cref="SecurityAssetClassCatalog.ResolveLabel"/>: the label named one catalog
+/// class, named none, or named more than one and so cannot be classified by the catalog.
+/// </summary>
+public enum SecurityAssetClassLabelResolution
+{
+    Unresolved,
+    Resolved,
+    Ambiguous
+}
+
 /// <param name="AssetClass">Canonical Security Master asset-class name (matches the F# <c>AssetClassRegistry</c>).</param>
 /// <param name="LotUnit">
 /// What one unit of a position lot in this class measures (shares, contracts, face value, notional,
@@ -838,7 +868,7 @@ public static class SecurityAssetClassCatalog
 /// <param name="AssetOperationsCapabilities">Asset Operations capability set; null means identity-only.</param>
 /// <param name="AmortizesTowardPar">
 /// Whether lots record unit cost as a price per 100 of par and premium/discount amortizes toward par
-/// (drives cost-basis amortization). Deliberately narrower than <paramref name="UsesFaceValueLots"/>:
+/// (drives cost-basis amortization). Deliberately narrower than <see cref="SecurityAssetClassDescriptor.UsesFaceValueLots"/>:
 /// Deposit and Repo hold face-value lots but are booked at par, so nothing amortizes.
 /// </param>
 /// <param name="RequiresMaturity">Whether the canonical validator requires a maturity date (data-quality rule MA001).</param>
@@ -864,10 +894,19 @@ public static class SecurityAssetClassCatalog
 /// </param>
 /// <param name="TermsVersion">
 /// The current version of this asset class's flat terms contract, stamped onto every flat payload
-/// as <see cref="SecurityTermsEnvelope.AssetClassTermsVersionKey"/>. Bump it when the class's term
-/// fields change shape (a renamed key, a changed type); readers refuse payloads stamped with a
+/// as <see cref="SecurityTermsEnvelope.AssetClassTermsVersionKey"/>. Bump it when a term field is
+/// added, removed, renamed or retyped, declare the step in <paramref name="TermsUpgrades"/>, and
+/// commit the new manifest version (ADR-024 decision 3); readers refuse payloads stamped with a
 /// newer version than they know, rather than silently dropping the newer fields. Versions are
 /// per asset class, so evolving one class never reserves or collides with another's numbers.
+/// </param>
+/// <param name="TermsUpgrades">
+/// The steps from each terms version to the next, one per version from 1 to
+/// <paramref name="TermsVersion"/> - 1 in ascending <see cref="SecurityAssetClassTermsUpgrade.FromVersion"/>
+/// (null or empty only while <paramref name="TermsVersion"/> is 1). <see cref="SecurityAssetClassTermsUpgrader"/>
+/// runs them on read. An identity step is legal only when the committed manifests show the next
+/// version removes or retypes nothing, makes no optional term required and adds only optional
+/// terms (ADR-024 decision 3); anything else is a transform step with in and out fixtures.
 /// </param>
 /// <param name="LotMultiplierTermKey">
 /// The asset-specific term that carries the contract multiplier a lot's quantity is scaled by
@@ -898,17 +937,19 @@ public static class SecurityAssetClassCatalog
 /// the first-class alternative asset kinds MAY be profile-backed; CustomAsset and OtherSecurity have
 /// no terms contract of their own and so MUST be.
 /// </param>
-/// <summary>
-/// Outcome of <see cref="SecurityAssetClassCatalog.ResolveLabel"/>: the label named one catalog
-/// class, named none, or named more than one and so cannot be classified by the catalog.
-/// </summary>
-public enum SecurityAssetClassLabelResolution
-{
-    Unresolved,
-    Resolved,
-    Ambiguous
-}
-
+/// <param name="RequiresProfileReference">Whether the record must pin an approved custom profile.</param>
+/// <param name="SupportsEquityClassification">
+/// Whether the terms carry the equity <c>classification</c> discriminant with preferred and convertible blocks.
+/// </param>
+/// <param name="CarriesBondCouponStructure">
+/// Whether the terms carry the bond coupon structure and bullet amortization conventions.
+/// </param>
+/// <param name="UsesOccOptionSymbols">Whether OCC option symbols are a valid identifier for the class.</param>
+/// <param name="QuotesRatesAsFractions">Whether a rate at or below one is a fraction, not a percent.</param>
+/// <param name="TradesAsBilateralContract">
+/// Whether positions are bilateral contracts against a counterparty under a master agreement, so the
+/// instrument carries <c>OtcContractDto</c> records rather than exchange-traded lots.
+/// </param>
 public sealed record SecurityAssetClassDescriptor(
     string AssetClass,
     SecurityLotUnitKind LotUnit,
@@ -934,7 +975,8 @@ public sealed record SecurityAssetClassDescriptor(
     bool CarriesBondCouponStructure = false,
     bool UsesOccOptionSymbols = false,
     bool QuotesRatesAsFractions = false,
-    bool TradesAsBilateralContract = false)
+    bool TradesAsBilateralContract = false,
+    IReadOnlyList<SecurityAssetClassTermsUpgrade>? TermsUpgrades = null)
 {
     /// <summary>
     /// The catalog facts below replace per-site asset-class name checks. Each is a declared
