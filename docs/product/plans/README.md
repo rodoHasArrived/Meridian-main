@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-20
+**Reviewed:** 2026-10-23
 
 Home for product delivery plans and prioritization inputs: wave close-out plans, priority slates,
 remediation plans, and next-work determinations. This collection is registered in the single
@@ -20,7 +20,8 @@ with retained evidence and carries no ranking.
 
 | Plan | Purpose |
 |---|---|
-| [What To Work On Next (2026-10-20)](next-work-determination-2026-10-20.md) | Latest prioritization input. Records that the 2026-10-16 bar is met — `Meridian CI / quality-gate` green on six consecutive `main` pushes and a ten-workflow green receipt on `a9d470c3` — so the RC tag finally has a target; reframes `PRD-002`'s non-Windows key clause as a missing fail-closed platform rejection inside ADR-019's Windows-only v1 envelope; records the closed W9 slate and the resulting `program-state.yml` drift; and re-measures the generated-conflict load at 360 of 367 conflicts across 23 of 32 open PRs |
+| [What To Work On Next (2026-10-23)](next-work-determination-2026-10-23.md) | Latest prioritization input. Does not re-rank: the unmerged 2026-10-22 determination (#3259) holds the standing ranking, and its bar — a tagged `v0.1.0-rc.2` producing a certification receipt — is recorded here as **not met**. Adds four findings: the green push receipt is not monotonic because `Golden Path Validation` and `Demo Smoke` are path-filtered on `main`, leaving `52c1a6fe` the only complete receipt and three merges behind; the `eligibility` job in `desktop-installer-packaging.yml` fans out to all six evidence-producing jobs with the signing check as its first step, so one absent secret suppresses every certification receipt a tag could mint; #3169 carries the queue's first real source conflicts (17 `src/**` files) against the fast-moving Security Master lane; and 100 conflicted paths over 74 distinct paths are generated output outside `generated()`'s filename set |
+| [What To Work On Next (2026-10-20)](next-work-determination-2026-10-20.md) | Newest determination merged to `main` before 2026-10-23. Records that the 2026-10-16 bar is met — `Meridian CI / quality-gate` green on six consecutive `main` pushes and a ten-workflow green receipt on `a9d470c3` — so the RC tag finally has a target; reframes `PRD-002`'s non-Windows key clause as a missing fail-closed platform rejection inside ADR-019's Windows-only v1 envelope; records the closed W9 slate and the resulting `program-state.yml` drift; and re-measures the generated-conflict load at 360 of 367 conflicts across 23 of 32 open PRs |
 | [What To Work On Next (2026-10-16)](next-work-determination-2026-10-16.md) | Newest determination merged to `main` before 2026-10-20. Does not re-rank: it carries the unmerged 2026-10-15 determination (#3170) forward intact and adds three delivery-system findings — a red `Meridian CI / quality-gate` on `main`, a `Generated Repair Publisher` with no green run in its history, and an open-queue conflict load that is entirely generated files |
 | [Certification Unblock Verification (2026-10-12)](certification-unblock-verification-2026-10-12.md) | Verifies that #3133 clears the `GHSA-vfj7-8cjw-p6xm` certification blocker and states the merge order; carries no ranking of its own |
 | [What To Work On Next (2026-10-05)](next-work-determination-2026-10-05.md) | Newest determination merged to `main` before 2026-10-16; its ranking was carried forward by the unmerged 2026-10-15 determination (#3170). The 2026-10-10 determination (#3132) was closed unmerged on 2026-10-16 |
