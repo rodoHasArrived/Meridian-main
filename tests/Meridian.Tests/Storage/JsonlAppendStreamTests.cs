@@ -452,6 +452,29 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
     }
 
     [Fact]
+    public async Task RetentionSweep_KeepsAnExpiredArchiveThatAnAppenderHoldsUntilItIsReleased()
+    {
+        var archive = Path.Combine(TestDataRoot, "SPY_trade_20260102.jsonl.gz");
+        await WriteArchiveWithChecksumAsync(archive, DateTime.UtcNow.AddDays(-30));
+        var options = new StorageOptions { RootPath = TestDataRoot, RetentionDays = 7 };
+        await using var sink = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot));
+
+        // A late append is replacing the expired archive and still holds its lock.
+        using (var appender = new FileStream(ArchiveAppendLock.PathFor(archive), FileMode.OpenOrCreate,
+                   FileAccess.ReadWrite, FileShare.None))
+        {
+            sink.RunRetentionCleanup();
+            File.Exists(archive).Should().BeTrue("deleting it now could drop a member whose append already succeeded");
+            File.Exists(archive + ".sha256").Should().BeTrue();
+        }
+
+        // Sweeps are throttled per sink; a later sweep runs from a fresh one.
+        await using var later = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot));
+        later.RunRetentionCleanup();
+        File.Exists(archive).Should().BeFalse("once no appender holds it, the expired archive is removed");
+    }
+
+    [Fact]
     public async Task RetentionByteBudget_CountsChecksumSidecars()
     {
         var older = Path.Combine(TestDataRoot, "SPY_trade_20260102.jsonl.gz");

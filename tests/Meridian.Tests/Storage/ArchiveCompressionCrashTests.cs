@@ -292,6 +292,31 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
+    public async Task Publication_HoldsTheArchiveLockUntilItsChecksumIsWritten()
+    {
+        var path = await CreateSourceAsync();
+        var archive = path + ".gz";
+        bool? lockedWhenPublished = null;
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot })
+        {
+            CompressionCheckpoint = stage =>
+            {
+                if (stage != CompressionPublicationStage.Published)
+                    return;
+                // A health sweep at this instant would see the archive before its sidecar exists.
+                lockedWhenPublished = !ArchiveAppendLock.TryAcquire(archive, out var probe);
+                probe?.Dispose();
+            }
+        };
+
+        var result = await service.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false));
+
+        result.Success.Should().BeTrue();
+        lockedWhenPublished.Should().BeTrue("a health check must skip the archive until its checksum exists");
+        File.Exists(archive + ".sha256").Should().BeTrue();
+    }
+
+    [Fact]
     public async Task WithdrawnGzipPath_ReplaysTheSurvivingSource()
     {
         var path = await CreateSourceAsync();

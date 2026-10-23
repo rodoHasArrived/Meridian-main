@@ -58,6 +58,32 @@ public sealed class BankStatementClosingBalanceAuthorityTests
     }
 
     [Fact]
+    public void SelectLatestLine_FeedBatchesOnOneDate_DoNotCompareTheirRestartingSequences()
+    {
+        // Two deliveries on one date each number their rows from 1.
+        var earlierBatch = Guid.NewGuid();
+        var laterBatch = Guid.NewGuid();
+        var account = Guid.NewGuid();
+        BankStatementLineDto Feed(Guid batch, int sequence, DateOnly valueDate) => Line(0m) with
+        {
+            BatchId = batch,
+            AccountId = account,
+            TransactionDate = new(2026, 10, 9),
+            ValueDate = valueDate,
+            StatementAsOfDate = new(2026, 10, 9),
+            ClosingBalance = null,
+            LineSequence = sequence,
+            IsTransactionFeed = true
+        };
+        var first = Feed(earlierBatch, 1, new(2026, 10, 8));
+        var second = Feed(earlierBatch, 2, new(2026, 10, 8));
+        var latest = Feed(laterBatch, 1, new(2026, 10, 9));
+
+        BankStatementClosingBalanceAuthority.SelectLatestLine([first, second, latest], "USD")
+            .Should().Be(latest, "the later value date decides across deliveries, not the earlier batch's higher ordinal");
+    }
+
+    [Fact]
     public void SelectClosingBalance_LaterTransactionFeedDate_KeepsTheLatestStatementBalance()
     {
         var statement = Line(500m);

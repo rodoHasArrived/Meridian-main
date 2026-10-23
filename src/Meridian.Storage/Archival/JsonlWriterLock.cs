@@ -35,13 +35,20 @@ internal static class JsonlWriterLock
     /// Takes the source exclusively without waiting. Returns false while any writer, in this
     /// process or another, holds it shared.
     /// </summary>
-    public static bool TryAcquireExclusive(string sourcePath, out FileStream? handle)
+    /// <remarks>With <paramref name="createIfMissing"/> false, a source no writer has ever locked
+    /// yields true with no handle and no lock file is created.</remarks>
+    public static bool TryAcquireExclusive(string sourcePath, out FileStream? handle, bool createIfMissing = true)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourcePath);
         try
         {
-            handle = new FileStream(PathFor(sourcePath), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None,
-                bufferSize: 1, options: FileOptions.Asynchronous | FileOptions.WriteThrough);
+            handle = new FileStream(PathFor(sourcePath), createIfMissing ? FileMode.OpenOrCreate : FileMode.Open,
+                FileAccess.ReadWrite, FileShare.None, bufferSize: 1, options: FileOptions.Asynchronous | FileOptions.WriteThrough);
+            return true;
+        }
+        catch (Exception exception) when (!createIfMissing && exception is FileNotFoundException or DirectoryNotFoundException)
+        {
+            handle = null;
             return true;
         }
         catch (IOException exception) when (ArchiveAppendLock.IsContention(exception))

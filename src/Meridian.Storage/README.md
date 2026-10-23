@@ -63,7 +63,10 @@ commits: a failure leaves the archive without a sidecar and never reports the co
 failed. A partition written directly as gzip (`StorageOptions.Compress`) is itself such an archive:
 each append takes the same append lease and the cross-process `ArchiveAppendLock`, retires its
 sidecar before the bytes change and republishes it after. Health checks hold that lock while they
-read a `.gz` archive and its sidecar, and skip an archive that is being appended at that moment.
+read a `.gz` archive and its sidecar, and skip an archive that is being appended at that moment;
+compression holds the same lock from publishing an archive until its sidecar exists. Retention
+deletes a file only while holding the lock its writer takes (without creating one) and only when
+the file is unchanged since it was selected, so it never removes bytes a late append just committed.
 Compression also retires a source checksum orphaned by an interrupted cleanup. The
 `RecompressOptimal` repair strategy never re-encodes a file with unresolved health issues: changing
 encoding cannot repair content, and re-signing damaged bytes would make the damage read as healthy.

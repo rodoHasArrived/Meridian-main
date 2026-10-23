@@ -101,7 +101,7 @@
       "path": "src/Meridian.PortfolioRecords",
       "readme": "src/Meridian.PortfolioRecords/README.md",
       "readme_hash": "8b89cc4f7e775d086e56659071b63dd570f70963e3254562652db72614005084",
-      "source_hash": "a31449b328f13f0f2b4ee52eac8f7d23a203c7c2a74cb4e9bbb9aefbd8a31023"
+      "source_hash": "28be68e88d1a6b4a0b450544fdea38546ffbe44291124d3b0c0c2364c947cc96"
     },
     {
       "id": "SRC-DESIGN-REFERENCE-DATA",
@@ -247,8 +247,8 @@
       "id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
-      "readme_hash": "546a55f7bb92afae82778dcb68d40404695741a14f0956536d84306bcf83d70a",
-      "source_hash": "0ac82d6c26f730a6dc76e50974d4952f8964b6ed857789e46487bfe5478c3211"
+      "readme_hash": "c84fbccbec12d427c885f06593d86cb3528e880801b46b9cdaf9d6559dfa3706",
+      "source_hash": "af3419c20fb62b9223efc36d2aa454c303c5e6bf71036931acd0c61a427368b9"
     },
     {
       "id": "SRC-STRATEGIES",

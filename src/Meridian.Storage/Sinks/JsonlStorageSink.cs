@@ -1090,10 +1090,26 @@ public sealed class JsonlStorageSink : IStorageSink
             return (file.Exists ? file.Length : 0) + (sidecar.Exists ? sidecar.Length : 0);
         }
 
+        // The file was selected from metadata read at enumeration. A writer may have changed it since:
+        // a late append replaces an archive, a sink extends a plain file. Deleting it then would drop
+        // bytes whose append already reported success, so the WAL would commit events no longer on
+        // disk. Hold the lock that writer takes, without creating one, and delete only a file that is
+        // still exactly as selected; anything else waits for a later sweep.
         private void TryDelete(FileInfo file)
         {
+            var selectedWriteUtc = file.LastWriteTimeUtc;
+            var selectedLength = file.Length;
+            FileStream? lease = null;
             try
             {
+                var free = file.Name.EndsWith(".gz", StringComparison.OrdinalIgnoreCase)
+                    ? ArchiveAppendLock.TryAcquire(file.FullName, out lease, createIfMissing: false)
+                    : JsonlWriterLock.TryAcquireExclusive(file.FullName, out lease, createIfMissing: false);
+                if (!free)
+                    return;
+                file.Refresh();
+                if (!file.Exists || file.LastWriteTimeUtc != selectedWriteUtc || file.Length != selectedLength)
+                    return;
                 // Remove the sidecar first: an interruption then leaves a file without a
                 // checksum, never a stale checksum that a later recreated file would fail.
                 File.Delete(file.FullName + ".sha256");
@@ -1106,6 +1122,10 @@ public sealed class JsonlStorageSink : IStorageSink
                     "Failed to delete file during retention cleanup: {FilePath}, Size={FileSize} bytes",
                     file.FullName,
                     file.Exists ? file.Length : 0);
+            }
+            finally
+            {
+                lease?.Dispose();
             }
         }
 

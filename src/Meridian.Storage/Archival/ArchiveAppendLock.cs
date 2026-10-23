@@ -63,13 +63,20 @@ internal static class ArchiveAppendLock
     /// Takes the archive's lock without waiting. Returns false while an appender holds it. A data root
     /// this host cannot write yields true with no handle: no appender on this host can hold it either.
     /// </summary>
-    public static bool TryAcquire(string archivePath, out FileStream? handle)
+    /// <remarks>With <paramref name="createIfMissing"/> false, an archive that no appender has ever
+    /// locked yields true with no handle and no lock file is created.</remarks>
+    public static bool TryAcquire(string archivePath, out FileStream? handle, bool createIfMissing = true)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(archivePath);
         try
         {
-            handle = new FileStream(PathFor(archivePath), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None,
-                bufferSize: 1, options: FileOptions.None);
+            handle = new FileStream(PathFor(archivePath), createIfMissing ? FileMode.OpenOrCreate : FileMode.Open,
+                FileAccess.ReadWrite, FileShare.None, bufferSize: 1, options: FileOptions.None);
+            return true;
+        }
+        catch (Exception exception) when (!createIfMissing && exception is FileNotFoundException or DirectoryNotFoundException)
+        {
+            handle = null;
             return true;
         }
         catch (IOException exception) when (IsContention(exception))

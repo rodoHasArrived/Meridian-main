@@ -68,7 +68,11 @@ public static class BankStatementClosingBalanceAuthority
         var candidates = statement.Where(line => currency is null || string.Equals(line.Currency, currency, StringComparison.OrdinalIgnoreCase)).ToArray();
         if (candidates.Length == 0)
             return null;
-        if (candidates.All(static line => line.LineSequence.HasValue))
+        // Each delivery numbers its rows from 1, and additive feed batches share a date, so a source
+        // sequence orders rows only within one batch. Across batches the value date decides, and a
+        // tie stays unavailable rather than comparing unrelated ordinals.
+        if (candidates.All(static line => line.LineSequence.HasValue)
+            && candidates.Select(static line => line.BatchId).Distinct().Count() == 1)
         {
             var sequence = candidates.Max(static line => line.LineSequence);
             candidates = candidates.Where(line => line.LineSequence == sequence).ToArray();

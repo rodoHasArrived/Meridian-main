@@ -225,6 +225,8 @@ public sealed partial class FileMaintenanceService
     // Per-instance test seam; never shared across maintenance operations or configured by input.
     internal Action<CompressionPublicationStage>? CompressionCheckpoint { get; init; }
 
+    private static readonly TimeSpan ArchiveLockTimeout = TimeSpan.FromMinutes(5);
+
     private async Task<bool> RecompressAsync(string filePath, CancellationToken ct, string? requiredBackup = null)
     {
         if (!filePath.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
@@ -246,6 +248,9 @@ public sealed partial class FileMaintenanceService
         if (!JsonlWriterLock.TryAcquireExclusive(filePath, out var writerLock))
             throw new IOException($"Refusing to compress a file that another process has open for writing: {filePath}");
         await using var writerLease = writerLock!;
+        // The archive is published before its checksum sidecar is written. Health checks and late
+        // appenders treat this lock as an archive generation in progress, so hold it across both.
+        await using var archiveLease = await ArchiveAppendLock.AcquireAsync(outputPath, ArchiveLockTimeout, ct);
 
         FileStream source;
         try
