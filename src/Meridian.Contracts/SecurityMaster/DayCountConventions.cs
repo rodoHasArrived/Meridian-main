@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>
@@ -66,6 +68,10 @@ public enum DayCountConvention
 /// <see cref="Fraction(DayCountConvention, DateOnly, DateOnly, Func{DateOnly, bool})"/> overload with a
 /// calendar predicate. Without one it degrades to Actual/365.</description></item>
 /// </list>
+/// <para>ICMA, 30E/360 (ISDA) and Business/252 callers that hold a schedule period should use the
+/// <see cref="TryFraction(DayCountConvention, DateOnly, DateOnly, DayCountPeriodContext, out decimal, out string?)"/>
+/// overload, which takes the reference periods, termination date and business-day predicate from a
+/// <see cref="DayCountPeriodContext"/> and refuses when they are missing instead of degrading.</para>
 /// <para>All arithmetic is <see cref="decimal"/> end-to-end; no <see cref="double"/> intermediates, so
 /// fractions are exact and reproducible across runtimes.</para>
 /// </remarks>
@@ -224,6 +230,124 @@ public static class DayCountConventions
         return convention == DayCountConvention.Business252
             ? Business252Days(start, end, isBusinessDay) / BusinessDaysPerYear
             : Fraction(convention, start, end);
+    }
+
+    /// <summary>
+    /// Period-aware fraction that refuses instead of degrading when a convention's context is missing.
+    /// Returns 0 when <paramref name="end"/> is not after <paramref name="start"/>.
+    /// </summary>
+    /// <remarks>
+    /// <list type="bullet">
+    /// <item><description><see cref="DayCountConvention.ActualActualIcma"/> requires a positive
+    /// <see cref="DayCountPeriodContext.PeriodsPerYear"/> and contiguous reference periods covering
+    /// [<paramref name="start"/>, <paramref name="end"/>]. The fraction sums
+    /// <see cref="ActualActualIcmaFraction"/> over each non-empty overlap with a reference period, in
+    /// order (ISDA 2006 §4.16(c); ICMA Rule 251 for stubs).</description></item>
+    /// <item><description><see cref="DayCountConvention.ThirtyE360Isda"/> keeps February's true last
+    /// day when <paramref name="end"/> is <see cref="DayCountPeriodContext.TerminationDate"/>.</description></item>
+    /// <item><description><see cref="DayCountConvention.Business252"/> requires
+    /// <see cref="DayCountPeriodContext.IsBusinessDay"/>.</description></item>
+    /// <item><description>Every other convention, including <see cref="DayCountConvention.Unknown"/>,
+    /// returns exactly <see cref="Fraction(DayCountConvention, DateOnly, DateOnly)"/>.</description></item>
+    /// </list>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="context"/> is null.</exception>
+    public static bool TryFraction(
+        DayCountConvention convention,
+        DateOnly start,
+        DateOnly end,
+        DayCountPeriodContext context,
+        out decimal fraction,
+        [NotNullWhen(false)] out string? refusal)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        fraction = 0m;
+        refusal = null;
+        if (end <= start)
+        {
+            return true;
+        }
+
+        switch (convention)
+        {
+            case DayCountConvention.ActualActualIcma:
+                return TryActualActualIcma(start, end, context, out fraction, out refusal);
+            case DayCountConvention.ThirtyE360Isda:
+                fraction = ThirtyE360IsdaDays(start, end, endIsMaturityDate: end == context.TerminationDate) / DaysPerYear360;
+                return true;
+            case DayCountConvention.Business252:
+                if (context.IsBusinessDay is null)
+                {
+                    refusal = "Business/252 requires a business-day calendar.";
+                    return false;
+                }
+
+                fraction = Fraction(convention, start, end, context.IsBusinessDay);
+                return true;
+            default:
+                fraction = Fraction(convention, start, end);
+                return true;
+        }
+    }
+
+    /// <summary>
+    /// Period-aware fraction; see
+    /// <see cref="TryFraction(DayCountConvention, DateOnly, DateOnly, DayCountPeriodContext, out decimal, out string?)"/>.
+    /// </summary>
+    /// <exception cref="ArgumentException">The convention's period context is missing or does not cover the window; the message carries the refusal.</exception>
+    public static decimal Fraction(DayCountConvention convention, DateOnly start, DateOnly end, DayCountPeriodContext context)
+        => TryFraction(convention, start, end, context, out var fraction, out var refusal)
+            ? fraction
+            : throw new ArgumentException(refusal, nameof(context));
+
+    private static bool TryActualActualIcma(
+        DateOnly start,
+        DateOnly end,
+        DayCountPeriodContext context,
+        out decimal fraction,
+        [NotNullWhen(false)] out string? refusal)
+    {
+        fraction = 0m;
+        if (context.PeriodsPerYear is not { } periodsPerYear || periodsPerYear <= 0)
+        {
+            refusal = "Actual/Actual (ICMA) requires a positive number of coupon periods per year.";
+            return false;
+        }
+
+        var references = context.ReferencePeriods;
+        if (references is null || references.Count == 0)
+        {
+            refusal = "Actual/Actual (ICMA) requires the coupon reference periods.";
+            return false;
+        }
+
+        for (var i = 0; i < references.Count; i++)
+        {
+            if (references[i].End <= references[i].Start || (i > 0 && references[i].Start != references[i - 1].End))
+            {
+                refusal = "Actual/Actual (ICMA) reference periods must be non-empty and contiguous.";
+                return false;
+            }
+        }
+
+        if (start < references[0].Start || end > references[^1].End)
+        {
+            refusal = "Actual/Actual (ICMA) reference periods do not cover the accrual window.";
+            return false;
+        }
+
+        foreach (var reference in references)
+        {
+            var overlapStart = start > reference.Start ? start : reference.Start;
+            var overlapEnd = end < reference.End ? end : reference.End;
+            if (overlapEnd > overlapStart)
+            {
+                fraction += ActualActualIcmaFraction(overlapStart, overlapEnd, reference.Start, reference.End, periodsPerYear);
+            }
+        }
+
+        refusal = null;
+        return true;
     }
 
     /// <summary>
