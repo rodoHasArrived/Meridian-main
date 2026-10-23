@@ -2,11 +2,27 @@
 
 # `security-master-contracts` data objects - page 5 of 5
 
-Objects 321-382 of 382. References crossing pages remain available in the dependency manifest.
+Objects 321-385 of 385. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto["SecurityPriceGoldenCopyDto"] {
+        +IReadOnlyList~SecurityComparisonPriceDto~ ComparisonPrices
+        +int? DaysStale
+        +DateTimeOffset? EvaluatedAsOf
+        +decimal GoldenCopyPrice
+        +DateTimeOffset? HierarchyAsOf
+        +SecurityPricingHierarchyDto? HierarchySnapshot
+        +bool IsStaleFallback
+        +DateTimeOffset? KnowledgeAsOf
+        +DateTimeOffset PriceAsOf
+        +SecurityPriceKind PriceKind
+        +Guid SecurityId
+        +string SelectedSource
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityPriceKind["SecurityPriceKind"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityPriceUnit["SecurityPriceUnit"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto["SecurityPricingHierarchyDto"] {
@@ -87,6 +103,8 @@ classDiagram
         +IReadOnlyList~string~ All
     }
     class Meridian_Contracts_SecurityMaster_SecurityTermsProjectionKind["SecurityTermsProjectionKind"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityTermsUpgradeKind["SecurityTermsUpgradeKind"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityUnderlyingGraphDto["SecurityUnderlyingGraphDto"] {
         +DateTimeOffset AsOfUtc
@@ -434,6 +452,9 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceKind
+    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
+    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto
     Meridian_Contracts_SecurityMaster_SecurityProjectionRecord --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
     Meridian_Contracts_SecurityMaster_SecurityRawPriceDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
     Meridian_Contracts_SecurityMaster_SecuritySummaryDto --> Meridian_Contracts_SecurityMaster_SecurityStatusDto

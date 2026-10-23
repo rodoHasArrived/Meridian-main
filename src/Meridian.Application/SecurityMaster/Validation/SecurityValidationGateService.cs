@@ -74,7 +74,8 @@ public sealed class SecurityValidationGateService : ISecurityValidationGateServi
     {
         ct.ThrowIfCancellationRequested();
 
-        var report = await _validationService.ValidateSecurityAsync(securityId, ct).ConfigureAwait(false);
+        var report = WithoutInformationalIssues(
+            await _validationService.ValidateSecurityAsync(securityId, ct).ConfigureAwait(false));
         var snapshot = persistSnapshot
             ? await RecordSnapshotAsync(report, workflow, workflowReference, actor, symbol, ct).ConfigureAwait(false)
             : null;
@@ -87,6 +88,32 @@ public sealed class SecurityValidationGateService : ISecurityValidationGateServi
             IsBlocked: report.HasBlockingIssues,
             Report: report,
             Snapshot: snapshot);
+    }
+
+    /// <summary>
+    /// Drops <see cref="SecurityValidationSeverityDto.Info"/> issues from a report before a workflow
+    /// gate decides on it, snapshots it or hands it on. Gate consumers treat any issue they receive
+    /// as reviewable — reconciliation intake turns each into a coverage issue, strategy preflight
+    /// turns a passed check into a warning, ledger posting and provider passports list every code —
+    /// so an informational notice such as <c>SM_ASSET_CLASS_TERMS_VERSION_BEHIND</c>, which needs no
+    /// action, must not reach them; <c>ReportPackValidationService</c> already skips Info for the same
+    /// reason. Validation snapshots therefore omit informational issues by design: a snapshot records
+    /// what the gate decided on. Blocking state and the critical and error counts are unchanged, and a
+    /// report without an informational issue is returned as the same instance. The full report stays
+    /// available from <see cref="ISecurityValidationService"/>.
+    /// </summary>
+    private static SecurityValidationReportDto WithoutInformationalIssues(SecurityValidationReportDto report)
+    {
+        ArgumentNullException.ThrowIfNull(report);
+        if (!report.Issues.Any(static issue => issue.Severity == SecurityValidationSeverityDto.Info))
+        {
+            return report;
+        }
+
+        return report with
+        {
+            Issues = report.Issues.Where(static issue => issue.Severity != SecurityValidationSeverityDto.Info).ToArray()
+        };
     }
 
     private Task<SecurityValidationSnapshotDto> RecordSnapshotAsync(

@@ -2,11 +2,22 @@
 
 # `security-master-contracts` data objects - page 4 of 5
 
-Objects 241-320 of 382. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 385. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileRollbackRequestDto["SecurityAssetProfileRollbackRequestDto"] {
+        +string ApprovalReference
+        +string? CorrelationId
+        +DateOnly EffectiveFrom
+        +string ProfileId
+        +string Rationale
+        +string? RequestedBy
+        +int TargetVersion
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileStatusDto["SecurityAssetProfileStatusDto"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto["SecurityAssetProfileTermsDto"] {
         +string CustomProfileId
         +IReadOnlyList~SecurityEvidenceLinkDto~ EvidenceLinks
@@ -37,6 +48,7 @@ classDiagram
         +string Key
         +bool Required
         +SecurityAssetTermRole Role
+        +int SinceTermsVersion
         +SecurityAssetTermFieldType Type
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto["SecurityAssetTermFieldDefinitionDto"] {
@@ -431,22 +443,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityPaymentFrequencyExtensions["SecurityPaymentFrequencyExtensions"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto["SecurityPriceGoldenCopyDto"] {
-        +IReadOnlyList~SecurityComparisonPriceDto~ ComparisonPrices
-        +int? DaysStale
-        +DateTimeOffset? EvaluatedAsOf
-        +decimal GoldenCopyPrice
-        +DateTimeOffset? HierarchyAsOf
-        +SecurityPricingHierarchyDto? HierarchySnapshot
-        +bool IsStaleFallback
-        +DateTimeOffset? KnowledgeAsOf
-        +DateTimeOffset PriceAsOf
-        +SecurityPriceKind PriceKind
-        +Guid SecurityId
-        +string SelectedSource
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityPriceKind["SecurityPriceKind"] {
-    }
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsV0ToCurrentUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
@@ -458,7 +454,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
     Meridian_Contracts_SecurityMaster_SecurityClosePriceInputDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceOverrideDto
-    Meridian_Contracts_SecurityMaster_SecurityClosePriceLineDto --> Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceApprovalDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSetDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto
     Meridian_Contracts_SecurityMaster_SecurityClosePriceSnapshotDto --> Meridian_Contracts_SecurityMaster_SecurityClosePriceBlockerDto
@@ -484,6 +479,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityEconomicDefinitionRecord
     Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityMasterReportingResolutionMode
     Meridian_Contracts_SecurityMaster_SecurityOverrideAuditEntryDto --> Meridian_Contracts_SecurityMaster_SecurityOverrideApprovalStatusDto
-    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityComparisonPriceDto
-    Meridian_Contracts_SecurityMaster_SecurityPriceGoldenCopyDto --> Meridian_Contracts_SecurityMaster_SecurityPriceKind
 ```

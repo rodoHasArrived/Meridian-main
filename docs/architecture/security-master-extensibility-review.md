@@ -6118,3 +6118,101 @@ method fails exactly where the oracle does at the end of the date range.
 `DirectLendingTermsHashCharacterizationTests` with its F# twin (new), with the existing Security
 Master cash-flow, asset-operations, cash-ladder, direct-lending, `FaceValueLot`, architecture and
 term-schema round-trip suites.
+
+## Resolution pass — 2026-10-23 (priority 5, second increment: the per-class terms upgrade hook)
+
+| Finding | What landed |
+| --- | --- |
+| ADR-024 decision 3 says a terms-version bump ships an upcaster, but nothing could hold one | The per-class terms upgrade hook ([ADR-024](../adr/024-terms-payload-format-and-version-policy.md), 2026-10-23 application). `SecurityAssetClassDescriptor.TermsUpgrades` declares one `SecurityAssetClassTermsUpgrade` per terms version: an identity step, or a transform step with a delegate that rewrites a private copy of the payload. The record has a private constructor and two factories, so an identity step never carries a delegate and no step starts below version 1. `SecurityAssetClassTermsUpgrader.UpgradeForRead` runs a class's steps on read. It acts only on flat-codec objects (`schemaVersion` 1 or absent, flat by tag or shape, no `customProfileId` or `profileFields`) stamped from version 1 to below the class's current version. Everything else passes through, and it never refuses a payload: the newer-stamp refusal stays in `EnsureReadableAsAssetSpecificTerms`. Identity steps return the stored element itself, with no parse, clone or allocation. A transform returns a new payload stamped at the current version through the new `SecurityTermsEnvelope.StampFlat(json, termsVersion)` overload. The runner requires exactly one step for every version it crosses and refuses a transform that returns nothing or touches `schemaVersion`. The hook is wired into `SecurityMasterMapping.ToSecurityKind` after the read guard (read, create, import, amend and every `ToEconomicRecord`), the retained-terms branch of `SecurityEconomicDefinitionAdapter.ToProjection`, `StructuredCashFlowTermsResolver.EnumerateTermSources`, the factor-date walk in `SecurityMasterCashFlowService`, the Security Master terms wrapper both obligation walks read (`AssetObligationProjectionService.BuildSecurityMasterTermsPayload`, with the record's own asset class), `PostgresSecurityMasterStore.TryBuildTermsProjection`, and the class validators in `SecurityValidationService.ValidateRecord`. Stored blobs and the `schema_version` and `terms_format` columns stay derived from what was written. |
+| StructuredCredit's version 1 → 2 identity (2026-10-18) was asserted in prose only, and no test read a version-1 payload | The nine version-2 fields carry `.Since(2)` (`SecurityAssetTermField.SinceTermsVersion`, a single-member `with` like `AsOperational`), and the descriptor declares `Identity(1)`. `SecurityAssetClassTermsHistoryTests` holds 32 committed manifests under `tests/fixtures/security-master/terms-versions`, one per catalog class, recording each version's top-level keys with type and required flag. It checks that every class has versions 1 to its `TermsVersion`, the latest version equals the live schema, each field's `.Since(n)` is the first version that lists it, steps are contiguous, and an identity step removes, retypes and tightens nothing and adds only optional keys. Transform steps need in and out fixtures that map and are idempotent; none exists yet. A missing version is written as a received file for review. `SecurityAssetClassTermsUpgraderTests` reads a version-1, a version-2 and an unstamped StructuredCredit payload to the same F# record, the same economic terms and the same write-mode kind. |
+| Hand-built envelope writers and the envelope itself read `TermsVersion` off the descriptor at seven sites | `SecurityAssetClassCatalog.GetTermsVersion` is the one accessor for the version a node writes, used by the CSV parser, both EDGAR writers, the WPF edit template, the class-aware bridge envelope, `StampFlat` and the read guard. A source scan refuses the old spelling under `src`. The descriptor's `TermsVersion` doc now says a new field bumps it too, as decision 3 requires. |
+| Nothing measured rows stamped below their class's terms version | `SM_ASSET_CLASS_TERMS_VERSION_BEHIND` (Info), beside the format rules, for a flat row whose `schemaVersion` is an integer and whose stamp is below, or absent and so read as below, its class's version. It names the stamp or its absence, never blocks and never changes the counts. |
+| The `ISchemaUpcaster<SecurityAssetSpecificTerms>` registration claimed the projection store used it | The comment in `StorageFeatureRegistration` now says nothing in the composition resolves it, the store derives `schema_version` from the stored blob, and per-class upgrades belong to the new hook. The registration is kept. |
+
+**Corrections to the plan.**
+
+- **Snapshots are not covered by `ToProjection`, and its output is persisted.** Snapshots are taken
+  on write paths from projections the F# codec has just serialized
+  (`SecurityMasterService.SaveSnapshotIfNeededAsync`). The adapter's output is cached and upserted
+  by `SecurityMasterRebuildOrchestrator` at three sites: the full warm (:81), the incremental replay
+  (:129) and the asset-class rebuild (:195). Only the asset-class rebuild has a production caller,
+  through `UflProjectionRebuilder`. With identity steps this changes nothing. Under a transform, a
+  rebuild would write the upgraded payload into `securities.asset_specific_terms`, and a startup
+  warm would do so on every boot.
+- **Validation was not simply additive.** Every workflow gate consumer treats any issue as
+  reviewable: reconciliation intake raises a coverage issue, strategy preflight downgrades a pass to
+  a warning, and ledger posting and provider passports list every code. The workbench also counted
+  every non-blocking issue against trust, moving a record from Trusted to Review and deducting
+  three points. `SecurityValidationGateService` therefore drops Info issues before a gate decides,
+  snapshots or hands the report on, as `ReportPackValidationService` already does. The workbench
+  counts only non-Info issues in its posture and in its review action, through in-place edits that
+  add no lines to that god file. The WPF Security Master screen counts the same way in its
+  validation status line and its coverage summary, so the two UI lanes agree; both still list the
+  notice in their issue grids.
+- **Two obligation walks, not one.** The factor-date reads use a nested-first walk beside the main
+  one. Both now read the wrapper built from the hooked terms. `SecurityMasterCashFlowService` had
+  the same split: the resolver was hooked, but its factor-date walk read the raw terms. It is now
+  wired too.
+- **The relational projection is decoded in `PostgresSecurityMasterStore.TryBuildTermsProjection`,**
+  not in the registry's decoders. The hook substitutes the record once at its entry, and the
+  registry is not edited.
+- **`JsonElement.Clone` of an element from a cloned document returns the same element,** so a clone
+  cannot serve as the control for an instance-identity assertion. The tests compare against a
+  re-parsed copy instead.
+- **The byte-stable round-trip loop does not prove the hook for every class.** It goes through
+  `SecurityMasterMapping.ToProjection`, a snapshot copy, not the adapter. For 31 classes it proves
+  the version-1 short-circuit. For StructuredCredit it proves the write-mode identity pass of an
+  unstamped payload already in the current shape, which a future transform must keep idempotent.
+
+**Not yet landed.** Increments 3 to 12 of this priority are unchanged from the first-increment
+section above. Before any class declares a transform step, every remaining reader of stored flat
+terms must be wired to the hook or shown unaffected:
+
+- `PortfolioCashLadderEngine`, `SwapProjectionService` and `SecurityMasterDataQualityService`;
+- `SecurityMasterWorkbenchQueryService` and the F# readers;
+- the Strategies `SecurityMasterAccountingEventSourceAdapter`, which reads the factor schedule and
+  current factor from retained legacy terms;
+- `PostgresSecurityMasterStore.TryBuildOptionProjection`;
+- persisted Asset Operations payloads walked by
+  `AssetObligationProjectionService.BuildProjectedObligationEvents`;
+- the raw-payload comparisons in `OpenLotAmortizationContinuation` and the conflict detection;
+- `SecurityMasterQueryService.GetByIdAsync`, which returns the stored detail while the as-of reads
+  go through the hooked adapter.
+
+The persistence decision above is part of the same precondition: accept the projection as a derived
+read model, or move the hook below the cache. The manifests record top-level keys, types and
+required flags only. Element shapes, aliases, vocabularies and conventions stay with the round-trip
+suites, and committed versions are append-only by review.
+
+**Behaviour changes.**
+
+- **Reads: none.** The only declared step is StructuredCredit `Identity(1)`. Every read path gets the
+  same element it got before, or the same clone in the adapter. No stored payload, column, event,
+  snapshot, codec or engine-version string changes, and there is no migration or DI change.
+- **Validation report: additive, at Info.** `ValidateSecurityAsync`, `ValidateUniverseAsync` and
+  `ValidateRecord` add `SM_ASSET_CLASS_TERMS_VERSION_BEHIND` for StructuredCredit rows stamped 1,
+  unstamped, or stamped with a non-integer. Blocking state and the critical and error counts are
+  unchanged. The notice shows in `GET /api/security-master/{id}/validation` and in the workbench
+  issue list.
+- **Workflow gates, validation snapshots, workbench posture and WPF counts: none.** No Info issue
+  existed before this change, so the gate filter, the workbench count and the WPF counts leave every
+  current report and summary unchanged.
+- **Writers and `StampFlat`: none.** They read the same integer through `GetTermsVersion`, and the
+  class overload of `StampFlat` produces byte-identical output.
+- **Contracts: additive.** New public types `SecurityTermsUpgradeKind`,
+  `SecurityAssetClassTermsUpgrade` and `SecurityAssetClassTermsUpgrader`. New public members
+  `SecurityAssetTermField.SinceTermsVersion` and `Since`, `SecurityAssetClassDescriptor.TermsUpgrades`,
+  `SecurityAssetClassCatalog.GetTermsVersion` and `SecurityTermsEnvelope.StampFlat(string, int)`.
+  The descriptor's parameter docs now attach to the record rather than to the neighbouring enum.
+  Wire DTOs and TypeScript types are unchanged.
+
+**Validation.** `SecurityAssetClassTermsHistoryTests`, `SecurityAssetClassTermsUpgraderTests`,
+`SecurityAssetClassTermsUpgradeWiringTests` and `SecurityValidationGateServiceTests` are new.
+Extended suites: `SecurityValidationServiceTests` (the notice and where it does not fire),
+`SecurityTermsVersioningTests` (the `StampFlat` overloads) and
+`SecurityMasterPostgresRoundTripTests` (a version-1 row keeps its blob, `schema_version` and
+`terms_format`, and projects). These ran with the Security Master, term-schema round-trip, economic
+bridge, projection registry, asset-operations, structured cash-flow, architecture-ratchet,
+reconciliation and provider-ledger suites, the F# Security Master tests and a disposable
+PostgreSQL 16. A temporary mutation (an untagged version-2 field, and a version-2 key made required
+in both the schema and the manifest) failed the `.Since` and identity-legality guards as intended.
