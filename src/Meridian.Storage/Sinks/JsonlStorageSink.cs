@@ -598,12 +598,13 @@ public sealed class JsonlStorageSink : IStorageSink
                 {
                     EnsureCompressedFileIsReadable();
                     using var fence = await JsonlWriteFence.EnterWriteAsync(_path, ct).ConfigureAwait(false);
+                    // A plain source replaced copy-on-write is still a source another process may be
+                    // compressing; hold the writer lock as the append stream does.
+                    await using var writerLock = _compressed ? null
+                        : await JsonlWriterLock.AcquireSharedAsync(_path, WriterLockTimeout, ct).ConfigureAwait(false);
                     if (await TryAppendToPublishedArchiveAsync(stream => WriteEventToTargetStreamAsync(stream, evt, ct), ct).ConfigureAwait(false))
                         return;
-                    await AtomicFileWriter.AppendAsync(
-                        _path,
-                        stream => WriteSingleEventAsync(stream, evt, ct),
-                        ct).ConfigureAwait(false);
+                    await AppendCopyOnWriteAsync(stream => WriteSingleEventAsync(stream, evt, ct), ct).ConfigureAwait(false);
                     return;
                 }
 
@@ -633,12 +634,13 @@ public sealed class JsonlStorageSink : IStorageSink
                 {
                     EnsureCompressedFileIsReadable();
                     using var fence = await JsonlWriteFence.EnterWriteAsync(_path, ct).ConfigureAwait(false);
+                    // A plain source replaced copy-on-write is still a source another process may be
+                    // compressing; hold the writer lock as the append stream does.
+                    await using var writerLock = _compressed ? null
+                        : await JsonlWriterLock.AcquireSharedAsync(_path, WriterLockTimeout, ct).ConfigureAwait(false);
                     if (await TryAppendToPublishedArchiveAsync(stream => WriteEventsToTargetStreamAsync(stream, events, ct), ct).ConfigureAwait(false))
                         return;
-                    await AtomicFileWriter.AppendAsync(
-                        _path,
-                        stream => WriteEventsAsync(stream, events, ct),
-                        ct).ConfigureAwait(false);
+                    await AppendCopyOnWriteAsync(stream => WriteEventsAsync(stream, events, ct), ct).ConfigureAwait(false);
                     return;
                 }
 
@@ -851,6 +853,29 @@ public sealed class JsonlStorageSink : IStorageSink
             // interrupted before its sidecar was written must not stay uncovered on every append.
             await RepublishArchiveChecksumAsync(archive, sidecar).ConfigureAwait(false);
             return true;
+        }
+
+        // Caller holds _gate and the write fence. A plain source is replaced as a whole. A direct gzip
+        // partition is itself an archive: every instance writing it, in this process or another, would
+        // copy the same bytes and the last replacement would drop the others' members, so it takes the
+        // same append lease and OS lock as a late append to a published archive. Its checksum is retired
+        // before the bytes change and republished after, as for a published archive.
+        private async Task AppendCopyOnWriteAsync(Func<Stream, Task> write, CancellationToken ct)
+        {
+            if (!_compressed)
+            {
+                await AtomicFileWriter.AppendAsync(_path, write, ct).ConfigureAwait(false);
+                return;
+            }
+
+            using var appendLease = await JsonlWriteFence.EnterArchiveAppendAsync(_path, ct).ConfigureAwait(false);
+            await using var processLease = await ArchiveAppendLock.AcquireAsync(_path, ArchiveAppendLockTimeout, ct).ConfigureAwait(false);
+            var sidecar = _path + ".sha256";
+            if (File.Exists(sidecar))
+                File.Delete(sidecar);
+            await AtomicFileWriter.AppendAsync(_path, write, ct).ConfigureAwait(false);
+            // Committed: as for a published archive, nothing after this may report failure.
+            await RepublishArchiveChecksumAsync(_path, sidecar).ConfigureAwait(false);
         }
 
         // Best effort and uncancellable. On failure the sidecar stays retired, so health checks

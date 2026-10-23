@@ -59,6 +59,31 @@ internal static class ArchiveAppendLock
         }
     }
 
+    /// <summary>
+    /// Takes the archive's lock without waiting. Returns false while an appender holds it. A data root
+    /// this host cannot write yields true with no handle: no appender on this host can hold it either.
+    /// </summary>
+    public static bool TryAcquire(string archivePath, out FileStream? handle)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(archivePath);
+        try
+        {
+            handle = new FileStream(PathFor(archivePath), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None,
+                bufferSize: 1, options: FileOptions.None);
+            return true;
+        }
+        catch (IOException exception) when (IsContention(exception))
+        {
+            handle = null;
+            return false;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            handle = null;
+            return true;
+        }
+    }
+
     // Windows refuses a locked file with ERROR_SHARING_VIOLATION (32) or ERROR_LOCK_VIOLATION (33)
     // in the low word of HResult; Unix advisory locking refuses with EAGAIN/EWOULDBLOCK, surfaced
     // with the raw errno as HResult (11 on Linux, 35 on macOS).

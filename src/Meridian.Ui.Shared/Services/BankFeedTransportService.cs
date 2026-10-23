@@ -345,6 +345,7 @@ internal static class BankStatementCsvImportMapper
         using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
         var issues = new List<DataUploadValidationIssueDto>();
         var lines = new List<BankStatementLineDto>();
+        var acceptedSequences = new HashSet<int>();
         int? statementRevision = null;
         var revisionDeclared = false;
         DateOnly? csvStatementDate = null;
@@ -480,13 +481,14 @@ internal static class BankStatementCsvImportMapper
                 issues.Add(new DataUploadValidationIssueDto("Error", "statement_revision", "Every row in a statement must declare the same revision.", RowNumber: lineNumber));
                 continue;
             }
-            if (lines.Any(existing => existing.LineSequence == sequence))
+            if (acceptedSequences.Contains(sequence))
             {
                 issues.Add(new DataUploadValidationIssueDto("Error", "line_sequence", "Source line sequences must be unique within a statement.", RowNumber: lineNumber));
                 continue;
             }
             statementRevision = revision;
             var currency = currencyValue.Trim().ToUpperInvariant();
+            acceptedSequences.Add(sequence);
             lines.Add(new BankStatementLineDto(
                 LineId: BuildGuid(
                     $"bank-statement-line|{batchId:N}|{lineNumber.ToString(CultureInfo.InvariantCulture)}|{transactionDate:yyyyMMdd}|{valueDate:yyyyMMdd}|{amount.ToString(CultureInfo.InvariantCulture)}|{currency}|{transactionType}|{reference}|{description}"),

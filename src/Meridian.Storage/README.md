@@ -38,11 +38,14 @@ an enabled truncation strategy and never substitutes index rebuilding. Focused r
 Scheduled compression uses `CompressAsync` and its compression-specific result, separately from
 repair completion. It selects healthy plain JSONL files within the requested paths, completes all
 required backups before mutation, and verifies decompressed bytes against the unchanged source
-before publishing a create-only gzip destination and deleting the original. Successful encoding
+before publishing a create-only gzip destination and deleting the original. Under the writer fence
+it also requires each file's backup to match the source it is about to compress, so a late write
+between the backup pass and that file's turn refuses compression rather than leaving a stale
+recovery copy. Successful encoding
 changes report compressed files and bytes saved with zero repaired issues. `JsonlStorageSink` holds a shared
 `JsonlWriteFence` lease while its append stream is open and compression takes the path
 exclusively, so an open file is refused and a reopening sink waits until the source is gone. The
-sink also holds a shared `JsonlWriterLock` (an open handle on `<source>.write-lock`) and
+sink also holds a shared `JsonlWriterLock` (an open handle on `<source>.write-lock`), for append-stream and copy-on-write writes to a plain source alike, and
 compression holds it exclusively for the whole verify-publish-delete window, which extends that
 exclusion to writers in other processes sharing the data root. A sink that waited out another
 process's compression then appends to the published archive. Readers take neither lock, so a
@@ -57,7 +60,13 @@ because such writes are rare. Each copy-on-write append to an archive holds a pe
 (`JsonlWriteFence.EnterArchiveAppendAsync`) shared by every sink instance in the process, across
 copy, replace and checksum republication, so concurrent sinks never drop each other's members. Its checksum sidecar is republished best-effort after the append
 commits: a failure leaves the archive without a sidecar and never reports the committed write as
-failed. Compression also retires a source checksum orphaned by an interrupted cleanup.
+failed. A partition written directly as gzip (`StorageOptions.Compress`) is itself such an archive:
+each append takes the same append lease and the cross-process `ArchiveAppendLock`, retires its
+sidecar before the bytes change and republishes it after. Health checks hold that lock while they
+read a `.gz` archive and its sidecar, and skip an archive that is being appended at that moment.
+Compression also retires a source checksum orphaned by an interrupted cleanup. The
+`RecompressOptimal` repair strategy never re-encodes a file with unresolved health issues: changing
+encoding cannot repair content, and re-signing damaged bytes would make the damage read as healthy.
 Scheduled runs also defer files written
 within the last five minutes, and every run refuses to delete a source whose length or timestamp
 changed after verification, withdrawing the new archive instead. Every published gzip archive

@@ -48,6 +48,28 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
+    public async Task RunHealthCheckAsync_ArchiveBeingAppended_IsCheckedOnTheNextSweepNotMisreported()
+    {
+        var archivePath = Path.Combine(TestDataRoot, "SPY_trade_20260110.jsonl.gz");
+        await using (var gzip = new System.IO.Compression.GZipStream(File.Create(archivePath), System.IO.Compression.CompressionLevel.Fastest))
+            await gzip.WriteAsync(Encoding.UTF8.GetBytes("{\"price\":450.0}\n"));
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot });
+        var checksumsOnly = new HealthCheckOptions(ValidateChecksums: true, IdentifyCorruption: false);
+
+        // An appender has retired the sidecar and holds the archive's lock while it rewrites the bytes.
+        using (var appender = new FileStream(ArchiveAppendLock.PathFor(archivePath), FileMode.OpenOrCreate,
+                   FileAccess.ReadWrite, FileShare.None))
+        {
+            var during = await service.RunHealthCheckAsync(checksumsOnly);
+            during.Issues.Should().NotContain(issue => issue.Path == archivePath,
+                "a sidecar retired by an in-flight append is not lost coverage");
+        }
+
+        var after = await service.RunHealthCheckAsync(checksumsOnly);
+        after.Issues.Should().ContainSingle(issue => issue.Type == IssueType.MissingChecksum && issue.Path == archivePath);
+    }
+
+    [Fact]
     public async Task RunHealthCheckAsync_CompressedArchiveWithoutSidecar_ReportsMissingChecksum()
     {
         // Compression always publishes a sidecar beside the archive, so a bare archive has lost
@@ -140,10 +162,10 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
-    public async Task RepairAsync_RecompressOptimal_LeavesSingleCanonicalCompressedCopy()
+    public async Task RepairAsync_RecompressOptimal_LeavesDamagedContentUnchangedAndUnsigned()
     {
-        // The old recompress left both the .jsonl and the .gz on disk, so replay double-counted
-        // every event; it also wrote the .gz non-atomically.
+        // Re-encoding cannot repair damaged content. Publishing it under a fresh archive checksum and
+        // deleting the source would make the same damage read as healthy on every later check.
         var dataPath = Path.Combine(TestDataRoot, "SPY_trade_20260109.jsonl");
         var content = "{\"seq\":1}\nnot-json\n";
         await File.WriteAllTextAsync(dataPath, content);
@@ -152,13 +174,11 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
         var result = await service.RepairAsync(new RepairOptions(RepairStrategy.RecompressOptimal));
 
         result.FilesRepaired.Should().Be(0, "encoding damaged content does not resolve its corruption");
-        result.FilesChanged.Should().Be(1);
-        result.Errors.Should().ContainSingle(error => error.Contains("recompression preserves the source content"));
-        File.Exists(dataPath).Should().BeFalse("the plain file must be removed after recompression");
-        var compressedPath = dataPath + ".gz";
-        File.Exists(compressedPath).Should().BeTrue();
-        (await ReadGzipTextAsync(compressedPath)).Should().Be(content,
-            "the compressed copy must round-trip the original bytes");
+        result.FilesChanged.Should().Be(0);
+        result.Errors.Should().ContainSingle(error => error.Contains("recompression cannot repair"));
+        (await File.ReadAllTextAsync(dataPath)).Should().Be(content);
+        File.Exists(dataPath + ".gz").Should().BeFalse();
+        File.Exists(dataPath + ".gz.sha256").Should().BeFalse();
     }
 
     [Fact]
@@ -175,7 +195,7 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
         var result = await service.RepairAsync(new RepairOptions(RepairStrategy.RecompressOptimal));
 
         result.FilesRepaired.Should().Be(0);
-        result.Errors.Should().ContainSingle(error => error.Contains("Refusing to replace existing compression destination"));
+        result.Errors.Should().ContainSingle(error => error.Contains("recompression cannot repair"));
         (await File.ReadAllTextAsync(sourcePath)).Should().Be(original);
         (await File.ReadAllBytesAsync(compressedPath)).Should().Equal(retainedCompressed);
         Directory.GetFiles(TestDataRoot, "*.recompress.tmp").Should().BeEmpty();
@@ -435,13 +455,5 @@ public sealed class FileMaintenanceServiceTests : TempDirectoryAsyncTestBase
         result.FilesDeleted.Should().Be(1);
         result.BytesAfter.Should().BeGreaterThan(lockedLength,
             "the actual footprint includes both the merged file and the source that survived deletion");
-    }
-
-    private static async Task<string> ReadGzipTextAsync(string path)
-    {
-        await using var fileStream = File.OpenRead(path);
-        await using var gzip = new System.IO.Compression.GZipStream(fileStream, System.IO.Compression.CompressionMode.Decompress);
-        using var reader = new StreamReader(gzip);
-        return await reader.ReadToEndAsync();
     }
 }

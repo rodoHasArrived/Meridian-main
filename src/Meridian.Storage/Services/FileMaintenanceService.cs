@@ -175,10 +175,19 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
 
             try
             {
+                if (options.Strategy == RepairStrategy.RecompressOptimal)
+                {
+                    // Changing encoding cannot correct damaged data or establish which bytes were
+                    // authoritative before a checksum mismatch. Re-encoding would publish the damaged
+                    // bytes under a fresh archive checksum and delete the source and its retained
+                    // checksum, after which the same damage reads as healthy. Leave the file as found.
+                    errors.Add($"Unresolved issues for {group.Key}: recompression cannot repair {string.Join(", ", group.Select(issue => issue.Type))}; the file was left unchanged. Restore or repair its evidence, then compress the healthy file.");
+                    continue;
+                }
+
                 var repaired = options.Strategy switch
                 {
                     RepairStrategy.TruncateCorrupted => await TruncateCorruptedAsync(group.Key, recoveryCopies, ct),
-                    RepairStrategy.RecompressOptimal => await RecompressAsync(group.Key, ct),
                     _ => false
                 };
 
@@ -188,14 +197,6 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
                     continue;
                 }
                 filesChanged++;
-
-                if (options.Strategy == RepairStrategy.RecompressOptimal)
-                {
-                    // Changing encoding cannot correct damaged data or establish which bytes
-                    // were authoritative before a checksum mismatch.
-                    errors.Add($"Unresolved issues for {group.Key}: recompression preserves the source content; restore or repair its {string.Join(", ", group.Select(issue => issue.Type))} evidence.");
-                    continue;
-                }
 
                 var remaining = new ConcurrentBag<HealthIssue>();
                 await CheckFileHealthAsync(new FileInfo(group.Key), new HealthCheckOptions(), remaining, ct);
@@ -418,11 +419,21 @@ public sealed partial class FileMaintenanceService : IFileMaintenanceService
         ));
     }
 
+    private static bool IsArchiveBeingAppended(FileInfo file, out FileStream? appendLease)
+    {
+        appendLease = null;
+        return file.Name.EndsWith(".gz", StringComparison.OrdinalIgnoreCase)
+            && !ArchiveAppendLock.TryAcquire(file.FullName, out appendLease);
+    }
+
     private async Task CheckFileHealthAsync(FileInfo file, HealthCheckOptions options, ConcurrentBag<HealthIssue> issues, CancellationToken ct)
     {
-        // Validate checksum if requested
-        if (options.ValidateChecksums)
+        // Validate checksum if requested. An append retires and republishes a .gz archive's sidecar
+        // under the archive append lock; holding it keeps the sidecar and the bytes from one
+        // generation, and an archive being appended right now is checked on the next sweep.
+        if (options.ValidateChecksums && !IsArchiveBeingAppended(file, out var appendLease))
         {
+            using var heldAppendLease = appendLease;
             var checksumFile = file.FullName + ".sha256";
             if (File.Exists(checksumFile))
             {

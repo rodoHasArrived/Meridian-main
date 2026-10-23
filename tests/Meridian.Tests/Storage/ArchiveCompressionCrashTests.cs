@@ -269,6 +269,29 @@ public sealed class ArchiveCompressionCrashTests : TempDirectoryAsyncTestBase
     }
 
     [Fact]
+    public async Task SourceChangedAfterRequiredBackup_RefusesCompressionAndKeepsTheSource()
+    {
+        var path = await CreateSourceAsync();
+        var late = Serialize(BuildTrade(99)) + "\n";
+        var service = new FileMaintenanceService(new StorageOptions { RootPath = TestDataRoot })
+        {
+            // A late writer commits after every backup was taken but before this file is fenced.
+            CompressionCheckpoint = stage =>
+            {
+                if (stage == CompressionPublicationStage.BackupsCompleted)
+                    File.AppendAllText(path, late);
+            }
+        };
+
+        var result = await service.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: true));
+
+        result.Success.Should().BeFalse("the recovery copy would not hold the bytes being compressed");
+        result.Errors.Should().Contain(error => error.Contains("after its required backup"));
+        File.Exists(path + ".gz").Should().BeFalse();
+        File.ReadAllText(path).Should().EndWith(late, "the source and its late write are kept");
+    }
+
+    [Fact]
     public async Task WithdrawnGzipPath_ReplaysTheSurvivingSource()
     {
         var path = await CreateSourceAsync();

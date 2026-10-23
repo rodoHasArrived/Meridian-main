@@ -10,13 +10,16 @@ public static class BankStatementClosingBalanceAuthority
         lines.Where(line => (line.StatementAsOfDate ?? line.TransactionDate) == asOfDate);
 
     /// <summary>
-    /// The latest statement date and highest declared revision supersede earlier statements.
-    /// Within a statement, source line sequence selects the final running balance, including backdated entries.
+    /// The latest statement date and highest declared revision supersede earlier statements; transaction-feed
+    /// deltas never supply or displace a balance. Within a statement, source line sequence selects the final
+    /// running balance, including backdated entries.
     /// Conflicting evidence without sufficient authority remains unavailable.
     /// </summary>
     public static decimal? SelectClosingBalance(IEnumerable<BankStatementLineDto> lines, string? currency = null, DateOnly? throughValueDate = null)
     {
-        var selected = SelectLatestStatement(lines);
+        // Balance authority comes from complete statements only. Transaction-feed deliveries carry no
+        // running balance, so a later feed date must not displace the latest statement's balance.
+        var selected = SelectLatestStatement(lines.Where(static line => line.IsTransactionFeed != true));
         return selected is null ? null : SelectWithinStatement(selected
             .Where(line => currency is null || string.Equals(line.Currency, currency, StringComparison.OrdinalIgnoreCase))
             .Where(line => throughValueDate is null || line.ValueDate <= throughValueDate));

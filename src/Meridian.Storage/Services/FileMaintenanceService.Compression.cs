@@ -102,21 +102,23 @@ public sealed partial class FileMaintenanceService
                 plannedSidecarRemovals.Concat(healthyFiles.Select(file => $"gzip: {file}")).ToList())
             { Deferred = deferred };
 
+        var backupsBySource = new Dictionary<string, string>(StringComparer.Ordinal);
         if (!await CreateRequiredBackupsAsync(healthyFiles, options.BackupBeforeCompression,
-                options.BackupPath, "compression", recoveryCopies, errors, ct))
+                options.BackupPath, "compression", recoveryCopies, errors, ct, backupsBySource))
             return new FileCompressionResult(files.Count - deferred.Count, 0, errors, false)
             { RecoveryCopies = recoveryCopies, Deferred = deferred };
 
         var compressed = 0;
         long bytesBefore = 0;
         long bytesAfter = 0;
+        CompressionCheckpoint?.Invoke(CompressionPublicationStage.BackupsCompleted);
         foreach (var file in healthyFiles)
         {
             ct.ThrowIfCancellationRequested();
             try
             {
                 var sourceLength = new FileInfo(file).Length;
-                if (!await RecompressAsync(file, ct))
+                if (!await RecompressAsync(file, ct, backupsBySource.GetValueOrDefault(file)))
                 {
                     errors.Add($"Compression made no change for {file}.");
                     continue;
@@ -140,7 +142,8 @@ public sealed partial class FileMaintenanceService
 
     private static async Task<bool> CreateRequiredBackupsAsync(
         IEnumerable<string> paths, bool required, string? backupPath, string operation,
-        List<string> recoveryCopies, List<string> errors, CancellationToken ct)
+        List<string> recoveryCopies, List<string> errors, CancellationToken ct,
+        IDictionary<string, string>? backupsBySource = null)
     {
         if (!required)
             return true;
@@ -170,6 +173,8 @@ public sealed partial class FileMaintenanceService
                         stream.Flush(flushToDisk: true);
                     await AtomicFileWriter.SyncDirectoryAsync(Path.GetDirectoryName(backupFile)!, CancellationToken.None);
                     recoveryCopies.Add(backupFile);
+                    if (backupsBySource is not null && string.Equals(source, path, StringComparison.Ordinal))
+                        backupsBySource[path] = backupFile;
                 }
             }
             catch (Exception ex)
@@ -220,7 +225,7 @@ public sealed partial class FileMaintenanceService
     // Per-instance test seam; never shared across maintenance operations or configured by input.
     internal Action<CompressionPublicationStage>? CompressionCheckpoint { get; init; }
 
-    private async Task<bool> RecompressAsync(string filePath, CancellationToken ct)
+    private async Task<bool> RecompressAsync(string filePath, CancellationToken ct, string? requiredBackup = null)
     {
         if (!filePath.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
             return false;
@@ -257,6 +262,15 @@ public sealed partial class FileMaintenanceService
         {
             var sourceChecksum = await ComputeChecksumAsync(source, ct);
             var sourceStamp = SourceStamp(filePath);
+            // Backups are taken for every file before any is fenced, so a late write in between
+            // would be compressed and deleted while the advertised recovery copy holds older bytes.
+            // Under the fence the source cannot change again; refuse unless the backup matches it.
+            if (requiredBackup is not null)
+            {
+                await using var backup = new FileStream(requiredBackup, FileMode.Open, FileAccess.Read, FileShare.Read);
+                if (!string.Equals(await ComputeChecksumAsync(backup, ct), sourceChecksum, StringComparison.Ordinal))
+                    throw new IOException($"Source changed after its required backup was taken; kept the source and refused compression so the recovery copy matches what would be mutated: {filePath}");
+            }
             if (File.Exists(outputPath))
             {
                 // A crash after create-only publication can leave both complete representations.
@@ -386,6 +400,7 @@ public sealed partial class FileMaintenanceService
 
 internal enum CompressionPublicationStage
 {
+    BackupsCompleted,
     StagedVerified,
     Published,
     PublicationSynced,

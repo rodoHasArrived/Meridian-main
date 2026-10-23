@@ -143,6 +143,38 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
     }
 
     [Fact]
+    public async Task CompressedAppendStream_PublishesAMatchingChecksumAndWaitsForAnotherAppender()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot, Compress = true };
+        var batchOptions = new JsonlBatchOptions { BatchSize = 100, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot, ".jsonl.gz"), batchOptions))
+        {
+            await first.AppendAsync(CreateTestEvent("TLT", 1));
+            await first.FlushAsync();
+        }
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl.gz", SearchOption.AllDirectories).Should().ContainSingle().Subject;
+        var health = new FileMaintenanceService(options);
+        var checksumsOnly = new HealthCheckOptions(ValidateChecksums: true, IdentifyCorruption: false);
+        (await health.RunHealthCheckAsync(checksumsOnly)).Issues.Should().BeEmpty(
+            "a configured gzip partition carries its own checksum");
+
+        // Another instance, in this process or another, is appending to the same partition.
+        var otherAppender = new FileStream(ArchiveAppendLock.PathFor(dayFile), FileMode.OpenOrCreate,
+            FileAccess.ReadWrite, FileShare.None);
+        await using var second = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot, ".jsonl.gz"), batchOptions);
+        await second.AppendAsync(CreateTestEvent("TLT", 2));
+        var flush = second.FlushAsync();
+        (await Task.WhenAny(flush, Task.Delay(TimeSpan.FromMilliseconds(400)))).Should().NotBeSameAs(flush,
+            "copying the partition underneath the other appender would drop its member");
+        otherAppender.Dispose();
+        await flush.WaitAsync(TimeSpan.FromSeconds(10));
+
+        (await ReadGzipLinesAsync(dayFile)).Should().HaveCount(2);
+        (await health.RunHealthCheckAsync(checksumsOnly)).Issues.Should().BeEmpty(
+            "the checksum is republished after every committed append");
+    }
+
+    [Fact]
     public async Task CompressedAppendStream_RefusesToAppendAfterATornGzipMember()
     {
         var options = new StorageOptions { RootPath = TestDataRoot, Compress = true };
@@ -543,6 +575,40 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
         await flush.WaitAsync(TimeSpan.FromSeconds(10));
 
         File.Exists(dayFile).Should().BeFalse("the late write extends the archive instead of recreating the source");
+        var replayed = new List<MarketEvent>();
+        await foreach (var evt in new Meridian.Storage.Replay.JsonlReplayer(TestDataRoot).ReadEventsAsync())
+            replayed.Add(evt);
+        replayed.Select(evt => evt.Sequence).Should().Equal(1, 2);
+    }
+
+    [Fact]
+    public async Task CopyOnWriteSink_WaitsOutCompressionInAnotherProcess()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var batchOptions = new JsonlBatchOptions
+        {
+            BatchSize = 1000,
+            Enabled = true,
+            FlushInterval = TimeSpan.FromMinutes(5),
+            WriteMode = JsonlWriteMode.CopyOnWrite
+        };
+        await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await first.AppendAsync(CreateTestEvent("AAPL", 1, ClosedDay));
+            await first.FlushAsync();
+        }
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl").Should().ContainSingle().Subject;
+        // Another process is compressing the source: it holds the writer lock exclusively.
+        JsonlWriterLock.TryAcquireExclusive(dayFile, out var otherProcessCompression).Should().BeTrue();
+
+        await using var second = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions);
+        await second.AppendAsync(CreateTestEvent("AAPL", 2, ClosedDay));
+        var flush = second.FlushAsync();
+        (await Task.WhenAny(flush, Task.Delay(TimeSpan.FromMilliseconds(400)))).Should().NotBeSameAs(flush,
+            "a copy-on-write replacement must not land on a source another process may delete");
+        otherProcessCompression!.Dispose();
+        await flush.WaitAsync(TimeSpan.FromSeconds(10));
+
         var replayed = new List<MarketEvent>();
         await foreach (var evt in new Meridian.Storage.Replay.JsonlReplayer(TestDataRoot).ReadEventsAsync())
             replayed.Add(evt);

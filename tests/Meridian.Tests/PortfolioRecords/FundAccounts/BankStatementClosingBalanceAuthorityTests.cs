@@ -58,6 +58,23 @@ public sealed class BankStatementClosingBalanceAuthorityTests
     }
 
     [Fact]
+    public void SelectClosingBalance_LaterTransactionFeedDate_KeepsTheLatestStatementBalance()
+    {
+        var statement = Line(500m);
+        // A Plaid delivery dated after the statement carries no running balance of its own.
+        var delta = Line(0m) with
+        {
+            AccountId = statement.AccountId,
+            TransactionDate = new(2026, 10, 9),
+            ValueDate = new(2026, 10, 9),
+            ClosingBalance = null,
+            IsTransactionFeed = true
+        };
+
+        BankStatementClosingBalanceAuthority.SelectClosingBalance([statement, delta], "USD").Should().Be(500m);
+    }
+
+    [Fact]
     public void SelectLatestLine_UsesRevisionAndSourceOrdinalForBackdatedFinalRow()
     {
         var line = Line(90m) with { StatementAsOfDate = new(2026, 10, 7), StatementRevision = 1, LineSequence = 99 };
