@@ -2,7 +2,7 @@
 
 # `security_master` schema
 
-- Relations: 116
+- Relations: 120
 - Functions/procedures: 7
 - Triggers: 15
 - Row-level security policies: 0
@@ -832,6 +832,66 @@ erDiagram
         numeric strike
         text put_call
     }
+    security_master_otc_collateral_agreements {
+        uuid collateral_agreement_id PK
+        uuid master_agreement_id FK
+        text currency
+        numeric_28_10_ threshold_ours
+        numeric_28_10_ threshold_theirs
+        numeric_28_10_ minimum_transfer_amount
+        numeric_28_10_ independent_amount
+        numeric_28_10_ rounding_amount
+        text valuation_frequency
+        jsonb eligible_collateral
+        date effective_date
+        date termination_date
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_contracts {
+        uuid contract_id PK
+        uuid security_id FK
+        uuid netting_set_id FK
+        text external_trade_id
+        text direction
+        numeric_28_10_ notional
+        text notional_currency
+        date trade_date
+        date effective_date
+        date termination_date
+        text status
+        text confirmation_reference
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_master_agreements {
+        uuid agreement_id PK
+        text counterparty
+        text counterparty_lei
+        text our_entity
+        uuid our_entity_id
+        text agreement_type
+        date agreement_date
+        text governing_law
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_netting_sets {
+        uuid netting_set_id PK
+        uuid master_agreement_id FK
+        uuid collateral_agreement_id FK
+        text name
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
     security_master_other_security_projection {
         uuid security_id PK
         text display_name
@@ -1562,6 +1622,10 @@ erDiagram
     security_master_option_contract_projection ||--o{ security_master_option_alias_projection : "option_alias_projection_contract_symbol_fkey"
     security_master_option_contract_projection ||--o{ security_master_option_lifecycle_projection : "option_lifecycle_projection_contract_symbol_fkey"
     security_master_option_contract_projection ||--o{ security_master_option_series_projection : "option_series_projection_contract_symbol_fkey"
+    security_master_otc_collateral_agreements ||--o{ security_master_otc_netting_sets : "otc_netting_sets_collateral_agreement_id_fkey"
+    security_master_otc_master_agreements ||--o{ security_master_otc_collateral_agreements : "otc_collateral_agreements_master_agreement_id_fkey"
+    security_master_otc_master_agreements ||--o{ security_master_otc_netting_sets : "otc_netting_sets_master_agreement_id_fkey"
+    security_master_otc_netting_sets ||--o{ security_master_otc_contracts : "otc_contracts_netting_set_id_fkey"
     security_master_projected_cash_flow ||--o{ security_master_reconciliation_result : "reconciliation_result_projected_flow_id_fkey"
     security_master_projection_run ||--o{ security_master_projected_cash_flow : "projected_cash_flow_projection_run_id_fkey"
     security_master_projection_run ||--o{ security_master_projection_run : "projection_run_supersedes_projection_run_id_fkey"
@@ -1580,6 +1644,7 @@ erDiagram
     security_master_securities ||--o{ security_master_fxspot_projection : "fxspot_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_underlying_security_id_fkey"
+    security_master_securities ||--o{ security_master_otc_contracts : "otc_contracts_security_id_fkey"
     security_master_securities ||--o{ security_master_security_alias_revisions : "security_alias_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_aliases : "security_aliases_security_id_fkey"
     security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
@@ -1664,6 +1729,10 @@ erDiagram
 | `option_contract_projection` | table | 14 | `contract_symbol` | 2 | 4 | - |
 | `option_lifecycle_projection` | table | 6 | `contract_symbol` | 1 | 1 | - |
 | `option_series_projection` | table | 6 | `option_chain_id`, `contract_symbol` | 1 | 1 | - |
+| `otc_collateral_agreements` | table | 16 | `collateral_agreement_id` | 1 | 2 | Credit support annexes under a master agreement: thresholds, minimum transfer amount, independent amount, rounding, valuation cadence and eligible collateral with haircuts. |
+| `otc_contracts` | table | 16 | `contract_id` | 2 | 4 | Bilateral contracts: one trade against a counterparty on a Security Master instrument, in a netting set, with its notional, direction, dates and lifecycle status. Many contracts share one instrument. |
+| `otc_master_agreements` | table | 12 | `agreement_id` | 0 | 2 | Master agreements (ISDA, GMRA, GMSLA) between a fund legal entity and a counterparty. Every bilateral contract hangs off one through its netting set. |
+| `otc_netting_sets` | table | 8 | `netting_set_id` | 2 | 2 | Sets of contracts under one master agreement whose exposures net on close-out, optionally margined under one collateral agreement. |
 | `other_security_projection` | table | 10 | `security_id` | 0 | 2 | Relational projection of OtherSecurity asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `outbox_message` | table | 10 | `outbox_message_id` | 0 | 4 | - |
 | `payment_allocation` | table | 10 | `allocation_id` | 3 | 3 | - |

@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 243,
-    "warning": 243
+    "total": 244,
+    "warning": 244
   },
   "failed": false,
   "findings": [
@@ -2177,6 +2177,20 @@
     {
       "details": {
         "columns": [
+          "collateral_agreement_id"
+        ],
+        "constraint": "otc_netting_sets_collateral_agreement_id_fkey",
+        "schema": "security_master",
+        "table": "otc_netting_sets"
+      },
+      "message": "Foreign key security_master.otc_netting_sets.otc_netting_sets_collateral_agreement_id_fkey is not covered by a left-prefix index.",
+      "object": "security_master.otc_netting_sets.otc_netting_sets_collateral_agreement_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "source_event_id"
         ],
         "constraint": "payment_allocation_source_event_id_fkey",
@@ -2655,5 +2669,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "7b8e72fb06f84fc1e785be066b77a4543deab85df8d5a9fee585845583dd504f"
+  "fingerprint": "85ba566194e51c7d8c3b9080f1aff31ffc1193fbf699a49e3837990aa2da0558"
 }
