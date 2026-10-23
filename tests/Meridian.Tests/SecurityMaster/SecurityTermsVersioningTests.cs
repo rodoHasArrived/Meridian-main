@@ -38,6 +38,39 @@ public sealed class SecurityTermsVersioningTests
             .Should().Be(SecurityAssetClassCatalog.GetOrDefault("Bond").TermsVersion);
     }
 
+    [Theory]
+    [InlineData("""{"schemaVersion":1,"maturity":"2030-01-15"}""")]
+    [InlineData("""{"maturity":"2030-01-15","issuerName":"ACME"}""")]
+    [InlineData("""{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":5,"maturity":"2030-01-15"}""")]
+    [InlineData("[]")]
+    public void StampFlat_ByAssetClass_IsTheExplicitVersionOverload_ByteForByte(string json)
+    {
+        SecurityTermsEnvelope.StampFlat(json, "Bond").Should().Be(SecurityTermsEnvelope.StampFlat(json, 1));
+        SecurityTermsEnvelope.StampFlat(json, "StructuredCredit").Should().Be(SecurityTermsEnvelope.StampFlat(json, 2));
+        SecurityTermsEnvelope.StampFlat(json, "Nope").Should().Be(SecurityTermsEnvelope.StampFlat(json, 1));
+    }
+
+    [Fact]
+    public void StampFlat_ExplicitVersion_PlacesTheEnvelopeAfterSchemaVersionOrLast_AndRefusesVersionZero()
+    {
+        Json(SecurityTermsEnvelope.StampFlat("""{"maturity":"2030-01-15","schemaVersion":1,"issuerName":"ACME"}""", 3))
+            .EnumerateObject().Select(static property => property.Name).Should().Equal(
+                "maturity",
+                "schemaVersion",
+                SecurityTermsEnvelope.FormatKey,
+                SecurityTermsEnvelope.AssetClassTermsVersionKey,
+                "issuerName");
+        Json(SecurityTermsEnvelope.StampFlat("""{"maturity":"2030-01-15"}""", 3))
+            .EnumerateObject().Select(static property => property.Name).Should().Equal(
+                "maturity",
+                SecurityTermsEnvelope.FormatKey,
+                SecurityTermsEnvelope.AssetClassTermsVersionKey);
+        SecurityTermsEnvelope.StampFlat("[]", 3).Should().Be("[]");
+
+        var zero = () => SecurityTermsEnvelope.StampFlat("{}", 0);
+        zero.Should().Throw<ArgumentOutOfRangeException>();
+    }
+
     [Fact]
     public void ResolveFormat_TaggedFlatPayloadStampedTwo_IsFlat_NotEconomic()
     {

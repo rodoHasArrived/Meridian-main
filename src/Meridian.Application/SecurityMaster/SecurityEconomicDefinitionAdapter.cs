@@ -89,8 +89,11 @@ internal static class SecurityEconomicDefinitionAdapter
         // legs, a bond's subclass (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys)
         // — so the payload is stamped with FlattenedFromMarkerProperty and a projection rebuilt
         // through this route stays distinguishable from one whose flat terms were always present.
-        var assetSpecificTerms = economic.LegacyAssetSpecificTerms?.Clone()
-            ?? SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms, legacyAssetClass).Payload;
+        // Retained flat terms are read at the class's current terms version (ADR-024); the flattened
+        // branch is already stamped at it.
+        var assetSpecificTerms = economic.LegacyAssetSpecificTerms is { } legacyTerms
+            ? SecurityAssetClassTermsUpgrader.UpgradeForRead(legacyAssetClass, legacyTerms.Clone())
+            : SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms, legacyAssetClass).Payload;
         var primaryIdentifier = economic.Identifiers.FirstOrDefault(identifier => identifier.IsPrimary);
 
         return new SecurityProjectionRecord(

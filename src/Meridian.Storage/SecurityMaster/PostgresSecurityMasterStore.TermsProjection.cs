@@ -115,6 +115,13 @@ public sealed partial class PostgresSecurityMasterStore
             return false;
         }
 
+        // Columns decode the payload at the class's current terms version (ADR-024); the stored blob,
+        // and the schema_version and terms_format columns UpsertProjectionAsync derives from it, are untouched.
+        if (SecurityAssetClassTermsUpgrader.TryUpgradeForRead(record.AssetClass, record.AssetSpecificTerms, out var upgradedTerms))
+        {
+            record = record with { AssetSpecificTerms = upgradedTerms };
+        }
+
         var terms = record.AssetSpecificTerms;
         var profileFields = ResolveProfileFields(descriptor.AssetClass, terms);
         if (!TryBuildTableColumns(

@@ -115,7 +115,13 @@ public sealed class SecurityValidationService : ISecurityValidationService
 
         if (_assetClassValidators.TryGetValidator(record.AssetClass, out var assetClassValidator))
         {
-            issues.AddRange(assetClassValidator.Validate(new SecurityValidationContext(record, evaluatedAt)));
+            // The class rules read the terms at the class's current terms version (ADR-024), the way
+            // every decoder does; the schema and format rules above, and the terms-version notice,
+            // judge the stored payload. Identity steps keep the record as it is.
+            var termsRecord = SecurityAssetClassTermsUpgrader.TryUpgradeForRead(record.AssetClass, record.AssetSpecificTerms, out var upgradedTerms)
+                ? record with { AssetSpecificTerms = upgradedTerms }
+                : record;
+            issues.AddRange(assetClassValidator.Validate(new SecurityValidationContext(termsRecord, evaluatedAt)));
         }
         else
         {
@@ -227,6 +233,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
         }
 
         issues.AddRange(ValidateTermsFormat(record));
+        issues.AddRange(ValidateAssetClassTermsVersion(record));
         return issues;
     }
 
@@ -274,6 +281,45 @@ public sealed class SecurityValidationService : ISecurityValidationService
         }
 
         return [];
+    }
+
+    /// <summary>
+    /// An informational notice for a flat payload stamped (or, unstamped, read as) below its class's
+    /// current terms version: exactly the payloads <see cref="SecurityAssetClassTermsUpgrader"/> reads
+    /// through the class's upgrade steps, among those whose <c>schemaVersion</c> is an integer. It
+    /// measures the backlog of older per-class versions (ADR-024) and never blocks: the record reads
+    /// correctly, and workflow gates drop informational issues.
+    /// </summary>
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidateAssetClassTermsVersion(SecurityProjectionRecord record)
+    {
+        if (!SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade(
+                record.AssetClass,
+                record.AssetSpecificTerms,
+                out var declared,
+                out var current))
+        {
+            return [];
+        }
+
+        var key = SecurityTermsEnvelope.AssetClassTermsVersionKey;
+        var stamped = record.AssetSpecificTerms.TryGetProperty(key, out var stamp)
+                      && stamp.ValueKind == JsonValueKind.Number
+                      && stamp.TryGetInt32(out _);
+        var reading = $"the payload is read through the class's upgrade steps from version {declared} to {current}.";
+        var message = stamped
+            ? $"assetSpecificTerms.{key} is {declared}, but asset class '{record.AssetClass}' is at terms version {current}; {reading}"
+            : $"assetSpecificTerms.{key} is absent or not an integer, so the payload reads as version {declared}, but asset class '{record.AssetClass}' is at terms version {current}; {reading}";
+
+        return
+        [
+            SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Info,
+                "SM_ASSET_CLASS_TERMS_VERSION_BEHIND",
+                "Asset-class terms version is behind the current contract",
+                message,
+                [$"assetSpecificTerms.{key}"],
+                $"No action is needed to read the record. A governed amendment, or any writer that stamps {key} = {current} (SecurityTermsEnvelope.StampFlat), clears this notice.")
+        ];
     }
 
     private static bool IsProfileBackedRecord(SecurityProjectionRecord record)

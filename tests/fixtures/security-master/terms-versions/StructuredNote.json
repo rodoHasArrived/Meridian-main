@@ -1,0 +1,65 @@
+{
+  "assetClass": "StructuredNote",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "barrierLevel",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "couponRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "denomination",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "issueDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "issuerName",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "maturity",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "participationRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "paymentFrequency",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "principalProtectionPct",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "returnCap",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "underlyingDescription",
+          "type": "String",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -331,7 +331,8 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         // may seed the balance; a future-dated scalar leaves the latest eligible schedule point
         // (already resolved above) or the unfactored walk in charge.
         var scalarFactorDate = SecurityTermReader.ReadDate(
-            EnumerateFactorDateSources(security.AssetSpecificTerms), ["factorDate", "currentFactorDate"]);
+            EnumerateFactorDateSources(SecurityAssetClassTermsUpgrader.UpgradeForRead(security.AssetClass, security.AssetSpecificTerms)),
+            ["factorDate", "currentFactorDate"]);
         var scalarFactorApplies = scalarFactorDate is not DateOnly scalarAsOf || scalarAsOf <= asOfDate;
         var scheduledFactor = appliedFactorEntry?.Factor ?? (scalarFactorApplies ? terms.CurrentFactor : null);
         var hasAuthoritativeFactor = scheduledFactor is >= 0m;

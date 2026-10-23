@@ -1,0 +1,45 @@
+{
+  "assetClass": "FxForward",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "baseCurrency",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "forwardRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "notional",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "quoteCurrency",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "settlementType",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "tradeDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "valueDate",
+          "type": "Date",
+          "required": true
+        }
+      ]
+    }
+  ]
+}
