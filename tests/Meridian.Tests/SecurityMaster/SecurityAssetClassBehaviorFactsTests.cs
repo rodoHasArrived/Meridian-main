@@ -36,6 +36,11 @@ public sealed class SecurityAssetClassBehaviorFactsTests
         => Classes(static d => d.QuotesRatesAsFractions).Should().Equal("Deposit");
 
     [Fact]
+    public void TradesAsBilateralContract_IsTheOtcClasses()
+        => Classes(static d => d.TradesAsBilateralContract)
+            .Should().BeEquivalentTo(["Swap", "FxForward", "NonDeliverableForward", "CreditDefaultSwap", "Swaption", "CapFloor", "Repo", "Cfd"]);
+
+    [Fact]
     public void SingleClassBehaviours_ResolveTheClassTheSitesNamed()
     {
         Classes(static d => d.CashFlowBehavior == SecurityCashFlowBehavior.SwapLegs).Should().Equal("Swap");
