@@ -1,5 +1,113 @@
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityPriceUnit["SecurityPriceUnit"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityPricingHierarchyDto["SecurityPricingHierarchyDto"] {
+        +string? AccountId
+        +DateTimeOffset AsOf
+        +IReadOnlyList~PricingHierarchyEntryDto~ Entries
+        +Guid SecurityId
+        +string UpdatedBy
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityProjectionRecord["SecurityProjectionRecord"] {
+        +IReadOnlyList~SecurityAliasDto~ Aliases
+        +string AssetClass
+        +JsonElement AssetSpecificTerms
+        +JsonElement CommonTerms
+        +string Currency
+        +string DisplayName
+        +DateTimeOffset EffectiveFrom
+        +DateTimeOffset? EffectiveTo
+        +IReadOnlyList~SecurityIdentifierDto~ Identifiers
+        +string PrimaryIdentifierKind
+        +string PrimaryIdentifierValue
+        +JsonElement Provenance
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityRawPriceDto["SecurityRawPriceDto"] {
+        +decimal Price
+        +DateTimeOffset PriceAsOf
+        +string SourceId
+        +SecurityPriceUnit Unit
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityRecordProvenance["SecurityRecordProvenance"] {
+        +DateTimeOffset? AsOf
+        +string? Reason
+        +string? SourceRecordId
+        +string SourceSystem
+        +string? UpdatedBy
+    }
+    class Meridian_Contracts_SecurityMaster_SecuritySearchRequest["SecuritySearchRequest"] {
+        +bool ActiveOnly
+        +string? CustomProfileId
+        +string? ProfileFieldKey
+        +string? ProfileFieldValue
+        +int? ProfileVersion
+        +string Query
+        +int Skip
+        +int Take
+    }
+    class Meridian_Contracts_SecurityMaster_SecuritySettlementMethod["SecuritySettlementMethod"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecuritySnapshotRecord["SecuritySnapshotRecord"] {
+        +JsonElement Payload
+        +Guid SecurityId
+        +DateTimeOffset SnapshotTimestamp
+        +long Version
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityStatusDto["SecurityStatusDto"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecuritySummaryDto["SecuritySummaryDto"] {
+        +string AssetClass
+        +string Currency
+        +string DisplayName
+        +string PrimaryIdentifier
+        +Guid SecurityId
+        +SecurityStatusDto Status
+        +long Version
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityTermBlocks["SecurityTermBlocks"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityTermConventionKind["SecurityTermConventionKind"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityTermConventions["SecurityTermConventions"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityTermReader["SecurityTermReader"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityTermsEnvelope["SecurityTermsEnvelope"] {
+        +IReadOnlySet~string~ ReservedKeys
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityTermsFormats["SecurityTermsFormats"] {
+        +IReadOnlyList~string~ All
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityTermsProjectionKind["SecurityTermsProjectionKind"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingGraphDto["SecurityUnderlyingGraphDto"] {
+        +DateTimeOffset AsOfUtc
+        +IReadOnlyList~SecurityUnderlyingLinkDto~ Dependents
+        +IReadOnlyList~string~ Gaps
+        +Guid SecurityId
+        +IReadOnlyList~SecurityUnderlyingLinkDto~ Underlyings
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDeriver["SecurityUnderlyingLinkDeriver"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto["SecurityUnderlyingLinkDto"] {
+        +DateTimeOffset CreatedAt
+        +string CreatedBy
+        +Guid LinkId
+        +string? Notes
+        +string? Reference
+        +SecurityUnderlyingRole Role
+        +Guid SecurityId
+        +SecurityUnderlyingLinkSource Source
+        +Guid? UnderlyingSecurityId
+        +DateTimeOffset ValidFrom
+        +DateTimeOffset? ValidTo
+        +decimal? Weight
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkSource["SecurityUnderlyingLinkSource"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole["SecurityUnderlyingRole"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto["SecurityValidationGateResultDto"] {
         +bool IsBlocked
         +bool IsResolved
@@ -319,6 +427,12 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_SecurityProjectionRecord --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
+    Meridian_Contracts_SecurityMaster_SecurityRawPriceDto --> Meridian_Contracts_SecurityMaster_SecurityPriceUnit
+    Meridian_Contracts_SecurityMaster_SecuritySummaryDto --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
+    Meridian_Contracts_SecurityMaster_SecurityUnderlyingGraphDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto
+    Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkSource
+    Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole
     Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationReportDto
     Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto
     Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto

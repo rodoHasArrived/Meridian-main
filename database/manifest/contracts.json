@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "3ed1d0051e0535e4c442d58eb62f1e4b20bc0b3f77a6c47708ba4b617a9dc4fd",
+      "fingerprint": "ea00a977c2534d649ac7ab015357d706beea772522127a40961bb6639fa8fb37",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -477,6 +477,15 @@
         "Meridian.Contracts.Banking.RecordPaymentBankEvidenceRequest",
         "Meridian.Contracts.Banking.RejectPaymentRequest",
         "Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest",
+        "Meridian.Contracts.Calendars.BusinessDayAdjustment",
+        "Meridian.Contracts.Calendars.BusinessDayCalendars",
+        "Meridian.Contracts.Calendars.BusinessDayConvention",
+        "Meridian.Contracts.Calendars.CalendarCoverage",
+        "Meridian.Contracts.Calendars.HolidayBusinessDayCalendar",
+        "Meridian.Contracts.Calendars.IBusinessDayCalendar",
+        "Meridian.Contracts.Calendars.IBusinessDayCalendarSource",
+        "Meridian.Contracts.Calendars.JointBusinessDayCalendar",
+        "Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource",
         "Meridian.Contracts.Catalog.CanonicalSymbolAliasDefinition",
         "Meridian.Contracts.Catalog.CanonicalSymbolDefinition",
         "Meridian.Contracts.Catalog.CatalogConfiguration",
@@ -1632,6 +1641,8 @@
         "Meridian.Contracts.SecurityMaster.DataVendorEntitlementStatus",
         "Meridian.Contracts.SecurityMaster.DayCountConvention",
         "Meridian.Contracts.SecurityMaster.DayCountConventions",
+        "Meridian.Contracts.SecurityMaster.DayCountPeriodContext",
+        "Meridian.Contracts.SecurityMaster.DayCountReferencePeriod",
         "Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest",
         "Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest",
         "Meridian.Contracts.SecurityMaster.EconomicTermsSchema",
@@ -1707,6 +1718,26 @@
         "Meridian.Contracts.SecurityMaster.ResolveConflictRequest",
         "Meridian.Contracts.SecurityMaster.ResolveCorporateActionConflictRequestDto",
         "Meridian.Contracts.SecurityMaster.ResolveSecurityRequest",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator",
+        "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod",
+        "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodId",
+        "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit",
         "Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses",
         "Meridian.Contracts.SecurityMaster.SecurityAliasDto",
         "Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException",
@@ -3851,7 +3882,7 @@
       "directories": [
         "src/Meridian.Contracts/SecurityMaster"
       ],
-      "fingerprint": "3b587d44be2065924781b94bb262a2724c8af029547f2d8364062d2deff55421",
+      "fingerprint": "383147533d3ebe6d4942e01f1203e0a2f917b08c1798b07f57d7e4a60610562a",
       "id": "security-master-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.SecurityMaster"
@@ -3970,6 +4001,8 @@
         "Meridian.Contracts.SecurityMaster.DataVendorEntitlementStatus",
         "Meridian.Contracts.SecurityMaster.DayCountConvention",
         "Meridian.Contracts.SecurityMaster.DayCountConventions",
+        "Meridian.Contracts.SecurityMaster.DayCountPeriodContext",
+        "Meridian.Contracts.SecurityMaster.DayCountReferencePeriod",
         "Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest",
         "Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest",
         "Meridian.Contracts.SecurityMaster.EconomicTermsSchema",
@@ -4045,6 +4078,26 @@
         "Meridian.Contracts.SecurityMaster.ResolveConflictRequest",
         "Meridian.Contracts.SecurityMaster.ResolveCorporateActionConflictRequestDto",
         "Meridian.Contracts.SecurityMaster.ResolveSecurityRequest",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator",
+        "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod",
+        "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodId",
+        "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit",
         "Meridian.Contracts.SecurityMaster.SecurityAccountingInstrumentClasses",
         "Meridian.Contracts.SecurityMaster.SecurityAliasDto",
         "Meridian.Contracts.SecurityMaster.SecurityAliasHistoryConflictException",
@@ -4223,7 +4276,7 @@
       ]
     }
   ],
-  "fingerprint": "dab7ea845ca33f5fb8a578e75d322fc9dbc52f6590920e8ff70043b60480ef58",
+  "fingerprint": "ebe7ad07d0a38bf4c493cf150668e835a4e090b5a70d849ce2fce04cd61b09f4",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4793,6 +4846,25 @@
         "Meridian.Contracts.Banking.RecordPaymentBankEvidenceRequest",
         "Meridian.Contracts.Banking.RejectPaymentRequest",
         "Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest"
+      ]
+    },
+    {
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "fingerprint": "2dc04bc44452941a745a5d60e6a1a262731acf8ec24e090b37223bcaeef4d064",
+      "mapped_schemas": [],
+      "namespace": "Meridian.Contracts.Calendars",
+      "object_ids": [
+        "Meridian.Contracts.Calendars.BusinessDayAdjustment",
+        "Meridian.Contracts.Calendars.BusinessDayCalendars",
+        "Meridian.Contracts.Calendars.BusinessDayConvention",
+        "Meridian.Contracts.Calendars.CalendarCoverage",
+        "Meridian.Contracts.Calendars.HolidayBusinessDayCalendar",
+        "Meridian.Contracts.Calendars.IBusinessDayCalendar",
+        "Meridian.Contracts.Calendars.IBusinessDayCalendarSource",
+        "Meridian.Contracts.Calendars.JointBusinessDayCalendar",
+        "Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource"
       ]
     },
     {
@@ -6228,7 +6300,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "09f4fa51134225059b047e34676faa044860ea1c831a1a6f17dcd267c7bb48d9",
+      "fingerprint": "670a446b01765231b2a47465bf587f4cd1a1808f473c8f3afb41da6254e4ea3d",
       "mapped_schemas": [
         "security_master"
       ],
@@ -6347,6 +6419,8 @@
         "Meridian.Contracts.SecurityMaster.DataVendorEntitlementStatus",
         "Meridian.Contracts.SecurityMaster.DayCountConvention",
         "Meridian.Contracts.SecurityMaster.DayCountConventions",
+        "Meridian.Contracts.SecurityMaster.DayCountPeriodContext",
+        "Meridian.Contracts.SecurityMaster.DayCountReferencePeriod",
         "Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest",
         "Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest",
         "Meridian.Contracts.SecurityMaster.EconomicTermsSchema",
@@ -6594,6 +6668,39 @@
         "Meridian.Contracts.SecurityMaster.UpsertOtcMasterAgreementRequest",
         "Meridian.Contracts.SecurityMaster.UpsertOtcNettingSetRequest",
         "Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest"
+      ]
+    },
+    {
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "fingerprint": "26f6c0d940f5b8ba928ccaf1df64dd40f59843815d47e1d703a39f21ae3f0fe7",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "object_ids": [
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator",
+        "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod",
+        "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodId",
+        "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit"
       ]
     },
     {
@@ -72277,6 +72384,568 @@
         {
           "line": 61,
           "path": "src/Meridian.Contracts/Banking/BankingModels.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "5456d9cc52b63902ceb9022251c738b2064a398c5405a86f3d44056f682e688e",
+      "full_name": "Meridian.Contracts.Calendars.BusinessDayAdjustment",
+      "id": "Meridian.Contracts.Calendars.BusinessDayAdjustment",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Calendar",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "IBusinessDayCalendar?",
+          "source_line": 13,
+          "type": "IBusinessDayCalendar?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Convention",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "BusinessDayConvention",
+          "source_line": 13,
+          "type": "BusinessDayConvention"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Unadjusted",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "BusinessDayAdjustment",
+          "source_line": 16,
+          "type": "BusinessDayAdjustment"
+        }
+      ],
+      "name": "BusinessDayAdjustment",
+      "namespace": "Meridian.Contracts.Calendars",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Calendars.BusinessDayAdjustment",
+      "references": [
+        "Meridian.Contracts.Calendars.BusinessDayConvention",
+        "Meridian.Contracts.Calendars.IBusinessDayCalendar"
+      ],
+      "source": {
+        "line": 13,
+        "path": "src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs"
+      },
+      "sources": [
+        {
+          "line": 13,
+          "path": "src/Meridian.Contracts/Calendars/BusinessDayAdjustment.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "384eefb6b69f749d899168eff426337c9828ef80f2805ef346cd0e2d40cc1121",
+      "full_name": "Meridian.Contracts.Calendars.BusinessDayCalendars",
+      "id": "Meridian.Contracts.Calendars.BusinessDayCalendars",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "WeekendsOnly",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IBusinessDayCalendar",
+          "source_line": 38,
+          "type": "IBusinessDayCalendar"
+        }
+      ],
+      "name": "BusinessDayCalendars",
+      "namespace": "Meridian.Contracts.Calendars",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Calendars.BusinessDayCalendars",
+      "references": [
+        "Meridian.Contracts.Calendars.IBusinessDayCalendar"
+      ],
+      "source": {
+        "line": 23,
+        "path": "src/Meridian.Contracts/Calendars/BusinessDayCalendars.cs"
+      },
+      "sources": [
+        {
+          "line": 23,
+          "path": "src/Meridian.Contracts/Calendars/BusinessDayCalendars.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [
+        {
+          "explicit_value": true,
+          "name": "Unadjusted",
+          "source_line": 13,
+          "value": "0"
+        },
+        {
+          "explicit_value": false,
+          "name": "Following",
+          "source_line": 16,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "ModifiedFollowing",
+          "source_line": 22,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Preceding",
+          "source_line": 25,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "ModifiedPreceding",
+          "source_line": 31,
+          "value": null
+        }
+      ],
+      "fingerprint": "6303f312488e79f2a32bfafe1ab387a72520383f562b720eb923733e4e0ead45",
+      "full_name": "Meridian.Contracts.Calendars.BusinessDayConvention",
+      "id": "Meridian.Contracts.Calendars.BusinessDayConvention",
+      "kind": "enum",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "BusinessDayConvention",
+      "namespace": "Meridian.Contracts.Calendars",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Calendars.BusinessDayConvention",
+      "references": [],
+      "source": {
+        "line": 10,
+        "path": "src/Meridian.Contracts/Calendars/BusinessDayConvention.cs"
+      },
+      "sources": [
+        {
+          "line": 10,
+          "path": "src/Meridian.Contracts/Calendars/BusinessDayConvention.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record_struct",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "0383818b277839037aab32d405af0a7d6aa2bbe2d798137f68ba02e8a825ba51",
+      "full_name": "Meridian.Contracts.Calendars.CalendarCoverage",
+      "id": "Meridian.Contracts.Calendars.CalendarCoverage",
+      "kind": "record_struct",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "From",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 15,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "To",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 15,
+          "type": "DateOnly?"
+        }
+      ],
+      "name": "CalendarCoverage",
+      "namespace": "Meridian.Contracts.Calendars",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Calendars.CalendarCoverage",
+      "references": [],
+      "source": {
+        "line": 15,
+        "path": "src/Meridian.Contracts/Calendars/CalendarCoverage.cs"
+      },
+      "sources": [
+        {
+          "line": 15,
+          "path": "src/Meridian.Contracts/Calendars/CalendarCoverage.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "IBusinessDayCalendar"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "7f8aef8a71a32dbd132b8aeebfb312d4ab9dd5cc297940f1e14d7939a71d6635",
+      "full_name": "Meridian.Contracts.Calendars.HolidayBusinessDayCalendar",
+      "id": "Meridian.Contracts.Calendars.HolidayBusinessDayCalendar",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CalendarId",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "string",
+          "source_line": 83,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ContentHash",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "string",
+          "source_line": 98,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Coverage",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "CalendarCoverage",
+          "source_line": 95,
+          "type": "CalendarCoverage"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "DateOnly",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Holidays",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<DateOnly>",
+          "source_line": 92,
+          "type": "IReadOnlyList<DateOnly>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Version",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "int",
+          "source_line": 86,
+          "type": "int"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "DayOfWeek",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "WeekendDays",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<DayOfWeek>",
+          "source_line": 89,
+          "type": "IReadOnlyList<DayOfWeek>"
+        }
+      ],
+      "name": "HolidayBusinessDayCalendar",
+      "namespace": "Meridian.Contracts.Calendars",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Calendars.HolidayBusinessDayCalendar",
+      "references": [
+        "Meridian.Contracts.Calendars.CalendarCoverage",
+        "Meridian.Contracts.Calendars.IBusinessDayCalendar"
+      ],
+      "source": {
+        "line": 22,
+        "path": "src/Meridian.Contracts/Calendars/HolidayBusinessDayCalendar.cs"
+      },
+      "sources": [
+        {
+          "line": 22,
+          "path": "src/Meridian.Contracts/Calendars/HolidayBusinessDayCalendar.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "19f01ff2a0bf461c96470ad9fae23ad2f429f937f75e05fdf735a77fa81c0c96",
+      "full_name": "Meridian.Contracts.Calendars.IBusinessDayCalendar",
+      "id": "Meridian.Contracts.Calendars.IBusinessDayCalendar",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IBusinessDayCalendar",
+      "namespace": "Meridian.Contracts.Calendars",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Calendars.IBusinessDayCalendar",
+      "references": [],
+      "source": {
+        "line": 11,
+        "path": "src/Meridian.Contracts/Calendars/IBusinessDayCalendar.cs"
+      },
+      "sources": [
+        {
+          "line": 11,
+          "path": "src/Meridian.Contracts/Calendars/IBusinessDayCalendar.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "service_contract",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "5afdb13411622b8c9567252a22f791457aa66c4c15084e6ff21ac5e886073e29",
+      "full_name": "Meridian.Contracts.Calendars.IBusinessDayCalendarSource",
+      "id": "Meridian.Contracts.Calendars.IBusinessDayCalendarSource",
+      "kind": "interface",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "IBusinessDayCalendarSource",
+      "namespace": "Meridian.Contracts.Calendars",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Calendars.IBusinessDayCalendarSource",
+      "references": [],
+      "source": {
+        "line": 11,
+        "path": "src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs"
+      },
+      "sources": [
+        {
+          "line": 11,
+          "path": "src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "IBusinessDayCalendar"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "296d579de2d7fdbe2d67c24fb3ac0821405d15b9d6a39a9e5e01a60f1fae941d",
+      "full_name": "Meridian.Contracts.Calendars.JointBusinessDayCalendar",
+      "id": "Meridian.Contracts.Calendars.JointBusinessDayCalendar",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CalendarId",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "string",
+          "source_line": 60,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ContentHash",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "string",
+          "source_line": 63,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Coverage",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "CalendarCoverage",
+          "source_line": 66,
+          "type": "CalendarCoverage"
+        }
+      ],
+      "name": "JointBusinessDayCalendar",
+      "namespace": "Meridian.Contracts.Calendars",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Calendars.JointBusinessDayCalendar",
+      "references": [
+        "Meridian.Contracts.Calendars.CalendarCoverage",
+        "Meridian.Contracts.Calendars.IBusinessDayCalendar"
+      ],
+      "source": {
+        "line": 14,
+        "path": "src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs"
+      },
+      "sources": [
+        {
+          "line": 14,
+          "path": "src/Meridian.Contracts/Calendars/JointBusinessDayCalendar.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "IBusinessDayCalendarSource"
+      ],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "4a05dc31ca525a70214306874774dd8ea5f5f9b77b70240ead04fa423c56b149",
+      "full_name": "Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource",
+      "id": "Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "StaticBusinessDayCalendarSource",
+      "namespace": "Meridian.Contracts.Calendars",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Calendars.StaticBusinessDayCalendarSource",
+      "references": [
+        "Meridian.Contracts.Calendars.IBusinessDayCalendarSource"
+      ],
+      "source": {
+        "line": 27,
+        "path": "src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs"
+      },
+      "sources": [
+        {
+          "line": 27,
+          "path": "src/Meridian.Contracts/Calendars/IBusinessDayCalendarSource.cs"
         }
       ],
       "type_parameters": []
@@ -228182,71 +228851,71 @@
         {
           "explicit_value": false,
           "name": "Actual360",
-          "source_line": 11,
+          "source_line": 13,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Actual365",
-          "source_line": 14,
+          "source_line": 16,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Thirty360",
-          "source_line": 17,
+          "source_line": 19,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Business252",
-          "source_line": 20,
+          "source_line": 22,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "ActualActualIsda",
-          "source_line": 23,
+          "source_line": 25,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "ThirtyE360",
-          "source_line": 26,
+          "source_line": 28,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "ThirtyE360Isda",
-          "source_line": 29,
+          "source_line": 31,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "ActualActualIcma",
-          "source_line": 32,
+          "source_line": 34,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Nl365",
-          "source_line": 35,
+          "source_line": 37,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Actual36525",
-          "source_line": 38,
+          "source_line": 40,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Unknown",
-          "source_line": 41,
+          "source_line": 43,
           "value": null
         }
       ],
-      "fingerprint": "cde063b285d7d46616e3cd621c79dd2d8b7321e055c033b798451544c341fd1e",
+      "fingerprint": "7680dbe300a8ada0c9892e0bc2590128945cb6510a5f7eb5459b4b5d637828ba",
       "full_name": "Meridian.Contracts.SecurityMaster.DayCountConvention",
       "id": "Meridian.Contracts.SecurityMaster.DayCountConvention",
       "kind": "enum",
@@ -228260,12 +228929,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.DayCountConvention",
       "references": [],
       "source": {
-        "line": 8,
+        "line": 10,
         "path": "src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs"
       },
       "sources": [
         {
-          "line": 8,
+          "line": 10,
           "path": "src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs"
         }
       ],
@@ -228284,7 +228953,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "241c2799f1fa284622ac11658f90d5cb3ddfed17f7e398b0730bedac187114e9",
+      "fingerprint": "336137f6e4ec8416bb76f5ecb57763e2183d906f64c5cc8ff27afb3cbf5002cc",
       "full_name": "Meridian.Contracts.SecurityMaster.DayCountConventions",
       "id": "Meridian.Contracts.SecurityMaster.DayCountConventions",
       "kind": "class",
@@ -228298,13 +228967,179 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.DayCountConventions",
       "references": [],
       "source": {
-        "line": 72,
+        "line": 78,
         "path": "src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs"
       },
       "sources": [
         {
-          "line": 72,
+          "line": 78,
           "path": "src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "3723234424be41f22da9fd8ae1aead71cf42e2532248e5e864b0f54717ad3958",
+      "full_name": "Meridian.Contracts.SecurityMaster.DayCountPeriodContext",
+      "id": "Meridian.Contracts.SecurityMaster.DayCountPeriodContext",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsBusinessDay",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "Func<DateOnly, bool>?",
+          "source_line": 27,
+          "type": "Func<DateOnly, bool>?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PeriodsPerYear",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "int?",
+          "source_line": 25,
+          "type": "int?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "DayCountReferencePeriod",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReferencePeriods",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<DayCountReferencePeriod>",
+          "source_line": 24,
+          "type": "IReadOnlyList<DayCountReferencePeriod>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TerminationDate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 26,
+          "type": "DateOnly?"
+        }
+      ],
+      "name": "DayCountPeriodContext",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.DayCountPeriodContext",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.DayCountReferencePeriod"
+      ],
+      "source": {
+        "line": 23,
+        "path": "src/Meridian.Contracts/SecurityMaster/DayCountPeriodContext.cs"
+      },
+      "sources": [
+        {
+          "line": 23,
+          "path": "src/Meridian.Contracts/SecurityMaster/DayCountPeriodContext.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record_struct",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "3264cfa687463a4dfec402aecfb258b1929aa17dbc22752b842c6d0c01767402",
+      "full_name": "Meridian.Contracts.SecurityMaster.DayCountReferencePeriod",
+      "id": "Meridian.Contracts.SecurityMaster.DayCountReferencePeriod",
+      "kind": "record_struct",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "End",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 9,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Start",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 9,
+          "type": "DateOnly"
+        }
+      ],
+      "name": "DayCountReferencePeriod",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.DayCountReferencePeriod",
+      "references": [],
+      "source": {
+        "line": 9,
+        "path": "src/Meridian.Contracts/SecurityMaster/DayCountPeriodContext.cs"
+      },
+      "sources": [
+        {
+          "line": 9,
+          "path": "src/Meridian.Contracts/SecurityMaster/DayCountPeriodContext.cs"
         }
       ],
       "type_parameters": []
@@ -237196,6 +238031,1754 @@
         {
           "line": 3,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityQueries.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Anchored",
+          "source_line": 21,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Compounded",
+          "source_line": 28,
+          "value": null
+        }
+      ],
+      "fingerprint": "71b93c75800ce426bf75ed74ca498f8c192f08d561ca67322e1467c699dfc080",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode",
+      "kind": "enum",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ScheduleAnchorMode",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode",
+      "references": [],
+      "source": {
+        "line": 18,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs"
+      },
+      "sources": [
+        {
+          "line": 18,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Accrual",
+          "source_line": 84,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "EffectiveDate",
+          "source_line": 87,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "TerminationDate",
+          "source_line": 90,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Payment",
+          "source_line": 93,
+          "value": null
+        }
+      ],
+      "fingerprint": "cf2e536a83e751272e33b19d08c53acf9cb7a6962a3d20c515612589cdd8d1ff",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose",
+      "kind": "enum",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ScheduleCalendarPurpose",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose",
+      "references": [],
+      "source": {
+        "line": 81,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs"
+      },
+      "sources": [
+        {
+          "line": 81,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "4bb1eb7ab7182fefe6ea165af27e9558ffad7cd8994cbad67ea152b009165155",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CalendarId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 100,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ContentHash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 100,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Purpose",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ScheduleCalendarPurpose",
+          "source_line": 100,
+          "type": "ScheduleCalendarPurpose"
+        }
+      ],
+      "name": "ScheduleCalendarUsage",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarPurpose"
+      ],
+      "source": {
+        "line": 100,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs"
+      },
+      "sources": [
+        {
+          "line": 100,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "fd61f5ff0973b485fcd7f0fbf7cbf8e73ded14d7dc74e7045134cdd3f7f257b6",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount",
+      "kind": "class",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ScheduleDayCount",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDayCount",
+      "references": [],
+      "source": {
+        "line": 16,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs"
+      },
+      "sources": [
+        {
+          "line": 16,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleDayCount.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "a1d435407aca144e73da2890303c8434104ac9b8bd9898345deba8db3000135c",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CalendarId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 78,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Code",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ScheduleDiagnosticCode",
+          "source_line": 78,
+          "type": "ScheduleDiagnosticCode"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Date",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 78,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Message",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 78,
+          "type": "string"
+        }
+      ],
+      "name": "ScheduleDiagnostic",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode"
+      ],
+      "source": {
+        "line": 78,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs"
+      },
+      "sources": [
+        {
+          "line": 78,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "CalendarCoverageExceeded",
+          "source_line": 70,
+          "value": null
+        }
+      ],
+      "fingerprint": "e89c5751cc1bcf61a8d0a09d51623a4d6a3496e8b0c2041b3bd51e89ae2ae2f9",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode",
+      "kind": "enum",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ScheduleDiagnosticCode",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnosticCode",
+      "references": [],
+      "source": {
+        "line": 67,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs"
+      },
+      "sources": [
+        {
+          "line": 67,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Forward",
+          "source_line": 11,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Backward",
+          "source_line": 14,
+          "value": null
+        }
+      ],
+      "fingerprint": "00ffdcf8f10ac7e750feae0d52b933511051971e28578ed22f9e2b729528db19",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection",
+      "kind": "enum",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ScheduleDirection",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection",
+      "references": [],
+      "source": {
+        "line": 8,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs"
+      },
+      "sources": [
+        {
+          "line": 8,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "0f223346c38ef375a4cba531ba0fe15a31dea7ba0bfb28015914d208bacadf0e",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Code",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ScheduleFailureCode",
+          "source_line": 64,
+          "type": "ScheduleFailureCode"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Date",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 64,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Message",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 64,
+          "type": "string"
+        }
+      ],
+      "name": "ScheduleFailure",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode"
+      ],
+      "source": {
+        "line": 64,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs"
+      },
+      "sources": [
+        {
+          "line": 64,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "InvalidPeriodLimit",
+          "source_line": 9,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "NegativePaymentLag",
+          "source_line": 12,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "TermTenorDisallowsRegularDates",
+          "source_line": 15,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "TenorNotAllowedForDirection",
+          "source_line": 18,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "RollNotAllowedForTenor",
+          "source_line": 21,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "CompoundedModeRestricted",
+          "source_line": 24,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "RegularDateOutOfRange",
+          "source_line": 27,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "DirectionConflictsWithRegularDates",
+          "source_line": 30,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "AdjustmentRequiresCalendar",
+          "source_line": 33,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "PaymentLagRequiresCalendar",
+          "source_line": 36,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "AnchorNotOnRollDay",
+          "source_line": 39,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "RegularDatesNotOnGrid",
+          "source_line": 42,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "DoesNotFitRegularGrid",
+          "source_line": 45,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "PeriodLimitExceeded",
+          "source_line": 48,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "AdjustedPeriodCollapsed",
+          "source_line": 51,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "InvalidSpecification",
+          "source_line": 54,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "BusinessDayAdjustmentFailed",
+          "source_line": 57,
+          "value": null
+        }
+      ],
+      "fingerprint": "d2e52694a6c3d199916250a171561620516ad4e0b5f2637518db9212daf2121c",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode",
+      "kind": "enum",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ScheduleFailureCode",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailureCode",
+      "references": [],
+      "source": {
+        "line": 6,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs"
+      },
+      "sources": [
+        {
+          "line": 6,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "result",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "7362f2bdab1a823170ab55e578d99d1c061c17fdbdb812081947f106e9a65c63",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "ScheduleCalendarUsage",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "CalendarsUsed",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<ScheduleCalendarUsage>",
+          "source_line": 116,
+          "type": "IReadOnlyList<ScheduleCalendarUsage>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "ScheduleDiagnostic",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Diagnostics",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<ScheduleDiagnostic>",
+          "source_line": 115,
+          "type": "IReadOnlyList<ScheduleDiagnostic>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Failure",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "ScheduleFailure?",
+          "source_line": 114,
+          "type": "ScheduleFailure?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "SchedulePeriod",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Periods",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<SchedulePeriod>",
+          "source_line": 113,
+          "type": "IReadOnlyList<SchedulePeriod>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Spec",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ScheduleSpec",
+          "source_line": 112,
+          "type": "ScheduleSpec"
+        }
+      ],
+      "name": "ScheduleGenerationResult",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerationResult",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleCalendarUsage",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDiagnostic",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleFailure",
+        "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec"
+      ],
+      "source": {
+        "line": 111,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs"
+      },
+      "sources": [
+        {
+          "line": 111,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerationResult.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "1fbedd318b9c5fa78ab9c7098f927f5a6d58c1cb248411f9afda8682a332c5ca",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator",
+      "kind": "class",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ScheduleGenerator",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": true,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleGenerator",
+      "references": [],
+      "source": {
+        "line": 7,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Adjustment.cs"
+      },
+      "sources": [
+        {
+          "line": 7,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Adjustment.cs"
+        },
+        {
+          "line": 29,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.cs"
+        },
+        {
+          "line": 7,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleGenerator.Validation.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "3e754decaa6567e019d8e854d1b5855eae463e9091f8b3e7ca528a082de1bf37",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccrualEnd",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 51,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccrualStart",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 50,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "IsFinal",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 55,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Kind",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "SchedulePeriodKind",
+          "source_line": 53,
+          "type": "SchedulePeriodKind"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PaymentDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 52,
+          "type": "DateOnly"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "DayCountReferencePeriod",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReferencePeriods",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<DayCountReferencePeriod>",
+          "source_line": 54,
+          "type": "IReadOnlyList<DayCountReferencePeriod>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Sequence",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 47,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "UnadjustedEnd",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 49,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "UnadjustedStart",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 48,
+          "type": "DateOnly"
+        }
+      ],
+      "name": "SchedulePeriod",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriod",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.DayCountReferencePeriod",
+        "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind"
+      ],
+      "source": {
+        "line": 46,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs"
+      },
+      "sources": [
+        {
+          "line": 46,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "ff7cc097949b660829f2ab514cb13fe90ec0c3001ffbe75b69f9089e8286b36a",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodId",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodId",
+      "kind": "class",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "SchedulePeriodId",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodId",
+      "references": [],
+      "source": {
+        "line": 24,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs"
+      },
+      "sources": [
+        {
+          "line": 24,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Regular",
+          "source_line": 10,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Term",
+          "source_line": 13,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "ShortInitialStub",
+          "source_line": 16,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "LongInitialStub",
+          "source_line": 19,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "ShortFinalStub",
+          "source_line": 22,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "LongFinalStub",
+          "source_line": 25,
+          "value": null
+        }
+      ],
+      "fingerprint": "bed4c16bae5069cd5ad20f5daaf9a06fec76f0d135e5ac41d0c397c7c917fb3f",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind",
+      "kind": "enum",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "SchedulePeriodKind",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.SchedulePeriodKind",
+      "references": [],
+      "source": {
+        "line": 7,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs"
+      },
+      "sources": [
+        {
+          "line": 7,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriod.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record_struct",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "7e5305240528890cfcfc9d534bf98f37254ed6ba05f4ec3954700e0f4d0647e0",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll",
+      "kind": "record_struct",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AnchorDay",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "ScheduleRoll",
+          "source_line": 42,
+          "type": "ScheduleRoll"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DayOfMonth",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "int",
+          "source_line": 73,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EndOfMonth",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "ScheduleRoll",
+          "source_line": 45,
+          "type": "ScheduleRoll"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Imm",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "ScheduleRoll",
+          "source_line": 48,
+          "type": "ScheduleRoll"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Kind",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "ScheduleRollKind",
+          "source_line": 70,
+          "type": "ScheduleRollKind"
+        }
+      ],
+      "name": "ScheduleRoll",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind"
+      ],
+      "source": {
+        "line": 33,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs"
+      },
+      "sources": [
+        {
+          "line": 33,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "AnchorDay",
+          "source_line": 11,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "FixedDay",
+          "source_line": 14,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "EndOfMonth",
+          "source_line": 17,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Imm",
+          "source_line": 20,
+          "value": null
+        }
+      ],
+      "fingerprint": "2af41159f15c5ee8b10acc5055f4feca19447319c99df59fff120751803da0d2",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind",
+      "kind": "enum",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ScheduleRollKind",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRollKind",
+      "references": [],
+      "source": {
+        "line": 8,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs"
+      },
+      "sources": [
+        {
+          "line": 8,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleRoll.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "287967d03e65ecbdb1634dd7772f0003cbade585f78fa7aa05caefddba80228d",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccrualAdjustment",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "BusinessDayAdjustment?",
+          "source_line": 87,
+          "type": "BusinessDayAdjustment?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "ScheduleAnchorMode.Anchored",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AnchorMode",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ScheduleAnchorMode",
+          "source_line": 82,
+          "type": "ScheduleAnchorMode"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "ScheduleDirection.Forward",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Direction",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ScheduleDirection",
+          "source_line": 81,
+          "type": "ScheduleDirection"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EffectiveDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 78,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EffectiveDateAdjustment",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "BusinessDayAdjustment?",
+          "source_line": 89,
+          "type": "BusinessDayAdjustment?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "FirstRegularDate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 85,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "LastRegularDate",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly?",
+          "source_line": 86,
+          "type": "DateOnly?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "ScheduleSpec.DefaultMaxPeriods",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "MaxPeriods",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "int?",
+          "source_line": 92,
+          "type": "int?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PaymentAdjustment",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "BusinessDayAdjustment?",
+          "source_line": 88,
+          "type": "BusinessDayAdjustment?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "0",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PaymentLagBusinessDays",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "int",
+          "source_line": 91,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "default",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Roll",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ScheduleRoll",
+          "source_line": 83,
+          "type": "ScheduleRoll"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "ScheduleStubPolicy.Short",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "StubPolicy",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ScheduleStubPolicy",
+          "source_line": 84,
+          "type": "ScheduleStubPolicy"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Tenor",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "ScheduleTenor",
+          "source_line": 80,
+          "type": "ScheduleTenor"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TerminationDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 79,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TerminationDateAdjustment",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "BusinessDayAdjustment?",
+          "source_line": 90,
+          "type": "BusinessDayAdjustment?"
+        }
+      ],
+      "name": "ScheduleSpec",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleSpec",
+      "references": [
+        "Meridian.Contracts.Calendars.BusinessDayAdjustment",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleAnchorMode",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleDirection",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleRoll",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy",
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor"
+      ],
+      "source": {
+        "line": 77,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs"
+      },
+      "sources": [
+        {
+          "line": 77,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Short",
+          "source_line": 36,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Long",
+          "source_line": 39,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "RequireRegular",
+          "source_line": 42,
+          "value": null
+        }
+      ],
+      "fingerprint": "00a300409fd691c5c467d7c106d04c3007fc8d935a319d49897d22cd3d2ecd09",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy",
+      "kind": "enum",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ScheduleStubPolicy",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleStubPolicy",
+      "references": [],
+      "source": {
+        "line": 33,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs"
+      },
+      "sources": [
+        {
+          "line": 33,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [
+        "IEquatable<ScheduleTenor>"
+      ],
+      "classification": "struct",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "3e3a772ddb5439e8a3fd2e425223ca9b3243ecbfbad653523fcf32b2cfa0bc26",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor",
+      "kind": "struct",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Count",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "int",
+          "source_line": 64,
+          "type": "int"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Term",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "ScheduleTenor",
+          "source_line": 82,
+          "type": "ScheduleTenor"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Unit",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "ScheduleTenorUnit",
+          "source_line": 67,
+          "type": "ScheduleTenorUnit"
+        }
+      ],
+      "name": "ScheduleTenor",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenor",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit"
+      ],
+      "source": {
+        "line": 35,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs"
+      },
+      "sources": [
+        {
+          "line": 35,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "Day",
+          "source_line": 11,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Week",
+          "source_line": 14,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Month",
+          "source_line": 17,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Year",
+          "source_line": 20,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "Term",
+          "source_line": 23,
+          "value": null
+        }
+      ],
+      "fingerprint": "27a3aba63fe52f98679b7b3f60f5c6ce016e4255018bd32d6a34c39b8ed0552f",
+      "full_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit",
+      "id": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit",
+      "kind": "enum",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "ScheduleTenorUnit",
+      "namespace": "Meridian.Contracts.SecurityMaster.Schedules",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.Schedules.ScheduleTenorUnit",
+      "references": [],
+      "source": {
+        "line": 8,
+        "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs"
+      },
+      "sources": [
+        {
+          "line": 8,
+          "path": "src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs"
         }
       ],
       "type_parameters": []
