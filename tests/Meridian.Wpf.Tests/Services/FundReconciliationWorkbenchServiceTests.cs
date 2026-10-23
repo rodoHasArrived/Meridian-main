@@ -178,9 +178,35 @@ public sealed class FundReconciliationWorkbenchServiceTests
         await context.FundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
             context.AccountId, asOf, "USD", 700m, "test", "test", SecuritiesMarketValue: 250m));
         var broken = await context.FundAccountService.ReconcileAccountAsync(new ReconcileAccountRequest(context.AccountId, asOf, "test"));
-        // The operator opened the run while it was the latest; the detail is read live when opened.
-        var snapshot = await context.Service.GetSnapshotAsync("alpha-fund");
-        var runRow = snapshot.RunRows.Single(row => row.ReconciliationRunId == broken.ReconciliationRunId);
+        // The operator opened the account run while it was the latest; the detail is read live when
+        // opened. Snapshot run rows are strategy runs only, so the account row is built as the
+        // account ledger lists it.
+        var runRow = new FundReconciliationRunRow(
+            RowKey: $"account:{broken.ReconciliationRunId:N}",
+            ReconciliationRunId: broken.ReconciliationRunId,
+            AccountId: context.AccountId,
+            SourceType: FundReconciliationSourceType.AccountRun,
+            ScopeLabel: "Account",
+            ScopeIcon: "\u25A3",
+            PrimaryLabel: "Operating account",
+            SecondaryLabel: context.AccountId.ToString("N"),
+            Status: "Break",
+            StatusLabel: "Break",
+            StatusIcon: "\u26A0",
+            AsOfDate: asOf,
+            AsOfDateText: asOf.ToString("yyyy-MM-dd"),
+            TotalChecks: 1,
+            TotalMatched: 0,
+            TotalBreaks: 1,
+            BreakAmountTotal: 50m,
+            BreakAmountText: "$50.00",
+            RequestedAt: DateTimeOffset.UtcNow,
+            RequestedAtText: "now",
+            CompletedAt: DateTimeOffset.UtcNow,
+            CompletedAtText: "now",
+            SecurityIssueCount: 0,
+            HasSecurityCoverageIssues: false,
+            CoverageLabel: "Security Master aligned");
         await context.FundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
             context.AccountId, asOf, "USD", 750m, "test", "test", SecuritiesMarketValue: 250m));
         await context.FundAccountService.ReconcileAccountAsync(new ReconcileAccountRequest(context.AccountId, asOf, "test"));
