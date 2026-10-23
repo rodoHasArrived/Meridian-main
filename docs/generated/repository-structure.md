@@ -6235,6 +6235,7 @@ Meridian-main
 │   │   │   ├── AtomicFileWriterAdapter.cs
 │   │   │   ├── CompressionProfileManager.cs
 │   │   │   ├── JsonlWriteFence.cs
+│   │   │   ├── JsonlWriterLock.cs
 │   │   │   ├── WalChecksum.cs
 │   │   │   └── WriteAheadLog.cs
 │   │   ├── AssetOperations

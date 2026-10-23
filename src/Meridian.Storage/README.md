@@ -39,9 +39,15 @@ Scheduled compression uses `CompressAsync` and its compression-specific result, 
 repair completion. It selects healthy plain JSONL files within the requested paths, completes all
 required backups before mutation, and verifies decompressed bytes against the unchanged source
 before publishing a create-only gzip destination and deleting the original. Successful encoding
-changes report compressed files and bytes saved with zero repaired issues. In-process, `JsonlStorageSink` holds a shared
+changes report compressed files and bytes saved with zero repaired issues. `JsonlStorageSink` holds a shared
 `JsonlWriteFence` lease while its append stream is open and compression takes the path
-exclusively, so an open file is refused and a reopening sink waits until the source is gone.
+exclusively, so an open file is refused and a reopening sink waits until the source is gone. The
+sink also holds a shared `JsonlWriterLock` (an open handle on `<source>.write-lock`) and
+compression holds it exclusively for the whole verify-publish-delete window, which extends that
+exclusion to writers in other processes sharing the data root. A sink that waited out another
+process's compression then appends to the published archive. Readers take neither lock, so a
+replay keeps reading a source while it is compressed. The lock file is never deleted, carries no
+state, and is not a data extension, so storage scanners ignore it.
 Compression selects only files whose partition period (the date or hour encoded in the path) has
 closed, so the live append target stays plain. Open-period and quiet-period files are reported in `FileCompressionResult.Deferred`
 as informational entries, not errors, so a live day does not fail the run. A late write to a compressed closed period appends

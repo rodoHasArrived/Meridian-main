@@ -47,9 +47,10 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
         new FileInfo(dayFile).Length.Should().BeGreaterThan(prefixLength, "later batches append new bytes");
         HashPrefix(dayFile, prefixLength).Should().Equal(prefixHash,
             "appending must never rewrite previously written bytes");
+        // The only other file is the stateless cross-process writer lock beside the source.
         Directory.GetFiles(TestDataRoot, "*", SearchOption.AllDirectories)
             .Where(f => !f.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase))
-            .Should().BeEmpty("append-stream mode must not create copy-on-write temp files");
+            .Should().Equal([JsonlWriterLock.PathFor(dayFile)], "append-stream mode must not create copy-on-write temp files");
     }
 
     [Fact]
@@ -482,6 +483,70 @@ public sealed class JsonlAppendStreamTests : TempDirectoryTestBase
         replayed.Select(evt => evt.Sequence).Should().Equal(1, 2);
         // The lock is released with the append; the file itself stays and carries no state.
         using var reacquired = new FileStream(ArchiveAppendLock.PathFor(archive), FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+    }
+
+    [Fact]
+    public async Task WriterInAnotherProcess_RefusesCompressionAndKeepsTheSource()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await first.AppendAsync(CreateTestEvent("AAPL", 1, ClosedDay));
+            await first.FlushAsync();
+        }
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl").Should().ContainSingle().Subject;
+        await AtomicFileWriter.WriteAsync(dayFile + ".sha256",
+            $"{Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(dayFile))).ToLowerInvariant()}  {Path.GetFileName(dayFile)}");
+        var sourceBytes = await File.ReadAllBytesAsync(dayFile);
+        var maintenance = new FileMaintenanceService(options);
+        // Another process's sink with its append stream open: it holds the writer lock shared and
+        // none of this process's in-process fence.
+        var otherProcessWriter = await JsonlWriterLock.AcquireSharedAsync(dayFile, TimeSpan.FromSeconds(5), CancellationToken.None);
+
+        var refused = await maintenance.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false));
+
+        refused.Success.Should().BeFalse("deleting the source would orphan the other process's later appends");
+        File.Exists(dayFile + ".gz").Should().BeFalse();
+        (await File.ReadAllBytesAsync(dayFile)).Should().Equal(sourceBytes);
+        otherProcessWriter.Dispose();
+        (await maintenance.CompressAsync(new FileCompressionOptions(BackupBeforeCompression: false))).Success.Should().BeTrue(
+            "the refusal lasts only while that writer has the source open");
+        File.Exists(dayFile).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CompressionInAnotherProcess_SinkWaitsThenAppendsToThePublishedArchive()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var batchOptions = new JsonlBatchOptions { BatchSize = 1000, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        await using (var first = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions))
+        {
+            await first.AppendAsync(CreateTestEvent("AAPL", 1, ClosedDay));
+            await first.FlushAsync();
+        }
+        var dayFile = Directory.GetFiles(TestDataRoot, "*.jsonl").Should().ContainSingle().Subject;
+        // Another process is compressing the source: it holds the writer lock exclusively.
+        JsonlWriterLock.TryAcquireExclusive(dayFile, out var otherProcessCompression).Should().BeTrue();
+
+        await using var second = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot), batchOptions);
+        await second.AppendAsync(CreateTestEvent("AAPL", 2, ClosedDay));
+        var flush = second.FlushAsync();
+        (await Task.WhenAny(flush, Task.Delay(TimeSpan.FromMilliseconds(400)))).Should().NotBeSameAs(flush,
+            "the append must not reach a source another process is about to delete");
+        // That compression publishes the archive and deletes the source, then releases the lock.
+        await using (var archive = new FileStream(dayFile + ".gz", FileMode.CreateNew, FileAccess.Write))
+        await using (var gzip = new GZipStream(archive, CompressionLevel.Fastest))
+            await gzip.WriteAsync(await File.ReadAllBytesAsync(dayFile));
+        File.Delete(dayFile);
+        otherProcessCompression!.Dispose();
+        await flush.WaitAsync(TimeSpan.FromSeconds(10));
+
+        File.Exists(dayFile).Should().BeFalse("the late write extends the archive instead of recreating the source");
+        var replayed = new List<MarketEvent>();
+        await foreach (var evt in new Meridian.Storage.Replay.JsonlReplayer(TestDataRoot).ReadEventsAsync())
+            replayed.Add(evt);
+        replayed.Select(evt => evt.Sequence).Should().Equal(1, 2);
     }
 
     [Fact]

@@ -21,11 +21,18 @@ internal static class ArchiveAppendLock
 {
     public static string PathFor(string archivePath) => archivePath + ".append-lock";
 
-    public static async Task<FileStream> AcquireAsync(string archivePath, TimeSpan timeout, CancellationToken ct)
+    public static Task<FileStream> AcquireAsync(string archivePath, TimeSpan timeout, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(archivePath);
+        return AcquireLockFileAsync(PathFor(archivePath), FileShare.None, timeout, ct);
+    }
+
+    // Opens a lock file with the given share mode, polling while another live handle refuses it.
+    // FileShare.None is exclusive; FileShare.ReadWrite admits other shared holders and refuses an
+    // exclusive one, in this process or another (Windows share modes; Unix flock LOCK_SH/LOCK_EX).
+    internal static async Task<FileStream> AcquireLockFileAsync(string lockPath, FileShare share, TimeSpan timeout, CancellationToken ct)
+    {
         ct.ThrowIfCancellationRequested();
-        var lockPath = PathFor(archivePath);
         using var expiry = CancellationTokenSource.CreateLinkedTokenSource(ct);
         expiry.CancelAfter(timeout);
         while (true)
@@ -33,7 +40,7 @@ internal static class ArchiveAppendLock
             IOException contention;
             try
             {
-                return new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None,
+                return new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, share,
                     bufferSize: 1, options: FileOptions.Asynchronous | FileOptions.WriteThrough);
             }
             catch (IOException exception) when (IsContention(exception))
@@ -47,7 +54,7 @@ internal static class ArchiveAppendLock
             catch (OperationCanceledException)
             {
                 ct.ThrowIfCancellationRequested();
-                throw new TimeoutException($"Timed out after {timeout} waiting for archive lock '{lockPath}'.", contention);
+                throw new TimeoutException($"Timed out after {timeout} waiting for lock '{lockPath}'.", contention);
             }
         }
     }

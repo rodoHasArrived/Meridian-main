@@ -229,14 +229,18 @@ public sealed partial class FileMaintenanceService
         if (File.Exists(outputSidecar) && !File.Exists(outputPath))
             throw new IOException($"Refusing to replace existing compression checksum without its archive: {outputSidecar}");
 
-        // Fence in-process writers for the whole verify-publish-delete window: JsonlStorageSink holds
-        // a shared lease while its stream is open, and a sink reopening the path waits here, then
-        // appends to a fresh source after this one is deleted. Writers in other processes are not
-        // covered by the fence; the Windows share mode, quiet period and unchanged-source checks
-        // below remain as defense in depth for them.
+        // Fence writers for the whole verify-publish-delete window. JsonlStorageSink holds a shared
+        // in-process fence lease and a shared JsonlWriterLock while its stream is open, so an open
+        // writer in this process or another refuses compression, and a sink reopening the path
+        // waits here, then appends to the published archive once this source is gone. Readers take
+        // neither, so a replay keeps its handle. The quiet period and unchanged-source checks below
+        // remain as defense in depth.
         if (!JsonlWriteFence.TryEnterExclusive(filePath, out var fence))
             throw new IOException($"Refusing to compress a file that is open for writing: {filePath}");
         using var fenceLease = fence;
+        if (!JsonlWriterLock.TryAcquireExclusive(filePath, out var writerLock))
+            throw new IOException($"Refusing to compress a file that another process has open for writing: {filePath}");
+        await using var writerLease = writerLock!;
 
         FileStream source;
         try

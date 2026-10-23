@@ -521,6 +521,10 @@ public sealed class JsonlStorageSink : IStorageSink
         private FileStream? _stream;
         // Held while _stream is open so compression cannot delete a source we append to.
         private IDisposable? _fenceLease;
+        // Held with the fence while the append stream is open, so compression in another process
+        // sharing the data root cannot delete this source while it can still be appended to.
+        private FileStream? _writerLock;
+        private static readonly TimeSpan WriterLockTimeout = TimeSpan.FromMinutes(5);
         private bool _dirtySinceFsync;
         private bool _compressedFileValidated;
         private long _fsyncCount;
@@ -687,6 +691,14 @@ public sealed class JsonlStorageSink : IStorageSink
 
             await _stream.DisposeAsync().ConfigureAwait(false);
             _stream = null;
+            ReleaseWriteLeases();
+        }
+
+        // Caller must hold _gate. Releases in the reverse of acquisition order.
+        private void ReleaseWriteLeases()
+        {
+            _writerLock?.Dispose();
+            _writerLock = null;
             _fenceLease?.Dispose();
             _fenceLease = null;
         }
@@ -702,18 +714,19 @@ public sealed class JsonlStorageSink : IStorageSink
                 _fenceLease ??= await JsonlWriteFence.EnterWriteAsync(_path, ct).ConfigureAwait(false);
                 try
                 {
+                    // Waits out a compression of this source in another process; the archive check
+                    // below then sees its outcome, so a late write never recreates a compressed source.
+                    _writerLock ??= await JsonlWriterLock.AcquireSharedAsync(_path, WriterLockTimeout, ct).ConfigureAwait(false);
                     if (await TryAppendToPublishedArchiveAsync(write, ct).ConfigureAwait(false))
                     {
-                        _fenceLease.Dispose();
-                        _fenceLease = null;
+                        ReleaseWriteLeases();
                         return;
                     }
                     stream = EnsureStream();
                 }
                 catch
                 {
-                    _fenceLease?.Dispose();
-                    _fenceLease = null;
+                    ReleaseWriteLeases();
                     throw;
                 }
             }
