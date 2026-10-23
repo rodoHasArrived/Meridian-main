@@ -383,6 +383,14 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassRegistry["SecurityAssetClassRegistry"] {
         +IReadOnlyList~SecurityAssetClassDefinition~ All
     }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetClassTermsUpgrade["SecurityAssetClassTermsUpgrade"] {
+        +int FromVersion
+        +SecurityTermsUpgradeKind Kind
+        +string Rationale
+        +Func~JsonObject__JsonObject~? Transform
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetClassTermsUpgrader["SecurityAssetClassTermsUpgrader"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetPackDescriptor["SecurityAssetPackDescriptor"] {
         +AssetPackAccountingRules AccountingRules
         +AssetPackAdmissionPolicy AdmissionPolicy
@@ -515,17 +523,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfilePromotionSignalSeverityDto["SecurityAssetProfilePromotionSignalSeverityDto"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileRollbackRequestDto["SecurityAssetProfileRollbackRequestDto"] {
-        +string ApprovalReference
-        +string? CorrelationId
-        +DateOnly EffectiveFrom
-        +string ProfileId
-        +string Rationale
-        +string? RequestedBy
-        +int TargetVersion
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityAssetProfileStatusDto["SecurityAssetProfileStatusDto"] {
-    }
     Meridian_Contracts_SecurityMaster_OtcCollateralAgreementDto --> Meridian_Contracts_SecurityMaster_OtcEligibleCollateralDto
     Meridian_Contracts_SecurityMaster_OtcContractDto --> Meridian_Contracts_SecurityMaster_OtcContractDirection
     Meridian_Contracts_SecurityMaster_OtcContractDto --> Meridian_Contracts_SecurityMaster_OtcContractStatus
@@ -552,18 +549,17 @@ classDiagram
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleTenor --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleTenorUnit
     Meridian_Contracts_SecurityMaster_SecurityAliasDto --> Meridian_Contracts_SecurityMaster_SecurityAliasScope
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor
+    Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor --> Meridian_Contracts_SecurityMaster_SecurityAssetClassTermsUpgrade
     Meridian_Contracts_SecurityMaster_SecurityAssetClassRegistry --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDateOrderRuleDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileFieldDefinitionDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileIdentifierPreferenceDto
-    Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileStatusDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDraftRequestDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDraftRequestDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDateOrderRuleDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDraftRequestDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileFieldDefinitionDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileDraftRequestDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileIdentifierPreferenceDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileFieldTypeDto
-    Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceAuditEventDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileStatusDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceResultDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileDefinitionDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceResultDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceAuditEventDto
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileGovernanceResultDto --> Meridian_Contracts_SecurityMaster_SecurityAssetProfileLineageDto
