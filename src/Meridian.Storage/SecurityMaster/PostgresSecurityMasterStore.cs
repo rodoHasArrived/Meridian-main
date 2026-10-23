@@ -523,6 +523,11 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             await ProjectionWritersByAssetClass[assetClass].WriteAsync(this, connection, transaction, record, ct).ConfigureAwait(false);
         }
 
+        // The underlying graph follows the terms: the derived edges are rewritten with every
+        // projection write, in the same transaction, so the graph never shows a dependency the
+        // terms no longer state. Declared edges are owned by the graph store and left alone.
+        await SecurityUnderlyingLinkWriter.ReplaceDerivedAsync(connection, transaction, _options.Schema, record, ct).ConfigureAwait(false);
+
         return true;
     }
 

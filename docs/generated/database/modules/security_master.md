@@ -2,7 +2,7 @@
 
 # `security_master` schema
 
-- Relations: 115
+- Relations: 120
 - Functions/procedures: 7
 - Triggers: 15
 - Row-level security policies: 0
@@ -832,6 +832,66 @@ erDiagram
         numeric strike
         text put_call
     }
+    security_master_otc_collateral_agreements {
+        uuid collateral_agreement_id PK
+        uuid master_agreement_id FK
+        text currency
+        numeric_28_10_ threshold_ours
+        numeric_28_10_ threshold_theirs
+        numeric_28_10_ minimum_transfer_amount
+        numeric_28_10_ independent_amount
+        numeric_28_10_ rounding_amount
+        text valuation_frequency
+        jsonb eligible_collateral
+        date effective_date
+        date termination_date
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_contracts {
+        uuid contract_id PK
+        uuid security_id FK
+        uuid netting_set_id FK
+        text external_trade_id
+        text direction
+        numeric_28_10_ notional
+        text notional_currency
+        date trade_date
+        date effective_date
+        date termination_date
+        text status
+        text confirmation_reference
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_master_agreements {
+        uuid agreement_id PK
+        text counterparty
+        text counterparty_lei
+        text our_entity
+        uuid our_entity_id
+        text agreement_type
+        date agreement_date
+        text governing_law
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
+    security_master_otc_netting_sets {
+        uuid netting_set_id PK
+        uuid master_agreement_id FK
+        uuid collateral_agreement_id FK
+        text name
+        text notes
+        bigint version
+        text updated_by
+        timestamp_with_time_zone updated_at
+    }
     security_master_other_security_projection {
         uuid security_id PK
         text display_name
@@ -1242,6 +1302,20 @@ erDiagram
         timestamp_with_time_zone snapshot_timestamp
         jsonb payload
     }
+    security_master_security_underlying_links {
+        uuid link_id PK
+        uuid security_id FK
+        text role
+        uuid underlying_security_id
+        text reference_text
+        numeric_28_10_ weight
+        timestamp_with_time_zone valid_from
+        timestamp_with_time_zone valid_to
+        text source
+        text notes
+        text created_by
+        timestamp_with_time_zone created_at
+    }
     security_master_security_workbench_generations {
         uuid security_id PK
         bigint generation
@@ -1548,6 +1622,10 @@ erDiagram
     security_master_option_contract_projection ||--o{ security_master_option_alias_projection : "option_alias_projection_contract_symbol_fkey"
     security_master_option_contract_projection ||--o{ security_master_option_lifecycle_projection : "option_lifecycle_projection_contract_symbol_fkey"
     security_master_option_contract_projection ||--o{ security_master_option_series_projection : "option_series_projection_contract_symbol_fkey"
+    security_master_otc_collateral_agreements ||--o{ security_master_otc_netting_sets : "otc_netting_sets_collateral_agreement_id_fkey"
+    security_master_otc_master_agreements ||--o{ security_master_otc_collateral_agreements : "otc_collateral_agreements_master_agreement_id_fkey"
+    security_master_otc_master_agreements ||--o{ security_master_otc_netting_sets : "otc_netting_sets_master_agreement_id_fkey"
+    security_master_otc_netting_sets ||--o{ security_master_otc_contracts : "otc_contracts_netting_set_id_fkey"
     security_master_projected_cash_flow ||--o{ security_master_reconciliation_result : "reconciliation_result_projected_flow_id_fkey"
     security_master_projection_run ||--o{ security_master_projected_cash_flow : "projected_cash_flow_projection_run_id_fkey"
     security_master_projection_run ||--o{ security_master_projection_run : "projection_run_supersedes_projection_run_id_fkey"
@@ -1566,6 +1644,7 @@ erDiagram
     security_master_securities ||--o{ security_master_fxspot_projection : "fxspot_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_security_id_fkey"
     security_master_securities ||--o{ security_master_option_contract_projection : "option_contract_projection_underlying_security_id_fkey"
+    security_master_securities ||--o{ security_master_otc_contracts : "otc_contracts_security_id_fkey"
     security_master_securities ||--o{ security_master_security_alias_revisions : "security_alias_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_aliases : "security_aliases_security_id_fkey"
     security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
@@ -1575,6 +1654,7 @@ erDiagram
     security_master_securities ||--o{ security_master_security_pricing_hierarchy : "security_pricing_hierarchy_security_id_fkey"
     security_master_securities ||--o{ security_master_security_pricing_hierarchy_history : "security_pricing_hierarchy_history_security_id_fkey"
     security_master_securities ||--o{ security_master_security_raw_prices : "security_raw_prices_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_underlying_links : "security_underlying_links_security_id_fkey"
     security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_approvals : "security_close_price_approvals_snapshot_id_fkey"
     security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_snapshots : "security_close_price_snapshot_corrects_snapshot_id_account_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_position_report_line : "servicer_position_report_line_servicer_report_batch_id_fkey"
@@ -1649,6 +1729,10 @@ erDiagram
 | `option_contract_projection` | table | 14 | `contract_symbol` | 2 | 4 | - |
 | `option_lifecycle_projection` | table | 6 | `contract_symbol` | 1 | 1 | - |
 | `option_series_projection` | table | 6 | `option_chain_id`, `contract_symbol` | 1 | 1 | - |
+| `otc_collateral_agreements` | table | 16 | `collateral_agreement_id` | 1 | 2 | Credit support annexes under a master agreement: thresholds, minimum transfer amount, independent amount, rounding, valuation cadence and eligible collateral with haircuts. |
+| `otc_contracts` | table | 16 | `contract_id` | 2 | 4 | Bilateral contracts: one trade against a counterparty on a Security Master instrument, in a netting set, with its notional, direction, dates and lifecycle status. Many contracts share one instrument. |
+| `otc_master_agreements` | table | 12 | `agreement_id` | 0 | 2 | Master agreements (ISDA, GMRA, GMSLA) between a fund legal entity and a counterparty. Every bilateral contract hangs off one through its netting set. |
+| `otc_netting_sets` | table | 8 | `netting_set_id` | 2 | 2 | Sets of contracts under one master agreement whose exposures net on close-out, optionally margined under one collateral agreement. |
 | `other_security_projection` | table | 10 | `security_id` | 0 | 2 | Relational projection of OtherSecurity asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `outbox_message` | table | 10 | `outbox_message_id` | 0 | 4 | - |
 | `payment_allocation` | table | 10 | `allocation_id` | 3 | 3 | - |
@@ -1686,6 +1770,7 @@ erDiagram
 | `security_pricing_hierarchy_history` | table | 6 | `security_id`, `account_id`, `as_of` | 1 | 1 | Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection. |
 | `security_raw_prices` | table | 7 | `security_id`, `source_id`, `price_as_of` | 1 | 2 | - |
 | `security_snapshots` | table | 4 | `security_id` | 0 | 1 | - |
+| `security_underlying_links` | table | 12 | `link_id` | 1 | 3 | The underlying graph: one edge per row from an instrument to the security or named reference it depends on, in a stated role, with its validity window. Derived rows follow the terms; declared rows are governed through the graph API. |
 | `security_workbench_generations` | table | 2 | `security_id` | 0 | 1 | - |
 | `servicer_position_report_line` | table | 14 | `servicer_report_line_id` | 2 | 2 | - |
 | `servicer_report_batch` | table | 12 | `servicer_report_batch_id` | 0 | 1 | - |

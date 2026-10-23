@@ -299,6 +299,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<ILedgerBookService>()));
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
+            services.AddSingleton<ISecurityUnderlyingGraphStore, PostgresSecurityUnderlyingGraphStore>();
+            services.AddSingleton<IOtcContractStore, PostgresOtcContractStore>();
             services.AddSingleton<IBondReferenceProjectionStore, PostgresBondReferenceProjectionStore>();
             services.AddSingleton<IOptionReferenceProjectionStore, PostgresOptionReferenceProjectionStore>();
             services.AddSingleton<IEquityReferenceProjectionStore, PostgresEquityReferenceProjectionStore>();
