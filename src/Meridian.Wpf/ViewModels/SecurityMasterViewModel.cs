@@ -1080,13 +1080,13 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
                 return "Validation report unavailable for the selected security.";
             }
 
-            if (ValidationIssues.Count == 0)
+            if (!ValidationIssues.Any(static issue => issue.Severity != SecurityValidationSeverityDto.Info))
             {
                 return "Validation report loaded with no blocking or advisory issues.";
             }
 
             var blockingCount = report.CriticalIssueCount + report.ErrorIssueCount;
-            var advisoryCount = Math.Max(0, ValidationIssues.Count - blockingCount);
+            var advisoryCount = Math.Max(0, ValidationIssues.Count(static issue => issue.Severity != SecurityValidationSeverityDto.Info) - blockingCount);
             return $"{blockingCount} blocking issue{(blockingCount == 1 ? string.Empty : "s")} and {advisoryCount} advisory issue{(advisoryCount == 1 ? string.Empty : "s")} loaded.";
         }
     }
@@ -3388,13 +3388,13 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             return "Validation report unavailable.";
         }
 
-        if (report.Issues.Count == 0)
+        if (!report.Issues.Any(static issue => issue.Severity != SecurityValidationSeverityDto.Info))
         {
             return "No validation issues detected.";
         }
 
         var blockingCount = report.CriticalIssueCount + report.ErrorIssueCount;
-        var advisoryCount = Math.Max(0, report.Issues.Count - blockingCount);
+        var advisoryCount = Math.Max(0, report.Issues.Count(static issue => issue.Severity != SecurityValidationSeverityDto.Info) - blockingCount);
         if (blockingCount > 0 && advisoryCount > 0)
         {
             return $"{blockingCount} blocking issue(s) • {advisoryCount} advisory issue(s)";

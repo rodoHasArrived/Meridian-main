@@ -1,0 +1,25 @@
+{
+  "assetClass": "Swap",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "effectiveDate",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "legs",
+          "type": "Array",
+          "required": true
+        },
+        {
+          "key": "maturityDate",
+          "type": "Date",
+          "required": true
+        }
+      ]
+    }
+  ]
+}
