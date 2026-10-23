@@ -378,6 +378,17 @@ public static class UiApiRoutes
     public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
     public const string SecurityMasterIncomeCashFlows = "/api/security-master/{securityId:guid}/income-cash-flows";
     public const string SecurityMasterFactorHistory = "/api/security-master/{securityId:guid}/factor-history";
+    public const string SecurityMasterUnderlyings = "/api/security-master/{securityId:guid}/underlyings";
+    public const string SecurityMasterUnderlyingLink = "/api/security-master/{securityId:guid}/underlyings/{linkId:guid}";
+    public const string SecurityMasterContracts = "/api/security-master/{securityId:guid}/contracts";
+    public const string SecurityMasterOtcMasterAgreements = "/api/security-master/otc/master-agreements";
+    public const string SecurityMasterOtcMasterAgreement = "/api/security-master/otc/master-agreements/{agreementId:guid}";
+    public const string SecurityMasterOtcCollateralAgreements = "/api/security-master/otc/collateral-agreements";
+    public const string SecurityMasterOtcCollateralAgreement = "/api/security-master/otc/collateral-agreements/{collateralAgreementId:guid}";
+    public const string SecurityMasterOtcNettingSets = "/api/security-master/otc/netting-sets";
+    public const string SecurityMasterOtcNettingSet = "/api/security-master/otc/netting-sets/{nettingSetId:guid}";
+    public const string SecurityMasterOtcContracts = "/api/security-master/otc/contracts";
+    public const string SecurityMasterOtcContract = "/api/security-master/otc/contracts/{contractId:guid}";
     public const string SecurityMasterCorporateActionsIngest = "/api/security-master/corporate-actions/ingest";
     public const string SecurityMasterCorporateActionsInbox = "/api/security-master/corporate-actions/inbox";
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";

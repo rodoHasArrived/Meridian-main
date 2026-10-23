@@ -9736,6 +9736,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.EconomicTermsSchema"
     },
     {
@@ -9868,6 +9874,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.IOtcContractStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityCoverageSymbolSource"
     },
     {
@@ -9940,6 +9952,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityUnderlyingGraphStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.IStructuredCashFlowProvider"
     },
     {
@@ -10007,6 +10025,72 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcCollateralAgreementDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractDirection"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractRules"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractsJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcEligibleCollateralDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcMasterAgreementDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcMasterAgreementType"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto"
     },
     {
       "kind": "contract-set-member",
@@ -10858,6 +10942,36 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDeriver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkSource"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValidationGateResultDto"
     },
     {
@@ -11063,6 +11177,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.UpsertDataVendorEntitlementRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcCollateralAgreementRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcContractRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcMasterAgreementRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcNettingSetRequest"
     },
     {
       "kind": "contract-set-member",
@@ -22762,6 +22900,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.EconomicTermsSchema"
     },
     {
@@ -22894,6 +23038,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.IOtcContractStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityCoverageSymbolSource"
     },
     {
@@ -22966,6 +23116,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityUnderlyingGraphStore"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.IStructuredCashFlowProvider"
     },
     {
@@ -23033,6 +23189,72 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcCollateralAgreementDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractDirection"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractRules"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractStatus"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractsJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcEligibleCollateralDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcMasterAgreementDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcMasterAgreementType"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto"
     },
     {
       "kind": "contract-set-member",
@@ -23884,6 +24106,36 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDeriver"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkSource"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValidationGateResultDto"
     },
     {
@@ -24089,6 +24341,30 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.UpsertDataVendorEntitlementRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcCollateralAgreementRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcContractRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcMasterAgreementRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcNettingSetRequest"
     },
     {
       "kind": "contract-set-member",
@@ -34569,6 +34845,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.EdgarFactsRecord",
       "target": "contract:Meridian.Contracts.SecurityMaster.EdgarXbrlFact"
     },
@@ -34685,6 +34967,54 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.OperatorOverridesDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityOverrideAuditEntryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcCollateralAgreementDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcEligibleCollateralDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcContractDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractDirection"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcContractDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcMasterAgreementDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcMasterAgreementType"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcCollateralAgreementDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcMasterAgreementDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetDto"
     },
     {
       "kind": "contract-reference",
@@ -35409,6 +35739,24 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkSource"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityValidationGateResultDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValidationReportDto"
     },
@@ -35651,6 +35999,30 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.UpsertDataVendorEntitlementRequest",
       "target": "contract:Meridian.Contracts.SecurityMaster.DataVendorDataType"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcCollateralAgreementRequest",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcEligibleCollateralDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcContractRequest",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractDirection"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcContractRequest",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcContractStatus"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcMasterAgreementRequest",
+      "target": "contract:Meridian.Contracts.SecurityMaster.OtcMasterAgreementType"
     },
     {
       "kind": "contract-reference",
@@ -48789,6 +49161,173 @@
       "target": "database:security_master.option_contract_projection_pkey"
     },
     {
+      "constraint": "otc_collateral_agreements_master_agreement_id_fkey",
+      "kind": "foreign-key",
+      "label": "master_agreement_id",
+      "source": "database:security_master.otc_collateral_agreements",
+      "target": "database:security_master.otc_master_agreements"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_collateral_agreements_amounts_check on security_master.otc_collateral_agreements",
+      "target": "database:security_master.otc_collateral_agreements.minimum_transfer_amount"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_collateral_agreements_amounts_check on security_master.otc_collateral_agreements",
+      "target": "database:security_master.otc_collateral_agreements.threshold_ours"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_collateral_agreements_amounts_check on security_master.otc_collateral_agreements",
+      "target": "database:security_master.otc_collateral_agreements.threshold_theirs"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_collateral_agreements_master_agreement_id_fkey on security_master.otc_collateral_agreements",
+      "target": "database:security_master.otc_master_agreements.agreement_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_collateral_agreements_master_agreement_id_fkey on security_master.otc_collateral_agreements",
+      "target": "database:security_master.otc_master_agreements_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_collateral_agreements_window_check on security_master.otc_collateral_agreements",
+      "target": "database:security_master.otc_collateral_agreements.effective_date"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_collateral_agreements_window_check on security_master.otc_collateral_agreements",
+      "target": "database:security_master.otc_collateral_agreements.termination_date"
+    },
+    {
+      "constraint": "otc_contracts_netting_set_id_fkey",
+      "kind": "foreign-key",
+      "label": "netting_set_id",
+      "source": "database:security_master.otc_contracts",
+      "target": "database:security_master.otc_netting_sets"
+    },
+    {
+      "constraint": "otc_contracts_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.otc_contracts",
+      "target": "database:security_master.securities"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contracts_dates_check on security_master.otc_contracts",
+      "target": "database:security_master.otc_contracts.effective_date"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contracts_dates_check on security_master.otc_contracts",
+      "target": "database:security_master.otc_contracts.termination_date"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contracts_dates_check on security_master.otc_contracts",
+      "target": "database:security_master.otc_contracts.trade_date"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contracts_direction_check on security_master.otc_contracts",
+      "target": "database:security_master.otc_contracts.direction"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contracts_netting_set_id_fkey on security_master.otc_contracts",
+      "target": "database:security_master.otc_netting_sets.netting_set_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contracts_netting_set_id_fkey on security_master.otc_contracts",
+      "target": "database:security_master.otc_netting_sets_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contracts_notional_check on security_master.otc_contracts",
+      "target": "database:security_master.otc_contracts.notional"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contracts_security_id_fkey on security_master.otc_contracts",
+      "target": "database:security_master.securities.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contracts_security_id_fkey on security_master.otc_contracts",
+      "target": "database:security_master.securities_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_contracts_status_check on security_master.otc_contracts",
+      "target": "database:security_master.otc_contracts.status"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_master_agreements_type_check on security_master.otc_master_agreements",
+      "target": "database:security_master.otc_master_agreements.agreement_type"
+    },
+    {
+      "constraint": "otc_netting_sets_collateral_agreement_id_fkey",
+      "kind": "foreign-key",
+      "label": "collateral_agreement_id",
+      "source": "database:security_master.otc_netting_sets",
+      "target": "database:security_master.otc_collateral_agreements"
+    },
+    {
+      "constraint": "otc_netting_sets_master_agreement_id_fkey",
+      "kind": "foreign-key",
+      "label": "master_agreement_id",
+      "source": "database:security_master.otc_netting_sets",
+      "target": "database:security_master.otc_master_agreements"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_netting_sets_collateral_agreement_id_fkey on security_master.otc_netting_sets",
+      "target": "database:security_master.otc_collateral_agreements.collateral_agreement_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_netting_sets_collateral_agreement_id_fkey on security_master.otc_netting_sets",
+      "target": "database:security_master.otc_collateral_agreements_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_netting_sets_master_agreement_id_fkey on security_master.otc_netting_sets",
+      "target": "database:security_master.otc_master_agreements.agreement_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.otc_netting_sets_master_agreement_id_fkey on security_master.otc_netting_sets",
+      "target": "database:security_master.otc_master_agreements_pkey"
+    },
+    {
       "constraint": "payment_allocation_cash_transaction_id_fkey",
       "kind": "foreign-key",
       "label": "cash_transaction_id",
@@ -49385,6 +49924,55 @@
       "label": "",
       "source": "database:security_master.security_raw_prices_unit_check on security_master.security_raw_prices",
       "target": "database:security_master.security_raw_prices.price_unit"
+    },
+    {
+      "constraint": "security_underlying_links_security_id_fkey",
+      "kind": "foreign-key",
+      "label": "security_id",
+      "source": "database:security_master.security_underlying_links",
+      "target": "database:security_master.securities"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_underlying_links_security_id_fkey on security_master.security_underlying_links",
+      "target": "database:security_master.securities.security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_underlying_links_security_id_fkey on security_master.security_underlying_links",
+      "target": "database:security_master.securities_pkey"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_underlying_links_source_check on security_master.security_underlying_links",
+      "target": "database:security_master.security_underlying_links.source"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_underlying_links_target_check on security_master.security_underlying_links",
+      "target": "database:security_master.security_underlying_links.reference_text"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_underlying_links_target_check on security_master.security_underlying_links",
+      "target": "database:security_master.security_underlying_links.underlying_security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_underlying_links_window_check on security_master.security_underlying_links",
+      "target": "database:security_master.security_underlying_links.valid_from"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.security_underlying_links_window_check on security_master.security_underlying_links",
+      "target": "database:security_master.security_underlying_links.valid_to"
     },
     {
       "kind": "normal",
@@ -50719,6 +51307,30 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.otc_collateral_agreements"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.otc_contracts"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.otc_master_agreements"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
+      "target": "database:security_master.otc_netting_sets"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.other_security_projection"
     },
     {
@@ -50941,6 +51553,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_underlying_links"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_workbench_generations"
     },
     {
@@ -51065,7 +51683,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "cf9b947e3204778b42b210ddb2277d8f83c7cf601a5969598270e1e107296c1e",
+  "fingerprint": "9722501bda3ae24010d5f02d8ab3d8fb377a43b191f7f09f3da43929efc7509a",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -60851,6 +61469,12 @@
       "label": "Meridian.Contracts.SecurityMaster.DeactivateSecurityRequest"
     },
     {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.DeclareSecurityUnderlyingLinkRequest"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.EconomicTermsSchema",
       "kind": "contract-type",
@@ -60984,6 +61608,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.SecurityMaster.IOtcContractStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.IOtcContractStore"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.SecurityMaster.ISecurityCoverageSymbolSource",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.ISecurityCoverageSymbolSource"
@@ -61056,6 +61686,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ISecurityUnderlyingGraphStore",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ISecurityUnderlyingGraphStore"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.SecurityMaster.IStructuredCashFlowProvider",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.IStructuredCashFlowProvider"
@@ -61125,6 +61761,72 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.OperatorOverridesPatchRequest"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcCollateralAgreementDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcCollateralAgreementDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcContractDirection",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcContractDirection"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcContractDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcContractDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcContractRules",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcContractRules"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcContractStatus",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcContractStatus"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcContractsJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcContractsJsonContext"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcEligibleCollateralDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcEligibleCollateralDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcMasterAgreementDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcMasterAgreementDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcMasterAgreementType",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcMasterAgreementType"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcNettingSetDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.OtcNettingSetViewDto"
     },
     {
       "classification": "record",
@@ -61974,6 +62676,36 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDeriver",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDeriver"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkSource",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkSource"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityValidationGateResultDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityValidationGateResultDto"
@@ -62181,6 +62913,30 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.UpsertDataVendorEntitlementRequest",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.UpsertDataVendorEntitlementRequest"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcCollateralAgreementRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.UpsertOtcCollateralAgreementRequest"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcContractRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.UpsertOtcContractRequest"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcMasterAgreementRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.UpsertOtcMasterAgreementRequest"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.SecurityMaster.UpsertOtcNettingSetRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.UpsertOtcNettingSetRequest"
     },
     {
       "classification": "request",
@@ -73842,6 +74598,180 @@
       "label": "security_master.option_series_projection_contract_symbol_fkey on security_master.option_series_projection"
     },
     {
+      "id": "database:security_master.otc_collateral_agreements",
+      "kind": "database-table",
+      "label": "security_master.otc_collateral_agreements",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.otc_collateral_agreements.collateral_agreement_id",
+      "kind": "database-object",
+      "label": "security_master.otc_collateral_agreements.collateral_agreement_id"
+    },
+    {
+      "id": "database:security_master.otc_collateral_agreements.effective_date",
+      "kind": "database-object",
+      "label": "security_master.otc_collateral_agreements.effective_date"
+    },
+    {
+      "id": "database:security_master.otc_collateral_agreements.minimum_transfer_amount",
+      "kind": "database-object",
+      "label": "security_master.otc_collateral_agreements.minimum_transfer_amount"
+    },
+    {
+      "id": "database:security_master.otc_collateral_agreements.termination_date",
+      "kind": "database-object",
+      "label": "security_master.otc_collateral_agreements.termination_date"
+    },
+    {
+      "id": "database:security_master.otc_collateral_agreements.threshold_ours",
+      "kind": "database-object",
+      "label": "security_master.otc_collateral_agreements.threshold_ours"
+    },
+    {
+      "id": "database:security_master.otc_collateral_agreements.threshold_theirs",
+      "kind": "database-object",
+      "label": "security_master.otc_collateral_agreements.threshold_theirs"
+    },
+    {
+      "id": "database:security_master.otc_collateral_agreements_amounts_check on security_master.otc_collateral_agreements",
+      "kind": "database-object",
+      "label": "security_master.otc_collateral_agreements_amounts_check on security_master.otc_collateral_agreements"
+    },
+    {
+      "id": "database:security_master.otc_collateral_agreements_master_agreement_id_fkey on security_master.otc_collateral_agreements",
+      "kind": "database-object",
+      "label": "security_master.otc_collateral_agreements_master_agreement_id_fkey on security_master.otc_collateral_agreements"
+    },
+    {
+      "id": "database:security_master.otc_collateral_agreements_pkey",
+      "kind": "database-object",
+      "label": "security_master.otc_collateral_agreements_pkey"
+    },
+    {
+      "id": "database:security_master.otc_collateral_agreements_window_check on security_master.otc_collateral_agreements",
+      "kind": "database-object",
+      "label": "security_master.otc_collateral_agreements_window_check on security_master.otc_collateral_agreements"
+    },
+    {
+      "id": "database:security_master.otc_contracts",
+      "kind": "database-table",
+      "label": "security_master.otc_contracts",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.otc_contracts.direction",
+      "kind": "database-object",
+      "label": "security_master.otc_contracts.direction"
+    },
+    {
+      "id": "database:security_master.otc_contracts.effective_date",
+      "kind": "database-object",
+      "label": "security_master.otc_contracts.effective_date"
+    },
+    {
+      "id": "database:security_master.otc_contracts.notional",
+      "kind": "database-object",
+      "label": "security_master.otc_contracts.notional"
+    },
+    {
+      "id": "database:security_master.otc_contracts.status",
+      "kind": "database-object",
+      "label": "security_master.otc_contracts.status"
+    },
+    {
+      "id": "database:security_master.otc_contracts.termination_date",
+      "kind": "database-object",
+      "label": "security_master.otc_contracts.termination_date"
+    },
+    {
+      "id": "database:security_master.otc_contracts.trade_date",
+      "kind": "database-object",
+      "label": "security_master.otc_contracts.trade_date"
+    },
+    {
+      "id": "database:security_master.otc_contracts_dates_check on security_master.otc_contracts",
+      "kind": "database-object",
+      "label": "security_master.otc_contracts_dates_check on security_master.otc_contracts"
+    },
+    {
+      "id": "database:security_master.otc_contracts_direction_check on security_master.otc_contracts",
+      "kind": "database-object",
+      "label": "security_master.otc_contracts_direction_check on security_master.otc_contracts"
+    },
+    {
+      "id": "database:security_master.otc_contracts_netting_set_id_fkey on security_master.otc_contracts",
+      "kind": "database-object",
+      "label": "security_master.otc_contracts_netting_set_id_fkey on security_master.otc_contracts"
+    },
+    {
+      "id": "database:security_master.otc_contracts_notional_check on security_master.otc_contracts",
+      "kind": "database-object",
+      "label": "security_master.otc_contracts_notional_check on security_master.otc_contracts"
+    },
+    {
+      "id": "database:security_master.otc_contracts_security_id_fkey on security_master.otc_contracts",
+      "kind": "database-object",
+      "label": "security_master.otc_contracts_security_id_fkey on security_master.otc_contracts"
+    },
+    {
+      "id": "database:security_master.otc_contracts_status_check on security_master.otc_contracts",
+      "kind": "database-object",
+      "label": "security_master.otc_contracts_status_check on security_master.otc_contracts"
+    },
+    {
+      "id": "database:security_master.otc_master_agreements",
+      "kind": "database-table",
+      "label": "security_master.otc_master_agreements",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.otc_master_agreements.agreement_id",
+      "kind": "database-object",
+      "label": "security_master.otc_master_agreements.agreement_id"
+    },
+    {
+      "id": "database:security_master.otc_master_agreements.agreement_type",
+      "kind": "database-object",
+      "label": "security_master.otc_master_agreements.agreement_type"
+    },
+    {
+      "id": "database:security_master.otc_master_agreements_pkey",
+      "kind": "database-object",
+      "label": "security_master.otc_master_agreements_pkey"
+    },
+    {
+      "id": "database:security_master.otc_master_agreements_type_check on security_master.otc_master_agreements",
+      "kind": "database-object",
+      "label": "security_master.otc_master_agreements_type_check on security_master.otc_master_agreements"
+    },
+    {
+      "id": "database:security_master.otc_netting_sets",
+      "kind": "database-table",
+      "label": "security_master.otc_netting_sets",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.otc_netting_sets.netting_set_id",
+      "kind": "database-object",
+      "label": "security_master.otc_netting_sets.netting_set_id"
+    },
+    {
+      "id": "database:security_master.otc_netting_sets_collateral_agreement_id_fkey on security_master.otc_netting_sets",
+      "kind": "database-object",
+      "label": "security_master.otc_netting_sets_collateral_agreement_id_fkey on security_master.otc_netting_sets"
+    },
+    {
+      "id": "database:security_master.otc_netting_sets_master_agreement_id_fkey on security_master.otc_netting_sets",
+      "kind": "database-object",
+      "label": "security_master.otc_netting_sets_master_agreement_id_fkey on security_master.otc_netting_sets"
+    },
+    {
+      "id": "database:security_master.otc_netting_sets_pkey",
+      "kind": "database-object",
+      "label": "security_master.otc_netting_sets_pkey"
+    },
+    {
       "id": "database:security_master.other_security_projection",
       "kind": "database-table",
       "label": "security_master.other_security_projection",
@@ -74364,6 +75294,57 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.security_underlying_links",
+      "kind": "database-table",
+      "label": "security_master.security_underlying_links",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_underlying_links.reference_text",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links.reference_text"
+    },
+    {
+      "id": "database:security_master.security_underlying_links.source",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links.source"
+    },
+    {
+      "id": "database:security_master.security_underlying_links.underlying_security_id",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links.underlying_security_id"
+    },
+    {
+      "id": "database:security_master.security_underlying_links.valid_from",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links.valid_from"
+    },
+    {
+      "id": "database:security_master.security_underlying_links.valid_to",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links.valid_to"
+    },
+    {
+      "id": "database:security_master.security_underlying_links_security_id_fkey on security_master.security_underlying_links",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links_security_id_fkey on security_master.security_underlying_links"
+    },
+    {
+      "id": "database:security_master.security_underlying_links_source_check on security_master.security_underlying_links",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links_source_check on security_master.security_underlying_links"
+    },
+    {
+      "id": "database:security_master.security_underlying_links_target_check on security_master.security_underlying_links",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links_target_check on security_master.security_underlying_links"
+    },
+    {
+      "id": "database:security_master.security_underlying_links_window_check on security_master.security_underlying_links",
+      "kind": "database-object",
+      "label": "security_master.security_underlying_links_window_check on security_master.security_underlying_links"
+    },
+    {
       "id": "database:security_master.security_workbench_generations",
       "kind": "database-table",
       "label": "security_master.security_workbench_generations",
@@ -74663,11 +75644,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3330,
-    "contract_set_memberships": 4016,
-    "edges": 8485,
-    "foreign_keys": 138,
+    "contract_references": 3346,
+    "contract_set_memberships": 4062,
+    "edges": 8587,
+    "foreign_keys": 144,
     "logical_references": 6,
-    "nodes": 4086
+    "nodes": 4153
   }
 }

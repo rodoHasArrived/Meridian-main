@@ -5990,3 +5990,42 @@ owner to say which setting is meant before it can be fixed.
 
 **Validation.** The PostgreSQL round-trip suite (including the new determinism test) against a
 disposable PostgreSQL 16, and the reconciliation, automated-journal and backtest suites.
+
+## Resolution pass — 2026-10-21 (priority 4, first increment: the underlying graph)
+
+| Finding | What landed |
+| --- | --- |
+| Underlying links are single id fields; structured notes describe their underlying in free text; nothing walks from an underlying to the instruments that reference it | The underlying graph: `security_underlying_links` (migration 049) holds one edge per row from an instrument to the security it depends on, or to the reference text its terms name, in a stated role (`Underlying`, `ReferenceEntity`, `ReferenceObligation`, `Index`, `BasketConstituent`, `Collateral`) with a weight and a validity window. **Derived** edges are rewritten from the terms on every projection write, in the projection transaction (`SecurityUnderlyingLinkDeriver` reads the keys the term schema declares: `underlyingId` resolves; `referenceEntity`, `referenceObligation`, `floatingIndex`, `referenceIndex`, `inflationIndex`, `indexName`, `couponOrIndex` and `underlyingDescription` record the name), so the graph follows the terms. **Declared** edges (basket constituents with weights, collateral, reference obligations) are written through `ISecurityUnderlyingGraphStore` with their own window and a deterministic id, so re-declaring an edge updates it. `GET /api/security-master/{id}/underlyings` returns the instrument's underlyings, the instruments that depend on it (the reverse walk, indexed on the target) and the gaps: references that name no record and targets that are not in the Security Master. `POST` declares an edge, `DELETE …/{linkId}` removes a declared one. |
+
+**Not yet landed from this priority.** The OTC contract and collateral model (a trade or
+contract entity distinct from the instrument, collateral agreements, netting sets) is the next
+increment. A structured note's free-text underlying still enters the graph as an unresolved
+reference; resolving it to a record is an operator action through the declare endpoint until an
+ingest maps it.
+
+**Validation.** `SecurityUnderlyingLinkDeriverTests`, `SecurityUnderlyingLinksMigrationTests`,
+`SecurityUnderlyingEndpointsTests` (new), `SecurityUnderlyingGraphPostgresTests` (new; derived
+edges follow a re-pointed option, declared edges beside derived ones, reverse walk, removal rules
+and refusals) against a disposable PostgreSQL 16, with the Security Master round-trip suite.
+
+## Resolution pass — 2026-10-21 (priority 4, second increment: the OTC contract and collateral model)
+
+| Finding | What landed |
+| --- | --- |
+| OTC trades are stored as securities; there is no contract entity distinct from the instrument, no collateral agreement, no netting set | The OTC contract model (migration 050). An instrument stays a Security Master record that says *what* was traded; an `OtcContractDto` (`otc_contracts`) says *who* it was traded with, how much, which way, under which netting set and where it is in its life (`Pending`, `Confirmed`, `Terminated`, `Novated`, `Matured`; the last three are closed and refuse amendment). Many contracts share one instrument, and the instrument cannot be deleted from under them. Contracts live in an `OtcNettingSetDto` (`otc_netting_sets`) under an `OtcMasterAgreementDto` (`otc_master_agreements`: ISDA 1992/2002, GMRA, GMSLA, other; counterparty and LEI; the fund's legal entity; governing law), optionally margined by an `OtcCollateralAgreementDto` (`otc_collateral_agreements`: thresholds each way, minimum transfer amount, independent amount, rounding, valuation cadence, eligible collateral with haircuts) that must sit under the same master. `IOtcContractStore` / `PostgresOtcContractStore` persist the four with versioned upserts; `OtcContractRules` holds the write rules as pure functions so they are identical in every store and testable without a database. The catalog fact `TradesAsBilateralContract` (Swap, FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption, CapFloor, Repo, Cfd) decides which instruments carry contracts; an exchange-traded instrument is refused by name of the rule, not by a string check. Endpoints under `/api/security-master/otc/…` upsert and read master agreements, collateral agreements, netting sets (read back with their agreements and contracts) and contracts, and `GET /api/security-master/{id}/contracts` lists an instrument's contracts. |
+
+**Not yet landed from this priority.** The contract model holds the facts; it does not yet
+value them. Exposure and margin calculation against a collateral agreement, collateral balances
+and calls, and the close-out netting computation itself remain with the workstation collateral
+exposure read model until they are moved onto these records. A CDS `protectionSide` and a swap
+leg's pay/receive still live on the instrument's terms; the contract's `Direction` says which
+side of that instrument the fund took. Onboarding total return swaps, FX options and structured
+notes as contracts is the next increment, now that the graph and the contract model both exist.
+
+**Validation.** `OtcContractRulesTests`, `OtcContractsMigrationTests`,
+`SecurityAssetClassBehaviorFactsTests` (the bilateral fact is declared on exactly the eight OTC
+classes), `SecurityMasterOtcContractEndpointsTests` (new) and `OtcContractsPostgresTests` (new;
+agreements, a CSA, a netting set and two contracts on one swap round-trip, confirmation bumps the
+version, termination closes the contract, and contracts on an equity, on an unknown instrument,
+in an unknown netting set, or margined under another master's CSA are refused) against a
+disposable PostgreSQL 16, with the Security Master round-trip and underlying-graph suites.
