@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 5
 
-Objects 81-160 of 360. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 382. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -195,6 +195,16 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_DayCountConvention["DayCountConvention"] {
     }
     class Meridian_Contracts_SecurityMaster_DayCountConventions["DayCountConventions"] {
+    }
+    class Meridian_Contracts_SecurityMaster_DayCountPeriodContext["DayCountPeriodContext"] {
+        +Func~DateOnly__bool~? IsBusinessDay
+        +int? PeriodsPerYear
+        +IReadOnlyList~DayCountReferencePeriod~ ReferencePeriods
+        +DateOnly? TerminationDate
+    }
+    class Meridian_Contracts_SecurityMaster_DayCountReferencePeriod["DayCountReferencePeriod"] {
+        +DateOnly End
+        +DateOnly Start
     }
     class Meridian_Contracts_SecurityMaster_DeactivateSecurityRequest["DeactivateSecurityRequest"] {
         +DateTimeOffset EffectiveTo
@@ -455,21 +465,6 @@ classDiagram
         +decimal Multiplier
         +SecurityLotUnitKind UnitKind
     }
-    class Meridian_Contracts_SecurityMaster_NotionalLot["NotionalLot"] {
-        +decimal CurrentNotional
-        +DateOnly EffectiveDate
-        +string LotId
-        +decimal OriginalNotional
-        +Guid SecurityId
-        +decimal UpfrontPayment
-    }
-    class Meridian_Contracts_SecurityMaster_OfferCorporateActionTerms["OfferCorporateActionTerms"] {
-        +string EventType
-        +DateOnly? ExpiryDate
-        +bool? IsPartial
-        +bool? IsVoluntary
-        +decimal? OfferPricePerUnit
-    }
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto
     Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto --> Meridian_Contracts_SecurityMaster_CorporateActionProviderReleaseStatusDto
@@ -483,6 +478,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_DataQualityRuleViolationDto --> Meridian_Contracts_SecurityMaster_DataQualityRuleSeverity
     Meridian_Contracts_SecurityMaster_DataVendorEntitlementDto --> Meridian_Contracts_SecurityMaster_DataVendorDataType
     Meridian_Contracts_SecurityMaster_DataVendorEntitlementDto --> Meridian_Contracts_SecurityMaster_DataVendorEntitlementStatus
+    Meridian_Contracts_SecurityMaster_DayCountPeriodContext --> Meridian_Contracts_SecurityMaster_DayCountReferencePeriod
     Meridian_Contracts_SecurityMaster_EdgarFactsRecord --> Meridian_Contracts_SecurityMaster_EdgarXbrlFact
     Meridian_Contracts_SecurityMaster_EdgarFactsRecord --> Meridian_Contracts_SecurityMaster_IssuerFactSnapshot
     Meridian_Contracts_SecurityMaster_EdgarFilerRecord --> Meridian_Contracts_SecurityMaster_EdgarAddress
@@ -496,6 +492,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_FundUnitLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
     Meridian_Contracts_SecurityMaster_InMemorySecurityForwardCurveProvider --> Meridian_Contracts_SecurityMaster_ISecurityForwardCurveProvider
     Meridian_Contracts_SecurityMaster_IssuerFactSnapshot --> Meridian_Contracts_SecurityMaster_EdgarXbrlFact
-    Meridian_Contracts_SecurityMaster_NotionalLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
-    Meridian_Contracts_SecurityMaster_OfferCorporateActionTerms --> Meridian_Contracts_SecurityMaster_CorporateActionTerms
 ```
