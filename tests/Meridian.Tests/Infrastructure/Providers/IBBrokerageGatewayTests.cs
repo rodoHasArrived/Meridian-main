@@ -565,6 +565,13 @@ public sealed partial class IBBrokerageGatewayTests
         public void RaiseManagedAccounts(string accounts) =>
             ManagedAccountsReceived?.Invoke(this, accounts.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
         public void RaiseConnectionLost() => ConnectionLost?.Invoke(this, EventArgs.Empty);
+
+        // A loss the client does not restore on its own: the transport is down until reconnected.
+        public void DropTransport()
+        {
+            IsConnected = false;
+            RaiseConnectionLost();
+        }
         public void RaiseConnectionRestored() => ConnectionRestored?.Invoke(this, EventArgs.Empty);
 
         public void Dispose()

@@ -320,6 +320,30 @@ public sealed partial class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task RecoveryDuringExplicitReconnect_BeforePrimingCompletes_KeepsItsRouteCurrent()
+    {
+        var cancelled = new List<int>();
+        var client = RecoveryClient(c => c.RaiseOpenOrder(RecoverableOpenOrder()), cancelled);
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        var recovery = (IBrokerageOrderRecoveryGateway)sut;
+        client.DropTransport();
+        var priming = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        client.OnRequestNextValidId = _ => priming.TrySetResult();
+
+        var connect = sut.ConnectAsync();
+        await priming.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        // The transport is connected and the gateway reports it before nextValidId arrives.
+        sut.IsConnected.Should().BeTrue();
+        (await recovery.GetOrderForRecoveryAsync("client-1")).Should().NotBeNull();
+        client.RaiseNextValidId(9002);
+        await connect;
+
+        (await sut.CancelOrderAsync("client-1")).OrderStatus.Should().Be(OrderStatus.Cancelled);
+        cancelled.Should().Equal([7001], "the route recovered while the explicit connect primed is current, not stale");
+    }
+
+    [Fact]
     public async Task StaleRouteCleanup_RacingARecoveryOfADifferentClientOrder_RefusesTheResolvedAlias()
     {
         var cancelled = new List<int>();

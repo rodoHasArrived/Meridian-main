@@ -165,15 +165,22 @@ public sealed partial class IBBrokerageGateway :
             "IB brokerage connecting to {Host}:{Port} (clientId={ClientId}, paper={Paper})",
             _options.Host, _options.Port, _options.ClientId, _options.UsePaperTrading);
 
+        // Begin the session before the transport can be observed. After a loss _connected stays
+        // true, so IsConnected turns true as soon as the client connects, before priming ends, and
+        // a recovery can bind and install its route in that window; advancing afterwards would make
+        // it stale. A loss already ended the previous session and began this one, so it is not
+        // ended again, and the marker stays for an automatic restore that may still be in flight.
+        lock (_sessionGate)
+        {
+            if (!_sessionEndedByLoss)
+            {
+                Interlocked.Increment(ref _connectionEpoch);
+                ForgetOwedOpenOrdersEnds();
+            }
+        }
         _verifiedAccounts = NoVerifiedAccounts;
         await _client.ConnectAsync(ct).ConfigureAwait(false);
         await PrimeNextOrderIdAsync(ct).ConfigureAwait(false);
-
-        lock (_sessionGate)
-        {
-            Interlocked.Increment(ref _connectionEpoch);
-            ForgetOwedOpenOrdersEnds();
-        }
         _connected = true;
 
         _logger.LogInformation(
