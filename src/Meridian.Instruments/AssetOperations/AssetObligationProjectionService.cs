@@ -833,6 +833,8 @@ public sealed class AssetObligationProjectionService
         };
     }
 
+    // The wrapped asset-specific terms are read at the class's current terms version (ADR-024), once,
+    // with the record's own asset class, so both term walks below and every TryReadX see one payload.
     private static JsonElement BuildSecurityMasterTermsPayload(SecurityDetailDto security)
         => JsonSerializer.SerializeToElement(new
         {
@@ -843,7 +845,7 @@ public sealed class AssetObligationProjectionService
             security.EffectiveFrom,
             security.EffectiveTo,
             security.CommonTerms,
-            security.AssetSpecificTerms
+            AssetSpecificTerms = SecurityAssetClassTermsUpgrader.UpgradeForRead(security.AssetClass, security.AssetSpecificTerms)
         });
 
     // Each branch reads a catalog fact instead of naming classes, so a class the catalog declares

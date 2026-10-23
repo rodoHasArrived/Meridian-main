@@ -393,21 +393,26 @@ public static class StructuredCashFlowTermsResolver
             .OrderBy(static entry => entry.AsOfDate)
             .ToArray();
 
-    /// <summary>Enumerates governed profile fields, outer asset terms, and common terms in authority order.</summary>
+    /// <summary>
+    /// Enumerates governed profile fields, outer asset terms, and common terms in authority order.
+    /// The asset terms are read at the class's current terms version
+    /// (<see cref="SecurityAssetClassTermsUpgrader"/>, ADR-024).
+    /// </summary>
     public static IEnumerable<JsonElement> EnumerateTermSources(SecurityDetailDto security)
     {
         ArgumentNullException.ThrowIfNull(security);
+        var assetSpecificTerms = SecurityAssetClassTermsUpgrader.UpgradeForRead(security.AssetClass, security.AssetSpecificTerms);
         // Governed profile fields outrank outer duplicates: profileFields values are schema- and
         // profile-validated on write, while extra outer keys on an envelope are ungoverned
         // pass-through. Probing the outer object first would let an unvalidated outer `maturity`
         // silently shadow the governed one in every projection and conflict comparison.
-        if (SecurityTermReader.TryGetProperty(security.AssetSpecificTerms, "profileFields", out var profileFields) &&
+        if (SecurityTermReader.TryGetProperty(assetSpecificTerms, "profileFields", out var profileFields) &&
             profileFields.ValueKind == JsonValueKind.Object)
         {
             yield return profileFields;
         }
 
-        yield return security.AssetSpecificTerms;
+        yield return assetSpecificTerms;
         yield return security.CommonTerms;
     }
 }

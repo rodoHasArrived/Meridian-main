@@ -1,0 +1,35 @@
+{
+  "assetClass": "Warrant",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "expiry",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "multiplier",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "strike",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "underlyingId",
+          "type": "Guid",
+          "required": true
+        },
+        {
+          "key": "warrantType",
+          "type": "String",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

@@ -293,6 +293,50 @@ public sealed class SecurityMasterPostgresRoundTripTests : IClassFixture<Securit
             "the store never mutates the payload to add the tag; writers own stamping");
     }
 
+    [SecurityMasterDatabaseFact]
+    public async Task UpsertProjection_OfAnOlderTermsVersion_StoresTheBlobAndItsColumnsUnchanged_AndProjectsItAtTheCurrentVersion()
+    {
+        // ADR-024 decision 3: a StructuredCredit row stamped version 1 is read through the class's
+        // identity step. The store derives schema_version and terms_format from the stored blob and
+        // never rewrites it; the relational projection decodes it like a version-2 row.
+        var store = new PostgresSecurityMasterStore(_fixture.Options);
+        var securityId = Guid.NewGuid();
+        var v1 = SecurityAssetClassTermsUpgraderTests.Json(SecurityAssetClassTermsUpgraderTests.V1Text);
+        await store.UpsertProjectionAsync(SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("StructuredCredit", v1) with
+        {
+            SecurityId = securityId,
+            PrimaryIdentifierValue = $"TV1-{securityId:N}",
+            Identifiers = [new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, $"TV1-{securityId:N}", true, DateTimeOffset.UtcNow.AddDays(-1))]
+        });
+
+        await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = $"select schema_version, terms_format from {_fixture.Options.Schema}.securities where security_id = @security_id;";
+            command.Parameters.AddWithValue("security_id", securityId);
+            await using var reader = await command.ExecuteReaderAsync();
+            (await reader.ReadAsync()).Should().BeTrue();
+            reader.GetInt32(0).Should().Be(1);
+            reader.GetString(1).Should().Be(SecurityTermsFormats.Flat);
+        }
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = $"select tranche, original_face from {_fixture.Options.Schema}.structured_credit_projection where security_id = @security_id;";
+            command.Parameters.AddWithValue("security_id", securityId);
+            await using var reader = await command.ExecuteReaderAsync();
+            (await reader.ReadAsync()).Should().BeTrue("the version-1 row projects through the identity step");
+            reader.GetString(0).Should().Be("A-1");
+            reader.GetDecimal(1).Should().Be(10000000m);
+        }
+
+        var stored = await store.GetProjectionAsync(securityId);
+        stored!.AssetSpecificTerms.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32()
+            .Should().Be(1, "the store never restamps a stored payload");
+        JsonElement.DeepEquals(stored.AssetSpecificTerms, v1).Should().BeTrue();
+    }
+
     private static SecurityProjectionRecord TermsFormatProjection(Guid securityId, string ticker, JsonElement assetSpecificTerms)
     {
         var effectiveFrom = DateTimeOffset.UtcNow.AddDays(-1);
