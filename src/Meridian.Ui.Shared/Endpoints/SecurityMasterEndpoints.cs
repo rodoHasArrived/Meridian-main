@@ -1423,6 +1423,8 @@ public static partial class SecurityMasterEndpoints
             is not (null or AppSecurityMaster.NullSecurityMasterStructuredCreditReclassificationService))
             MapStructuredCreditReclassificationEndpoints(group, jsonOptions);
 
+        MapOtcContractEndpoints(group, jsonOptions);
+
         if (app.Services.GetService<SecurityMasterExceptionCaseworkService>() is not null)
             MapExceptionAgingEndpoints(group, jsonOptions);
     }

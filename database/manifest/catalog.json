@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "6abe3570af9b11708d5fdf6179a3bbc8124cfb2d524eac209abdc11c79fd2467",
+  "database_fingerprint": "0bbba838d3b8045c1e4ea8265fd6cb95d1be4159f8276c13b1d2fb61b1a512a9",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -8039,6 +8039,270 @@
       "target": "security_master.option_contract_projection_pkey",
       "target_kind": "index",
       "target_name": "option_contract_projection_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "9e09e39823dfb59548e42be6f328a75a062dbc6e95a46d901e1f3c7dcb1747b1",
+      "kind": "normal",
+      "source": "security_master.otc_collateral_agreements_amounts_check on security_master.otc_collateral_agreements",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_collateral_agreements.minimum_transfer_amount",
+      "target_kind": "table column",
+      "target_name": "otc_collateral_agreements",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "31621d50a7136bc49b85f7efdf13f5ed6c4b752724cacdfb449ebd95e473015b",
+      "kind": "normal",
+      "source": "security_master.otc_collateral_agreements_amounts_check on security_master.otc_collateral_agreements",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_collateral_agreements.threshold_ours",
+      "target_kind": "table column",
+      "target_name": "otc_collateral_agreements",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "00d504b3d284e73db883aea59485626b73631f15138ee2670ba2dbdb86cd61e5",
+      "kind": "normal",
+      "source": "security_master.otc_collateral_agreements_amounts_check on security_master.otc_collateral_agreements",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_collateral_agreements.threshold_theirs",
+      "target_kind": "table column",
+      "target_name": "otc_collateral_agreements",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "8d40794733830a32d2a7e23ed70561e2e9d699307f8de3057174b1e657db547d",
+      "kind": "normal",
+      "source": "security_master.otc_collateral_agreements_master_agreement_id_fkey on security_master.otc_collateral_agreements",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_master_agreements.agreement_id",
+      "target_kind": "table column",
+      "target_name": "otc_master_agreements",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "0eeb5867cd009a72c55b71b520b16062a69dff9126f0edb9a68759aa839330c5",
+      "kind": "normal",
+      "source": "security_master.otc_collateral_agreements_master_agreement_id_fkey on security_master.otc_collateral_agreements",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_master_agreements_pkey",
+      "target_kind": "index",
+      "target_name": "otc_master_agreements_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "c2f859370a4de7ebe62c51cf8cea54e46e6270f48bc8e2cf18705e04b5682ee0",
+      "kind": "normal",
+      "source": "security_master.otc_collateral_agreements_window_check on security_master.otc_collateral_agreements",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_collateral_agreements.effective_date",
+      "target_kind": "table column",
+      "target_name": "otc_collateral_agreements",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "ad76b1281dc406d058c5a37916fc3711e17e9cb08574f51f961c2d5a0a2d2e13",
+      "kind": "normal",
+      "source": "security_master.otc_collateral_agreements_window_check on security_master.otc_collateral_agreements",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_collateral_agreements.termination_date",
+      "target_kind": "table column",
+      "target_name": "otc_collateral_agreements",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "21103af5799333a2171bb2e7b8ac86b87f6b702d933be2cf5652caa51ea6176b",
+      "kind": "normal",
+      "source": "security_master.otc_contracts_dates_check on security_master.otc_contracts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_contracts.effective_date",
+      "target_kind": "table column",
+      "target_name": "otc_contracts",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "55e8b78da662722f1ec1e3a3b80b1771cb9d9958997494fd55bd24624c6fea51",
+      "kind": "normal",
+      "source": "security_master.otc_contracts_dates_check on security_master.otc_contracts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_contracts.termination_date",
+      "target_kind": "table column",
+      "target_name": "otc_contracts",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "0c957eb0eb03e99c74e34c0a091cb90b24929c592e60fdf2368ebef6504c0348",
+      "kind": "normal",
+      "source": "security_master.otc_contracts_dates_check on security_master.otc_contracts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_contracts.trade_date",
+      "target_kind": "table column",
+      "target_name": "otc_contracts",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "26a2f9ffcd70fcde4e7aaeedd3c9f4e298ce42c96dfc40828d612367c8308937",
+      "kind": "normal",
+      "source": "security_master.otc_contracts_direction_check on security_master.otc_contracts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_contracts.direction",
+      "target_kind": "table column",
+      "target_name": "otc_contracts",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "f8257f355a1d662627a521181302f37d9b731361d4af5d5638ba516eaff306ae",
+      "kind": "normal",
+      "source": "security_master.otc_contracts_netting_set_id_fkey on security_master.otc_contracts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_netting_sets.netting_set_id",
+      "target_kind": "table column",
+      "target_name": "otc_netting_sets",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "8a483f44d295584275658f7f5eb69fdf1723b0651467066173597f7841123bf9",
+      "kind": "normal",
+      "source": "security_master.otc_contracts_netting_set_id_fkey on security_master.otc_contracts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_netting_sets_pkey",
+      "target_kind": "index",
+      "target_name": "otc_netting_sets_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "caf98c27fdf3e9af65382885f443ef78ffbab195e27ee1e05be6272d790a045d",
+      "kind": "normal",
+      "source": "security_master.otc_contracts_notional_check on security_master.otc_contracts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_contracts.notional",
+      "target_kind": "table column",
+      "target_name": "otc_contracts",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "39af200164d71b6a3fcc9ed7933d37f25d3dfacb126ca26cbbf925e272081584",
+      "kind": "normal",
+      "source": "security_master.otc_contracts_security_id_fkey on security_master.otc_contracts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities.security_id",
+      "target_kind": "table column",
+      "target_name": "securities",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "f52028fad61c6d6393c668192257432dbcff778a10db127f4e87e705c5864ddd",
+      "kind": "normal",
+      "source": "security_master.otc_contracts_security_id_fkey on security_master.otc_contracts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.securities_pkey",
+      "target_kind": "index",
+      "target_name": "securities_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "dc028be4ebff0f067984c67279a8a215c428ab9ed6f81a93e9ebac92cf8ecc3c",
+      "kind": "normal",
+      "source": "security_master.otc_contracts_status_check on security_master.otc_contracts",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_contracts.status",
+      "target_kind": "table column",
+      "target_name": "otc_contracts",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "e306502f4fe41499e4e6c4e086c0b452fb5611d01536cde580a351c41cd3824c",
+      "kind": "normal",
+      "source": "security_master.otc_master_agreements_type_check on security_master.otc_master_agreements",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_master_agreements.agreement_type",
+      "target_kind": "table column",
+      "target_name": "otc_master_agreements",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "91303cc366e0cbe134478ebceec977854d04665737e7dbb8f79142160e3c3b4b",
+      "kind": "normal",
+      "source": "security_master.otc_netting_sets_collateral_agreement_id_fkey on security_master.otc_netting_sets",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_collateral_agreements.collateral_agreement_id",
+      "target_kind": "table column",
+      "target_name": "otc_collateral_agreements",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "3e1ac975b0c4a676c0380ad3d07061687062d124f4e0ed2ba0eb0df26cfa20e8",
+      "kind": "normal",
+      "source": "security_master.otc_netting_sets_collateral_agreement_id_fkey on security_master.otc_netting_sets",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_collateral_agreements_pkey",
+      "target_kind": "index",
+      "target_name": "otc_collateral_agreements_pkey",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "6e0285fff11528c65d91ad0cde7fc00b17a702dd659a30455f759b14152afd12",
+      "kind": "normal",
+      "source": "security_master.otc_netting_sets_master_agreement_id_fkey on security_master.otc_netting_sets",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_master_agreements.agreement_id",
+      "target_kind": "table column",
+      "target_name": "otc_master_agreements",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "fe6b7a91b7e5af53eb4e3288500a1c5ca0f10dd394a9c16c9748f902ca69be23",
+      "kind": "normal",
+      "source": "security_master.otc_netting_sets_master_agreement_id_fkey on security_master.otc_netting_sets",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.otc_master_agreements_pkey",
+      "target_kind": "index",
+      "target_name": "otc_master_agreements_pkey",
       "target_schema": "security_master"
     },
     {
@@ -16749,6 +17013,214 @@
       "object": "column:security_master.option_series_projection.underlying_symbol"
     },
     {
+      "fingerprint": "c93a6c644705b51f1f1c2214a6804239dc4b8dfeab3ea8d92b66170b55aaef54",
+      "object": "column:security_master.otc_collateral_agreements.collateral_agreement_id"
+    },
+    {
+      "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+      "object": "column:security_master.otc_collateral_agreements.currency"
+    },
+    {
+      "fingerprint": "49a061082d7a6896724cc47252c5f8b34718427ebc55d41f6990535dedd63a12",
+      "object": "column:security_master.otc_collateral_agreements.effective_date"
+    },
+    {
+      "fingerprint": "bbeeb73ae63e4e3694972e48ace96364d70801338ed6ca0c17f3557ee2d81f46",
+      "object": "column:security_master.otc_collateral_agreements.eligible_collateral"
+    },
+    {
+      "fingerprint": "f2b7d36c12fcea540ff13aa8d5dc80ea7983fa1fd499765e5c731905f4bbded3",
+      "object": "column:security_master.otc_collateral_agreements.independent_amount"
+    },
+    {
+      "fingerprint": "e9537c696b008649e38c7e2fce1119239321ba98cdd2d5aebafca3d736666339",
+      "object": "column:security_master.otc_collateral_agreements.master_agreement_id"
+    },
+    {
+      "fingerprint": "25f3ca51d15ad2cb7a2cf94afdee67e99e490d5d8d12dbb843f5fb3d21ba3119",
+      "object": "column:security_master.otc_collateral_agreements.minimum_transfer_amount"
+    },
+    {
+      "fingerprint": "06cbae86ebc66948af5696f02f338ec2f012ff58cf3fbc503d5f538f4b175f04",
+      "object": "column:security_master.otc_collateral_agreements.notes"
+    },
+    {
+      "fingerprint": "a7121639844a218e0680f52e946b13f670d14f24aa878d369131ac1eb762918c",
+      "object": "column:security_master.otc_collateral_agreements.rounding_amount"
+    },
+    {
+      "fingerprint": "f3f390f2c4b686afc871bb6c6ba9c4478fbe3ebbd3878ba520626b9946ef6dc7",
+      "object": "column:security_master.otc_collateral_agreements.termination_date"
+    },
+    {
+      "fingerprint": "14969bf8aede362cc23046af29ce391a0b0b1debbcf91a43b5e271da9dfbc4a9",
+      "object": "column:security_master.otc_collateral_agreements.threshold_ours"
+    },
+    {
+      "fingerprint": "fe38cf487c0ddc9b3b0f312ac005a3095f9d54903f3ef7ea2ae81f7aee78566f",
+      "object": "column:security_master.otc_collateral_agreements.threshold_theirs"
+    },
+    {
+      "fingerprint": "e58f8b6a023d50abc6f440119a7caa50491fe2c74f93fd522b7b346d63665008",
+      "object": "column:security_master.otc_collateral_agreements.updated_at"
+    },
+    {
+      "fingerprint": "5fb9ed15cba3d2c77139aa6c727e8a60d362b135cde1fdb0e5c8e0602dc9eabe",
+      "object": "column:security_master.otc_collateral_agreements.updated_by"
+    },
+    {
+      "fingerprint": "9e402782e79f690218f7bf05b7739493dacf7cbb82b82edd808214eb7bd88981",
+      "object": "column:security_master.otc_collateral_agreements.valuation_frequency"
+    },
+    {
+      "fingerprint": "ce889b88e4b2ef78f8cd4ce288c7c36321f90a381c688a218ef7a70271354ef9",
+      "object": "column:security_master.otc_collateral_agreements.version"
+    },
+    {
+      "fingerprint": "db2a5260be5f4797d5dda49e00de8371eebd0ce9f9f89f10cc3a4770aedfaa00",
+      "object": "column:security_master.otc_contracts.confirmation_reference"
+    },
+    {
+      "fingerprint": "c15e12825281d110301aa15fe3d2ed1b1fac6407b20744a5d041c58f79d31088",
+      "object": "column:security_master.otc_contracts.contract_id"
+    },
+    {
+      "fingerprint": "f575353465c16bd584761a624a6d7189786d91f8b9459cb64f63a88c630adf42",
+      "object": "column:security_master.otc_contracts.direction"
+    },
+    {
+      "fingerprint": "59be057217e536b03e14eb9c34080d107056dec7e2a5a6eaa9210ebe779d9836",
+      "object": "column:security_master.otc_contracts.effective_date"
+    },
+    {
+      "fingerprint": "33a876f1da687377f8eed1e2d9560ea89673b0c0fa56885930fa5727f241fbc2",
+      "object": "column:security_master.otc_contracts.external_trade_id"
+    },
+    {
+      "fingerprint": "980be44e5189e5a047b58a6fb8bb46d7f289ff38e827347a91048e4f01c0b86a",
+      "object": "column:security_master.otc_contracts.netting_set_id"
+    },
+    {
+      "fingerprint": "06cbae86ebc66948af5696f02f338ec2f012ff58cf3fbc503d5f538f4b175f04",
+      "object": "column:security_master.otc_contracts.notes"
+    },
+    {
+      "fingerprint": "69fe92f5d4980bceb2428034ab45a316b03fbec89664a0ff295139dcd71c72aa",
+      "object": "column:security_master.otc_contracts.notional"
+    },
+    {
+      "fingerprint": "2248b83ac9da455545c384fdb50c505b2b2917bde3b2af3d0ffa5574a388e0ca",
+      "object": "column:security_master.otc_contracts.notional_currency"
+    },
+    {
+      "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
+      "object": "column:security_master.otc_contracts.security_id"
+    },
+    {
+      "fingerprint": "6710e0897a85d1ccfc3aea97577d944bbba7357ab334d8a8e617608b1520fcbe",
+      "object": "column:security_master.otc_contracts.status"
+    },
+    {
+      "fingerprint": "4cf805fdf22ce18d3d3e06a9173b34df2d9899edbf4948b1fde38da292f50fc2",
+      "object": "column:security_master.otc_contracts.termination_date"
+    },
+    {
+      "fingerprint": "68954a408ed8be28a79ef66387b6b7c747bc15a615d7889ec3f3d25af72da110",
+      "object": "column:security_master.otc_contracts.trade_date"
+    },
+    {
+      "fingerprint": "e58f8b6a023d50abc6f440119a7caa50491fe2c74f93fd522b7b346d63665008",
+      "object": "column:security_master.otc_contracts.updated_at"
+    },
+    {
+      "fingerprint": "5fb9ed15cba3d2c77139aa6c727e8a60d362b135cde1fdb0e5c8e0602dc9eabe",
+      "object": "column:security_master.otc_contracts.updated_by"
+    },
+    {
+      "fingerprint": "ce889b88e4b2ef78f8cd4ce288c7c36321f90a381c688a218ef7a70271354ef9",
+      "object": "column:security_master.otc_contracts.version"
+    },
+    {
+      "fingerprint": "eb3f44ec712bf39776620e0765eb9bfc11930a08b1b087baa6ed81f4fa28859a",
+      "object": "column:security_master.otc_master_agreements.agreement_date"
+    },
+    {
+      "fingerprint": "1adfa0aeccee7f8614f0b5aee52bab70c3b141227a7bfbccf91f7f704c6535f3",
+      "object": "column:security_master.otc_master_agreements.agreement_id"
+    },
+    {
+      "fingerprint": "82364b5e6c047216bb5101e363bcaf75a4533b90b222cc41e0daee028eea582c",
+      "object": "column:security_master.otc_master_agreements.agreement_type"
+    },
+    {
+      "fingerprint": "b7d7488e5c57258697e4f1f7c350825009a049feb62e4da314edc220c6e9c8b4",
+      "object": "column:security_master.otc_master_agreements.counterparty"
+    },
+    {
+      "fingerprint": "1cddd57db7fe20f00d49ab9f1fbcac69f51ae34eff4d44a585bc0bb931346153",
+      "object": "column:security_master.otc_master_agreements.counterparty_lei"
+    },
+    {
+      "fingerprint": "c6b1d8f3acc881ad6484409a06cad7fcccdd7b2c8235482ba0d59e49d96a35d9",
+      "object": "column:security_master.otc_master_agreements.governing_law"
+    },
+    {
+      "fingerprint": "907f35831104ae6bb3e9e3b52fbcf4edf9a6731e37d87201e800527e7ef48223",
+      "object": "column:security_master.otc_master_agreements.notes"
+    },
+    {
+      "fingerprint": "573cfc5fa54070ccd1a0aa8216b2cf481d69956b2bed757f13a16bf6064965db",
+      "object": "column:security_master.otc_master_agreements.our_entity"
+    },
+    {
+      "fingerprint": "b188efb0a3f27fa4c67eba312ff93481ade4e5f47edd455759570172b19fcfb7",
+      "object": "column:security_master.otc_master_agreements.our_entity_id"
+    },
+    {
+      "fingerprint": "3bdbb1396065c8adc51dbbcdc564f472f70d1dc840969b1c6e613ebd873a69d2",
+      "object": "column:security_master.otc_master_agreements.updated_at"
+    },
+    {
+      "fingerprint": "6e0446d525da1981d76b9f86a02e6387e015577f695a03d3d36bd0363458f021",
+      "object": "column:security_master.otc_master_agreements.updated_by"
+    },
+    {
+      "fingerprint": "d488f5777035217fcb84062d4a0dc1ee80ffdacbcf1b512865d0bdd2870e6d07",
+      "object": "column:security_master.otc_master_agreements.version"
+    },
+    {
+      "fingerprint": "55e8a07041c2909242392e260086815bb7efafdb43c32a7c7b4922bd61d224ca",
+      "object": "column:security_master.otc_netting_sets.collateral_agreement_id"
+    },
+    {
+      "fingerprint": "e9537c696b008649e38c7e2fce1119239321ba98cdd2d5aebafca3d736666339",
+      "object": "column:security_master.otc_netting_sets.master_agreement_id"
+    },
+    {
+      "fingerprint": "03fc6c2258119aac4a24c9a9825c2db829f10c4d1db8c64970b18f9078ca5e33",
+      "object": "column:security_master.otc_netting_sets.name"
+    },
+    {
+      "fingerprint": "51aa99de838899e839790317f0abc1e436835d6dbeb271408441c06047ba34e7",
+      "object": "column:security_master.otc_netting_sets.netting_set_id"
+    },
+    {
+      "fingerprint": "d2fc5a2d9b752a6c977aafb7ce847669e6cdfe68fb242781a88ebb27a426582a",
+      "object": "column:security_master.otc_netting_sets.notes"
+    },
+    {
+      "fingerprint": "2647ea2564e0a9b40daa27a288d27bc49b5e13e13c007ffe5158ebcc486f8902",
+      "object": "column:security_master.otc_netting_sets.updated_at"
+    },
+    {
+      "fingerprint": "2e5898da4cc24b125db3a34923f96ee8474d827945b7d9ffa8f6bb67d921f29b",
+      "object": "column:security_master.otc_netting_sets.updated_by"
+    },
+    {
+      "fingerprint": "cab4b8a5f00ec6450809772db5f62fb50dc627b89f337234ae273bd3c1d51290",
+      "object": "column:security_master.otc_netting_sets.version"
+    },
+    {
       "fingerprint": "eae9e78bfaa36444cb48792d12e92874d99952b02a337e0b2ea16c64cfa20cd4",
       "object": "column:security_master.other_security_projection.category"
     },
@@ -19141,6 +19613,22 @@
       "object": "comment:table:security_master.ndf_projection"
     },
     {
+      "fingerprint": "5759f56154f25d341ee24c40d62dba0ccd5ab8885c4c4618754a6531ecd4a7d7",
+      "object": "comment:table:security_master.otc_collateral_agreements"
+    },
+    {
+      "fingerprint": "75fca75886e91846f87423ff1a7ce071f6c8c5a00a346a7c078507a082b5bed2",
+      "object": "comment:table:security_master.otc_contracts"
+    },
+    {
+      "fingerprint": "dd51ed8abf828c3f9dfef02e7b70eb562f5d0ea11fc70b671a0acce2e00407ed",
+      "object": "comment:table:security_master.otc_master_agreements"
+    },
+    {
+      "fingerprint": "d73ac31b3db511ad5a2b1ad612507b6e359763812b197da4128215bfbac6fb1d",
+      "object": "comment:table:security_master.otc_netting_sets"
+    },
+    {
       "fingerprint": "8c829df39ea81d98b27dfa060fcdec9c0d41a694374a4818d02d3a7f5e6cafdc",
       "object": "comment:table:security_master.other_security_projection"
     },
@@ -21463,6 +21951,70 @@
     {
       "fingerprint": "86fb02ed0d49345b03784d79173fed6482a11945c96dd815bf86708cfb63170c",
       "object": "constraint:security_master.option_series_projection.option_series_projection_pkey"
+    },
+    {
+      "fingerprint": "06527a609bd8f1a0553701ed3746de76495177176c221f77d0e00dbfa5a4f78f",
+      "object": "constraint:security_master.otc_collateral_agreements.otc_collateral_agreements_amounts_check"
+    },
+    {
+      "fingerprint": "7b62ae6f8ff50ad7b4b3c0af5a0c5cca160b54da7a5cba49b311814f0bc9a6f0",
+      "object": "constraint:security_master.otc_collateral_agreements.otc_collateral_agreements_master_agreement_id_fkey"
+    },
+    {
+      "fingerprint": "ad8d36194e2648cc8cb1d3b26da58d490eb08dd9d578ee67173bc623fb3cc800",
+      "object": "constraint:security_master.otc_collateral_agreements.otc_collateral_agreements_pkey"
+    },
+    {
+      "fingerprint": "59319d7a02ea778b2f9b8b803df154708647968ebcc5e41792a4fe2c8175d943",
+      "object": "constraint:security_master.otc_collateral_agreements.otc_collateral_agreements_window_check"
+    },
+    {
+      "fingerprint": "822e3dbe8f4104fb6179f01af7ec21c49faa4727cfbcc36317351f61a8ffac65",
+      "object": "constraint:security_master.otc_contracts.otc_contracts_dates_check"
+    },
+    {
+      "fingerprint": "17a7b178dac9fbb8ff9b0a7cc7fbb2f1e55a4680ab7be4ac852025ff66edb629",
+      "object": "constraint:security_master.otc_contracts.otc_contracts_direction_check"
+    },
+    {
+      "fingerprint": "9865590c5b75410aaf13fb5cb915d9d27647369afbe5690253a6901387657fcf",
+      "object": "constraint:security_master.otc_contracts.otc_contracts_netting_set_id_fkey"
+    },
+    {
+      "fingerprint": "bbc882e5b87b8df3f4cf40f21738c4e5321a8cb0202dc922771ac80d640e8aa9",
+      "object": "constraint:security_master.otc_contracts.otc_contracts_notional_check"
+    },
+    {
+      "fingerprint": "03eeb4512d1cbc5934f7e6b71737e6f8ee1bba57fef7bf0ad811dbe19ac4c4cf",
+      "object": "constraint:security_master.otc_contracts.otc_contracts_pkey"
+    },
+    {
+      "fingerprint": "af72291859078d2cdf14be4710a90eb1793f7fb15ca164a2c5e12da937a2a0cf",
+      "object": "constraint:security_master.otc_contracts.otc_contracts_security_id_fkey"
+    },
+    {
+      "fingerprint": "7b3237b2a8d849cef072678f7ed9be83381fc28f240ddd896ee5c7c89ea2d6a4",
+      "object": "constraint:security_master.otc_contracts.otc_contracts_status_check"
+    },
+    {
+      "fingerprint": "83fd59f49dd7e751406a86ac11e0c25e35111f454dbf86cf51a350f3a1efdbb6",
+      "object": "constraint:security_master.otc_master_agreements.otc_master_agreements_pkey"
+    },
+    {
+      "fingerprint": "8a2617c07a868266766249f2aa46f970f573485ba2957d50e83332520b5da511",
+      "object": "constraint:security_master.otc_master_agreements.otc_master_agreements_type_check"
+    },
+    {
+      "fingerprint": "c01bba7f58e3b3e25ad27c47a786e2802d6fd95ac66c4cc5ad8debde84bc0a89",
+      "object": "constraint:security_master.otc_netting_sets.otc_netting_sets_collateral_agreement_id_fkey"
+    },
+    {
+      "fingerprint": "8e227f49c76f0de8fb0ae3ac05f287fe0b248e9beb29def1c3b8dc7100f6c27d",
+      "object": "constraint:security_master.otc_netting_sets.otc_netting_sets_master_agreement_id_fkey"
+    },
+    {
+      "fingerprint": "3b6540062c37f91bf4deb96d2471793aa638bdafce5f300ea03b64f0fb8fd4e5",
+      "object": "constraint:security_master.otc_netting_sets.otc_netting_sets_pkey"
     },
     {
       "fingerprint": "97e0b3337671f79e784a58f7e456f2f2af105b70b361569eb1dfd05eb9a412d0",
@@ -24593,6 +25145,94 @@
       "object": "dependency:security_master.option_series_projection_contract_symbol_fkey on security_master.option_series_projection->security_master.option_contract_projection_pkey:normal"
     },
     {
+      "fingerprint": "9e09e39823dfb59548e42be6f328a75a062dbc6e95a46d901e1f3c7dcb1747b1",
+      "object": "dependency:security_master.otc_collateral_agreements_amounts_check on security_master.otc_collateral_agreements->security_master.otc_collateral_agreements.minimum_transfer_amount:normal"
+    },
+    {
+      "fingerprint": "31621d50a7136bc49b85f7efdf13f5ed6c4b752724cacdfb449ebd95e473015b",
+      "object": "dependency:security_master.otc_collateral_agreements_amounts_check on security_master.otc_collateral_agreements->security_master.otc_collateral_agreements.threshold_ours:normal"
+    },
+    {
+      "fingerprint": "00d504b3d284e73db883aea59485626b73631f15138ee2670ba2dbdb86cd61e5",
+      "object": "dependency:security_master.otc_collateral_agreements_amounts_check on security_master.otc_collateral_agreements->security_master.otc_collateral_agreements.threshold_theirs:normal"
+    },
+    {
+      "fingerprint": "8d40794733830a32d2a7e23ed70561e2e9d699307f8de3057174b1e657db547d",
+      "object": "dependency:security_master.otc_collateral_agreements_master_agreement_id_fkey on security_master.otc_collateral_agreements->security_master.otc_master_agreements.agreement_id:normal"
+    },
+    {
+      "fingerprint": "0eeb5867cd009a72c55b71b520b16062a69dff9126f0edb9a68759aa839330c5",
+      "object": "dependency:security_master.otc_collateral_agreements_master_agreement_id_fkey on security_master.otc_collateral_agreements->security_master.otc_master_agreements_pkey:normal"
+    },
+    {
+      "fingerprint": "c2f859370a4de7ebe62c51cf8cea54e46e6270f48bc8e2cf18705e04b5682ee0",
+      "object": "dependency:security_master.otc_collateral_agreements_window_check on security_master.otc_collateral_agreements->security_master.otc_collateral_agreements.effective_date:normal"
+    },
+    {
+      "fingerprint": "ad76b1281dc406d058c5a37916fc3711e17e9cb08574f51f961c2d5a0a2d2e13",
+      "object": "dependency:security_master.otc_collateral_agreements_window_check on security_master.otc_collateral_agreements->security_master.otc_collateral_agreements.termination_date:normal"
+    },
+    {
+      "fingerprint": "21103af5799333a2171bb2e7b8ac86b87f6b702d933be2cf5652caa51ea6176b",
+      "object": "dependency:security_master.otc_contracts_dates_check on security_master.otc_contracts->security_master.otc_contracts.effective_date:normal"
+    },
+    {
+      "fingerprint": "55e8b78da662722f1ec1e3a3b80b1771cb9d9958997494fd55bd24624c6fea51",
+      "object": "dependency:security_master.otc_contracts_dates_check on security_master.otc_contracts->security_master.otc_contracts.termination_date:normal"
+    },
+    {
+      "fingerprint": "0c957eb0eb03e99c74e34c0a091cb90b24929c592e60fdf2368ebef6504c0348",
+      "object": "dependency:security_master.otc_contracts_dates_check on security_master.otc_contracts->security_master.otc_contracts.trade_date:normal"
+    },
+    {
+      "fingerprint": "26a2f9ffcd70fcde4e7aaeedd3c9f4e298ce42c96dfc40828d612367c8308937",
+      "object": "dependency:security_master.otc_contracts_direction_check on security_master.otc_contracts->security_master.otc_contracts.direction:normal"
+    },
+    {
+      "fingerprint": "f8257f355a1d662627a521181302f37d9b731361d4af5d5638ba516eaff306ae",
+      "object": "dependency:security_master.otc_contracts_netting_set_id_fkey on security_master.otc_contracts->security_master.otc_netting_sets.netting_set_id:normal"
+    },
+    {
+      "fingerprint": "8a483f44d295584275658f7f5eb69fdf1723b0651467066173597f7841123bf9",
+      "object": "dependency:security_master.otc_contracts_netting_set_id_fkey on security_master.otc_contracts->security_master.otc_netting_sets_pkey:normal"
+    },
+    {
+      "fingerprint": "caf98c27fdf3e9af65382885f443ef78ffbab195e27ee1e05be6272d790a045d",
+      "object": "dependency:security_master.otc_contracts_notional_check on security_master.otc_contracts->security_master.otc_contracts.notional:normal"
+    },
+    {
+      "fingerprint": "39af200164d71b6a3fcc9ed7933d37f25d3dfacb126ca26cbbf925e272081584",
+      "object": "dependency:security_master.otc_contracts_security_id_fkey on security_master.otc_contracts->security_master.securities.security_id:normal"
+    },
+    {
+      "fingerprint": "f52028fad61c6d6393c668192257432dbcff778a10db127f4e87e705c5864ddd",
+      "object": "dependency:security_master.otc_contracts_security_id_fkey on security_master.otc_contracts->security_master.securities_pkey:normal"
+    },
+    {
+      "fingerprint": "dc028be4ebff0f067984c67279a8a215c428ab9ed6f81a93e9ebac92cf8ecc3c",
+      "object": "dependency:security_master.otc_contracts_status_check on security_master.otc_contracts->security_master.otc_contracts.status:normal"
+    },
+    {
+      "fingerprint": "e306502f4fe41499e4e6c4e086c0b452fb5611d01536cde580a351c41cd3824c",
+      "object": "dependency:security_master.otc_master_agreements_type_check on security_master.otc_master_agreements->security_master.otc_master_agreements.agreement_type:normal"
+    },
+    {
+      "fingerprint": "91303cc366e0cbe134478ebceec977854d04665737e7dbb8f79142160e3c3b4b",
+      "object": "dependency:security_master.otc_netting_sets_collateral_agreement_id_fkey on security_master.otc_netting_sets->security_master.otc_collateral_agreements.collateral_agreement_id:normal"
+    },
+    {
+      "fingerprint": "3e1ac975b0c4a676c0380ad3d07061687062d124f4e0ed2ba0eb0df26cfa20e8",
+      "object": "dependency:security_master.otc_netting_sets_collateral_agreement_id_fkey on security_master.otc_netting_sets->security_master.otc_collateral_agreements_pkey:normal"
+    },
+    {
+      "fingerprint": "6e0285fff11528c65d91ad0cde7fc00b17a702dd659a30455f759b14152afd12",
+      "object": "dependency:security_master.otc_netting_sets_master_agreement_id_fkey on security_master.otc_netting_sets->security_master.otc_master_agreements.agreement_id:normal"
+    },
+    {
+      "fingerprint": "fe6b7a91b7e5af53eb4e3288500a1c5ca0f10dd394a9c16c9748f902ca69be23",
+      "object": "dependency:security_master.otc_netting_sets_master_agreement_id_fkey on security_master.otc_netting_sets->security_master.otc_master_agreements_pkey:normal"
+    },
+    {
       "fingerprint": "791154e9bbb33a4e8f9276244eb548e9cdc1aa0ba6b313c8523b1247f7e2ad04",
       "object": "dependency:security_master.payment_allocation_cash_transaction_id_fkey on security_master.payment_allocation->security_master.cash_transaction.cash_transaction_id:normal"
     },
@@ -26961,6 +27601,46 @@
       "object": "index:security_master.option_series_projection_pkey"
     },
     {
+      "fingerprint": "16b03dd948a16da477ecf8c3e4fee6dc7dc5b3857bfc30a9006dba1822f4a14b",
+      "object": "index:security_master.otc_collateral_agreements_master_idx"
+    },
+    {
+      "fingerprint": "e2c9698259771138957bc67de1ff390d5aaa6f238ad36ed077ff170c0a37435f",
+      "object": "index:security_master.otc_collateral_agreements_pkey"
+    },
+    {
+      "fingerprint": "786882e4bd37196e0307a15d1ac7d4656952dba0ac68d6a89daabc105d24ae10",
+      "object": "index:security_master.otc_contracts_external_trade_idx"
+    },
+    {
+      "fingerprint": "b2a664cc236b267d0242bd4d2f6495f0907801ebc264e6c9890fb7afc89f01ba",
+      "object": "index:security_master.otc_contracts_netting_set_idx"
+    },
+    {
+      "fingerprint": "706ad1c70922b4aa9f3b77a7c0a6bd9ac47ccc585cc2389b33a1d288c217cbee",
+      "object": "index:security_master.otc_contracts_pkey"
+    },
+    {
+      "fingerprint": "8c32ddbe29a3a33e8abb7ea336b6fabbd0841cda3e33a480bb2c69934d0dc1c4",
+      "object": "index:security_master.otc_contracts_security_idx"
+    },
+    {
+      "fingerprint": "c1e78aec8148e22334deaa4fdba89c0f67706e0e8d3216b087078ac8ea28185b",
+      "object": "index:security_master.otc_master_agreements_counterparty_idx"
+    },
+    {
+      "fingerprint": "ae8855043c7ab7d09e83bc708bda39f008bb03028f240409c56737f00f0900bc",
+      "object": "index:security_master.otc_master_agreements_pkey"
+    },
+    {
+      "fingerprint": "851ddf582ca762525aef173dcbc85222c9df4b7355f91433c1cf973505edeef6",
+      "object": "index:security_master.otc_netting_sets_master_idx"
+    },
+    {
+      "fingerprint": "97ef72a2fe9d91cf8dbbe55ff2b1e91b97b88e6b6b440b952bc6d8b0147eaa17",
+      "object": "index:security_master.otc_netting_sets_pkey"
+    },
+    {
       "fingerprint": "247af4f67f49401b6df6577847d720d8dcc8e8328b5e325396478781aa9a2e4b",
       "object": "index:security_master.other_security_projection_category_idx"
     },
@@ -28037,6 +28717,22 @@
       "object": "rls:security_master.option_series_projection"
     },
     {
+      "fingerprint": "97c3a9b2cbe1e435a1c23b42bc6863ec38331a797024cb7e5aefa453bf5301fd",
+      "object": "rls:security_master.otc_collateral_agreements"
+    },
+    {
+      "fingerprint": "2694b068f06c034aa27fb8a456ec8bdab1a15ea9df2a26a2ed348fc5e672730e",
+      "object": "rls:security_master.otc_contracts"
+    },
+    {
+      "fingerprint": "954f12d5f49336e5f44d083927c812df674f1a1dc4fc879de052a5a98efb6528",
+      "object": "rls:security_master.otc_master_agreements"
+    },
+    {
+      "fingerprint": "12a2b613980458d1f6644dd9ff3c71916b730b72c9cf34b7c4dbc541dd23ccd1",
+      "object": "rls:security_master.otc_netting_sets"
+    },
+    {
       "fingerprint": "2dd0f314592636bd4a3b3e477383aa81e8386013215911571bf88bbd6101cbf3",
       "object": "rls:security_master.other_security_projection"
     },
@@ -28285,7 +28981,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "dc6b236fdf6c5628e29ebbdcc20b77c7ac97c3534012042ec06dfb09a8c823fe",
+      "fingerprint": "0898f16b15ee4f345a28dd15a6ac6ce47a99c5e66968e4c1c3e4c386696ff998",
       "object": "schema:security_master"
     },
     {
@@ -28967,6 +29663,22 @@
     {
       "fingerprint": "97610bcd5ed72458805258ac53784c2b50c3e2cacdb8eca6a19a6f39ba987eaf",
       "object": "table:security_master.option_series_projection"
+    },
+    {
+      "fingerprint": "8799f73bf8f2c7b5cf0da73a90389f3533599c523cd7af22337e25e5fc0be452",
+      "object": "table:security_master.otc_collateral_agreements"
+    },
+    {
+      "fingerprint": "c4225b87cd14a0ddbe08bb8d8354596c782aedc745510f4e6caff8cae05dbddb",
+      "object": "table:security_master.otc_contracts"
+    },
+    {
+      "fingerprint": "0ffbcd9ce957c892f8a7a1e1e9ece7cead43d4d81121d32268ff463466c14dd1",
+      "object": "table:security_master.otc_master_agreements"
+    },
+    {
+      "fingerprint": "915637b2b3788860610962d179a0998213484af8f14bf8f672c8b07138311802",
+      "object": "table:security_master.otc_netting_sets"
     },
     {
       "fingerprint": "fec872bab770b8e920cf62a180b14e00bbe4e1c4c5e8f04aac590c9b39eccac3",
@@ -124307,6 +125019,30 @@
           "object_type": "table"
         },
         {
+          "comment": "Credit support annexes under a master agreement: thresholds, minimum transfer amount, independent amount, rounding, valuation cadence and eligible collateral with haircuts.",
+          "fingerprint": "5759f56154f25d341ee24c40d62dba0ccd5ab8885c4c4618754a6531ecd4a7d7",
+          "object": "security_master.otc_collateral_agreements",
+          "object_type": "table"
+        },
+        {
+          "comment": "Bilateral contracts: one trade against a counterparty on a Security Master instrument, in a netting set, with its notional, direction, dates and lifecycle status. Many contracts share one instrument.",
+          "fingerprint": "75fca75886e91846f87423ff1a7ce071f6c8c5a00a346a7c078507a082b5bed2",
+          "object": "security_master.otc_contracts",
+          "object_type": "table"
+        },
+        {
+          "comment": "Master agreements (ISDA, GMRA, GMSLA) between a fund legal entity and a counterparty. Every bilateral contract hangs off one through its netting set.",
+          "fingerprint": "dd51ed8abf828c3f9dfef02e7b70eb562f5d0ea11fc70b671a0acce2e00407ed",
+          "object": "security_master.otc_master_agreements",
+          "object_type": "table"
+        },
+        {
+          "comment": "Sets of contracts under one master agreement whose exposures net on close-out, optionally margined under one collateral agreement.",
+          "fingerprint": "d73ac31b3db511ad5a2b1ad612507b6e359763812b197da4128215bfbac6fb1d",
+          "object": "security_master.otc_netting_sets",
+          "object_type": "table"
+        },
+        {
           "comment": "Relational projection of OtherSecurity asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms.",
           "fingerprint": "8c829df39ea81d98b27dfa060fcdec9c0d41a694374a4818d02d3a7f5e6cafdc",
           "object": "security_master.other_security_projection",
@@ -126434,6 +127170,270 @@
           "target_schema": "security_master"
         },
         {
+          "fingerprint": "9e09e39823dfb59548e42be6f328a75a062dbc6e95a46d901e1f3c7dcb1747b1",
+          "kind": "normal",
+          "source": "security_master.otc_collateral_agreements_amounts_check on security_master.otc_collateral_agreements",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_collateral_agreements.minimum_transfer_amount",
+          "target_kind": "table column",
+          "target_name": "otc_collateral_agreements",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "31621d50a7136bc49b85f7efdf13f5ed6c4b752724cacdfb449ebd95e473015b",
+          "kind": "normal",
+          "source": "security_master.otc_collateral_agreements_amounts_check on security_master.otc_collateral_agreements",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_collateral_agreements.threshold_ours",
+          "target_kind": "table column",
+          "target_name": "otc_collateral_agreements",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "00d504b3d284e73db883aea59485626b73631f15138ee2670ba2dbdb86cd61e5",
+          "kind": "normal",
+          "source": "security_master.otc_collateral_agreements_amounts_check on security_master.otc_collateral_agreements",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_collateral_agreements.threshold_theirs",
+          "target_kind": "table column",
+          "target_name": "otc_collateral_agreements",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "8d40794733830a32d2a7e23ed70561e2e9d699307f8de3057174b1e657db547d",
+          "kind": "normal",
+          "source": "security_master.otc_collateral_agreements_master_agreement_id_fkey on security_master.otc_collateral_agreements",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_master_agreements.agreement_id",
+          "target_kind": "table column",
+          "target_name": "otc_master_agreements",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "0eeb5867cd009a72c55b71b520b16062a69dff9126f0edb9a68759aa839330c5",
+          "kind": "normal",
+          "source": "security_master.otc_collateral_agreements_master_agreement_id_fkey on security_master.otc_collateral_agreements",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_master_agreements_pkey",
+          "target_kind": "index",
+          "target_name": "otc_master_agreements_pkey",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "c2f859370a4de7ebe62c51cf8cea54e46e6270f48bc8e2cf18705e04b5682ee0",
+          "kind": "normal",
+          "source": "security_master.otc_collateral_agreements_window_check on security_master.otc_collateral_agreements",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_collateral_agreements.effective_date",
+          "target_kind": "table column",
+          "target_name": "otc_collateral_agreements",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "ad76b1281dc406d058c5a37916fc3711e17e9cb08574f51f961c2d5a0a2d2e13",
+          "kind": "normal",
+          "source": "security_master.otc_collateral_agreements_window_check on security_master.otc_collateral_agreements",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_collateral_agreements.termination_date",
+          "target_kind": "table column",
+          "target_name": "otc_collateral_agreements",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "21103af5799333a2171bb2e7b8ac86b87f6b702d933be2cf5652caa51ea6176b",
+          "kind": "normal",
+          "source": "security_master.otc_contracts_dates_check on security_master.otc_contracts",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_contracts.effective_date",
+          "target_kind": "table column",
+          "target_name": "otc_contracts",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "55e8b78da662722f1ec1e3a3b80b1771cb9d9958997494fd55bd24624c6fea51",
+          "kind": "normal",
+          "source": "security_master.otc_contracts_dates_check on security_master.otc_contracts",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_contracts.termination_date",
+          "target_kind": "table column",
+          "target_name": "otc_contracts",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "0c957eb0eb03e99c74e34c0a091cb90b24929c592e60fdf2368ebef6504c0348",
+          "kind": "normal",
+          "source": "security_master.otc_contracts_dates_check on security_master.otc_contracts",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_contracts.trade_date",
+          "target_kind": "table column",
+          "target_name": "otc_contracts",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "26a2f9ffcd70fcde4e7aaeedd3c9f4e298ce42c96dfc40828d612367c8308937",
+          "kind": "normal",
+          "source": "security_master.otc_contracts_direction_check on security_master.otc_contracts",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_contracts.direction",
+          "target_kind": "table column",
+          "target_name": "otc_contracts",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "f8257f355a1d662627a521181302f37d9b731361d4af5d5638ba516eaff306ae",
+          "kind": "normal",
+          "source": "security_master.otc_contracts_netting_set_id_fkey on security_master.otc_contracts",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_netting_sets.netting_set_id",
+          "target_kind": "table column",
+          "target_name": "otc_netting_sets",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "8a483f44d295584275658f7f5eb69fdf1723b0651467066173597f7841123bf9",
+          "kind": "normal",
+          "source": "security_master.otc_contracts_netting_set_id_fkey on security_master.otc_contracts",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_netting_sets_pkey",
+          "target_kind": "index",
+          "target_name": "otc_netting_sets_pkey",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "caf98c27fdf3e9af65382885f443ef78ffbab195e27ee1e05be6272d790a045d",
+          "kind": "normal",
+          "source": "security_master.otc_contracts_notional_check on security_master.otc_contracts",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_contracts.notional",
+          "target_kind": "table column",
+          "target_name": "otc_contracts",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "39af200164d71b6a3fcc9ed7933d37f25d3dfacb126ca26cbbf925e272081584",
+          "kind": "normal",
+          "source": "security_master.otc_contracts_security_id_fkey on security_master.otc_contracts",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.securities.security_id",
+          "target_kind": "table column",
+          "target_name": "securities",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "f52028fad61c6d6393c668192257432dbcff778a10db127f4e87e705c5864ddd",
+          "kind": "normal",
+          "source": "security_master.otc_contracts_security_id_fkey on security_master.otc_contracts",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.securities_pkey",
+          "target_kind": "index",
+          "target_name": "securities_pkey",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "dc028be4ebff0f067984c67279a8a215c428ab9ed6f81a93e9ebac92cf8ecc3c",
+          "kind": "normal",
+          "source": "security_master.otc_contracts_status_check on security_master.otc_contracts",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_contracts.status",
+          "target_kind": "table column",
+          "target_name": "otc_contracts",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "e306502f4fe41499e4e6c4e086c0b452fb5611d01536cde580a351c41cd3824c",
+          "kind": "normal",
+          "source": "security_master.otc_master_agreements_type_check on security_master.otc_master_agreements",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_master_agreements.agreement_type",
+          "target_kind": "table column",
+          "target_name": "otc_master_agreements",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "91303cc366e0cbe134478ebceec977854d04665737e7dbb8f79142160e3c3b4b",
+          "kind": "normal",
+          "source": "security_master.otc_netting_sets_collateral_agreement_id_fkey on security_master.otc_netting_sets",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_collateral_agreements.collateral_agreement_id",
+          "target_kind": "table column",
+          "target_name": "otc_collateral_agreements",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "3e1ac975b0c4a676c0380ad3d07061687062d124f4e0ed2ba0eb0df26cfa20e8",
+          "kind": "normal",
+          "source": "security_master.otc_netting_sets_collateral_agreement_id_fkey on security_master.otc_netting_sets",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_collateral_agreements_pkey",
+          "target_kind": "index",
+          "target_name": "otc_collateral_agreements_pkey",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "6e0285fff11528c65d91ad0cde7fc00b17a702dd659a30455f759b14152afd12",
+          "kind": "normal",
+          "source": "security_master.otc_netting_sets_master_agreement_id_fkey on security_master.otc_netting_sets",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_master_agreements.agreement_id",
+          "target_kind": "table column",
+          "target_name": "otc_master_agreements",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "fe6b7a91b7e5af53eb4e3288500a1c5ca0f10dd394a9c16c9748f902ca69be23",
+          "kind": "normal",
+          "source": "security_master.otc_netting_sets_master_agreement_id_fkey on security_master.otc_netting_sets",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.otc_master_agreements_pkey",
+          "target_kind": "index",
+          "target_name": "otc_master_agreements_pkey",
+          "target_schema": "security_master"
+        },
+        {
           "fingerprint": "791154e9bbb33a4e8f9276244eb548e9cdc1aa0ba6b313c8523b1247f7e2ad04",
           "kind": "normal",
           "source": "security_master.payment_allocation_cash_transaction_id_fkey on security_master.payment_allocation",
@@ -127578,7 +128578,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "dc6b236fdf6c5628e29ebbdcc20b77c7ac97c3534012042ec06dfb09a8c823fe",
+      "fingerprint": "0898f16b15ee4f345a28dd15a6ac6ce47a99c5e66968e4c1c3e4c386696ff998",
       "foreign_tables": [],
       "functions": [
         {
@@ -149877,6 +150877,1681 @@
               "comment": null,
               "data_type": "uuid",
               "default": null,
+              "fingerprint": "c93a6c644705b51f1f1c2214a6804239dc4b8dfeab3ea8d92b66170b55aaef54",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "collateral_agreement_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "e9537c696b008649e38c7e2fce1119239321ba98cdd2d5aebafca3d736666339",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "master_agreement_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "14969bf8aede362cc23046af29ce391a0b0b1debbcf91a43b5e271da9dfbc4a9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "threshold_ours",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "fe38cf487c0ddc9b3b0f312ac005a3095f9d54903f3ef7ea2ae81f7aee78566f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "threshold_theirs",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "25f3ca51d15ad2cb7a2cf94afdee67e99e490d5d8d12dbb843f5fb3d21ba3119",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "minimum_transfer_amount",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "f2b7d36c12fcea540ff13aa8d5dc80ea7983fa1fd499765e5c731905f4bbded3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "independent_amount",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "a7121639844a218e0680f52e946b13f670d14f24aa878d369131ac1eb762918c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "rounding_amount",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "9e402782e79f690218f7bf05b7739493dacf7cbb82b82edd808214eb7bd88981",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "valuation_frequency",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "bbeeb73ae63e4e3694972e48ace96364d70801338ed6ca0c17f3557ee2d81f46",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "eligible_collateral",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "49a061082d7a6896724cc47252c5f8b34718427ebc55d41f6990535dedd63a12",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "effective_date",
+              "nullable": false,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "f3f390f2c4b686afc871bb6c6ba9c4478fbe3ebbd3878ba520626b9946ef6dc7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "termination_date",
+              "nullable": true,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "06cbae86ebc66948af5696f02f338ec2f012ff58cf3fbc503d5f538f4b175f04",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notes",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "ce889b88e4b2ef78f8cd4ce288c7c36321f90a381c688a218ef7a70271354ef9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5fb9ed15cba3d2c77139aa6c727e8a60d362b135cde1fdb0e5c8e0602dc9eabe",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_by",
+              "nullable": false,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "e58f8b6a023d50abc6f440119a7caa50491fe2c74f93fd522b7b346d63665008",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_at",
+              "nullable": false,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Credit support annexes under a master agreement: thresholds, minimum transfer amount, independent amount, rounding, valuation cadence and eligible collateral with haircuts.",
+          "constraints": [
+            {
+              "columns": [
+                "threshold_ours",
+                "threshold_theirs",
+                "minimum_transfer_amount"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (threshold_ours >= 0::numeric AND threshold_theirs >= 0::numeric AND minimum_transfer_amount >= 0::numeric)",
+              "delete_action": null,
+              "fingerprint": "06527a609bd8f1a0553701ed3746de76495177176c221f77d0e00dbfa5a4f78f",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_collateral_agreements_amounts_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "termination_date",
+                "effective_date"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (termination_date IS NULL OR termination_date >= effective_date)",
+              "delete_action": null,
+              "fingerprint": "59319d7a02ea778b2f9b8b803df154708647968ebcc5e41792a4fe2c8175d943",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_collateral_agreements_window_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "master_agreement_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (master_agreement_id) REFERENCES security_master.otc_master_agreements(agreement_id)",
+              "delete_action": "no_action",
+              "fingerprint": "7b62ae6f8ff50ad7b4b3c0af5a0c5cca160b54da7a5cba49b311814f0bc9a6f0",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "otc_collateral_agreements_master_agreement_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "agreement_id"
+              ],
+              "referenced_schema": "security_master",
+              "referenced_table": "otc_master_agreements",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "collateral_agreement_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (collateral_agreement_id)",
+              "delete_action": null,
+              "fingerprint": "ad8d36194e2648cc8cb1d3b26da58d490eb08dd9d578ee67173bc623fb3cc800",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_collateral_agreements_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "8799f73bf8f2c7b5cf0da73a90389f3533599c523cd7af22337e25e5fc0be452",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX otc_collateral_agreements_master_idx ON security_master.otc_collateral_agreements USING btree (master_agreement_id)",
+              "expression": null,
+              "fingerprint": "16b03dd948a16da477ecf8c3e4fee6dc7dc5b3857bfc30a9006dba1822f4a14b",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "master_agreement_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_collateral_agreements_master_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_collateral_agreements_pkey ON security_master.otc_collateral_agreements USING btree (collateral_agreement_id)",
+              "expression": null,
+              "fingerprint": "e2c9698259771138957bc67de1ff390d5aaa6f238ad36ed077ff170c0a37435f",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "collateral_agreement_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_collateral_agreements_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "otc_collateral_agreements",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "c15e12825281d110301aa15fe3d2ed1b1fac6407b20744a5d041c58f79d31088",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "contract_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "980be44e5189e5a047b58a6fb8bb46d7f289ff38e827347a91048e4f01c0b86a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "netting_set_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "33a876f1da687377f8eed1e2d9560ea89673b0c0fa56885930fa5727f241fbc2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "external_trade_id",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f575353465c16bd584761a624a6d7189786d91f8b9459cb64f63a88c630adf42",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "direction",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "69fe92f5d4980bceb2428034ab45a316b03fbec89664a0ff295139dcd71c72aa",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notional",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "2248b83ac9da455545c384fdb50c505b2b2917bde3b2af3d0ffa5574a388e0ca",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notional_currency",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "68954a408ed8be28a79ef66387b6b7c747bc15a615d7889ec3f3d25af72da110",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "trade_date",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "59be057217e536b03e14eb9c34080d107056dec7e2a5a6eaa9210ebe779d9836",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "effective_date",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "4cf805fdf22ce18d3d3e06a9173b34df2d9899edbf4948b1fde38da292f50fc2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "termination_date",
+              "nullable": true,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6710e0897a85d1ccfc3aea97577d944bbba7357ab334d8a8e617608b1520fcbe",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "status",
+              "nullable": false,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "db2a5260be5f4797d5dda49e00de8371eebd0ce9f9f89f10cc3a4770aedfaa00",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "confirmation_reference",
+              "nullable": true,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "06cbae86ebc66948af5696f02f338ec2f012ff58cf3fbc503d5f538f4b175f04",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notes",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "ce889b88e4b2ef78f8cd4ce288c7c36321f90a381c688a218ef7a70271354ef9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5fb9ed15cba3d2c77139aa6c727e8a60d362b135cde1fdb0e5c8e0602dc9eabe",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_by",
+              "nullable": false,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "e58f8b6a023d50abc6f440119a7caa50491fe2c74f93fd522b7b346d63665008",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_at",
+              "nullable": false,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Bilateral contracts: one trade against a counterparty on a Security Master instrument, in a netting set, with its notional, direction, dates and lifecycle status. Many contracts share one instrument.",
+          "constraints": [
+            {
+              "columns": [
+                "effective_date",
+                "trade_date",
+                "termination_date"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (effective_date >= trade_date AND (termination_date IS NULL OR termination_date >= effective_date))",
+              "delete_action": null,
+              "fingerprint": "822e3dbe8f4104fb6179f01af7ec21c49faa4727cfbcc36317351f61a8ffac65",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contracts_dates_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "direction"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (direction = ANY (ARRAY['Buy'::text, 'Sell'::text]))",
+              "delete_action": null,
+              "fingerprint": "17a7b178dac9fbb8ff9b0a7cc7fbb2f1e55a4680ab7be4ac852025ff66edb629",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contracts_direction_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "notional"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (notional > 0::numeric)",
+              "delete_action": null,
+              "fingerprint": "bbc882e5b87b8df3f4cf40f21738c4e5321a8cb0202dc922771ac80d640e8aa9",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contracts_notional_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "status"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (status = ANY (ARRAY['Pending'::text, 'Confirmed'::text, 'Terminated'::text, 'Novated'::text, 'Matured'::text]))",
+              "delete_action": null,
+              "fingerprint": "7b3237b2a8d849cef072678f7ed9be83381fc28f240ddd896ee5c7c89ea2d6a4",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contracts_status_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "netting_set_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (netting_set_id) REFERENCES security_master.otc_netting_sets(netting_set_id)",
+              "delete_action": "no_action",
+              "fingerprint": "9865590c5b75410aaf13fb5cb915d9d27647369afbe5690253a6901387657fcf",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "otc_contracts_netting_set_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "netting_set_id"
+              ],
+              "referenced_schema": "security_master",
+              "referenced_table": "otc_netting_sets",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "security_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (security_id) REFERENCES security_master.securities(security_id)",
+              "delete_action": "no_action",
+              "fingerprint": "af72291859078d2cdf14be4710a90eb1793f7fb15ca164a2c5e12da937a2a0cf",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "otc_contracts_security_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "security_id"
+              ],
+              "referenced_schema": "security_master",
+              "referenced_table": "securities",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "contract_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (contract_id)",
+              "delete_action": null,
+              "fingerprint": "03eeb4512d1cbc5934f7e6b71737e6f8ee1bba57fef7bf0ad811dbe19ac4c4cf",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contracts_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "c4225b87cd14a0ddbe08bb8d8354596c782aedc745510f4e6caff8cae05dbddb",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_contracts_external_trade_idx ON security_master.otc_contracts USING btree (external_trade_id) WHERE (external_trade_id IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "786882e4bd37196e0307a15d1ac7d4656952dba0ac68d6a89daabc105d24ae10",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "external_trade_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_contracts_external_trade_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "external_trade_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX otc_contracts_netting_set_idx ON security_master.otc_contracts USING btree (netting_set_id)",
+              "expression": null,
+              "fingerprint": "b2a664cc236b267d0242bd4d2f6495f0907801ebc264e6c9890fb7afc89f01ba",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "netting_set_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_contracts_netting_set_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_contracts_pkey ON security_master.otc_contracts USING btree (contract_id)",
+              "expression": null,
+              "fingerprint": "706ad1c70922b4aa9f3b77a7c0a6bd9ac47ccc585cc2389b33a1d288c217cbee",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "contract_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_contracts_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX otc_contracts_security_idx ON security_master.otc_contracts USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "8c32ddbe29a3a33e8abb7ea336b6fabbd0841cda3e33a480bb2c69934d0dc1c4",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_contracts_security_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "otc_contracts",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "1adfa0aeccee7f8614f0b5aee52bab70c3b141227a7bfbccf91f7f704c6535f3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "agreement_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b7d7488e5c57258697e4f1f7c350825009a049feb62e4da314edc220c6e9c8b4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "counterparty",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "1cddd57db7fe20f00d49ab9f1fbcac69f51ae34eff4d44a585bc0bb931346153",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "counterparty_lei",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "573cfc5fa54070ccd1a0aa8216b2cf481d69956b2bed757f13a16bf6064965db",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "our_entity",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "b188efb0a3f27fa4c67eba312ff93481ade4e5f47edd455759570172b19fcfb7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "our_entity_id",
+              "nullable": true,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "82364b5e6c047216bb5101e363bcaf75a4533b90b222cc41e0daee028eea582c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "agreement_type",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "eb3f44ec712bf39776620e0765eb9bfc11930a08b1b087baa6ed81f4fa28859a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "agreement_date",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "c6b1d8f3acc881ad6484409a06cad7fcccdd7b2c8235482ba0d59e49d96a35d9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "governing_law",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "907f35831104ae6bb3e9e3b52fbcf4edf9a6731e37d87201e800527e7ef48223",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notes",
+              "nullable": true,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "d488f5777035217fcb84062d4a0dc1ee80ffdacbcf1b512865d0bdd2870e6d07",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6e0446d525da1981d76b9f86a02e6387e015577f695a03d3d36bd0363458f021",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_by",
+              "nullable": false,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "3bdbb1396065c8adc51dbbcdc564f472f70d1dc840969b1c6e613ebd873a69d2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_at",
+              "nullable": false,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Master agreements (ISDA, GMRA, GMSLA) between a fund legal entity and a counterparty. Every bilateral contract hangs off one through its netting set.",
+          "constraints": [
+            {
+              "columns": [
+                "agreement_type"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (agreement_type = ANY (ARRAY['Isda1992'::text, 'Isda2002'::text, 'Gmra'::text, 'Gmsla'::text, 'Other'::text]))",
+              "delete_action": null,
+              "fingerprint": "8a2617c07a868266766249f2aa46f970f573485ba2957d50e83332520b5da511",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_master_agreements_type_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "agreement_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (agreement_id)",
+              "delete_action": null,
+              "fingerprint": "83fd59f49dd7e751406a86ac11e0c25e35111f454dbf86cf51a350f3a1efdbb6",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_master_agreements_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "0ffbcd9ce957c892f8a7a1e1e9ece7cead43d4d81121d32268ff463466c14dd1",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX otc_master_agreements_counterparty_idx ON security_master.otc_master_agreements USING btree (counterparty)",
+              "expression": null,
+              "fingerprint": "c1e78aec8148e22334deaa4fdba89c0f67706e0e8d3216b087078ac8ea28185b",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "counterparty"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_master_agreements_counterparty_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_master_agreements_pkey ON security_master.otc_master_agreements USING btree (agreement_id)",
+              "expression": null,
+              "fingerprint": "ae8855043c7ab7d09e83bc708bda39f008bb03028f240409c56737f00f0900bc",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "agreement_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_master_agreements_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "otc_master_agreements",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "51aa99de838899e839790317f0abc1e436835d6dbeb271408441c06047ba34e7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "netting_set_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "e9537c696b008649e38c7e2fce1119239321ba98cdd2d5aebafca3d736666339",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "master_agreement_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "55e8a07041c2909242392e260086815bb7efafdb43c32a7c7b4922bd61d224ca",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "collateral_agreement_id",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "03fc6c2258119aac4a24c9a9825c2db829f10c4d1db8c64970b18f9078ca5e33",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "name",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d2fc5a2d9b752a6c977aafb7ce847669e6cdfe68fb242781a88ebb27a426582a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notes",
+              "nullable": true,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "cab4b8a5f00ec6450809772db5f62fb50dc627b89f337234ae273bd3c1d51290",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "2e5898da4cc24b125db3a34923f96ee8474d827945b7d9ffa8f6bb67d921f29b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_by",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "2647ea2564e0a9b40daa27a288d27bc49b5e13e13c007ffe5158ebcc486f8902",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_at",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Sets of contracts under one master agreement whose exposures net on close-out, optionally margined under one collateral agreement.",
+          "constraints": [
+            {
+              "columns": [
+                "collateral_agreement_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (collateral_agreement_id) REFERENCES security_master.otc_collateral_agreements(collateral_agreement_id)",
+              "delete_action": "no_action",
+              "fingerprint": "c01bba7f58e3b3e25ad27c47a786e2802d6fd95ac66c4cc5ad8debde84bc0a89",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "otc_netting_sets_collateral_agreement_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "collateral_agreement_id"
+              ],
+              "referenced_schema": "security_master",
+              "referenced_table": "otc_collateral_agreements",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "master_agreement_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (master_agreement_id) REFERENCES security_master.otc_master_agreements(agreement_id)",
+              "delete_action": "no_action",
+              "fingerprint": "8e227f49c76f0de8fb0ae3ac05f287fe0b248e9beb29def1c3b8dc7100f6c27d",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "otc_netting_sets_master_agreement_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "agreement_id"
+              ],
+              "referenced_schema": "security_master",
+              "referenced_table": "otc_master_agreements",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "netting_set_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (netting_set_id)",
+              "delete_action": null,
+              "fingerprint": "3b6540062c37f91bf4deb96d2471793aa638bdafce5f300ea03b64f0fb8fd4e5",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_netting_sets_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "915637b2b3788860610962d179a0998213484af8f14bf8f672c8b07138311802",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX otc_netting_sets_master_idx ON security_master.otc_netting_sets USING btree (master_agreement_id)",
+              "expression": null,
+              "fingerprint": "851ddf582ca762525aef173dcbc85222c9df4b7355f91433c1cf973505edeef6",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "master_agreement_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_netting_sets_master_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_netting_sets_pkey ON security_master.otc_netting_sets USING btree (netting_set_id)",
+              "expression": null,
+              "fingerprint": "97ef72a2fe9d91cf8dbbe55ff2b1e91b97b88e6b6b440b952bc6d8b0147eaa17",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "netting_set_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_netting_sets_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "otc_netting_sets",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
               "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
               "generated": null,
               "generated_expression": null,
@@ -168737,6 +171412,38 @@
           "forced": false,
           "policies": [],
           "relation": "option_series_projection",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "97c3a9b2cbe1e435a1c23b42bc6863ec38331a797024cb7e5aefa453bf5301fd",
+          "forced": false,
+          "policies": [],
+          "relation": "otc_collateral_agreements",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "2694b068f06c034aa27fb8a456ec8bdab1a15ea9df2a26a2ed348fc5e672730e",
+          "forced": false,
+          "policies": [],
+          "relation": "otc_contracts",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "954f12d5f49336e5f44d083927c812df674f1a1dc4fc879de052a5a98efb6528",
+          "forced": false,
+          "policies": [],
+          "relation": "otc_master_agreements",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "12a2b613980458d1f6644dd9ff3c71916b730b72c9cf34b7c4dbc541dd23ccd1",
+          "forced": false,
+          "policies": [],
+          "relation": "otc_netting_sets",
           "schema": "security_master"
         },
         {
@@ -191331,6 +194038,1681 @@
           "is_partition": false,
           "kind": "table",
           "name": "option_series_projection",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "c93a6c644705b51f1f1c2214a6804239dc4b8dfeab3ea8d92b66170b55aaef54",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "collateral_agreement_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "e9537c696b008649e38c7e2fce1119239321ba98cdd2d5aebafca3d736666339",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "master_agreement_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d102a811e96c23130a499c96ce5a70b4c810b79ef53a6ae60e80d57788f6ff49",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "currency",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "14969bf8aede362cc23046af29ce391a0b0b1debbcf91a43b5e271da9dfbc4a9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "threshold_ours",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "fe38cf487c0ddc9b3b0f312ac005a3095f9d54903f3ef7ea2ae81f7aee78566f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "threshold_theirs",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "25f3ca51d15ad2cb7a2cf94afdee67e99e490d5d8d12dbb843f5fb3d21ba3119",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "minimum_transfer_amount",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "f2b7d36c12fcea540ff13aa8d5dc80ea7983fa1fd499765e5c731905f4bbded3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "independent_amount",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "a7121639844a218e0680f52e946b13f670d14f24aa878d369131ac1eb762918c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "rounding_amount",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "9e402782e79f690218f7bf05b7739493dacf7cbb82b82edd808214eb7bd88981",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "valuation_frequency",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "bbeeb73ae63e4e3694972e48ace96364d70801338ed6ca0c17f3557ee2d81f46",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "eligible_collateral",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "49a061082d7a6896724cc47252c5f8b34718427ebc55d41f6990535dedd63a12",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "effective_date",
+              "nullable": false,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "f3f390f2c4b686afc871bb6c6ba9c4478fbe3ebbd3878ba520626b9946ef6dc7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "termination_date",
+              "nullable": true,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "06cbae86ebc66948af5696f02f338ec2f012ff58cf3fbc503d5f538f4b175f04",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notes",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "ce889b88e4b2ef78f8cd4ce288c7c36321f90a381c688a218ef7a70271354ef9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5fb9ed15cba3d2c77139aa6c727e8a60d362b135cde1fdb0e5c8e0602dc9eabe",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_by",
+              "nullable": false,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "e58f8b6a023d50abc6f440119a7caa50491fe2c74f93fd522b7b346d63665008",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_at",
+              "nullable": false,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Credit support annexes under a master agreement: thresholds, minimum transfer amount, independent amount, rounding, valuation cadence and eligible collateral with haircuts.",
+          "constraints": [
+            {
+              "columns": [
+                "threshold_ours",
+                "threshold_theirs",
+                "minimum_transfer_amount"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (threshold_ours >= 0::numeric AND threshold_theirs >= 0::numeric AND minimum_transfer_amount >= 0::numeric)",
+              "delete_action": null,
+              "fingerprint": "06527a609bd8f1a0553701ed3746de76495177176c221f77d0e00dbfa5a4f78f",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_collateral_agreements_amounts_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "termination_date",
+                "effective_date"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (termination_date IS NULL OR termination_date >= effective_date)",
+              "delete_action": null,
+              "fingerprint": "59319d7a02ea778b2f9b8b803df154708647968ebcc5e41792a4fe2c8175d943",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_collateral_agreements_window_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "master_agreement_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (master_agreement_id) REFERENCES security_master.otc_master_agreements(agreement_id)",
+              "delete_action": "no_action",
+              "fingerprint": "7b62ae6f8ff50ad7b4b3c0af5a0c5cca160b54da7a5cba49b311814f0bc9a6f0",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "otc_collateral_agreements_master_agreement_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "agreement_id"
+              ],
+              "referenced_schema": "security_master",
+              "referenced_table": "otc_master_agreements",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "collateral_agreement_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (collateral_agreement_id)",
+              "delete_action": null,
+              "fingerprint": "ad8d36194e2648cc8cb1d3b26da58d490eb08dd9d578ee67173bc623fb3cc800",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_collateral_agreements_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "8799f73bf8f2c7b5cf0da73a90389f3533599c523cd7af22337e25e5fc0be452",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX otc_collateral_agreements_master_idx ON security_master.otc_collateral_agreements USING btree (master_agreement_id)",
+              "expression": null,
+              "fingerprint": "16b03dd948a16da477ecf8c3e4fee6dc7dc5b3857bfc30a9006dba1822f4a14b",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "master_agreement_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_collateral_agreements_master_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_collateral_agreements_pkey ON security_master.otc_collateral_agreements USING btree (collateral_agreement_id)",
+              "expression": null,
+              "fingerprint": "e2c9698259771138957bc67de1ff390d5aaa6f238ad36ed077ff170c0a37435f",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "collateral_agreement_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_collateral_agreements_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "otc_collateral_agreements",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "c15e12825281d110301aa15fe3d2ed1b1fac6407b20744a5d041c58f79d31088",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "contract_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "980be44e5189e5a047b58a6fb8bb46d7f289ff38e827347a91048e4f01c0b86a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "netting_set_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "33a876f1da687377f8eed1e2d9560ea89673b0c0fa56885930fa5727f241fbc2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "external_trade_id",
+              "nullable": true,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f575353465c16bd584761a624a6d7189786d91f8b9459cb64f63a88c630adf42",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "direction",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(28,10)",
+              "default": null,
+              "fingerprint": "69fe92f5d4980bceb2428034ab45a316b03fbec89664a0ff295139dcd71c72aa",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notional",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "2248b83ac9da455545c384fdb50c505b2b2917bde3b2af3d0ffa5574a388e0ca",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notional_currency",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "68954a408ed8be28a79ef66387b6b7c747bc15a615d7889ec3f3d25af72da110",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "trade_date",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "59be057217e536b03e14eb9c34080d107056dec7e2a5a6eaa9210ebe779d9836",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "effective_date",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "4cf805fdf22ce18d3d3e06a9173b34df2d9899edbf4948b1fde38da292f50fc2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "termination_date",
+              "nullable": true,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6710e0897a85d1ccfc3aea97577d944bbba7357ab334d8a8e617608b1520fcbe",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "status",
+              "nullable": false,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "db2a5260be5f4797d5dda49e00de8371eebd0ce9f9f89f10cc3a4770aedfaa00",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "confirmation_reference",
+              "nullable": true,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "06cbae86ebc66948af5696f02f338ec2f012ff58cf3fbc503d5f538f4b175f04",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notes",
+              "nullable": true,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "ce889b88e4b2ef78f8cd4ce288c7c36321f90a381c688a218ef7a70271354ef9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 14,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5fb9ed15cba3d2c77139aa6c727e8a60d362b135cde1fdb0e5c8e0602dc9eabe",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_by",
+              "nullable": false,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "e58f8b6a023d50abc6f440119a7caa50491fe2c74f93fd522b7b346d63665008",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_at",
+              "nullable": false,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Bilateral contracts: one trade against a counterparty on a Security Master instrument, in a netting set, with its notional, direction, dates and lifecycle status. Many contracts share one instrument.",
+          "constraints": [
+            {
+              "columns": [
+                "effective_date",
+                "trade_date",
+                "termination_date"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (effective_date >= trade_date AND (termination_date IS NULL OR termination_date >= effective_date))",
+              "delete_action": null,
+              "fingerprint": "822e3dbe8f4104fb6179f01af7ec21c49faa4727cfbcc36317351f61a8ffac65",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contracts_dates_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "direction"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (direction = ANY (ARRAY['Buy'::text, 'Sell'::text]))",
+              "delete_action": null,
+              "fingerprint": "17a7b178dac9fbb8ff9b0a7cc7fbb2f1e55a4680ab7be4ac852025ff66edb629",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contracts_direction_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "notional"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (notional > 0::numeric)",
+              "delete_action": null,
+              "fingerprint": "bbc882e5b87b8df3f4cf40f21738c4e5321a8cb0202dc922771ac80d640e8aa9",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contracts_notional_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "status"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (status = ANY (ARRAY['Pending'::text, 'Confirmed'::text, 'Terminated'::text, 'Novated'::text, 'Matured'::text]))",
+              "delete_action": null,
+              "fingerprint": "7b3237b2a8d849cef072678f7ed9be83381fc28f240ddd896ee5c7c89ea2d6a4",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contracts_status_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "netting_set_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (netting_set_id) REFERENCES security_master.otc_netting_sets(netting_set_id)",
+              "delete_action": "no_action",
+              "fingerprint": "9865590c5b75410aaf13fb5cb915d9d27647369afbe5690253a6901387657fcf",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "otc_contracts_netting_set_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "netting_set_id"
+              ],
+              "referenced_schema": "security_master",
+              "referenced_table": "otc_netting_sets",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "security_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (security_id) REFERENCES security_master.securities(security_id)",
+              "delete_action": "no_action",
+              "fingerprint": "af72291859078d2cdf14be4710a90eb1793f7fb15ca164a2c5e12da937a2a0cf",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "otc_contracts_security_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "security_id"
+              ],
+              "referenced_schema": "security_master",
+              "referenced_table": "securities",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "contract_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (contract_id)",
+              "delete_action": null,
+              "fingerprint": "03eeb4512d1cbc5934f7e6b71737e6f8ee1bba57fef7bf0ad811dbe19ac4c4cf",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_contracts_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "c4225b87cd14a0ddbe08bb8d8354596c782aedc745510f4e6caff8cae05dbddb",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_contracts_external_trade_idx ON security_master.otc_contracts USING btree (external_trade_id) WHERE (external_trade_id IS NOT NULL)",
+              "expression": null,
+              "fingerprint": "786882e4bd37196e0307a15d1ac7d4656952dba0ac68d6a89daabc105d24ae10",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "external_trade_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_contracts_external_trade_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "external_trade_id IS NOT NULL",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX otc_contracts_netting_set_idx ON security_master.otc_contracts USING btree (netting_set_id)",
+              "expression": null,
+              "fingerprint": "b2a664cc236b267d0242bd4d2f6495f0907801ebc264e6c9890fb7afc89f01ba",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "netting_set_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_contracts_netting_set_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_contracts_pkey ON security_master.otc_contracts USING btree (contract_id)",
+              "expression": null,
+              "fingerprint": "706ad1c70922b4aa9f3b77a7c0a6bd9ac47ccc585cc2389b33a1d288c217cbee",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "contract_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_contracts_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX otc_contracts_security_idx ON security_master.otc_contracts USING btree (security_id)",
+              "expression": null,
+              "fingerprint": "8c32ddbe29a3a33e8abb7ea336b6fabbd0841cda3e33a480bb2c69934d0dc1c4",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_contracts_security_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "otc_contracts",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "1adfa0aeccee7f8614f0b5aee52bab70c3b141227a7bfbccf91f7f704c6535f3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "agreement_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b7d7488e5c57258697e4f1f7c350825009a049feb62e4da314edc220c6e9c8b4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "counterparty",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "1cddd57db7fe20f00d49ab9f1fbcac69f51ae34eff4d44a585bc0bb931346153",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "counterparty_lei",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "573cfc5fa54070ccd1a0aa8216b2cf481d69956b2bed757f13a16bf6064965db",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "our_entity",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "b188efb0a3f27fa4c67eba312ff93481ade4e5f47edd455759570172b19fcfb7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "our_entity_id",
+              "nullable": true,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "82364b5e6c047216bb5101e363bcaf75a4533b90b222cc41e0daee028eea582c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "agreement_type",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "eb3f44ec712bf39776620e0765eb9bfc11930a08b1b087baa6ed81f4fa28859a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "agreement_date",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "c6b1d8f3acc881ad6484409a06cad7fcccdd7b2c8235482ba0d59e49d96a35d9",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "governing_law",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "907f35831104ae6bb3e9e3b52fbcf4edf9a6731e37d87201e800527e7ef48223",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notes",
+              "nullable": true,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "d488f5777035217fcb84062d4a0dc1ee80ffdacbcf1b512865d0bdd2870e6d07",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6e0446d525da1981d76b9f86a02e6387e015577f695a03d3d36bd0363458f021",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_by",
+              "nullable": false,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "3bdbb1396065c8adc51dbbcdc564f472f70d1dc840969b1c6e613ebd873a69d2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_at",
+              "nullable": false,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Master agreements (ISDA, GMRA, GMSLA) between a fund legal entity and a counterparty. Every bilateral contract hangs off one through its netting set.",
+          "constraints": [
+            {
+              "columns": [
+                "agreement_type"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (agreement_type = ANY (ARRAY['Isda1992'::text, 'Isda2002'::text, 'Gmra'::text, 'Gmsla'::text, 'Other'::text]))",
+              "delete_action": null,
+              "fingerprint": "8a2617c07a868266766249f2aa46f970f573485ba2957d50e83332520b5da511",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_master_agreements_type_check",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "agreement_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (agreement_id)",
+              "delete_action": null,
+              "fingerprint": "83fd59f49dd7e751406a86ac11e0c25e35111f454dbf86cf51a350f3a1efdbb6",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_master_agreements_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "0ffbcd9ce957c892f8a7a1e1e9ece7cead43d4d81121d32268ff463466c14dd1",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX otc_master_agreements_counterparty_idx ON security_master.otc_master_agreements USING btree (counterparty)",
+              "expression": null,
+              "fingerprint": "c1e78aec8148e22334deaa4fdba89c0f67706e0e8d3216b087078ac8ea28185b",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "counterparty"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_master_agreements_counterparty_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_master_agreements_pkey ON security_master.otc_master_agreements USING btree (agreement_id)",
+              "expression": null,
+              "fingerprint": "ae8855043c7ab7d09e83bc708bda39f008bb03028f240409c56737f00f0900bc",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "agreement_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_master_agreements_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "otc_master_agreements",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "51aa99de838899e839790317f0abc1e436835d6dbeb271408441c06047ba34e7",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "netting_set_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "e9537c696b008649e38c7e2fce1119239321ba98cdd2d5aebafca3d736666339",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "master_agreement_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "55e8a07041c2909242392e260086815bb7efafdb43c32a7c7b4922bd61d224ca",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "collateral_agreement_id",
+              "nullable": true,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "03fc6c2258119aac4a24c9a9825c2db829f10c4d1db8c64970b18f9078ca5e33",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "name",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "d2fc5a2d9b752a6c977aafb7ce847669e6cdfe68fb242781a88ebb27a426582a",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "notes",
+              "nullable": true,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "bigint",
+              "default": null,
+              "fingerprint": "cab4b8a5f00ec6450809772db5f62fb50dc627b89f337234ae273bd3c1d51290",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "version",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "int8",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "2e5898da4cc24b125db3a34923f96ee8474d827945b7d9ffa8f6bb67d921f29b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_by",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "2647ea2564e0a9b40daa27a288d27bc49b5e13e13c007ffe5158ebcc486f8902",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "updated_at",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Sets of contracts under one master agreement whose exposures net on close-out, optionally margined under one collateral agreement.",
+          "constraints": [
+            {
+              "columns": [
+                "collateral_agreement_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (collateral_agreement_id) REFERENCES security_master.otc_collateral_agreements(collateral_agreement_id)",
+              "delete_action": "no_action",
+              "fingerprint": "c01bba7f58e3b3e25ad27c47a786e2802d6fd95ac66c4cc5ad8debde84bc0a89",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "otc_netting_sets_collateral_agreement_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "collateral_agreement_id"
+              ],
+              "referenced_schema": "security_master",
+              "referenced_table": "otc_collateral_agreements",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "master_agreement_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (master_agreement_id) REFERENCES security_master.otc_master_agreements(agreement_id)",
+              "delete_action": "no_action",
+              "fingerprint": "8e227f49c76f0de8fb0ae3ac05f287fe0b248e9beb29def1c3b8dc7100f6c27d",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "otc_netting_sets_master_agreement_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "agreement_id"
+              ],
+              "referenced_schema": "security_master",
+              "referenced_table": "otc_master_agreements",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "netting_set_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (netting_set_id)",
+              "delete_action": null,
+              "fingerprint": "3b6540062c37f91bf4deb96d2471793aa638bdafce5f300ea03b64f0fb8fd4e5",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "otc_netting_sets_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "915637b2b3788860610962d179a0998213484af8f14bf8f672c8b07138311802",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX otc_netting_sets_master_idx ON security_master.otc_netting_sets USING btree (master_agreement_id)",
+              "expression": null,
+              "fingerprint": "851ddf582ca762525aef173dcbc85222c9df4b7355f91433c1cf973505edeef6",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "master_agreement_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_netting_sets_master_idx",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX otc_netting_sets_pkey ON security_master.otc_netting_sets USING btree (netting_set_id)",
+              "expression": null,
+              "fingerprint": "97ef72a2fe9d91cf8dbbe55ff2b1e91b97b88e6b6b440b952bc6d8b0147eaa17",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "netting_set_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "otc_netting_sets_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "otc_netting_sets",
           "options": [],
           "owner": "meridian",
           "persistence": "permanent",
