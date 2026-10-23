@@ -1,0 +1,60 @@
+{
+  "assetClass": "CapFloor",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "capFloorType",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "capStrike",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "dayCount",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "effectiveDate",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "floorStrike",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "maturityDate",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "notional",
+          "type": "Decimal",
+          "required": true
+        },
+        {
+          "key": "premiumAmount",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "referenceIndex",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "resetFrequency",
+          "type": "String",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

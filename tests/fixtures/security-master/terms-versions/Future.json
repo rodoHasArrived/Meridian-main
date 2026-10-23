@@ -1,0 +1,65 @@
+{
+  "assetClass": "Future",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "contractMonth",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "deliveryLocationCode",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "deliveryMonthDt",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "expiry",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "firstNoticeDt",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "isRollTarget",
+          "type": "Boolean",
+          "required": true
+        },
+        {
+          "key": "lastTradingDt",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "multiplier",
+          "type": "Decimal",
+          "required": true
+        },
+        {
+          "key": "rollWindowDays",
+          "type": "Integer",
+          "required": false
+        },
+        {
+          "key": "rootSymbol",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "settlementType",
+          "type": "String",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

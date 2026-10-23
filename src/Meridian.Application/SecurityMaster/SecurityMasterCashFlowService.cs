@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.SecurityMaster.CashFlow;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.SecurityMaster.Schedules;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging;
 
@@ -330,7 +331,8 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         // may seed the balance; a future-dated scalar leaves the latest eligible schedule point
         // (already resolved above) or the unfactored walk in charge.
         var scalarFactorDate = SecurityTermReader.ReadDate(
-            EnumerateFactorDateSources(security.AssetSpecificTerms), ["factorDate", "currentFactorDate"]);
+            EnumerateFactorDateSources(SecurityAssetClassTermsUpgrader.UpgradeForRead(security.AssetClass, security.AssetSpecificTerms)),
+            ["factorDate", "currentFactorDate"]);
         var scalarFactorApplies = scalarFactorDate is not DateOnly scalarAsOf || scalarAsOf <= asOfDate;
         var scheduledFactor = appliedFactorEntry?.Factor ?? (scalarFactorApplies ? terms.CurrentFactor : null);
         var hasAuthoritativeFactor = scheduledFactor is >= 0m;
@@ -714,44 +716,31 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
     };
 
     /// <summary>
-    /// Yields each coupon period as an accrual start and its payment date, ending on maturity.
+    /// Each coupon period's accrual start and payment date, ending on maturity: the kernel's <see cref="ScheduleSpec.IssueAnchoredForward"/> schedule.
     /// </summary>
-    /// <remarks>
-    /// Every payment date is anchored on the issue date rather than compounded from the previous
-    /// payment date. <see cref="DateOnly.AddMonths"/> clamps a month-end anchor into shorter months
-    /// (31 Jan plus three months is 30 Apr), and compounding that clamp walks the schedule earlier
-    /// every period. For a bond issued on the 31st that drift lands the final period one day before
-    /// maturity and emits a spurious one-day stub, so a one-year quarterly bond yields five payments
-    /// instead of four. Anchoring keeps each period on the issue day-of-month, clamping only where
-    /// the target month is shorter.
-    /// </remarks>
     private static IEnumerable<(DateOnly AccrualStart, DateOnly PaymentDate)> BuildPaymentPeriods(
         DateOnly issueDate,
         DateOnly maturity,
         int periodMonths)
     {
-        // A non-positive period would never advance the anchor and would spin forever. Both callers
-        // clamp with Math.Max(1, ...), so this guards the contract rather than a reachable path.
+        // Both callers clamp with Math.Max(1, ...), so this guards the contract rather than a reachable path.
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(periodMonths);
 
-        if (issueDate >= maturity)
+        var tenor = ScheduleTenor.Months(periodMonths);
+        var schedule = ScheduleGenerator.Generate(ScheduleSpec.IssueAnchoredForward(issueDate, maturity, tenor));
+        if (!schedule.Succeeded)
         {
-            yield break;
+            throw new InvalidOperationException(schedule.Failure.Message);
         }
 
-        var accrualStart = issueDate;
-        for (var period = 1; ; period++)
-        {
-            var paymentDate = issueDate.AddMonths(periodMonths * period);
-            if (paymentDate >= maturity)
-            {
-                yield return (accrualStart, maturity);
-                yield break;
-            }
+        // The legacy loop evaluated the grid date that closed the schedule, so a maturity whose
+        // closing grid date lies beyond the supported date range (a far-dated or perpetual sentinel
+        // such as 9999-12-31 off the grid) threw ArgumentOutOfRangeException. The kernel treats that
+        // date as unbounded and closes at maturity instead; evaluate it to keep the legacy failure
+        // (SCH-DEF-010). Advance throws the same exception type for an out-of-range date.
+        _ = tenor.Advance(issueDate, schedule.Periods.Count);
 
-            yield return (accrualStart, paymentDate);
-            accrualStart = paymentDate;
-        }
+        return schedule.Periods.Select(static period => (period.AccrualStart, period.PaymentDate));
     }
 
     private static int ResolvePaymentFrequencyPerYear(string? paymentFrequency)

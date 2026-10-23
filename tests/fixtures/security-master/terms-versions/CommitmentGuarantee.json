@@ -1,0 +1,55 @@
+{
+  "assetClass": "CommitmentGuarantee",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "beneficiary",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "collateral",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "committedAmount",
+          "type": "Decimal",
+          "required": true
+        },
+        {
+          "key": "counterparty",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "covenants",
+          "type": "Array",
+          "required": true
+        },
+        {
+          "key": "effectiveDate",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "expiryDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "feeRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "unfundedAmount",
+          "type": "Decimal",
+          "required": false
+        }
+      ]
+    }
+  ]
+}
