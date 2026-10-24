@@ -357,6 +357,30 @@ public sealed partial class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task OrderRecovery_ReusedGatewayId_ExecutionBeforeRouteInstall_LeavesRecoveryUnresolved()
+    {
+        var sessions = 0;
+        var client = RecoveryClient(c => c.RaiseOpenOrder(sessions == 0
+            ? RecoverableOpenOrder()
+            : RecoverableOpenOrder(clientOrderId: "client-2")));
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        var recovery = (IBrokerageOrderRecoveryGateway)sut;
+        (await recovery.GetOrderForRecoveryAsync("client-1")).Should().NotBeNull();
+        sessions++;
+        client.RaiseConnectionLost();
+        client.RaiseConnectionRestored();
+        client.RaiseManagedAccounts("DU123456");
+        // Only the execution arrives before the route is installed; it leaves no cached report.
+        sut.RecoveryRoutesInstalling = () => client.RaiseExecution(new IBExecutionUpdate(7001, "AAPL", "BOT", 10m, 100d,
+            10m, 100d, "exec-before-install", "DU123456", "SMART", 1L, null, DateTimeOffset.UtcNow));
+
+        var recovered = await recovery.GetOrderForRecoveryAsync("client-2");
+
+        recovered.Should().BeNull("the withheld execution is evidence the snapshot does not describe");
+    }
+
+    [Fact]
     public async Task ManagedAccountsChangingAfterVerification_EndsTheSessionOfRoutesRecoveredUnderThem()
     {
         var cancelled = new List<int>();

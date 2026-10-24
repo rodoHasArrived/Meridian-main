@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Meridian.Execution.Sdk;
 
 namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
@@ -12,6 +13,16 @@ public sealed partial class IBBrokerageGateway
     // Guards every epoch change and the install of recovered routes, so a route is installed only
     // for evidence from the session that is still current and never needs rolling back.
     private readonly object _sessionGate = new();
+
+    // Executions withheld for a stale recovered id, numbered in arrival order under the session gate.
+    // A withheld status changes the cached report the route handoff rechecks; an execution leaves
+    // none, so recovery compares these numbers instead: one newer than its snapshot request is a
+    // fill the snapshot may not describe.
+    private readonly ConcurrentDictionary<int, long> _withheldExecutions = new();
+    private long _withheldExecutionSequence;
+
+    private void NoteWithheldExecution(int gatewayOrderId)
+        => _withheldExecutions[gatewayOrderId] = Interlocked.Increment(ref _withheldExecutionSequence);
 
     // Guards the open-orders request/end pairing: openOrderEnd carries no request id, so ends still
     // owed to abandoned requests are counted and drained instead of completing a later request.
@@ -167,6 +178,8 @@ public sealed partial class IBBrokerageGateway
         // The broker-verified accounts for this session. An orderRef is only unique within an
         // account, so a snapshot from another login or environment must never match.
         var verifiedAccounts = _verifiedAccounts;
+        // An execution withheld from here on may be a fill the snapshot this recovery reads omits.
+        var executionsBefore = Interlocked.Read(ref _withheldExecutionSequence);
 
         var open = await GetOpenOrdersAsync(ct).ConfigureAwait(false);
         var matches = open.Where(order => string.Equals(order.ClientOrderId, clientOrderId, StringComparison.Ordinal)).ToArray();
@@ -253,7 +266,8 @@ public sealed partial class IBBrokerageGateway
             Current(report);
             // A withheld callback for this id caches its report under this gate, so one that arrived
             // after the consistency check shows here: the validated evidence is no longer current.
-            if (!ReferenceEquals(CurrentSessionReport(gatewayOrderId, TrackedContext(gatewayOrderId)), latest))
+            if (!ReferenceEquals(CurrentSessionReport(gatewayOrderId, TrackedContext(gatewayOrderId)), latest)
+                || _withheldExecutions.TryGetValue(gatewayOrderId, out var withheld) && withheld > executionsBefore)
                 return null;
             // A route recovered in an earlier session is refreshed; a context this process submitted
             // is never replaced by snapshot terms.

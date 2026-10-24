@@ -1206,7 +1206,10 @@ public sealed partial class IBBrokerageGateway :
             lock (_sessionGate)
             {
                 if (TrackedContext(gatewayOrderId) is null)
+                {
+                    NoteWithheldExecution(gatewayOrderId);
                     return;
+                }
             }
             OnExecutionDetailsReceived(sender, update);
             return;
