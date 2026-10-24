@@ -1802,8 +1802,10 @@ stays verbatim, writes must name a recognized spelling, and the reference DTOs (
 and `DayCount`, swap-leg `PaymentCadence` and `DayCountConvention`) expose the typed value
 beside the raw text. Schedule-driving coupon cadences (bond `paymentFrequency`, swap-leg
 `paymentFrequency`) carry the narrower `CouponFrequency` convention: only cadences the cash-flow
-engines step in whole months, or `AtMaturity`, are accepted on write, and
-`SecurityTermConventions.CouponPaymentsPerYear` is the shared reader both schedulers use.
+engines step in whole months, or `AtMaturity`, are accepted on write. Both schedulers read the
+cadence through `SecurityTermConventions.LegacyCouponPaymentsPerYear`, which takes
+`CouponPaymentsPerYear`'s answer for every spelling it recognizes and keeps the pre-convention
+reading (one payment a year, or a count clamped to 1 through 12) for anything else.
 Conventions declared on array elements (the swap legs) are enforced on write like top-level ones. Swap legs may carry optional `notionalSchedule` (`{effectiveDate, notional}` steps) and
 `resetSchedule` (`{resetDate, fixingRate}`) arrays; `StructuredCashFlowLeg.NotionalOn` and `FixingOn`
 let the leg scheduler accrue on the scheduled notional (paying step-downs as principal when the leg

@@ -6216,3 +6216,74 @@ bridge, projection registry, asset-operations, structured cash-flow, architectur
 reconciliation and provider-ledger suites, the F# Security Master tests and a disposable
 PostgreSQL 16. A temporary mutation (an untagged version-2 field, and a version-2 key made required
 in both the schema and the manifest) failed the `.Since` and identity-legality guards as intended.
+
+## Resolution pass — 2026-10-24 (priority 5, third increment: the compounded generators and the coupon cadence reader)
+
+| Finding | What landed |
+| --- | --- |
+| After the first increment, seven of the eight schedule generators still rolled their own periods (G5) | Three more run on the kernel, each with output proven unchanged ([ADR-025](../adr/025-contractual-schedule-kernel.md) retirement record). `AssetOperationsProjectionBuilder.BuildBondProjectedCashFlows` iterates the periods of `ScheduleSpec.CompoundedForward`; coupon segmentation, sinking-fund rows, sequence numbers and the random flow ids are untouched. The obligation timeline's `NextMonthlyDate`, `NextQuarterDate`, `NextFrequencyDate` and `AdvanceAfter` take `ScheduleTenor` steps, and `AdvanceAfter` still compounds from its anchor. The fund-structure forecast's windowed loop moves into `RollProjectedScheduleDates`, which has the frozen oracle's signature and steps by the `ScheduleTenor` that `ResolveProjectedScheduleTenor` maps from the forecast's own fifteen spellings, behind the same 256-date guard. The `fixed-income-cash-flow-projection-v1` and `asset-obligation-projection-v1` stamps are unchanged. |
+| The coupon cadence parser existed as two byte-identical private copies, in `SecurityMasterCashFlowService` and `AssetOperationsReadService` | One public reader, `SecurityTermConventions.LegacyCouponPaymentsPerYear`, with the body moved unchanged and called by both Security Master walks (the single-stream projection and the per-leg schedule) and the asset-operations bond projection. Its documentation says why it is legacy. Where `CouponPaymentsPerYear` returns null, it returns 1 for blank text, `AtMaturity`, `Irregular`, the sub-monthly cadence names and tenors and unrecognized text. A positive whole number it does not recognize is clamped to 1 through 12, so `"5"` reads as 5, and `"13"` and the numeric sub-monthly spellings `"52"` and `"365"` read as 12. Separators are dropped before the convention is consulted, so `"1.2"` reads as 12. SCH-DEF-001 now names it. |
+| `SchedulePeriodRollingRatchetTests` still allowed nine period rolls in the three moved files | `AssetOperationsReadService.cs` (1), `AssetObligationProjectionService.cs` (4) and `InMemoryFundStructureService.cs` (4) carry no `AddMonths` or `AddYears` call any more, and their entries are removed. The remaining allowances are `FaceValueLot.cs` 2, `PostgresDirectLendingCommandService.cs` 1 and `InMemoryDirectLendingService.Workflows.cs` 1, plus the interest-only end offset in `DirectLending.fs` 1. |
+| Nothing proved the obligation and fund-structure production methods equal to their frozen copies, and no obligation due date was pinned | `LegacyOracleFidelityTests` now binds every moved method by reflection and compares it with its oracle. The bond roll is read back through `ProjectFixedIncomeCashFlows`, which both asset-operations paths run, on the 5,000-case forward sample. The obligation steps run over all 517 forward starts (44,462 cases) and over every day of the last thirteen months of the date range (29,304 cases, of which 12,543 throw in the oracle). The fund-structure roll runs on a 5,000-case sample of a new 909,920-case grid of spellings, windows, start hours and absent anchors that reaches the 256-date guard. End-of-range theories cover the bond roll (13 rows) and the forecast roll (15 rows, four on the guard), and a precedence test proves an earlier period's `OverflowException` still wins over the bond roll's range-end failure. Through the public seams, `AssetObligationProjectionServiceTests` pins the due date of every step-driven event, and `Meridian.FundStructure.Tests` pins the recognised spellings and the 256-date guard. `SecurityTermConventionTests` pins the cadence reader to explicit values. |
+| The legacy steps' failures past 9999-12-31 were unregistered | SCH-DEF-010 now also covers the asset-operations bond roll, pinned through a bond reference and through the Security Master-synthesized fallback. The new SCH-DEF-011 covers the obligation-timeline and fund-structure steps, each pinned beside the last as-of that still projects. Both rows are in the [registry](../../tests/fixtures/schedules/KNOWN-DEFECTS.md), with no owning increment for SCH-DEF-011. |
+
+**Corrections to the plan.**
+
+- **The obligation timeline and the fund-structure forecast do not use `RollDates`.** The plan moved
+  both onto `ScheduleGenerator.RollDates` in compounded mode. Each interleaves its own control with
+  every step. The forecast counts the anchor towards its 256-date guard and still evaluates the
+  256th step, whose date it never uses. The obligation lookups fail when no step after the as-of is
+  representable. `RollDates` stops silently at 9999-12-31, so both would have needed a fallback step
+  just to keep their failures. They take the compounded grid's step, `ScheduleTenor.Advance(date,
+  1)`, directly, and ADR-025 decision 6 now names that step for such callers.
+- **The obligation timeline is not one compounded roll.** `NextMonthlyDate` and `NextQuarterDate`
+  are one step from the current month or calendar-quarter start, and `NextFrequencyDate` is a single
+  offset from the as-of. Only `AdvanceAfter`, the NAV-statement cadence, compounds, from the NAV
+  date, so a month-end NAV date drifts (2025-05-31 reaches 2026-08-28 by 2026-05-31).
+- **The moved generators fail past 9999-12-31, and the plan called their output bit-identical
+  without saying so.** The failures are reachable from data. The obligation timeline's as-of comes
+  from the latest projection run or the earliest flow, and the fund-structure forecast's from the
+  query. Each failure keeps its type and its point of evaluation. The bond roll re-evaluates the
+  closing grid date at the start of the closing period, not as soon as the schedule is generated,
+  before any period is walked, as increment 1 does for the Security Master walk, because its earlier
+  periods do arithmetic that can fail first.
+
+**Not yet landed.** Increments 4 to 12 of this priority are unchanged from the first-increment
+section above. The frozen copies of the moved generators stay in `LegacyScheduleOracles` with their
+parity grids and fidelity checks. Each is deleted in a separate change after the last increment
+that edits its call site: increment 6 for the Security Master, asset-operations and cadence copies,
+increment 8 for the obligation timeline, and at any time for the fund-structure copies.
+
+**Behaviour changes.**
+
+- **Output: none.** Every date, amount, sequence number, row order and engine-version stamp is
+  unchanged, and the flow ids stay random. SCH-DEF-001, 002 and 007 pass in their pinned form.
+- **Failures past 9999-12-31: the same exception type, on the same inputs, at the same point.** The
+  parameter name and message text change. The legacy steps threw
+  `ArgumentOutOfRangeException` from the runtime's date arithmetic: the month and year steps with
+  parameter `months` or `value` and "The added or subtracted value results in an un-representable
+  DateTime.", and the fund-structure day and week steps (`DateOnly.AddDays`) with parameter `value`
+  and "Value to add was out of range.". The kernel step throws it with parameter `periods` and "The
+  advanced date falls outside the supported date range." Two
+  callers surface the message: `AccountingPostingCandidateService` copies it into its
+  `posting-candidate.instrument-projection-resolution-failed` issue, and
+  `DirectLendingOutboxDispatcher` stores it as the outbox failure. Only dates in the last months of
+  9999 reach it, and increment 1 made the same trade for SCH-DEF-010. Matching the text would mean
+  copying two runtime resource strings into three files.
+- **Unreachable inputs.** `AdvanceAfter` with a non-positive step now fails at once, where the
+  legacy loop spun forever on 0. Its only caller passes 3.
+- **Contracts: additive.** One new public method, `SecurityTermConventions.LegacyCouponPaymentsPerYear`.
+  The schema-control manifests record types, not methods, and `verify` reproduces them unchanged.
+  No persisted shape, API shape, term schema, terms version, engine-version string or DI
+  registration changes.
+
+**Validation.** Extended suites: `LegacyOracleFidelityTests` (the bond, obligation and forecast
+checks, and the cadence check retargeted to the public reader), `ScheduleParityGrids` (the
+fund-structure grid), `SecurityTermConventionTests` (the legacy-reader theories),
+`AssetOperationsBondScheduleCharacterizationTests` (SCH-DEF-010), `AssetObligationProjectionServiceTests`
+(the seam pins and SCH-DEF-011), the `Meridian.FundStructure.Tests` schedule characterization
+partial (spellings, guard and SCH-DEF-011) and `SchedulePeriodRollingRatchetTests` (three entries
+removed). These ran with the whole `Meridian.Tests` suite against a disposable PostgreSQL 16 and the
+whole `Meridian.FundStructure.Tests` suite. `ScheduleKernelLegacyParityTests` is unchanged and still
+green, the KnownDefect pins pass in their pinned form, schema-control `verify` reproduces the
+committed manifests, and the duplicate-helper, file-size and inline SHA-256 guards hold.
