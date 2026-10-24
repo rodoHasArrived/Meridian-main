@@ -1,11 +1,11 @@
 {
   "total_files": 746,
-  "total_lines": 166705,
+  "total_lines": 166820,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 305,
-  "average_lines": 223.5,
+  "average_lines": 223.6,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1070,7 +1070,7 @@
     },
     {
       "path": "docs/adr/025-contractual-schedule-kernel.md",
-      "line_count": 335,
+      "line_count": 368,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1646,7 +1646,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 6218,
+      "line_count": 6289,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2150,7 +2150,7 @@
     },
     {
       "path": "docs/domain/contractual-schedule.md",
-      "line_count": 157,
+      "line_count": 165,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5878,7 +5878,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1886,
+      "line_count": 1888,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6230,7 +6230,7 @@
     },
     {
       "path": "tests/fixtures/schedules/KNOWN-DEFECTS.md",
-      "line_count": 48,
+      "line_count": 49,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
