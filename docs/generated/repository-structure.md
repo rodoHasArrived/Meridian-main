@@ -6608,7 +6608,8 @@ Meridian-main
 │   │   │   │   ├── 047_rate_option_and_note_terms_projections.sql
 │   │   │   │   ├── 048_security_master_listing_mic.sql
 │   │   │   │   ├── 049_security_underlying_links.sql
-│   │   │   │   └── 050_otc_contracts.sql
+│   │   │   │   ├── 050_otc_contracts.sql
+│   │   │   │   └── 051_security_governance_events_underlying_graph_stream.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -11263,6 +11264,7 @@ Meridian-main
 │   │   │   ├── SecurityUnderlyingGraphPostgresTests.cs
 │   │   │   ├── SecurityUnderlyingLinkDeriverTests.cs
 │   │   │   ├── SecurityUnderlyingLinksMigrationTests.cs
+│   │   │   ├── SecurityUnderlyingRoleCoverageTests.cs
 │   │   │   ├── SecurityValidationGateServiceTests.cs
 │   │   │   ├── SecurityValidationServiceTests.cs
 │   │   │   ├── SpecializedProjectionGoldenTests.cs
