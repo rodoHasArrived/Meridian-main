@@ -892,7 +892,7 @@ public static partial class SecurityMasterEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
-        /// <summary>Removes a declared underlying link. Derived links follow the terms and cannot be removed here.</summary>
+        /// <summary>Removes a declared underlying link, recording the actor. Derived links follow the terms and cannot be removed here.</summary>
         group.MapDelete(UiApiRoutes.SecurityMasterUnderlyingLink, async (
             Guid securityId,
             Guid linkId,
@@ -904,7 +904,7 @@ public static partial class SecurityMasterEndpoints
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            return await graphStore.RemoveDeclaredAsync(securityId, linkId, ct).ConfigureAwait(false)
+            return await graphStore.RemoveDeclaredAsync(securityId, linkId, ResolveActor(context), ct).ConfigureAwait(false)
                 ? Results.NoContent()
                 : Results.NotFound();
         })

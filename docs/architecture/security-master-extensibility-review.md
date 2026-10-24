@@ -6030,6 +6030,33 @@ version, termination closes the contract, and contracts on an equity, on an unkn
 in an unknown netting set, or margined under another master's CSA are refused) against a
 disposable PostgreSQL 16, with the Security Master round-trip and underlying-graph suites.
 
+## Resolution pass — 2026-10-22 (underlying graph follow-ups: schema roles and governed declarations)
+
+A review of the two priority 4 increments found two defects in the underlying graph, both closed
+here.
+
+| Finding | What landed |
+| --- | --- |
+| **H1 — the graph does not follow the schema.** `SecurityUnderlyingLinkDeriver` read a fixed list of keys of its own (`underlyingId`, `underlyingSecurityId`, `floatingIndex`, `referenceIndex` and the rest), although its comment said it read the term schema. A swap leg's floating index (inside `legs`, an array) was never read, so swaps got no index link; commitment collateral was never linked; each role kept only the first matching key, so a bond with a floating and an inflation index got one link; and a convertible equity's conversion target (`convertibleTerms.underlyingSecurityId`) was never read either. | Each term field now declares the role it plays in the graph (`SecurityAssetTermField.UnderlyingRole`, set with `LinksUnderlying`): `underlyingId` on Option and Warrant; `underlyingDescription` (and its aliases) on Cfd and StructuredNote; `referenceEntity`, `referenceObligation` and `indexName` on CreditDefaultSwap; `floatingIndex` and `inflationIndex` on Bond; `referenceIndex` on DirectLoan and CapFloor; `floatingIndex` on Swaption; `couponOrIndex` on StructuredCredit; `collateral` on CommitmentGuarantee; `index` on each swap leg; and `underlyingSecurityId` in an equity's conversion terms (newly registered as the `Equity.convertibleTerms` element shape). The deriver reads only these declarations: every role-marked field of the record's class under its key or any alias, and every role-marked field of each element of an array or nested object the class declares. Each field yields its own link. Profile-backed terms are read against every spelling the schema marks on any class. A Guid-typed field links only to the security id it carries, and a self-reference is never a link. `SecurityUnderlyingRoleCoverageTests` (new) holds every role-marked field to linking in its role under every spelling, as text and as a security id. It also requires every field whose name refers to an underlying, index or collateral to declare a role or be listed as not a link with its reason, and fails if the deriver's code names a term key. |
+| **H2 — manually entered links have no audit trail.** Declared links (basket weights, collateral, resolved references) were upserted in place when re-entered and deleted outright on removal; no governance event was written and a removal did not record who made it. | Every declaration, amendment and removal of a declared link now appends to `security_governance_events` on a new `UnderlyingGraph` stream (migration 051 widens the stream check; every existing stream stays allowed), in the same transaction as the change: `UnderlyingLinkDeclared` with the link, `UnderlyingLinkAmended` with the link, the state it replaced and the changed fields (`weight`, `validFrom`, `validTo`, `notes`), and `UnderlyingLinkRemoved` with the removed link. Each event names the session actor. `RemoveDeclaredAsync` now takes the actor (the endpoint passes the authenticated user, and a blank actor is refused). Writers of one link are serialized with a transaction-scoped advisory lock so an amendment always records the state it replaced. Re-declaring an edge exactly as stored writes nothing and returns the stored link. Derived links follow the economic terms, which `security_events` already records, and log nothing. |
+
+**Behaviour changes to confirm.** The deriver reads a field only for the class that declares it,
+so a stray key outside a class's schema (an option carrying `referenceEntity`) no longer states an
+edge; profile-backed terms keep the broad read. Swap leg indexes, commitment collateral, bond second
+indexes and convertible conversion targets appear as derived links when a record is next persisted;
+an existing database backfills them with `SecurityMasterRebuildOrchestrator`. Migration 051 drops and
+re-adds one check constraint, which the destructive-change policy flags; its waiver in
+`database/policies/migration-waivers.json` needs human schema/storage review.
+
+**Validation.** `SecurityUnderlyingRoleCoverageTests` (new), `SecurityUnderlyingLinkDeriverTests`
+(swap legs and container aliases, commitment collateral, a bond with two indexes, a convertible's
+conversion target, class-scoped reads, Guid fields), `SecurityUnderlyingLinksMigrationTests`
+(migration 051 replaces only the stream check), `SecurityMasterUnderlyingEndpointsTests` (the removal
+names the session actor) and `SecurityUnderlyingGraphPostgresTests` (declared, amended and removed
+links each record one event with the actor and the replaced state; an unchanged re-declaration
+records nothing; derived links record nothing; a removal requires an actor) against a disposable
+PostgreSQL 16, with the governance-event and Security Master suites.
+
 ## Resolution pass — 2026-10-23 (priority 5, first increment: the schedule kernel and calendar seam)
 
 | Finding | What landed |
