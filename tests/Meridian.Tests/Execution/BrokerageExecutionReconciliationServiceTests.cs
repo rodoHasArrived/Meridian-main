@@ -263,6 +263,26 @@ public sealed class BrokerageExecutionReconciliationServiceTests
     }
 
     [Fact]
+    public async Task RecoverOrdersAsync_BrokerIdRetainedForAnotherOrder_IsNotBookedAgainstIt()
+    {
+        var accountId = Guid.NewGuid();
+        await using var context = new RecoveryContext([
+            CreateLocalOrder("ord-A") with { FundAccountId = accountId, Status = OrderStatus.PendingNew },
+            CreateLocalOrder("ord-B") with { FundAccountId = accountId, Status = OrderStatus.PendingNew }
+        ]);
+        // A later session reused ord-A's retained broker id for ord-B, which then filled.
+        context.RecoveryGateway.GetOrderForRecoveryAsync("ord-B", Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<ExecutionReport?>(CreateRecoveryReport("ord-B") with { GatewayOrderId = "broker-ord-A" }));
+
+        var recover = () => CreateService().RecoverOrdersAsync(context.Gateway, context.OrderManager, accountId);
+
+        await recover.Should().ThrowAsync<InvalidDataException>();
+        context.OrderManager.GetOrder("ord-A")!.FilledQuantity.Should().Be(0m, "ord-B's fill is not ord-A's");
+        context.OrderManager.GetOrder("ord-B")!.FilledQuantity.Should().Be(0m);
+        context.Portfolio.Positions.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task RecoverOrdersAsync_ReferenceMatchingGateway_ReceivesTheBoundGenerationWithTheLookup()
     {
         var accountId = Guid.NewGuid();
