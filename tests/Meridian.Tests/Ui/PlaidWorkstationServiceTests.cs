@@ -81,6 +81,38 @@ public sealed class PlaidWorkstationServiceTests
     }
 
     [Fact]
+    public async Task SyncItem_IncrementalDeltasAndModifiedTransactions_StayAdditiveAndAdvanceTheCursor()
+    {
+        var fixture = await PlaidFixture.CreateAsync();
+        var account = await fixture.FundAccounts.CreateAccountAsync(new CreateAccountRequest(
+            Guid.NewGuid(), AccountTypeDto.Bank, "BANK-PLAID", "Plaid operating account", "USD", DateTimeOffset.UtcNow, "test",
+            BankDetails: new BankAccountDetailsDto(null, "Plaid Test Bank", null, null, null, null, null, null, null, null, null)));
+        await fixture.Service.ExchangePublicTokenAsync(new PlaidPublicTokenExchangeRequest(
+            "public-sandbox-token", "ins_1", "Plaid Test Bank",
+            [new PlaidAccountLinkRequest("plaid-account-1", "Operating Cash", null, "6789", "depository", "checking", MeridianAccountId: account.AccountId)],
+            "operator"));
+        await fixture.Service.SyncItemAsync(new PlaidSyncRequest("item-1", RequestedBy: "operator"));
+
+        // Same value date as the first delta, one new transaction, and txn-1 re-delivered with a corrected amount.
+        fixture.Client.NextSync = new PlaidTransactionsSyncResult("cursor-3", false,
+            [new PlaidTransactionDto("txn-3", "plaid-account-1", new DateOnly(2026, 5, 31), null, 10.00m, "USD", "Lunch", "Lunch", "Food", "in store", false, "place")],
+            [new PlaidTransactionDto("txn-1", "plaid-account-1", new DateOnly(2026, 5, 31), null, 27.10m, "USD", "Coffee", "Coffee", "Food", "in store", false, "place")],
+            [], "req-txn-2");
+
+        var result = await fixture.Service.SyncItemAsync(new PlaidSyncRequest("item-1", RequestedBy: "operator"));
+
+        result.BankStatementLinesIngested.Should().Be(2);
+        var item = (await fixture.Service.ListItemsAsync()).Single();
+        item.TransactionsCursor.Should().Be("cursor-3");
+        var lines = await fixture.FundAccounts.GetBankStatementLinesAsync(account.AccountId);
+        lines.Should().HaveCount(3);
+        lines.Should().ContainSingle(line => line.Reference == "txn-1").Which.Amount.Should().Be(-27.10m);
+        var authoritative = BankStatementClosingBalanceAuthority.SelectAuthoritativeLines(lines);
+        authoritative.Should().NotBeNull("two incremental deltas on one day must not read as competing statements");
+        authoritative!.Sum(line => line.Amount).Should().Be(62.90m);
+    }
+
+    [Fact]
     public async Task SearchInstitutions_UsesStoredPlaidCredentialsAndReturnsSupportedInstitutions()
     {
         var fixture = await PlaidFixture.CreateAsync();
@@ -350,8 +382,11 @@ public sealed class PlaidWorkstationServiceTests
                 new PlaidBalanceDto("plaid-account-1", 1200m, 1250.25m, "USD", DateTimeOffset.UtcNow, true)
             ]);
 
+        /// <summary>The next incremental delivery; null returns the initial two-transaction sync.</summary>
+        public PlaidTransactionsSyncResult? NextSync { get; set; }
+
         public Task<PlaidTransactionsSyncResult> SyncTransactionsAsync(PlaidClientCredentials credentials, string accessToken, string? cursor, CancellationToken ct = default)
-            => Task.FromResult(new PlaidTransactionsSyncResult(
+            => Task.FromResult(NextSync ?? new PlaidTransactionsSyncResult(
                 "cursor-2",
                 false,
                 [

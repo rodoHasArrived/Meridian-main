@@ -1094,7 +1094,9 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
             currency,
             projectedEntries);
         var varianceBuckets = BuildVarianceBuckets(realizedLadder, projectedLadder);
-        var currentCashBalance = accountViews.Sum(static account => account.CurrentCashBalance);
+        decimal? currentCashBalance = accountViews.Any(static account => account.CurrentCashBalance is null)
+            ? null
+            : accountViews.Sum(static account => account.CurrentCashBalance!.Value);
         var varianceSummary = new GovernanceCashFlowVarianceSummaryDto(
             RealizedInflows: realizedLadder.TotalProjectedInflows,
             RealizedOutflows: realizedLadder.TotalProjectedOutflows,
@@ -1641,7 +1643,6 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
     {
         var historicalStartDate = DateOnly.FromDateTime(historicalWindowStart.UtcDateTime);
         var asOfDate = DateOnly.FromDateTime(asOf.UtcDateTime);
-        var projectionEndDate = DateOnly.FromDateTime(projectionWindowEnd.UtcDateTime);
         var balanceHistoryTask = _fundAccountService.GetBalanceHistoryAsync(
             account.AccountId,
             historicalStartDate,
@@ -1649,9 +1650,7 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
             ct);
         var bankLinesTask = _fundAccountService.GetBankStatementLinesAsync(
             account.AccountId,
-            historicalStartDate,
-            projectionEndDate,
-            ct);
+            ct: ct);
 
         await Task.WhenAll(balanceHistoryTask, bankLinesTask).ConfigureAwait(false);
 
@@ -1664,7 +1663,16 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
             .OrderByDescending(static snapshot => snapshot.AsOfDate)
             .ThenByDescending(static snapshot => snapshot.RecordedAt)
             .FirstOrDefault();
-        var bankLines = (await bankLinesTask.ConfigureAwait(false))
+        // A statement is evidence as of its header date. A transaction-feed delivery is a set of
+        // independently dated rows whose header date is only the latest of them, so each row is
+        // admitted by its own value date; otherwise a historical as-of view would drop every
+        // earlier row of a delivery that also carried a later one.
+        var retainedBankLines = (await bankLinesTask.ConfigureAwait(false))
+            .Where(line => (line.IsTransactionFeed == true ? line.ValueDate : line.StatementDate) <= asOfDate).ToArray();
+        var authoritativeBankLines = BankStatementClosingBalanceAuthority.SelectAuthoritativeLines(retainedBankLines,
+            currency, historicalStartDate, DateOnly.FromDateTime(projectionWindowEnd.AddTicks(-1).UtcDateTime))
+            ?? throw new BankStatementEvidenceUnavailableException();
+        var bankLines = authoritativeBankLines
             .Where(line => MatchesCurrency(line.Currency, currency))
             .OrderBy(line => line.StatementDate)
             .ThenBy(line => line.ValueDate)
@@ -1706,8 +1714,7 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
             bucketDays,
             ct).ConfigureAwait(false);
         var currentCashBalance = latestSnapshot?.CashBalance
-            ?? GetLatestRunningBalance(bankLines, asOf, currency)
-            ?? 0m;
+            ?? GetLatestRunningBalance(retainedBankLines, asOf, currency);
 
         return new AccountCashFlowWindow(
             account,
@@ -2505,13 +2512,9 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
         IReadOnlyList<BankStatementLineDto> bankLines,
         DateTimeOffset asOf,
         string currency) =>
-        bankLines
-            .Where(line => MatchesCurrency(line.Currency, currency))
-            .Where(line => ToDateTimeOffset(line.ValueDate) <= asOf)
-            .OrderByDescending(line => line.StatementDate)
-            .ThenByDescending(line => line.ValueDate)
-            .Select(line => line.RunningBalance)
-            .FirstOrDefault(balance => balance.HasValue);
+        BankStatementClosingBalanceAuthority.SelectClosingBalance(
+            bankLines.Where(line => ToDateTimeOffset(line.StatementDate) <= asOf),
+            currency, DateOnly.FromDateTime(asOf.UtcDateTime));
 
     private static GovernanceCashFlowLadderDto BuildCashFlowLadder(
         DateTimeOffset anchor,
@@ -3439,7 +3442,7 @@ public sealed partial class InMemoryFundStructureService : INonProductionOnlySer
 
     private sealed record AccountCashFlowWindow(
         AccountSummaryDto Account,
-        decimal CurrentCashBalance,
+        decimal? CurrentCashBalance,
         DateOnly? LatestSnapshotDate,
         IReadOnlyList<GovernanceCashFlowEntryDto> RealizedEntries,
         IReadOnlyList<GovernanceCashFlowEntryDto> ProjectedEntries,

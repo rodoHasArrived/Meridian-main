@@ -90,6 +90,30 @@
       "target_schema": "fund_accounts"
     },
     {
+      "fingerprint": "3a4819282ee6a167150366317844938bd96fd4e9f07ed098d4cf49f3ab597446",
+      "kind": "normal",
+      "source": "fund_accounts.account_reconciliation_breaks_superseded_by_result_id_fkey on fund_accounts.account_reconciliation_breaks",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_accounts",
+      "target": "fund_accounts.account_reconciliation_breaks.result_id",
+      "target_kind": "table column",
+      "target_name": "account_reconciliation_breaks",
+      "target_schema": "fund_accounts"
+    },
+    {
+      "fingerprint": "0c316953991a314ac0314c78b5cee8d11e56eb4a4bc4240a4bd1efe9659860d4",
+      "kind": "normal",
+      "source": "fund_accounts.account_reconciliation_breaks_superseded_by_result_id_fkey on fund_accounts.account_reconciliation_breaks",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_accounts",
+      "target": "fund_accounts.account_reconciliation_breaks_pkey",
+      "target_kind": "index",
+      "target_name": "account_reconciliation_breaks_pkey",
+      "target_schema": "fund_accounts"
+    },
+    {
       "fingerprint": "9d6e419d7784baf5aea7b89f765bd513b3454e46f4223bc234ee0cb67aa80d0e",
       "kind": "normal",
       "source": "fund_accounts.account_reconciliation_run_account_id_fkey on fund_accounts.account_reconciliation_run",
@@ -138,6 +162,30 @@
       "target_schema": "fund_accounts"
     },
     {
+      "fingerprint": "07410ab39f0279f10a6b4707b205f1941e05da7fc8ff2086a112f2c17fcf171e",
+      "kind": "normal",
+      "source": "fund_accounts.account_sync_history_superseded_by_sync_history_id_fkey on fund_accounts.account_sync_history",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_accounts",
+      "target": "fund_accounts.account_sync_history.sync_history_id",
+      "target_kind": "table column",
+      "target_name": "account_sync_history",
+      "target_schema": "fund_accounts"
+    },
+    {
+      "fingerprint": "27f1bb8b1368f49685e5ea4891b0abff4f0aa46f0ec8476956f1b53e4749aa30",
+      "kind": "normal",
+      "source": "fund_accounts.account_sync_history_superseded_by_sync_history_id_fkey on fund_accounts.account_sync_history",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_accounts",
+      "target": "fund_accounts.account_sync_history_pkey",
+      "target_kind": "index",
+      "target_name": "account_sync_history_pkey",
+      "target_schema": "fund_accounts"
+    },
+    {
       "fingerprint": "ca6cc411a6f0fb51574c17daa6b094258941819b129fbe60ef69ff9570b72e2e",
       "kind": "normal",
       "source": "fund_accounts.bank_statement_batch_account_id_fkey on fund_accounts.bank_statement_batch",
@@ -159,6 +207,18 @@
       "target": "fund_accounts.account_definition_pkey",
       "target_kind": "index",
       "target_name": "account_definition_pkey",
+      "target_schema": "fund_accounts"
+    },
+    {
+      "fingerprint": "8a249549f2252fcf4ec89ed8055f40a2a8dc5e73012841a615fa0f7bf16e203f",
+      "kind": "normal",
+      "source": "fund_accounts.bank_statement_batch_statement_revision_check on fund_accounts.bank_statement_batch",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_accounts",
+      "target": "fund_accounts.bank_statement_batch.statement_revision",
+      "target_kind": "table column",
+      "target_name": "bank_statement_batch",
       "target_schema": "fund_accounts"
     },
     {
@@ -207,6 +267,18 @@
       "target": "fund_accounts.bank_statement_batch_pkey",
       "target_kind": "index",
       "target_name": "bank_statement_batch_pkey",
+      "target_schema": "fund_accounts"
+    },
+    {
+      "fingerprint": "6e2e194db5d9e9e5dd748d9e7c05a276b8720b1ab53a3e6f313c434010247ceb",
+      "kind": "normal",
+      "source": "fund_accounts.bank_statement_line_line_sequence_check on fund_accounts.bank_statement_line",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "fund_accounts",
+      "target": "fund_accounts.bank_statement_line.line_sequence",
+      "target_kind": "table column",
+      "target_name": "bank_statement_line",
       "target_schema": "fund_accounts"
     },
     {
@@ -298,7 +370,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "c11c69e353f522f359821226ed66d7a45615ba0af92b1640fe4d4df33c5b66fe",
+  "fingerprint": "b88d70b4f769dc43e7235337e069e5bf7484d39e55209c5c2401e83a0ccfee10",
   "foreign_tables": [],
   "functions": [],
   "logical_modules": [
@@ -2202,6 +2274,38 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "657812f6cf25126e8536c2ae4ff1731c0c18157d35279c98eafca6505fdd8855",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "superseded_by_result_id",
+          "nullable": true,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "f74fb028af320badbbc8a452e24983d60bbf4917b64eaf988c0e905c9dabc648",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "resolved_at",
+          "nullable": true,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -2230,6 +2334,28 @@
         },
         {
           "columns": [
+            "superseded_by_result_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (superseded_by_result_id) REFERENCES fund_accounts.account_reconciliation_breaks(result_id)",
+          "delete_action": "no_action",
+          "fingerprint": "338d3a8605a716852656c7153cb833c9b8c1890a110a3cf7e32e8bca3648341d",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "account_reconciliation_breaks_superseded_by_result_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "result_id"
+          ],
+          "referenced_schema": "fund_accounts",
+          "referenced_table": "account_reconciliation_breaks",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
             "result_id"
           ],
           "comment": null,
@@ -2251,7 +2377,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "97835b54f98b7c7fb2bbd96b15bf1bd943b46b2062ed7b2d744cc3731a04d88d",
+      "fingerprint": "5524bb319a7529e60c5f35bdc0c40d81cf76e6725cfec5c70eae793c2dfd4719",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -2275,6 +2401,28 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_account_reconciliation_active ON fund_accounts.account_reconciliation_breaks USING btree (reconciliation_run_id) WHERE (superseded_by_result_id IS NULL)",
+          "expression": null,
+          "fingerprint": "b500ab4600deaaf94b71f878da9a116e43d55ed1bc06bad4ba86f4acf608a032",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "reconciliation_run_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_account_reconciliation_active",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "superseded_by_result_id IS NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         },
         {
@@ -2983,6 +3131,22 @@
           "security_labels": [],
           "type_name": "jsonb",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "fa22281d57da976abc24351d5e1d633a0dfa152f46d5852f19729f4fbe39ef07",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "superseded_by_sync_history_id",
+          "nullable": true,
+          "ordinal_position": 19,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -3011,6 +3175,28 @@
         },
         {
           "columns": [
+            "superseded_by_sync_history_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (superseded_by_sync_history_id) REFERENCES fund_accounts.account_sync_history(sync_history_id)",
+          "delete_action": "no_action",
+          "fingerprint": "2a866aa9322b0adf470a0daf140c1e205f5e40051837d0beea3eebcc37fd02a0",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "account_sync_history_superseded_by_sync_history_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "sync_history_id"
+          ],
+          "referenced_schema": "fund_accounts",
+          "referenced_table": "account_sync_history",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
             "sync_history_id"
           ],
           "comment": null,
@@ -3032,7 +3218,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "44d51de418138a322d2ad357df98a700987cbe48ef5c51eaf89cb9105ad58307",
+      "fingerprint": "120037433f1c6c70fe29035592e86b50a7370d1f215745fa41bf47d1a7960c03",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -3079,6 +3265,30 @@
           "ready": true,
           "security_labels": [],
           "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_account_sync_history_correlation ON fund_accounts.account_sync_history USING btree (account_id, lower(TRIM(BOTH FROM capability)), lower(TRIM(BOTH FROM correlation_id))) WHERE ((correlation_id IS NOT NULL) AND (TRIM(BOTH FROM correlation_id) <> ''::text) AND (superseded_by_sync_history_id IS NULL))",
+          "expression": "lower(TRIM(BOTH FROM capability)), lower(TRIM(BOTH FROM correlation_id))",
+          "fingerprint": "241f79760d8a3579bd16e245e93be6a470c07214b675527a2e9f5a5be8968c1e",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "account_id",
+            "lower(TRIM(BOTH FROM capability))",
+            "lower(TRIM(BOTH FROM correlation_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_account_sync_history_correlation",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "correlation_id IS NOT NULL AND TRIM(BOTH FROM correlation_id) <> ''::text AND superseded_by_sync_history_id IS NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
           "valid": true
         }
       ],
@@ -3270,10 +3480,62 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": "1",
+          "fingerprint": "e8ef2a02b5c80babde0a3038d786efba238beef2113cdfdc1f21fd031707a6cf",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "statement_revision",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": "false",
+          "fingerprint": "2a1bd4c8ddafb758fd9c16ccbae67a4b70351b216ec55facd57e4172f32ba362",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "transaction_feed",
+          "nullable": false,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "statement_revision"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (statement_revision > 0)",
+          "delete_action": null,
+          "fingerprint": "c0b36157b9d59a3ea2dd0f222e9958bf8eb920f9a9271eb9a6f20e9f2c6e3627",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "bank_statement_batch_statement_revision_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "account_id"
@@ -3319,7 +3581,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "28506ec29f8bc1a4443b960112115cd01a21f1632e74d09ff54531a41e3e600b",
+      "fingerprint": "1d4e739701a4efe1144b920c85ee637a1f6b32fd9d0448851ecb0c23c6a497e6",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -3582,10 +3844,46 @@
           "security_labels": [],
           "type_name": "numeric",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "7c9040ac361ace89d70b2248d23cfbd9030a0a7f4300777a5a3bb9ea834f1305",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "line_sequence",
+          "nullable": true,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "line_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (line_sequence > 0)",
+          "delete_action": null,
+          "fingerprint": "20d06ad5ee7905cdfaf56458a382e97b56e0a41946df4e94c258ae8b423c350e",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "bank_statement_line_line_sequence_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "account_id"
@@ -3653,7 +3951,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "5a2fdb95b5df36bee871a48db5609f0a9f5f06be1cfccbab62148504ff4c8da3",
+      "fingerprint": "9c9ec8674b55423f340afe13bc22874b1dbe7a6ae79d4974085e5b6053524af2",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -3700,6 +3998,29 @@
           "ready": true,
           "security_labels": [],
           "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_bank_statement_source_sequence ON fund_accounts.bank_statement_line USING btree (batch_id, line_sequence) WHERE (line_sequence IS NOT NULL)",
+          "expression": null,
+          "fingerprint": "dde18e3e632650199e7860f69fd8435c2c317f07c45372cc283761e054ac0658",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "batch_id",
+            "line_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_bank_statement_source_sequence",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "line_sequence IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
           "valid": true
         }
       ],
@@ -6724,6 +7045,38 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "657812f6cf25126e8536c2ae4ff1731c0c18157d35279c98eafca6505fdd8855",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "superseded_by_result_id",
+          "nullable": true,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": null,
+          "fingerprint": "f74fb028af320badbbc8a452e24983d60bbf4917b64eaf988c0e905c9dabc648",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "resolved_at",
+          "nullable": true,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -6752,6 +7105,28 @@
         },
         {
           "columns": [
+            "superseded_by_result_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (superseded_by_result_id) REFERENCES fund_accounts.account_reconciliation_breaks(result_id)",
+          "delete_action": "no_action",
+          "fingerprint": "338d3a8605a716852656c7153cb833c9b8c1890a110a3cf7e32e8bca3648341d",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "account_reconciliation_breaks_superseded_by_result_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "result_id"
+          ],
+          "referenced_schema": "fund_accounts",
+          "referenced_table": "account_reconciliation_breaks",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
             "result_id"
           ],
           "comment": null,
@@ -6773,7 +7148,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "97835b54f98b7c7fb2bbd96b15bf1bd943b46b2062ed7b2d744cc3731a04d88d",
+      "fingerprint": "5524bb319a7529e60c5f35bdc0c40d81cf76e6725cfec5c70eae793c2dfd4719",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -6797,6 +7172,28 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_account_reconciliation_active ON fund_accounts.account_reconciliation_breaks USING btree (reconciliation_run_id) WHERE (superseded_by_result_id IS NULL)",
+          "expression": null,
+          "fingerprint": "b500ab4600deaaf94b71f878da9a116e43d55ed1bc06bad4ba86f4acf608a032",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "reconciliation_run_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_account_reconciliation_active",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "superseded_by_result_id IS NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         },
         {
@@ -7505,6 +7902,22 @@
           "security_labels": [],
           "type_name": "jsonb",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "fa22281d57da976abc24351d5e1d633a0dfa152f46d5852f19729f4fbe39ef07",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "superseded_by_sync_history_id",
+          "nullable": true,
+          "ordinal_position": 19,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -7533,6 +7946,28 @@
         },
         {
           "columns": [
+            "superseded_by_sync_history_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "FOREIGN KEY (superseded_by_sync_history_id) REFERENCES fund_accounts.account_sync_history(sync_history_id)",
+          "delete_action": "no_action",
+          "fingerprint": "2a866aa9322b0adf470a0daf140c1e205f5e40051837d0beea3eebcc37fd02a0",
+          "initially_deferred": false,
+          "match_type": "simple",
+          "name": "account_sync_history_superseded_by_sync_history_id_fkey",
+          "no_inherit": true,
+          "referenced_columns": [
+            "sync_history_id"
+          ],
+          "referenced_schema": "fund_accounts",
+          "referenced_table": "account_sync_history",
+          "type": "foreign_key",
+          "update_action": "no_action",
+          "validated": true
+        },
+        {
+          "columns": [
             "sync_history_id"
           ],
           "comment": null,
@@ -7554,7 +7989,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "44d51de418138a322d2ad357df98a700987cbe48ef5c51eaf89cb9105ad58307",
+      "fingerprint": "120037433f1c6c70fe29035592e86b50a7370d1f215745fa41bf47d1a7960c03",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -7601,6 +8036,30 @@
           "ready": true,
           "security_labels": [],
           "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_account_sync_history_correlation ON fund_accounts.account_sync_history USING btree (account_id, lower(TRIM(BOTH FROM capability)), lower(TRIM(BOTH FROM correlation_id))) WHERE ((correlation_id IS NOT NULL) AND (TRIM(BOTH FROM correlation_id) <> ''::text) AND (superseded_by_sync_history_id IS NULL))",
+          "expression": "lower(TRIM(BOTH FROM capability)), lower(TRIM(BOTH FROM correlation_id))",
+          "fingerprint": "241f79760d8a3579bd16e245e93be6a470c07214b675527a2e9f5a5be8968c1e",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "account_id",
+            "lower(TRIM(BOTH FROM capability))",
+            "lower(TRIM(BOTH FROM correlation_id))"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_account_sync_history_correlation",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "correlation_id IS NOT NULL AND TRIM(BOTH FROM correlation_id) <> ''::text AND superseded_by_sync_history_id IS NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
           "valid": true
         }
       ],
@@ -7792,10 +8251,62 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": "1",
+          "fingerprint": "e8ef2a02b5c80babde0a3038d786efba238beef2113cdfdc1f21fd031707a6cf",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "statement_revision",
+          "nullable": false,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "boolean",
+          "default": "false",
+          "fingerprint": "2a1bd4c8ddafb758fd9c16ccbae67a4b70351b216ec55facd57e4172f32ba362",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "transaction_feed",
+          "nullable": false,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "bool",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "statement_revision"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (statement_revision > 0)",
+          "delete_action": null,
+          "fingerprint": "c0b36157b9d59a3ea2dd0f222e9958bf8eb920f9a9271eb9a6f20e9f2c6e3627",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "bank_statement_batch_statement_revision_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "account_id"
@@ -7841,7 +8352,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "28506ec29f8bc1a4443b960112115cd01a21f1632e74d09ff54531a41e3e600b",
+      "fingerprint": "1d4e739701a4efe1144b920c85ee637a1f6b32fd9d0448851ecb0c23c6a497e6",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -8104,10 +8615,46 @@
           "security_labels": [],
           "type_name": "numeric",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "integer",
+          "default": null,
+          "fingerprint": "7c9040ac361ace89d70b2248d23cfbd9030a0a7f4300777a5a3bb9ea834f1305",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "line_sequence",
+          "nullable": true,
+          "ordinal_position": 12,
+          "security_labels": [],
+          "type_name": "int4",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "line_sequence"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (line_sequence > 0)",
+          "delete_action": null,
+          "fingerprint": "20d06ad5ee7905cdfaf56458a382e97b56e0a41946df4e94c258ae8b423c350e",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "bank_statement_line_line_sequence_check",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "account_id"
@@ -8175,7 +8722,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "5a2fdb95b5df36bee871a48db5609f0a9f5f06be1cfccbab62148504ff4c8da3",
+      "fingerprint": "9c9ec8674b55423f340afe13bc22874b1dbe7a6ae79d4974085e5b6053524af2",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -8222,6 +8769,29 @@
           "ready": true,
           "security_labels": [],
           "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX ux_bank_statement_source_sequence ON fund_accounts.bank_statement_line USING btree (batch_id, line_sequence) WHERE (line_sequence IS NOT NULL)",
+          "expression": null,
+          "fingerprint": "dde18e3e632650199e7860f69fd8435c2c317f07c45372cc283761e054ac0658",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "batch_id",
+            "line_sequence"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ux_bank_statement_source_sequence",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "line_sequence IS NOT NULL",
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
           "valid": true
         }
       ],

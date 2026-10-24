@@ -11,6 +11,12 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Application
 
+Governance cash forecasts share retained bank statement revision and source-sequence authority with
+account reconciliation. Corrected full statements contribute cash flows once; current balances remain
+nullable when evidence is unavailable. Relevant competing statement batches raise
+`BankStatementEvidenceUnavailableException`, surfaced as HTTP 409 by the cash-flow endpoint. Future
+headers and statement evidence outside the requested value-date/currency window cannot block its flows.
+
 `SecurityMasterPricingService.ClosePrices` builds independently reviewed immutable close-price
 sets through the existing hierarchy and retained selection receipts. Exact account/book/UTC
 valuation date, quote units, source observations, override support and blocker assessments are
@@ -299,6 +305,8 @@ One-shot command dispatch uses the same Portfolio Records registration as runtim
 fund-account PostgreSQL persistence remains authoritative for command reconciliation reads, and
 local command reads pass through the same migration gate. Account query, management, and fund-account
 ports resolve to one shared service instance.
+The local tenant guard forwards batched account reconciliation reads through the same gate, so
+local and desktop hosts do not fall through to the unsupported default.
 Command reconciliation resolves account authority when reading retained populations, keeping help
 and configuration diagnostics available even when account tenant configuration requires repair.
 

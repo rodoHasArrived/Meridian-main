@@ -437,6 +437,48 @@ public sealed class ProviderLedgerReconciliationServiceTests
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Scenario_ProviderLedgerReconciliation_BankIncomeUsesWholeAuthoritativeRevision(bool ambiguous)
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            await using var fixture = await CreateFixtureAsync(root, includeSecurityLookup: true,
+                activityAdapter: new IncomeActivityAdapter(), recordBankStatement: true,
+                bankClosingBalance: 50_000m, bankIncomeAmount: 100m, internalAccruedInterest: null);
+            var date = (await fixture.AccountService.GetLatestBalanceSnapshotAsync(fixture.AccountId))!.AsOfDate;
+            var batch = Guid.NewGuid();
+            var line = new BankStatementLineDto(Guid.NewGuid(), batch, fixture.AccountId,
+                date.AddDays(-1), date.AddDays(-1), 142.25m, "USD", "DIVIDEND", "Corrected income", "corrected-income", 50_000m);
+            await fixture.AccountService.IngestBankStatementAsync(new(batch, fixture.AccountId, date, "test-bank", null,
+                [line], "tests", StatementRevision: ambiguous ? 1 : 2));
+
+            var detail = await fixture.RunReconciliationAsync(fixture.AccountId);
+            var income = detail.ShadowBookComparison!.Lines.Single(item => item.Dimension == "bank-statement-income-cash-flow");
+            var cash = detail.ShadowBookComparison.Lines.Single(item => item.Dimension == "bank-statement-cash");
+            if (ambiguous)
+            {
+                income.Status.Should().Be(ProviderLedgerReconciliationCheckStatusDto.Blocked);
+                income.InternalAmount.Should().BeNull();
+                cash.ProviderAmount.Should().BeNull();
+                income.Reason.Should().Contain("unavailable");
+            }
+            else
+            {
+                income.Status.Should().Be(ProviderLedgerReconciliationCheckStatusDto.Matched);
+                income.InternalAmount.Should().Be(142.25m, "the replacement revision contributes income once");
+                cash.ProviderAmount.Should().Be(50_000m);
+            }
+            (await fixture.AccountService.GetBankStatementLinesAsync(fixture.AccountId)).Should().HaveCount(3);
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
     [Fact]
     public async Task Scenario_ProviderLedgerReconciliation_FlagsBankStatementCashAndIncomeVariance()
     {

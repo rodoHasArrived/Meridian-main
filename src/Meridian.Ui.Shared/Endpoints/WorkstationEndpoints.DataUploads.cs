@@ -226,8 +226,8 @@ public static partial class WorkstationEndpoints
                 fileBytes = buffer.ToArray();
             }
 
-            var batchId = BankStatementCsvImportMapper.BuildBatchId(fileBytes, accountId, bankName);
-            var parsed = BankStatementCsvImportMapper.Parse(fileBytes, accountId, batchId);
+            var batchId = BankStatementCsvImportMapper.BuildBatchId(fileBytes, accountId, bankName, statementDate);
+            var parsed = BankStatementCsvImportMapper.Parse(fileBytes, accountId, batchId, statementDate);
             if (parsed.Issues.Any(static issue => string.Equals(issue.Severity, "Error", StringComparison.OrdinalIgnoreCase)))
             {
                 return DataUploadValidationProblem(parsed.Issues);
@@ -249,7 +249,7 @@ public static partial class WorkstationEndpoints
                 .WriteAllBytesAsync(Path.Combine(retainedDirectory, safeFileName), fileBytes, context.RequestAborted)
                 .ConfigureAwait(false);
 
-            var effectiveStatementDate = statementDate ?? parsed.StatementDate!.Value;
+            var effectiveStatementDate = parsed.StatementDate!.Value;
             var notes = form["notes"].FirstOrDefault();
             var isBackfill = bool.TryParse(form["isBackfill"].FirstOrDefault(), out var parsedBackfill) && parsedBackfill;
             var batch = await fundAccountService
@@ -262,7 +262,8 @@ public static partial class WorkstationEndpoints
                         BuildBankStatementImportNotes(notes, relativePath),
                         parsed.Lines,
                         currentUser,
-                        isBackfill),
+                        isBackfill,
+                        parsed.StatementRevision),
                     context.RequestAborted)
                 .ConfigureAwait(false);
 

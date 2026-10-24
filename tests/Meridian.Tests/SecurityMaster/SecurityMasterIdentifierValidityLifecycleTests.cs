@@ -358,12 +358,28 @@ public sealed class SecurityMasterIdentifierValidityLifecycleTests
     private static SecurityAliasDto Alias(Guid id, string value, DateTimeOffset from, DateTimeOffset? to = null, string? provider = null)
         => new(Guid.NewGuid(), id, "Ticker", value, provider, SecurityAliasScope.Operations, null, "test", T0, from, to, true);
 
+    [Fact]
+    public async Task UntilAsync_AcceptsTheFirstSuccessfulObservationWithoutReadingItAgain()
+    {
+        var observations = 0;
+
+        // Timer readiness can disappear when the worker consumes its queued schedule change.
+        // Observing it successfully must not be followed by a second, racing assertion read.
+        await UntilAsync(() => ++observations == 1);
+
+        observations.Should().Be(1);
+    }
+
     private static async Task UntilAsync(Func<bool> condition)
     {
         var deadline = DateTime.UtcNow.AddSeconds(5);
-        while (!condition() && DateTime.UtcNow < deadline)
+        var observed = condition();
+        while (!observed && DateTime.UtcNow < deadline)
+        {
             await Task.Delay(5);
-        condition().Should().BeTrue("the asynchronous validity worker should complete after manual time advances");
+            observed = condition();
+        }
+        observed.Should().BeTrue("the asynchronous validity worker should complete after manual time advances");
     }
 
     private sealed class Host : IAsyncDisposable

@@ -10,8 +10,11 @@ using static Meridian.DataIntegration.AccountingSystem.AccountingProviderJson;
 namespace Meridian.DataIntegration.AccountingSystem;
 
 public sealed class XeroAccountingProvider(IProviderCredentialStore store, HttpClient client)
-    : CredentialedAccountingProvider(store, client)
+    : CredentialedAccountingProvider(store, client), IConnectionBoundAccountingProvider
 {
+    public IAccountingSystemConnectionVerifier BindCredentials(IProviderCredentialStore credentialStore)
+        => new XeroAccountingProvider(credentialStore, Client);
+
     public const string Id = "xero";
     public override string ProviderId => Id;
     public override string DisplayName => "Xero";

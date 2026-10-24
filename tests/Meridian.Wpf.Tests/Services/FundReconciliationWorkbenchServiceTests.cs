@@ -169,6 +169,60 @@ public sealed class FundReconciliationWorkbenchServiceTests
         detail.AuditRows.Should().HaveCountGreaterThanOrEqualTo(2);
     }
 
+    [Fact]
+    public async Task GetRunDetailAsync_ForAccountRunSupersededByCorrectedEvidence_ShowsResolvedHistoryNotOpenExceptions()
+    {
+        var context = await CreateContextAsync();
+        var asOf = new DateOnly(2026, 3, 21);
+        // A wrong internal balance opens a cash break; the corrected balance resolves it in a later run.
+        await context.FundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            context.AccountId, asOf, "USD", 700m, "test", "test", SecuritiesMarketValue: 250m));
+        var broken = await context.FundAccountService.ReconcileAccountAsync(new ReconcileAccountRequest(context.AccountId, asOf, "test"));
+        // The operator opened the account run while it was the latest; the detail is read live when
+        // opened. Snapshot run rows are strategy runs only, so the account row is built as the
+        // account ledger lists it.
+        var runRow = new FundReconciliationRunRow(
+            RowKey: $"account:{broken.ReconciliationRunId:N}",
+            ReconciliationRunId: broken.ReconciliationRunId,
+            AccountId: context.AccountId,
+            SourceType: FundReconciliationSourceType.AccountRun,
+            ScopeLabel: "Account",
+            ScopeIcon: "\u25A3",
+            PrimaryLabel: "Operating account",
+            SecondaryLabel: context.AccountId.ToString("N"),
+            Status: "Break",
+            StatusLabel: "Break",
+            StatusIcon: "\u26A0",
+            AsOfDate: asOf,
+            AsOfDateText: asOf.ToString("yyyy-MM-dd"),
+            TotalChecks: 1,
+            TotalMatched: 0,
+            TotalBreaks: 1,
+            BreakAmountTotal: 50m,
+            BreakAmountText: "$50.00",
+            RequestedAt: DateTimeOffset.UtcNow,
+            RequestedAtText: "now",
+            CompletedAt: DateTimeOffset.UtcNow,
+            CompletedAtText: "now",
+            SecurityIssueCount: 0,
+            HasSecurityCoverageIssues: false,
+            CoverageLabel: "Security Master aligned");
+        await context.FundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            context.AccountId, asOf, "USD", 750m, "test", "test", SecuritiesMarketValue: 250m));
+        await context.FundAccountService.ReconcileAccountAsync(new ReconcileAccountRequest(context.AccountId, asOf, "test"));
+        var results = await context.FundAccountService.GetReconciliationResultsAsync(broken.ReconciliationRunId);
+        var resolved = results.Should().ContainSingle(result => !result.IsMatch && result.ResolvedAt != null).Subject;
+
+        var detail = await context.Service.GetRunDetailAsync(runRow, "USD");
+
+        detail.Should().NotBeNull();
+        detail!.ExceptionRows.Should().NotContain(row => row.RowKey == resolved.ResultId.ToString("N"),
+            "a result resolved by a later reconciliation is history, not an open exception");
+        var history = detail.AllCheckRows.Single(row => row.RowKey == resolved.ResultId.ToString("N"));
+        history.StatusLabel.Should().Be("Resolved");
+        history.StatusIcon.Should().Be("\u2713");
+    }
+
     private static async Task<WorkbenchContext> CreateContextAsync(
         IWorkstationReconciliationApiClient? apiClientOverride = null,
         bool includeSecondRun = false)
@@ -351,7 +405,7 @@ public sealed class FundReconciliationWorkbenchServiceTests
             workspaceService,
             apiClient);
 
-        return new WorkbenchContext(service);
+        return new WorkbenchContext(service, fundAccountService, accountId);
     }
 
     private static Guid ToFundId(string fundProfileId)
@@ -632,6 +686,7 @@ public sealed class FundReconciliationWorkbenchServiceTests
             => Task.FromException<WorkstationReconciliationActionResult>(new InvalidOperationException("Workstation API is offline."));
     }
 
-    private sealed record WorkbenchContext(FundReconciliationWorkbenchService Service);
+    private sealed record WorkbenchContext(
+        FundReconciliationWorkbenchService Service, InMemoryFundAccountService FundAccountService, Guid AccountId);
 }
 #endif
