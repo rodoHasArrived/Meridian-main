@@ -207,6 +207,74 @@ public sealed class StatementImportAndMatchingTests
 
 public sealed class StatementStoreDurabilityTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PublicationClaim_BlocksCompleteImportUntilReleaseOrCancellation(bool cancel)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-statement-claim-{Guid.NewGuid():N}");
+        var folder = Path.Combine(root, "reconciliation", "statement-imports");
+        Directory.CreateDirectory(folder);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token);
+        var target = Path.Combine(folder, "blocked.json");
+        var writer = Substitute.For<IAtomicFileWriter>();
+        var store = new JsonCanonicalStatementStore(root, writer);
+        var import = new CanonicalStatementImport("blocked", "fixture", new DateOnly(2026, 6, 30),
+            DateTimeOffset.UnixEpoch, "source.csv", "original-hash", 0, 0);
+        try
+        {
+            await using var owner = new FileStream(target + ".lock", FileMode.OpenOrCreate,
+                FileAccess.ReadWrite, FileShare.None);
+            var attempt = store.TrySaveImportAsync(import, [], cancellation.Token);
+            // Observe a complete closed temporary envelope, rather than assuming serialization
+            // reached the publication boundary after an arbitrary delay.
+            while (true)
+            {
+                Assert.False(attempt.IsCompleted, "Publication must wait for the exclusive claim owner.");
+                var temporary = Directory.GetFiles(folder, "*.tmp");
+                if (temporary.Length == 1)
+                {
+                    try
+                    {
+                        using var staged = new FileStream(temporary[0], FileMode.Open, FileAccess.Read, FileShare.Read);
+                        using var envelope = System.Text.Json.JsonDocument.Parse(staged);
+                        Assert.Equal("blocked", envelope.RootElement.GetProperty("import").GetProperty("ImportId").GetString());
+                        break;
+                    }
+                    catch (IOException) { }
+                }
+                await Task.Delay(10, timeout.Token);
+            }
+            Assert.False(File.Exists(target));
+            Assert.Empty(await store.ListImportsAsync(timeout.Token));
+            await writer.DidNotReceive().SyncDirectoryAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+
+            if (cancel)
+            {
+                cancellation.Cancel();
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(() => attempt);
+                Assert.False(File.Exists(target));
+                Assert.Empty(Directory.GetFiles(folder, "*.tmp"));
+                await writer.DidNotReceive().SyncDirectoryAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+            }
+            else
+            {
+                owner.Dispose();
+                Assert.True(await attempt);
+                await writer.Received(1).SyncDirectoryAsync(folder, CancellationToken.None);
+                Assert.False(await store.TrySaveImportAsync(import with { SourceFileHash = "replacement-hash" }, [], timeout.Token));
+                Assert.Equal("original-hash", (await store.GetImportAsync("blocked", timeout.Token))!.Import.SourceFileHash);
+                Assert.True(File.Exists(target + ".lock"), "Future writers must reuse the same lock inode.");
+                Assert.Empty(Directory.GetFiles(folder, "*.tmp"));
+            }
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     [Fact]
     public async Task PublishedImport_SyncsDirectoryThroughPortWithoutCallerCancellation()
     {
@@ -218,6 +286,11 @@ public sealed class StatementStoreDurabilityTests
         writer.SyncDirectoryAsync(folder, CancellationToken.None).Returns(_ =>
         {
             Assert.True(File.Exists(target), "Directory durability follows complete publication.");
+            Assert.Throws<IOException>(() =>
+            {
+                using var competingClaim = new FileStream(target + ".lock", FileMode.OpenOrCreate,
+                    FileAccess.ReadWrite, FileShare.None);
+            });
             cancellation.Cancel();
             return Task.CompletedTask;
         });

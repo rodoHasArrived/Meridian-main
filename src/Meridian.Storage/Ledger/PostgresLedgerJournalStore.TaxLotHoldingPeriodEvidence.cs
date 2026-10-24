@@ -11,7 +11,8 @@ public sealed partial class PostgresLedgerJournalStore
     private const int MaximumHoldingPeriodCarryDepth = 32;
     private const int MaximumHoldingPeriodCarryBatches = 1024;
 
-    private async Task CertifyCarriedHoldingPeriodsAsync(NpgsqlConnection connection, Guid ledgerBookId,
+    private async Task CertifyCarriedHoldingPeriodsAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction,
+        Guid ledgerBookId,
         IReadOnlyDictionary<Guid, DisposalBatchAccumulator> batches, CancellationToken ct)
     {
         var known = batches.ToDictionary(static batch => batch.Key, static batch => batch.Value);
@@ -21,7 +22,7 @@ public sealed partial class PostgresLedgerJournalStore
         {
             if (depth > MaximumHoldingPeriodCarryDepth || known.Count > MaximumHoldingPeriodCarryBatches)
                 throw new LedgerValidationException("Retained holding-period carry exceeds the bounded evidence verification limit.");
-            var evidence = await LoadCarriedHoldingPeriodEvidenceAsync(connection, pending, ct).ConfigureAwait(false);
+            var evidence = await LoadCarriedHoldingPeriodEvidenceAsync(connection, transaction, pending, ct).ConfigureAwait(false);
             foreach (var batchId in pending.Keys)
                 evidenceByBatch[batchId] = evidence.Where(item => item.TargetBatchId == batchId).ToArray();
             var missing = evidence.Where(item => !known.ContainsKey(item.SourceBatchId)).ToArray();
@@ -30,7 +31,7 @@ public sealed partial class PostgresLedgerJournalStore
             var sourceIds = missing.Select(static item => item.SourceBatchId).Distinct().ToArray();
             if (known.Count + sourceIds.Length > MaximumHoldingPeriodCarryBatches)
                 throw new LedgerValidationException("Retained holding-period carry exceeds the bounded evidence verification limit.");
-            var sources = await LoadDisposalLotsAsync(connection, ledgerBookId,
+            var sources = await LoadDisposalLotsAsync(connection, transaction, ledgerBookId,
                 missing.Select(static item => item.SourceJournalId).Distinct().ToArray(), ct).ConfigureAwait(false);
             pending = new Dictionary<Guid, DisposalBatchAccumulator>();
             foreach (var sourceId in sourceIds)

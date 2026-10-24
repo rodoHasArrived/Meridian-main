@@ -116,8 +116,9 @@ applies shared trade, quote, and aggregate quality validation. Source time remai
 receipt metadata on published events; receipt time never substitutes for missing source evidence.
 
 Canonical statement imports stream JSON to an exclusive temporary file, force its contents to
-disk, then publish with a no-overwrite rename and the host-supplied `IAtomicFileWriter`
-directory-sync policy. Caller
+disk, then publish under a persistent per-import exclusive file lock with a no-overwrite rename
+and the host-supplied `IAtomicFileWriter` directory-sync policy. The lock stays held through
+directory sync; its sidecar remains so future writers share the same inode. Caller
 cancellation is checked before publication and is not observed after the rename commits.
 Subprocess tests cover interrupted serialization, restart after acknowledged publication,
 and concurrent writers claiming one complete import. These are process-crash tests; they do

@@ -368,6 +368,19 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct).ConfigureAwait(false);
         await EnsureBookWriteAuthorityAsync(connection, transaction, ledgerBookId, ct).ConfigureAwait(false);
+        var results = await GetOpenLotSuccessorHistoryAsync(connection, transaction, ledgerBookId, journalEntryIds, ct)
+            .ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return results;
+    }
+
+    // Shared by the reporting snapshot so successor batches are read in its repeatable-read transaction.
+    private async Task<IReadOnlyList<AtomicTaxLotJournalResult>> GetOpenLotSuccessorHistoryAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction, Guid ledgerBookId,
+        IReadOnlyList<Guid> journalEntryIds, CancellationToken ct)
+    {
+        if (journalEntryIds.Count == 0)
+            return [];
         await using var query = connection.CreateCommand();
         query.Transaction = transaction;
         query.CommandText = $"""
@@ -386,7 +399,6 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         var results = new List<AtomicTaxLotJournalResult>(ids.Count);
         foreach (var id in ids)
             results.Add(await LoadAtomicTaxLotResultAsync(connection, transaction, id, false, ct).ConfigureAwait(false));
-        await transaction.CommitAsync(ct).ConfigureAwait(false);
         return results;
     }
 }
