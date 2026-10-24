@@ -273,6 +273,35 @@ public sealed partial class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task StatusForAReusedGatewayId_StaysSuppressedAfterTheStaleRouteIsRemoved()
+    {
+        var cancelled = new List<int>();
+        var client = RecoveryClient(c => c.RaiseOpenOrder(RecoverableOpenOrder()), cancelled);
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        (await ((IBrokerageOrderRecoveryGateway)sut).GetOrderForRecoveryAsync("client-1")).Should().NotBeNull();
+        client.RaiseConnectionLost();
+        client.RaiseConnectionRestored();
+        client.RaiseManagedAccounts("DU123456");
+
+        // Cancelling the stale route refuses it and removes it.
+        var cancel = () => sut.CancelOrderAsync("client-1");
+        await cancel.Should().ThrowAsync<InvalidOperationException>();
+        cancelled.Should().BeEmpty();
+
+        // The new session's unrelated order under id 7001 fills; this is not client-1's fill.
+        client.RaiseOrderStatus(new IBOrderStatusUpdate(7001, "Filled", 10m, 0m, 100d, 100d, 1L, 1, null, null,
+            DateTimeOffset.UtcNow));
+        client.RaiseExecution(new IBExecutionUpdate(7001, "AAPL", "BOT", 10m, 100d, 10m, 100d, "exec-after-cleanup",
+            "DU123456", "SMART", 1L, null, DateTimeOffset.UtcNow));
+
+        using var reportTimeout = new CancellationTokenSource(TimeSpan.FromMilliseconds(400));
+        var read = () => ReadUntilAsync(sut.StreamExecutionReportsAsync(reportTimeout.Token),
+            report => report.GatewayOrderId == "7001", reportTimeout.Token);
+        await read.Should().ThrowAsync<OperationCanceledException>("removing the stale route must not lift its suppression");
+    }
+
+    [Fact]
     public async Task ManagedAccountsChangingAfterVerification_EndsTheSessionOfRoutesRecoveredUnderThem()
     {
         var cancelled = new List<int>();

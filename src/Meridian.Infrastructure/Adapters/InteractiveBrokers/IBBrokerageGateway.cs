@@ -43,6 +43,9 @@ public sealed partial class IBBrokerageGateway :
     private readonly IIBBrokerageClient _client;
     private readonly Channel<ExecutionReport> _reportChannel;
     private readonly ConcurrentDictionary<int, SubmittedOrderContext> _submittedOrders = new();
+    // Numeric ids recovered in an earlier session whose stale route has since been removed. They stay
+    // suppressed until a recovery in the current session, or this process's own submission, owns them.
+    private readonly ConcurrentDictionary<int, byte> _staleRecoveredIds = new();
     private readonly ConcurrentDictionary<string, int> _gatewayOrderIdsByExternalId = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<int, BrokerOrder> _openOrders = new();
     private readonly ConcurrentDictionary<int, ExecutionReport> _latestOrderReports = new();
@@ -215,6 +218,7 @@ public sealed partial class IBBrokerageGateway :
         var pendingOperation = RegisterPendingOrderOperation(gatewayOrderId, PendingOrderOperationKind.Submit);
 
         _submittedOrders[gatewayOrderId] = context;
+        _staleRecoveredIds.TryRemove(gatewayOrderId, out _);
         _gatewayOrderIdsByExternalId[meridianOrderId] = gatewayOrderId;
         _gatewayOrderIdsByExternalId[gatewayOrderId.ToString()] = gatewayOrderId;
 
@@ -752,8 +756,9 @@ public sealed partial class IBBrokerageGateway :
     // whatever order the reused id now names: they are recovery evidence only and never publish,
     // or the OMS would map the numeric id back to the retained order they no longer describe.
     private bool IsStaleRecoveredId(int gatewayOrderId)
-        => _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) && tracked.RecoveredFromSnapshot
-            && tracked.RecoveryEpoch != Volatile.Read(ref _connectionEpoch);
+        => _submittedOrders.TryGetValue(gatewayOrderId, out var tracked)
+            ? tracked.RecoveredFromSnapshot && tracked.RecoveryEpoch != Volatile.Read(ref _connectionEpoch)
+            : _staleRecoveredIds.ContainsKey(gatewayOrderId);
 
     // A cached report describes the order the id named when it was recorded. Only an order this
     // process submitted keeps its reports across a session change; for a recovered or untracked
@@ -792,6 +797,8 @@ public sealed partial class IBBrokerageGateway :
             if (!ReferenceEquals(current, context))
                 return Names(current, orderId) ? CurrentSessionContext(orderId, gatewayOrderId, current) : throw StaleRoute(orderId);
             _submittedOrders.TryRemove(gatewayOrderId, out _);
+            // Removing the route must not lift the suppression it carried.
+            _staleRecoveredIds[gatewayOrderId] = 0;
             foreach (var key in new[] { context.MeridianOrderId, gatewayOrderId.ToString() })
                 ((ICollection<KeyValuePair<string, int>>)_gatewayOrderIdsByExternalId)
                     .Remove(new KeyValuePair<string, int>(key, gatewayOrderId));
