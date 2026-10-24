@@ -1160,7 +1160,18 @@ public sealed partial class IBBrokerageGateway :
         // as recovery evidence only; tracked orders and updates outside a snapshot publish as before.
         if (staleRecovered)
         {
-            RecordLatestReport(report);
+            // A recovery validates this id's evidence and installs its route under the session gate.
+            // Deciding here under the same gate means the update is either cached before that check,
+            // which then sees it, or handled as the installed route's own update.
+            lock (_sessionGate)
+            {
+                if (TrackedContext(gatewayOrderId) is null)
+                {
+                    RecordLatestReport(report);
+                    return;
+                }
+            }
+            OnOrderStatusReceived(sender, update);
             return;
         }
         if (context is null && _openOrdersSnapshotBuffer is not null)
@@ -1190,7 +1201,16 @@ public sealed partial class IBBrokerageGateway :
         // The execution belongs to whatever order the reused id now names; recovery in the current
         // session reads its fills from the snapshot and status evidence, not from this stream.
         if (context is null && IsStaleRecoveredId(gatewayOrderId))
+        {
+            // As for status: a route installed meanwhile makes this its own execution.
+            lock (_sessionGate)
+            {
+                if (TrackedContext(gatewayOrderId) is null)
+                    return;
+            }
+            OnExecutionDetailsReceived(sender, update);
             return;
+        }
         _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
         _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
         var latest = CurrentSessionReport(gatewayOrderId, context);

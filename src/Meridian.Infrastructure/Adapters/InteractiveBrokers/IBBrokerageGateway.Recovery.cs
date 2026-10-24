@@ -251,6 +251,10 @@ public sealed partial class IBBrokerageGateway
         {
             RecoveryRoutesInstalling?.Invoke();
             Current(report);
+            // A withheld callback for this id caches its report under this gate, so one that arrived
+            // after the consistency check shows here: the validated evidence is no longer current.
+            if (!ReferenceEquals(CurrentSessionReport(gatewayOrderId, TrackedContext(gatewayOrderId)), latest))
+                return null;
             // A route recovered in an earlier session is refreshed; a context this process submitted
             // is never replaced by snapshot terms.
             var recovered = context with { RecoveryEpoch = epoch };

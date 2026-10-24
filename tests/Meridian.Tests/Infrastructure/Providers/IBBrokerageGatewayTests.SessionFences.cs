@@ -333,6 +333,30 @@ public sealed partial class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task OrderRecovery_ReusedGatewayId_FillBeforeRouteInstall_LeavesRecoveryUnresolved()
+    {
+        var sessions = 0;
+        var client = RecoveryClient(c => c.RaiseOpenOrder(sessions == 0
+            ? RecoverableOpenOrder()
+            : RecoverableOpenOrder(clientOrderId: "client-2")));
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        var recovery = (IBrokerageOrderRecoveryGateway)sut;
+        (await recovery.GetOrderForRecoveryAsync("client-1")).Should().NotBeNull();
+        sessions++;
+        client.RaiseConnectionLost();
+        client.RaiseConnectionRestored();
+        client.RaiseManagedAccounts("DU123456");
+        // The order fills after the snapshot was checked and before its route is installed.
+        sut.RecoveryRoutesInstalling = () => client.RaiseOrderStatus(new IBOrderStatusUpdate(7001, "Filled", 10m, 0m,
+            100d, 100d, 1L, 1, null, null, DateTimeOffset.UtcNow));
+
+        var recovered = await recovery.GetOrderForRecoveryAsync("client-2");
+
+        recovered.Should().BeNull("a working report would clear recovery while the fill is never published");
+    }
+
+    [Fact]
     public async Task ManagedAccountsChangingAfterVerification_EndsTheSessionOfRoutesRecoveredUnderThem()
     {
         var cancelled = new List<int>();
