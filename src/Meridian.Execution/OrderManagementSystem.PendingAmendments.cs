@@ -22,7 +22,19 @@ public sealed partial class OrderManagementSystem
                 RoutedNotional = ResolveAmendedRoutedNotional(original, modification)
             };
             _orderBrokerIds.TryGetValue(orderId, out var brokerId);
-            var pending = new PendingOrderAmendment(original, proposed, brokerId) { ProposedTrail = modification.NewTrail };
+            // The replacement reference and the chain's earlier members are durable before the
+            // gateway dispatches, so a crash mid-dispatch still leaves recovery able to find the
+            // successor and attribute every member's fills.
+            var pending = new PendingOrderAmendment(original, proposed, brokerId)
+            {
+                CandidateClientOrderId = string.IsNullOrWhiteSpace(modification.ReplacementClientOrderId)
+                    ? null : modification.ReplacementClientOrderId,
+                PriorChainBrokerOrderIds = GetBrokerOrderAliases(orderId)
+                    .Where(alias => !string.Equals(alias, brokerId, StringComparison.Ordinal)
+                        && !string.Equals(alias, orderId, StringComparison.Ordinal))
+                    .ToArray(),
+                ProposedTrail = modification.NewTrail
+            };
             if (!_pendingModificationOrderIds.TryAdd(orderId, pending))
                 throw new InvalidOperationException("An earlier amendment requires broker reconciliation.");
             var current = _orders[orderId];

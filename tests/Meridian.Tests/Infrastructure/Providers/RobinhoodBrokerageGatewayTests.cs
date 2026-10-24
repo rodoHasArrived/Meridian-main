@@ -1106,6 +1106,87 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
         handler.Requests.Should().ContainSingle(r => IsReplacementPost(r));
     }
 
+    [Fact]
+    public async Task ModifyOrderAsync_PreassignedReference_IsTheSubmittedRefAndRecoversAfterRestart()
+    {
+        var handler = CreateRecoveryHandler((reference, _, _) => OrderHistory(
+            [BuildOrderResponse("recovered", quantity: "10", filledQuantity: "1", averagePrice: "160", refId: reference)]));
+        ExecutionReport pending;
+        await using (var first = CreateSut(handler))
+        {
+            await first.ConnectAsync();
+            pending = await first.ModifyOrderAsync("order-1",
+                new OrderModification { NewQuantity = 12m, ReplacementClientOrderId = "persisted-ref" });
+        }
+        var original = RetainedOriginal(filled: 2m, averagePrice: 150m);
+        var amendment = new PendingOrderAmendment(original, original with { Quantity = 12m }, "order-1")
+        { CandidateClientOrderId = "persisted-ref", PriorChainBrokerOrderIds = [] };
+        await using var restarted = CreateSut(handler);
+        await restarted.ConnectAsync();
+
+        var recovered = await ((IBrokerageOrderAmendmentRecoveryGateway)restarted).GetAmendmentForRecoveryAsync(
+            "client-1", original with { Status = OrderStatus.PendingNew }, amendment);
+
+        pending.ReportType.Should().Be(ExecutionReportType.ModificationPending);
+        pending.CandidateClientOrderId.Should().Be("persisted-ref");
+        recovered.Should().NotBeNull();
+        recovered!.GatewayOrderId.Should().Be("recovered");
+        recovered.CandidateClientOrderId.Should().Be("persisted-ref");
+        handler.Requests.Should().ContainSingle(r => IsReplacementPost(r));
+    }
+
+    [Theory]
+    // Predecessor order-1 is cancelled with 2 filled @ 150 and the candidate has 1 filled @ 160.
+    [InlineData(false, 1, 150, "10", 3, 460)]   // single member: the store missed one predecessor fill
+    [InlineData(true, 2, 145, "9", 4, 600)]     // two members: earlier member order-0 filled 1 @ 140
+    public async Task AmendmentRecovery_LatePredecessorFill_AttributesEveryChainMemberExactly(
+        bool earlierMember, int retainedFilled, int retainedAverage, string candidateQuantity,
+        int expectedFilled, int expectedNotional)
+    {
+        var handler = CreateRecoveryHandler((reference, _, _) => OrderHistory(
+                [BuildOrderResponse("recovered", quantity: candidateQuantity, filledQuantity: "1", averagePrice: "160", refId: reference)]),
+            priorMember: id => id switch
+            {
+                "order-0" => BuildOrderResponse("order-0", "cancelled", "10", "1", "140", "client-1"),
+                "recovered" => BuildOrderResponse("recovered", "confirmed", candidateQuantity, "1", "160", "persisted-ref"),
+                _ => null
+            });
+        await using (var first = CreateSut(handler))
+        {
+            await first.ConnectAsync();
+            await first.ModifyOrderAsync("order-1", new OrderModification { NewQuantity = 12m, ReplacementClientOrderId = "persisted-ref" });
+        }
+        var original = RetainedOriginal(filled: retainedFilled, averagePrice: retainedAverage);
+        var amendment = new PendingOrderAmendment(original, original with { Quantity = 12m }, "order-1")
+        {
+            CandidateClientOrderId = "persisted-ref",
+            PriorChainBrokerOrderIds = earlierMember ? ["order-0"] : []
+        };
+        await using var restarted = CreateSut(handler);
+        await restarted.ConnectAsync();
+
+        var recovered = await ((IBrokerageOrderAmendmentRecoveryGateway)restarted).GetAmendmentForRecoveryAsync(
+            "client-1", original with { Status = OrderStatus.PendingNew }, amendment);
+
+        recovered.Should().NotBeNull("the broker's higher predecessor fill is evidence, not a conflict");
+        recovered!.FilledQuantity.Should().Be(expectedFilled);
+        recovered.FillPrice.Should().Be((decimal)expectedNotional / expectedFilled);
+        recovered.FillPriceIsCumulativeAverage.Should().BeTrue();
+        recovered.OrderQuantity.Should().Be(12m);
+    }
+
+    private static OrderState RetainedOriginal(decimal filled, decimal averagePrice) => new()
+    {
+        OrderId = "client-1",
+        Symbol = "AAPL",
+        Side = OrderSide.Buy,
+        Type = OrderType.Market,
+        Quantity = 10m,
+        FilledQuantity = filled,
+        AverageFillPrice = averagePrice,
+        Status = OrderStatus.Accepted
+    };
+
     private static HttpResponseMessage OrderHistory(HttpContent[] orders, string? next = null)
         => new(HttpStatusCode.OK)
         {
@@ -1120,7 +1201,7 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
         Func<string, Uri, int, HttpResponseMessage> history,
         string recoveredState = "confirmed", string recoveredFilled = "1", bool options = false,
         Action? replacementStarted = null, HttpStatusCode? firstReplacementStatus = null,
-        Func<bool>? predecessorVisible = null)
+        Func<bool>? predecessorVisible = null, Func<string, HttpContent?>? priorMember = null)
     {
         var cancelled = new HashSet<string>();
         string reference = string.Empty;
@@ -1162,6 +1243,8 @@ public sealed class RobinhoodBrokerageGatewayTests : IDisposable
                 cancelled.Add(id);
                 return new(HttpStatusCode.NoContent);
             }
+            if (priorMember?.Invoke(id) is { } member)
+                return new(HttpStatusCode.OK) { Content = member };
             var state = cancelled.Contains(id) ? "cancelled" : id == "order-1" ? "confirmed" : recoveredState;
             var filled = id == "order-1" ? "2" : recoveredFilled;
             var average = options ? id == "order-1" ? "1.25" : "1.50" : id == "order-1" ? "150" : "160";

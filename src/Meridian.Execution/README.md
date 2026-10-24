@@ -15,6 +15,8 @@ OMS amendments resolve explicit broker/client identifiers, retain replacement br
 the original client identity, and process cumulative fills through the shared fill funnel.
 Refused cancellations and amendments fail the operation while preserving observed order state;
 they cannot turn a working order into a terminal rejection. These controls support `W7-LIVE-001`.
+For cancel-and-replace gateways the OMS assigns the replacement reference and persists it, with
+the chain's earlier broker ids, before dispatch.
 Unconfirmed replacements retain both original and proposed terms durably and reserve conservative
 exposure until authoritative recovery selects the actual outcome. The reservation uses whichever
 retained outcome measures larger, keeping its quantity and prices together rather than combining
