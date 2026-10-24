@@ -3,7 +3,7 @@
 **Status:** Proposed
 **Date:** 2026-10-23
 **Owner:** core-team
-**Reviewed:** 2026-10-23
+**Reviewed:** 2026-10-24
 **Deciders:** core-team (review pending)
 **Supersedes:** —
 **Superseded by:** —
@@ -90,7 +90,8 @@ to live below the owners that interpret terms, without taking interpretation fro
 6. **Legacy generators become named kernel modes before any semantics change.** The issue-anchored
    rule is `ScheduleSpec.IssueAnchoredForward`. The compounded rule is
    `ScheduleSpec.CompoundedForward`, or `ScheduleGenerator.RollDates` in compounded mode for callers
-   that only step dates. `FaceValueLot`'s backward dates are backward generation on an end-of-month
+   that only step dates. A caller that interleaves its own guard, window or failure with each step
+   takes the compounded grid's step itself, `ScheduleTenor.Advance(date, 1)`. `FaceValueLot`'s backward dates are backward generation on an end-of-month
    roll with a short initial stub; its regular dates are forward generation with
    `ScheduleStubPolicy.RequireRegular`. Each mode is proven equal to a verbatim, test-only copy of
    the generator it replaces over an exhaustive grid before any call site moves.
@@ -120,16 +121,40 @@ to live below the owners that interpret terms, without taking interpretation fro
 | Calendar contract | `src/Meridian.Contracts/Calendars/IBusinessDayCalendar.cs` | Id, content hash, coverage and the business-day test |
 | Calendar operations | `src/Meridian.Contracts/Calendars/BusinessDayCalendars.cs` | The `WEEKENDS` built-in, joint calendars, and the roll, add and count operations |
 | Day count | `src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs` | The period-context overload that refuses instead of degrading |
-| First consumer | `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs` | `BuildPaymentPeriods` delegates to `IssueAnchoredForward` |
-| Defect registry | `tests/fixtures/schedules/KNOWN-DEFECTS.md` | SCH-DEF-001 to 010: pinned behaviour, target behaviour and owning increment |
+| Consumer, increment 1 | `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs` | `BuildPaymentPeriods` delegates to `IssueAnchoredForward` |
+| Consumer, increment 3 | `src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs` | `BuildBondProjectedCashFlows` iterates `CompoundedForward` periods |
+| Consumer, increment 3 | `src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs` | The obligation-timeline steps take `ScheduleTenor` steps |
+| Consumer, increment 3 | `src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs` | `RollProjectedScheduleDates` steps by `ScheduleTenor` |
+| Legacy coupon cadence | `src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs` | `LegacyCouponPaymentsPerYear`, the one cadence reader of the Security Master and asset-operations coupon schedulers |
+| Ratchet | `tests/Meridian.Tests/Architecture/SchedulePeriodRollingRatchetTests.cs` | Period rolls left outside the kernel; allowances only shrink |
+| Defect registry | `tests/fixtures/schedules/KNOWN-DEFECTS.md` | SCH-DEF-001 to 011: pinned behaviour, target behaviour and owning increment |
 
 Increment 1 implements decisions 1 to 5 and 9, the parity proof for every mode in decision 6, and
 the first move under decision 6: `SecurityMasterCashFlowService.BuildPaymentPeriods` keeps its
-signature and delegates to `IssueAnchoredForward`, with output proven unchanged. No other production code calls the kernel
-yet. No calendar source is registered in DI, and nothing in production consumes
-`SchedulePeriodId` or the context day-count overload. Decision 7, the `ScheduleSpecFactory` in
-decision 8, and the moves of the other seven generators are proposed; their sequence is recorded
-in the extensibility review's resolution pass of 2026-10-23.
+signature and delegates to `IssueAnchoredForward`, with output proven unchanged. Increment 1 moved
+no other production code onto the kernel.
+
+Increment 3 makes the next three moves and merges the two copies of the legacy coupon-cadence
+reader into `SecurityTermConventions.LegacyCouponPaymentsPerYear`. Each move keeps the method's
+output, its evaluation order and the exception type it throws past 9999-12-31; only that
+exception's parameter name and message text change. The frozen copy each move was proven against
+stays in `LegacyScheduleOracles` with its parity grid until a separate change after the last
+increment that edits that call site.
+
+| Generator | Runs on | Moved in | Ratchet allowance |
+| --- | --- | --- | --- |
+| Security Master cash-flow projection (`BuildPaymentPeriods`) | `IssueAnchoredForward`; the closing grid date is re-evaluated to keep SCH-DEF-010 | Increment 1 | Never listed |
+| Asset-operations bond projection (`BuildBondProjectedCashFlows`) | `CompoundedForward`; the closing grid date is re-evaluated at the start of the closing period to keep SCH-DEF-010 | Increment 3 | 1, removed |
+| Obligation timeline (`NextMonthlyDate`, `NextQuarterDate`, `NextFrequencyDate`, `AdvanceAfter`) | `ScheduleTenor.Advance`; the statement cadence compounds from its anchor | Increment 3 | 4, removed |
+| Fund-structure projected dates (`RollProjectedScheduleDates`) | `ScheduleTenor.Advance`, compounded, behind the forecast's own spellings and 256-date guard | Increment 3 | 4, removed |
+| Direct lending, PostgreSQL (`BuildProjectedFlows`) | Its own loop; planned for increment 10 | — | 1 |
+| Direct lending, in memory (`BuildFlows`) | Its own loop; planned for increment 10 | — | 1 |
+| `FaceValueLot` regular and backward coupon dates | Their own loops; planned for increment 12 | — | 2 |
+
+No calendar source is registered in DI, and nothing in production consumes `SchedulePeriodId` or
+the context day-count overload. Decision 7, the `ScheduleSpecFactory` in decision 8, and the
+remaining moves are proposed; their sequence is recorded in the extensibility review's resolution
+passes of 2026-10-23 and 2026-10-24.
 
 ## Rationale
 
@@ -253,17 +278,21 @@ can converge later.
 
 ### Negative
 
-- Until the later increments land, the kernel coexists with seven legacy period loops, each held at
-  its current count by the ratchet.
+- Until the later increments land, the kernel coexists with the legacy period loops not yet moved
+  (four after increment 3: both direct-lending projections and `FaceValueLot`'s two coupon-date
+  generators), each held at its current count by the ratchet.
 - Records that declare nothing keep the defects listed in the registry.
 - Contracts gains public types, so the schema-control contracts manifest must be refreshed.
-- Test-only oracles carry maintenance until the generators they copy are retired.
+- Test-only oracles carry maintenance until the generators they copy are retired and the last
+  increment that edits each call site has landed.
 - Calendar data governance (identifiers, who maintains holiday files, evidence retention) is open.
 
 ### Neutral
 
-- Increment 1 changes no persisted shape, API shape, term schema, terms version, engine-version
-  string or DI registration.
+- Increments 1 and 3 change no persisted shape, API shape, term schema, terms version,
+  engine-version string (`fixed-income-cash-flow-projection-v1` and
+  `asset-obligation-projection-v1` included) or DI registration. Increment 3 adds one public
+  Contracts method, `SecurityTermConventions.LegacyCouponPaymentsPerYear`.
 - `StaticBusinessDayCalendarSource` is not registered in DI; a file-backed source is planned for a
   later increment.
 
@@ -303,11 +332,15 @@ bool resolved = source.TryResolve(calendarIds, out var calendar);
   overload for every other convention, and ICMA, 30E/360 ISDA and Business/252 with and without
   context.
 - `ScheduleKernelLegacyParityTests` and `LegacyOracleFidelityTests` — each kernel mode against a
-  verbatim copy of the generator it replaces, and each copy against the private original by
-  reflection.
+  verbatim copy of the generator it replaces; the Security Master, asset-operations,
+  obligation-timeline, fund-structure and `FaceValueLot` copies against their production methods by
+  reflection (the first four also at the end of the date range, where the legacy arithmetic threw);
+  and the coupon-cadence copy against `SecurityTermConventions.LegacyCouponPaymentsPerYear` directly.
+  The direct-lending copies are proven against the kernel only, until increment 10 moves them.
 - `FaceValueLotGoldenTests` — 576 constant-yield values compared with exact equality.
-- The KnownDefect pins (SCH-DEF-001 to 010) and the 25 existing `SecurityMasterCashFlowServiceTests`,
-  unchanged.
+- The KnownDefect pins (SCH-DEF-001 to 011), the 25 existing `SecurityMasterCashFlowServiceTests`
+  and the existing asset-operations, obligation-timeline and fund-structure suites, unchanged;
+  `SecurityTermConventionTests` pins the legacy cadence reader to explicit values.
 - `SchedulePeriodRollingRatchetTests` — period rolls outside the kernel only shrink.
 - Verify paths in the Implementation Links table from the repository root:
 
@@ -323,7 +356,7 @@ This command verifies referenced files and directories exist; it does not valida
   [Business-Day Calendar](../domain/business-day-calendar.md) domain pages
 - [Contractual-schedule known-defect registry](../../tests/fixtures/schedules/KNOWN-DEFECTS.md)
 - [Security Master extensibility review](../architecture/security-master-extensibility-review.md)
-  (G5, and the resolution pass of 2026-10-23)
+  (G5, and the resolution passes of 2026-10-23 and 2026-10-24)
 - [ADR-024: Terms Payload Format and Version Policy](024-terms-payload-format-and-version-policy.md)
   (declared conventions arrive as versioned flat terms)
 - [ADR-022: Canonical Asset-Class Homes](022-canonical-asset-class-homes.md)
@@ -332,4 +365,4 @@ This command verifies referenced files and directories exist; it does not valida
 
 ---
 
-*Last Updated: 2026-10-23*
+*Last Updated: 2026-10-24*
