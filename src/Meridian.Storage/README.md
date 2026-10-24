@@ -88,7 +88,10 @@ Security Master migration `040_security_master_governance_events.sql` adds the a
 `security_governance_events` log (streams `OperatorOverrides`, `Aliases`, `ProjectionRebuild`);
 triggers refuse update and delete, and migration `041_security_master_governance_events_truncate_guard.sql` adds a statement-level BEFORE TRUNCATE rejection. Override patches and decisions, alias revisions and
 projection batch rebuilds append in the same transaction as the change, and an override reviewer
-cannot approve values they staged. The event store and projection store join
+cannot approve values they staged. Migration `051_security_governance_events_underlying_graph_stream.sql`
+adds the `UnderlyingGraph` stream: `PostgresSecurityUnderlyingGraphStore` records each declaration,
+amendment (with the replaced state) and removal of a declared underlying link, naming the actor,
+in the same transaction as the change to `security_underlying_links`. The event store and projection store join
 `PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap,
 Commodity and Bond projections are now declarative registry plans rather than hand-written writers;
 Bond's `bond_projection` parent and its `bond_lifecycle_projection`,
