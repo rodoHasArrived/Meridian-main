@@ -6,8 +6,10 @@ namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
 /// The underlying graph derived from an instrument's terms: resolved links for term keys that carry
-/// a security id, unresolved references for the names the terms carry, deterministic link ids, and
-/// the profile-backed fallback.
+/// a security id, unresolved references for the names the terms carry, one link per role-marked
+/// field (including array elements and nested objects), deterministic link ids, and the
+/// profile-backed fallback. <see cref="SecurityUnderlyingRoleCoverageTests"/> holds every role the
+/// schema declares to the same rules.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class SecurityUnderlyingLinkDeriverTests
@@ -88,9 +90,117 @@ public sealed class SecurityUnderlyingLinkDeriverTests
     }
 
     [Fact]
+    public void ProfileBackedTerms_LinkAnUnderlyingSecurityIdUnderProfileFields()
+    {
+        // underlyingSecurityId is declared only inside an element shape (an equity's conversion
+        // terms); a profile field with that spelling still links.
+        var links = SecurityUnderlyingLinkDeriver.Derive(Record("CustomAsset", new
+        {
+            customProfileId = "equity-linked-note",
+            profileVersion = 1,
+            profileFields = new { underlyingSecurityId = Underlying }
+        }));
+
+        links.Should().ContainSingle().Which.UnderlyingSecurityId.Should().Be(Underlying);
+    }
+
+    [Fact]
+    public void Swap_LinksEveryLegsFloatingIndex_UnderAnyDeclaredSpelling()
+    {
+        var links = SecurityUnderlyingLinkDeriver.Derive(Record("Swap", new
+        {
+            effectiveDate = "2026-01-15",
+            maturityDate = "2031-01-15",
+            legs = new object[]
+            {
+                new { legType = "Fixed", currency = "USD", fixedRate = 0.04m, exchangesPrincipal = false },
+                new { legType = "Floating", currency = "USD", index = "SOFR", exchangesPrincipal = false },
+                new { legType = "Floating", currency = "EUR", indexName = "ESTR", exchangesPrincipal = false }
+            }
+        }));
+
+        links.Should().HaveCount(2);
+        links.Should().OnlyContain(static l => l.Role == SecurityUnderlyingRole.Index && !l.IsResolved);
+        links.Select(static l => l.Reference).Should().BeEquivalentTo("SOFR", "ESTR");
+    }
+
+    [Fact]
+    public void Swap_LegsUnderAContainerAlias_AreRead_AndARepeatedIndexLinksOnce()
+    {
+        var links = SecurityUnderlyingLinkDeriver.Derive(Record("Swap", new
+        {
+            swapLegs = new object[]
+            {
+                new { legType = "Floating", currency = "USD", referenceIndex = "SOFR" },
+                new { legType = "Floating", currency = "USD", index = "sofr" }
+            }
+        }));
+
+        links.Should().ContainSingle(static l => l.Role == SecurityUnderlyingRole.Index)
+            .Which.Reference.Should().Be("SOFR", "reference text is one edge regardless of case");
+    }
+
+    [Fact]
+    public void CommitmentGuarantee_LinksItsCollateral()
+    {
+        var collateralId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+
+        SecurityUnderlyingLinkDeriver.Derive(Record("CommitmentGuarantee", new { counterparty = "Bank", collateral = "Pledged receivables" }))
+            .Should().ContainSingle(static l => l.Role == SecurityUnderlyingRole.Collateral && l.Reference == "Pledged receivables");
+        SecurityUnderlyingLinkDeriver.Derive(Record("CommitmentGuarantee", new { counterparty = "Bank", collateral = collateralId.ToString() }))
+            .Should().ContainSingle().Which.UnderlyingSecurityId.Should().Be(collateralId);
+    }
+
+    [Fact]
+    public void Bond_WithAFloatingAndAnInflationIndex_LinksBoth()
+    {
+        var links = SecurityUnderlyingLinkDeriver.Derive(Record("Bond", new
+        {
+            maturity = "2031-01-01",
+            couponType = "Floating",
+            floatingIndex = "SOFR",
+            inflationIndex = "CPI-U"
+        }));
+
+        links.Should().HaveCount(2);
+        links.Should().OnlyContain(static l => l.Role == SecurityUnderlyingRole.Index);
+        links.Select(static l => l.Reference).Should().BeEquivalentTo("SOFR", "CPI-U");
+    }
+
+    [Fact]
+    public void ConvertibleEquity_LinksTheSecurityItConvertsInto()
+    {
+        var links = SecurityUnderlyingLinkDeriver.Derive(Record("Equity", new
+        {
+            classification = "Convertible",
+            convertibleTerms = new { underlyingSecurityId = Underlying, conversionRatio = 2.5m }
+        }));
+
+        var link = links.Should().ContainSingle().Subject;
+        link.Role.Should().Be(SecurityUnderlyingRole.Underlying);
+        link.UnderlyingSecurityId.Should().Be(Underlying);
+    }
+
+    [Fact]
+    public void Fields_AreReadForTheRecordsClassOnly()
+    {
+        // referenceEntity is a CDS term; an option that happens to carry the key states no CDS edge.
+        SecurityUnderlyingLinkDeriver.Derive(Record("Option", new { underlyingId = Underlying, referenceEntity = "Acme Corp" }))
+            .Should().ContainSingle().Which.Role.Should().Be(SecurityUnderlyingRole.Underlying);
+    }
+
+    [Fact]
+    public void AGuidField_ThatCarriesText_IsNotRecordedAsAReference()
+    {
+        SecurityUnderlyingLinkDeriver.Derive(Record("Warrant", new { underlyingId = "ACME", warrantType = "Call" }))
+            .Should().BeEmpty("an underlying id is a security id or nothing");
+    }
+
+    [Fact]
     public void SelfReferenceAndBlankReferences_ProduceNoLinks()
     {
         SecurityUnderlyingLinkDeriver.Derive(Record("Option", new { underlyingId = Security })).Should().BeEmpty();
+        SecurityUnderlyingLinkDeriver.Derive(Record("StructuredNote", new { underlyingDescription = Security.ToString() })).Should().BeEmpty();
         SecurityUnderlyingLinkDeriver.Derive(Record("Bond", new { floatingIndex = "  " })).Should().BeEmpty();
         SecurityUnderlyingLinkDeriver.Derive(Record("Equity", new { shareClass = "Common" })).Should().BeEmpty();
     }

@@ -451,6 +451,15 @@
       "sha256": "3ab9a5ba45a2e61baf9a3097ac28c881a87f497781e1b2f0173fdc25e4c26511"
     },
     {
+      "filename": "051_security_governance_events_underlying_graph_stream.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 51,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/051_security_governance_events_underlying_graph_stream.sql",
+      "schema": "security_master",
+      "sha256": "31343269ee38438787542d6d6845c1f9874b479d0375cf7764a6d2f87dc761be"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1298,7 +1307,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "a2a2c7710f4d4017b85f5169019552263ae2eee4d33dc524a2d2f50cf4b63774",
+  "fingerprint": "da1b9546fa73f7dda012a0aaba3650c3692fc14c14c1486f1167322d4416030e",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1536,9 +1545,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 144,
+    "files": 145,
     "migration_sets": 10,
-    "waivers": 20,
+    "waivers": 21,
     "warnings": 0
   },
   "waivers": [
@@ -1674,6 +1683,13 @@
       "reason": "Requires human schema/storage review. Authorized by the repository owner on 2026-10-16. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only Security Master governance event log; no data is truncated. PostgreSQL regression coverage attempts update, delete and truncate and verifies the events are retained.",
       "review_after": "2027-04-16",
       "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/051_security_governance_events_underlying_graph_stream.sql",
+      "reason": "Requires human schema/storage review. Replaces only security_governance_events_stream_check with a wider check that keeps every existing stream ('OperatorOverrides', 'Aliases', 'ProjectionRebuild') and admits 'UnderlyingGraph', so declared underlying-graph links can be recorded in the append-only governance log. No row, column or trigger is removed, and the drop and re-add run in the migration runner's single transaction, so a failure leaves the original constraint in place. A reverse migration must not narrow the check while 'UnderlyingGraph' rows exist.",
+      "review_after": "2027-04-22",
+      "rule_id": "migration-drop-table-member"
     },
     {
       "category": "removed_migrations",

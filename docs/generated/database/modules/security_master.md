@@ -1757,7 +1757,7 @@ erDiagram
 | `security_events` | table | 12 | `global_sequence` | 0 | 4 | - |
 | `security_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_field_provenance` | table | 10 | `security_id`, `field_path`, `origin` | 0 | 2 | - |
-| `security_governance_events` | table | 8 | `global_sequence` | 0 | 3 | Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds), written in the same transaction as the state change. |
+| `security_governance_events` | table | 8 | `global_sequence` | 0 | 3 | Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links), written in the same transaction as the state change. |
 | `security_governance_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_identifiers` | table | 12 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from` | 1 | 3 | - |
 | `security_master_conflicts` | table | 14 | `conflict_id` | 0 | 2 | - |

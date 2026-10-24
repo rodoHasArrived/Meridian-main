@@ -110,19 +110,21 @@ public sealed class SecurityMasterUnderlyingEndpointsTests
     }
 
     [Fact]
-    public async Task Remove_ReturnsNoContent_OrNotFound()
+    public async Task Remove_ReturnsNoContent_OrNotFound_AndNamesTheSessionActor()
     {
         var securityId = Guid.NewGuid();
         var present = Guid.NewGuid();
         var absent = Guid.NewGuid();
         var graph = Substitute.For<ISecurityUnderlyingGraphStore>();
-        graph.RemoveDeclaredAsync(securityId, present, Arg.Any<CancellationToken>()).Returns(true);
-        graph.RemoveDeclaredAsync(securityId, absent, Arg.Any<CancellationToken>()).Returns(false);
+        graph.RemoveDeclaredAsync(securityId, present, Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
+        graph.RemoveDeclaredAsync(securityId, absent, Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(false);
         await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterQueryService>(), graph);
         var client = app.GetTestClient();
 
         (await client.DeleteAsync($"/api/security-master/{securityId}/underlyings/{present}")).StatusCode.Should().Be(HttpStatusCode.NoContent);
         (await client.DeleteAsync($"/api/security-master/{securityId}/underlyings/{absent}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        await graph.Received(1).RemoveDeclaredAsync(securityId, present, "casey.doyle", Arg.Any<CancellationToken>());
     }
 
     private static SecurityUnderlyingLinkDto Link(Guid securityId, SecurityUnderlyingRole role, Guid? target, string? reference, DateTimeOffset from, DateTimeOffset? to)
