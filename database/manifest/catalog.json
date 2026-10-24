@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "9cd84afedbbd5bd7a801434823e6ff7657e106baada50ccccb4229da58c4ebd6",
+  "database_fingerprint": "d4989f23240dd312679e44431b485ad9f0b9a7e6e61b1ae11ea90f6f754e8541",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -19565,7 +19565,7 @@
       "object": "comment:table:security_master.security_close_price_snapshots"
     },
     {
-      "fingerprint": "9d38710299092ec1d2d6af0a81be7060f7a590181aac1a84432eb2327b70a613",
+      "fingerprint": "1df4ae246a41f77332511eff76c82a4c9a99bf731ea2290cc18bf9c819ece535",
       "object": "comment:table:security_master.security_governance_events"
     },
     {
@@ -22141,7 +22141,7 @@
       "object": "constraint:security_master.security_governance_events.security_governance_events_pkey"
     },
     {
-      "fingerprint": "99d79b450b12d1ec02b15cf39ad33fce8a696ac57ba3d5bbfb8e4cfd0f261365",
+      "fingerprint": "ed1e9e2da32bb94eaaddacdf004f036313a9551d6e3c64c2c5eb73b355537090",
       "object": "constraint:security_master.security_governance_events.security_governance_events_stream_check"
     },
     {
@@ -28833,7 +28833,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "0898f16b15ee4f345a28dd15a6ac6ce47a99c5e66968e4c1c3e4c386696ff998",
+      "fingerprint": "1ac8c689eb0be03100ea51f47a90b384c89fb48716ef759a13f10e1f18c2a1d6",
       "object": "schema:security_master"
     },
     {
@@ -29625,7 +29625,7 @@
       "object": "table:security_master.security_field_provenance"
     },
     {
-      "fingerprint": "c00d8c88d46d5d58f034cacda35ff7e91641251de18c4b79a37b7b68c3b9ba28",
+      "fingerprint": "d4196c806a5137006a95ee8e418ce767f2bc1fb528e77ee23d53fe2357691235",
       "object": "table:security_master.security_governance_events"
     },
     {
@@ -124373,8 +124373,8 @@
           "object_type": "table"
         },
         {
-          "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds), written in the same transaction as the state change.",
-          "fingerprint": "9d38710299092ec1d2d6af0a81be7060f7a590181aac1a84432eb2327b70a613",
+          "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links), written in the same transaction as the state change.",
+          "fingerprint": "1df4ae246a41f77332511eff76c82a4c9a99bf731ea2290cc18bf9c819ece535",
           "object": "security_master.security_governance_events",
           "object_type": "table"
         },
@@ -127860,7 +127860,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "0898f16b15ee4f345a28dd15a6ac6ce47a99c5e66968e4c1c3e4c386696ff998",
+      "fingerprint": "1ac8c689eb0be03100ea51f47a90b384c89fb48716ef759a13f10e1f18c2a1d6",
       "foreign_tables": [],
       "functions": [
         {
@@ -160280,7 +160280,7 @@
               "type_schema": "pg_catalog"
             }
           ],
-          "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds), written in the same transaction as the state change.",
+          "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links), written in the same transaction as the state change.",
           "constraints": [
             {
               "columns": [
@@ -160308,9 +160308,9 @@
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (stream = ANY (ARRAY['OperatorOverrides'::text, 'Aliases'::text, 'ProjectionRebuild'::text]))",
+              "definition": "CHECK (stream = ANY (ARRAY['OperatorOverrides'::text, 'Aliases'::text, 'ProjectionRebuild'::text, 'UnderlyingGraph'::text]))",
               "delete_action": null,
-              "fingerprint": "99d79b450b12d1ec02b15cf39ad33fce8a696ac57ba3d5bbfb8e4cfd0f261365",
+              "fingerprint": "ed1e9e2da32bb94eaaddacdf004f036313a9551d6e3c64c2c5eb73b355537090",
               "initially_deferred": false,
               "match_type": null,
               "name": "security_governance_events_stream_check",
@@ -160345,7 +160345,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c00d8c88d46d5d58f034cacda35ff7e91641251de18c4b79a37b7b68c3b9ba28",
+          "fingerprint": "d4196c806a5137006a95ee8e418ce767f2bc1fb528e77ee23d53fe2357691235",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -203451,7 +203451,7 @@
               "type_schema": "pg_catalog"
             }
           ],
-          "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds), written in the same transaction as the state change.",
+          "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links), written in the same transaction as the state change.",
           "constraints": [
             {
               "columns": [
@@ -203479,9 +203479,9 @@
               ],
               "comment": null,
               "deferrable": false,
-              "definition": "CHECK (stream = ANY (ARRAY['OperatorOverrides'::text, 'Aliases'::text, 'ProjectionRebuild'::text]))",
+              "definition": "CHECK (stream = ANY (ARRAY['OperatorOverrides'::text, 'Aliases'::text, 'ProjectionRebuild'::text, 'UnderlyingGraph'::text]))",
               "delete_action": null,
-              "fingerprint": "99d79b450b12d1ec02b15cf39ad33fce8a696ac57ba3d5bbfb8e4cfd0f261365",
+              "fingerprint": "ed1e9e2da32bb94eaaddacdf004f036313a9551d6e3c64c2c5eb73b355537090",
               "initially_deferred": false,
               "match_type": null,
               "name": "security_governance_events_stream_check",
@@ -203516,7 +203516,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c00d8c88d46d5d58f034cacda35ff7e91641251de18c4b79a37b7b68c3b9ba28",
+          "fingerprint": "d4196c806a5137006a95ee8e418ce767f2bc1fb528e77ee23d53fe2357691235",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
