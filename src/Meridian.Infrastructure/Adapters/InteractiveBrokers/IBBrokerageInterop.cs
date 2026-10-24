@@ -24,6 +24,12 @@ public interface IIBBrokerageClient : IDisposable
     event EventHandler<IBAccountSummaryUpdate>? AccountSummaryReceived;
     event EventHandler<int>? AccountSummaryCompleted;
     event EventHandler<IBApiError>? ErrorOccurred;
+    /// <summary>Accounts IB reports for the connected login.</summary>
+    event EventHandler<IReadOnlyList<string>>? ManagedAccountsReceived;
+    /// <summary>The transport dropped; raised before any automatic reconnect.</summary>
+    event EventHandler? ConnectionLost;
+    /// <summary>The client re-established the transport on its own.</summary>
+    event EventHandler? ConnectionRestored;
 
     Task ConnectAsync(CancellationToken ct = default);
     Task DisconnectAsync(CancellationToken ct = default);

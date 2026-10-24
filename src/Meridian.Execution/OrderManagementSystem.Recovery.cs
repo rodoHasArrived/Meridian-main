@@ -233,6 +233,11 @@ public sealed partial class OrderManagementSystem
     }
 
     /// <summary>Applies broker-proven recovery evidence through the ordinary idempotent fill path.</summary>
+    private bool RetainedForAnotherOrder(string? brokerOrderId, string orderId)
+        => brokerOrderId is { Length: > 0 }
+            && _brokerOrderAliases.TryGetValue(brokerOrderId, out var owner)
+            && !string.Equals(owner, orderId, StringComparison.Ordinal);
+
     public async Task ReconcileRecoveryOrderAsync(ExecutionReport report, CancellationToken ct = default)
     {
         using var operation = EnterOperation();
@@ -243,6 +248,12 @@ public sealed partial class OrderManagementSystem
             var orderId = report.ClientOrderId ?? report.OrderId;
             if (_inFlightDispatches.ContainsKey(orderId))
                 throw new InvalidOperationException("Order submission is still in progress; broker recovery must wait for its outcome.");
+            // Processing normalizes a report to the order its broker id is retained for. A later
+            // session can reuse a broker id still retained for another order, and the evidence
+            // validated here for this order would then be booked against that one.
+            if (RetainedForAnotherOrder(report.GatewayOrderId ?? report.OrderId, orderId)
+                || RetainedForAnotherOrder(report.ReplacesOrderId, orderId))
+                throw new InvalidDataException("Broker recovery evidence names a broker order id retained for another order.");
             if (report.ReportType is ExecutionReportType.ModificationPending)
             {
                 // A pending outcome can still book fills, so it must prove the same identity and

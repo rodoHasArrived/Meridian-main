@@ -26,9 +26,12 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 [ImplementsAdr("ADR-001", "IB brokerage provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
-public sealed class IBBrokerageGateway :
+public sealed partial class IBBrokerageGateway :
     IBrokerageGateway,
     IExecutionGatewayModeProvider,
+    IBrokerageRetainedOrderRecoveryGateway,
+    IBrokerageOrderAmendmentRecoveryGateway,
+    IBrokerageConnectionState,
     IBrokerageAccountCatalog,
     IBrokeragePortfolioSync,
     IBrokerageActivitySync
@@ -40,10 +43,16 @@ public sealed class IBBrokerageGateway :
     private readonly IIBBrokerageClient _client;
     private readonly Channel<ExecutionReport> _reportChannel;
     private readonly ConcurrentDictionary<int, SubmittedOrderContext> _submittedOrders = new();
+    // Numeric ids recovered in an earlier session whose stale route has since been removed. They stay
+    // suppressed until a recovery in the current session, or this process's own submission, owns them.
+    private readonly ConcurrentDictionary<int, byte> _staleRecoveredIds = new();
     private readonly ConcurrentDictionary<string, int> _gatewayOrderIdsByExternalId = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<int, BrokerOrder> _openOrders = new();
-    private readonly ConcurrentDictionary<int, ExecutionReport> _latestOrderReports = new();
+    // Each cached report with the connection epoch it was recorded in, published as one entry so a
+    // reader never pairs one session's epoch with another session's report; see CurrentSessionReport.
+    private readonly ConcurrentDictionary<int, LatestOrderReport> _latestOrderReports = new();
     private readonly ConcurrentDictionary<int, string> _openOrderAccounts = new();
+    private readonly ConcurrentDictionary<int, string> _openOrderSecurityTypes = new();
     private readonly ConcurrentDictionary<string, IBExecutionUpdate> _executions = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<int, PendingOrderOperation> _pendingOrderOperations = new();
     private readonly ConcurrentDictionary<int, PendingOrderOperation> _unconfirmedAmendments = new();
@@ -80,6 +89,9 @@ public sealed class IBBrokerageGateway :
         _client.AccountSummaryReceived += OnAccountSummaryReceived;
         _client.AccountSummaryCompleted += OnAccountSummaryCompleted;
         _client.ErrorOccurred += OnErrorOccurred;
+        _client.ManagedAccountsReceived += OnManagedAccountsReceived;
+        _client.ConnectionLost += OnConnectionLost;
+        _client.ConnectionRestored += OnConnectionRestored;
     }
 
     /// <inheritdoc />
@@ -156,9 +168,22 @@ public sealed class IBBrokerageGateway :
             "IB brokerage connecting to {Host}:{Port} (clientId={ClientId}, paper={Paper})",
             _options.Host, _options.Port, _options.ClientId, _options.UsePaperTrading);
 
+        // Begin the session before the transport can be observed. After a loss _connected stays
+        // true, so IsConnected turns true as soon as the client connects, before priming ends, and
+        // a recovery can bind and install its route in that window; advancing afterwards would make
+        // it stale. A loss already ended the previous session and began this one, so it is not
+        // ended again, and the marker stays for an automatic restore that may still be in flight.
+        lock (_sessionGate)
+        {
+            if (!_sessionEndedByLoss)
+            {
+                Interlocked.Increment(ref _connectionEpoch);
+                ForgetOwedOpenOrdersEnds();
+            }
+        }
+        _verifiedAccounts = NoVerifiedAccounts;
         await _client.ConnectAsync(ct).ConfigureAwait(false);
         await PrimeNextOrderIdAsync(ct).ConfigureAwait(false);
-
         _connected = true;
 
         _logger.LogInformation(
@@ -173,6 +198,7 @@ public sealed class IBBrokerageGateway :
             return;
 
         await _client.DisconnectAsync(ct).ConfigureAwait(false);
+        EndSession(forgetAccounts: true, lost: false);
         _connected = false;
 
         _logger.LogInformation("IB brokerage disconnected");
@@ -192,6 +218,7 @@ public sealed class IBBrokerageGateway :
         var pendingOperation = RegisterPendingOrderOperation(gatewayOrderId, PendingOrderOperationKind.Submit);
 
         _submittedOrders[gatewayOrderId] = context;
+        _staleRecoveredIds.TryRemove(gatewayOrderId, out _);
         _gatewayOrderIdsByExternalId[meridianOrderId] = gatewayOrderId;
         _gatewayOrderIdsByExternalId[gatewayOrderId.ToString()] = gatewayOrderId;
 
@@ -227,7 +254,8 @@ public sealed class IBBrokerageGateway :
 
         try
         {
-            await _client.CancelOrderAsync(gatewayOrderId, ct).ConfigureAwait(false);
+            await SendInCurrentSession(orderId, gatewayOrderId, context,
+                () => _client.CancelOrderAsync(gatewayOrderId, ct)).ConfigureAwait(false);
             return await AwaitPendingOrderOperationAsync(
                 gatewayOrderId,
                 pendingOperation,
@@ -262,6 +290,11 @@ public sealed class IBBrokerageGateway :
         {
             ct.ThrowIfCancellationRequested();
             (gatewayOrderId, var context) = ResolveOrder(orderId);
+            // The open-order snapshot omits time-in-force and contract detail; resubmitting those
+            // guessed terms could silently change the working order, so recovered orders cancel only.
+            if (context.RecoveredFromSnapshot)
+                throw new InvalidOperationException(
+                    $"Order '{orderId}' was recovered from IB's open-order snapshot and cannot be amended; cancel and resubmit it.");
             var updatedRequest = context.ToModifiedRequest(modification);
             var updatedContext = context with
             {
@@ -271,8 +304,11 @@ public sealed class IBBrokerageGateway :
             };
             pendingOperation = RegisterPendingOrderOperation(
                 gatewayOrderId, PendingOrderOperationKind.Modify, updatedContext);
-            sent = true;
-            await _client.PlaceOrderAsync(gatewayOrderId, updatedRequest, ct).ConfigureAwait(false);
+            await SendInCurrentSession(orderId, gatewayOrderId, context, () =>
+            {
+                sent = true;
+                return _client.PlaceOrderAsync(gatewayOrderId, updatedRequest, ct);
+            }).ConfigureAwait(false);
             return await AwaitPendingOrderOperationAsync(
                 gatewayOrderId,
                 pendingOperation,
@@ -374,19 +410,34 @@ public sealed class IBBrokerageGateway :
         EnsureConnected();
 
         await _openOrdersGate.WaitAsync(ct).ConfigureAwait(false);
+        var requested = false;
+        var requestEpoch = 0;
         try
         {
             _openOrdersSnapshotBuffer = new ConcurrentDictionary<int, BrokerOrder>();
             _openOrdersSnapshotWaiter = new TaskCompletionSource<IReadOnlyList<BrokerOrder>>(
                 TaskCreationOptions.RunContinuationsAsynchronously);
 
+            var waiter = _openOrdersSnapshotWaiter;
+            requestEpoch = Volatile.Read(ref _connectionEpoch);
             _client.RequestOpenOrders();
-            return await _openOrdersSnapshotWaiter.Task.WaitAsync(CallbackTimeout, ct).ConfigureAwait(false);
+            requested = true;
+            return await waiter.Task.WaitAsync(CallbackTimeout, ct).ConfigureAwait(false);
         }
         finally
         {
-            _openOrdersSnapshotWaiter = null;
-            _openOrdersSnapshotBuffer = null;
+            lock (_openOrdersFence)
+            {
+                // openOrderEnd carries no request id. A request abandoned before its end arrived still
+                // owes one, which must drain here rather than complete the next request early. An
+                // end owed by an earlier session never arrives in this one (the session change
+                // already forgot it), so only a request of the current session owes one.
+                if (requested && _openOrdersSnapshotWaiter is { Task.IsCompleted: false }
+                    && Volatile.Read(ref _connectionEpoch) == requestEpoch)
+                    _abandonedOpenOrdersRequests++;
+                _openOrdersSnapshotWaiter = null;
+                _openOrdersSnapshotBuffer = null;
+            }
             _openOrdersGate.Release();
         }
     }
@@ -545,6 +596,9 @@ public sealed class IBBrokerageGateway :
         _client.AccountSummaryReceived -= OnAccountSummaryReceived;
         _client.AccountSummaryCompleted -= OnAccountSummaryCompleted;
         _client.ErrorOccurred -= OnErrorOccurred;
+        _client.ManagedAccountsReceived -= OnManagedAccountsReceived;
+        _client.ConnectionLost -= OnConnectionLost;
+        _client.ConnectionRestored -= OnConnectionRestored;
 
         try
         {
@@ -618,7 +672,7 @@ public sealed class IBBrokerageGateway :
             kind,
             new TaskCompletionSource<ExecutionReport>(TaskCreationOptions.RunContinuationsAsynchronously),
             proposedContext,
-            _latestOrderReports.TryGetValue(gatewayOrderId, out var latest) ? latest.OrderStatus : OrderStatus.Accepted);
+            _latestOrderReports.TryGetValue(gatewayOrderId, out var latest) ? latest.Report.OrderStatus : OrderStatus.Accepted);
 
         if (!_pendingOrderOperations.TryAdd(gatewayOrderId, operation))
             throw new InvalidOperationException($"IB order {gatewayOrderId} already has a pending operation.");
@@ -666,19 +720,105 @@ public sealed class IBBrokerageGateway :
     private (int GatewayOrderId, SubmittedOrderContext Context) ResolveOrder(string orderId)
     {
         if (_gatewayOrderIdsByExternalId.TryGetValue(orderId, out var gatewayOrderId) &&
-            _submittedOrders.TryGetValue(gatewayOrderId, out var context))
+            _submittedOrders.TryGetValue(gatewayOrderId, out var context) &&
+            Names(context, orderId))
         {
-            return (gatewayOrderId, context);
+            return (gatewayOrderId, CurrentSessionContext(orderId, gatewayOrderId, context));
         }
 
         if (int.TryParse(orderId, out gatewayOrderId) &&
             _submittedOrders.TryGetValue(gatewayOrderId, out context))
         {
-            return (gatewayOrderId, context);
+            return (gatewayOrderId, CurrentSessionContext(orderId, gatewayOrderId, context));
         }
 
         throw new InvalidOperationException(
             $"Order '{orderId}' is unknown to the IB brokerage gateway. Submit the order before modifying or cancelling it.");
+    }
+
+    // A numeric gateway id can be recovered for a different client order than the one an alias
+    // was registered for; the alias then names an unrelated order and must not route to it.
+    private static bool Names(SubmittedOrderContext context, string orderId)
+        => string.Equals(orderId, context.MeridianOrderId, StringComparison.Ordinal)
+            || string.Equals(orderId, context.ClientOrderId, StringComparison.Ordinal)
+            || string.Equals(orderId, context.GatewayOrderId.ToString(), StringComparison.Ordinal);
+
+    // A context recovered from an earlier session's snapshot describes that session's order. A
+    // later login can reuse the numeric id for an unrelated order, so callbacks never read a stale
+    // recovered context; the callback's own identity is used instead.
+    private SubmittedOrderContext? TrackedContext(int gatewayOrderId)
+        => _submittedOrders.TryGetValue(gatewayOrderId, out var tracked)
+            && (!tracked.RecoveredFromSnapshot || tracked.RecoveryEpoch == Volatile.Read(ref _connectionEpoch))
+            ? tracked
+            : null;
+
+    // An id this session does not track but an earlier session recovered. Its callbacks describe
+    // whatever order the reused id now names: they are recovery evidence only and never publish,
+    // or the OMS would map the numeric id back to the retained order they no longer describe.
+    private bool IsStaleRecoveredId(int gatewayOrderId)
+        => _submittedOrders.TryGetValue(gatewayOrderId, out var tracked)
+            ? tracked.RecoveredFromSnapshot && tracked.RecoveryEpoch != Volatile.Read(ref _connectionEpoch)
+            : _staleRecoveredIds.ContainsKey(gatewayOrderId);
+
+    // A cached report describes the order the id named when it was recorded. Only an order this
+    // process submitted keeps its reports across a session change; for a recovered or untracked
+    // id a report from an earlier session may belong to an unrelated order and is not evidence.
+    private ExecutionReport? CurrentSessionReport(int gatewayOrderId, SubmittedOrderContext? context)
+    {
+        if (!_latestOrderReports.TryGetValue(gatewayOrderId, out var latest))
+            return null;
+        if (context is { RecoveredFromSnapshot: false })
+            return latest.Report;
+        return latest.Epoch == Volatile.Read(ref _connectionEpoch) ? latest.Report : null;
+    }
+
+    /// <summary>
+    /// A route recovered from an open-order snapshot identifies an order only within the session it
+    /// was read in: a later login can reuse the numeric order id for an unrelated order. A stale
+    /// recovered route is dropped and refused; reconciliation recovers the order again.
+    /// </summary>
+    private SubmittedOrderContext CurrentSessionContext(string orderId, int gatewayOrderId, SubmittedOrderContext context)
+    {
+        if (!context.RecoveredFromSnapshot || context.RecoveryEpoch == Volatile.Read(ref _connectionEpoch))
+            return context;
+        StaleRouteCleanupStarting?.Invoke();
+        lock (_sessionGate)
+        {
+            // Installs share this gate, so what is registered now is authoritative. A recovery in the
+            // current session may have reinstalled this order since it was looked up: its context
+            // and aliases are not the stale route's to remove.
+            if (!_submittedOrders.TryGetValue(gatewayOrderId, out var current))
+                throw StaleRoute(orderId);
+            // The reinstalled route may name a different client order under this numeric id; an
+            // alias resolved before that replacement must not be sent against it.
+            if (!ReferenceEquals(current, context))
+                return Names(current, orderId) ? CurrentSessionContext(orderId, gatewayOrderId, current) : throw StaleRoute(orderId);
+            _submittedOrders.TryRemove(gatewayOrderId, out _);
+            // Removing the route must not lift the suppression it carried.
+            _staleRecoveredIds[gatewayOrderId] = 0;
+            foreach (var key in new[] { context.MeridianOrderId, gatewayOrderId.ToString() })
+                ((ICollection<KeyValuePair<string, int>>)_gatewayOrderIdsByExternalId)
+                    .Remove(new KeyValuePair<string, int>(key, gatewayOrderId));
+        }
+        throw StaleRoute(orderId);
+    }
+
+    private static InvalidOperationException StaleRoute(string orderId) => new(
+            $"Order '{orderId}' was recovered in an earlier IB session; reconcile it again before cancelling or amending it.");
+
+    /// <summary>
+    /// Sends a request that relies on a session-scoped order id. The session check and the client
+    /// call share the session gate with every session change, so the id is never sent into a later
+    /// session. Both client builds write to the socket synchronously and return a completed task, so
+    /// the gate is held only for the write and never across an await or an IB callback.
+    /// </summary>
+    private Task SendInCurrentSession(string orderId, int gatewayOrderId, SubmittedOrderContext context, Func<Task> send)
+    {
+        lock (_sessionGate)
+        {
+            CurrentSessionContext(orderId, gatewayOrderId, context);
+            return send();
+        }
     }
 
     private void EnsureConnected()
@@ -774,26 +914,28 @@ public sealed class IBBrokerageGateway :
 
     private void OnOpenOrderReceived(object? sender, IBOpenOrderUpdate update)
     {
+        var callbackEpoch = Volatile.Read(ref _connectionEpoch);
         var gatewayOrderId = update.OrderId;
         if (string.IsNullOrWhiteSpace(update.Account))
             _openOrderAccounts.TryRemove(gatewayOrderId, out _);
         else
             _openOrderAccounts[gatewayOrderId] = update.Account.Trim();
+        _openOrderSecurityTypes[gatewayOrderId] = update.SecurityType ?? string.Empty;
 
-        var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
+        var context = TrackedContext(gatewayOrderId);
         _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
         _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
-        _latestOrderReports.TryGetValue(gatewayOrderId, out var latest);
+        var latest = CurrentSessionReport(gatewayOrderId, context);
         var status = IBCanonicalPayloadMapper.MapOrderStatus(update.Status, update.FilledQuantity,
             Math.Max(update.Quantity - update.FilledQuantity, 0m), update.RejectReason, update.Metadata);
 
         // A refused amendment describes the operation, not rejection of the working order.
         // Keep the last confirmed request until IB echoes the amended terms.
         var refusedOperation = pending?.Kind == PendingOrderOperationKind.Cancel ? pending : amendment;
-        if (refusedOperation is not null && status == OrderStatus.Rejected)
+        if (refusedOperation is not null && status == OrderStatus.Rejected && context is not null)
         {
-            RejectPendingOperation(gatewayOrderId, refusedOperation, context!, update.RejectReason ?? update.Status,
-                update.FilledQuantity);
+            RejectPendingOperation(gatewayOrderId, refusedOperation, context, update.RejectReason ?? update.Status,
+                callbackEpoch, update.FilledQuantity);
             return;
         }
 
@@ -846,7 +988,10 @@ public sealed class IBBrokerageGateway :
                 snapshot[gatewayOrderId] = brokerOrder;
         }
 
-        if (pending is null && amendment is null)
+        // An id this session does not track (or tracks only through a route from an earlier
+        // session) can describe another login's order: it feeds the snapshot above, never an
+        // operation still pending for the id. That operation is refused or times out instead.
+        if (context is null || pending is null && amendment is null)
             return;
         if (!amendmentConfirmed && pending?.Kind == PendingOrderOperationKind.Cancel)
         {
@@ -879,7 +1024,7 @@ public sealed class IBBrokerageGateway :
             OrderLimitPrice = amendmentConfirmed ? context?.LimitPrice : null,
             OrderStopPrice = amendmentConfirmed ? context?.StopPrice : null
         };
-        PublishReport(report);
+        PublishReport(report, callbackEpoch);
         if (amendmentConfirmed)
         {
             CompleteAmendment(gatewayOrderId, amendment!, report);
@@ -904,19 +1049,35 @@ public sealed class IBBrokerageGateway :
 
     private void OnOpenOrdersCompleted(object? sender, EventArgs e)
     {
-        _openOrdersSnapshotWaiter?.TrySetResult(
-            _openOrdersSnapshotBuffer?.Values
-                .OrderBy(o => o.Symbol, StringComparer.OrdinalIgnoreCase)
-                .ThenBy(o => o.OrderId, StringComparer.OrdinalIgnoreCase)
-                .ToArray()
-            ?? Array.Empty<BrokerOrder>());
+        lock (_openOrdersFence)
+        {
+            if (_abandonedOpenOrdersRequests > 0)
+            {
+                _abandonedOpenOrdersRequests--;
+                // IB answers requests in order, so every row buffered before this owed end was the
+                // abandoned request's; the current request's own rows all follow it.
+                _openOrdersSnapshotBuffer?.Clear();
+                return;
+            }
+            _openOrdersSnapshotWaiter?.TrySetResult(
+                _openOrdersSnapshotBuffer?.Values
+                    .OrderBy(o => o.Symbol, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(o => o.OrderId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray()
+                ?? Array.Empty<BrokerOrder>());
+        }
     }
 
     private void OnOrderStatusReceived(object? sender, IBOrderStatusUpdate update)
     {
+        // Read before the route resolves: a report is evidence of the session its route was read in,
+        // so it is stamped with that epoch even if the connection changes before it is cached.
+        var callbackEpoch = Volatile.Read(ref _connectionEpoch);
         var gatewayOrderId = update.OrderId;
-        var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
-        _latestOrderReports.TryGetValue(gatewayOrderId, out var latest);
+        var context = TrackedContext(gatewayOrderId);
+        var staleRecovered = context is null && IsStaleRecoveredId(gatewayOrderId);
+        OrderStatusRouteResolved?.Invoke();
+        var latest = CurrentSessionReport(gatewayOrderId, context);
         _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
         _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
         var filled = Math.Max(update.Filled, latest?.FilledQuantity ?? 0m);
@@ -926,7 +1087,7 @@ public sealed class IBBrokerageGateway :
             orderStatus == OrderStatus.Rejected && context is not null)
         {
             RejectPendingOperation(gatewayOrderId, refusedOperation, context, update.RejectReason ?? update.Status,
-                filled, update.AverageFillPrice > 0 ? (decimal)update.AverageFillPrice : null);
+                callbackEpoch, filled, update.AverageFillPrice > 0 ? (decimal)update.AverageFillPrice : null);
             return;
         }
         if (orderStatus == OrderStatus.Accepted && filled > 0m)
@@ -940,7 +1101,23 @@ public sealed class IBBrokerageGateway :
             !IsTerminalOrderStatus(orderStatus))
             orderStatus = OrderStatus.PendingCancel;
 
-        if (_openOrders.TryGetValue(gatewayOrderId, out var openOrder))
+        // The live open-order entry of a stale recovered id is the earlier session's; the new
+        // session's order is described by its own snapshot row, never by refreshing that entry.
+        // That row still takes this status: IB's openOrder reports no filled quantity, so without
+        // it a partly filled order would fail recovery's quantity check.
+        _openOrders.TryGetValue(gatewayOrderId, out var openOrder);
+        if (staleRecovered)
+        {
+            openOrder = null;
+            if (_openOrdersSnapshotBuffer is { } currentSnapshot && currentSnapshot.TryGetValue(gatewayOrderId, out var row))
+            {
+                if (IsTerminalOrderStatus(orderStatus))
+                    currentSnapshot.TryRemove(gatewayOrderId, out _);
+                else
+                    currentSnapshot[gatewayOrderId] = row with { FilledQuantity = filled, Status = orderStatus };
+            }
+        }
+        if (openOrder is not null)
         {
             var refreshed = openOrder with { FilledQuantity = filled, Status = orderStatus };
             if (IsTerminalOrderStatus(orderStatus))
@@ -965,6 +1142,10 @@ public sealed class IBBrokerageGateway :
             _ when filled > (latest?.FilledQuantity ?? 0m) => ExecutionReportType.PartialFill,
             _ => ExecutionReportType.New
         };
+        // A status that advances the filled quantity without a new average cannot reuse the cached
+        // price: that average covered fewer shares, and carrying it forward as cumulative would price
+        // the new shares with it. The advanced fill stays unpriced until IB reports its average.
+        var fillAdvancedWithoutAverage = update.Filled > (latest?.FilledQuantity ?? 0m) && update.AverageFillPrice <= 0;
         var report = BuildExecutionReport(
             gatewayOrderId, reportType, orderStatus, context,
             context?.Symbol ?? openOrder?.Symbol ?? gatewayOrderId.ToString(),
@@ -974,11 +1155,34 @@ public sealed class IBBrokerageGateway :
                 : context?.Quantity ?? openOrder?.Quantity ?? filled + update.Remaining,
             filled,
             update.Filled < (latest?.FilledQuantity ?? 0m) ? latest?.FillPrice :
-                update.AverageFillPrice > 0 ? (decimal)update.AverageFillPrice : update.LastFillPrice > 0 ? (decimal)update.LastFillPrice : latest?.FillPrice,
+                update.AverageFillPrice > 0 ? (decimal)update.AverageFillPrice : update.LastFillPrice > 0 ? (decimal)update.LastFillPrice
+                : fillAdvancedWithoutAverage ? null : latest?.FillPrice,
             update.Status, update.RejectReason, null, update.ReceivedAt,
             update.Filled < (latest?.FilledQuantity ?? 0m) ? latest!.FillPriceIsCumulativeAverage :
-                update.AverageFillPrice > 0 || (update.LastFillPrice <= 0 && latest?.FillPriceIsCumulativeAverage == true));
-        PublishReport(report);
+                update.AverageFillPrice > 0 || (update.LastFillPrice <= 0 && !fillAdvancedWithoutAverage && latest?.FillPriceIsCumulativeAverage == true));
+        // reqOpenOrders echoes orderStatus for every open order, including orders this session does not
+        // track. Until recovery validates them (account, orderRef, contract and session) they are kept
+        // as recovery evidence only; tracked orders and updates outside a snapshot publish as before.
+        if (staleRecovered)
+        {
+            // A recovery validates this id's evidence and installs its route under the session gate.
+            // Deciding here under the same gate means the update is either cached before that check,
+            // which then sees it, or handled as the installed route's own update.
+            lock (_sessionGate)
+            {
+                if (TrackedContext(gatewayOrderId) is null)
+                {
+                    RecordLatestReport(report, callbackEpoch);
+                    return;
+                }
+            }
+            OnOrderStatusReceived(sender, update);
+            return;
+        }
+        if (context is null && _openOrdersSnapshotBuffer is not null)
+            RecordLatestReport(report, callbackEpoch);
+        else
+            PublishReport(report, callbackEpoch);
 
         // PendingCancel/Submitted and partial fills are progress, not confirmation of a cancel.
         // A status-only callback cannot confirm amended quantity or price either.
@@ -994,14 +1198,31 @@ public sealed class IBBrokerageGateway :
 
     private void OnExecutionDetailsReceived(object? sender, IBExecutionUpdate update)
     {
+        var callbackEpoch = Volatile.Read(ref _connectionEpoch);
         if (!string.IsNullOrWhiteSpace(update.ExecutionId))
             _executions[update.ExecutionId] = update;
 
         var gatewayOrderId = update.OrderId;
-        var context = _submittedOrders.TryGetValue(gatewayOrderId, out var tracked) ? tracked : null;
+        var context = TrackedContext(gatewayOrderId);
+        // The execution belongs to whatever order the reused id now names; recovery in the current
+        // session reads its fills from the snapshot and status evidence, not from this stream.
+        if (context is null && IsStaleRecoveredId(gatewayOrderId))
+        {
+            // As for status: a route installed meanwhile makes this its own execution.
+            lock (_sessionGate)
+            {
+                if (TrackedContext(gatewayOrderId) is null)
+                {
+                    NoteWithheldExecution(gatewayOrderId);
+                    return;
+                }
+            }
+            OnExecutionDetailsReceived(sender, update);
+            return;
+        }
         _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
         _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
-        _latestOrderReports.TryGetValue(gatewayOrderId, out var latest);
+        var latest = CurrentSessionReport(gatewayOrderId, context);
         var staleFill = update.CumulativeQuantity < (latest?.FilledQuantity ?? 0m);
         var cumulativeQuantity = Math.Max(update.CumulativeQuantity, latest?.FilledQuantity ?? 0m);
         var orderQuantity = amendment?.ProposedContext is { } proposed
@@ -1050,7 +1271,7 @@ public sealed class IBBrokerageGateway :
             }
         }
 
-        PublishReport(report);
+        PublishReport(report, callbackEpoch);
         if (orderStatus == OrderStatus.Filled && pending?.Kind != PendingOrderOperationKind.Modify)
         {
             CompletePendingOrderOperation(gatewayOrderId, report);
@@ -1059,6 +1280,7 @@ public sealed class IBBrokerageGateway :
 
     private void OnErrorOccurred(object? sender, IBApiError error)
     {
+        var callbackEpoch = Volatile.Read(ref _connectionEpoch);
         // IB sends informational/warning messages through the same error callback. These
         // neither refuse a request nor provide terminal order-state evidence.
         if (error.ErrorCode is 399 or 10167 or 10197 || error.ErrorCode is >= 2100 and < 2200 and not 2102)
@@ -1073,12 +1295,14 @@ public sealed class IBBrokerageGateway :
             return;
         }
 
-        if (error.RequestId < 0 || !_submittedOrders.TryGetValue(error.RequestId, out var context))
+        // An id tracked only through an earlier session's recovered route may now be another
+        // login's order; its errors are not evidence about the retained order (see TrackedContext).
+        if (error.RequestId < 0 || TrackedContext(error.RequestId) is not { } context)
             return;
 
         if (error.ErrorCode == 202)
         {
-            _latestOrderReports.TryGetValue(error.RequestId, out var latest);
+            var latest = CurrentSessionReport(error.RequestId, context);
             OnOrderStatusReceived(sender, new IBOrderStatusUpdate(error.RequestId, "Cancelled",
                 latest?.FilledQuantity ?? 0m, 0m, (double)(latest?.FillPrice ?? 0m), 0d,
                 0L, _client.ClientId, null, null, DateTimeOffset.UtcNow));
@@ -1096,7 +1320,7 @@ public sealed class IBBrokerageGateway :
                 : pending?.Kind is PendingOrderOperationKind.Cancel or PendingOrderOperationKind.Modify ? pending : amendment;
         if (refusedOperation is not null)
         {
-            RejectPendingOperation(error.RequestId, refusedOperation, context, error.ErrorMessage);
+            RejectPendingOperation(error.RequestId, refusedOperation, context, error.ErrorMessage, callbackEpoch);
             return;
         }
 
@@ -1110,7 +1334,7 @@ public sealed class IBBrokerageGateway :
             return;
         }
 
-        _latestOrderReports.TryGetValue(error.RequestId, out var previous);
+        var previous = CurrentSessionReport(error.RequestId, context);
         var report = BuildExecutionReport(
             error.RequestId,
             ExecutionReportType.Rejected,
@@ -1126,7 +1350,7 @@ public sealed class IBBrokerageGateway :
             null,
             DateTimeOffset.UtcNow);
 
-        PublishReport(report);
+        PublishReport(report, callbackEpoch);
         _openOrders.TryRemove(error.RequestId, out _);
         CompletePendingOrderOperation(error.RequestId, report);
     }
@@ -1136,10 +1360,11 @@ public sealed class IBBrokerageGateway :
         PendingOrderOperation pending,
         SubmittedOrderContext context,
         string reason,
+        int callbackEpoch,
         decimal? filledQuantity = null,
         decimal? averageFillPrice = null)
     {
-        _latestOrderReports.TryGetValue(gatewayOrderId, out var latest);
+        var latest = CurrentSessionReport(gatewayOrderId, context);
         var filled = Math.Max(latest?.FilledQuantity ?? 0m, filledQuantity ?? 0m);
         var orderQuantity = pending.Kind == PendingOrderOperationKind.Cancel &&
             _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment) && amendment.ProposedContext is { } proposed
@@ -1171,7 +1396,7 @@ public sealed class IBBrokerageGateway :
             if (_openOrdersSnapshotBuffer is { } snapshot)
                 snapshot[gatewayOrderId] = refreshed;
         }
-        PublishReport(report);
+        PublishReport(report, callbackEpoch);
         if (pending.Kind == PendingOrderOperationKind.Modify)
             CompleteAmendment(gatewayOrderId, pending, report);
         else
@@ -1181,10 +1406,19 @@ public sealed class IBBrokerageGateway :
         }
     }
 
-    private void PublishReport(ExecutionReport report)
+    // The epoch is the one the callback resolved its route under, never the epoch at caching time.
+    private void RecordLatestReport(ExecutionReport report, int callbackEpoch)
     {
-        if (int.TryParse(report.GatewayOrderId, out var gatewayOrderId))
-            _latestOrderReports[gatewayOrderId] = report;
+        if (!int.TryParse(report.GatewayOrderId, out var gatewayOrderId))
+            return;
+        _latestOrderReports[gatewayOrderId] = new LatestOrderReport(callbackEpoch, report);
+    }
+
+    private sealed record LatestOrderReport(int Epoch, ExecutionReport Report);
+
+    private void PublishReport(ExecutionReport report, int callbackEpoch)
+    {
+        RecordLatestReport(report, callbackEpoch);
         if (!_reportChannel.Writer.TryWrite(report))
         {
             _ = _reportChannel.Writer.WriteAsync(report);
@@ -1363,7 +1597,9 @@ public sealed class IBBrokerageGateway :
         OptionContractIdentity? OptionContract,
         IReadOnlyList<OrderLeg>? Legs,
         IReadOnlyDictionary<string, string>? Metadata,
-        DateTimeOffset CreatedAt)
+        DateTimeOffset CreatedAt,
+        bool RecoveredFromSnapshot = false,
+        int RecoveryEpoch = 0)
     {
         public static SubmittedOrderContext FromRequest(int gatewayOrderId, string meridianOrderId, OrderRequest request)
             => new(
@@ -1556,6 +1792,9 @@ public sealed class IBBrokerageGateway :
         public event EventHandler<IBAccountSummaryUpdate>? AccountSummaryReceived;
         public event EventHandler<int>? AccountSummaryCompleted;
         public event EventHandler<IBApiError>? ErrorOccurred;
+        public event EventHandler<IReadOnlyList<string>>? ManagedAccountsReceived;
+        public event EventHandler? ConnectionLost;
+        public event EventHandler? ConnectionRestored;
 #pragma warning restore CS0067
 
         public Task ConnectAsync(CancellationToken ct = default)

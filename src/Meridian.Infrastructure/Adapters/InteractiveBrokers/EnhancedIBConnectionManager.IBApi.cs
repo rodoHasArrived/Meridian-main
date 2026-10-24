@@ -155,6 +155,11 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public event EventHandler? ConnectionRestored;
 
     /// <summary>
+    /// Event raised when IB reports the accounts managed by the current login.
+    /// </summary>
+    public event EventHandler<IReadOnlyList<string>>? ManagedAccountsReceived;
+
+    /// <summary>
     /// Raised when the shared connection lifecycle snapshot changes.
     /// </summary>
     public event Action<WebSocketConnectionDiagnostics>? ConnectionDiagnosticsChanged;
@@ -1370,7 +1375,12 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         RecordMessageReceived();
         NextValidIdReceived?.Invoke(this, orderId);
     }
-    public void managedAccounts(string accountsList) { }
+    public void managedAccounts(string accountsList)
+    {
+        RecordMessageReceived();
+        ManagedAccountsReceived?.Invoke(this, (accountsList ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+    }
     public void currentTime(long time)
     {
         RecordMessageReceived();

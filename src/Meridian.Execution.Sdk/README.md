@@ -68,6 +68,9 @@ publishing accounting fills. Optional replacement and average fields preserve le
 when absent.
 `IBrokerageOrderRecoveryGateway` adds authoritative lookup by retained client ID, including terminal
 orders. A null result means unresolved state and cannot authorize resubmission.
+`IBrokerageRetainedOrderRecoveryGateway` extends it with the retained order's identity for gateways
+that match by a client-supplied reference, so a different instrument, side or type under the same
+reference is refused before any route is installed for the match.
 `IBrokerageConnectionState` exposes an opaque connection generation and verified account/environment
 scope so synchronization and durable recovery revoke evidence when the active connection changes.
 Brokerage activity fill snapshots can carry explicit provider-reported realized P&L when a broker
