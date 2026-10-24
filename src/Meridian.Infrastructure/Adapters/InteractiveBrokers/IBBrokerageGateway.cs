@@ -1101,9 +1101,20 @@ public sealed partial class IBBrokerageGateway :
 
         // The live open-order entry of a stale recovered id is the earlier session's; the new
         // session's order is described by its own snapshot row, never by refreshing that entry.
+        // That row still takes this status: IB's openOrder reports no filled quantity, so without
+        // it a partly filled order would fail recovery's quantity check.
         _openOrders.TryGetValue(gatewayOrderId, out var openOrder);
         if (staleRecovered)
+        {
             openOrder = null;
+            if (_openOrdersSnapshotBuffer is { } currentSnapshot && currentSnapshot.TryGetValue(gatewayOrderId, out var row))
+            {
+                if (IsTerminalOrderStatus(orderStatus))
+                    currentSnapshot.TryRemove(gatewayOrderId, out _);
+                else
+                    currentSnapshot[gatewayOrderId] = row with { FilledQuantity = filled, Status = orderStatus };
+            }
+        }
         if (openOrder is not null)
         {
             var refreshed = openOrder with { FilledQuantity = filled, Status = orderStatus };

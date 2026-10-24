@@ -302,6 +302,37 @@ public sealed partial class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task OrderRecovery_ReusedGatewayId_TakesTheCurrentRowsFillFromItsStatus()
+    {
+        var sessions = 0;
+        var client = RecoveryClient(c =>
+        {
+            if (sessions == 0)
+            {
+                c.RaiseOpenOrder(RecoverableOpenOrder());
+                return;
+            }
+            // IB's openOrder reports no fill; the status that follows it carries the filled quantity.
+            c.RaiseOpenOrder(RecoverableOpenOrder(clientOrderId: "client-2") with { FilledQuantity = 0m, Status = "Submitted" });
+            c.RaiseOrderStatus(new IBOrderStatusUpdate(7001, "Submitted", 2m, 8m, 100d, 100d, 1L, 1, null, null,
+                DateTimeOffset.UtcNow));
+        });
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        var recovery = (IBrokerageOrderRecoveryGateway)sut;
+        (await recovery.GetOrderForRecoveryAsync("client-1")).Should().NotBeNull();
+
+        sessions++;
+        client.RaiseConnectionLost();
+        client.RaiseConnectionRestored();
+        client.RaiseManagedAccounts("DU123456");
+        var recovered = await recovery.GetOrderForRecoveryAsync("client-2");
+
+        recovered.Should().NotBeNull("the status is this session's evidence for its own snapshot row");
+        recovered!.FilledQuantity.Should().Be(2m);
+    }
+
+    [Fact]
     public async Task ManagedAccountsChangingAfterVerification_EndsTheSessionOfRoutesRecoveredUnderThem()
     {
         var cancelled = new List<int>();
