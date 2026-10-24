@@ -48,9 +48,9 @@ public sealed partial class IBBrokerageGateway :
     private readonly ConcurrentDictionary<int, byte> _staleRecoveredIds = new();
     private readonly ConcurrentDictionary<string, int> _gatewayOrderIdsByExternalId = new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<int, BrokerOrder> _openOrders = new();
-    private readonly ConcurrentDictionary<int, ExecutionReport> _latestOrderReports = new();
-    // The connection epoch each cached report was recorded in; see CurrentSessionReport.
-    private readonly ConcurrentDictionary<int, int> _latestOrderReportEpochs = new();
+    // Each cached report with the connection epoch it was recorded in, published as one entry so a
+    // reader never pairs one session's epoch with another session's report; see CurrentSessionReport.
+    private readonly ConcurrentDictionary<int, LatestOrderReport> _latestOrderReports = new();
     private readonly ConcurrentDictionary<int, string> _openOrderAccounts = new();
     private readonly ConcurrentDictionary<int, string> _openOrderSecurityTypes = new();
     private readonly ConcurrentDictionary<string, IBExecutionUpdate> _executions = new(StringComparer.Ordinal);
@@ -672,7 +672,7 @@ public sealed partial class IBBrokerageGateway :
             kind,
             new TaskCompletionSource<ExecutionReport>(TaskCreationOptions.RunContinuationsAsynchronously),
             proposedContext,
-            _latestOrderReports.TryGetValue(gatewayOrderId, out var latest) ? latest.OrderStatus : OrderStatus.Accepted);
+            _latestOrderReports.TryGetValue(gatewayOrderId, out var latest) ? latest.Report.OrderStatus : OrderStatus.Accepted);
 
         if (!_pendingOrderOperations.TryAdd(gatewayOrderId, operation))
             throw new InvalidOperationException($"IB order {gatewayOrderId} already has a pending operation.");
@@ -768,11 +768,8 @@ public sealed partial class IBBrokerageGateway :
         if (!_latestOrderReports.TryGetValue(gatewayOrderId, out var latest))
             return null;
         if (context is { RecoveredFromSnapshot: false })
-            return latest;
-        return _latestOrderReportEpochs.TryGetValue(gatewayOrderId, out var epoch)
-            && epoch == Volatile.Read(ref _connectionEpoch)
-            ? latest
-            : null;
+            return latest.Report;
+        return latest.Epoch == Volatile.Read(ref _connectionEpoch) ? latest.Report : null;
     }
 
     /// <summary>
@@ -1382,9 +1379,10 @@ public sealed partial class IBBrokerageGateway :
     {
         if (!int.TryParse(report.GatewayOrderId, out var gatewayOrderId))
             return;
-        _latestOrderReportEpochs[gatewayOrderId] = Volatile.Read(ref _connectionEpoch);
-        _latestOrderReports[gatewayOrderId] = report;
+        _latestOrderReports[gatewayOrderId] = new LatestOrderReport(Volatile.Read(ref _connectionEpoch), report);
     }
+
+    private sealed record LatestOrderReport(int Epoch, ExecutionReport Report);
 
     private void PublishReport(ExecutionReport report)
     {
