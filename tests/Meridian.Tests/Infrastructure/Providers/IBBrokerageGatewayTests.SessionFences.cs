@@ -381,6 +381,40 @@ public sealed partial class IBBrokerageGatewayTests
     }
 
     [Fact]
+    public async Task StatusResolvedBeforeAConnectionLoss_IsNotCachedAsTheNextSessionsEvidence()
+    {
+        var sessions = 0;
+        var client = RecoveryClient(c => c.RaiseOpenOrder(sessions == 0
+            ? RecoverableOpenOrder()
+            : RecoverableOpenOrder(clientOrderId: "client-2") with { FilledQuantity = 2m, Status = "Submitted" }));
+        await using var sut = CreateSut(client);
+        await sut.ConnectAsync();
+        var recovery = (IBrokerageOrderRecoveryGateway)sut;
+        (await recovery.GetOrderForRecoveryAsync("client-1")).Should().NotBeNull();
+
+        // client-1's status resolves its current route, then the connection drops before it is cached.
+        var dropped = false;
+        sut.OrderStatusRouteResolved = () =>
+        {
+            if (dropped)
+                return;
+            dropped = true;
+            client.RaiseConnectionLost();
+        };
+        client.RaiseOrderStatus(new IBOrderStatusUpdate(7001, "Submitted", 2m, 8m, 100d, 100d, 1L, 1, null, null,
+            DateTimeOffset.UtcNow));
+        sut.OrderStatusRouteResolved = null;
+        sessions++;
+        client.RaiseConnectionRestored();
+        client.RaiseManagedAccounts("DU123456");
+
+        // The new session reuses 7001 for client-2 with the same filled quantity but no average of its own.
+        var recovered = await recovery.GetOrderForRecoveryAsync("client-2");
+
+        recovered.Should().BeNull("client-1's average price is the earlier session's evidence, not client-2's");
+    }
+
+    [Fact]
     public async Task ManagedAccountsChangingAfterVerification_EndsTheSessionOfRoutesRecoveredUnderThem()
     {
         var cancelled = new List<int>();

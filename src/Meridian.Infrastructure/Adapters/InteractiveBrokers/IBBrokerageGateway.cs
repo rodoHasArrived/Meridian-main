@@ -914,6 +914,7 @@ public sealed partial class IBBrokerageGateway :
 
     private void OnOpenOrderReceived(object? sender, IBOpenOrderUpdate update)
     {
+        var callbackEpoch = Volatile.Read(ref _connectionEpoch);
         var gatewayOrderId = update.OrderId;
         if (string.IsNullOrWhiteSpace(update.Account))
             _openOrderAccounts.TryRemove(gatewayOrderId, out _);
@@ -934,7 +935,7 @@ public sealed partial class IBBrokerageGateway :
         if (refusedOperation is not null && status == OrderStatus.Rejected && context is not null)
         {
             RejectPendingOperation(gatewayOrderId, refusedOperation, context, update.RejectReason ?? update.Status,
-                update.FilledQuantity);
+                callbackEpoch, update.FilledQuantity);
             return;
         }
 
@@ -1023,7 +1024,7 @@ public sealed partial class IBBrokerageGateway :
             OrderLimitPrice = amendmentConfirmed ? context?.LimitPrice : null,
             OrderStopPrice = amendmentConfirmed ? context?.StopPrice : null
         };
-        PublishReport(report);
+        PublishReport(report, callbackEpoch);
         if (amendmentConfirmed)
         {
             CompleteAmendment(gatewayOrderId, amendment!, report);
@@ -1069,9 +1070,13 @@ public sealed partial class IBBrokerageGateway :
 
     private void OnOrderStatusReceived(object? sender, IBOrderStatusUpdate update)
     {
+        // Read before the route resolves: a report is evidence of the session its route was read in,
+        // so it is stamped with that epoch even if the connection changes before it is cached.
+        var callbackEpoch = Volatile.Read(ref _connectionEpoch);
         var gatewayOrderId = update.OrderId;
         var context = TrackedContext(gatewayOrderId);
         var staleRecovered = context is null && IsStaleRecoveredId(gatewayOrderId);
+        OrderStatusRouteResolved?.Invoke();
         var latest = CurrentSessionReport(gatewayOrderId, context);
         _pendingOrderOperations.TryGetValue(gatewayOrderId, out var pending);
         _unconfirmedAmendments.TryGetValue(gatewayOrderId, out var amendment);
@@ -1082,7 +1087,7 @@ public sealed partial class IBBrokerageGateway :
             orderStatus == OrderStatus.Rejected && context is not null)
         {
             RejectPendingOperation(gatewayOrderId, refusedOperation, context, update.RejectReason ?? update.Status,
-                filled, update.AverageFillPrice > 0 ? (decimal)update.AverageFillPrice : null);
+                callbackEpoch, filled, update.AverageFillPrice > 0 ? (decimal)update.AverageFillPrice : null);
             return;
         }
         if (orderStatus == OrderStatus.Accepted && filled > 0m)
@@ -1167,7 +1172,7 @@ public sealed partial class IBBrokerageGateway :
             {
                 if (TrackedContext(gatewayOrderId) is null)
                 {
-                    RecordLatestReport(report);
+                    RecordLatestReport(report, callbackEpoch);
                     return;
                 }
             }
@@ -1175,9 +1180,9 @@ public sealed partial class IBBrokerageGateway :
             return;
         }
         if (context is null && _openOrdersSnapshotBuffer is not null)
-            RecordLatestReport(report);
+            RecordLatestReport(report, callbackEpoch);
         else
-            PublishReport(report);
+            PublishReport(report, callbackEpoch);
 
         // PendingCancel/Submitted and partial fills are progress, not confirmation of a cancel.
         // A status-only callback cannot confirm amended quantity or price either.
@@ -1193,6 +1198,7 @@ public sealed partial class IBBrokerageGateway :
 
     private void OnExecutionDetailsReceived(object? sender, IBExecutionUpdate update)
     {
+        var callbackEpoch = Volatile.Read(ref _connectionEpoch);
         if (!string.IsNullOrWhiteSpace(update.ExecutionId))
             _executions[update.ExecutionId] = update;
 
@@ -1265,7 +1271,7 @@ public sealed partial class IBBrokerageGateway :
             }
         }
 
-        PublishReport(report);
+        PublishReport(report, callbackEpoch);
         if (orderStatus == OrderStatus.Filled && pending?.Kind != PendingOrderOperationKind.Modify)
         {
             CompletePendingOrderOperation(gatewayOrderId, report);
@@ -1274,6 +1280,7 @@ public sealed partial class IBBrokerageGateway :
 
     private void OnErrorOccurred(object? sender, IBApiError error)
     {
+        var callbackEpoch = Volatile.Read(ref _connectionEpoch);
         // IB sends informational/warning messages through the same error callback. These
         // neither refuse a request nor provide terminal order-state evidence.
         if (error.ErrorCode is 399 or 10167 or 10197 || error.ErrorCode is >= 2100 and < 2200 and not 2102)
@@ -1313,7 +1320,7 @@ public sealed partial class IBBrokerageGateway :
                 : pending?.Kind is PendingOrderOperationKind.Cancel or PendingOrderOperationKind.Modify ? pending : amendment;
         if (refusedOperation is not null)
         {
-            RejectPendingOperation(error.RequestId, refusedOperation, context, error.ErrorMessage);
+            RejectPendingOperation(error.RequestId, refusedOperation, context, error.ErrorMessage, callbackEpoch);
             return;
         }
 
@@ -1343,7 +1350,7 @@ public sealed partial class IBBrokerageGateway :
             null,
             DateTimeOffset.UtcNow);
 
-        PublishReport(report);
+        PublishReport(report, callbackEpoch);
         _openOrders.TryRemove(error.RequestId, out _);
         CompletePendingOrderOperation(error.RequestId, report);
     }
@@ -1353,6 +1360,7 @@ public sealed partial class IBBrokerageGateway :
         PendingOrderOperation pending,
         SubmittedOrderContext context,
         string reason,
+        int callbackEpoch,
         decimal? filledQuantity = null,
         decimal? averageFillPrice = null)
     {
@@ -1388,7 +1396,7 @@ public sealed partial class IBBrokerageGateway :
             if (_openOrdersSnapshotBuffer is { } snapshot)
                 snapshot[gatewayOrderId] = refreshed;
         }
-        PublishReport(report);
+        PublishReport(report, callbackEpoch);
         if (pending.Kind == PendingOrderOperationKind.Modify)
             CompleteAmendment(gatewayOrderId, pending, report);
         else
@@ -1398,18 +1406,19 @@ public sealed partial class IBBrokerageGateway :
         }
     }
 
-    private void RecordLatestReport(ExecutionReport report)
+    // The epoch is the one the callback resolved its route under, never the epoch at caching time.
+    private void RecordLatestReport(ExecutionReport report, int callbackEpoch)
     {
         if (!int.TryParse(report.GatewayOrderId, out var gatewayOrderId))
             return;
-        _latestOrderReports[gatewayOrderId] = new LatestOrderReport(Volatile.Read(ref _connectionEpoch), report);
+        _latestOrderReports[gatewayOrderId] = new LatestOrderReport(callbackEpoch, report);
     }
 
     private sealed record LatestOrderReport(int Epoch, ExecutionReport Report);
 
-    private void PublishReport(ExecutionReport report)
+    private void PublishReport(ExecutionReport report, int callbackEpoch)
     {
-        RecordLatestReport(report);
+        RecordLatestReport(report, callbackEpoch);
         if (!_reportChannel.Writer.TryWrite(report))
         {
             _ = _reportChannel.Writer.WriteAsync(report);

@@ -36,13 +36,19 @@ public sealed class BrokerageExecutionReconciliationService
         var recoveryGateway = gateway as IBrokerageOrderRecoveryGateway;
         if (recoveryGateway is null && gateway is not IBrokerageOrderAmendmentRecoveryGateway)
             return;
-        orderManager.EnsureBrokerageRecoveryScope(gateway);
         // The scope is bound once, but each lookup captures whichever session is current. Evidence
         // read after the connection or its verified scope changed belongs to another session and
-        // must never reach the retained store under the bound scope.
+        // must never reach the retained store under the bound scope. The session is captured before
+        // the binding and must be unchanged after it, or the captured generation could describe a
+        // login whose scope was never bound.
         var connection = gateway as IBrokerageConnectionState;
         var boundGeneration = connection?.ConnectionGeneration;
         var boundScope = connection?.ScopeIdentity;
+        orderManager.EnsureBrokerageRecoveryScope(gateway);
+        if (connection is not null && (connection.ConnectionGeneration != boundGeneration
+            || !string.Equals(connection.ScopeIdentity, boundScope, StringComparison.Ordinal)))
+            throw new InvalidOperationException(
+                "The brokerage connection or its verified scope changed while the recovery scope was bound; no lookup was made.");
         // Accepted or terminal acknowledgements can precede a late fill lost during an outage.
         // Re-query every retained order with possible remaining execution on explicit sync;
         // cancellation and expiry do not prove that no earlier execution arrived late.

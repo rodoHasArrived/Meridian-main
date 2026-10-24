@@ -235,6 +235,34 @@ public sealed class BrokerageExecutionReconciliationServiceTests
     }
 
     [Fact]
+    public async Task RecoverOrdersAsync_ConnectionChangesWhileTheScopeIsBound_RefusesBeforeLookup()
+    {
+        var accountId = Guid.NewGuid();
+        await using var context = new RecoveryContext([
+            CreateLocalOrder("ord-1") with { FundAccountId = accountId, Status = OrderStatus.PendingNew }
+        ], retainedRecovery: true);
+        var generation = 7L;
+        var connection = (IBrokerageConnectionState)context.Gateway;
+        connection.ConnectionGeneration.Returns(_ => generation);
+        var scopeReads = 0;
+        connection.ScopeIdentity.Returns(_ =>
+        {
+            // The broker logs in again while the OMS binds the recovery scope.
+            if (++scopeReads == 2)
+                generation++;
+            return "alpaca:paper:test-account";
+        });
+        var scoped = (IBrokerageRetainedOrderRecoveryGateway)context.Gateway;
+
+        var recover = () => CreateService().RecoverOrdersAsync(context.Gateway, context.OrderManager, accountId);
+
+        await recover.Should().ThrowAsync<InvalidOperationException>();
+        await scoped.DidNotReceive().GetOrderForRecoveryAsync(Arg.Any<string>(), Arg.Any<OrderState>(), Arg.Any<long>(),
+            Arg.Any<CancellationToken>());
+        context.OrderManager.GetRecoveryOrders(accountId).Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task RecoverOrdersAsync_ReferenceMatchingGateway_ReceivesTheBoundGenerationWithTheLookup()
     {
         var accountId = Guid.NewGuid();

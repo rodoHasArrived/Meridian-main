@@ -35,6 +35,9 @@ public sealed partial class IBBrokerageGateway
     /// <summary>Test seam: runs inside the session gate immediately before recovered routes install.</summary>
     internal Action? RecoveryRoutesInstalling { get; set; }
 
+    /// <summary>Test seam: runs after an order-status callback resolves its route, before it reports.</summary>
+    internal Action? OrderStatusRouteResolved { get; set; }
+
     private static readonly IReadOnlySet<string> NoVerifiedAccounts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
     // Accounts IB reported for this login via managedAccounts. Cleared when the transport is lost or
