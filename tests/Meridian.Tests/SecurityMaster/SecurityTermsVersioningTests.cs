@@ -12,8 +12,10 @@ namespace Meridian.Tests.SecurityMaster;
 /// Guards the terms-payload versioning contract: every payload declares its family
 /// (<see cref="SecurityTermsEnvelope.FormatKey"/>) and flat payloads their asset-class terms
 /// version; readers dispatch on the declaration rather than the shared <c>schemaVersion</c>
-/// integer; the economic → flat bridge never loses data; and every security event carries a
-/// payload family and version that replay checks before decoding.
+/// integer; a node reads stamps through its readable version but writes only its write version,
+/// refusing on write any term it only reads (ADR-024, readable before writable); the economic → flat
+/// bridge never loses data; and every security event carries a payload family and version that
+/// replay checks before decoding.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class SecurityTermsVersioningTests
@@ -136,6 +138,341 @@ public sealed class SecurityTermsVersioningTests
     public void EveryCatalogClass_HasAPositiveTermsVersion()
     {
         SecurityAssetClassCatalog.All.Should().OnlyContain(static descriptor => descriptor.TermsVersion >= 1);
+    }
+
+    // ── Readable before writable (ADR-024, expand step) ─────────────────────────────────────────
+
+    // A flat payload: schemaVersion 1, the flat envelope when a stamp is given, then the members.
+    private static JsonElement Terms(int? stamp, string members)
+        => Json(
+            "{\"schemaVersion\":1," +
+            (stamp is { } version
+                ? $"\"{SecurityTermsEnvelope.FormatKey}\":\"flat\",\"{SecurityTermsEnvelope.AssetClassTermsVersionKey}\":{version},"
+                : string.Empty) +
+            members.Trim() +
+            "}");
+
+    private const string Maturity = "\"maturity\":\"2030-01-15\"";
+
+    private static string ReadableButNotWritable(string assetClass, int stamp, int reads, int writes)
+        => $"assetClassTermsVersion '{stamp}' for asset class '{assetClass}' is readable but not writable on this node: " +
+           $"it reads versions 1 through {reads} and writes version {writes}. " +
+           $"Submit the terms at version {writes}, or apply the change from a node that writes version {stamp}.";
+
+    private static string NotYetWritable(string assetClass, string path, int since, int writes)
+        => $"'{path}' is an asset-class terms version {since} term of '{assetClass}'. This node reads it but writes " +
+           $"assetClassTermsVersion {writes}, so a create, amend, import or field edit cannot set it yet. " +
+           "Leave it absent, null or empty (ADR-024).";
+
+    private static Exception? Capture(Action action)
+    {
+        try
+        {
+            action();
+            return null;
+        }
+        catch (Exception exception)
+        {
+            return exception;
+        }
+    }
+
+    [Theory]
+    [InlineData("Bond", 1, 2)]
+    [InlineData("CertificateOfDeposit", 1, 2)]
+    [InlineData("Swap", 1, 2)]
+    [InlineData("StructuredCredit", 2, 3)]
+    [InlineData("Equity", 1, 1)]
+    [InlineData("Option", 1, 1)]
+    public void EnsureReadable_AcceptsEveryStampThroughWhatTheClassReads_AndRefusesTheNext(string assetClass, int writes, int reads)
+    {
+        SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().Be(writes);
+        SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass).Should().Be(reads);
+
+        for (var version = 1; version <= reads; version++)
+        {
+            var payload = Terms(version, Maturity);
+            var read = () => SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, payload);
+            read.Should().NotThrow($"{assetClass} reads version {version}");
+        }
+
+        // Equity and Option read only what they write, so their version 2 is refused here.
+        var next = () => SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, Terms(reads + 1, Maturity));
+        next.Should().Throw<InvalidOperationException>().Which.Message.Should().Be(
+            $"Unsupported assetClassTermsVersion '{reads + 1}' for asset class '{assetClass}'; this node reads versions 1 through {reads}.");
+    }
+
+    [Theory]
+    [InlineData("Bond", 1)]
+    [InlineData("Bond", 2)]
+    [InlineData("CertificateOfDeposit", 1)]
+    [InlineData("CertificateOfDeposit", 2)]
+    [InlineData("Swap", 2)]
+    [InlineData("StructuredCredit", 2)]
+    [InlineData("StructuredCredit", 3)]
+    [InlineData("Equity", 1)]
+    public void StampFlat_AtAVersionBetweenTheWriteAndReadVersions_IsTheExplicitVersionOverload_ByteForByte(string assetClass, int version)
+    {
+        foreach (var json in new[]
+                 {
+                     """{"schemaVersion":1,"maturity":"2030-01-15"}""",
+                     """{"maturity":"2030-01-15","issuerName":"ACME"}""",
+                     """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":5,"maturity":"2030-01-15"}""",
+                     "[]",
+                 })
+        {
+            SecurityTermsEnvelope.StampFlat(json, assetClass, version).Should().Be(SecurityTermsEnvelope.StampFlat(json, version));
+        }
+    }
+
+    [Theory]
+    [InlineData("Bond", 3, 1, 2)]
+    [InlineData("StructuredCredit", 1, 2, 3)]
+    [InlineData("Equity", 2, 1, 1)]
+    public void StampFlat_OutsideTheWriteToReadRange_IsRefused(string assetClass, int version, int writes, int reads)
+    {
+        var stamp = () => SecurityTermsEnvelope.StampFlat("""{"schemaVersion":1}""", assetClass, version);
+
+        var refused = stamp.Should().Throw<ArgumentOutOfRangeException>()
+            .WithMessage($"Asset class '{assetClass}' writes assetClassTermsVersion {writes} and reads versions 1 through {reads}.*")
+            .Which;
+        refused.ParamName.Should().Be("assetClassTermsVersion");
+        refused.ActualValue.Should().Be(version);
+    }
+
+    [Fact]
+    public void DescribeNotYetWritable_NamesThePathTheVersionsAndTheWayOut()
+    {
+        SecurityTermsEnvelope.DescribeNotYetWritable("Bond", "scheduleConventions", 2).Should().Be(
+            "'scheduleConventions' is an asset-class terms version 2 term of 'Bond'. This node reads it but writes " +
+            "assetClassTermsVersion 1, so a create, amend, import or field edit cannot set it yet. Leave it absent, null or empty (ADR-024).");
+        SecurityTermsEnvelope.DescribeNotYetWritable("Swap", "legs[1].scheduleConventions", 2)
+            .Should().Be(NotYetWritable("Swap", "legs[1].scheduleConventions", 2, 1));
+        SecurityTermsEnvelope.DescribeNotYetWritable("StructuredCredit", "scheduleConventions", 3)
+            .Should().Be(NotYetWritable("StructuredCredit", "scheduleConventions", 3, 2));
+    }
+
+    private const string SwapDates = "\"effectiveDate\":\"2026-01-15\",\"maturityDate\":\"2031-01-15\"";
+
+    public static TheoryData<string, string, string> RefusedWrites()
+    {
+        var data = new TheoryData<string, string, string>
+        {
+            // Stamped above the write version: refused whatever the payload carries.
+            { "Bond", Terms(2, Maturity).GetRawText(), ReadableButNotWritable("Bond", 2, 2, 1) },
+            { "CertificateOfDeposit", Terms(2, Maturity).GetRawText(), ReadableButNotWritable("CertificateOfDeposit", 2, 2, 1) },
+            { "Swap", Terms(2, SwapDates).GetRawText(), ReadableButNotWritable("Swap", 2, 2, 1) },
+            { "StructuredCredit", Terms(3, Maturity).GetRawText(), ReadableButNotWritable("StructuredCredit", 3, 3, 2) },
+            {
+                "Bond",
+                Terms(2, Maturity + """ ,"scheduleConventions":{"stubPolicy":"Long"} """).GetRawText(),
+                ReadableButNotWritable("Bond", 2, 2, 1)
+            },
+
+            // At or below the write version, a populated block is refused; false, 0 and "" are values.
+            {
+                "Bond",
+                Terms(null, Maturity + """ ,"scheduleConventions":{"accrualAdjusted":false} """).GetRawText(),
+                NotYetWritable("Bond", "scheduleConventions", 2, 1)
+            },
+            {
+                "Bond",
+                Terms(1, Maturity + """ ,"scheduleConventions":{"paymentLagBusinessDays":0} """).GetRawText(),
+                NotYetWritable("Bond", "scheduleConventions", 2, 1)
+            },
+            {
+                "Bond",
+                Terms(1, Maturity + """ ,"scheduleConventions":{"stubPolicy":""} """).GetRawText(),
+                NotYetWritable("Bond", "scheduleConventions", 2, 1)
+            },
+            {
+                "Bond",
+                Terms(null, Maturity + """ ,"scheduleConventions":{"paymentCalendars":[null,"USNY"],"rollConvention":null} """).GetRawText(),
+                NotYetWritable("Bond", "scheduleConventions", 2, 1)
+            },
+            {
+                "Bond",
+                Terms(null, Maturity + """ ,"scheduleConventions":"x" """).GetRawText(),
+                NotYetWritable("Bond", "scheduleConventions", 2, 1)
+            },
+            {
+                "CertificateOfDeposit",
+                Terms(null, Maturity + """ ,"scheduleConventions":{"businessDayConvention":"Following"} """).GetRawText(),
+                NotYetWritable("CertificateOfDeposit", "scheduleConventions", 2, 1)
+            },
+            {
+                "StructuredCredit",
+                Terms(2, """ "tranche":"A-1","scheduleConventions":{"direction":"Backward"} """).GetRawText(),
+                NotYetWritable("StructuredCredit", "scheduleConventions", 3, 2)
+            },
+
+            // The key matches case-insensitively, as the readers match it; the reason names the spelling.
+            {
+                "Bond",
+                Terms(null, Maturity + """ ,"ScheduleConventions":{"stubPolicy":"Long"} """).GetRawText(),
+                NotYetWritable("Bond", "ScheduleConventions", 2, 1)
+            },
+            {
+                "Bond",
+                Terms(1, Maturity + """ ,"scheduleConventions":null,"SCHEDULECONVENTIONS":{"rollConvention":"EOM"} """).GetRawText(),
+                NotYetWritable("Bond", "SCHEDULECONVENTIONS", 2, 1)
+            },
+
+            // A swap carries the block per leg, under the legs container or either alias.
+            {
+                "Swap",
+                Terms(1, SwapDates + """ ,"legs":[{"legType":"Fixed","scheduleConventions":{}},{"legType":"Floating","ScheduleConventions":{"direction":"Backward"}}] """).GetRawText(),
+                NotYetWritable("Swap", "legs[1].ScheduleConventions", 2, 1)
+            },
+
+            // A Bond is not profile-capable, so a profileFields object does not shelter its root block.
+            {
+                "Bond",
+                Terms(null, Maturity + """ ,"profileFields":{},"scheduleConventions":{"rollConvention":"EOM"} """).GetRawText(),
+                NotYetWritable("Bond", "scheduleConventions", 2, 1)
+            },
+
+            // A profile envelope keeps the stamp check: it is the one versioned check it gets.
+            {
+                "StructuredCredit",
+                Terms(3, """ "customProfileId":"structured-credit-profile","profileFields":{"tranche":"A-1"} """).GetRawText(),
+                ReadableButNotWritable("StructuredCredit", 3, 3, 2)
+            },
+        };
+
+        foreach (var container in new[] { "legs", "swapLegs", "cashFlowLegs" })
+        {
+            data.Add(
+                "Swap",
+                Terms(null, SwapDates + $$$""" ,"{{{container}}}":[{"legType":"Fixed","currency":"USD"},{"legType":"Floating","currency":"USD","scheduleConventions":{"rollConvention":"IMM"}}] """).GetRawText(),
+                NotYetWritable("Swap", $"{container}[1].scheduleConventions", 2, 1));
+        }
+
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(RefusedWrites))]
+    public void TryGetWriteRefusal_RefusesWhatThisNodeReadsButCannotWrite_WithAPreciseReason(string assetClass, string payloadText, string expected)
+    {
+        var payload = Json(payloadText);
+
+        SecurityTermsEnvelope.TryGetWriteRefusal(assetClass, payload, out var reason).Should().BeTrue();
+        reason.Should().Be(expected);
+
+        var read = () => SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, payload);
+        read.Should().NotThrow("a payload refused on write is still readable");
+        var write = () => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms(assetClass, payload);
+        write.Should().Throw<InvalidOperationException>().Which.Message.Should().Be(expected);
+    }
+
+    public static TheoryData<string, string> AcceptedWrites() => new()
+    {
+        // Absent, null, [], {} and all-null objects all mean the block is unset.
+        { "Bond", Terms(null, Maturity).GetRawText() },
+        { "Bond", Terms(1, Maturity).GetRawText() },
+        { "Bond", Terms(1, Maturity + """ ,"scheduleConventions":null """).GetRawText() },
+        { "Bond", Terms(null, Maturity + """ ,"scheduleConventions":{} """).GetRawText() },
+        { "Bond", Terms(null, Maturity + """ ,"scheduleConventions":[] """).GetRawText() },
+        { "Bond", Terms(1, Maturity + """ ,"scheduleConventions":{"paymentCalendars":[]} """).GetRawText() },
+        { "Bond", Terms(1, Maturity + """ ,"scheduleConventions":{"paymentCalendars":[null]} """).GetRawText() },
+        {
+            "Bond",
+            Terms(1, Maturity + """ ,"scheduleConventions":{"businessDayConvention":null,"accrualAdjusted":null,"paymentCalendars":null,"rollConvention":null,"stubPolicy":null} """).GetRawText()
+        },
+        { "Bond", Terms(null, Maturity + """ ,"ScheduleConventions":{"stubPolicy":null} """).GetRawText() },
+        { "CertificateOfDeposit", Terms(1, Maturity + """ ,"scheduleConventions":{} """).GetRawText() },
+        { "StructuredCredit", Terms(2, """ "tranche":"A-1","seniority":"Senior","scheduleConventions":{"paymentCalendars":[]} """).GetRawText() },
+        { "Swap", Terms(1, SwapDates + """ ,"legs":[{"legType":"Fixed","scheduleConventions":null},{"legType":"Floating","scheduleConventions":{}}] """).GetRawText() },
+        { "Swap", Terms(1, SwapDates + """ ,"swapLegs":[null,{"legType":"Fixed","scheduleConventions":{"paymentCalendars":[null]}}] """).GetRawText() },
+        { "Bond", "[]" },
+
+        // A StructuredCredit profile envelope has no versioned class terms: neither its root nor its
+        // profileFields block is walked, so neither is refused.
+        {
+            "StructuredCredit",
+            """{"customProfileId":"structured-credit-profile","scheduleConventions":{"businessDayConvention":"Following"},"profileFields":{"tranche":"A-1","scheduleConventions":{"businessDayConvention":"Following","paymentCalendars":["USNY"]}}}"""
+        },
+        {
+            "StructuredCredit",
+            Terms(2, """ "profileFields":{"scheduleConventions":{"stubPolicy":"Long"}},"scheduleConventions":{"stubPolicy":"Long"} """).GetRawText()
+        },
+    };
+
+    [Theory]
+    [MemberData(nameof(AcceptedWrites))]
+    public void TryGetWriteRefusal_AcceptsEveryUnsetSpellingAndEveryProfileEnvelopeAtTheWriteVersion(string assetClass, string payloadText)
+    {
+        var payload = Json(payloadText);
+
+        SecurityTermsEnvelope.TryGetWriteRefusal(assetClass, payload, out var reason).Should().BeFalse();
+        reason.Should().BeNull();
+        var write = () => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms(assetClass, payload);
+        write.Should().NotThrow();
+    }
+
+    [Fact]
+    public void EnsureWritable_RunsTheReadGuardFirst()
+    {
+        // A stamp above what the node reads gets the read refusal, not the write reason.
+        var write = () => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms("Bond", Terms(3, Maturity));
+
+        write.Should().Throw<InvalidOperationException>().Which.Message
+            .Should().Be("Unsupported assetClassTermsVersion '3' for asset class 'Bond'; this node reads versions 1 through 2.");
+    }
+
+    public static TheoryData<string, string> ClassesThatReadOnlyWhatTheyWrite()
+    {
+        var data = new TheoryData<string, string>();
+        foreach (var assetClass in new[] { "Equity", "Option" })
+        {
+            foreach (var text in new[]
+                     {
+                         Terms(null, Maturity).GetRawText(),
+                         Terms(1, Maturity).GetRawText(),
+                         Terms(2, Maturity).GetRawText(),
+                         Terms(0, Maturity).GetRawText(),
+                         Terms(null, Maturity + """ ,"scheduleConventions":{"stubPolicy":"Long"} """).GetRawText(),
+                         Terms(1, """ "profileFields":{},"scheduleConventions":{"rollConvention":"EOM"} """).GetRawText(),
+                         $$"""{"schemaVersion":2,"{{SecurityTermsEnvelope.FormatKey}}":"economic"}""",
+                     })
+            {
+                data.Add(assetClass, text);
+            }
+        }
+
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(ClassesThatReadOnlyWhatTheyWrite))]
+    public void EnsureWritable_IsEnsureReadable_ForAClassThatReadsOnlyWhatItWrites(string assetClass, string payloadText)
+    {
+        var payload = Json(payloadText);
+
+        SecurityTermsEnvelope.TryGetWriteRefusal(assetClass, payload, out var reason).Should().BeFalse();
+        reason.Should().BeNull();
+
+        var readError = Capture(() => SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, payload));
+        var writeError = Capture(() => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms(assetClass, payload));
+        (writeError?.GetType(), writeError?.Message).Should().Be((readError?.GetType(), readError?.Message));
+    }
+
+    [Theory]
+    [InlineData("StructuredCredit", """{"customProfileId":"structured-credit-profile"}""", true, true)]
+    [InlineData("StructuredCredit", """{"tranche":"A-1","profileFields":{}}""", true, true)]
+    [InlineData("StructuredCredit", """{"customProfileId":"  ","profileFields":[]}""", false, false)]
+    [InlineData("StructuredCredit", """{"customProfileId":7,"profileFields":null}""", false, false)]
+    [InlineData("StructuredCredit", """{"tranche":"A-1"}""", false, false)]
+    [InlineData("StructuredCredit", "[]", false, false)]
+    [InlineData("Bond", """{"profileFields":{}}""", true, false)]
+    [InlineData("Bond", """{"customProfileId":"structured-credit-profile"}""", true, false)]
+    public void ProfileGovernedPayload_NeedsAProfileCapableClassAndAnEnvelopeSignal(string assetClass, string payloadText, bool carriesEnvelope, bool profileGoverned)
+    {
+        var payload = Json(payloadText);
+
+        SecurityTermsEnvelope.CarriesProfileEnvelope(payload).Should().Be(carriesEnvelope);
+        SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, payload).Should().Be(profileGoverned);
     }
 
     // ── Lossless economic → flat bridge ─────────────────────────────────────────────────────────

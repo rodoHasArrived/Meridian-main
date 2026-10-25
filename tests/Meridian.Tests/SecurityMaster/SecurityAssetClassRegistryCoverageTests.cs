@@ -176,4 +176,64 @@ public sealed class SecurityAssetClassRegistryCoverageTests
         SecurityAssetClassRegistry.Get("StructuredCredit").Fields.Should().Contain(static field => field.Key == "structuredCreditKind",
             "version-2 terms are written by a node at version 2");
     }
+
+    [Fact]
+    public void EveryDefinition_CarriesExactlyItsClassesWritableFields()
+    {
+        // Not only "nothing above the write version": nothing the node writes is dropped either.
+        foreach (var definition in SecurityAssetClassRegistry.All)
+        {
+            var writable = SecurityAssetTermsSchema.WritableFields(definition.AssetClass).Select(static field => field.Key).ToArray();
+            definition.Fields.Select(static field => field.Key).Should().Equal(writable, definition.AssetClass);
+            definition.UiHints.Select(static hint => hint.FieldPath)
+                .Should().Equal(writable.Select(static key => $"assetSpecificTerms.{key}"), definition.AssetClass);
+
+            // Required keys come from the unfiltered schema: every required term at or below the
+            // write version, and nothing the node only reads.
+            var writes = SecurityAssetClassCatalog.GetTermsVersion(definition.AssetClass);
+            definition.RequiredTermKeys.Should().Equal(
+                SecurityAssetTermsSchema.Fields(definition.AssetClass)
+                    .Where(field => field.Required && field.SinceTermsVersion <= writes)
+                    .Select(static field => field.Key),
+                definition.AssetClass);
+        }
+    }
+
+    [Theory]
+    [InlineData("Bond")]
+    [InlineData("CertificateOfDeposit")]
+    [InlineData("StructuredCredit")]
+    public void ReadAheadClasses_DeclareScheduleConventionsAboveTheWriteVersion_AndOfferNoOtherReadOnlyTerm(string assetClass)
+    {
+        // The schema declares the block at the class's readable version, above what it writes ...
+        var declared = SecurityAssetTermsSchema.Field(assetClass, "scheduleConventions");
+        declared.Should().NotBeNull();
+        declared!.SinceTermsVersion.Should().Be(SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass));
+        declared.SinceTermsVersion.Should().BeGreaterThan(SecurityAssetClassCatalog.GetTermsVersion(assetClass));
+
+        // ... and it is the only declared term no write surface offers.
+        var definition = SecurityAssetClassRegistry.Get(assetClass);
+        SecurityAssetTermsSchema.Fields(assetClass).Select(static field => field.Key)
+            .Except(definition.Fields.Select(static field => field.Key))
+            .Should().Equal("scheduleConventions");
+        definition.UiHints.Should().NotContain(static hint =>
+            hint.Key == "scheduleConventions" || hint.FieldPath == "assetSpecificTerms.scheduleConventions");
+        SecurityAssetClassRegistry.ToDto(definition).Fields.Should().NotContain(static field => field.Key == "scheduleConventions");
+    }
+
+    [Fact]
+    public void Swap_OffersItsLegsBlock_WhileTheLegScheduleConventionsStaysReadOnly()
+    {
+        // Swap reads version 2 through an element field of legs, so every top-level term stays
+        // writable and offered; the leg block is refused inside a legs value instead.
+        var definition = SecurityAssetClassRegistry.Get("Swap");
+        definition.Fields.Select(static field => field.Key)
+            .Should().Equal(SecurityAssetTermsSchema.Fields("Swap").Select(static field => field.Key));
+        definition.UiHints.Select(static hint => hint.Key).Should().Equal("effectiveDate", "maturityDate", "legs");
+        SecurityTermBlocks.For("Swap").Select(static field => field.Key).Should().Equal("legs");
+        SecurityAssetTermsSchema.ElementFields("Swap", "legs")
+            .Should().ContainSingle(static field => field.Key == "scheduleConventions")
+            .Which.SinceTermsVersion.Should().Be(SecurityAssetClassCatalog.GetReadsTermsThrough("Swap"))
+            .And.BeGreaterThan(SecurityAssetClassCatalog.GetTermsVersion("Swap"));
+    }
 }

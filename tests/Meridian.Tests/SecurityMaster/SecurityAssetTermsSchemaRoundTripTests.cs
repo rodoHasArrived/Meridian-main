@@ -21,7 +21,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// fails this test until the payload — and therefore both codec sides — carry it.</para>
 /// </summary>
 [Trait("Category", "Unit")]
-public sealed class SecurityAssetTermsSchemaRoundTripTests
+public sealed partial class SecurityAssetTermsSchemaRoundTripTests
 {
     private static readonly Guid UnderlyingId = Guid.Parse("6f9619ff-8b86-d011-b42d-00cf4fc964ff");
 
@@ -1013,8 +1013,19 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
 
     private static SecurityMasterSnapshotWrapper CreateSnapshot(string assetClass, object payload)
     {
+        var command = SecurityMasterMapping.ToCreateCommand(CreateRequest(assetClass, JsonSerializer.SerializeToElement(payload)));
+        var result = SecurityMasterCommandFacade.Create(command);
+
+        result.IsSuccess.Should().BeTrue(
+            string.Join("; ", result.ErrorDetails.Select(error => $"[{error.Code}] {error.Message}")));
+        result.Snapshot.Should().NotBeNull();
+        return result.Snapshot;
+    }
+
+    private static CreateSecurityRequest CreateRequest(string assetClass, JsonElement assetSpecificTerms)
+    {
         var effectiveFrom = new DateTimeOffset(2026, 8, 1, 0, 0, 0, TimeSpan.Zero);
-        var request = new CreateSecurityRequest(
+        return new CreateSecurityRequest(
             SecurityId: Guid.NewGuid(),
             AssetClass: assetClass,
             CommonTerms: JsonSerializer.SerializeToElement(new
@@ -1022,7 +1033,7 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
                 displayName = $"{assetClass} schema round-trip",
                 currency = "USD"
             }),
-            AssetSpecificTerms: JsonSerializer.SerializeToElement(payload),
+            AssetSpecificTerms: assetSpecificTerms,
             Identifiers:
             [
                 new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, $"SCHEMA-{assetClass}", true, effectiveFrom)
@@ -1032,13 +1043,5 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
             UpdatedBy: "schema-round-trip-tests",
             SourceRecordId: $"{assetClass}-schema-round-trip",
             Reason: "SecurityAssetTermsSchema round-trip guard");
-
-        var command = SecurityMasterMapping.ToCreateCommand(request);
-        var result = SecurityMasterCommandFacade.Create(command);
-
-        result.IsSuccess.Should().BeTrue(
-            string.Join("; ", result.ErrorDetails.Select(error => $"[{error.Code}] {error.Message}")));
-        result.Snapshot.Should().NotBeNull();
-        return result.Snapshot;
     }
 }

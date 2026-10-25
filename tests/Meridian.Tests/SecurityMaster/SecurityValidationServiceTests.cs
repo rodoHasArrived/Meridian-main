@@ -1373,6 +1373,12 @@ public sealed class SecurityValidationServiceTests
         { "StructuredCredit", """{"schemaVersion":3,"customProfileId":"structured-credit-v1","profileVersion":1,"profileFields":{"tranche":"A-1"}}""" },
         { "StructuredCredit", """{"schemaVersion":2,"termsFormat":"economic","maturity":{"maturityDate":"2031-06-15"}}""" },
         { "StructuredCredit", """{"schemaVersion":2,"termsFormat":"flat","assetClassTermsVersion":1,"tranche":"A-1"}""" },
+        // Stamped above the write version and within what the node reads (ADR-024, readable before
+        // writable): written by a newer node, so not behind. An unstamped version-1 class is current.
+        { "Bond", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":2,"maturity":"2030-01-15","isCallable":false,"scheduleConventions":{"stubPolicy":"Short"}}""" },
+        { "CertificateOfDeposit", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":2,"issuerName":"First Meridian Bank","maturity":"2027-09-30","scheduleConventions":null}""" },
+        { "Swap", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":2,"effectiveDate":"2026-01-15","maturityDate":"2031-01-15","legs":[{"legId":"fixed","legType":"Fixed","scheduleConventions":{"paymentCalendars":["USNY"]}}]}""" },
+        { "CertificateOfDeposit", """{"schemaVersion":1,"issuerName":"First Meridian Bank","maturity":"2027-09-30"}""" },
     };
 
     [Theory]

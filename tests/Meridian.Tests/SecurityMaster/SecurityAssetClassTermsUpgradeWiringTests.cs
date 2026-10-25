@@ -1,9 +1,13 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.FSharp.Domain;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Storage.SecurityMaster;
+using Microsoft.FSharp.Collections;
+using Microsoft.FSharp.Core;
 using Xunit;
 using static Meridian.Tests.SecurityMaster.SecurityAssetClassTermsUpgraderTests;
 
@@ -14,7 +18,9 @@ namespace Meridian.Tests.SecurityMaster;
 /// wired into reads a version-1 StructuredCredit payload exactly as it reads its version-2 twin, and
 /// the identity step leaves each path's input untouched: the mapping decoder, the economic-definition
 /// adapter, the structured cash-flow resolver, the obligation projection and the relational
-/// projection decoder. The stored blob and the columns derived from it are never changed.
+/// projection decoder. The stored blob and the columns derived from it are never changed. The mapping
+/// decoder also reads a version-3 payload, which a node reads before it writes it, as its version-2
+/// twin plus the scheduleConventions block it declares.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class SecurityAssetClassTermsUpgradeWiringTests
@@ -55,6 +61,69 @@ public sealed class SecurityAssetClassTermsUpgradeWiringTests
         var newer = () => SecurityMasterMapping.ToRecord(
             Record(V1Text.Replace("\"assetClassTermsVersion\":1", "\"assetClassTermsVersion\":4", StringComparison.Ordinal)));
         newer.Should().Throw<InvalidOperationException>().WithMessage($"*{SecurityTermsEnvelope.AssetClassTermsVersionKey}*");
+    }
+
+    // A StructuredCredit row stamped 3 by a node that writes version 3; this node reads it ahead of
+    // writing it (ADR-024).
+    private static string V3Text => V1Text.Replace("\"assetClassTermsVersion\":1", "\"assetClassTermsVersion\":3", StringComparison.Ordinal);
+
+    private const string ScheduleConventionsBlock = """
+        {"businessDayConvention":"ModifiedFollowing","accrualAdjusted":false,"paymentCalendars":["USNY","GBLO"],"paymentLagBusinessDays":2,"rollConvention":"15","endOfMonthRule":true,"firstRegularDate":"2024-07-15","lastRegularDate":"2031-01-15","direction":"Backward","stubPolicy":"Short","couponRateUnit":"Percent","couponCashBasis":"DayCount"}
+        """;
+
+    private static string WithScheduleConventions(string terms)
+    {
+        var node = JsonNode.Parse(terms)!.AsObject();
+        node["scheduleConventions"] = JsonNode.Parse(ScheduleConventionsBlock);
+        return node.ToJsonString();
+    }
+
+    [Fact]
+    public void Mapping_ReadsVersionThreeAsVersionTwo_PlusTheScheduleConventionsItDeclares()
+    {
+        var v2 = SecurityMasterMapping.ToRecord(Record(V2Text)).Kind;
+        SecurityMasterMapping.ToRecord(Record(V3Text)).Kind.Should().Be(v2, "version 3 adds only the optional scheduleConventions block");
+
+        var v2Terms = ((SecurityKind.StructuredCredit)v2).Item;
+        var conventions = new ScheduleConventions(
+            FSharpOption<string>.Some("ModifiedFollowing"),
+            FSharpOption<bool>.Some(false),
+            ListModule.OfSeq(new[] { "USNY", "GBLO" }),
+            FSharpOption<int>.Some(2),
+            FSharpOption<string>.Some("15"),
+            FSharpOption<bool>.Some(true),
+            FSharpOption<DateOnly>.Some(new DateOnly(2024, 7, 15)),
+            FSharpOption<DateOnly>.Some(new DateOnly(2031, 1, 15)),
+            FSharpOption<string>.Some("Backward"),
+            FSharpOption<string>.Some("Short"),
+            FSharpOption<string>.Some("Percent"),
+            FSharpOption<string>.Some("DayCount"));
+        var expected = SecurityKind.NewStructuredCredit(new StructuredCreditTerms(
+            v2Terms.Tranche,
+            v2Terms.PoolId,
+            v2Terms.CollateralType,
+            v2Terms.OriginalFace,
+            v2Terms.CurrentFactor,
+            v2Terms.CouponOrIndex,
+            v2Terms.FactorSchedule,
+            v2Terms.FactorScheduleEntries,
+            v2Terms.Maturity,
+            v2Terms.Kind,
+            v2Terms.Seniority,
+            v2Terms.AttachmentPoint,
+            v2Terms.DetachmentPoint,
+            v2Terms.WeightedAverageCoupon,
+            v2Terms.WeightedAverageMaturityMonths,
+            v2Terms.WeightedAverageLoanAgeMonths,
+            v2Terms.ReinvestmentPeriodEnd,
+            v2Terms.NonCallPeriodEnd,
+            conventions));
+        v2Terms.ScheduleConventions.Should().Be(ScheduleConventionsModule.Empty);
+
+        SecurityMasterMapping.ToRecord(Record(WithScheduleConventions(V3Text))).Kind.Should().Be(expected);
+
+        // Decoding is gated on the stamp: below version 3 the same block is not read.
+        SecurityMasterMapping.ToRecord(Record(WithScheduleConventions(V2Text))).Kind.Should().Be(v2);
     }
 
     [Fact]

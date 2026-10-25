@@ -275,4 +275,168 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
         SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, null, out _, out _)
             .Should().BeTrue("clears remove junk overlay keys rather than asserting a value");
     }
+
+    // ── Readable before writable (ADR-024) ─────────────────────────────────────────────────────
+
+    // The reason every write surface gives for a term this node reads but does not yet write
+    // (SecurityTermsEnvelope.DescribeNotYetWritable), spelled out so a reworded refusal fails here.
+    private static string NotYetWritable(string assetClass, string path, int since, int writes)
+        => $"'{path}' is an asset-class terms version {since} term of '{assetClass}'. This node reads it but writes " +
+           $"assetClassTermsVersion {writes}, so a create, amend, import or field edit cannot set it yet. " +
+           "Leave it absent, null or empty (ADR-024).";
+
+    [Theory]
+    [InlineData("Bond", 2, 1, null)]
+    [InlineData("Bond", 2, 1, "{}")]
+    [InlineData("Bond", 2, 1, """{"stubPolicy":"Short","paymentCalendars":["USNY"]}""")]
+    [InlineData("CertificateOfDeposit", 2, 1, null)]
+    [InlineData("CertificateOfDeposit", 2, 1, "{}")]
+    [InlineData("CertificateOfDeposit", 2, 1, """{"businessDayConvention":"ModifiedFollowing"}""")]
+    [InlineData("StructuredCredit", 3, 2, null)]
+    [InlineData("StructuredCredit", 3, 2, "{}")]
+    [InlineData("StructuredCredit", 3, 2, """{"rollConvention":"15","endOfMonthRule":true}""")]
+    public void ReadableOnlyScheduleConventions_IsRefused_ForASetAndForAClear(
+        string assetClass, int since, int writes, string? value)
+    {
+        // The merge maps an approved edit in Write mode, which refuses the block, so staging even a
+        // clear would put a draft and a provenance row behind an edit that can never publish.
+        SecurityAssetTermsFieldEditValidator.TryValidate(
+                assetClass, "assetSpecificTerms.scheduleConventions", value, out var canonicalPath, out var error)
+            .Should().BeFalse();
+        error.Should().Be(NotYetWritable(assetClass, "scheduleConventions", since, writes));
+        canonicalPath.Should().Be("assetSpecificTerms.scheduleConventions", "a refused edit passes its path through unchanged");
+    }
+
+    [Theory]
+    [InlineData("Bond", 2, 1, "assetSpecificTerms.scheduleConventions.stubPolicy", "Short")]
+    [InlineData("Bond", 2, 1, "assetSpecificTerms.scheduleConventions.paymentCalendars", null)]
+    [InlineData("Bond", 2, 1, "assetSpecificTerms.ScheduleConventions.rollConvention", "EndOfMonth")]
+    [InlineData("CertificateOfDeposit", 2, 1, "assetSpecificTerms.scheduleConventions.businessDayConvention", "Following")]
+    [InlineData("StructuredCredit", 3, 2, "assetSpecificTerms.scheduleConventions.stubPolicy", "Long")]
+    [InlineData("StructuredCredit", 3, 2, "assetSpecificTerms.scheduleConventions.paymentLagBusinessDays", null)]
+    public void NestedMemberOfReadableOnlyScheduleConventions_IsRefused(
+        string assetClass, int since, int writes, string fieldPath, string? value)
+    {
+        // The refusal names the declared block, whatever member or key casing the edit addressed.
+        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out _, out var error)
+            .Should().BeFalse();
+        error.Should().Be(NotYetWritable(assetClass, "scheduleConventions", since, writes));
+    }
+
+    [Theory]
+    [InlineData("assetSpecificTerms.legs",
+        """[{"legId":"fixed","legType":"Fixed","scheduleConventions":{"stubPolicy":"Short"}}]""",
+        "legs[0].scheduleConventions")]
+    [InlineData("assetSpecificTerms.legs",
+        """[{"legId":"fixed","legType":"Fixed","scheduleConventions":null},{"legId":"float","legType":"Floating","scheduleConventions":{"paymentCalendars":["USNY"]}}]""",
+        "legs[1].scheduleConventions")]
+    [InlineData("assetSpecificTerms.legs",
+        """[{"legId":"fixed","legType":"Fixed","scheduleConventions":{"accrualAdjusted":false}}]""",
+        "legs[0].scheduleConventions")]
+    [InlineData("assetSpecificTerms.legs",
+        """[{"legId":"fixed","legType":"Fixed","ScheduleConventions":{"rollConvention":"Imm"}}]""",
+        "legs[0].ScheduleConventions")]
+    [InlineData("assetSpecificTerms.swapLegs",
+        """[{"legId":"fixed","legType":"Fixed","scheduleConventions":{"direction":"Backward"}}]""",
+        "legs[0].scheduleConventions")]
+    public void WholeSwapLegsReplacement_CarryingALegBlock_IsRefused(string fieldPath, string value, string blockPath)
+    {
+        // legs itself is writable; the block inside one of its elements is a version 2 term. false is
+        // populated, so {accrualAdjusted:false} is refused like any other value.
+        SecurityAssetTermsFieldEditValidator.TryValidate("Swap", fieldPath, value, out _, out var error)
+            .Should().BeFalse();
+        error.Should().Be(NotYetWritable("Swap", blockPath, 2, 1));
+    }
+
+    [Theory]
+    [InlineData("""[{"legId":"fixed","legType":"Fixed","scheduleConventions":null}]""")]
+    [InlineData("""[{"legId":"fixed","legType":"Fixed","scheduleConventions":{}}]""")]
+    [InlineData("""[{"legId":"fixed","legType":"Fixed","scheduleConventions":{"paymentCalendars":[],"stubPolicy":null}}]""")]
+    public void WholeSwapLegsReplacement_WithAnUnsetLegBlock_IsAccepted(string value)
+    {
+        // Null, {} and an all-empty object mean unset, as an absent block does, which this node writes.
+        SecurityAssetTermsFieldEditValidator.TryValidate("Swap", "assetSpecificTerms.legs", value, out var canonicalPath, out var error)
+            .Should().BeTrue(error);
+        canonicalPath.Should().Be("assetSpecificTerms.legs");
+    }
+
+    [Theory]
+    [InlineData("assetSpecificTerms.legs.0.scheduleConventions", null, "legs.0.scheduleConventions")]
+    [InlineData("assetSpecificTerms.legs.0.scheduleConventions", "{\"stubPolicy\":\"Short\"}", "legs.0.scheduleConventions")]
+    [InlineData("assetSpecificTerms.legs.1.scheduleConventions.businessDayConvention", "ModifiedFollowing", "legs.1.scheduleConventions.businessDayConvention")]
+    [InlineData("assetSpecificTerms.legs.scheduleConventions", "{}", "legs.scheduleConventions")]
+    [InlineData("assetSpecificTerms.swapLegs.0.ScheduleConventions", null, "legs.0.ScheduleConventions")]
+    public void NestedSwapLegScheduleConventions_IsRefused(string fieldPath, string? value, string blockPath)
+    {
+        SecurityAssetTermsFieldEditValidator.TryValidate("Swap", fieldPath, value, out _, out var error)
+            .Should().BeFalse();
+        error.Should().Be(NotYetWritable("Swap", blockPath, 2, 1));
+    }
+
+    [Theory]
+    [InlineData("assetSpecificTerms.legs.0.notionalSchedule", null)]
+    [InlineData("assetSpecificTerms.legs.0", """{"legId":"fixed","legType":"Fixed","scheduleConventions":null}""")]
+    [InlineData("assetSpecificTerms.legs.1", """{"legId":"float","legType":"Floating","scheduleConventions":{}}""")]
+    public void NestedSwapLegEdit_WithoutAPopulatedLegBlock_IsStillAccepted(string fieldPath, string? value)
+    {
+        // Only the readable-only element field is refused; the leg's other nested paths keep their
+        // dynamic pass-through.
+        SecurityAssetTermsFieldEditValidator.TryValidate("Swap", fieldPath, value, out var canonicalPath, out var error)
+            .Should().BeTrue(error);
+        canonicalPath.Should().Be(fieldPath);
+    }
+
+    [Theory]
+    [InlineData("assetSpecificTerms.legs.0",
+        """{"legId":"fixed","legType":"Fixed","scheduleConventions":{"stubPolicy":"Short"}}""",
+        "legs.0.scheduleConventions")]
+    [InlineData("assetSpecificTerms.swapLegs.1",
+        """{"legId":"float","legType":"Floating","scheduleConventions":{"paymentCalendars":["USNY"]}}""",
+        "legs.1.scheduleConventions")]
+    [InlineData("assetSpecificTerms.legs.0",
+        """{"legId":"fixed","legType":"Fixed","scheduleConventions":{"accrualAdjusted":false}}""",
+        "legs.0.scheduleConventions")]
+    public void NestedSwapLegElementReplacement_CarryingAPopulatedLegBlock_IsRefused(
+        string fieldPath, string value, string blockPath)
+    {
+        // Replacing one leg sets the leg's scheduleConventions as surely as legs.0.scheduleConventions
+        // does, so it is refused like that path and like a whole-legs value carrying the same block.
+        SecurityAssetTermsFieldEditValidator.TryValidate("Swap", fieldPath, value, out _, out var error)
+            .Should().BeFalse("a leg element carrying a populated block sets a term this node only reads");
+        error.Should().Be(NotYetWritable("Swap", blockPath, 2, 1));
+    }
+
+    [Theory]
+    [InlineData("assetSpecificTerms.profileFields.scheduleConventions.stubPolicy", "Short",
+        "assetSpecificTerms.profileFields.scheduleConventions.stubPolicy")]
+    [InlineData("assetSpecificTerms.profileFields.scheduleConventions", "{\"stubPolicy\":\"Short\"}",
+        "assetSpecificTerms.profileFields.scheduleConventions")]
+    [InlineData("assetSpecificTerms.profileFields",
+        """{"tranche":"A-1","scheduleConventions":{"stubPolicy":"Short","rollConvention":"15"}}""",
+        "assetSpecificTerms.profileFields")]
+    public void StructuredCreditProfileFieldsScheduleConventions_IsStillAccepted(
+        string fieldPath, string value, string expectedCanonicalPath)
+    {
+        // A profile envelope's fields belong to the approved profile, not to the class's terms
+        // version: versioned class terms are never walked inside profileFields, so these edits stage
+        // exactly as they did before the class read version 3.
+        SecurityAssetTermsFieldEditValidator.TryValidate("StructuredCredit", fieldPath, value, out var canonicalPath, out var error)
+            .Should().BeTrue(error);
+        error.Should().BeNull();
+        canonicalPath.Should().Be(expectedCanonicalPath);
+    }
+
+    [Theory]
+    [InlineData("Bond")]
+    [InlineData("CertificateOfDeposit")]
+    [InlineData("StructuredCredit")]
+    public void UndeclaredFieldRefusal_ListsOnlyTheWritableFields(string assetClass)
+    {
+        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, "assetSpecificTerms.notATerm", "x", out _, out var error)
+            .Should().BeFalse();
+        error.Should().Be(
+            $"'notATerm' is not a declared asset-specific term for asset class '{assetClass}'. " +
+            $"Declared term fields: {string.Join(", ", SecurityAssetTermsSchema.WritableFields(assetClass).Select(static field => field.Key))}.");
+        error.Should().NotContain("scheduleConventions");
+    }
 }
