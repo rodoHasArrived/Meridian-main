@@ -9374,6 +9374,8 @@ Meridian-main
 │   │   │   │   └── face-value-lot-constant-yield.json
 │   │   │   └── KNOWN-DEFECTS.md
 │   │   ├── security-master
+│   │   │   ├── terms-golden
+│   │   │   │   └── security-terms-write-golden.json
 │   │   │   └── terms-versions
 │   │   │       ├── Bond.json
 │   │   │       ├── CapFloor.json
@@ -11254,6 +11256,7 @@ Meridian-main
 │   │   │   ├── SecurityTermConventionTests.cs
 │   │   │   ├── SecurityTermsProjectionRegistryTests.cs
 │   │   │   ├── SecurityTermsVersioningTests.cs
+│   │   │   ├── SecurityTermsWriteGoldenTests.cs
 │   │   │   ├── SecurityUnderlyingGraphPostgresTests.cs
 │   │   │   ├── SecurityUnderlyingLinkDeriverTests.cs
 │   │   │   ├── SecurityUnderlyingLinksMigrationTests.cs

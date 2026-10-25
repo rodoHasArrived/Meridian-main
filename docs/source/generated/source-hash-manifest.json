@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "6f18e233726255eefe530de8a555214437d5bcf8fe7f600724ec7d68d9f1e1a2",
-      "source_hash": "7ad6de377cc4186f602a9e511a4027bbf5c0d405bff236e8b26f9818b41b74a0"
+      "readme_hash": "775003a6e43b73cd73b97ef2063588f281ba173d31d8df6accde08a3da11b57f",
+      "source_hash": "cdfce6caefa242adb7f1efe902bf45c927c2db6d8af13adc5461d575e6cad7da"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "6c2619c94ac8f6c60339ffbf94062d6303b26ac35e96267db6f5654cfc4b157e",
-      "source_hash": "c61fe2c887c373cd5273bbe35110a3a1d4013fa7598da019d61040a501ad7aeb"
+      "readme_hash": "cb6f0089a7e9043c77dd15da7ec7b0e7cfc174b8eec114c0fae43cb7e5278c24",
+      "source_hash": "d018dfee8a8dfe0cf0890b5805b62a117e10f7052fc1aa7b45ded638a3166a73"
     },
     {
       "id": "SRC-CORE",
@@ -149,8 +149,8 @@
       "id": "SRC-FSHARP",
       "path": "src/Meridian.FSharp",
       "readme": "src/Meridian.FSharp/README.md",
-      "readme_hash": "9b624e4a629eabc61df400c5f8ff300bc13dc55c1d2221dc1685b25e7f43af9f",
-      "source_hash": "2e7dbad3c7fa41dbaf78a8b3a9f809ea4404854d87b1f31c13d78b858828f9ca"
+      "readme_hash": "4fcdd6f71e64e7e85bac7023d8fd3b6c7f63036754507765f2415d90c2bfb4dd",
+      "source_hash": "3062e1c68a5bb1485dc1f7f33354f83511030d52cba3ac045b12f77dd88410ef"
     },
     {
       "id": "SRC-FSHARP-DIRECTLENDING",
@@ -282,8 +282,8 @@
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "d1cc20cc124b4dcbf634bffa23b97dc93e8d6ac5abe2d591fc5f805dcff7a605",
-      "source_hash": "49734ea7c222a018670789012f1319dd1e398d212ef82324b0ce239ae8dce163"
+      "readme_hash": "06a5dc50639ea875e352ad9045799d2b9aea5bf9530bda34c3fd770fcdcb8c51",
+      "source_hash": "f20d16283fa3eeb803849cfedcd81f54d8be3d778717ddd97c1b6d2d5047519b"
     },
     {
       "id": "SRC-WPF",
