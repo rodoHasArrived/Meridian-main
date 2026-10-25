@@ -1425,6 +1425,12 @@ public static partial class SecurityMasterEndpoints
 
         MapOtcContractEndpoints(group, jsonOptions);
 
+        if (app.Services.GetService<ISecurityCurveStore>() is not null)
+            MapCurveEndpoints(group, jsonOptions);
+
+        if (app.Services.GetService<ISecurityValuationService>() is not null)
+            MapValuationEndpoints(group, jsonOptions);
+
         if (app.Services.GetService<SecurityMasterExceptionCaseworkService>() is not null)
             MapExceptionAgingEndpoints(group, jsonOptions);
     }

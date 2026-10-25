@@ -435,6 +435,13 @@ public static class UiApiRoutes
     public const string SecurityMasterCashFlowSource = "/api/security-master/{securityId:guid}/cashflow-source";
     public const string SecurityMasterCashFlowProjections = "/api/security-master/{securityId:guid}/cashflow-projections";
 
+    // Market curves and valuation (G4)
+    public const string SecurityMasterCurves = "/api/security-master/curves";
+    public const string SecurityMasterCurve = "/api/security-master/curves/{curveId:guid}";
+    public const string SecurityMasterCurveVersions = "/api/security-master/curves/{curveId:guid}/versions";
+    public const string SecurityMasterCurveVersion = "/api/security-master/curves/{curveId:guid}/versions/{version:long}";
+    public const string SecurityMasterValuation = "/api/security-master/{securityId:guid}/valuation";
+
     // Data vendor entitlements
     public const string DataVendorEntitlements = "/api/security-master/data-entitlements";
     public const string DataVendorEntitlementsExpiring = "/api/security-master/data-entitlements/expiring";

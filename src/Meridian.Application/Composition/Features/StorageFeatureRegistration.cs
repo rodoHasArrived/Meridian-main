@@ -22,6 +22,8 @@ using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.SecurityMaster.CashFlow;
+using Meridian.Application.SecurityMaster.Curves;
+using Meridian.Application.SecurityMaster.Valuation;
 using Meridian.Application.Tenancy;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
@@ -412,9 +414,14 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterPricingService, SecurityMasterPricingService>();
             services.AddSingleton<IStructuredCashFlowLedgerBridge, StructuredCashFlowLedgerBridge>();
             services.AddSingleton<ISecurityMasterAmortizationLedgerBridge, SecurityMasterAmortizationLedgerBridge>();
-            services.TryAddSingleton<InMemorySecurityForwardCurveProvider>();
-            services.TryAddSingleton<ISecurityForwardCurveProvider>(static sp => sp.GetRequiredService<InMemorySecurityForwardCurveProvider>());
+            // Stored, versioned curves (migrations 052/053) feed floating-leg projection and the
+            // valuation seam; both models dispatch on the catalog's DefaultValuationModel fact.
+            services.AddSingleton<ISecurityCurveStore, PostgresSecurityCurveStore>();
+            services.AddSingleton<ISecurityForwardCurveProvider, StoredSecurityForwardCurveProvider>();
             services.AddSingleton<ISecurityMasterCashFlowService, SecurityMasterCashFlowService>();
+            services.AddSingleton<ISecurityValuationModel, QuotedPriceValuationModel>();
+            services.AddSingleton<ISecurityValuationModel, DiscountedCashFlowValuationModel>();
+            services.AddSingleton<ISecurityValuationService, SecurityValuationService>();
             services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
             services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();
             services.AddSingleton<ISecurityMasterStructuredCreditReclassificationService, SecurityMasterStructuredCreditReclassificationService>();

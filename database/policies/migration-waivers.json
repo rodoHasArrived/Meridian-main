@@ -119,6 +119,18 @@
       "rule_id": "migration-drop-table-member",
       "reason": "Requires human schema/storage review. Replaces only security_governance_events_stream_check with a wider check that keeps every existing stream ('OperatorOverrides', 'Aliases', 'ProjectionRebuild') and admits 'UnderlyingGraph', so declared underlying-graph links can be recorded in the append-only governance log. No row, column or trigger is removed, and the drop and re-add run in the migration runner's single transaction, so a failure leaves the original constraint in place. A reverse migration must not narrow the check while 'UnderlyingGraph' rows exist.",
       "review_after": "2027-04-22"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/052_security_curves.sql",
+      "rule_id": "migration-truncate",
+      "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only, immutable security_curve_versions table; no data is truncated and the migration creates only new tables, indexes, a function and triggers. PostgreSQL regression coverage attempts update, delete and truncate and verifies that every published curve version is retained.",
+      "review_after": "2027-04-25"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/053_security_governance_events_curves_stream.sql",
+      "rule_id": "migration-drop-table-member",
+      "reason": "Requires human schema/storage review. Replaces only security_governance_events_stream_check with a wider check that keeps every existing stream ('OperatorOverrides', 'Aliases', 'ProjectionRebuild', 'UnderlyingGraph') and admits 'Curves', so stored-curve definitions and published versions can be recorded in the append-only governance log. No row, column or trigger is removed, and the drop and re-add run in the migration runner's single transaction, so a failure leaves the original constraint in place. A reverse migration must not narrow the check while 'Curves' rows exist.",
+      "review_after": "2027-04-25"
     }
   ],
   "removed_migrations": [

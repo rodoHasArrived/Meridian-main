@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-
 namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>A projected index fixing for a reset date. Rates above 1 are read as percentages.</summary>
@@ -59,44 +57,10 @@ public sealed record SecurityForwardCurve(
 
 /// <summary>
 /// Supplies forward curves for floating-rate cash-flow projection. Hosts without one keep the
-/// flat-forward projection (last fixing plus spread).
+/// flat-forward projection (last fixing plus spread). The stored implementation is
+/// <c>StoredSecurityForwardCurveProvider</c> in Application, reading <see cref="ISecurityCurveStore"/>.
 /// </summary>
 public interface ISecurityForwardCurveProvider
 {
     Task<SecurityForwardCurve?> GetForwardCurveAsync(string indexName, DateOnly asOf, CancellationToken ct = default);
-}
-
-/// <summary>
-/// Process-local curve store: the latest curve published for each index (by as-of date) that is not
-/// dated after the requested as-of. Index names compare case-insensitively.
-/// </summary>
-public sealed class InMemorySecurityForwardCurveProvider : ISecurityForwardCurveProvider
-{
-    private readonly ConcurrentDictionary<string, ImmutableCurveSet> _curves = new(StringComparer.OrdinalIgnoreCase);
-
-    public void Publish(SecurityForwardCurve curve)
-    {
-        ArgumentNullException.ThrowIfNull(curve);
-        ArgumentException.ThrowIfNullOrWhiteSpace(curve.IndexName);
-        _curves.AddOrUpdate(
-            curve.IndexName.Trim(),
-            _ => new ImmutableCurveSet([curve]),
-            (_, existing) => new ImmutableCurveSet(existing.Curves.Where(c => c.AsOfDate != curve.AsOfDate).Append(curve).ToArray()));
-    }
-
-    public Task<SecurityForwardCurve?> GetForwardCurveAsync(string indexName, DateOnly asOf, CancellationToken ct = default)
-    {
-        ct.ThrowIfCancellationRequested();
-        if (string.IsNullOrWhiteSpace(indexName) || !_curves.TryGetValue(indexName.Trim(), out var set))
-        {
-            return Task.FromResult<SecurityForwardCurve?>(null);
-        }
-
-        return Task.FromResult(set.Curves
-            .Where(curve => curve.AsOfDate <= asOf)
-            .OrderByDescending(static curve => curve.AsOfDate)
-            .FirstOrDefault());
-    }
-
-    private sealed record ImmutableCurveSet(IReadOnlyList<SecurityForwardCurve> Curves);
 }

@@ -96,6 +96,7 @@ public static class SecurityAssetClassCatalog
             LotUnit: SecurityLotUnitKind.FaceValue,
             CashFlowBehavior: SecurityCashFlowBehavior.ContractualSchedule,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            DefaultValuationModel: SecurityValuationModelKind.DiscountedCashFlow,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -294,6 +295,7 @@ public static class SecurityAssetClassCatalog
             LotUnit: SecurityLotUnitKind.Notional,
             CashFlowBehavior: SecurityCashFlowBehavior.SwapLegs,
             ProjectionKind: SecurityTermsProjectionKind.Declarative,
+            DefaultValuationModel: SecurityValuationModelKind.DiscountedCashFlow,
             SupportsBasicCreateWorkflow: false,
             PreferredIdentifierKinds:
             [
@@ -950,6 +952,11 @@ public enum SecurityAssetClassLabelResolution
 /// Whether positions are bilateral contracts against a counterparty under a master agreement, so the
 /// instrument carries <c>OtcContractDto</c> records rather than exchange-traded lots.
 /// </param>
+/// <param name="DefaultValuationModel">
+/// The valuation model <c>ISecurityValuationService</c> dispatches to when a request names none:
+/// the quoted golden-copy price by default, or discounted projected cash flows for the classes
+/// whose schedule the kernel projects and a stored discount curve can value (Bond, Swap).
+/// </param>
 public sealed record SecurityAssetClassDescriptor(
     string AssetClass,
     SecurityLotUnitKind LotUnit,
@@ -976,7 +983,8 @@ public sealed record SecurityAssetClassDescriptor(
     bool UsesOccOptionSymbols = false,
     bool QuotesRatesAsFractions = false,
     bool TradesAsBilateralContract = false,
-    IReadOnlyList<SecurityAssetClassTermsUpgrade>? TermsUpgrades = null)
+    IReadOnlyList<SecurityAssetClassTermsUpgrade>? TermsUpgrades = null,
+    SecurityValuationModelKind DefaultValuationModel = SecurityValuationModelKind.QuotedPrice)
 {
     /// <summary>
     /// The catalog facts below replace per-site asset-class name checks. Each is a declared
@@ -987,12 +995,15 @@ public sealed record SecurityAssetClassDescriptor(
     /// <see cref="CarriesBondCouponStructure"/> (terms carry the bond coupon structure and bullet
     /// amortization conventions), <see cref="UsesOccOptionSymbols"/> (OCC option symbols are a
     /// valid identifier) and <see cref="QuotesRatesAsFractions"/> (a rate at or below one is a
-    /// fraction, not a percent) and <see cref="TradesAsBilateralContract"/> (positions are
+    /// fraction, not a percent), <see cref="TradesAsBilateralContract"/> (positions are
     /// bilateral contracts against a counterparty under a master agreement, so the instrument
-    /// carries <c>OtcContractDto</c> records rather than exchange-traded lots).
+    /// carries <c>OtcContractDto</c> records rather than exchange-traded lots) and a
+    /// <see cref="DefaultValuationModel"/> other than the quoted price (the class is valued from its
+    /// projected cash flows and a stored discount curve unless a request names another model).
     /// </summary>
     public bool HasDeclaredBehaviorFacts
-        => RequiresProfileReference || SupportsEquityClassification || CarriesBondCouponStructure || UsesOccOptionSymbols || QuotesRatesAsFractions || TradesAsBilateralContract;
+        => RequiresProfileReference || SupportsEquityClassification || CarriesBondCouponStructure || UsesOccOptionSymbols || QuotesRatesAsFractions || TradesAsBilateralContract
+           || DefaultValuationModel != SecurityValuationModelKind.QuotedPrice;
 
     /// <summary>
     /// Whether positions are held as face-value lots (par-denominated quantity). Derived from

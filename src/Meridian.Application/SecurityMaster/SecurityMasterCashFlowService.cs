@@ -78,8 +78,12 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         await _store.UpsertSourceAsync(record, ct).ConfigureAwait(false);
     }
 
-    public async Task<StructuredCashFlowProjectionDto?> GetProjectionAsync(
+    public Task<StructuredCashFlowProjectionDto?> GetProjectionAsync(
         Guid securityId, StructuredCashFlowScenario scenario, CancellationToken ct = default)
+        => GetProjectionAsOfAsync(securityId, scenario, DateTimeOffset.UtcNow, ct);
+
+    public async Task<StructuredCashFlowProjectionDto?> GetProjectionAsOfAsync(
+        Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken ct = default)
     {
         var assignment = await _store.GetSourceAsync(securityId, ct).ConfigureAwait(false);
         if (assignment is null)
@@ -117,9 +121,11 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         if (assignment.SourceKind is StructuredCashFlowSourceKind.CalculatedBullet
             or StructuredCashFlowSourceKind.CalculatedSinker)
         {
-            var forwardCurves = await LoadForwardCurvesAsync(security, ct).ConfigureAwait(false);
+            // Curves are read as of the projection date, not the wall clock, so a valuation as of
+            // another date projects floating legs from the curve in force on that date.
+            var forwardCurves = await LoadForwardCurvesAsync(security, DateOnly.FromDateTime(asOf.UtcDateTime.Date), ct).ConfigureAwait(false);
             var projection = BuildCalculatedProjection(
-                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, forwardCurves);
+                security, assignment.SourceKind, scenario, staleness, assignment.LastUpdatedUtc, asOf, forwardCurves);
             var terms = projection.TermsUsed!;
             var usesNormalizedBasis = terms.PrincipalFace is not > 0m
                 && (!terms.HasLegs || terms.Legs!.Any(leg => leg.Notional is not > 0m));
@@ -145,7 +151,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         }
 
         var providerProjection = await provider.GetProjectedCashFlowsAsync(
-            securityId, isin, DateTimeOffset.UtcNow, scenario, ct).ConfigureAwait(false);
+            securityId, isin, asOf, scenario, ct).ConfigureAwait(false);
 
         // Stamp freshness onto provider projections too so every consumer sees a consistent gate.
         return providerProjection is null
@@ -220,7 +226,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
     /// the provider has no curve for, the leg keeps the flat-forward projection.
     /// </summary>
     private async Task<IReadOnlyDictionary<string, SecurityForwardCurve>> LoadForwardCurvesAsync(
-        SecurityDetailDto security, CancellationToken ct)
+        SecurityDetailDto security, DateOnly asOfDate, CancellationToken ct)
     {
         var curves = new Dictionary<string, SecurityForwardCurve>(StringComparer.OrdinalIgnoreCase);
         if (_forwardCurves is null)
@@ -229,7 +235,6 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         }
 
         var legs = StructuredCashFlowTermsResolver.Resolve(security).Legs ?? [];
-        var asOfDate = DateOnly.FromDateTime(DateTimeOffset.UtcNow.UtcDateTime.Date);
         foreach (var indexName in legs
                      .Where(static leg => leg.RateKind == CashFlowLegRateKind.Floating && !string.IsNullOrWhiteSpace(leg.IndexName))
                      .Select(static leg => leg.IndexName!.Trim())
@@ -251,9 +256,9 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         StructuredCashFlowScenario scenario,
         StructuredCashFlowStaleness staleness,
         DateTimeOffset? sourceLastUpdatedUtc,
+        DateTimeOffset asOf,
         IReadOnlyDictionary<string, SecurityForwardCurve>? forwardCurves = null)
     {
-        var asOf = DateTimeOffset.UtcNow;
         var terms = StructuredCashFlowTermsResolver.Resolve(security);
         var factorSchedule = terms.FactorSchedule;
 
