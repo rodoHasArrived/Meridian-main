@@ -4217,6 +4217,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterProjectionWarmupService.cs
 │   │   │   ├── SecurityMasterPublishFailedException.cs
 │   │   │   ├── SecurityMasterQueryService.cs
+│   │   │   ├── SecurityMasterService.AheadOfWriteTerms.cs
 │   │   │   ├── SecurityMasterService.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.cs
