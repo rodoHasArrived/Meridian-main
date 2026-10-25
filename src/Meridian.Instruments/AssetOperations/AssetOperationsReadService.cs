@@ -5,6 +5,7 @@ using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.SecurityMaster.Schedules;
 using Meridian.Storage.AssetOperations;
 
 namespace Meridian.Instruments.AssetOperations;
@@ -423,7 +424,7 @@ public static class AssetOperationsProjectionBuilder
         }
 
         var issueDate = bond.Lifecycle?.IssueDate ?? DateOnly.FromDateTime(DateTime.UtcNow.Date);
-        var paymentFrequency = ResolvePaymentFrequencyPerYear(bond.Lifecycle?.PaymentFrequency);
+        var paymentFrequency = SecurityTermConventions.LegacyCouponPaymentsPerYear(bond.Lifecycle?.PaymentFrequency);
         var periodMonths = Math.Max(1, 12 / paymentFrequency);
         var principalBasis = ResolveBondPrincipalBasis(bond);
         var outstandingPrincipal = principalBasis;
@@ -434,15 +435,28 @@ public static class AssetOperationsProjectionBuilder
             .ToArray() ?? [];
         var sinkingFundIndex = 0;
         var sequenceNumber = 1;
-        var accrualStart = issueDate;
-
-        while (accrualStart < maturity.Value)
+        var tenor = ScheduleTenor.Months(periodMonths);
+        var schedule = ScheduleGenerator.Generate(ScheduleSpec.CompoundedForward(issueDate, maturity.Value, tenor));
+        if (!schedule.Succeeded)
         {
-            var accrualEnd = accrualStart.AddMonths(periodMonths);
-            if (accrualEnd > maturity.Value)
+            throw new InvalidOperationException(schedule.Failure.Message);
+        }
+
+        foreach (var period in schedule.Periods)
+        {
+            if (period.IsFinal)
             {
-                accrualEnd = maturity.Value;
+                // Each legacy period stepped its start by one tenor before capping the result at
+                // maturity, so a maturity whose closing compounded grid date lies past 9999-12-31 (a
+                // far-dated or perpetual sentinel off the grid) threw ArgumentOutOfRangeException as the
+                // closing period began. The kernel treats that date as an overshoot and closes at
+                // maturity; evaluating it here, after the earlier periods' arithmetic, keeps the failure
+                // and its order (SCH-DEF-010). Advance throws the same exception type.
+                _ = tenor.Advance(period.UnadjustedStart, 1);
             }
+
+            var accrualStart = period.AccrualStart;
+            var accrualEnd = period.AccrualEnd;
 
             if (bond.AccrualConvention?.FixedCouponRate is decimal coupon && coupon > 0m && outstandingPrincipal > 0m)
             {
@@ -556,13 +570,6 @@ public static class AssetOperationsProjectionBuilder
                         null,
                         entry.SinkDate));
             }
-
-            if (accrualEnd == maturity.Value)
-            {
-                break;
-            }
-
-            accrualStart = accrualEnd;
         }
 
         if (outstandingPrincipal > 0m)
@@ -869,42 +876,6 @@ public static class AssetOperationsProjectionBuilder
             ? currentFactor
             : 1m;
         return RoundCash(par * factor);
-    }
-
-    private static int ResolvePaymentFrequencyPerYear(string? paymentFrequency)
-    {
-        if (string.IsNullOrWhiteSpace(paymentFrequency))
-        {
-            return 1;
-        }
-
-        // The write path admits only the cadences the shared convention recognizes; read them the
-        // same way (this adds BiMonthly and tenor spellings such as "3M"). Anything else keeps the
-        // legacy interpretation below so stored values read exactly as before.
-        if (SecurityTermConventions.CouponPaymentsPerYear(paymentFrequency) is { } paymentsPerYear)
-        {
-            return paymentsPerYear;
-        }
-
-        var normalized = paymentFrequency
-            .Replace("-", string.Empty, StringComparison.Ordinal)
-            .Replace("_", string.Empty, StringComparison.Ordinal)
-            .Replace(" ", string.Empty, StringComparison.Ordinal)
-            .Trim()
-            .ToUpperInvariant();
-        if (int.TryParse(normalized, out var parsed) && parsed > 0)
-        {
-            return Math.Clamp(parsed, 1, 12);
-        }
-
-        return normalized switch
-        {
-            "MONTHLY" => 12,
-            "QUARTERLY" => 4,
-            "SEMIANNUAL" or "SEMIANNUALLY" or "SEMIYEARLY" or "HALFYEARLY" => 2,
-            "ANNUAL" or "ANNUALLY" or "YEARLY" => 1,
-            _ => 1
-        };
     }
 
     private static decimal CalculateBondCouponSegmentAmount(

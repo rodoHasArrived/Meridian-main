@@ -172,13 +172,79 @@ public static class SecurityTermConventions
 
     /// <summary>
     /// Coupon payments per year for a schedule-driving cadence spelling, or null when the text is not
-    /// a recognized monthly-or-longer cadence. Shared by the cash-flow and asset-operations schedulers
-    /// so they agree with the convention the write path enforces.
+    /// a recognized monthly-or-longer cadence. <see cref="LegacyCouponPaymentsPerYear"/>, the reader the
+    /// cash-flow and asset-operations schedulers share, consults it first, so they agree with the
+    /// convention the write path enforces.
     /// </summary>
     public static int? CouponPaymentsPerYear(string? raw)
         => TryParsePaymentFrequency(raw, out var frequency) && frequency.MonthsPerPeriod() is { } months
             ? 12 / months
             : null;
+
+    /// <summary>
+    /// Coupon payments per year as the legacy schedulers read a stored cadence. The Security Master
+    /// cash-flow projection and the asset-operations bond projection
+    /// (<c>fixed-income-cash-flow-projection-v1</c>) both step <c>Math.Max(1, 12 / n)</c> months per
+    /// coupon period from it. It never returns null and never refuses.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A spelling <see cref="CouponPaymentsPerYear"/> recognizes reads the same here. Anything else
+    /// keeps the reading those schedulers had before the convention existed, so a stored value
+    /// projects exactly as it always has:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>Blank text, <see cref="SecurityPaymentFrequency.AtMaturity"/>,
+    /// <see cref="SecurityPaymentFrequency.Irregular"/>, the sub-monthly cadence names and tenors
+    /// (<c>Daily</c>, <c>Weekly</c>, <c>BiWeekly</c>, <c>2W</c>) and unrecognized text read as 1.</description></item>
+    /// <item><description>Any other positive whole number, once hyphens, underscores and spaces are
+    /// removed, is a payments-per-year count clamped to 1 through 12: <c>"5"</c> reads as 5, and
+    /// <c>"13"</c> and the numeric sub-monthly spellings <c>"52"</c> and <c>"365"</c> as 12. Zero, a
+    /// number too large for an <see cref="int"/> and a decimal such as <c>"1.5"</c> read as 1. The
+    /// convention drops separators before it is consulted, so <c>"1.2"</c> reads as <c>"12"</c>, which
+    /// is 12.</description></item>
+    /// </list>
+    /// <para>
+    /// Reading <c>AtMaturity</c> as one payment a year is the pinned defect SCH-DEF-001, kept for records
+    /// that declare no schedule conventions. New readers use <see cref="CouponPaymentsPerYear"/> or
+    /// <see cref="TryParsePaymentFrequency"/>, which say when they do not recognize a value.
+    /// </para>
+    /// </remarks>
+    public static int LegacyCouponPaymentsPerYear(string? paymentFrequency)
+    {
+        if (string.IsNullOrWhiteSpace(paymentFrequency))
+        {
+            return 1;
+        }
+
+        // The write path admits only the cadences the shared convention recognizes; read them the
+        // same way (this adds BiMonthly and tenor spellings such as "3M"). Anything else keeps the
+        // legacy interpretation below so stored values read exactly as before.
+        if (SecurityTermConventions.CouponPaymentsPerYear(paymentFrequency) is { } paymentsPerYear)
+        {
+            return paymentsPerYear;
+        }
+
+        var normalized = paymentFrequency
+            .Replace("-", string.Empty, StringComparison.Ordinal)
+            .Replace("_", string.Empty, StringComparison.Ordinal)
+            .Replace(" ", string.Empty, StringComparison.Ordinal)
+            .Trim()
+            .ToUpperInvariant();
+        if (int.TryParse(normalized, out var parsed) && parsed > 0)
+        {
+            return Math.Clamp(parsed, 1, 12);
+        }
+
+        return normalized switch
+        {
+            "MONTHLY" => 12,
+            "QUARTERLY" => 4,
+            "SEMIANNUAL" or "SEMIANNUALLY" or "SEMIYEARLY" or "HALFYEARLY" => 2,
+            "ANNUAL" or "ANNUALLY" or "YEARLY" => 1,
+            _ => 1
+        };
+    }
 
     /// <summary>The shared rejection reason for an unrecognized convention value.</summary>
     public static string DescribeUnrecognized(SecurityTermConventionKind kind, string assetClass, string key, string? raw)
