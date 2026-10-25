@@ -194,28 +194,50 @@ So the correct action is **one re-run of the failed job on `05840a0a`**, not a c
 the narrow, legitimate flake case — an error naming a toolchain the diff does not touch, which the
 same lane contradicts on the same content hours later. What it is not is a reason to relax the lane.
 
-## P1: the script-test lane converts a toolchain outage into a release-gate failure
+## P1: the script-test lane diagnoses a broken interpreter as 130 unrelated test failures
 
-The transient crash above should have produced skips. It produced 130 failures and a red
-authoritative merge gate on the branch a release candidate is cut from. That is a signal-quality
-defect in the lane, and it is worth fixing on its own merits.
+The outage above was surfaced as 130 assertion failures spread across twelve modules, each one
+reading like an independent defect in recovery receipts, PostgreSQL payloads or desktop build
+receipts. The actual fault was one sentence long: the host's PowerShell could not start. That gap
+between the signal and the cause is the defect worth fixing, and it cost most of the diagnosis time
+behind this document.
 
-The lane already contains the correct pattern and the incorrect one side by side:
+**What this is not an argument for.** An earlier draft of this section proposed routing the twelve
+`pwsh`-executing modules through the `skipUnless` guard that `test_desktop_msix_packaging:53` uses.
+That recommendation was wrong on its own evidence, and the correction is worth recording because the
+same reasoning error is easy to repeat:
 
-- `test_desktop_msix_packaging:53` — `@unittest.skipUnless(os.name == "nt" and shutil.which("pwsh"), "requires PowerShell on Windows")`. Skipped cleanly. Passed.
-- `test_production_recovery:33` — `self.assertIsNotNone(self.pwsh, "PowerShell 7 is required for recovery receipt tests.")`. 25 hard failures.
-- `test_recovery_evidence:57` — `raise RuntimeError("PowerShell 7 (pwsh) is required …")` in `setUpClass`. Reported as an error, not a skip.
+- **A `which`-based guard would not have skipped anything.** `pwsh` was *installed* during the
+  outage — the lane's own `CalledProcessError` names `/usr/bin/pwsh` — and it aborted on execution.
+  `shutil.which("pwsh")` therefore returned a real path, so the guard would have been true and all
+  130 tests would have run and failed exactly as they did.
+- **What actually skipped `test_desktop_msix_packaging` was `os.name == "nt"`**, which is false on
+  every Linux runner. Copying that guard to the twelve cross-platform modules would not have made
+  them resilient; it would have **deleted their Linux coverage permanently**, outage or not. Those
+  modules normally run and pass on Linux.
+- **The ownership safeguard that section claimed does not exist.**
+  `build/scripts/ci/check-test-skip-register.py:607` scans only `**/*.cs` and `**/*.fs`. Python
+  suites are outside its scope, so skips added in `tests/scripts` would carry no registered owner
+  and no expiry.
+- **And it is prohibited.** `AGENTS.md:58` forbids disabling, weakening, or *conditionally
+  bypassing* tests. Turning a red lane green by skipping is precisely that, and no
+  signal-quality argument overrides it.
 
-Two different modules disagree about whether an unavailable interpreter is a skip, a failure, or an
-error. The same defect is visible locally without any crash at all: running the lane in this
-container, where `pwsh` is simply absent, yields **49 failures and 4 errors** purely from its
-absence — `shutil.which("pwsh")` returns `None` and the assertions fire.
+**The distinction that matters.** An interpreter that is *absent* and one that is *present but
+non-functional* are different conditions and deserve different outcomes. Absent is a local-developer
+condition and may legitimately skip: running this lane in a container without PowerShell yields
+**49 failures and 4 errors** purely from `shutil.which("pwsh")` returning `None`, which is noise
+rather than information. Present-but-aborting is an infrastructure fault, and CI must **keep
+failing** on it — the lane was right to go red; it was only wrong about how it said so.
 
-Routing the twelve pwsh-executing modules through one shared `skipUnless` helper — the pattern
-`test_desktop_msix_packaging` already uses — would have turned this outage into 130 skips and a
-green gate, and would make the lane runnable on a developer machine without PowerShell. It also
-preserves the gate's teeth: a skip register already exists (`check-test-skip-register.py`), so
-skips stay owned and visible rather than silently disappearing.
+**So the work here is diagnosis, not suppression.** A single preflight at lane start that executes
+`pwsh -NoProfile -Command $PSVersionTable.PSVersion` and, when that aborts, fails the lane once with
+an explicit "PowerShell runtime is present but non-functional on this host" message would preserve
+the failure that `AGENTS.md` requires while replacing 130 misleading assertions with one accurate
+line. The narrower inconsistency can be settled alongside it: `test_production_recovery:33` asserts
+on a missing interpreter while `test_recovery_evidence:57` raises in `setUpClass`, so the same
+precondition is reported as a failure in one module and an error in the other. Making those agree is
+cleanup; it must not become a skip in CI.
 
 ## P1: the two `verify-workflows` races are still unfixed, four days on
 
@@ -328,7 +350,7 @@ work does not.
 | **P0** | **Provision `MDC_SIGNING_CERT_PFX_BASE64` and `MDC_SIGNING_CERT_PASSWORD`** in the protected `desktop-release-signing` environment | The `v0.1.0-rc.1` tag run failed closed: `Release signing prerequisite failed (signing-secrets-unavailable)`. `PRD-014`. The only purely human item here, and the one thing between the program and a signed artifact |
 | **P0** | **Tag `v0.1.0-rc.2` on a head green across both `Meridian CI` and `Production Certification`** | `v0.1.0-rc.1` carries neither receipt: its tag run failed on secrets, and `c51c5d8d`'s `Meridian CI` failed on `verify-docs`. Only two workflows ran on the tag ref at all. The predecessor found a ten-workflow receipt on `a9d470c3`; a later, red commit was tagged instead |
 | **P0** | **`PRD-002`'s remaining clauses** — browser/WPF/setup/default-runtime ownership; legacy ownership/verification migration, rollback and rotation proof | Still the tracker's only code-rather-than-signature P0. C7/C8 and the platform clause closed on 2026-10-20; these did not |
-| **P1** | **Route the 12 `pwsh`-executing script-test modules through one `skipUnless` helper** | A transient toolchain crash produced 130 failures and a red merge gate on the release branch; the same lane yields 49 failures locally purely because `pwsh` is absent. `test_desktop_msix_packaging:53` already shows the right pattern while `test_production_recovery:33` asserts and `test_recovery_evidence:57` raises |
+| **P1** | **Add a `pwsh` preflight to the script-test lane that fails once with an accurate message** — not a `skipUnless` guard, which `AGENTS.md:58` forbids and which would not have helped | The outage surfaced as 130 assertion failures across twelve modules when the real fault was that PowerShell could not start. `pwsh` was installed (`/usr/bin/pwsh`) and aborted on execution, so a `which`-based guard would have been true and skipped nothing; the guard that spared `test_desktop_msix_packaging` is `os.name == "nt"`, and copying it would delete those modules' Linux coverage outright. CI must keep failing here — only the diagnostic should change |
 | **P1** | **Run the resolver across the open queue** | 778 of 809 conflicting paths are generated, and the resolver already covers all four top paths — including `example-validation.md`, whose one-line fix landed but has never been applied. 29 of 40 measured PRs conflict; 428 conflicts total, up from 367 |
 | **P1** | **Land #3232, then promote the `.gitattributes` / regenerate-on-merge item** | `Generated Repair Publisher` is at 582 runs, up from 383, with every recent `workflow_run` failing; `generated_repair.py:213` is unchanged. `doc-health-dashboard.{json,md}` conflicts on 22 of 40 PRs — recurring by construction, now measured four times |
 | **P1** | **Fix the two `verify-workflows` races** — `ignore_cleanup_errors=True` across 321 `tests/scripts` call sites; the `disposable.py` reconcile window | Unchanged for four days. Latent while the lane is green, but it is the second way this lane reddens the release branch without a code defect |
