@@ -255,6 +255,146 @@
           "required": true
         }
       ]
+    },
+    {
+      "termsVersion": 3,
+      "fields": [
+        {
+          "key": "callDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "callSchedule",
+          "type": "Array",
+          "required": false
+        },
+        {
+          "key": "capRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "couponRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "couponType",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "dayCount",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "floatingIndex",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "floorRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "inflationBaseIndexValue",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "inflationIndex",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "inflationIndexRatio",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "isCallable",
+          "type": "Boolean",
+          "required": true
+        },
+        {
+          "key": "issueDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "issuerName",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "legalFinalMaturity",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "mandatoryPutDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "maturity",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "par",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "paymentFrequency",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "preRefundDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "principalSchedule",
+          "type": "Array",
+          "required": false
+        },
+        {
+          "key": "putSchedule",
+          "type": "Array",
+          "required": false
+        },
+        {
+          "key": "scheduleConventions",
+          "type": "Object",
+          "required": false
+        },
+        {
+          "key": "seniority",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "spreadBps",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "stepSchedule",
+          "type": "Array",
+          "required": false
+        },
+        {
+          "key": "subclass",
+          "type": "String",
+          "required": true
+        }
+      ]
     }
   ]
 }

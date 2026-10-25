@@ -306,6 +306,104 @@ module ScheduleConventions =
     [<CompiledName("IsEmpty")>]
     let isEmpty (conventions: ScheduleConventions) = conventions = empty
 
+/// One declared call (a flat callSchedule entry: asset-class terms version 3 on bonds and
+/// certificates of deposit, 4 on structured credit). Text members are kept verbatim; their meanings
+/// are frozen in ADR-025's Applications.
+type CallScheduleTerm = {
+    /// The call date, or the start of an American or Bermudan call window. An entry without one is
+    /// not a term and is never read.
+    CallDate: DateOnly
+    /// The end of an American or Bermudan call window; absent for a single call date.
+    CallEndDate: DateOnly option
+    /// European, American or Bermudan.
+    ExerciseStyle: string option
+    /// How often a Bermudan window's call dates recur (a coupon frequency spelling).
+    ExerciseFrequency: string option
+    /// The call price, in the unit priceBasis names.
+    CallPrice: decimal option
+    /// PercentOfPar or PercentOfAccretedValue.
+    PriceBasis: string option
+    /// Fixed or MakeWhole.
+    PriceType: string option
+    /// The make-whole spread over the benchmark, in basis points.
+    MakeWholeSpreadBps: decimal option
+    /// WholeOnly, ProRata or ByLot.
+    PartialRedemption: string option
+    /// The fewest days before the call date that notice may be given.
+    MinimumNoticeDays: int option
+    /// The most days before the call date that notice may be given.
+    MaximumNoticeDays: int option
+    /// Whether the notice counts are Business or Calendar days.
+    NoticeDayType: string option
+}
+
+/// One declared holder put (a flat putSchedule entry), with the same versions as the call entry. A
+/// mandatory tender is not a put entry; it stays MandatoryPutDate.
+type PutScheduleTerm = {
+    /// The put date, or the start of a put window. An entry without one is never read.
+    PutDate: DateOnly
+    /// The end of a put window; absent for a single put date.
+    PutEndDate: DateOnly option
+    /// European, American or Bermudan.
+    ExerciseStyle: string option
+    /// How often a Bermudan window's put dates recur (a coupon frequency spelling).
+    ExerciseFrequency: string option
+    /// The put price, in the unit priceBasis names.
+    PutPrice: decimal option
+    /// PercentOfPar or PercentOfAccretedValue.
+    PriceBasis: string option
+    /// The fewest days before the put date that the holder may elect.
+    MinimumNoticeDays: int option
+    /// The most days before the put date that the holder may elect.
+    MaximumNoticeDays: int option
+    /// Whether the notice counts are Business or Calendar days.
+    NoticeDayType: string option
+}
+
+/// The declared call and put schedules, in stored order; empty until declared.
+type CallPutSchedules = { Calls: CallScheduleTerm list; Puts: PutScheduleTerm list }
+
+[<RequireQualifiedAccess>]
+module CallPutSchedules =
+    /// Nothing declared: what every record carries until a node writes the schedules.
+    [<CompiledName("Empty")>]
+    let empty : CallPutSchedules = { Calls = []; Puts = [] }
+
+    /// Whether neither a call nor a put is declared.
+    [<CompiledName("IsEmpty")>]
+    let isEmpty (schedules: CallPutSchedules) = schedules.Calls.IsEmpty && schedules.Puts.IsEmpty
+
+[<RequireQualifiedAccess>]
+module CallScheduleTerm =
+    /// A call on the date with nothing else stated.
+    let onDate (date: DateOnly) : CallScheduleTerm =
+        { CallDate = date
+          CallEndDate = None
+          ExerciseStyle = None
+          ExerciseFrequency = None
+          CallPrice = None
+          PriceBasis = None
+          PriceType = None
+          MakeWholeSpreadBps = None
+          PartialRedemption = None
+          MinimumNoticeDays = None
+          MaximumNoticeDays = None
+          NoticeDayType = None }
+
+[<RequireQualifiedAccess>]
+module PutScheduleTerm =
+    /// A put on the date with nothing else stated.
+    let onDate (date: DateOnly) : PutScheduleTerm =
+        { PutDate = date
+          PutEndDate = None
+          ExerciseStyle = None
+          ExerciseFrequency = None
+          PutPrice = None
+          PriceBasis = None
+          MinimumNoticeDays = None
+          MaximumNoticeDays = None
+          NoticeDayType = None }
+
 type BondTerms = {
     Maturity: DateOnly
     IssueDate: DateOnly option
@@ -336,6 +434,8 @@ type BondTerms = {
     PrincipalSchedule: PrincipalPaymentEntry list
     /// Declared schedule conventions (asset-class terms version 2); empty until declared.
     ScheduleConventions: ScheduleConventions
+    /// Declared call and put schedules (asset-class terms version 3); empty until declared.
+    CallPutSchedules: CallPutSchedules
 }
 
 [<RequireQualifiedAccess>]
@@ -346,7 +446,8 @@ module BondTerms =
           Subclass = BondSubclass.Corporate
           Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
           PrincipalSchedule = []
-          ScheduleConventions = ScheduleConventions.empty }
+          ScheduleConventions = ScheduleConventions.empty
+          CallPutSchedules = CallPutSchedules.empty }
 
     let floatingRate maturity index spreadBps issuerName =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None)
@@ -354,7 +455,8 @@ module BondTerms =
           Subclass = BondSubclass.FloatingRate
           Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
           PrincipalSchedule = []
-          ScheduleConventions = ScheduleConventions.empty }
+          ScheduleConventions = ScheduleConventions.empty
+          CallPutSchedules = CallPutSchedules.empty }
 
     let zeroCoupon maturity issuerName =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon
@@ -362,7 +464,8 @@ module BondTerms =
           Subclass = BondSubclass.Corporate
           Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
           PrincipalSchedule = []
-          ScheduleConventions = ScheduleConventions.empty }
+          ScheduleConventions = ScheduleConventions.empty
+          CallPutSchedules = CallPutSchedules.empty }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with
@@ -424,6 +527,8 @@ type CertificateOfDepositTerms = {
     DayCount: string option
     /// Declared schedule conventions (asset-class terms version 2); empty until declared.
     ScheduleConventions: ScheduleConventions
+    /// Declared call and put schedules (asset-class terms version 3); empty until declared.
+    CallPutSchedules: CallPutSchedules
 }
 
 type CommercialPaperTerms = {
@@ -632,6 +737,8 @@ type StructuredCreditTerms = {
     NonCallPeriodEnd: DateOnly option
     /// Declared schedule conventions (asset-class terms version 3); empty until declared.
     ScheduleConventions: ScheduleConventions
+    /// Declared call and put schedules (asset-class terms version 4); empty until declared.
+    CallPutSchedules: CallPutSchedules
 }
 
 type PrivateFundInterestTerms = {

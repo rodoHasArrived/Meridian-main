@@ -200,7 +200,11 @@ public sealed record SecurityAssetTermField(
     /// <c>tests/fixtures/security-master/terms-versions</c> are checked against it: a field must first
     /// appear in the manifest of this version. A field above the class's write version is readable
     /// but not writable (<see cref="SecurityAssetClassDescriptor.ReadsTermsThrough"/>): a node decodes
-    /// it from payloads stamped at or above this version and refuses it on every write path.
+    /// it from payloads stamped at or above this version and refuses it on every write path. A class
+    /// may read several versions ahead of what it writes, each introduced by its own top-level fields
+    /// (Bond: <c>scheduleConventions</c> at 2, <c>callSchedule</c> and <c>putSchedule</c> at 3). The
+    /// members of a container introduced above version 1 are frozen with it: a later member needs a
+    /// new container key.
     /// </summary>
     public int SinceTermsVersion { get; init; } = SecurityTermsEnvelope.DefaultAssetClassTermsVersion;
 
@@ -356,7 +360,11 @@ public static class SecurityAssetTermsSchema
                 Opt("principalSchedule", SecurityAssetTermFieldType.Array),
                 // How the schedule kernel builds the coupon periods (asset-class terms version 2,
                 // readable before writable: ADR-024). Inner shape: ScheduleConventionFields.
-                Opt("scheduleConventions", SecurityAssetTermFieldType.Object).Since(2)
+                Opt("scheduleConventions", SecurityAssetTermFieldType.Object).Since(2),
+                // Declared call and put schedules (asset-class terms version 3, readable before
+                // writable: ADR-024). Entry shapes: CallScheduleEntryFields, PutScheduleEntryFields.
+                Opt("callSchedule", SecurityAssetTermFieldType.Array).Since(3),
+                Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(3)
             ],
             ["FxSpot"] =
             [
@@ -387,7 +395,11 @@ public static class SecurityAssetTermsSchema
                 Opt("callableDate", SecurityAssetTermFieldType.Date),
                 Opt("dayCount", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.DayCount),
                 // Asset-class terms version 2, readable before writable (ADR-024).
-                Opt("scheduleConventions", SecurityAssetTermFieldType.Object).Since(2)
+                Opt("scheduleConventions", SecurityAssetTermFieldType.Object).Since(2),
+                // Declared call and put schedules (asset-class terms version 3, readable before
+                // writable: ADR-024). Entry shapes: CallScheduleEntryFields, PutScheduleEntryFields.
+                Opt("callSchedule", SecurityAssetTermFieldType.Array).Since(3),
+                Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(3)
             ],
             ["CommercialPaper"] =
             [
@@ -495,7 +507,11 @@ public static class SecurityAssetTermsSchema
                 Opt("reinvestmentPeriodEnd", SecurityAssetTermFieldType.Date).Since(2),
                 Opt("nonCallPeriodEnd", SecurityAssetTermFieldType.Date).Since(2),
                 // Asset-class terms version 3, readable before writable (ADR-024).
-                Opt("scheduleConventions", SecurityAssetTermFieldType.Object).Since(3)
+                Opt("scheduleConventions", SecurityAssetTermFieldType.Object).Since(3),
+                // Declared call and put schedules (asset-class terms version 4, readable before
+                // writable: ADR-024). Entry shapes: CallScheduleEntryFields, PutScheduleEntryFields.
+                Opt("callSchedule", SecurityAssetTermFieldType.Array).Since(4),
+                Opt("putSchedule", SecurityAssetTermFieldType.Array).Since(4)
             ],
             ["PrivateFundInterest"] =
             [
@@ -676,6 +692,51 @@ public static class SecurityAssetTermsSchema
         OptOneOf("couponCashBasis", "Level", "DayCount").WithVerbatimUndeclaredValue()
     ];
 
+    // Notice terms shared by call and put entries (ADR-025 Applications, increment 4b): how many days
+    // before the exercise date notice (or a holder's put election) is due, at the latest and the
+    // earliest, and whether the counts are business or calendar days.
+    private static readonly IReadOnlyList<SecurityAssetTermField> NoticeFields =
+    [
+        Opt("minimumNoticeDays", SecurityAssetTermFieldType.Integer),
+        Opt("maximumNoticeDays", SecurityAssetTermFieldType.Integer),
+        OptOneOf("noticeDayType", "Business", "Calendar").WithVerbatimUndeclaredValue()
+    ];
+
+    // One entry of a declared call schedule (asset-class terms version 3 on Bond and
+    // CertificateOfDeposit, 4 on StructuredCredit; readable before writable, ADR-024). Meanings are
+    // frozen in ADR-025 Applications. The date is required in meaning but optional here, because a
+    // versioned container's members are untagged and optional: the reader drops an undated entry and
+    // the contract step refuses it on write. The shape is frozen once readable
+    // (terms-element-shapes/versioned-containers.json): a member added later needs a new container key
+    // at a new readable version, so a later class-wide term belongs at the top level instead. Both
+    // entry lists are declared above ElementFieldsByPath, which reads them while the type initializes.
+    private static readonly IReadOnlyList<SecurityAssetTermField> CallScheduleEntryFields =
+    [
+        Opt("callDate", SecurityAssetTermFieldType.Date),
+        Opt("callEndDate", SecurityAssetTermFieldType.Date),
+        OptOneOf("exerciseStyle", "European", "American", "Bermudan").WithVerbatimUndeclaredValue(),
+        Opt("exerciseFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.CouponFrequency),
+        Opt("callPrice", SecurityAssetTermFieldType.Decimal),
+        OptOneOf("priceBasis", "PercentOfPar", "PercentOfAccretedValue").WithVerbatimUndeclaredValue(),
+        OptOneOf("priceType", "Fixed", "MakeWhole").WithVerbatimUndeclaredValue(),
+        Opt("makeWholeSpreadBps", SecurityAssetTermFieldType.Decimal),
+        OptOneOf("partialRedemption", "WholeOnly", "ProRata", "ByLot").WithVerbatimUndeclaredValue(),
+        .. NoticeFields
+    ];
+
+    // One entry of a declared put schedule: a holder-elective put (a mandatory tender stays
+    // mandatoryPutDate). The same version and freezing rules as the call entry.
+    private static readonly IReadOnlyList<SecurityAssetTermField> PutScheduleEntryFields =
+    [
+        Opt("putDate", SecurityAssetTermFieldType.Date),
+        Opt("putEndDate", SecurityAssetTermFieldType.Date),
+        OptOneOf("exerciseStyle", "European", "American", "Bermudan").WithVerbatimUndeclaredValue(),
+        Opt("exerciseFrequency", SecurityAssetTermFieldType.String).WithConvention(SecurityTermConventionKind.CouponFrequency),
+        Opt("putPrice", SecurityAssetTermFieldType.Decimal),
+        OptOneOf("priceBasis", "PercentOfPar", "PercentOfAccretedValue").WithVerbatimUndeclaredValue(),
+        .. NoticeFields
+    ];
+
     private static readonly IReadOnlyDictionary<string, IReadOnlyList<SecurityAssetTermField>> ElementFieldsByPath =
         new Dictionary<string, IReadOnlyList<SecurityAssetTermField>>(StringComparer.OrdinalIgnoreCase)
         {
@@ -705,6 +766,12 @@ public static class SecurityAssetTermsSchema
             ["Bond.scheduleConventions"] = ScheduleConventionFields,
             ["CertificateOfDeposit.scheduleConventions"] = ScheduleConventionFields,
             ["StructuredCredit.scheduleConventions"] = ScheduleConventionFields,
+            ["Bond.callSchedule"] = CallScheduleEntryFields,
+            ["Bond.putSchedule"] = PutScheduleEntryFields,
+            ["CertificateOfDeposit.callSchedule"] = CallScheduleEntryFields,
+            ["CertificateOfDeposit.putSchedule"] = PutScheduleEntryFields,
+            ["StructuredCredit.callSchedule"] = CallScheduleEntryFields,
+            ["StructuredCredit.putSchedule"] = PutScheduleEntryFields,
             // The conversion terms a convertible or convertible-preferred equity carries (the F#
             // ConvertibleTerms record): the security it converts into, and at what ratio.
             ["Equity.convertibleTerms"] =
@@ -807,7 +874,7 @@ public static class SecurityAssetTermsSchema
         string assetClass,
         JsonElement payload,
         int termsVersion)
-        => VersionedTermsAbove(assetClass, payload, termsVersion)
+        => VersionedTermsAbove(assetClass, payload, termsVersion, int.MaxValue)
             .Where(static term => IsPopulatedTermValue(term.Value))
             .Select(static term => (term.Path, term.Field))
             .ToArray();
@@ -824,10 +891,24 @@ public static class SecurityAssetTermsSchema
         JsonElement payload,
         int termsVersion,
         out IReadOnlyList<string> conflictingPaths)
+        => NormalizedTermsAbove(assetClass, payload, termsVersion, int.MaxValue, out conflictingPaths);
+
+    /// <summary>
+    /// <see cref="NormalizedTermsAbove(string, JsonElement, int, out IReadOnlyList{string})"/> bounded
+    /// above: only the terms introduced after <paramref name="termsVersion"/> and at or before
+    /// <paramref name="throughVersion"/>. The round-trip guard bounds it by a row's own stamp, because a
+    /// term above the stamp is an undeclared key of that row, which no reader decodes.
+    /// </summary>
+    public static JsonObject NormalizedTermsAbove(
+        string assetClass,
+        JsonElement payload,
+        int termsVersion,
+        int throughVersion,
+        out IReadOnlyList<string> conflictingPaths)
     {
         var normalized = new JsonObject();
         var conflicts = new List<string>();
-        foreach (var term in VersionedTermsAbove(assetClass, payload, termsVersion))
+        foreach (var term in VersionedTermsAbove(assetClass, payload, termsVersion, throughVersion))
         {
             if (NormalizeTermValue(JsonNode.Parse(term.Value.GetRawText())) is not { } value)
             {
@@ -850,7 +931,8 @@ public static class SecurityAssetTermsSchema
     private static IEnumerable<(string Path, string CanonicalPath, SecurityAssetTermField Field, JsonElement Value)> VersionedTermsAbove(
         string assetClass,
         JsonElement payload,
-        int termsVersion)
+        int termsVersion,
+        int throughVersion)
     {
         if (payload.ValueKind != JsonValueKind.Object || SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, payload))
         {
@@ -859,6 +941,11 @@ public static class SecurityAssetTermsSchema
 
         foreach (var field in Fields(assetClass))
         {
+            if (field.SinceTermsVersion > throughVersion)
+            {
+                continue;
+            }
+
             foreach (var property in MatchingProperties(payload, field))
             {
                 if (field.SinceTermsVersion > termsVersion)
@@ -868,7 +955,7 @@ public static class SecurityAssetTermsSchema
                 }
 
                 var inner = ElementFields(assetClass, field.Key)
-                    .Where(innerField => innerField.SinceTermsVersion > termsVersion)
+                    .Where(innerField => innerField.SinceTermsVersion > termsVersion && innerField.SinceTermsVersion <= throughVersion)
                     .ToArray();
                 if (inner.Length == 0)
                 {

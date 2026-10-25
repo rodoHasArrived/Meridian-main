@@ -117,7 +117,8 @@ public sealed class SecurityAssetClassTermsUpgradeWiringTests
             v2Terms.WeightedAverageLoanAgeMonths,
             v2Terms.ReinvestmentPeriodEnd,
             v2Terms.NonCallPeriodEnd,
-            conventions));
+            conventions,
+            CallPutSchedulesModule.Empty));
         v2Terms.ScheduleConventions.Should().Be(ScheduleConventionsModule.Empty);
 
         SecurityMasterMapping.ToRecord(Record(WithScheduleConventions(V3Text))).Kind.Should().Be(expected);

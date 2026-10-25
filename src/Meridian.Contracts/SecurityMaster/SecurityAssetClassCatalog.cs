@@ -113,15 +113,19 @@ public static class SecurityAssetClassCatalog
             // type name rather than as the canonical asset class.
             Aliases: ["CorporateBond", "MunicipalBond"],
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
-            // Version 2 adds the optional scheduleConventions block. This node reads it and writes
-            // version 1 until the contract step raises TermsVersion (ADR-024, readable before writable).
+            // Version 2 adds the optional scheduleConventions block and version 3 the optional
+            // callSchedule and putSchedule arrays. This node reads both and writes version 1 until the
+            // contract step raises TermsVersion (ADR-024, readable before writable).
             TermsUpgrades:
             [
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 1,
-                    rationale: "Version 2 adds the optional scheduleConventions block and changes no version-1 term, so a version-1 payload reads it as unset (ADR-024, 2026-10-25).")
+                    rationale: "Version 2 adds the optional scheduleConventions block and changes no version-1 term, so a version-1 payload reads it as unset (ADR-024, 2026-10-25)."),
+                SecurityAssetClassTermsUpgrade.Identity(
+                    fromVersion: 2,
+                    rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25).")
             ],
-            ReadableTermsVersion: 2),
+            ReadableTermsVersion: 3),
         new(
             AssetClass: "FxSpot",
             AssetPackIds: ["derivatives-fx"],
@@ -189,14 +193,18 @@ public static class SecurityAssetClassCatalog
             AmortizesTowardPar: true,
             RequiresMaturity: true,
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
-            // Version 2 adds the optional scheduleConventions block; read ahead of write (ADR-024).
+            // Version 2 adds the optional scheduleConventions block and version 3 the optional
+            // callSchedule and putSchedule arrays; both are read ahead of write (ADR-024).
             TermsUpgrades:
             [
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 1,
-                    rationale: "Version 2 adds the optional scheduleConventions block and changes no version-1 term, so a version-1 payload reads it as unset (ADR-024, 2026-10-25).")
+                    rationale: "Version 2 adds the optional scheduleConventions block and changes no version-1 term, so a version-1 payload reads it as unset (ADR-024, 2026-10-25)."),
+                SecurityAssetClassTermsUpgrade.Identity(
+                    fromVersion: 2,
+                    rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25).")
             ],
-            ReadableTermsVersion: 2),
+            ReadableTermsVersion: 3),
         new(
             AssetClass: "CommercialPaper",
             AssetPackIds: ["fixed-income"],
@@ -371,8 +379,9 @@ public static class SecurityAssetClassCatalog
             // detachment points, WAC/WAM/WALA, CLO period dates); every addition is optional, so a
             // version-1 payload reads unchanged and needs no field transformation (ADR-024). The
             // identity step below records it, and SecurityAssetClassTermsHistoryTests checks it
-            // against the committed manifests. Version 3 adds the optional scheduleConventions block,
-            // which this node reads and does not yet write (ADR-024, readable before writable).
+            // against the committed manifests. Version 3 adds the optional scheduleConventions block and
+            // version 4 the optional callSchedule and putSchedule arrays, which this node reads and does
+            // not yet write (ADR-024, readable before writable).
             TermsVersion: 2,
             TermsUpgrades:
             [
@@ -381,9 +390,12 @@ public static class SecurityAssetClassCatalog
                     rationale: "Version 2 added nine optional typed tranche terms and changed no version-1 term, so a version-1 payload reads them as unset (ADR-024, 2026-10-18)."),
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 2,
-                    rationale: "Version 3 adds the optional scheduleConventions block and changes no version-2 term, so a version-2 payload reads it as unset (ADR-024, 2026-10-25).")
+                    rationale: "Version 3 adds the optional scheduleConventions block and changes no version-2 term, so a version-2 payload reads it as unset (ADR-024, 2026-10-25)."),
+                SecurityAssetClassTermsUpgrade.Identity(
+                    fromVersion: 3,
+                    rationale: "Version 4 adds the optional callSchedule and putSchedule arrays and changes no version-3 term, so a version-3 payload reads them as unset (ADR-024, 2026-10-25).")
             ],
-            ReadableTermsVersion: 3,
+            ReadableTermsVersion: 4,
             SupportsProfileBackedTerms: true,
             Aliases: ["MortgageBacked", "MortgageBackedSecurity", "MBS", "AssetBacked", "AssetBackedSecurity", "ABS"],
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity),

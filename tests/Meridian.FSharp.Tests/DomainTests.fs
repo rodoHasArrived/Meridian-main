@@ -212,6 +212,7 @@ let ``BondTerms callable bond preserves callDate`` () =
         MandatoryPutDate = None
         PrincipalSchedule = []
         ScheduleConventions = ScheduleConventions.empty
+        CallPutSchedules = CallPutSchedules.empty
     }
     terms.IsCallable |> should equal true
     terms.CallDate |> should equal (Some callDate)
@@ -784,6 +785,7 @@ let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` ()
         MandatoryPutDate = None
         PrincipalSchedule = []
         ScheduleConventions = ScheduleConventions.empty
+        CallPutSchedules = CallPutSchedules.empty
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.Bond bondTerms }
@@ -825,6 +827,7 @@ let private stepBondTerms = {
     MandatoryPutDate = None
     PrincipalSchedule = []
     ScheduleConventions = ScheduleConventions.empty
+    CallPutSchedules = CallPutSchedules.empty
 }
 
 [<Fact>]
@@ -932,6 +935,7 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
         ReinvestmentPeriodEnd = Some (DateOnly(2028, 6, 15))
         NonCallPeriodEnd = Some (DateOnly(2027, 6, 15))
         ScheduleConventions = ScheduleConventions.empty
+        CallPutSchedules = CallPutSchedules.empty
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -1004,6 +1008,7 @@ let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Ma
         ReinvestmentPeriodEnd = None
         NonCallPeriodEnd = None
         ScheduleConventions = ScheduleConventions.empty
+        CallPutSchedules = CallPutSchedules.empty
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -1688,6 +1693,7 @@ let ``Structured credit factors above one are rejected`` () =
         ReinvestmentPeriodEnd = None
         NonCallPeriodEnd = None
         ScheduleConventions = ScheduleConventions.empty
+        CallPutSchedules = CallPutSchedules.empty
     }
 
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with CurrentFactor = Some 1.5m })
@@ -1887,7 +1893,8 @@ let ``Legacy upgrade reads IO and PO strips from the tranche label as whole toke
                 Maturity = None; Kind = None; Seniority = None; AttachmentPoint = None; DetachmentPoint = None
                 WeightedAverageCoupon = None; WeightedAverageMaturityMonths = None; WeightedAverageLoanAgeMonths = None
                 ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None
-                ScheduleConventions = ScheduleConventions.empty })
+                ScheduleConventions = ScheduleConventions.empty
+                CallPutSchedules = CallPutSchedules.empty })
         definition.Terms.StructuredProduct |> Option.defaultWith (fun () -> failwith "Expected StructuredProduct term module")
 
     // "Senior" contains the letters "io"; it is not an interest-only strip.
@@ -1921,6 +1928,7 @@ let private securitizedBond subclass coupon par =
         MandatoryPutDate = None
         PrincipalSchedule = []
         ScheduleConventions = ScheduleConventions.empty
+        CallPutSchedules = CallPutSchedules.empty
     }
 
 let private blockerCodes (proposal: SecurityMasterLegacyUpgrade.StructuredCreditReclassificationProposal) =
@@ -2084,6 +2092,7 @@ let private scheduleDeposit conventions =
         CallableDate = None
         DayCount = Some "ACT/360"
         ScheduleConventions = conventions
+        CallPutSchedules = CallPutSchedules.empty
     } : CertificateOfDepositTerms)
 
 let private scheduleStructuredCredit conventions =
@@ -2095,6 +2104,7 @@ let private scheduleStructuredCredit conventions =
         WeightedAverageMaturityMonths = None; WeightedAverageLoanAgeMonths = None
         ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None
         ScheduleConventions = conventions
+        CallPutSchedules = CallPutSchedules.empty
     } : StructuredCreditTerms)
 
 let private scheduleSwap legs =
