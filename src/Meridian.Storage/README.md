@@ -91,7 +91,17 @@ projection batch rebuilds append in the same transaction as the change, and an o
 cannot approve values they staged. Migration `051_security_governance_events_underlying_graph_stream.sql`
 adds the `UnderlyingGraph` stream: `PostgresSecurityUnderlyingGraphStore` records each declaration,
 amendment (with the replaced state) and removal of a declared underlying link, naming the actor,
-in the same transaction as the change to `security_underlying_links`. The event store and projection store join
+in the same transaction as the change to `security_underlying_links`. Migration `052_security_curves.sql`
+adds stored market curves: `security_curves` (write-once identity, key unique ignoring case) and
+`security_curve_versions` (append-only versions with economic `as_of`, knowledge `recorded_at`,
+actor, jsonb points and a content hash; update, delete and truncate are refused by trigger).
+Migration `053_security_governance_events_curves_stream.sql` adds the `Curves` stream, and
+`PostgresSecurityCurveStore` appends `CurveDefined` and `CurveVersionPublished` (with a null
+`security_id` and the curve id in the payload) in the same transaction as each write; identical
+content for the same curve and as-of returns the retained version and writes nothing, and the latest
+version as of a date is read with the pricing lane's `as_of`/`recorded_at` predicate.
+`ISecurityGovernanceEventReader.GetForStreamAsync` reads one stream by global sequence for subjects
+that are not securities. The event store and projection store join
 `PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap,
 Commodity and Bond projections are now declarative registry plans rather than hand-written writers;
 Bond's `bond_projection` parent and its `bond_lifecycle_projection`,

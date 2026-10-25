@@ -1041,10 +1041,23 @@ lots with multiplier 100. Writes reject non-canonical values for typed term conv
 (day count, settlement method, option right).
 
 `SecurityMasterCashFlowService` projects floating legs from an `ISecurityForwardCurveProvider` when
-one is registered (the default is the in-process `InMemorySecurityForwardCurveProvider`): each
-future reset reads the index curve at its accrual start, the period already reset keeps the
-retained fixing, and each leg schedule records its `RateSource`. Without a curve, legs stay flat
-forward. `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
+one is registered: each future reset reads the index curve at its accrual start, the period already
+reset keeps the retained fixing, and each leg schedule records its `RateSource`. Without a curve,
+legs stay flat forward. The registered provider is `SecurityMaster/Curves/StoredSecurityForwardCurveProvider`,
+which reads the one stored Forward definition for the index (trimmed, ignoring case) at its latest
+version dated on or before the projection date and carries the curve key, version and hash prefix
+into `RateSource`; several definitions for one index are logged and leave the leg flat forward.
+`GetProjectionAsOfAsync` projects as of a requested date and reads curves as of that date;
+`GetProjectionAsync` is that method at `UtcNow`, so existing callers are unchanged.
+`SecurityMaster/Valuation/` holds the valuation seam: `SecurityValuationService` loads the security
+and dispatches to the registered `ISecurityValuationModel` whose kind the request names or the
+catalog's `DefaultValuationModel` declares; `QuotedPriceValuationModel` composes the golden-copy
+as-of read (retaining a selection receipt, as that read does) and reports its staleness verdict as a
+diagnostic; `DiscountedCashFlowValuationModel` discounts the base-scenario projection as of the
+valuation date on a stored Discount curve (pinned on the request or the one definition in the
+security's currency), refuses to extrapolate past the curve, and names the curve version, hash,
+forward provenance and terms version in its inputs. Market values use the F# `SecurityCalculations`
+functions. `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
 block (preferred terms, call schedules, swap legs) through the normal amend path and records
 `TermBlockAmended`.
 
