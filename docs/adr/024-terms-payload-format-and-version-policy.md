@@ -28,8 +28,10 @@ stored family was not queryable, and nothing recorded the policy that lets the s
 ## Decision
 
 1. **Every writer stamps the family.** A flat payload carries `schemaVersion`, `termsFormat =
-   "flat"` and `assetClassTermsVersion` (the asset class's `SecurityAssetClassDescriptor.TermsVersion`),
-   written through `SecurityTermsEnvelope.StampFlat` or by emitting the same three keys. The economic
+   "flat"` and `assetClassTermsVersion`, written through `SecurityTermsEnvelope.StampFlat` or by
+   emitting the same three keys. The stamp is the writer's effective version: the asset class's
+   `SecurityAssetClassDescriptor.TermsVersion`, raised to a readable version above it only when the
+   record holds a term that only that version declares (decision 3). The economic
    definition adapter stamps `termsFormat = "economic"`; the custom-asset profile document is the
    profile family and is emitted verbatim. No code path persists an untagged payload.
 2. **The stored family is a column.** Migration `042_security_master_terms_format_column.sql` adds
@@ -38,9 +40,35 @@ stored family was not queryable, and nothing recorded the policy that lets the s
    version-2 document carrying an economic module key → `economic`; otherwise `flat`). The projection
    store writes the column from `ResolveFormat` on every upsert and refuses an unknown declared format
    with a precise reason. The stored payload is never rewritten by the store or the migration.
-3. **Per-class evolution does not touch the codec number.** New flat-term fields bump the class's
-   `TermsVersion` and ship an upcaster; `schemaVersion` stays the codec version of the family and the
-   reserved value `2` is never declared as a flat version.
+3. **Per-class evolution does not touch the codec number, and runs expand-then-contract.**
+   `schemaVersion` stays the codec version of the family and the reserved value `2` is never declared
+   as a flat version. A class's terms evolve in two deployable steps:
+   - **Expand.** The new term is tagged `.Since(n)` and the class raises
+     `SecurityAssetClassDescriptor.ReadableTermsVersion` to `n`, above its write version
+     (`TermsVersion`). Versions above the write version are reached only through identity upgrade
+     steps. Every node then reads version `n`: the read guard accepts stamps up to
+     `ReadsTermsThrough`, and decoding a versioned term is gated on the payload's own stamp.
+   - **Write mode refuses what it cannot write.** Every create, amend, import, term-block amend and
+     approved field-edit merge refuses a payload stamped above the write version, or one that
+     populates a term above it, with a precise reason. Absent, `null`, `[]` and objects whose members
+     are all unset mean unset and are accepted.
+   - **Contract.** A later change raises `TermsVersion` to `n` once every node in the fleet reads
+     `n`. Committed readable versions are append-only: a version is never edited after it ships, so
+     a further addition takes the next readable version.
+   - **Versioned class terms are flat-codec-only.** A profile envelope of a profile-capable class
+     (`customProfileId` or a `profileFields` object) is never walked, decoded or validated for
+     versioned class terms; only its stamp is checked. Its fields belong to the approved profile.
+     The contract step keeps this rule.
+   - **The written form is frozen when the term is declared.** For the `scheduleConventions` block,
+     the key is present whenever the writer's effective version is at or above its `Since`: `null`
+     when nothing is declared, otherwise all twelve members in alphabetical order, with `null` or
+     `[]` for an unset member. Swap legs follow the same rule, with the key on every leg. Inner JSON
+     kinds are frozen too: conventions are strings, dates are ISO `yyyy-MM-dd` strings,
+     `paymentLagBusinessDays` is an `Int32` and `paymentCalendars` is an array of strings. An inner
+     member cannot be added without a new readable version.
+   - **Round trip.** A node refuses to re-serialize a row stamped above its write version when it
+     cannot reproduce that row's versioned content (a deactivation or a patch-less amend), rather than
+     drop what it cannot decode.
 4. **Validation surfaces the backlog.** `SecurityValidationService` reports
    `SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING` (warning, names the inferred family) for an untagged
    payload and `SM_ASSET_SPECIFIC_TERMS_FORMAT_UNKNOWN` (error) for a tag this node does not know.
@@ -54,7 +82,10 @@ stored family was not queryable, and nothing recorded the policy that lets the s
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
-| Envelope | `src/Meridian.Contracts/SecurityMaster/SecurityTermsEnvelope.cs` | Keys, `StampFlat`, `ResolveFormat`, read guard |
+| Envelope | `src/Meridian.Contracts/SecurityMaster/SecurityTermsEnvelope.cs` | Keys, `StampFlat`, `ResolveFormat`, read guard, write guard (`TryGetWriteRefusal`) |
+| Catalog | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | Per-class write version (`TermsVersion`) and readable version (`ReadableTermsVersion`, `ReadsTermsThrough`) |
+| Term schema | `src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs` | `.Since(n)` tags, `WritableFields`, `PopulatedTermsAbove`, `NormalizedTermsAbove` |
+| Round-trip guard | `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` | Refuses to re-serialize an ahead-of-write row it cannot reproduce |
 | Versions | `src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs` | Codec versions and the reserved value |
 | Upcaster chain | `src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs` | Tag-first dispatch; shape rule for untagged payloads |
 | Migration | `src/Meridian.Storage/SecurityMaster/Migrations/042_security_master_terms_format_column.sql` | `terms_format` column, backfill, check constraint |
@@ -66,7 +97,8 @@ stored family was not queryable, and nothing recorded the policy that lets the s
 | Version manifests | `tests/fixtures/security-master/terms-versions` | Committed per-class key sets for every terms version |
 | Tests | `tests/Meridian.Tests/SecurityMaster/SecurityTermsVersioningTests.cs`, `tests/Meridian.Tests/SecurityMaster/SecurityValidationServiceTests.cs`, `tests/Meridian.Tests/SecurityMaster/SecurityMasterPostgresRoundTripTests.cs`, `tests/Meridian.Tests/SecurityMaster/SecurityAssetClassTermsHistoryTests.cs`, `tests/Meridian.Tests/SecurityMaster/SecurityAssetClassTermsUpgraderTests.cs` | Stamping, SQL/code parity, column round trip, version history, upgrade hook |
 
-Items 1–4 are implemented; decision 3's upcaster is `SecurityAssetClassTermsUpgrader` (2026-10-23).
+Items 1–4 are implemented; decision 3's upcaster is `SecurityAssetClassTermsUpgrader` (2026-10-23),
+and its expand step is implemented for the `scheduleConventions` block (2026-10-25).
 Item 5 (retiring the shape rule and the reserved value) is proposed and waits on the backfill
 evidence described above.
 
@@ -130,6 +162,19 @@ version stream, and the remaining collision only matters for untagged legacy row
 ```csharp
 // Writers: a flat payload carries the full envelope.
 SecurityTermsEnvelope.StampFlat(json, assetClass);
+// Writers holding a term above the write version stamp the version it needs, within ReadsTermsThrough.
+SecurityTermsEnvelope.StampFlat(json, assetClass, assetClassTermsVersion);
+// Write paths: refuse a payload this node reads but cannot write.
+SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms(assetClass, payload);
+SecurityTermsEnvelope.TryGetWriteRefusal(assetClass, payload, out var reason);
+// Profile envelopes carry no versioned class terms; only their stamp is checked.
+SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, payload);
+// Read ceiling, and the fields an authoring surface may offer.
+SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
+SecurityAssetTermsSchema.WritableFields(assetClass);
+// Populated terms above a version, and their normalized form for the round-trip guard.
+SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, payload, termsVersion);
+SecurityAssetTermsSchema.NormalizedTermsAbove(assetClass, payload, termsVersion, out var conflictingPaths);
 // Readers: never classify by shape when a tag is present.
 SecurityTermsEnvelope.ResolveFormat(payload);
 // Store: the column is derived from the payload, never from the post-upcast result.
@@ -148,9 +193,14 @@ SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, payload);
 - `SecurityAssetSpecificTermsUpcasterChainTests` — no accepted flat version equals
   `EconomicTermsSchema.Current`.
 - `SecurityAssetClassTermsHistoryTests` — every catalog class has a committed manifest for versions
-  1 to its `TermsVersion`, the latest manifest equals the live schema, each field's `.Since(n)` is
+  1 to its `ReadsTermsThrough`, the latest manifest equals the live schema, each field's `.Since(n)` is
   the first version that lists it, steps are contiguous, and an identity step is legal for the
-  manifest diff it spans.
+  manifest diff it spans. Four guards hold the expand step: steps at or above the write version are
+  identity steps; `ReadableTermsVersion` is null or above the write version; each readable-only
+  version introduces a top-level or element field; and every element field's `Since` is within what
+  its class reads, optional above version 1.
+- `SecurityTermsWriteGoldenTests` — the written terms, economic terms, registry DTOs, term blocks and
+  validation reports equal their pre-expand bytes.
 - `SecurityAssetClassTermsUpgraderTests` and `SecurityAssetClassTermsUpgradeWiringTests` — an
   identity step returns the stored element itself, a transform step returns a new payload stamped at
   the current version, everything outside the flat codec passes through, and a version-1
@@ -171,7 +221,7 @@ This command verifies referenced files and directories exist; it does not valida
 
 ---
 
-*Last Updated: 2026-10-23*
+*Last Updated: 2026-10-25*
 
 ## Applications
 
@@ -235,3 +285,32 @@ This command verifies referenced files and directories exist; it does not valida
     already excludes the payloads the mapping treats as profile-backed (`customProfileId`) or reads
     through `profileFields`, so a transform never rewrites an outer object whose terms the reader
     takes from elsewhere.
+- **Readable before writable (priority 5, increment 4a) (2026-10-25).** Decision 3's expand step,
+  applied to the `scheduleConventions` block that later schedule generation reads.
+  - **Versions.** Bond, CertificateOfDeposit and Swap write terms version 1 and read through 2;
+    StructuredCredit writes 2 and reads through 3. Each new readable version adds only the optional
+    `scheduleConventions` object (on Swap, on each leg), reached by an identity step. The committed
+    manifests record the new versions; Swap's version 2 manifest equals version 1 because manifests
+    list top-level keys only, and the element-field guard covers the leg.
+  - **No node writes the block yet.** The schema, registry, term blocks and field-edit validator
+    offer writable fields only. A create, amend, import, term-block amend, field edit or workbench
+    submission that populates the block, or carries a stamp above the write version, is refused with
+    a reason naming the class, the term and both versions. Written payloads, economic terms, registry
+    DTOs, term-block keys and validation reports are byte-identical to the base commit
+    (`SecurityTermsWriteGoldenTests`).
+  - **Reading.** A row stamped 2 (3 for StructuredCredit) decodes its block into the F# record. A
+    declared block also fills the economic `Accrual` module for Bond, CertificateOfDeposit and
+    StructuredCredit under the frozen rules in
+    [ADR-025](025-contractual-schedule-kernel.md#applications). A row whose block is empty re-emits at
+    the write version on its next re-serialization: the data is equal, and a contract node shows only
+    the informational BEHIND notice.
+  - **Deploy.** Roll every node forward to this build (and to the next readable step's build) before
+    any contract step raises a write version.
+  - **Rollback floor.** Once a contract node has written a version-2 or version-3 stamp, no node may
+    roll back below this build, because older nodes refuse those rows.
+  - **During the contract rollout.** Full-payload amends of rows stamped above the write version are
+    refused on expand-only nodes: the WPF edit screen, `SecurityTermBlocks.BuildPatch` and the
+    approved field-edit merge. Deactivations and patch-less amends still work. Route edit traffic to
+    contract nodes.
+  - **Before deploying.** Drain staged workbench `legs` revisions that carry a populated block; they
+    now fail at merge with the not-yet-writable reason.

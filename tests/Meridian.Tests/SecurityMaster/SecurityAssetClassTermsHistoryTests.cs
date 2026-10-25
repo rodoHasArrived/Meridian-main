@@ -16,9 +16,10 @@ namespace Meridian.Tests.SecurityMaster;
 /// (<see cref="SecurityAssetClassDescriptor.ReadsTermsThrough"/>), the top-level flat keys with their
 /// <see cref="SecurityAssetTermFieldType"/> and whether they are required. The committed manifests are
 /// the authoritative history: versions are append-only and the live schema is compared only against
-/// the latest one. A version above the write version is reached only through identity steps. Each field's <see cref="SecurityAssetTermField.SinceTermsVersion"/> must be the
-/// first version that lists it, each declared upgrade step must be legal for the manifest diff it
-/// spans, and the steps must be contiguous.</para>
+/// the latest one. A version above the write version is reached only through identity steps. Each
+/// field's <see cref="SecurityAssetTermField.SinceTermsVersion"/> must be the first version that lists
+/// it, each declared upgrade step must be legal for the manifest diff it spans, and the steps must be
+/// contiguous.</para>
 /// <para>A missing manifest, or one without the class's newest version, writes
 /// <c>&lt;AssetClass&gt;.received.json</c> beside the test binaries and fails. The received file holds
 /// the committed versions unchanged, followed by each missing version derived from the live schema
