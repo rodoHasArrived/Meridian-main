@@ -371,7 +371,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
             annualRate = 0m;
         }
 
-        var periodMonths = Math.Max(1, 12 / ResolvePaymentFrequencyPerYear(terms.PaymentFrequency));
+        var periodMonths = Math.Max(1, 12 / SecurityTermConventions.LegacyCouponPaymentsPerYear(terms.PaymentFrequency));
         var periods = BuildPaymentPeriods(issueDate, maturity, periodMonths)
             .Where(period => period.PaymentDate >= asOfDate)
             .ToArray();
@@ -608,7 +608,7 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         }
 
         var dayCount = leg.DayCountConvention ?? terms.DayCountConvention;
-        var periodMonths = Math.Max(1, 12 / ResolvePaymentFrequencyPerYear(leg.PaymentFrequency ?? terms.PaymentFrequency));
+        var periodMonths = Math.Max(1, 12 / SecurityTermConventions.LegacyCouponPaymentsPerYear(leg.PaymentFrequency ?? terms.PaymentFrequency));
         var periods = BuildPaymentPeriods(issueDate, maturity, periodMonths)
             .Where(period => period.PaymentDate >= asOfDate)
             .ToArray();
@@ -741,42 +741,6 @@ public sealed class SecurityMasterCashFlowService : ISecurityMasterCashFlowServi
         _ = tenor.Advance(issueDate, schedule.Periods.Count);
 
         return schedule.Periods.Select(static period => (period.AccrualStart, period.PaymentDate));
-    }
-
-    private static int ResolvePaymentFrequencyPerYear(string? paymentFrequency)
-    {
-        if (string.IsNullOrWhiteSpace(paymentFrequency))
-        {
-            return 1;
-        }
-
-        // The write path admits only the cadences the shared convention recognizes; read them the
-        // same way (this adds BiMonthly and tenor spellings such as "3M"). Anything else keeps the
-        // legacy interpretation below so stored values read exactly as before.
-        if (SecurityTermConventions.CouponPaymentsPerYear(paymentFrequency) is { } paymentsPerYear)
-        {
-            return paymentsPerYear;
-        }
-
-        var normalized = paymentFrequency
-            .Replace("-", string.Empty, StringComparison.Ordinal)
-            .Replace("_", string.Empty, StringComparison.Ordinal)
-            .Replace(" ", string.Empty, StringComparison.Ordinal)
-            .Trim()
-            .ToUpperInvariant();
-        if (int.TryParse(normalized, out var parsed) && parsed > 0)
-        {
-            return Math.Clamp(parsed, 1, 12);
-        }
-
-        return normalized switch
-        {
-            "MONTHLY" => 12,
-            "QUARTERLY" => 4,
-            "SEMIANNUAL" or "SEMIANNUALLY" or "SEMIYEARLY" or "HALFYEARLY" => 2,
-            "ANNUAL" or "ANNUALLY" or "YEARLY" => 1,
-            _ => 1
-        };
     }
 
     private static decimal NormalizeAnnualRate(decimal coupon)

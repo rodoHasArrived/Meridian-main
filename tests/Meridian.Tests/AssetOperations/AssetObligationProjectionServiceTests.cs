@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FSharp.SecurityMasterInterop;
 using Meridian.Instruments.AssetOperations;
@@ -10,6 +12,14 @@ namespace Meridian.Tests.AssetOperations;
 [Trait("Category", "Unit")]
 public sealed class AssetObligationProjectionServiceTests
 {
+    // The due dates the obligation timeline's step functions give its events, through the public
+    // BuildProjectedObligationEvents seam at fixed projection as-of dates: the next month start, the
+    // next calendar-quarter start, one payment-frequency step clamped to the target month, and the
+    // NAV statement cadence compounded quarterly from the retained NAV date. The end-of-range rows
+    // pin where the steps throw (SCH-DEF-011).
+    private static readonly Guid StepSecurityId = Guid.Parse("8b0c5d2e-41f7-4a3b-9e6d-2f1a7c9b4e05");
+    private static readonly DateOnly StepAsOf = new(2026, 5, 31);
+
     [Fact]
     public void ProjectFromSecurityMaster_StructuredCredit_AppliesScheduledFactorToPrincipal()
     {
@@ -438,6 +448,165 @@ public sealed class AssetObligationProjectionServiceTests
         legacy.TermsObligationsTimeline.Events.Should().NotContain(evt => evt.EventKind == "ValuationReview",
             "a fund interest is not routed through the structured-or-custom branch");
     }
+
+    [Fact]
+    public void BuildProjectedObligationEvents_FixedIncome_MonthlyCheckpointsFallOnTheNextMonthStart()
+        => ProjectSteps("Bond", new { currentFactor = 0.98m, callDate = "2027-01-15" }, StepAsOf).Should().Equal(
+            ("CorporateActionCheckpoint", Day(2026, 6, 1)),
+            ("FactorUpdate", Day(2026, 6, 1)),
+            ("CallPutReview", Day(2027, 1, 15)));
+
+    [Fact]
+    public void BuildProjectedObligationEvents_DirectLoan_CovenantTestOnTheNextQuarterStart_PaymentEventsOneFrequencyStepOut()
+        => ProjectSteps(
+                "DirectLoan",
+                new
+                {
+                    paymentFrequency = "Monthly",
+                    covenants = "Leverage <= 4.0x",
+                    rateType = "Floating",
+                    commitmentFeeRate = 0.005m,
+                    maturityDate = "2030-06-30",
+                },
+                StepAsOf)
+            .Should().Equal(
+                ("CommitmentFee", Day(2026, 6, 30)),
+                ("RateReset", Day(2026, 6, 30)),
+                ("CovenantTest", Day(2026, 7, 1)),
+                ("BorrowerNotice", Day(2030, 6, 20)));
+
+    [Theory]
+    [InlineData(null, "2026-08-31")]
+    [InlineData("Monthly", "2026-06-30")]
+    [InlineData("Quarterly", "2026-08-31")]
+    [InlineData("Semi-Annual", "2026-11-30")]
+    [InlineData("Annual", "2027-05-31")]
+    [InlineData("Bullet", "2027-05-31")]
+    [InlineData("12", "2026-06-30")]
+    [InlineData("5", "2026-07-31")]
+    [InlineData("weekly", "2026-08-31")]
+    public void BuildProjectedObligationEvents_DirectLoan_RateResetIsOneLegacyFrequencyStepAfterTheAsOf(string? paymentFrequency, string expected)
+        => ProjectSteps(
+                "DirectLoan",
+                new Dictionary<string, object?> { ["rateType"] = "Floating", ["paymentFrequency"] = paymentFrequency },
+                StepAsOf)
+            .Should().ContainSingle(static row => row.Kind == "RateReset")
+            .Which.Date.Should().Be(ParseDay(expected), "blank and unknown spellings read as quarterly, and a month end clamps");
+
+    [Theory]
+    [InlineData("2025-05-31", "2026-08-28")]
+    [InlineData("2026-05-31", "2026-08-31")]
+    [InlineData("2026-09-30", "2026-09-30")]
+    [InlineData(null, "2026-08-31")]
+    public void BuildProjectedObligationEvents_PrivateFund_StatementsCompoundQuarterlyFromTheNavDate(string? navDate, string expected)
+    {
+        // 2025-05-31 compounds to 08-31, 11-30, 2026-02-28, 05-28 and 08-28: the February clamp
+        // carries forward, where an anchored grid would give 2026-08-31. A NAV date after the as-of
+        // is the statement date itself; without one the cadence starts at the as-of.
+        var events = ProjectSteps(
+            "PrivateFundInterest",
+            new Dictionary<string, object?> { ["navDate"] = navDate, ["unfundedAmount"] = 750_000m },
+            StepAsOf);
+
+        events.Where(static row => row.Kind is "NavStatement" or "CapitalAccountStatement")
+            .Should().Equal(("CapitalAccountStatement", ParseDay(expected)), ("NavStatement", ParseDay(expected)));
+        events.Should().Contain(("UnfundedCommitmentReview", Day(2026, 7, 1)));
+        events.Should().Contain(("CapitalCallEvidenceSlot", Day(2026, 6, 30)));
+        events.Should().Contain(("DistributionEvidenceSlot", Day(2026, 6, 30)));
+    }
+
+    [Fact]
+    public void BuildProjectedObligationEvents_StructuredCredit_MonthlyEvidenceOnTheNextMonthStart_ValuationReviewOnTheNextQuarterStart()
+        => ProjectSteps("StructuredCredit", new { factorSchedule = "monthly-trustee" }, StepAsOf).Should().Equal(
+            ("CollateralTape", Day(2026, 6, 1)),
+            ("CorporateActionCheckpoint", Day(2026, 6, 1)),
+            ("TrusteeReport", Day(2026, 6, 1)),
+            ("FactorUpdate", Day(2026, 6, 1)),
+            ("FactorUpdate", Day(2026, 6, 1)),
+            ("ValuationReview", Day(2026, 7, 1)));
+
+    [Theory]
+    [InlineData("2024-02-29", "2024-03-01", "2024-04-01")]
+    [InlineData("2026-01-01", "2026-02-01", "2026-04-01")]
+    [InlineData("2026-03-31", "2026-04-01", "2026-04-01")]
+    [InlineData("2026-04-01", "2026-05-01", "2026-07-01")]
+    [InlineData("2026-12-31", "2027-01-01", "2027-01-01")]
+    public void BuildProjectedObligationEvents_StructuredCredit_StepsFollowTheCalendarMonthAndQuarterStarts(
+        string asOf, string nextMonthStart, string nextQuarterStart)
+    {
+        var monthStart = ParseDay(nextMonthStart);
+        var events = ProjectSteps("StructuredCredit", new { factorSchedule = "monthly-trustee" }, ParseDay(asOf));
+
+        events.Where(static row => row.Kind is "TrusteeReport" or "CollateralTape" or "FactorUpdate" or "CorporateActionCheckpoint")
+            .Should().OnlyContain(row => row.Date == monthStart).And.HaveCount(5);
+        events.Should().ContainSingle(static row => row.Kind == "ValuationReview").Which.Date.Should().Be(ParseDay(nextQuarterStart));
+    }
+
+    [Fact]
+    public void BuildProjectedObligationEvents_CustomAsset_ReviewsFallOnTheNextQuarterStart()
+        => ProjectSteps("CustomAsset", new { customProfileId = "specialized-holding" }, StepAsOf).Should().Equal(
+            ("ObligationCloseEvidence", Day(2026, 7, 1)),
+            ("CustomProfileEvidenceReview", Day(2026, 7, 1)),
+            ("ValuationReview", Day(2026, 7, 1)));
+
+    [Theory]
+    [Trait("Category", "KnownDefect")]
+    [InlineData("Bond", "{\"issuer\":\"Meridian\"}", "9999-11-30", "CorporateActionCheckpoint", "9999-12-01")]
+    [InlineData("Bond", "{\"issuer\":\"Meridian\"}", "9999-12-01", null, null)]
+    [InlineData("CustomAsset", "{\"customProfileId\":\"specialized-holding\"}", "9999-09-30", "ValuationReview", "9999-10-01")]
+    [InlineData("CustomAsset", "{\"customProfileId\":\"specialized-holding\"}", "9999-10-01", null, null)]
+    [InlineData("DirectLoan", "{\"paymentFrequency\":\"Annual\",\"rateType\":\"Floating\"}", "9998-12-31", "RateReset", "9999-12-31")]
+    [InlineData("DirectLoan", "{\"paymentFrequency\":\"Annual\",\"rateType\":\"Floating\"}", "9999-01-01", null, null)]
+    [InlineData("PrivateFundInterest", "{\"navDate\":\"9999-12-31\"}", "9999-09-30", "NavStatement", "9999-12-31")]
+    [InlineData("PrivateFundInterest", "{\"navDate\":\"9999-12-31\"}", "9999-10-01", null, null)]
+    public void BuildProjectedObligationEvents_StepPastTheLastRepresentableDate_CurrentBehavior_Throws_SCH_DEF_011(
+        string assetClass, string payloadJson, string asOf, string? eventKind, string? expected)
+    {
+        // SCH-DEF-011. TARGET: a step with no representable date after the as-of omits its event, and
+        // the timeline is built; it never throws. Each class's last as-of that still projects is
+        // pinned beside its first as-of that throws. A private fund's boundary is its quarterly
+        // review's: its statement cadence can fail only on reads the quarterly review already fails,
+        // so the reflection sweep in LegacyOracleFidelityTests isolates the statement cadence.
+        Func<(string Kind, DateOnly Date)[]> project =
+            () => ProjectSteps(assetClass, JsonSerializer.Deserialize<JsonElement>(payloadJson), ParseDay(asOf));
+
+        if (eventKind is null)
+        {
+            project.Should().ThrowExactly<ArgumentOutOfRangeException>(
+                "CURRENT defective behavior: a step after the as-of falls past 9999-12-31 and throws");
+        }
+        else
+        {
+            project().Should().Contain((eventKind, ParseDay(expected!)));
+        }
+    }
+
+    private static (string Kind, DateOnly Date)[] ProjectSteps(string assetClass, object terms, DateOnly projectionAsOf)
+        => ProjectSteps(assetClass, JsonSerializer.SerializeToElement(terms), projectionAsOf);
+
+    private static (string Kind, DateOnly Date)[] ProjectSteps(string assetClass, JsonElement payload, DateOnly projectionAsOf)
+    {
+        var subject = new AssetOperationSubjectDto(StepSecurityId, assetClass, "Obligation step pin", null, []);
+        var terms = new AssetTermsVersionDto(
+            Guid.Parse("5d7e9f10-2b3c-4d5e-8f60-718293a4b5c6"),
+            StepSecurityId,
+            1,
+            "terms:1",
+            projectionAsOf,
+            DateTimeOffset.UnixEpoch,
+            "SecurityMaster",
+            StepSecurityId.ToString("D"),
+            "Obligation step pin terms",
+            payload);
+
+        return AssetObligationProjectionService.BuildProjectedObligationEvents(subject, [terms], projectionAsOf, [])
+            .Select(static row => (Kind: row.EventKind, Date: row.EffectiveDate))
+            .ToArray();
+    }
+
+    private static DateOnly Day(int year, int month, int day) => new(year, month, day);
+
+    private static DateOnly ParseDay(string text) => DateOnly.ParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     private static SecurityDetailDto MakeSecurity(string assetClass, string displayName, object assetTerms)
         => new(

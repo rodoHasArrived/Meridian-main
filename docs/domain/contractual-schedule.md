@@ -2,7 +2,7 @@
 
 **Status:** active guidance
 **Owner:** core-team
-**Reviewed:** 2026-10-23
+**Reviewed:** 2026-10-24
 
 ## Definition
 
@@ -54,8 +54,10 @@ with diagnostics and the calendars it used. The decision record is
   date; it requires forward generation, the anchor-day roll and short stubs, and takes no explicit
   regular dates (`CompoundedModeRestricted`). Day and week tenors step by days, generate forward only and
   take only the anchor-day roll. A grid date past the last representable date (9999-12-31) is
-  treated as an overshoot, never as an error. (The Security Master's issue-anchored walk still
-  evaluates that closing date and throws, as it always has, until SCH-DEF-010 is fixed.)
+  treated as an overshoot, never as an error. (The Security Master's issue-anchored walk and the
+  asset-operations bond projection's compounded walk still evaluate that closing date and throw,
+  as they always have, until SCH-DEF-010 is fixed; the obligation-timeline and fund-structure date
+  steps likewise throw past that date, pinned as SCH-DEF-011.)
 - **Roll.** Anchor day, a fixed day of the month (clamped in short months), end of month, or IMM
   (the third Wednesday). A generation anchor that is not on its roll day is refused
   (`AnchorNotOnRollDay`).
@@ -99,7 +101,8 @@ so the accrual start equals the unadjusted start and the payment date equals the
 | Mode | Spec | Reproduces | Status |
 | --- | --- | --- | --- |
 | Issue-anchored forward | `ScheduleSpec.IssueAnchoredForward` | Security Master cash-flow projection | Routed: `SecurityMasterCashFlowService.BuildPaymentPeriods` delegates to it |
-| Compounded forward | `ScheduleSpec.CompoundedForward`, or `ScheduleGenerator.RollDates` in compounded mode | Asset-operations bond projection, obligation timeline, fund-structure projected dates, both direct-lending projections | Parity proven; call sites unchanged |
+| Compounded forward | `ScheduleSpec.CompoundedForward`, or `ScheduleGenerator.RollDates` in compounded mode, or one `ScheduleTenor.Advance` step at a time | Asset-operations bond projection, obligation timeline, fund-structure projected dates | Routed (increment 3): `AssetOperationsProjectionBuilder.BuildBondProjectedCashFlows` iterates `CompoundedForward` periods; the `AssetObligationProjectionService` steps and `InMemoryFundStructureService.RollProjectedScheduleDates` take `ScheduleTenor` steps |
+| Compounded forward | `ScheduleSpec.CompoundedForward` | Both direct-lending projections | Parity proven; call sites unchanged |
 | Backward, end-of-month roll, short initial stub | `ScheduleSpec.BackwardFromTermination` with `ScheduleRoll.ForAnchor(maturity, true)` and a 1,200-period limit | `FaceValueLot` backward coupon dates, including the quasi-coupon date | Parity proven; call site unchanged |
 | Forward, regular periods only | Forward generation with `ScheduleStubPolicy.RequireRegular` | `FaceValueLot` regular coupon dates | Parity proven; call site unchanged |
 
@@ -145,13 +148,18 @@ conventions for declared records are open decisions.
 - [Schedule spec and legacy factories](../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleSpec.cs)
 - [Period identity](../../src/Meridian.Contracts/SecurityMaster/Schedules/SchedulePeriodId.cs)
 - [Day-count engine and period-context overload](../../src/Meridian.Contracts/SecurityMaster/DayCountConventions.cs)
-- [First routed consumer](../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs)
+- Routed consumers: [Security Master cash-flow projection](../../src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs),
+  [asset-operations bond projection](../../src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs),
+  [obligation timeline](../../src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs) and
+  [fund-structure projected dates](../../src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs)
+- [Legacy coupon cadence reader](../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs)
 - [Known-defect registry](../../tests/fixtures/schedules/KNOWN-DEFECTS.md)
 - Regression scope: `ScheduleGeneratorTests`, `ScheduleAdjustmentTests`, `SchedulePeriodIdTests`,
   `DayCountConventionsPeriodContextTests`, `ScheduleDayCountTests`,
   `ScheduleKernelLegacyParityTests`, `LegacyOracleFidelityTests`, `FaceValueLotGoldenTests`,
-  `SchedulePeriodRollingRatchetTests`, the KnownDefect pins and the existing
-  `SecurityMasterCashFlowServiceTests`.
+  `SchedulePeriodRollingRatchetTests`, `SecurityTermConventionTests`, the KnownDefect pins and the
+  existing `SecurityMasterCashFlowServiceTests`, `AssetOperationsReadServiceTests`,
+  `AssetObligationProjectionServiceTests` and `Meridian.FundStructure.Tests` schedule pins.
 
 These references identify the implementation and its regression scope. The pull request carries
 actual validation results.
