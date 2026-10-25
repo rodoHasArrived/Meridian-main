@@ -234,6 +234,21 @@ SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, payload);
   identity step returns the stored element itself, a transform step returns a new payload stamped at
   the current version, everything outside the flat codec passes through, and a version-1
   StructuredCredit payload reads exactly as its version-2 twin on every wired read path.
+- `SecurityAssetTermsSchemaRoundTripTests` (readable twins) — at every readable version above the
+  write version (Bond and CertificateOfDeposit 2 and 3, StructuredCredit 3 and 4, Swap 2), a twin
+  populating every term up to that version round-trips byte-stably at its own stamp, keeps stored
+  entry order, writes each entry's members in ordinal order, and is refused by create and amend; a
+  stray block or schedule below its `Since` is not decoded; and foreign rows (partial entries,
+  all-null entries, rows that downgrade) persist pinned bytes through deactivate and patch-less amend.
+- `SecurityMasterServiceSnapshotTests` (ahead-of-write partial) — the round-trip guard's bound: a
+  decodable Bond stamped 3 persists its arrays and stamp byte for byte; a Bond stamped 2 or a
+  StructuredCredit stamped 3 carrying a stray `callSchedule` persists the golden bytes; an entry the
+  readers cannot type is refused on deactivate and patch-less amend with nothing written; and a
+  StructuredCredit profile envelope carrying call and put schedules at its root and in
+  `profileFields` is created at stamp 1 and deactivated at stamp 4 byte for byte.
+- `SecurityEconomicTermsClassAwareBridgeTests` and the F# `DomainTests` — the writer's effective
+  version and frozen entry form, and exact economic `Call` goldens for declared schedules under the
+  rule in [ADR-025](025-contractual-schedule-kernel.md#applications).
 - Verify paths in the Implementation Links table from the repository root:
 
 ```bash
@@ -366,7 +381,9 @@ This command verifies referenced files and directories exist; it does not valida
     keys silently, and field edits and term-block amends refused them as undeclared. When a payload
     populates the block and an array, the reason names `scheduleConventions`. A Bond or
     CertificateOfDeposit write stamped 3, or a StructuredCredit write stamped 4, gets the
-    readable-but-not-writable stamp reason. The read-guard, write-version and `StampFlat` texts for
+    readable-but-not-writable stamp reason. When such a write also populates a term introduced above
+    its own stamp (a Bond stamped 2 with a populated `callSchedule`), that reason names the version
+    the term needs ("…from a node that writes version 3") rather than the stamp. The read-guard, write-version and `StampFlat` texts for
     these classes now say "reads versions 1 through 3" (1 through 4 for StructuredCredit). Profile
     envelopes are still checked by stamp only. The Write-mode element-convention walk now covers only
     the array fields the node writes and skips a versioned container of a profile envelope, so an

@@ -6495,8 +6495,11 @@ describe behaviour that predates this change.
   read ceiling, so on the three classes they now say "reads versions 1 through 3" (1 through 4 for
   StructuredCredit); a Bond write stamped 2 is now refused with "it reads versions 1 through 3 and
   writes version 1". The round-trip guard's reason now ends "…that settle its versioned terms."
-  instead of "…that settle the block." Tests and any external log matcher pinned to the old texts
-  must follow.
+  instead of "…that settle the block." The readable-but-not-writable stamp reason names, as the node
+  that could apply the change, the highest version among the stamp and the terms the payload
+  populates above it: a Bond stamped 2 that populates `callSchedule` is pointed at a node that writes
+  version 3, not 2, since a node writing 2 would still refuse the arrays. Tests and any external log
+  matcher pinned to the old texts must follow.
 - **Inbound refusals are not 400s on every route.** The design said a client that populates the
   arrays gets a 400 with the reason. The term-block route does. A create or amend request throws
   from the Write-mode mapping, and `MeridianApiExceptionHandler` answers 500, with the reason in the
