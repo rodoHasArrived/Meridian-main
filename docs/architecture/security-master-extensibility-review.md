@@ -6594,4 +6594,31 @@ readable-only fields, increment 5's fallback to `commonTerms.holidayCalendarId`,
 `direction`, and whether a payload with `profileFields` but no `customProfileId` stays a profile
 envelope.
 
-<!-- i4b-validation-results -->
+**Validation.** The characterization goldens, the frozen 4a container shapes and the
+unset-spelling theory were committed on the stack base first and pass unchanged after the change.
+New suites: `SecurityMasterWorkbenchQueryServiceCallScheduleTests`, plus the version-3/4 readable
+twins and foreign rows, the bounded round-trip guard cases, and the profile-envelope create and
+deactivate pins in the existing partials. The versioning, upgrader, wiring, history, schema,
+registry, field-edit, term-block, schema-validation, validation-service, economic-bridge,
+reclassification, workbench, merge-handler and F# domain suites are extended, and the 4a tests that
+pinned the old readable versions are moved. The whole `Meridian.Tests` suite ran against a
+disposable PostgreSQL 16 with 21,746 passed, 455 skipped and 14 failed; every Security Master suite
+passed. The 14 failures are this container's: thirteen `UiServer` composition tests fail only when
+the PostgreSQL connection string is set and pass without it, and the isolated QuantScript worker
+behind one strategy-design test has exited early in every full run since increment 3. The whole
+`Meridian.FSharp.Tests` suite passed (525). Each of the seven planned mutations failed the guard it
+targets, and `VersionedContainerShapes_AreFrozenOnceReadable` was the only history guard to fail
+when a member was appended to the call entry. The format, file-size, inline SHA-256,
+duplicate-helper, test-skip and warning-suppression guards pass, schema-control `verify` reproduces
+the refreshed manifests, `validate-doc-hashes` is clean, the `verify-docs` lane passes and the
+generated-repair pre-check reports nothing to change.
+
+The tests were written in nine lanes, each critiqued by an independent reviewer, and the whole change
+then went through an adversarial review: five lenses, with two skeptics trying to refute each
+finding. That work changed the code in one place. The readable-but-not-writable stamp reason named
+the payload's own stamp as the version a node needs, which cannot work for a payload that also
+populates a term introduced above its stamp; it now names the highest of the two. The documentation
+check also corrected the F# entry docs, which had read an absent end date as a single exercise date.
+The one adversarial finding, that the entry readers parse dates with the node's culture, was refuted
+by both skeptics: the helper predates 4b, already reads 4a's dates, and no writer can store a
+non-ISO date.
