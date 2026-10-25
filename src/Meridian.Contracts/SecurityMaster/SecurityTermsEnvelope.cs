@@ -261,7 +261,9 @@ public static class SecurityTermsEnvelope
     /// version, or it populates a term introduced above that version (ADR-024, readable before
     /// writable). Absent, null, <c>[]</c> and all-null objects mean unset and are accepted. A
     /// profile-governed payload (<see cref="IsProfileGovernedPayload"/>) has no versioned class terms,
-    /// so only its stamp is checked. A class that reads exactly what it writes is never refused here.
+    /// so only its stamp is checked. A class that reads exactly what it writes is never refused here,
+    /// and neither is a payload stamped above what this node reads: that is the read guard's refusal
+    /// (<see cref="EnsureReadableAsAssetSpecificTerms"/>), which names the newer version.
     /// </summary>
     public static bool TryGetWriteRefusal(string assetClass, JsonElement payload, [NotNullWhen(true)] out string? reason)
     {
@@ -274,6 +276,11 @@ public static class SecurityTermsEnvelope
         }
 
         var declaredVersion = ResolveAssetClassTermsVersion(payload);
+        if (declaredVersion > reads)
+        {
+            return false;
+        }
+
         if (declaredVersion > writes)
         {
             reason =

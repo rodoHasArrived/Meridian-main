@@ -421,6 +421,31 @@ public sealed class SecurityTermsVersioningTests
             .Should().Be("Unsupported assetClassTermsVersion '3' for asset class 'Bond'; this node reads versions 1 through 2.");
     }
 
+    public static TheoryData<string, string> StampsAboveWhatThisNodeReads() => new()
+    {
+        { "Bond", Terms(3, Maturity).GetRawText() },
+        { "Bond", Terms(3, Maturity + """ ,"scheduleConventions":{"stubPolicy":"Long"} """).GetRawText() },
+        { "Swap", Terms(3, SwapDates + """ ,"legs":[{"legType":"Fixed","scheduleConventions":{"stubPolicy":"Long"}}] """).GetRawText() },
+        { "StructuredCredit", Terms(4, """ "customProfileId":"structured-credit-profile","profileFields":{"tranche":"A-1"} """).GetRawText() },
+    };
+
+    [Theory]
+    [MemberData(nameof(StampsAboveWhatThisNodeReads))]
+    public void TryGetWriteRefusal_LeavesAStampAboveWhatThisNodeReadsToTheReadGuard(string assetClass, string payloadText)
+    {
+        // The write reason says the payload is readable here, which a newer stamp is not; the read
+        // guard's refusal names the newer version, so it is the only reason given.
+        var payload = Json(payloadText);
+        var stamp = SecurityTermsEnvelope.ResolveAssetClassTermsVersion(payload);
+
+        SecurityTermsEnvelope.TryGetWriteRefusal(assetClass, payload, out var reason).Should().BeFalse();
+        reason.Should().BeNull();
+        var write = () => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms(assetClass, payload);
+        write.Should().Throw<InvalidOperationException>().Which.Message.Should().Be(
+            $"Unsupported assetClassTermsVersion '{stamp}' for asset class '{assetClass}'; " +
+            $"this node reads versions 1 through {SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass)}.");
+    }
+
     public static TheoryData<string, string> ClassesThatReadOnlyWhatTheyWrite()
     {
         var data = new TheoryData<string, string>();

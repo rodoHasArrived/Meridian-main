@@ -386,9 +386,10 @@ This command verifies referenced files and directories exist; it does not valida
     `couponCashBasis` (`Level` or `DayCount`) are coupon-amount inputs, not schedule inputs.
   - **Spellings.** `SecurityTermConventions` parses `businessDayConvention` (`Unadjusted`/`None`,
     `Following`/`F`, `ModifiedFollowing`/`MF`, `Preceding`/`P`, `ModifiedPreceding`/`MP`),
-    `rollConvention` (`AnchorDay`, `EndOfMonth`/`EOM`, `IMM`, a day of the month from 1 to 31, or
+    `rollConvention` (`AnchorDay`, `EndOfMonth`/`EOM`, `Imm`, a day of the month from 1 to 31, or
     `FixedDay(n)`) and `stubPolicy` (`Short`, `Long`, `RequireRegular`/`NoStub`). `NEAREST`, `FRN`
-    and positional stub spellings such as `ShortInitial` are refused.
+    and positional stub spellings such as `ShortInitial` are refused. Named spellings match ignoring
+    case and separators, so `IMM` and `Modified-Following` are accepted too.
   - **Economic `Accrual` fill.** The F# legacy upgrade fills the economic `Accrual` module from a
     declared block for Bond, CertificateOfDeposit and StructuredCredit only, and only when the
     block names a business-day convention or a non-blank payment calendar. The convention is kept

@@ -6323,11 +6323,11 @@ committed manifests, and the duplicate-helper, file-size and inline SHA-256 guar
 | Finding | What landed |
 | --- | --- |
 | Declared schedule conventions had no home in the terms (G5), and ADR-024 decision 3 had a new term bump the class's terms version, so the first node to write it would write rows that other nodes still refuse | ADR-024 decision 3 is now expand-then-contract. `SecurityAssetClassDescriptor` gains `ReadableTermsVersion` and `ReadsTermsThrough`, with `SecurityAssetClassCatalog.GetReadsTermsThrough`. Bond, CertificateOfDeposit and Swap still write terms version 1 and now read through 2; StructuredCredit writes 2 and reads through 3. The optional `scheduleConventions` block (business-day convention, accrual adjustment, payment calendars, payment lag, roll, end-of-month rule, first and last regular dates, direction, stub policy, coupon rate unit and coupon cash basis) is declared at those versions on Bond, CertificateOfDeposit and StructuredCredit and on each swap leg, reached by identity steps. The committed manifests gain the new versions. |
-| Nothing stopped a write path from emitting a term that only a newer version declares | `SecurityMasterMapping.ToSecurityKind` now passes its mode to the terms-version guard. In Write mode, `SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms` refuses a payload stamped above the write version or populating a term above it (`TryGetWriteRefusal`, `SecurityAssetTermsSchema.PopulatedTermsAbove`), with one reason text (`DescribeNotYetWritable`) naming the class, the term and both versions. Absent, `null`, `[]` and all-unset objects mean unset. The registry, `SecurityTermBlocks` and the field-edit validator offer only `WritableFields`; `BuildPatch` and the `PUT /terms/{blockKey}` route refuse the block with the same reason; the workbench refuses at submission, so it never stages a draft that the merge would refuse; and the schema-terms validator checks a versioned field only when the payload's stamp reaches it. Profile envelopes of profile-capable classes are never walked for versioned terms; only their stamp is checked. |
+| Nothing stopped a write path from emitting a term that only a newer version declares | `SecurityMasterMapping.ToSecurityKind` now passes its mode to the terms-version guard. In Write mode, `SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms` refuses a payload stamped above the write version (a reason naming the class, the stamp and the versions it reads and writes) or populating a term above it (`DescribeNotYetWritable`, naming the term, the class, the term's version and the write version), through `TryGetWriteRefusal` and `SecurityAssetTermsSchema.PopulatedTermsAbove`. A stamp above what the node reads keeps the read guard's refusal. Absent, `null`, `[]` and all-unset objects mean unset. The registry, `SecurityTermBlocks` and the field-edit validator offer only `WritableFields`; `BuildPatch` and the `PUT /terms/{blockKey}` route refuse the block with the same reason; the workbench refuses at submission when the record's or the edited terms are readable but not writable, including a root edit of a profile envelope stamped above the write version, so it does not stage a draft that the merge would refuse for that reason; and the schema-terms validator checks a versioned field only when the payload's stamp reaches it. Profile envelopes of profile-capable classes (`customProfileId` or a `profileFields` object) are never walked for versioned terms; only their stamp is checked. |
 | A node that reads a newer row would drop what it cannot decode when it re-serializes the row (deactivate, patch-less amend) | The F# `BondTerms`, `CertificateOfDepositTerms`, `StructuredCreditTerms` and `SwapLeg` carry a `ScheduleConventions` record, decoded only from rows whose stamp reaches the block's version. The F# writer stamps the effective version and emits the block in its frozen canonical form. `SecurityMasterService.EnsureAheadOfWriteTermsRoundTripSafely` refuses a deactivation or patch-less amend of a row stamped above the write version when re-serializing would change any versioned term (`NormalizedTermsAbove`), before anything is appended. |
 | Two nodes could derive different economic terms from the same declaring row | The economic `Accrual` fill is frozen in [ADR-025](../adr/025-contractual-schedule-kernel.md#applications): Bond, CertificateOfDeposit and StructuredCredit only, triggered by a business-day convention or a payment calendar, the convention kept verbatim, the calendars joined by the new `BusinessDayCalendars.JointCalendarId`, and no fallback to `commonTerms.holidayCalendarId`. A bond declaring conventions blocks its StructuredCredit reclassification (`structured_credit_schedule_conventions_unwritable`), because StructuredCredit cannot write the block yet. |
 | The block's spellings had no parser | `SecurityTermConventions` gains the `BusinessDayConvention`, `RollConvention` and `StubPolicy` kinds and their parsers onto the kernel's types. |
-| Nothing proved the expand step byte-neutral for records that declare nothing | `SecurityTermsWriteGoldenTests` was committed against the base commit first: written terms for every fully populated class and the bond and swap variants, economic terms, registry DTOs, term-block keys, validation reports and a masked deactivation event. It is unchanged after the change. |
+| Nothing proved the expand step byte-neutral for records that declare nothing | `SecurityTermsWriteGoldenTests` was committed against the base commit first: written terms for every fully populated class and the bond and swap variants, economic terms, registry DTOs, term-block keys and validation reports. It is unchanged after the change. Deactivation of rows that declare nothing re-serializes through the same pinned writer. |
 | The terms-history guards keyed on the write version and taught the old "bump `TermsVersion`" recipe | They are keyed on `ReadsTermsThrough` and teach the expand-then-contract recipe. Four new guards: steps at or above the write version are identity steps; `ReadableTermsVersion` is null or above the write version; each readable-only version introduces a top-level or element field; and every element field's `Since` is within what its class reads, optional above version 1. |
 
 **Corrections to the plan.**
@@ -6341,8 +6341,11 @@ committed manifests, and the duplicate-helper, file-size and inline SHA-256 guar
 - **Decoding is gated on the stamp, not on the key's presence.** Reading a key whenever it is present
   would change the bytes of existing rows that carry a stray key. Write mode and profile envelopes
   decode at the write version.
-- **Profile envelopes are not walked.** They are persisted verbatim, and the upgrade hook already
-  excludes them. Walking them would refuse profile-legal keys and leave such rows unamendable.
+- **Profile envelopes are not walked.** An envelope with a `customProfileId` is persisted verbatim,
+  and the upgrade hook already excludes envelopes. Walking them would refuse profile-legal keys and
+  leave such rows unamendable. A payload with a `profileFields` object but no `customProfileId` is
+  decoded from `profileFields` and re-serialized as flat terms, dropping its root keys, as it did
+  before this change.
 - **The F# effective-version writer is required, and is not enough on its own.** Deactivation and
   patch-less amends re-serialize a Read-mode record, and the tolerant readers would still drop an
   inner member they do not type. Hence the round-trip guard.
@@ -6355,7 +6358,7 @@ committed manifests, and the duplicate-helper, file-size and inline SHA-256 guar
 
 **Behaviour changes.**
 
-- **Records that declare nothing: none.** Every written payload, stamp, economic event, registry DTO,
+- **Records that declare nothing: none.** Every written payload, stamp, economic terms document, registry DTO,
   term-block key and validation report is byte-identical (`SecurityTermsWriteGoldenTests`).
 - **Rows stamped 2 (3 for StructuredCredit) are now readable.** Before this change they were refused
   on read.
@@ -6382,5 +6385,33 @@ now fail at merge.
 above. Open decisions: whether to rename the inner `direction` (which shares its name with a swap
 leg's pay/receive `direction`) before any node can write it; whether the service should restamp a
 re-serialized row at its stored version instead of the pinned downgrade; whether the registry should
-expose readable-only fields; and whether increment 5's `ScheduleSpecFactory` falls back to
-`commonTerms.holidayCalendarId` when a block names no payment calendar.
+expose readable-only fields; whether increment 5's `ScheduleSpecFactory` falls back to
+`commonTerms.holidayCalendarId` when a block names no payment calendar; and whether a payload with
+`profileFields` but no `customProfileId` should stop counting as a profile envelope, so that its root
+keys are refused or kept instead of dropped.
+
+**Validation.** New suites: `SecurityTermsWriteGoldenTests` (committed on the base first),
+`SecurityMasterTermBlockEndpointsTests`, and the readable-twin and ahead-of-write partials of
+`SecurityAssetTermsSchemaRoundTripTests`, `SecurityMasterServiceSnapshotTests`,
+`SecurityMasterWorkbenchCommandServiceTests` and `ApprovedFieldEditCanonicalMergeHandlerTests`. The
+versioning, upgrader, wiring, schema, convention, calendar, field-edit, term-block, registry,
+schema-validation, validation-service, economic-bridge, reclassification and F# domain suites are
+extended, and the terms-history guards are re-keyed. The Security Master, asset-terms, schedule,
+calendar, architecture, EDGAR, validation, economic-terms, underlying-graph, swap-leg, cash-flow
+resolver and merge-handler suites ran against a disposable PostgreSQL 16 with 4,208 passed, 0 failed
+and 11 skipped; the whole `Meridian.FSharp.Tests` suite passed (515). Each of the four new history
+guards was shown to fail under a mutation of the rule it guards. The format, file-size, inline
+SHA-256, duplicate-helper and test-skip guards pass, schema-control `verify` reproduces the
+refreshed manifests, `validate-doc-hashes` is clean and the generated-repair pre-check reports
+nothing to change.
+
+The tests were written in six lanes, each critiqued by an independent reviewer, and the whole change
+then went through an adversarial review: four lenses, with two skeptics trying to refute each
+finding. That work changed the code in three places. A field edit that replaces one swap leg
+(`legs.0`) with a value carrying a populated block is now refused, as the block itself and the
+whole `legs` value already were. The workbench now also checks the stamp of a profile envelope when
+a term at its root is edited, so such an edit is refused at submission instead of failing at publish.
+And `TryGetWriteRefusal` leaves a stamp above what the node reads to the read guard, so the refusal
+names the newer version instead of calling the row readable. Findings that the skeptics refuted
+(the HTTP status of Write-mode refusals, and refusing clears on rows stamped above the write version)
+describe behaviour that predates this change.

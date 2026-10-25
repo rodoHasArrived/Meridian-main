@@ -270,6 +270,46 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         await AssertNothingStagedAsync(harness);
     }
 
+    [Fact]
+    public async Task UpdateSecurityField_RootTermOfAProfileEnvelopeStampedAboveTheWriteVersion_IsRefusedAtSubmission()
+    {
+        // A declared term at the envelope root goes through the first-class gate, which has no kind to
+        // rebuild for a profile envelope, but the merge applies the term in Write mode all the same.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("StructuredCredit");
+        var stamped = JsonNode.Parse(ProfileBackedStructuredCreditEnvelope)!.AsObject();
+        stamped[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 3;
+        harness.SetProjectionAssetTerms("StructuredCredit", AheadOfWriteFixtures.Parse(stamped.ToJsonString()));
+
+        var refused = await harness.Service
+            .Invoking(s => s.UpdateSecurityFieldAsync(ProfileFieldEdit("assetSpecificTerms.tranche", "B")))
+            .Should().ThrowAsync<ArgumentException>();
+
+        refused.Which.Message.Should().Be(AheadOfWriteFixtures.StructuredCreditWriteVersionReason + " (Parameter 'request')");
+        await AssertNothingStagedAsync(harness);
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_ProfileEnvelopeStampedAboveWhatThisNodeReads_IsRefusedWithTheReadReason()
+    {
+        // Stamped 4, the envelope is not readable here at all, so the refusal must say so rather than
+        // call it readable but not writable.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("StructuredCredit");
+        var stamped = JsonNode.Parse(ProfileBackedStructuredCreditEnvelope)!.AsObject();
+        stamped[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 4;
+        harness.SetProjectionAssetTerms("StructuredCredit", AheadOfWriteFixtures.Parse(stamped.ToJsonString()));
+
+        var refused = await harness.Service
+            .Invoking(s => s.UpdateSecurityFieldAsync(ProfileFieldEdit("assetSpecificTerms.profileFields.tranche", "A-2")))
+            .Should().ThrowAsync<ArgumentException>();
+
+        refused.Which.Message.Should()
+            .Contain("Unsupported assetClassTermsVersion '4' for asset class 'StructuredCredit'; this node reads versions 1 through 3.")
+            .And.NotContain("readable but not writable");
+        await AssertNothingStagedAsync(harness);
+    }
+
     private static UpdateSecurityFieldRequest IssuerNameEdit()
         => new(
             SecurityId: SecurityId,

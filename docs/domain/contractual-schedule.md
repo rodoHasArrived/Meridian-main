@@ -138,7 +138,7 @@ Planned in sequence, each behind its own proof:
 - The block's spellings are frozen ([ADR-025](../adr/025-contractual-schedule-kernel.md#applications)):
   `businessDayConvention` is `Unadjusted`, `Following`, `ModifiedFollowing`, `Preceding` or
   `ModifiedPreceding` (with `None`, `F`, `MF`, `P` and `MP` accepted); `rollConvention` is
-  `AnchorDay`, `EndOfMonth`, `IMM` or a day of the month from 1 to 31; `stubPolicy` is `Short`,
+  `AnchorDay`, `EndOfMonth`, `Imm` or a day of the month from 1 to 31; `stubPolicy` is `Short`,
   `Long` or `RequireRegular`; `direction` is `Forward` or `Backward`; `couponRateUnit` is `Percent`
   or `Fraction`; and `couponCashBasis` is `Level` or `DayCount`.
 - A file-backed calendar source and a declared mode in the Security Master cash-flow engine.

@@ -251,6 +251,35 @@ public sealed partial class SecurityMasterServiceSnapshotTests
         harness.Appended.Should().ContainSingle();
     }
 
+    public static TheoryData<string> UnreproducibleShapes()
+    {
+        var data = new TheoryData<string>();
+        foreach (var shape in UnreproducibleRows.Keys)
+        {
+            data.Add(shape);
+        }
+
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(UnreproducibleShapes))]
+    public async Task AmendTermsAsync_TermsPatchAtTheWriteVersion_SettlesARowTheGuardRefusesToReSerialize(string shape)
+    {
+        // The remedy the round-trip refusal names must stay open: the guard stands aside for a terms
+        // patch, which replaces the terms wholesale and is mapped in Write mode instead.
+        var (assetClass, terms, _) = UnreproducibleRows[shape];
+        var settled = assetClass == "Swap" ? SwapAtVersion1 : BondAtVersion1;
+        var securityId = Guid.NewGuid();
+        var harness = new ServiceHarness();
+        harness.Seed(securityId, assetClass, terms);
+
+        await harness.Service.AmendTermsAsync(AmendRequest(securityId, Parse(settled)));
+
+        harness.Upserted.Should().ContainSingle().Which.AssetSpecificTerms.GetRawText().Should().Be(settled);
+        harness.Appended.Should().ContainSingle();
+    }
+
     [Fact]
     public async Task AmendTermsAsync_TermsPatchAtVersionOneStillPopulatingTheBlock_IsRefusedAsNotYetWritable()
     {

@@ -85,7 +85,7 @@ stored family was not queryable, and nothing recorded the policy that lets the s
 | Envelope | `src/Meridian.Contracts/SecurityMaster/SecurityTermsEnvelope.cs` | Keys, `StampFlat`, `ResolveFormat`, read guard, write guard (`TryGetWriteRefusal`) |
 | Catalog | `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | Per-class write version (`TermsVersion`) and readable version (`ReadableTermsVersion`, `ReadsTermsThrough`) |
 | Term schema | `src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs` | `.Since(n)` tags, `WritableFields`, `PopulatedTermsAbove`, `NormalizedTermsAbove` |
-| Round-trip guard | `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` | Refuses to re-serialize an ahead-of-write row it cannot reproduce |
+| Round-trip guard | `src/Meridian.Application/SecurityMaster/SecurityMasterService.AheadOfWriteTerms.cs` | Refuses to re-serialize an ahead-of-write row it cannot reproduce |
 | Versions | `src/Meridian.Contracts/SecurityMaster/SecurityMasterSchemaVersions.cs` | Codec versions and the reserved value |
 | Upcaster chain | `src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs` | Tag-first dispatch; shape rule for untagged payloads |
 | Migration | `src/Meridian.Storage/SecurityMaster/Migrations/042_security_master_terms_format_column.sql` | `terms_format` column, backfill, check constraint |
@@ -294,8 +294,10 @@ This command verifies referenced files and directories exist; it does not valida
     list top-level keys only, and the element-field guard covers the leg.
   - **No node writes the block yet.** The schema, registry, term blocks and field-edit validator
     offer writable fields only. A create, amend, import, term-block amend, field edit or workbench
-    submission that populates the block, or carries a stamp above the write version, is refused with
-    a reason naming the class, the term and both versions. Written payloads, economic terms, registry
+    submission that populates the block is refused with a reason naming the term, the class, the
+    term's version and the write version; one that carries a stamp above the write version is refused
+    with a reason naming the class, the stamp and the versions the node reads and writes. Written
+    payloads, economic terms, registry
     DTOs, term-block keys and validation reports are byte-identical to the base commit
     (`SecurityTermsWriteGoldenTests`).
   - **Reading.** A row stamped 2 (3 for StructuredCredit) decodes its block into the F# record. A

@@ -1000,12 +1000,24 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         }
 
         if (projection is null
-            || SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass).RequiresGovernedProfile
-            || (projection.AssetSpecificTerms is { ValueKind: JsonValueKind.Object } profileProbe
-                && profileProbe.TryGetProperty("customProfileId", out var profileId)
-                && profileId.ValueKind == JsonValueKind.String
-                && !string.IsNullOrWhiteSpace(profileId.GetString())))
+            || SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass).RequiresGovernedProfile)
         {
+            return;
+        }
+
+        if (projection.AssetSpecificTerms is { ValueKind: JsonValueKind.Object } profileProbe
+            && profileProbe.TryGetProperty("customProfileId", out var profileId)
+            && profileId.ValueKind == JsonValueKind.String
+            && !string.IsNullOrWhiteSpace(profileId.GetString()))
+        {
+            // A profile envelope has no first-class kind to reconstruct, but the merge still maps it in
+            // Write mode: an envelope stamped above the class's write version (ADR-024, readable before
+            // writable) would stage an edit that fails at publish, so refuse it here.
+            if (SecurityTermsEnvelope.TryGetWriteRefusal(projection.AssetClass, profileProbe, out var envelopeRefusal))
+            {
+                throw new ArgumentException(envelopeRefusal, nameof(request));
+            }
+
             return;
         }
 
