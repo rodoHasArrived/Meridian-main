@@ -33,9 +33,12 @@ public sealed class SecurityAssetClassTermsHistoryTests
 {
     private const string ManifestFolder = "terms-versions";
     private const string UpgradeFixtureFolder = "terms-upgrades";
+    private const string ElementShapeFolder = "terms-element-shapes";
+    private const string VersionedContainersFile = "versioned-containers";
     private const string ReceivedSuffix = ".received.json";
     private const string RepositoryManifestPath = "tests/fixtures/security-master/terms-versions";
     private const string RepositoryUpgradeFixturePath = "tests/fixtures/security-master/terms-upgrades";
+    private const string RepositoryElementShapePath = "tests/fixtures/security-master/terms-element-shapes";
 
     private static readonly JsonSerializerOptions CanonicalJson = new()
     {
@@ -382,6 +385,142 @@ public sealed class SecurityAssetClassTermsHistoryTests
         }
 
         failures.Should().BeEmpty("an element field above version 1 is optional and within the versions the class reads");
+    }
+
+    [Fact]
+    public void VersionedContainerShapes_AreFrozenOnceReadable()
+    {
+        // A container introduced above version 1 carries the version itself and its members are
+        // untagged (the element-field guard above), so nothing versions a member added to it later:
+        // one node would read it at that version and another drop it. The committed fixture therefore
+        // freezes every such container's members, in order, once readable.
+        var live = new SortedDictionary<string, JsonObject>(StringComparer.Ordinal);
+        foreach (var assetClass in SecurityAssetClassCatalog.AssetClasses)
+        {
+            foreach (var (path, container, fields) in ElementShapesOf(assetClass))
+            {
+                if (container.SinceTermsVersion > SecurityTermsEnvelope.DefaultAssetClassTermsVersion)
+                {
+                    live[path] = DescribeVersionedContainer(path, container, fields);
+                }
+            }
+        }
+
+        var directory = LocateFixtureDirectory(ElementShapeFolder);
+        var fixturePath = directory is null ? null : Path.Combine(directory, VersionedContainersFile + ".json");
+        var committed = new List<JsonObject>();
+        var failures = new List<string>();
+        if (fixturePath is null || !File.Exists(fixturePath))
+        {
+            failures.Add($"no committed {VersionedContainersFile}.json.");
+        }
+        else
+        {
+            committed = (JsonNode.Parse(File.ReadAllText(fixturePath))?["containers"]?.AsArray()
+                         ?? throw new InvalidOperationException($"{VersionedContainersFile}.json has no containers array."))
+                .Select(static entry => entry!.AsObject())
+                .ToList();
+        }
+
+        var committedPaths = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var entry in committed)
+        {
+            var path = entry["path"]!.GetValue<string>();
+            if (!committedPaths.Add(path))
+            {
+                failures.Add($"{path}: committed twice.");
+                continue;
+            }
+
+            if (!live.TryGetValue(path, out var current))
+            {
+                failures.Add($"{path}: committed, but no longer registered as a container introduced above version 1.");
+                continue;
+            }
+
+            if (!JsonNode.DeepEquals(entry["containerSince"], current["containerSince"]))
+            {
+                failures.Add($"{path}: committed with containerSince {entry["containerSince"]?.ToJsonString()}, but the live container is introduced at {current["containerSince"]!.ToJsonString()}.");
+            }
+
+            var frozen = entry["members"]!.AsArray();
+            var members = current["members"]!.AsArray();
+            if (frozen.Count == members.Count && frozen.Zip(members).All(static pair => JsonNode.DeepEquals(pair.First, pair.Second)))
+            {
+                continue;
+            }
+
+            var index = Enumerable.Range(0, Math.Min(frozen.Count, members.Count))
+                .FirstOrDefault(position => !JsonNode.DeepEquals(frozen[position], members[position]), Math.Min(frozen.Count, members.Count));
+            failures.Add(
+                $"{path}: the live members [{MemberKeys(members)}] differ from the frozen [{MemberKeys(frozen)}], first at member {index}: " +
+                $"frozen {(index < frozen.Count ? frozen[index]!.ToJsonString() : "none")}, live {(index < members.Count ? members[index]!.ToJsonString() : "none")}.");
+        }
+
+        var missing = live.Keys.Where(path => !committedPaths.Contains(path)).ToArray();
+        string? received = null;
+        if (missing.Length > 0)
+        {
+            failures.Add($"[{string.Join(", ", missing)}]: registered above version 1 with no committed shape.");
+            received = WriteReceivedContainerShapes(committed, missing.Select(path => live[path]));
+        }
+
+        failures.Should().BeEmpty(
+            "the member shape of a readable versioned container is append-only history: a committed entry is never edited or removed, " +
+            "and a member added later needs a new container key at a new readable version (ADR-024 decision 3)" +
+            (received is null
+                ? string.Empty
+                : $". The received shapes were written to {received}; review them and copy the file to {RepositoryElementShapePath}/{VersionedContainersFile}.json"));
+    }
+
+    // One frozen-shape entry: the container's path and version, and every member as the guard compares it.
+    private static JsonObject DescribeVersionedContainer(string path, SecurityAssetTermField container, IReadOnlyList<SecurityAssetTermField> fields)
+    {
+        var members = new JsonArray();
+        foreach (var field in fields)
+        {
+            members.Add(new JsonObject
+            {
+                ["key"] = field.Key,
+                ["type"] = field.Type.ToString(),
+                ["required"] = field.Required,
+                ["since"] = field.SinceTermsVersion,
+                ["aliases"] = new JsonArray(field.Aliases.Select(static alias => (JsonNode?)alias).ToArray()),
+                ["allowedValues"] = new JsonArray(field.AllowedValues.Select(static value => (JsonNode?)value).ToArray()),
+                ["carriesUndeclaredValueVerbatim"] = field.CarriesUndeclaredValueVerbatim,
+                ["convention"] = field.Convention.ToString(),
+                ["underlyingRole"] = field.UnderlyingRole?.ToString(),
+            });
+        }
+
+        return new JsonObject
+        {
+            ["path"] = path,
+            ["containerSince"] = container.SinceTermsVersion,
+            ["members"] = members,
+        };
+    }
+
+    private static string MemberKeys(JsonArray members)
+        => string.Join(", ", members.Select(static member => member?["key"]?.GetValue<string>()));
+
+    /// <summary>
+    /// Writes the received frozen shapes: the committed entries unchanged, then each missing live
+    /// container in path order. Committed entries are never recomputed.
+    /// </summary>
+    private static string WriteReceivedContainerShapes(IReadOnlyList<JsonObject> committed, IEnumerable<JsonObject> missing)
+    {
+        var containers = new JsonArray();
+        foreach (var entry in committed.Concat(missing))
+        {
+            containers.Add(entry.DeepClone());
+        }
+
+        var directory = Path.Combine(AppContext.BaseDirectory, "fixtures", "security-master", ElementShapeFolder);
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, VersionedContainersFile + ReceivedSuffix);
+        File.WriteAllText(path, new JsonObject { ["containers"] = containers }.ToJsonString(CanonicalJson) + "\n");
+        return path;
     }
 
     // Every registered inner shape of a class, with the container field that holds it.

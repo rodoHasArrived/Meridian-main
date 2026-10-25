@@ -514,32 +514,63 @@ public sealed partial class SecurityAssetTermsSchemaRoundTripTests
     // ── Helpers ─────────────────────────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// The readable twin of <paramref name="assetClass"/>: its <see cref="FullPayloads"/> entry written
-    /// through the domain, with the fully-populated block of <see cref="ReadableTwinBlocks"/> added and
-    /// the payload stamped at <see cref="SecurityAssetClassCatalog.GetReadsTermsThrough"/>.
+    /// The increment-4a readable twin of <paramref name="assetClass"/>:
+    /// <see cref="ReadableTwin(string, int)"/> at the version that introduced the block
+    /// (<see cref="BlockSince"/>). It stays pinned there however far the class later reads, so what it
+    /// means never moves.
     /// </summary>
     internal static JsonElement ReadableTwin(string assetClass)
-        => ReadableTwin(assetClass, FullPayloads[assetClass], ReadableTwinBlocks[assetClass]);
+        => ReadableTwin(assetClass, BlockSince(assetClass));
+
+    /// <summary>
+    /// The readable twin of <paramref name="assetClass"/> at <paramref name="version"/>: its
+    /// <see cref="FullPayloads"/> entry written through the domain, with the fully-populated block of
+    /// <see cref="ReadableTwinBlocks"/> added when <paramref name="version"/> is at or above the block's
+    /// <see cref="BlockSince"/>, and the payload stamped <paramref name="version"/>.
+    /// </summary>
+    internal static JsonElement ReadableTwin(string assetClass, int version)
+    {
+        var terms = JsonNode.Parse(SerializeThroughDomain(assetClass, FullPayloads[assetClass]).GetRawText())!.AsObject();
+        if (version >= BlockSince(assetClass))
+        {
+            AddBlocks(assetClass, terms, ReadableTwinBlocks[assetClass]);
+        }
+
+        return Parse(SecurityTermsEnvelope.StampFlat(terms.ToJsonString(), assetClass, version));
+    }
 
     /// <summary>
     /// A readable twin of <paramref name="payload"/> carrying <paramref name="blocks"/>: one block for a
-    /// class that declares it at the top level, one per leg (in order) for a swap.
+    /// class that declares it at the top level, one per leg (in order) for a swap. The payload is
+    /// stamped <paramref name="version"/>, by default the block's <see cref="BlockSince"/>.
     /// </summary>
-    internal static JsonElement ReadableTwin(string assetClass, object payload, IReadOnlyList<string> blocks)
+    internal static JsonElement ReadableTwin(string assetClass, object payload, IReadOnlyList<string> blocks, int? version = null)
     {
         var terms = JsonNode.Parse(SerializeThroughDomain(assetClass, payload).GetRawText())!.AsObject();
+        AddBlocks(assetClass, terms, blocks);
+
+        return Parse(SecurityTermsEnvelope.StampFlat(terms.ToJsonString(), assetClass, version ?? BlockSince(assetClass)));
+    }
+
+    private static void AddBlocks(string assetClass, JsonObject terms, IReadOnlyList<string> blocks)
+    {
         var containers = BlockContainers(assetClass, terms);
         containers.Should().HaveCount(blocks.Count, $"the '{assetClass}' twin needs one block per block container");
         for (var index = 0; index < blocks.Count; index++)
         {
             containers[index][ScheduleConventionsKey] = JsonNode.Parse(blocks[index]);
         }
-
-        return Parse(SecurityTermsEnvelope.StampFlat(
-            terms.ToJsonString(),
-            assetClass,
-            SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass)));
     }
+
+    /// <summary>
+    /// The terms version that introduced the scheduleConventions block of <paramref name="assetClass"/>:
+    /// the top-level field's <see cref="SecurityAssetTermField.SinceTermsVersion"/>, or for a swap the
+    /// leg element field's.
+    /// </summary>
+    private static int BlockSince(string assetClass)
+        => (SecurityAssetTermsSchema.Field(assetClass, ScheduleConventionsKey)
+            ?? SecurityAssetTermsSchema.ElementFields(assetClass, "legs").Single(static field => field.Key == ScheduleConventionsKey))
+            .SinceTermsVersion;
 
     // The objects that carry the block: the terms themselves, or each swap leg.
     private static IReadOnlyList<JsonObject> BlockContainers(string assetClass, JsonObject terms)

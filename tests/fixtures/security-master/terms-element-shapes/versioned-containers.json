@@ -1,0 +1,592 @@
+{
+  "containers": [
+    {
+      "path": "Bond.scheduleConventions",
+      "containerSince": 2,
+      "members": [
+        {
+          "key": "businessDayConvention",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "BusinessDayConvention",
+          "underlyingRole": null
+        },
+        {
+          "key": "accrualAdjusted",
+          "type": "Boolean",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "paymentCalendars",
+          "type": "Array",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "paymentLagBusinessDays",
+          "type": "Integer",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "rollConvention",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "RollConvention",
+          "underlyingRole": null
+        },
+        {
+          "key": "endOfMonthRule",
+          "type": "Boolean",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "firstRegularDate",
+          "type": "Date",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "lastRegularDate",
+          "type": "Date",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "direction",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "Forward",
+            "Backward"
+          ],
+          "carriesUndeclaredValueVerbatim": true,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "stubPolicy",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "StubPolicy",
+          "underlyingRole": null
+        },
+        {
+          "key": "couponRateUnit",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "Percent",
+            "Fraction"
+          ],
+          "carriesUndeclaredValueVerbatim": true,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "couponCashBasis",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "Level",
+            "DayCount"
+          ],
+          "carriesUndeclaredValueVerbatim": true,
+          "convention": "None",
+          "underlyingRole": null
+        }
+      ]
+    },
+    {
+      "path": "CertificateOfDeposit.scheduleConventions",
+      "containerSince": 2,
+      "members": [
+        {
+          "key": "businessDayConvention",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "BusinessDayConvention",
+          "underlyingRole": null
+        },
+        {
+          "key": "accrualAdjusted",
+          "type": "Boolean",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "paymentCalendars",
+          "type": "Array",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "paymentLagBusinessDays",
+          "type": "Integer",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "rollConvention",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "RollConvention",
+          "underlyingRole": null
+        },
+        {
+          "key": "endOfMonthRule",
+          "type": "Boolean",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "firstRegularDate",
+          "type": "Date",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "lastRegularDate",
+          "type": "Date",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "direction",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "Forward",
+            "Backward"
+          ],
+          "carriesUndeclaredValueVerbatim": true,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "stubPolicy",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "StubPolicy",
+          "underlyingRole": null
+        },
+        {
+          "key": "couponRateUnit",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "Percent",
+            "Fraction"
+          ],
+          "carriesUndeclaredValueVerbatim": true,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "couponCashBasis",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "Level",
+            "DayCount"
+          ],
+          "carriesUndeclaredValueVerbatim": true,
+          "convention": "None",
+          "underlyingRole": null
+        }
+      ]
+    },
+    {
+      "path": "StructuredCredit.scheduleConventions",
+      "containerSince": 3,
+      "members": [
+        {
+          "key": "businessDayConvention",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "BusinessDayConvention",
+          "underlyingRole": null
+        },
+        {
+          "key": "accrualAdjusted",
+          "type": "Boolean",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "paymentCalendars",
+          "type": "Array",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "paymentLagBusinessDays",
+          "type": "Integer",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "rollConvention",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "RollConvention",
+          "underlyingRole": null
+        },
+        {
+          "key": "endOfMonthRule",
+          "type": "Boolean",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "firstRegularDate",
+          "type": "Date",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "lastRegularDate",
+          "type": "Date",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "direction",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "Forward",
+            "Backward"
+          ],
+          "carriesUndeclaredValueVerbatim": true,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "stubPolicy",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "StubPolicy",
+          "underlyingRole": null
+        },
+        {
+          "key": "couponRateUnit",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "Percent",
+            "Fraction"
+          ],
+          "carriesUndeclaredValueVerbatim": true,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "couponCashBasis",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "Level",
+            "DayCount"
+          ],
+          "carriesUndeclaredValueVerbatim": true,
+          "convention": "None",
+          "underlyingRole": null
+        }
+      ]
+    },
+    {
+      "path": "Swap.legs.scheduleConventions",
+      "containerSince": 2,
+      "members": [
+        {
+          "key": "businessDayConvention",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "BusinessDayConvention",
+          "underlyingRole": null
+        },
+        {
+          "key": "accrualAdjusted",
+          "type": "Boolean",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "paymentCalendars",
+          "type": "Array",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "paymentLagBusinessDays",
+          "type": "Integer",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "rollConvention",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "RollConvention",
+          "underlyingRole": null
+        },
+        {
+          "key": "endOfMonthRule",
+          "type": "Boolean",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "firstRegularDate",
+          "type": "Date",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "lastRegularDate",
+          "type": "Date",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "direction",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "Forward",
+            "Backward"
+          ],
+          "carriesUndeclaredValueVerbatim": true,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "stubPolicy",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [],
+          "carriesUndeclaredValueVerbatim": false,
+          "convention": "StubPolicy",
+          "underlyingRole": null
+        },
+        {
+          "key": "couponRateUnit",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "Percent",
+            "Fraction"
+          ],
+          "carriesUndeclaredValueVerbatim": true,
+          "convention": "None",
+          "underlyingRole": null
+        },
+        {
+          "key": "couponCashBasis",
+          "type": "String",
+          "required": false,
+          "since": 1,
+          "aliases": [],
+          "allowedValues": [
+            "Level",
+            "DayCount"
+          ],
+          "carriesUndeclaredValueVerbatim": true,
+          "convention": "None",
+          "underlyingRole": null
+        }
+      ]
+    }
+  ]
+}
