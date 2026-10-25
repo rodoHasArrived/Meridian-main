@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
@@ -150,6 +151,97 @@ public sealed class SecurityMasterStructuredCreditReclassificationServiceTests
         report.SecuritiesScanned.Should().Be(2);
         report.UnreadableCount.Should().Be(1, "a bond without a maturity cannot be mapped into the domain");
         report.Candidates.Should().ContainSingle(item => item.SecurityId == candidate.SecurityId);
+    }
+
+    [Fact]
+    public async Task BuildReportAsync_BlocksABondDeclaringScheduleConventions_InsteadOfDroppingThem()
+    {
+        // A bond stamped 2 by a node that writes the block declares schedule conventions. For a
+        // StructuredCredit they are a terms version 3 term this node reads but cannot write, so the
+        // proposal is blocked rather than carried over without them (ADR-024).
+        var (sut, store) = BuildSut();
+        var bond = MakeSecurity(Guid.NewGuid(), "Bond", new
+        {
+            maturity = "2040-03-25",
+            couponType = "Fixed",
+            couponRate = 5.5,
+            subclass = "AgencyMbs",
+            par = 1000,
+            seniority = "Senior",
+            assetClassTermsVersion = 2,
+            scheduleConventions = new { businessDayConvention = "ModifiedFollowing", paymentCalendars = new[] { "USNY" } }
+        });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { bond });
+
+        var report = await sut.BuildReportAsync();
+
+        report.UnreadableCount.Should().Be(0, "this node reads a bond stamped at the version it reads through");
+        report.ReadyCount.Should().Be(0);
+        report.BlockedCount.Should().Be(1);
+
+        var candidate = report.Candidates.Single();
+        candidate.Disposition.Should().Be(StructuredCreditReclassificationDisposition.Blocked);
+        candidate.Blockers.Select(static blocker => blocker.Code).Should().Equal(
+            "structured_credit_schedule_conventions_unwritable",
+            "structured_credit_tranche_required",
+            "structured_credit_collateral_type_required");
+        candidate.Blockers[0].Message.Should().Be(
+            "The bond declares scheduleConventions, a StructuredCredit terms version 3 term this node cannot write; " +
+            "reclassify from a node that writes StructuredCredit version 3.");
+
+        var derived = candidate.DerivedAssetSpecificTerms;
+        derived.TryGetProperty("scheduleConventions", out _).Should().BeFalse("a blocked draft never carries a term this node cannot write");
+        derived.TryGetProperty(SecurityTermsEnvelope.FormatKey, out _).Should().BeFalse("no proposed terms are stamped for a blocked candidate");
+        derived.TryGetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey, out _).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("nullBlockAtVersion2")]
+    [InlineData("emptyBlockAtVersion2")]
+    [InlineData("strayPopulatedBlockAtVersion1")]
+    public async Task BuildReportAsync_BondDeclaringNoConventions_IsProposedExactlyAsAPlainBond(string variant)
+    {
+        // A block that declares nothing, and a block on a row stamped below its version (never
+        // decoded), leave the proposal exactly as it is for the same bond without the key.
+        var (sut, store) = BuildSut();
+        var plainTerms = new JsonObject
+        {
+            ["maturity"] = "2040-03-25",
+            ["couponType"] = "Fixed",
+            ["couponRate"] = 5.5,
+            ["subclass"] = "AgencyMbs",
+            ["par"] = 1000,
+            ["seniority"] = "Senior"
+        };
+        var variantTerms = plainTerms.DeepClone().AsObject();
+        switch (variant)
+        {
+            case "nullBlockAtVersion2":
+                variantTerms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 2;
+                variantTerms["scheduleConventions"] = null;
+                break;
+            case "emptyBlockAtVersion2":
+                variantTerms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 2;
+                variantTerms["scheduleConventions"] = new JsonObject { ["businessDayConvention"] = null, ["paymentCalendars"] = new JsonArray() };
+                break;
+            case "strayPopulatedBlockAtVersion1":
+                variantTerms["scheduleConventions"] = new JsonObject { ["businessDayConvention"] = "ModifiedFollowing" };
+                break;
+        }
+
+        var plain = MakeSecurity(Guid.NewGuid(), "Bond", plainTerms);
+        var withVariant = MakeSecurity(Guid.NewGuid(), "Bond", variantTerms);
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { plain, withVariant });
+
+        var report = await sut.BuildReportAsync();
+
+        report.UnreadableCount.Should().Be(0);
+        var expected = report.Candidates.Single(candidate => candidate.SecurityId == plain.SecurityId);
+        var actual = report.Candidates.Single(candidate => candidate.SecurityId == withVariant.SecurityId);
+        actual.Disposition.Should().Be(expected.Disposition);
+        actual.ProposedKind.Should().Be(expected.ProposedKind);
+        actual.Blockers.Should().Equal(expected.Blockers);
+        actual.DerivedAssetSpecificTerms.GetRawText().Should().Be(expected.DerivedAssetSpecificTerms.GetRawText());
     }
 
     private static SecurityProjectionRecord MakeSecurity(

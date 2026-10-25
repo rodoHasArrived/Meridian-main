@@ -51,7 +51,14 @@ public sealed class SchemaTermsValidationTests
 
         foreach (var field in SecurityAssetTermsSchema.Fields(assetClass))
         {
+            // A field above the class's write version is checked where the decoder reads it: a flat
+            // payload stamped at its version (ADR-024, readable before writable).
             var terms = new Dictionary<string, object?> { [field.Key] = WrongValueFor(field.Type) };
+            if (field.SinceTermsVersion > SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+            {
+                terms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = field.SinceTermsVersion;
+            }
+
             var issues = validator.Validate(Context(assetClass, terms));
             var path = $"assetSpecificTerms.{field.Key}";
 
@@ -132,6 +139,94 @@ public sealed class SchemaTermsValidationTests
         var record = Record("Bond", JsonSerializer.SerializeToElement("not-an-object"));
 
         schemaOnly.Validate(new SecurityValidationContext(record, EvaluatedAt)).Should().BeEmpty();
+    }
+
+    // ── Readable before writable (ADR-024) ─────────────────────────────────────────────────────
+
+    private const string ScheduleConventionsPath = "assetSpecificTerms.scheduleConventions";
+
+    [Theory]
+    // Below the block's version the key is not a term of the class: an older or unstamped flat
+    // payload never carries it, so a stray value is not reported against the schema.
+    [InlineData("Bond", null)]
+    [InlineData("Bond", 1)]
+    [InlineData("CertificateOfDeposit", null)]
+    [InlineData("CertificateOfDeposit", 1)]
+    [InlineData("StructuredCredit", null)]
+    [InlineData("StructuredCredit", 2)]
+    public void ReadableOnlyField_OnAFlatPayloadStampedBelowItsVersion_IsNotValidated(string assetClass, int? stamp)
+    {
+        Registry.TryGetValidator(assetClass, out var validator).Should().BeTrue();
+        var terms = new Dictionary<string, object?> { ["scheduleConventions"] = "x" };
+        if (stamp is { } version)
+        {
+            terms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = version;
+        }
+
+        var issues = validator.Validate(Context(assetClass, terms));
+
+        issues.Should().NotContain(static issue => issue.AffectedFields.Contains(ScheduleConventionsPath, StringComparer.OrdinalIgnoreCase));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(3)]
+    public void ReadableOnlyField_OnAStructuredCreditProfileEnvelope_IsNotValidated(int? stamp)
+    {
+        // A profile envelope's terms belong to its approved profile: versioned class terms are never
+        // validated in it, whatever its stamp. Only the stamp itself is checked elsewhere.
+        Registry.TryGetValidator("StructuredCredit", out var validator).Should().BeTrue();
+        var terms = new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = 3,
+            ["customProfileId"] = "structured-credit-v1",
+            ["profileVersion"] = 1,
+            ["profileFields"] = new Dictionary<string, object?> { ["tranche"] = "A-1", ["scheduleConventions"] = "x" },
+            ["scheduleConventions"] = "x"
+        };
+        if (stamp is { } version)
+        {
+            terms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = version;
+        }
+
+        var issues = validator.Validate(Context("StructuredCredit", terms));
+
+        issues.Should().NotContain(static issue => issue.AffectedFields.Contains(ScheduleConventionsPath, StringComparer.OrdinalIgnoreCase));
+    }
+
+    [Theory]
+    [InlineData("Bond", 2)]
+    [InlineData("CertificateOfDeposit", 2)]
+    [InlineData("StructuredCredit", 3)]
+    public void ReadableOnlyField_OnAFlatPayloadStampedAtItsVersion_RejectsTheWrongJsonType(string assetClass, int stamp)
+    {
+        // Where the decoder reads the block, the schema checks it like any other declared object.
+        Registry.TryGetValidator(assetClass, out var validator).Should().BeTrue();
+
+        var issues = validator.Validate(Context(assetClass, new Dictionary<string, object?>
+        {
+            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = stamp,
+            ["scheduleConventions"] = "x"
+        }));
+
+        var issue = issues.Should().ContainSingle(static candidate => candidate.AffectedFields.Contains(ScheduleConventionsPath)).Which;
+        issue.Code.Should().Be(SchemaTermsAssetClassValidator.TypeCode);
+        issue.Severity.Should().Be(SecurityValidationSeverityDto.Error);
+        issue.Message.Should().Be("The term schema declares 'scheduleConventions' as object and the record carries a string.");
+    }
+
+    [Fact]
+    public void ReadableOnlyField_OnAFlatPayloadStampedAtItsVersion_AcceptsAnObject()
+    {
+        Registry.TryGetValidator("Bond", out var validator).Should().BeTrue();
+
+        var issues = validator.Validate(Context("Bond", new Dictionary<string, object?>
+        {
+            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = 2,
+            ["scheduleConventions"] = new Dictionary<string, object?> { ["stubPolicy"] = "Short", ["paymentCalendars"] = new[] { "USNY" } }
+        }));
+
+        issues.Should().NotContain(static issue => issue.AffectedFields.Contains(ScheduleConventionsPath, StringComparer.OrdinalIgnoreCase));
     }
 
     private static SecurityValidationContext Context(string assetClass, Dictionary<string, object?> terms)

@@ -1020,6 +1020,20 @@ node that could apply the change, so without that exit the row would be permanen
 Verify this lane with `SecurityMasterServiceSnapshotTests` and
 `SecurityAssetTermsSchemaRoundTripTests`.
 
+Terms a class reads but does not yet write (ADR-024, readable before writable) follow the mapping's
+mode. `SecurityMasterMapping.ToSecurityKind` passes its mode to the terms-version guard: in Write
+mode (every create, amend, import, term-block amend and approved field-edit merge) a payload stamped
+above the class's write version is refused with a reason naming the class, the stamp and the versions
+this node reads and writes, and one populating a term introduced above it with a reason naming the
+term, the class, the term's version and the write version; in Read mode such a term is decoded once the payload's
+own stamp reaches its version, and profile envelopes are decoded at the write version. Deactivate and
+patch-less amend re-serialize a row stamped above the write version only when the re-serialized terms
+reproduce its versioned content (`SecurityAssetTermsSchema.NormalizedTermsAbove`); otherwise they are
+refused before anything is appended. The workbench refuses a field or profile-field edit at
+submission when the record's or the edited terms are readable but not writable, including a root edit
+of a profile envelope stamped above the write version, so it does not stage a draft the merge would
+refuse for that reason, and the schema-terms validator checks a versioned field only when the payload's stamp reaches it.
+
 The file-based Security Master bulk ingest (`--security-master-ingest <file.csv|file.json>`) is
 fail-closed on caller identity: the import runs only when a registered
 `ISecurityMasterCliImportAuthority` resolves a validated operator or workload actor for the
@@ -1046,7 +1060,8 @@ future reset reads the index curve at its accrual start, the period already rese
 retained fixing, and each leg schedule records its `RateSource`. Without a curve, legs stay flat
 forward. `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
 block (preferred terms, call schedules, swap legs) through the normal amend path and records
-`TermBlockAmended`.
+`TermBlockAmended`. A block the class only reads (`scheduleConventions`) is refused with the
+not-yet-writable reason.
 
 ## API contract notes
 

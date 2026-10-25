@@ -40,7 +40,11 @@ transaction snapshot. A later commit can change a repeated query with the same c
 
 `SecurityTermsEnvelope` stamps asset-specific terms with `termsFormat` (flat, economic or custom
 profile) and a per-asset-class `assetClassTermsVersion` taken from `SecurityAssetClassCatalog`.
-Terms newer than the declared class version fail loudly; economic modules a flat conversion cannot
+Each class writes its `TermsVersion` and reads through `ReadsTermsThrough`, which an expand step
+raises with `ReadableTermsVersion` (ADR-024, readable before writable). Terms stamped above the read
+ceiling fail loudly; terms stamped above the write version, or populating a term introduced above
+it, are read but refused on write (`EnsureWritableAsAssetSpecificTerms`, `TryGetWriteRefusal`), and
+profile envelopes are checked by stamp only. Economic modules a flat conversion cannot
 express travel under the reserved `retainedEconomicTerms` key and fold back on the next economic
 rebuild. Reserved envelope keys are rejected as user-editable term fields.
 `SecurityMasterEventEnvelope` carries `PayloadType`/`PayloadVersion`;
@@ -283,6 +287,11 @@ dashboard, and WPF.
 `SecurityAssetTermsSchema.ElementFields("Swap", "legs")` declares the serialized swap-leg
 field names and types. Codec tests compare this nested contract with persisted terms and the
 cash-flow reader so a top-level `legs` array alone cannot conceal missing leg economics.
+`ElementFields` also declares the twelve-member `scheduleConventions` shape under
+`Bond.scheduleConventions`, `CertificateOfDeposit.scheduleConventions`,
+`StructuredCredit.scheduleConventions` and `Swap.legs.scheduleConventions`. The block is tagged
+above each class's write version, so `WritableFields` (what the registry, term blocks and field
+edits offer) leaves it out, and `PopulatedTermsAbove` finds it in a payload.
 
 A term field that names something the instrument depends on declares its role with
 `LinksUnderlying` (`SecurityAssetTermField.UnderlyingRole`): an underlying, reference entity or
@@ -1184,7 +1193,8 @@ carries typed tranche terms at asset-class terms version 2 (`structuredCreditKin
 of the deal balance, `weightedAverageCoupon`/`weightedAverageMaturityMonths`/
 `weightedAverageLoanAgeMonths`, and the CLO `reinvestmentPeriodEnd`/`nonCallPeriodEnd` dates); all
 are optional, so a version-1 payload reads unchanged, and the pool statistics bridge to the
-`structuredProduct` economic module. The registry keeps
+`structuredProduct` economic module. It reads through version 3, which adds only the optional
+`scheduleConventions` block and is not yet writable. The registry keeps
 `CustomAsset` as the governed compatibility and wide-capture fallback for profile-backed records
 that cannot yet be upgraded to one of those minimum first-class classes.
 `SecurityAssetPackRegistry` defines the additive asset-pack registry contract for wide capture and
@@ -1813,7 +1823,11 @@ engines step in whole months, or `AtMaturity`, are accepted on write. Both sched
 cadence through `SecurityTermConventions.LegacyCouponPaymentsPerYear`, which takes
 `CouponPaymentsPerYear`'s answer for every spelling it recognizes and keeps the pre-convention
 reading (one payment a year, or a count clamped to 1 through 12) for anything else.
-Conventions declared on array elements (the swap legs) are enforced on write like top-level ones. Swap legs may carry optional `notionalSchedule` (`{effectiveDate, notional}` steps) and
+The `BusinessDayConvention`, `RollConvention` and `StubPolicy` conventions parse the
+`scheduleConventions` block's spellings onto the schedule kernel's `BusinessDayConvention`,
+`ScheduleRoll` and `ScheduleStubPolicy` (`TryParseBusinessDayConvention`, `TryParseRollConvention`,
+`TryParseStubPolicy`). Conventions declared on array elements (the swap legs) are enforced on write
+like top-level ones, and the readable-only block is refused on write altogether. Swap legs may carry optional `notionalSchedule` (`{effectiveDate, notional}` steps) and
 `resetSchedule` (`{resetDate, fixingRate}`) arrays; `StructuredCashFlowLeg.NotionalOn` and `FixingOn`
 let the leg scheduler accrue on the scheduled notional (paying step-downs as principal when the leg
 exchanges principal) and use a recorded fixing for a period that has already reset. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
@@ -1838,8 +1852,9 @@ floating legs. `SecurityFactorHistoryProjector` merges the declared factor sched
 factors and the dated scalar factor into one dated history with same-day conflicts.
 `CorporateActionTerms.From` reads a `CorporateActionDto` into its event family's typed terms
 (cash distribution, split, exchange, redemption, principal paydown and others); a coverage test
-holds every catalog event type to a family. `SecurityTermBlocks` lists each class's nested blocks
-from the registry. `SecurityAssetTermRole` marks operational fields (pricing sources) apart from
+holds every catalog event type to a family. `SecurityTermBlocks` lists each class's writable nested
+blocks from the registry; `BuildPatch` refuses a block the class only reads with the
+not-yet-writable reason (`TryDescribeReadableOnlyBlock`). `SecurityAssetTermRole` marks operational fields (pricing sources) apart from
 economics. `SecurityAssetTermFormModel` holds the schema-driven editor rules. The unused
 `BondAccountingElectionsDto` and `BondYieldAdjustmentMethod` are retired; accounting elections live
 on the lot.

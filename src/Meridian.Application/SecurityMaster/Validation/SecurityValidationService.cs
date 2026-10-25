@@ -288,7 +288,9 @@ public sealed class SecurityValidationService : ISecurityValidationService
     /// current terms version: exactly the payloads <see cref="SecurityAssetClassTermsUpgrader"/> reads
     /// through the class's upgrade steps, among those whose <c>schemaVersion</c> is an integer. It
     /// measures the backlog of older per-class versions (ADR-024) and never blocks: the record reads
-    /// correctly, and workflow gates drop informational issues.
+    /// correctly, and workflow gates drop informational issues. "Current" is the version this node
+    /// writes; a payload stamped above it and within what the node reads is neither behind nor
+    /// reported.
     /// </summary>
     private static IReadOnlyList<SecurityValidationIssueDto> ValidateAssetClassTermsVersion(SecurityProjectionRecord record)
     {

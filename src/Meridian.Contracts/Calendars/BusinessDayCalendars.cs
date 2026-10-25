@@ -60,6 +60,25 @@ public static class BusinessDayCalendars
         return new JointBusinessDayCalendar(list);
     }
 
+    /// <summary>
+    /// The id <see cref="Joint"/> would give the calendars named <paramref name="calendarIds"/>, without
+    /// resolving them: blank ids dropped, ids trimmed and de-duplicated ignoring case (the first
+    /// spelling kept), then sorted ordinally and joined with <c>+</c>. A single id is returned as
+    /// itself and no id as <see langword="null"/>. Terms that name payment calendars record their
+    /// joint calendar under this id.
+    /// </summary>
+    public static string? JointCalendarId(IEnumerable<string?> calendarIds)
+    {
+        ArgumentNullException.ThrowIfNull(calendarIds);
+        var ids = calendarIds
+            .Where(static id => !string.IsNullOrWhiteSpace(id))
+            .Select(static id => id!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static id => id, StringComparer.Ordinal)
+            .ToArray();
+        return ids.Length == 0 ? null : string.Join("+", ids);
+    }
+
     /// <summary>Returns <paramref name="date"/> when it is a business day, otherwise the next one.</summary>
     /// <exception cref="InvalidOperationException">No business day lies within <see cref="MaxRollDays"/> days.</exception>
     public static DateOnly NextOrSameBusinessDay(this IBusinessDayCalendar calendar, DateOnly date)

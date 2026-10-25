@@ -461,7 +461,9 @@ public static partial class SecurityMasterEndpoints
             if (!SecurityTermBlocks.For(current.AssetClass).Any(field => string.Equals(field.Key, blockKey, StringComparison.Ordinal)))
             {
                 return Results.Problem(
-                    $"Asset class '{current.AssetClass}' declares no term block '{blockKey}'.",
+                    SecurityTermBlocks.TryDescribeReadableOnlyBlock(current.AssetClass, blockKey, out var readableOnly)
+                        ? readableOnly
+                        : $"Asset class '{current.AssetClass}' declares no term block '{blockKey}'.",
                     statusCode: StatusCodes.Status400BadRequest);
             }
 

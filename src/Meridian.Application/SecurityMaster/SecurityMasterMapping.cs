@@ -258,7 +258,13 @@ internal static class SecurityMasterMapping
 
     private static SecurityKind ToSecurityKind(string assetClass, JsonElement json, SecurityKindMappingMode mode = SecurityKindMappingMode.Read)
     {
-        EnsureSupportedAssetSchemaVersion(assetClass, json);
+        EnsureSupportedAssetSchemaVersion(assetClass, json, mode);
+        // A term above the class's write version is decoded only from a flat payload stamped at or
+        // above it (ADR-024, readable before writable). Writes and profile envelopes decode exactly
+        // what the write version declares, so their bytes never change.
+        var decodeThrough = mode == SecurityKindMappingMode.Write || SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, json)
+            ? SecurityAssetClassCatalog.GetTermsVersion(assetClass)
+            : Math.Max(SecurityAssetClassCatalog.GetTermsVersion(assetClass), SecurityTermsEnvelope.ResolveAssetClassTermsVersion(json));
         // The guard sees the stored or submitted payload; the decoder reads it at the class's current
         // terms version (ADR-024). Identity steps return the same element.
         json = SecurityAssetClassTermsUpgrader.UpgradeForRead(assetClass, json);
@@ -293,7 +299,7 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(json, "deliveryLocationCode")),
                 GetOptionalBoolean(json, "isRollTarget") ?? false,
                 ToOption(GetOptionalInt(json, "rollWindowDays")))),
-            "Bond" => SecurityKind.NewBond(ToBondTerms(json, mode)),
+            "Bond" => SecurityKind.NewBond(ToBondTerms(json, mode, ReadScheduleConventions(json, assetClass, decodeThrough))),
             "FxSpot" => SecurityKind.NewFxSpot(new FxSpotTerms(
                 GetRequiredString(json, "baseCurrency"),
                 GetRequiredString(json, "quoteCurrency"))),
@@ -314,7 +320,8 @@ internal static class SecurityMasterMapping
                 GetRequiredDateOnly(json, "maturity"),
                 ToOption(GetOptionalDecimal(json, "couponRate")),
                 ToOption(GetOptionalDateOnly(json, "callableDate")),
-                ToOption(GetOptionalString(json, "dayCount")))),
+                ToOption(GetOptionalString(json, "dayCount")),
+                ReadScheduleConventions(json, assetClass, decodeThrough))),
             "CommercialPaper" => SecurityKind.NewCommercialPaper(new CommercialPaperTerms(
                 GetRequiredString(json, "issuerName"),
                 GetRequiredDateOnly(json, "maturity"),
@@ -349,7 +356,7 @@ internal static class SecurityMasterMapping
             "Swap" => SecurityKind.NewSwap(new SwapTerms(
                 GetRequiredDateOnly(json, "effectiveDate"),
                 GetRequiredDateOnly(json, "maturityDate"),
-                ToFSharpList(GetSwapLegItems(json).Select(ToSwapLeg)))),
+                ToFSharpList(GetSwapLegItems(json).Select(leg => ToSwapLeg(leg, ReadLegScheduleConventions(leg, assetClass, decodeThrough)))))),
             "DirectLoan" => SecurityKind.NewDirectLoan(new DirectLoanTerms(
                 GetRequiredString(json, "borrower"),
                 ToOption(GetOptionalDateOnly(json, "maturity")),
@@ -382,7 +389,10 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalInt(terms, "weightedAverageMaturityMonths", mode)),
                 ToOption(GetOptionalInt(terms, "weightedAverageLoanAgeMonths", mode)),
                 ToOption(GetOptionalDateOnly(terms, "reinvestmentPeriodEnd", mode)),
-                ToOption(GetOptionalDateOnly(terms, "nonCallPeriodEnd", mode)))),
+                ToOption(GetOptionalDateOnly(terms, "nonCallPeriodEnd", mode)),
+                // From the root: a profile envelope's decode ceiling is the write version, so its
+                // profileFields never reach the block.
+                ReadScheduleConventions(json, assetClass, decodeThrough))),
             "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
                 GetRequiredString(terms, "gpSponsor"),
                 GetRequiredString(terms, "strategy"),
@@ -741,7 +751,7 @@ internal static class SecurityMasterMapping
     /// decode already apply. An absent <c>couponType</c> still means <c>Fixed</c> on both paths: it
     /// is the serializer's own spelling for a plain fixed coupon, not an unreadable value.
     /// </summary>
-    private static BondTerms ToBondTerms(JsonElement json, SecurityKindMappingMode mode)
+    private static BondTerms ToBondTerms(JsonElement json, SecurityKindMappingMode mode, ScheduleConventions scheduleConventions)
     {
         var couponType = GetOptionalString(json, "couponType") ?? "Fixed";
         BondCouponStructure coupon = couponType switch
@@ -791,12 +801,53 @@ internal static class SecurityMasterMapping
             ToOption(GetOptionalDateOnly(json, "legalFinalMaturity")),
             ToOption(GetOptionalDateOnly(json, "preRefundDate")),
             ToOption(GetOptionalDateOnly(json, "mandatoryPutDate")),
-            ToFSharpList(GetOptionalArrayItemsStrict(json, "principalSchedule").Select(ToPrincipalPaymentEntry)));
+            ToFSharpList(GetOptionalArrayItemsStrict(json, "principalSchedule").Select(ToPrincipalPaymentEntry)),
+            scheduleConventions);
+    }
+
+    private const string ScheduleConventionsKey = "scheduleConventions";
+
+    private static ScheduleConventions ReadScheduleConventions(JsonElement container, string assetClass, int decodeThrough)
+        => ReadScheduleConventions(container, SecurityAssetTermsSchema.Field(assetClass, ScheduleConventionsKey), decodeThrough);
+
+    private static ScheduleConventions ReadLegScheduleConventions(JsonElement leg, string assetClass, int decodeThrough)
+        => leg.ValueKind == JsonValueKind.Object
+            ? ReadScheduleConventions(
+                leg,
+                SecurityAssetTermsSchema.ElementFields(assetClass, "legs").FirstOrDefault(static field => field.Key == ScheduleConventionsKey),
+                decodeThrough)
+            : ScheduleConventionsModule.Empty;
+
+    // The scheduleConventions block (ADR-024, readable before writable): decoded only when the class
+    // declares it at or below decodeThrough, so a version-1 row, an unstamped row, a profile envelope
+    // and every write decode nothing and keep their bytes. Members are read tolerantly and verbatim;
+    // SecurityMasterService refuses to re-serialize a row whose block content this cannot type, before
+    // anything could be dropped.
+    private static ScheduleConventions ReadScheduleConventions(JsonElement container, SecurityAssetTermField? field, int decodeThrough)
+    {
+        if (field is null || field.SinceTermsVersion > decodeThrough || GetOptionalObject(container, field.Key) is not { } block)
+        {
+            return ScheduleConventionsModule.Empty;
+        }
+
+        return new ScheduleConventions(
+            ToOption(GetOptionalString(block, "businessDayConvention")),
+            ToOption(GetOptionalBoolean(block, "accrualAdjusted")),
+            ToFSharpList(GetOptionalStringArray(block, "paymentCalendars").Where(static calendar => !string.IsNullOrWhiteSpace(calendar))),
+            ToOption(GetOptionalInt(block, "paymentLagBusinessDays")),
+            ToOption(GetOptionalString(block, "rollConvention")),
+            ToOption(GetOptionalBoolean(block, "endOfMonthRule")),
+            ToOption(GetOptionalDateOnly(block, "firstRegularDate")),
+            ToOption(GetOptionalDateOnly(block, "lastRegularDate")),
+            ToOption(GetOptionalString(block, "direction")),
+            ToOption(GetOptionalString(block, "stubPolicy")),
+            ToOption(GetOptionalString(block, "couponRateUnit")),
+            ToOption(GetOptionalString(block, "couponCashBasis")));
     }
 
     // Match the cash-flow resolver's alias priority, while refusing malformed supplied economics
     // instead of persisting them as absent. The pre-widening four-field leg remains readable.
-    private static SwapLeg ToSwapLeg(JsonElement json)
+    private static SwapLeg ToSwapLeg(JsonElement json, ScheduleConventions scheduleConventions)
     {
         if (json.ValueKind != JsonValueKind.Object)
         {
@@ -819,7 +870,8 @@ internal static class SecurityMasterMapping
             ToOption(ReadSwapLegString(json, "dayCountConvention", "dayCount", "dayCountBasis")),
             ReadSwapLegPrincipalExchange(json),
             ToFSharpList(ReadSwapLegNotionalSchedule(json)),
-            ToFSharpList(ReadSwapLegResetSchedule(json)));
+            ToFSharpList(ReadSwapLegResetSchedule(json)),
+            scheduleConventions);
     }
 
     // Dated schedules on a leg. Like the leg's scalar terms, a malformed entry is refused rather
@@ -1095,9 +1147,19 @@ internal static class SecurityMasterMapping
     private static JsonElement ParseJson(string json)
         => JsonDocument.Parse(json).RootElement.Clone();
 
-    private static void EnsureSupportedAssetSchemaVersion(string assetClass, JsonElement json)
+    private static void EnsureSupportedAssetSchemaVersion(string assetClass, JsonElement json, SecurityKindMappingMode mode)
     {
-        SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, json);
+        // A write is also refused when it is readable but not writable on this node: stamped above
+        // the class's write version, or populating a term introduced above it (ADR-024).
+        if (mode == SecurityKindMappingMode.Write)
+        {
+            SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms(assetClass, json);
+        }
+        else
+        {
+            SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, json);
+        }
+
         var schemaVersion = GetOptionalInt(json, "schemaVersion")
             ?? SecurityMasterSchemaVersions.DefaultAssetSpecificTerms;
         var isProfileBacked = IsProfileBackedAssetPayload(assetClass, json);
