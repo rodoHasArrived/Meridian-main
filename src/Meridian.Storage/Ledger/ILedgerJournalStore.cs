@@ -408,7 +408,12 @@ public sealed record LedgerTaxLotRecord(
     Meridian.Contracts.Accounting.Lots.OpenLotAcquisitionDto? Acquisition = null,
     // The latest governed open-basis restatement; absent on every lot that was never restated.
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto? BasisAdjustment = null)
+    Meridian.Contracts.Accounting.Lots.OpenLotBasisAdjustmentDto? BasisAdjustment = null,
+    // The paydown factor the lot currently holds; absent while the lot is still at its booked
+    // factor, which is every lot that has absorbed no governed paydown. Never stamped at
+    // acquisition, even when it would equal the booked factor, so retained digests stay stable.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    decimal? CurrentFactor = null)
 {
     /// <summary>
     /// True when the lot recorded the acquisition-time par conventions

@@ -458,6 +458,9 @@ public sealed partial class PostgresLedgerJournalStore
         if (lot.BasisAdjustment is not null)
             throw new LedgerValidationException("Atomic acquisition cannot introduce a basis adjustment; use a governed basis mutation.");
 
+        if (lot.CurrentFactor is not null)
+            throw new LedgerValidationException("Atomic acquisition opens a lot at its booked factor; a paydown factor is applied by a governed lot mutation.");
+
         ArgumentNullException.ThrowIfNull(lot.Account);
         if ((lot.Acquisition?.Direction ?? OpenLotDirection.Long) != command.Direction)
             throw new LedgerValidationException("Atomic acquisition direction must match its immutable acquisition facts.");
@@ -865,7 +868,8 @@ public sealed partial class PostgresLedgerJournalStore
                    booked_factor,
                    par_basis,
                    acquisition_terms,
-                   basis_adjustment
+                   basis_adjustment,
+                   current_factor
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and tax_lot_record_id = any(@tax_lot_record_ids)
@@ -973,7 +977,8 @@ public sealed partial class PostgresLedgerJournalStore
                    booked_factor,
                    par_basis,
                    acquisition_terms,
-                   basis_adjustment
+                   basis_adjustment,
+                   current_factor
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
@@ -1197,7 +1202,8 @@ public sealed partial class PostgresLedgerJournalStore
                       booked_factor,
                       par_basis,
                       acquisition_terms,
-                      basis_adjustment;
+                      basis_adjustment,
+                      current_factor;
             """;
         AddAtomicTaxLotParameters(insert, acquired);
         AddBasisAdjustmentParameter(insert, acquired.BasisAdjustment);
@@ -1288,7 +1294,8 @@ public sealed partial class PostgresLedgerJournalStore
                       booked_factor,
                       par_basis,
                       acquisition_terms,
-                      basis_adjustment;
+                      basis_adjustment,
+                      current_factor;
             """;
         update.Parameters.AddWithValue("tax_lot_record_id", selection.TaxLotRecordId);
         update.Parameters.AddWithValue("ledger_book_id", command.LedgerBookId);
@@ -1567,7 +1574,8 @@ public sealed partial class PostgresLedgerJournalStore
                    booked_factor,
                    par_basis,
                    acquisition_terms,
-                   basis_adjustment
+                   basis_adjustment,
+                   current_factor
             from {Qualified("tax_lots")}
             where tax_lot_record_id = @tax_lot_record_id
               and ledger_book_id = @ledger_book_id

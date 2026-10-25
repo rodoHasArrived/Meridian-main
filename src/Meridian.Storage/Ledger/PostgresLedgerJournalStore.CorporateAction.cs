@@ -314,6 +314,14 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         NpgsqlConnection connection, NpgsqlTransaction transaction, AtomicTaxLotJournalCommand command,
         LedgerTaxLotRecord before, DateTimeOffset recordedAt, CancellationToken ct)
     {
+        // The successor is built from the canonical open-lot target, which carries no current
+        // factor, and re-books the predecessor's acquisition factor. Replacing a paid-down lot that
+        // way would silently reset its factor, so a predecessor that has absorbed a paydown is
+        // refused until the successor can inherit it.
+        if (before.CurrentFactor is not null)
+            throw new LedgerValidationException(
+                $"Lot '{before.LotId}' has absorbed a paydown (current factor {before.CurrentFactor}); a corporate-action successor cannot yet inherit it.");
+
         await using var update = connection.CreateCommand();
         update.Transaction = transaction;
         update.CommandText = $"""

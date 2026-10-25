@@ -6425,7 +6425,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_042__atomic_lot_successors.sql
 │   │   │   │   ├── V_ledger_043__amortization_reversal_basis_restoration.sql
 │   │   │   │   ├── V_ledger_050__atomic_lot_capital_return.sql
-│   │   │   │   └── V_ledger_051__tax_lot_account_case_insensitive_keys.sql
+│   │   │   │   ├── V_ledger_051__tax_lot_account_case_insensitive_keys.sql
+│   │   │   │   └── V_ledger_052__tax_lot_current_factor.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -11319,6 +11320,7 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CarryDateLineage.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.CurrentBasis.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.CurrentFactor.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.DeferralRecipients.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Direction.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.DirectWrites.cs

@@ -1345,6 +1345,66 @@
       "target_schema": "ledger"
     },
     {
+      "fingerprint": "ee184895eb395c937dc5ee397230c26fc4704dc8d20f452d77cbb54488da4b34",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lots_current_factor on ledger.tax_lots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.acquisition_terms",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "8b203c63688f7593fa2fcee87e6029445fe36edb3e7a1e4f14d18e2e8d27051d",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lots_current_factor on ledger.tax_lots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.booked_factor",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "e5ea48d31be256a431360efd5a8c4e33cfda5b62e56762a54518995bb0143f97",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lots_current_factor on ledger.tax_lots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.current_factor",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "6a5e110a5f901a91129de74a659247fd626c66276c76a9d690e3c15841ad1983",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lots_current_factor on ledger.tax_lots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.original_face",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "6673978377d3e200d65f2556bac26258f261a18b1afc0935c6f9dbd933ba2d23",
+      "kind": "normal",
+      "source": "ledger.ck_tax_lots_current_factor on ledger.tax_lots",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.par_basis",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
       "fingerprint": "58af9cfa61edceb26fbe5b4c513f04e034097b8a2b06fd1961f1811e1a71f975",
       "kind": "normal",
       "source": "ledger.ck_tax_lots_face_terms on ledger.tax_lots",
@@ -2477,7 +2537,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "aa594f4046e7fc3191005a86905b4eea9faa9c26bb2770a6e151f3204683e112",
+  "fingerprint": "e4854183d788e99db0b3011d84c6222002039e8dadc76f94ead40ddd94409f24",
   "foreign_tables": [],
   "functions": [
     {
@@ -2787,6 +2847,37 @@
       "security_definer": false,
       "security_labels": [],
       "signature": "protect_open_lot_basis_adjustment()",
+      "strict": false,
+      "volatility": "volatile"
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "PUBLIC",
+          "grantor": "meridian",
+          "privilege": "execute"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "execute"
+        }
+      ],
+      "comment": null,
+      "definition_hash": "d2054fc44a2625329b607aa57d14511733839ffbc1b2629187287951da5d7a9a",
+      "fingerprint": "d18d70ee5ea5e8528dac91488576fb8fc2430f505f2b32df1b3d124e467169f7",
+      "kind": "function",
+      "language": "plpgsql",
+      "name": "protect_open_lot_current_factor",
+      "owner": "meridian",
+      "parallel_safety": "unsafe",
+      "result_type": "trigger",
+      "schema": "ledger",
+      "security_definer": false,
+      "security_labels": [],
+      "signature": "protect_open_lot_current_factor()",
       "strict": false,
       "volatility": "volatile"
     },
@@ -16717,6 +16808,22 @@
           "security_labels": [],
           "type_name": "jsonb",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "numeric(38,12)",
+          "default": null,
+          "fingerprint": "2a23ea3373a9aa351fd9e7772f435366ed09047d4252170b69896e319f2608eb",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "current_factor",
+          "nullable": true,
+          "ordinal_position": 27,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -16797,6 +16904,30 @@
           "initially_deferred": false,
           "match_type": null,
           "name": "ck_tax_lots_currency",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "current_factor",
+            "acquisition_terms",
+            "original_face",
+            "booked_factor",
+            "par_basis"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (current_factor IS NULL OR acquisition_terms IS NOT NULL AND original_face IS NOT NULL AND booked_factor IS NOT NULL AND par_basis IS NOT NULL AND current_factor > 0::numeric AND current_factor < booked_factor)",
+          "delete_action": null,
+          "fingerprint": "04e0cefd6c8481e39113345d07ee82c96fbdd23112391f32dcb7064d6daedd10",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_tax_lots_current_factor",
           "no_inherit": false,
           "referenced_columns": [],
           "referenced_schema": null,
@@ -17021,7 +17152,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "2fbab82b0fbf344a864891f90fa2f7ffa718fdcd1ace088ab87879991d8be4b4",
+      "fingerprint": "2fc9a1b021de2e08ca3ee17d1df30cb53b70ec4fe13421de2974d1a26df36b9b",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -17264,6 +17395,24 @@
           "function_signature": "protect_open_lot_basis_adjustment()",
           "level": "row",
           "name": "protect_open_lot_basis_adjustment",
+          "relation": "tax_lots",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER protect_open_lot_current_factor BEFORE INSERT OR UPDATE ON ledger.tax_lots FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_current_factor()",
+          "definition_hash": "46d8554ec5e75deeac2b71d7ed97ff8a90d5dcae98b6aae140c3d7589f0fd273",
+          "enabled": "origin",
+          "events": [
+            "insert",
+            "update"
+          ],
+          "fingerprint": "adaab71c80b6c839f5a7d0ac5e89129875bc25ce89105f362e8e5313f8548103",
+          "function_schema": "ledger",
+          "function_signature": "protect_open_lot_current_factor()",
+          "level": "row",
+          "name": "protect_open_lot_current_factor",
           "relation": "tax_lots",
           "schema": "ledger",
           "timing": "before"
@@ -31722,6 +31871,22 @@
           "security_labels": [],
           "type_name": "jsonb",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "numeric(38,12)",
+          "default": null,
+          "fingerprint": "2a23ea3373a9aa351fd9e7772f435366ed09047d4252170b69896e319f2608eb",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "current_factor",
+          "nullable": true,
+          "ordinal_position": 27,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -31802,6 +31967,30 @@
           "initially_deferred": false,
           "match_type": null,
           "name": "ck_tax_lots_currency",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "current_factor",
+            "acquisition_terms",
+            "original_face",
+            "booked_factor",
+            "par_basis"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (current_factor IS NULL OR acquisition_terms IS NOT NULL AND original_face IS NOT NULL AND booked_factor IS NOT NULL AND par_basis IS NOT NULL AND current_factor > 0::numeric AND current_factor < booked_factor)",
+          "delete_action": null,
+          "fingerprint": "04e0cefd6c8481e39113345d07ee82c96fbdd23112391f32dcb7064d6daedd10",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_tax_lots_current_factor",
           "no_inherit": false,
           "referenced_columns": [],
           "referenced_schema": null,
@@ -32026,7 +32215,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "2fbab82b0fbf344a864891f90fa2f7ffa718fdcd1ace088ab87879991d8be4b4",
+      "fingerprint": "2fc9a1b021de2e08ca3ee17d1df30cb53b70ec4fe13421de2974d1a26df36b9b",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -32269,6 +32458,24 @@
           "function_signature": "protect_open_lot_basis_adjustment()",
           "level": "row",
           "name": "protect_open_lot_basis_adjustment",
+          "relation": "tax_lots",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER protect_open_lot_current_factor BEFORE INSERT OR UPDATE ON ledger.tax_lots FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_current_factor()",
+          "definition_hash": "46d8554ec5e75deeac2b71d7ed97ff8a90d5dcae98b6aae140c3d7589f0fd273",
+          "enabled": "origin",
+          "events": [
+            "insert",
+            "update"
+          ],
+          "fingerprint": "adaab71c80b6c839f5a7d0ac5e89129875bc25ce89105f362e8e5313f8548103",
+          "function_schema": "ledger",
+          "function_signature": "protect_open_lot_current_factor()",
+          "level": "row",
+          "name": "protect_open_lot_current_factor",
           "relation": "tax_lots",
           "schema": "ledger",
           "timing": "before"
@@ -33315,6 +33522,24 @@
       "function_signature": "protect_open_lot_basis_adjustment()",
       "level": "row",
       "name": "protect_open_lot_basis_adjustment",
+      "relation": "tax_lots",
+      "schema": "ledger",
+      "timing": "before"
+    },
+    {
+      "comment": null,
+      "definition": "CREATE TRIGGER protect_open_lot_current_factor BEFORE INSERT OR UPDATE ON ledger.tax_lots FOR EACH ROW EXECUTE FUNCTION ledger.protect_open_lot_current_factor()",
+      "definition_hash": "46d8554ec5e75deeac2b71d7ed97ff8a90d5dcae98b6aae140c3d7589f0fd273",
+      "enabled": "origin",
+      "events": [
+        "insert",
+        "update"
+      ],
+      "fingerprint": "adaab71c80b6c839f5a7d0ac5e89129875bc25ce89105f362e8e5313f8548103",
+      "function_schema": "ledger",
+      "function_signature": "protect_open_lot_current_factor()",
+      "level": "row",
+      "name": "protect_open_lot_current_factor",
       "relation": "tax_lots",
       "schema": "ledger",
       "timing": "before"

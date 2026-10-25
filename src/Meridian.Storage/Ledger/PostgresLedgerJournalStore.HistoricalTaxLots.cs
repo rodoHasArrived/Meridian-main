@@ -63,7 +63,8 @@ public sealed partial class PostgresLedgerJournalStore
                    booked_factor,
                    par_basis,
                    acquisition_terms,
-                   basis_adjustment
+                   basis_adjustment,
+                   current_factor
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and security_id = @security_id

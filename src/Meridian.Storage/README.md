@@ -489,6 +489,15 @@ after exact replay, so their lock order cannot oppose a backfill holding that bo
 `OpenLotBackfillPostgresTests` covers physical row-lock contention, cancellation, stale
 reference versions, rollback and restart replay using real reference stores.
 
+`V_ledger_052__tax_lot_current_factor.sql` adds the nullable `current_factor` the lot of record
+holds after a paydown: null while the lot is still at its booked factor (every lot today), never
+stamped at acquisition so retained digests stay stable, and movable only by a governed decline
+(`ck_tax_lots_current_factor`, `protect_open_lot_current_factor`). `LedgerTaxLotRecord.CurrentFactor`
+is read at ordinal 26 on every lot path and `LedgerTaxLotFaceValueTerms.ToFaceValueLot` rehydrates
+the aggregate at that factor, so `FaceOutstanding` is the paid-down face. The as-of read and the
+corporate-action successor fail closed on a paid-down lot until the paydown mutation dates the
+factor. Focused proof: `AtomicTaxLotJournalStoreTests.CurrentFactor`, `HistoricalTaxLotQuantityTests`.
+
 Durable disposal now uses the canonical decimal relief guard. Missing identity, quantity basis, or acquisition FX blocks relief and authoritative reporting until repaired. Reporting carries canonical lot evidence alongside retained disposal history; current market FX never substitutes for acquisition FX. Durable AverageCost posting remains refused until remaining-lot basis redistribution has its own atomic proof.
 
 ### Reviewed fund tenant backfill

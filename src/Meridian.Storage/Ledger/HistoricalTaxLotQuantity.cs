@@ -16,6 +16,13 @@ internal static class HistoricalTaxLotQuantity
         LedgerValidationException Missing() => new(
             $"Historical quantity for lot '{lot.TaxLotRecordId}' cannot be established from complete retained mutation evidence.");
 
+        // The as-of read restates quantity only. A lot that has absorbed a paydown carries a current
+        // factor the mutation history here does not yet date, so projecting it would let a later
+        // factor leak into an earlier as-of date (paydowns post with a lag). Fail closed until the
+        // paydown mutation restates the factor as of the effective date too.
+        if (lot.CurrentFactor is not null)
+            throw Missing();
+
         if (history.Count == 0)
         {
             // A pristine legacy acquisition has no relief to reverse. A reduced or rewritten legacy

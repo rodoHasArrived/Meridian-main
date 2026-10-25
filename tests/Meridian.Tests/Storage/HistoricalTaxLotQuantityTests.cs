@@ -92,6 +92,20 @@ public sealed class HistoricalTaxLotQuantityTests
             .OpenQuantity.Should().Be(100m);
     }
 
+    [Fact]
+    public void Project_RefusesALotThatHoldsACurrentFactor()
+    {
+        // The as-of read restates quantity from dated mutations; it cannot yet date the factor a
+        // paid-down lot holds, so projecting one would let a later factor leak into an earlier
+        // effective date. A complete history is no help: the refusal is about the factor.
+        var (lot, history) = Scenario(40);
+
+        var act = () => HistoricalTaxLotQuantity.Project(lot with { CurrentFactor = 0.7m }, history, new(2026, 5, 15));
+
+        act.Should().Throw<LedgerValidationException>().WithMessage("*cannot be established*");
+        HistoricalTaxLotQuantity.Project(lot, history, new(2026, 5, 15)).OpenQuantity.Should().Be(100m);
+    }
+
     private static (LedgerTaxLotRecord Lot, DatedTaxLotQuantityMutation[] History) Scenario(decimal sold)
     {
         var acquired = Guid.NewGuid();
