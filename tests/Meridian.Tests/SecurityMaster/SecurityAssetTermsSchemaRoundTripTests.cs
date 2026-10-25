@@ -448,7 +448,9 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
     public void FullPayload_DeclaresEverySchemaField(string assetClass)
     {
         var payloadKeys = PayloadKeys(assetClass);
-        foreach (var field in SecurityAssetTermsSchema.Fields(assetClass))
+        // The fully-populated payloads are WRITES, so they carry what the node writes; a term it
+        // only reads (ADR-024) has its own readable twin below.
+        foreach (var field in SecurityAssetTermsSchema.WritableFields(assetClass))
         {
             payloadKeys.Should().Contain(
                 field.Key,
@@ -484,7 +486,7 @@ public sealed class SecurityAssetTermsSchemaRoundTripTests
         var serializedKeys = ElementKeys(serialized);
         serializedKeys.RemoveWhere(SecurityTermsEnvelope.IsReservedKey);
 
-        var declaredKeys = SecurityAssetTermsSchema.Fields(assetClass)
+        var declaredKeys = SecurityAssetTermsSchema.WritableFields(assetClass)
             .Select(static field => field.Key)
             .ToHashSet(StringComparer.Ordinal);
 

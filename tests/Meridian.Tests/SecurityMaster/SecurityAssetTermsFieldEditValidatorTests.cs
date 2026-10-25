@@ -230,7 +230,9 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
         string[] reservedGovernanceKeys = ["customProfileId", "profileVersion", "profileApproval"];
         foreach (var assetClass in SecurityAssetTermsSchema.AssetClasses)
         {
-            foreach (var field in SecurityAssetTermsSchema.Fields(assetClass))
+            // Only what the node writes: a term it reads ahead of writing (ADR-024) is refused, which
+            // the readable-only edit tests below pin.
+            foreach (var field in SecurityAssetTermsSchema.WritableFields(assetClass))
             {
                 if (reservedGovernanceKeys.Contains(field.Key, StringComparer.OrdinalIgnoreCase))
                 {

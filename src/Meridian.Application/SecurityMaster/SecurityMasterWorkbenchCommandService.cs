@@ -1011,6 +1011,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
 
         var stagedOverrides = await TryGetStagedOverrideValuesAsync(request.SecurityId, ct).ConfigureAwait(false);
         Meridian.FSharp.Domain.SecurityKind kind;
+        JsonElement effectiveTerms;
         try
         {
             var envelope = System.Text.Json.Nodes.JsonNode.Parse(projection.AssetSpecificTerms.GetRawText())?.AsObject();
@@ -1043,7 +1044,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 ApplyFirstClassTermOverlay(envelope, projection.AssetClass, canonicalFieldPath, request.NewValue!);
             }
 
-            var effectiveTerms = JsonSerializer.SerializeToElement(envelope);
+            effectiveTerms = JsonSerializer.SerializeToElement(envelope);
             kind = SecurityMasterMapping.ToRecord(projection with { AssetSpecificTerms = effectiveTerms }).Kind;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -1060,6 +1061,14 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 "against the class's domain invariants. Migrate the record's retained terms to the canonical shape " +
                 "through a governed amendment and retry; the namespace only accepts validated writes.",
                 nameof(request));
+        }
+
+        // The read above accepts a row this node only reads (ADR-024, readable before writable); the
+        // merge maps the same terms in Write mode and would refuse them after approval, leaving the
+        // revision failing publish. Refuse at submission with the precise reason instead.
+        if (SecurityTermsEnvelope.TryGetWriteRefusal(projection.AssetClass, effectiveTerms, out var writeRefusal))
+        {
+            throw new ArgumentException(writeRefusal, nameof(request));
         }
 
         var invariantErrors = Meridian.FSharp.SecurityMasterInterop.SecurityMasterCommandFacade.ValidateKindInvariants(kind);

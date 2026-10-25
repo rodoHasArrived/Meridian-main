@@ -152,7 +152,28 @@ public sealed class SecurityAssetClassRegistryCoverageTests
         bond.CashFlowBehavior.Should().Be(SecurityCashFlowBehavior.ContractualSchedule);
         bond.ProjectionKind.Should().Be(SecurityTermsProjectionKind.Declarative);
         bond.SupportsSchemaDrivenCreate.Should().BeTrue();
-        bond.Fields.Select(static field => field.Key).Should().Equal(SecurityAssetTermsSchema.Fields("Bond").Select(static field => field.Key));
+        bond.Fields.Select(static field => field.Key).Should().Equal(SecurityAssetTermsSchema.WritableFields("Bond").Select(static field => field.Key));
         SecurityAssetClassRegistry.Get("MBS").AssetClass.Should().Be("StructuredCredit", "aliases resolve through the catalog");
+    }
+
+    [Fact]
+    public void NoWriteSurface_OffersATermTheNodeOnlyReads()
+    {
+        // ADR-024, readable before writable: definitions, wire DTOs, UI hints, required keys and term
+        // blocks carry only what this node writes, so neither workstation offers a term it would refuse.
+        foreach (var definition in SecurityAssetClassRegistry.All)
+        {
+            var writes = SecurityAssetClassCatalog.GetTermsVersion(definition.AssetClass);
+            definition.Fields.Should().OnlyContain(field => field.SinceTermsVersion <= writes, definition.AssetClass);
+            definition.UiHints.Should().HaveCount(definition.Fields.Count);
+            SecurityAssetClassRegistry.ToDto(definition).Fields.Select(static field => field.Key)
+                .Should().Equal(definition.Fields.Select(static field => field.Key));
+            SecurityTermBlocks.For(definition.AssetClass).Should().OnlyContain(field => field.SinceTermsVersion <= writes);
+        }
+
+        SecurityAssetClassRegistry.Get("Bond").Fields.Should().NotContain(static field => field.Key == "scheduleConventions");
+        SecurityAssetClassRegistry.Get("StructuredCredit").Fields.Should().NotContain(static field => field.Key == "scheduleConventions");
+        SecurityAssetClassRegistry.Get("StructuredCredit").Fields.Should().Contain(static field => field.Key == "structuredCreditKind",
+            "version-2 terms are written by a node at version 2");
     }
 }

@@ -51,7 +51,14 @@ public sealed class SchemaTermsValidationTests
 
         foreach (var field in SecurityAssetTermsSchema.Fields(assetClass))
         {
+            // A field above the class's write version is checked where the decoder reads it: a flat
+            // payload stamped at its version (ADR-024, readable before writable).
             var terms = new Dictionary<string, object?> { [field.Key] = WrongValueFor(field.Type) };
+            if (field.SinceTermsVersion > SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+            {
+                terms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = field.SinceTermsVersion;
+            }
+
             var issues = validator.Validate(Context(assetClass, terms));
             var path = $"assetSpecificTerms.{field.Key}";
 

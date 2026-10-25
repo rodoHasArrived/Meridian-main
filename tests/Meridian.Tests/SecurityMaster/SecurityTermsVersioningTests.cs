@@ -112,7 +112,7 @@ public sealed class SecurityTermsVersioningTests
     [Fact]
     public void EnsureReadable_RefusesANewerAssetClassTermsVersion()
     {
-        var supported = SecurityAssetClassCatalog.GetOrDefault("Bond").TermsVersion;
+        var supported = SecurityAssetClassCatalog.GetReadsTermsThrough("Bond");
         var payload = Json($$"""
             {"schemaVersion":1,"{{SecurityTermsEnvelope.FormatKey}}":"flat","{{SecurityTermsEnvelope.AssetClassTermsVersionKey}}":{{supported + 1}}}
             """);

@@ -410,7 +410,7 @@ public sealed class SecurityAssetClassTermsUpgraderTests
     }
 
     [Fact]
-    public void Since_TagsExactlyTheNineStructuredCreditVersionTwoFields()
+    public void Since_TagsExactlyTheNineStructuredCreditVersionTwoFields_AndTheScheduleConventionsBlocks()
     {
         SecurityAssetTermsSchema.Fields("StructuredCredit")
             .Where(static field => field.SinceTermsVersion == 2)
@@ -426,12 +426,65 @@ public sealed class SecurityAssetClassTermsUpgraderTests
                 "reinvestmentPeriodEnd",
                 "nonCallPeriodEnd");
 
-        foreach (var assetClass in SecurityAssetTermsSchema.AssetClasses.Where(static name => name != "StructuredCredit"))
+        // The schedule conventions block (ADR-024, readable before writable, 2026-10-25).
+        SecurityAssetTermsSchema.Fields("StructuredCredit").Where(static field => field.SinceTermsVersion == 3)
+            .Select(static field => field.Key).Should().Equal("scheduleConventions");
+        foreach (var assetClass in new[] { "Bond", "CertificateOfDeposit" })
+        {
+            SecurityAssetTermsSchema.Fields(assetClass).Where(static field => field.SinceTermsVersion > 1)
+                .Select(static field => (field.Key, field.SinceTermsVersion)).Should().Equal(("scheduleConventions", 2));
+        }
+
+        SecurityAssetTermsSchema.ElementFields("Swap", "legs").Where(static field => field.SinceTermsVersion > 1)
+            .Select(static field => (field.Key, field.SinceTermsVersion)).Should().Equal(("scheduleConventions", 2));
+
+        foreach (var assetClass in SecurityAssetTermsSchema.AssetClasses
+                     .Where(static name => name is not ("StructuredCredit" or "Bond" or "CertificateOfDeposit")))
         {
             SecurityAssetTermsSchema.Fields(assetClass).Should().OnlyContain(
                 field => field.SinceTermsVersion == 1,
-                $"{assetClass} has never bumped its terms version");
+                $"{assetClass} has never added a top-level term at a later terms version");
         }
+    }
+
+    [Fact]
+    public void GetReadsTermsThrough_ResolvesThroughTheCatalog()
+    {
+        SecurityAssetClassCatalog.GetReadsTermsThrough("StructuredCredit").Should().Be(3);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("Bond").Should().Be(2);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("CertificateOfDeposit").Should().Be(2);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("Swap").Should().Be(2);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("Equity").Should().Be(1);
+        SecurityAssetClassCatalog.GetReadsTermsThrough(null).Should().Be(1);
+        SecurityAssetClassCatalog.GetReadsTermsThrough("Nope").Should().Be(1);
+
+        foreach (var assetClass in SecurityAssetClassCatalog.AssetClasses)
+        {
+            SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass)
+                .Should().Be(SecurityAssetClassCatalog.GetOrDefault(assetClass).ReadsTermsThrough)
+                .And.BeGreaterThanOrEqualTo(SecurityAssetClassCatalog.GetTermsVersion(assetClass), "every class reads at least what it writes");
+        }
+    }
+
+    [Fact]
+    public void PendingUpgrade_IsFalseForAPayloadStampedAboveTheWriteVersion()
+    {
+        var bond = JsonSerializer.SerializeToElement(new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = 1,
+            [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
+            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = 2,
+        });
+        var structuredCredit = JsonSerializer.SerializeToElement(new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = 1,
+            [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat,
+            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = 3,
+        });
+
+        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("Bond", bond, out _, out _).Should().BeFalse();
+        SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade("StructuredCredit", structuredCredit, out _, out _).Should().BeFalse();
+        SecurityAssetClassTermsUpgrader.UpgradeForRead("Bond", bond).Should().Be(bond, "a readable-ahead stamp passes through unchanged");
     }
 
     // ── Accessor ────────────────────────────────────────────────────────────────────────────────

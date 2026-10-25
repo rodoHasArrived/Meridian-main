@@ -50,9 +50,10 @@ public sealed class SecurityAssetClassTermsUpgradeWiringTests
         SecurityMasterMapping.ToRecord(Record(V1Text)).Kind.Should().Be(v2);
         SecurityMasterMapping.ToRecord(Record(UnstampedText)).Kind.Should().Be(v2);
 
-        // The guard still sees the stored payload before the hook, so a newer stamp is refused as before.
+        // The guard still sees the stored payload before the hook, so a stamp above what the node
+        // reads (version 3 is readable ahead of write since 2026-10-25) is refused as before.
         var newer = () => SecurityMasterMapping.ToRecord(
-            Record(V1Text.Replace("\"assetClassTermsVersion\":1", "\"assetClassTermsVersion\":3", StringComparison.Ordinal)));
+            Record(V1Text.Replace("\"assetClassTermsVersion\":1", "\"assetClassTermsVersion\":4", StringComparison.Ordinal)));
         newer.Should().Throw<InvalidOperationException>().WithMessage($"*{SecurityTermsEnvelope.AssetClassTermsVersionKey}*");
     }
 

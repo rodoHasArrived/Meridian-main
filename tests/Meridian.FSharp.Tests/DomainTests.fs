@@ -211,6 +211,7 @@ let ``BondTerms callable bond preserves callDate`` () =
         PreRefundDate = None
         MandatoryPutDate = None
         PrincipalSchedule = []
+        ScheduleConventions = ScheduleConventions.empty
     }
     terms.IsCallable |> should equal true
     terms.CallDate |> should equal (Some callDate)
@@ -600,6 +601,7 @@ let private legacySwapLeg : SwapLeg = {
     ExchangesPrincipal = false
     NotionalSchedule = []
     ResetSchedule = []
+    ScheduleConventions = ScheduleConventions.empty
 }
 
 let private createSwapCommand legs =
@@ -781,6 +783,7 @@ let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` ()
         PreRefundDate = None
         MandatoryPutDate = None
         PrincipalSchedule = []
+        ScheduleConventions = ScheduleConventions.empty
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.Bond bondTerms }
@@ -821,6 +824,7 @@ let private stepBondTerms = {
     PreRefundDate = None
     MandatoryPutDate = None
     PrincipalSchedule = []
+    ScheduleConventions = ScheduleConventions.empty
 }
 
 [<Fact>]
@@ -927,6 +931,7 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
         WeightedAverageLoanAgeMonths = Some 14
         ReinvestmentPeriodEnd = Some (DateOnly(2028, 6, 15))
         NonCallPeriodEnd = Some (DateOnly(2027, 6, 15))
+        ScheduleConventions = ScheduleConventions.empty
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -998,6 +1003,7 @@ let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Ma
         WeightedAverageLoanAgeMonths = Some 36
         ReinvestmentPeriodEnd = None
         NonCallPeriodEnd = None
+        ScheduleConventions = ScheduleConventions.empty
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -1681,6 +1687,7 @@ let ``Structured credit factors above one are rejected`` () =
         WeightedAverageLoanAgeMonths = None
         ReinvestmentPeriodEnd = None
         NonCallPeriodEnd = None
+        ScheduleConventions = ScheduleConventions.empty
     }
 
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with CurrentFactor = Some 1.5m })
@@ -1879,7 +1886,8 @@ let ``Legacy upgrade reads IO and PO strips from the tranche label as whole toke
                 CurrentFactor = None; CouponOrIndex = "5.5"; FactorSchedule = None; FactorScheduleEntries = []
                 Maturity = None; Kind = None; Seniority = None; AttachmentPoint = None; DetachmentPoint = None
                 WeightedAverageCoupon = None; WeightedAverageMaturityMonths = None; WeightedAverageLoanAgeMonths = None
-                ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None })
+                ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None
+                ScheduleConventions = ScheduleConventions.empty })
         definition.Terms.StructuredProduct |> Option.defaultWith (fun () -> failwith "Expected StructuredProduct term module")
 
     // "Senior" contains the letters "io"; it is not an interest-only strip.
@@ -1912,6 +1920,7 @@ let private securitizedBond subclass coupon par =
         PreRefundDate = None
         MandatoryPutDate = None
         PrincipalSchedule = []
+        ScheduleConventions = ScheduleConventions.empty
     }
 
 let private blockerCodes (proposal: SecurityMasterLegacyUpgrade.StructuredCreditReclassificationProposal) =
