@@ -27,5 +27,6 @@ Start with:
 - [Security](security.md)
 - [Contractual Schedule](contractual-schedule.md)
 - [Business-Day Calendar](business-day-calendar.md)
+- [Credit Support](credit-support.md)
 
 When new code introduces a durable business concept, add or update the matching dictionary page before broad code generation.

@@ -119,6 +119,12 @@
       "rule_id": "migration-drop-table-member",
       "reason": "Requires human schema/storage review. Replaces only security_governance_events_stream_check with a wider check that keeps every existing stream ('OperatorOverrides', 'Aliases', 'ProjectionRebuild') and admits 'UnderlyingGraph', so declared underlying-graph links can be recorded in the append-only governance log. No row, column or trigger is removed, and the drop and re-add run in the migration runner's single transaction, so a failure leaves the original constraint in place. A reverse migration must not narrow the check while 'UnderlyingGraph' rows exist.",
       "review_after": "2027-04-22"
+    },
+    {
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/055_security_governance_events_otc_collateral_stream.sql",
+      "rule_id": "migration-drop-table-member",
+      "reason": "Requires human schema/storage review. Replaces only security_governance_events_stream_check with a wider check that keeps every existing stream ('OperatorOverrides', 'Aliases', 'ProjectionRebuild', 'UnderlyingGraph', 'Curves') and admits 'OtcCollateral', so OTC exposure snapshots, collateral balances and margin calls can be recorded in the append-only governance log. No row, column or trigger is removed, and the drop and re-add run in the migration runner's single transaction, so a failure leaves the original constraint in place. A reverse migration must not narrow the check while 'OtcCollateral' rows exist.",
+      "review_after": "2027-04-25"
     }
   ],
   "removed_migrations": [

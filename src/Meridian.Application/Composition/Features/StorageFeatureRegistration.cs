@@ -301,6 +301,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
             services.AddSingleton<ISecurityUnderlyingGraphStore, PostgresSecurityUnderlyingGraphStore>();
             services.AddSingleton<IOtcContractStore, PostgresOtcContractStore>();
+            services.AddSingleton<IOtcCollateralStore, PostgresOtcCollateralStore>();
             services.AddSingleton<IBondReferenceProjectionStore, PostgresBondReferenceProjectionStore>();
             services.AddSingleton<IOptionReferenceProjectionStore, PostgresOptionReferenceProjectionStore>();
             services.AddSingleton<IEquityReferenceProjectionStore, PostgresEquityReferenceProjectionStore>();
@@ -414,6 +415,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterAmortizationLedgerBridge, SecurityMasterAmortizationLedgerBridge>();
             services.TryAddSingleton<InMemorySecurityForwardCurveProvider>();
             services.TryAddSingleton<ISecurityForwardCurveProvider>(static sp => sp.GetRequiredService<InMemorySecurityForwardCurveProvider>());
+            // OTC exposure: the observed-price mark is the default valuation source; a host that
+            // registers its own IOtcContractValuationSource first keeps it.
+            services.TryAddSingleton<IOtcContractValuationSource, Meridian.Application.SecurityMaster.Otc.PricingStoreOtcContractValuationSource>();
+            services.AddSingleton<IOtcExposureService, Meridian.Application.SecurityMaster.Otc.OtcExposureService>();
             services.AddSingleton<ISecurityMasterCashFlowService, SecurityMasterCashFlowService>();
             services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
             services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();
