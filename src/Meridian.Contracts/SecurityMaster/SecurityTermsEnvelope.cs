@@ -147,9 +147,9 @@ public static class SecurityTermsEnvelope
 
     /// <summary>
     /// <see cref="StampFlat(string, string)"/> at the version a writer's populated terms need: the
-    /// class's write version, or a readable version above it when the record carries a term only
-    /// that version declares (a row read from a node that writes the newer version). Throws when the
-    /// version is below the write version or above <see cref="SecurityAssetClassCatalog.GetReadsTermsThrough"/>.
+    /// class's write version, or, when the record carries terms introduced above it, the highest
+    /// readable version among them (a row read from a node that writes the newer version). Throws
+    /// when the version is below the write version or above <see cref="SecurityAssetClassCatalog.GetReadsTermsThrough"/>.
     /// </summary>
     public static string StampFlat(string json, string assetClass, int assetClassTermsVersion)
     {

@@ -133,14 +133,37 @@ Planned in sequence, each behind its own proof:
   upgrade hook that has landed. The `scheduleConventions` block (business-day convention, payment
   calendars, payment lag, roll, first and last regular dates, direction, stub policy, coupon unit and
   coupon cash basis) is readable at the next terms version of each class but not yet writable
-  (increment 4a). Call and put schedules with notice periods follow at the readable version after
-  that (increment 4b), and a later contract step makes both writable.
+  (increment 4a). Call and put schedules with notice periods, the `callSchedule` and `putSchedule`
+  arrays, are readable at the version after that (increment 4b: version 3 of Bond and
+  CertificateOfDeposit, 4 of StructuredCredit) and are not yet writable either. A later contract
+  step makes the block and the arrays writable.
 - The block's spellings are frozen ([ADR-025](../adr/025-contractual-schedule-kernel.md#applications)):
   `businessDayConvention` is `Unadjusted`, `Following`, `ModifiedFollowing`, `Preceding` or
   `ModifiedPreceding` (with `None`, `F`, `MF`, `P` and `MP` accepted); `rollConvention` is
   `AnchorDay`, `EndOfMonth`, `Imm` or a day of the month from 1 to 31; `stubPolicy` is `Short`,
   `Long` or `RequireRegular`; `direction` is `Forward` or `Backward`; `couponRateUnit` is `Percent`
   or `Fraction`; and `couponCashBasis` is `Level` or `DayCount`.
+- The call and put entries are frozen too
+  ([ADR-025](../adr/025-contractual-schedule-kernel.md#applications)). A `callSchedule` entry
+  carries `callDate`, `callEndDate`, `exerciseStyle` (`European`, `American` or `Bermudan`),
+  `exerciseFrequency` (a coupon-frequency spelling), `callPrice`, `priceBasis` (`PercentOfPar` or
+  `PercentOfAccretedValue`), `priceType` (`Fixed` or `MakeWhole`), `makeWholeSpreadBps`,
+  `partialRedemption` (`WholeOnly`, `ProRata` or `ByLot`), `minimumNoticeDays`,
+  `maximumNoticeDays` and `noticeDayType` (`Business` or `Calendar`). A `putSchedule` entry carries
+  `putDate`, `putEndDate`, `exerciseStyle`, `exerciseFrequency`, `putPrice`, `priceBasis` and the
+  three notice members. A put entry is a holder-elective put; a mandatory tender stays
+  `mandatoryPutDate`.
+- In brief, an entry's window runs from its start date through its end date or, without one, to the
+  day before the next entry's start date in date order (to maturity for the last entry). A European
+  entry is exercisable on its start date only, an American one on any business day in the window,
+  and a Bermudan one on dates recurring at `exerciseFrequency`, or on the coupon dates, within it.
+  The price is a clean percentage of par (or of accreted value) with accrued interest paid on top,
+  it applies throughout the window, and for a make-whole call it is the floor; an absent price is
+  not par. Notice falls between `maximumNoticeDays` and `minimumNoticeDays` before the exercise
+  date, counted in calendar days or in business days on the block's payment calendars
+  ([ADR-025](../adr/025-contractual-schedule-kernel.md#applications)). Until increment 8 drives
+  redemption scenarios, the cash ladder's early call, the obligation timeline and the schedule book
+  from the schedules, consumers keep reading the scalar call terms and `mandatoryPutDate`.
 - A file-backed calendar source and a declared mode in the Security Master cash-flow engine.
 - Stable asset-operations flow ids keyed by period, and a schedule book built from engine output in
   both the browser and WPF workstations.
@@ -149,8 +172,10 @@ Planned in sequence, each behind its own proof:
   versions, and `FaceValueLot`'s coupon-date generators last.
 
 Calendar data governance and the default flip for records that declare nothing are open
-decisions. The coupon vocabulary for declared records is fixed by `couponRateUnit` and
-`couponCashBasis`; how the cash-flow engine applies them is decided with the contract step.
+decisions. So are the generation of call and put exercise and notice dates and the make-whole
+amount: ADR-025 records proposals for them that increment 8 adopts or amends. The coupon vocabulary
+for declared records is fixed by `couponRateUnit` and `couponCashBasis`; how the cash-flow engine
+applies them is decided with the contract step.
 
 ## Implementation and regression references
 

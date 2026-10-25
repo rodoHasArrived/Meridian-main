@@ -313,7 +313,8 @@ type CallScheduleTerm = {
     /// The call date, or the start of an American or Bermudan call window. An entry without one is
     /// not a term and is never read.
     CallDate: DateOnly
-    /// The end of an American or Bermudan call window; absent for a single call date.
+    /// The last day of the call window, inclusive. Absent, the window runs to the day before the
+    /// next call's date in date order, or to maturity for the last call (ADR-025).
     CallEndDate: DateOnly option
     /// European, American or Bermudan.
     ExerciseStyle: string option
@@ -329,9 +330,9 @@ type CallScheduleTerm = {
     MakeWholeSpreadBps: decimal option
     /// WholeOnly, ProRata or ByLot.
     PartialRedemption: string option
-    /// The fewest days before the call date that notice may be given.
+    /// Notice of the call falls at least this many days before the exercise date.
     MinimumNoticeDays: int option
-    /// The most days before the call date that notice may be given.
+    /// Notice of the call falls at most this many days before the exercise date.
     MaximumNoticeDays: int option
     /// Whether the notice counts are Business or Calendar days.
     NoticeDayType: string option
@@ -342,7 +343,8 @@ type CallScheduleTerm = {
 type PutScheduleTerm = {
     /// The put date, or the start of a put window. An entry without one is never read.
     PutDate: DateOnly
-    /// The end of a put window; absent for a single put date.
+    /// The last day of the put window, inclusive. Absent, the window runs to the day before the
+    /// next put's date in date order, or to maturity for the last put (ADR-025).
     PutEndDate: DateOnly option
     /// European, American or Bermudan.
     ExerciseStyle: string option
@@ -352,9 +354,9 @@ type PutScheduleTerm = {
     PutPrice: decimal option
     /// PercentOfPar or PercentOfAccretedValue.
     PriceBasis: string option
-    /// The fewest days before the put date that the holder may elect.
+    /// The holder's election falls at least this many days before the exercise date.
     MinimumNoticeDays: int option
-    /// The most days before the put date that the holder may elect.
+    /// The holder's election falls at most this many days before the exercise date.
     MaximumNoticeDays: int option
     /// Whether the notice counts are Business or Calendar days.
     NoticeDayType: string option

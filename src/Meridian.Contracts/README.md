@@ -289,9 +289,15 @@ field names and types. Codec tests compare this nested contract with persisted t
 cash-flow reader so a top-level `legs` array alone cannot conceal missing leg economics.
 `ElementFields` also declares the twelve-member `scheduleConventions` shape under
 `Bond.scheduleConventions`, `CertificateOfDeposit.scheduleConventions`,
-`StructuredCredit.scheduleConventions` and `Swap.legs.scheduleConventions`. The block is tagged
-above each class's write version, so `WritableFields` (what the registry, term blocks and field
-edits offer) leaves it out, and `PopulatedTermsAbove` finds it in a payload.
+`StructuredCredit.scheduleConventions` and `Swap.legs.scheduleConventions`, and the shared
+twelve-member call entry and nine-member put entry under six paths: `callSchedule` and
+`putSchedule` on `Bond`, `CertificateOfDeposit` and `StructuredCredit`. The block and both arrays
+are tagged above each class's write version, so `WritableFields` (what the registry, term blocks and
+field edits offer) leaves them out, and `PopulatedTermsAbove` finds them in a payload. The members
+of a container introduced above version 1 are frozen once readable:
+`SecurityAssetClassTermsHistoryTests` compares each one with the committed
+`tests/fixtures/security-master/terms-element-shapes/versioned-containers.json` fixture, so a
+member added later needs a new container key at a new readable version.
 
 A term field that names something the instrument depends on declares its role with
 `LinksUnderlying` (`SecurityAssetTermField.UnderlyingRole`): an underlying, reference entity or
@@ -1193,8 +1199,9 @@ carries typed tranche terms at asset-class terms version 2 (`structuredCreditKin
 of the deal balance, `weightedAverageCoupon`/`weightedAverageMaturityMonths`/
 `weightedAverageLoanAgeMonths`, and the CLO `reinvestmentPeriodEnd`/`nonCallPeriodEnd` dates); all
 are optional, so a version-1 payload reads unchanged, and the pool statistics bridge to the
-`structuredProduct` economic module. It reads through version 3, which adds only the optional
-`scheduleConventions` block and is not yet writable. The registry keeps
+`structuredProduct` economic module. It reads through version 4: version 3 adds only the optional
+`scheduleConventions` block and version 4 only the optional `callSchedule` and `putSchedule`
+arrays, and neither is yet writable. The registry keeps
 `CustomAsset` as the governed compatibility and wide-capture fallback for profile-backed records
 that cannot yet be upgraded to one of those minimum first-class classes.
 `SecurityAssetPackRegistry` defines the additive asset-pack registry contract for wide capture and
@@ -1826,8 +1833,12 @@ reading (one payment a year, or a count clamped to 1 through 12) for anything el
 The `BusinessDayConvention`, `RollConvention` and `StubPolicy` conventions parse the
 `scheduleConventions` block's spellings onto the schedule kernel's `BusinessDayConvention`,
 `ScheduleRoll` and `ScheduleStubPolicy` (`TryParseBusinessDayConvention`, `TryParseRollConvention`,
-`TryParseStubPolicy`). Conventions declared on array elements (the swap legs) are enforced on write
-like top-level ones, and the readable-only block is refused on write altogether. Swap legs may carry optional `notionalSchedule` (`{effectiveDate, notional}` steps) and
+`TryParseStubPolicy`). Conventions declared on the elements of an array the class writes (the swap
+legs today) are enforced on write like top-level ones, but never inside a versioned container of a
+profile envelope. Call and put entries declare `exerciseFrequency` with the `CouponFrequency`
+convention, which is enforced once the arrays are writable. Until a contract step raises the class's
+write version to a term's version, a flat payload that populates that term (the readable-only block,
+`callSchedule` or `putSchedule`) is refused on write altogether. Swap legs may carry optional `notionalSchedule` (`{effectiveDate, notional}` steps) and
 `resetSchedule` (`{resetDate, fixingRate}`) arrays; `StructuredCashFlowLeg.NotionalOn` and `FixingOn`
 let the leg scheduler accrue on the scheduled notional (paying step-downs as principal when the leg
 exchanges principal) and use a recorded fixing for a period that has already reset. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
