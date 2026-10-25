@@ -260,8 +260,9 @@ public static class SecurityAssetTermsFieldEditValidator
             return true;
         }
 
-        // A whole-container value that populates a readable-only element field.
-        if (nestedPath.Length == 0 && !string.IsNullOrWhiteSpace(newValue))
+        // A value for the whole container, or for one of its elements (legs.0), that populates a
+        // readable-only element field. An element value is checked as the only element of its array.
+        if (segment is null && !string.IsNullOrWhiteSpace(newValue))
         {
             JsonElement value;
             try
@@ -274,11 +275,18 @@ public static class SecurityAssetTermsFieldEditValidator
                 return false;
             }
 
+            var indexDepth = nestedPath.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Length;
+            for (var depth = 0; depth < indexDepth; depth++)
+            {
+                value = JsonSerializer.SerializeToElement(new[] { value });
+            }
+
             var container = JsonSerializer.SerializeToElement(new Dictionary<string, JsonElement> { [field.Key] = value });
             var populated = SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, container, writes);
             if (populated.Count > 0)
             {
-                error = SecurityTermsEnvelope.DescribeNotYetWritable(assetClass, populated[0].Path, populated[0].Field.SinceTermsVersion);
+                var path = indexDepth == 0 ? populated[0].Path : $"{field.Key}.{nestedPath}.{populated[0].Field.Key}";
+                error = SecurityTermsEnvelope.DescribeNotYetWritable(assetClass, path, populated[0].Field.SinceTermsVersion);
                 return true;
             }
         }
