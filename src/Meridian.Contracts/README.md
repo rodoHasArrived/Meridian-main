@@ -250,6 +250,23 @@ quantity, acquisition facts and holding date and refuses reductions beyond eithe
 Optional capital-return fields on the event spine, posting command and basis adjustment are
 omitted from historical JSON when absent.
 
+`OpenLotFactorPaydownInstructionDto` (`Accounting/Lots/OpenLotFactorPaydown.cs`) retains a reviewed
+MBS/ABS factor paydown over every lot open in one security/position scope: the canonical
+`AssetAccounting.CorporateAction` event whose identity is the projector's deterministic
+`FactorPaydownProjectionIdentity.EventId`, its lineage, the versioned scope, the prior and new
+factor, the position principal and the per-lot allocation (`OpenLotFactorPaydownLotDto`: expected
+lot, principal, both bases after relief, ordinal). `OpenLotFactorPaydown.Allocate` relieves each
+lot's basis pro rata (`basis x new / prior`, rounded once in the lot's currency) and assigns the
+currency residual of the position principal to the last lot; `Project` re-runs that allocation,
+requires equality and returns each lot at the new factor with its version advanced, closed when
+the new factor is zero. `RealizedResult` is principal less functional basis relieved;
+`Components` exposes principal, basis relieved and realized gain/loss to Rules Studio's
+`LotMutationComponent` formulas. Same-currency Long face lots only. `OpenLotDto.CurrentFactor`
+(omitted when null) and `FaceValueLot` now admit a factor of zero for a fully repaid pool; a
+successor must inherit its predecessor's factor. Optional factor-paydown fields on the event spine,
+lot mutation, posting command and basis adjustment are omitted from JSON when absent, so retained
+fingerprints are unchanged.
+
 `AssetLotMutationInstructionDto.DisposalSalePrice` optionally retains the original disposal quote
 through governed drafting and posting. It is omitted from JSON when absent so existing retained
 event payloads keep their shape. Aggregate-only instructions do not claim an original quote.

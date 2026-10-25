@@ -825,3 +825,62 @@ insert/update behavior. The existing production composition and atomic posting f
 the proof for wiring and supported writes. Validation results belong to the PR's exact head.
 This boundary change requires no migration and does not close the remaining consumer parity,
 compatibility retirement or live shadow-operation acceptance gates for `W10-LOT-002`.
+
+## Current paydown factor on the lot of record, phase 2 (2026-10-25)
+
+Phase 1 (`V_ledger_052`) gave the lot of record a nullable `current_factor` that nothing could yet
+move. This increment adds the governed `FactorPaydown` lot mutation that moves it, twinned on the
+in-place capital return.
+
+Decisions: the paydown reuses the `AssetAccounting.CorporateAction` event kind with a new lot
+mutation intent `FactorPaydown`; a new factor of zero is a full paydown that closes the lot
+(`open_quantity = 0`, `current_factor = 0`); the difference between principal and relieved basis
+posts to the existing realized gain/loss accounts; same-currency lots only; as-of reads date the
+factor exactly while basis stays current. `V_ledger_053` replaces `ck_tax_lots_current_factor`
+with the `>= 0` form and the four V050 checks with strict supersets, adds the nullable
+`factor_paydown_instruction`, and tightens `protect_open_lot_current_factor` so a factor moves only
+through a `FactorPaydown` batch of the same book/security/position that restates the lot's basis in
+the same batch (a successor may open with its predecessor's factor). V052 is committed as-is.
+
+Worked example (golden numbers): 1,000,000 of par booked at factor 0.95 (950,000 of face) at 101.5,
+basis 964,250, pays 0.95 -> 0.90. Principal 50,000 (par face x 0.05); basis after
+964,250 x 0.90 / 0.95 = 913,500, so 50,750 is relieved and the 750 difference is a realized loss:
+Dr Cash 50,000 / Cr Investments 50,750 / Dr Realized Loss 750. A later 0.90 -> 0 paydown repays
+900,000, relieves 913,500 and books a 13,500 loss, closing the lot; across both paydowns cash is the
+booked face and the cumulative loss is the premium paid. A discount lot books a gain; a par lot
+books no realized line.
+
+Contracts: `OpenLotFactorPaydownInstructionDto`, `OpenLotFactorPaydown.Allocate/Project/
+BasisRelieved/RealizedResult/Components/Fingerprint`, `FactorPaydownProjectionIdentity` (the
+projector's deterministic event id, shared so Contracts can verify it), `OpenLotDto.CurrentFactor`
+and `FaceValueLot` admitting zero, `OpenLotSuccessors` requiring factor inheritance, the spine,
+posting command and lot-mutation `FactorPaydown` fields, and the Rules Studio formula kind
+`LotMutationComponent` keyed by `lot.principal`, `lot.basisRelieved`, `lot.realizedGain`,
+`lot.realizedLoss` (a zero component generates no line). Storage: the serializable
+`FactorPaydown` batch locks reference and position authority, loads the instruction's lots in order,
+requires every open lot of the scope at the prior factor with one carrying account, refuses
+partial scopes and paydowns preceding retained mutations, asserts each lot after the CAS reproduces
+the reviewed projection, retains the before snapshot and the functional basis relieved as the
+mutation's `cost_basis`, and dates the factor in `HistoricalTaxLotQuantity` from the after snapshot.
+Financial Operations: `FactorPaydownLotInstructionService` prepares the spine request from the lots
+of record; the candidate service accepts the paydown only under spine authority and only with the
+governed lot mutation, recomputing held face, principal and the allocation from the lots; the spine
+service rereads every lot and the carrying credit before drafting; the post service dispatches the
+`FactorPaydown` batch. The projector's `MbsFactorPaydown` type survives only as lineage.
+
+Deviations from the design note: the disposal-history "face restatement" had no code site (the
+retained snapshot already carries `currentFactor`), so it is proven by the later-disposal test
+instead; the projector identity moved into Contracts; the candidate service binds the cash and
+realized lines to the carrying account's scope (`BindFactorPaydownLineAccount`) so the atomic store's
+account checks hold; `OpenLotValidation` admits a factor only on face lots and below the booked
+factor; the factor candidate tests now run under spine authority, so omitted lineage and a missing
+rule-pack reference fail at the authority gate (`asset-authority-lineage-required`,
+`asset-authority-rule-pack-mismatch`) rather than at the typed recalculation.
+
+Proof: `OpenLotFactorPaydownTests`, `FaceValueLotTests`, `HistoricalTaxLotQuantityTests`,
+`AtomicTaxLotJournalStoreTests.FactorPaydown` / `.FactorPaydownPublication` / `.CurrentFactor`,
+`AtomicTaxLotSuccessorMigrationTests.FactorPaydown`, `AssetAccountingEventSpineServiceTests.FactorPaydown`,
+`AccountingPostingCandidateServiceTests.FactorPaydown`. Hosted PostgreSQL execution and
+independent Accounting/Ledger and Storage review remain required before release; broader
+corrections (an upward factor restatement), cross-currency paydowns and short positions keep
+their existing gates.

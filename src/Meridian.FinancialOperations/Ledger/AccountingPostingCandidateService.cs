@@ -137,7 +137,12 @@ public sealed class AccountingPostingCandidateService :
                     request.InstrumentSymbol,
                     request.CorrelationId?.ToString("D"),
                     request.TenantId,
-                    request.CompanyId),
+                    request.CompanyId,
+                    // A factor paydown's carrying relief and realized result are not derivable from
+                    // the event amount; the governed instruction supplies them to the rule's formulas.
+                    LotMutationComponents: request.AssetLotMutation?.FactorPaydown is { } factorPaydownComponents
+                        ? Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydown.Components(factorPaydownComponents)
+                        : null),
                 ct)
             .ConfigureAwait(false);
 
@@ -243,6 +248,28 @@ public sealed class AccountingPostingCandidateService :
                 || predecessorLot.LotId != capitalReturn.ExpectedLot.LotId)
                 throw new InvalidOperationException("The carrying account does not belong to the reviewed capital-return lot.");
         }
+        LedgerAccount? paydownAccount = null;
+        if (request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.FactorPaydown, FactorPaydown: { } factorPaydown })
+        {
+            Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydown.Project(factorPaydown);
+            if (_taxLotStore is null)
+                throw new InvalidOperationException("Factor-paydown candidates require the authoritative lot store.");
+            var lotIds = factorPaydown.Lots.Select(static lot => lot.ExpectedLot.TaxLotRecordId).ToArray();
+            var paidDown = await _taxLotStore.GetTaxLotsByIdsAsync(factorPaydown.Scope.LedgerBookId, lotIds, ct).ConfigureAwait(false);
+            if (paidDown.Count != lotIds.Length)
+                throw new InvalidOperationException("A paid-down lot is missing from the authoritative book.");
+            foreach (var lot in factorPaydown.Lots)
+            {
+                var retained = paidDown.Single(candidate => candidate.TaxLotRecordId == lot.ExpectedLot.TaxLotRecordId);
+                if (retained.SecurityId != lot.ExpectedLot.SecurityId || retained.BookPositionId != lot.ExpectedLot.BookPositionId
+                    || retained.LotId != lot.ExpectedLot.LotId)
+                    throw new InvalidOperationException("The carrying account does not belong to the reviewed paid-down lots.");
+            }
+            var carryingAccounts = paidDown.Select(static lot => lot.Account).Distinct().ToArray();
+            if (carryingAccounts.Length != 1)
+                throw new InvalidOperationException("Paid-down lots must share one durable carrying account.");
+            paydownAccount = carryingAccounts[0];
+        }
         var lines = new List<AccountingJournalDraftLineRequest>(dryRun.GeneratedPostingLines.Count);
 
         for (var index = 0; index < dryRun.GeneratedPostingLines.Count; index++)
@@ -308,6 +335,8 @@ public sealed class AccountingPostingCandidateService :
                     throw new InvalidOperationException("The mapped predecessor account must match the durable lot carrying account.");
                 account = predecessorLot.Account;
             }
+            if (paydownAccount is not null)
+                account = BindFactorPaydownLineAccount(account, line, paydownAccount, request.Currency);
             lines.Add(new AccountingJournalDraftLineRequest(
                 account,
                 line.Side == AccountingTemplateLineSideDto.Debit ? amount : 0m,
@@ -368,7 +397,9 @@ public sealed class AccountingPostingCandidateService :
                 LotCorporateAction = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.CorporateAction }
                     ? request.AssetLotMutation.CorporateAction : null,
                 LotCapitalReturn = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.CapitalReturn }
-                    ? request.AssetLotMutation.CapitalReturn : null
+                    ? request.AssetLotMutation.CapitalReturn : null,
+                LotFactorPaydown = request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.FactorPaydown }
+                    ? request.AssetLotMutation.FactorPaydown : null
             }
             : null;
         var write = draft.Write is null
@@ -377,7 +408,8 @@ public sealed class AccountingPostingCandidateService :
             {
                 Entry = WithSecurityMasterLineage(draft.Write.Entry, authority,
                     request.AssetLotMutation?.CorporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency
-                        ?? request.AssetLotMutation?.CapitalReturn?.ExpectedLot.Acquisition.AcquisitionCurrency ?? request.Currency,
+                        ?? request.AssetLotMutation?.CapitalReturn?.ExpectedLot.Acquisition.AcquisitionCurrency
+                        ?? request.AssetLotMutation?.FactorPaydown?.Currency ?? request.Currency,
                     request.AssetLotMutation?.Amortization is { Reversal: not null } reversal
                         ? reversal.Security.Status : SecurityStatusDto.Active),
                 PostingCommand = postingCommand
@@ -446,15 +478,32 @@ public sealed class AccountingPostingCandidateService :
             return null;
         }
 
-        if (!TextEquals(request.EconomicEvent.EventType, FactorPaydownProjectionService.EventType) ||
-            !TextEquals(request.SourceEventType, FactorPaydownProjectionService.EventType))
+        // A paydown posts only as the governed FactorPaydown lot mutation under spine authority: it
+        // sets each lot's factor, relieves its basis pro rata and recognises the realized result in
+        // one atomic batch. A bare factor journal that only moves cash against the carrying account
+        // would leave the lots of record at their old factor and full basis, so it is not posting
+        // authority at all.
+        if (request.AssetLotMutation is not { Intent: AssetLotMutationIntentDto.FactorPaydown, FactorPaydown: { } paydownInstruction })
+        {
+            issues.Add(Issue(
+                "posting-candidate.factor-paydown-lot-mutation-required",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Factor-paydown candidates post only through the governed FactorPaydown lot mutation under Asset Accounting Event Spine authority; a plain factor journal is not posting authority.",
+                "assetLotMutation",
+                "Prepare the per-lot paydown instruction from the lots of record and draft it through the event spine."));
+            return null;
+        }
+
+        var canonicalEventType = AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.CorporateAction);
+        if (!TextEquals(request.EconomicEvent.EventType, canonicalEventType) ||
+            !TextEquals(request.SourceEventType, canonicalEventType))
         {
             issues.Add(Issue(
                 "posting-candidate.instrument-factor-event-type-mismatch",
                 AccountingConfigurationValidationSeverityDto.Critical,
-                "Factor-paydown lineage may only be used with the canonical MBS factor-paydown event type.",
+                "Factor-paydown lineage may only be used with the canonical AssetAccounting.CorporateAction event the paydown instruction binds.",
                 "economicEvent.eventType",
-                "Use the event type emitted by the registered factor-paydown projector."));
+                "Retype the projector's factor event as the canonical corporate-action event; the model event type survives only in the projection lineage."));
             return null;
         }
 
@@ -619,12 +668,25 @@ public sealed class AccountingPostingCandidateService :
             return null;
         }
 
+        // Every lot must still hold the position's prior factor: a lot already below it was paid
+        // down separately and this observation does not apply to it.
+        if (heldFace.Value.Lots.Any(lot => (lot.CurrentFactor ?? lot.BookedFactor) != state.PriorFactor))
+        {
+            issues.Add(Issue(
+                "posting-candidate.instrument-lot-factor-stale",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "An open lot of record holds a factor other than the position's prior factor, so this paydown cannot be applied to the scope.",
+                "bookPositionId",
+                "Reconcile the lots' paydown history with the position's factor state before drafting the principal paydown."));
+            return null;
+        }
+
         var projection = _factorPaydownProjector.Project(new FactorPaydownProjectionRequest(
             securityId,
             positionId,
             position.Version,
             position.Version,
-            heldFace.Value,
+            heldFace.Value.HeldFace,
             state.PriorFactor.Value,
             state.CurrentFactor.Value,
             state.Currency,
@@ -674,7 +736,76 @@ public sealed class AccountingPostingCandidateService :
             "The submitted event amount does not match the server-calculated principal paydown.",
             "eventAmount");
 
+        // The per-lot allocation is rebuilt from the lots of record and must equal the instruction
+        // exactly; a client cannot shift principal or basis relief between lots.
+        IReadOnlyList<Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownLotDto> allocated;
+        try
+        {
+            allocated = Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydown.Allocate(
+                heldFace.Value.Lots.Select(static lot => lot.ToOpenLot()).ToArray(),
+                state.PriorFactor.Value,
+                state.CurrentFactor.Value,
+                projection.PrincipalPaydown!.Value,
+                state.Currency);
+        }
+        catch (Exception ex) when (ex is ArgumentException or LedgerValidationException)
+        {
+            issues.Add(Issue(
+                "posting-candidate.factor-paydown-allocation-mismatch",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"The paydown cannot be allocated across the lots of record: {ex.Message}",
+                "assetLotMutation.factorPaydown",
+                "Rebuild the paydown instruction from the current lots of record."));
+            return null;
+        }
+        AddMismatch(
+            issues,
+            paydownInstruction.PriorFactor == state.PriorFactor
+                && paydownInstruction.NewFactor == state.CurrentFactor
+                && paydownInstruction.PrincipalPaydown == projection.PrincipalPaydown
+                && TextEquals(paydownInstruction.Currency, state.Currency)
+                && PayloadEquals(allocated, paydownInstruction.Lots),
+            "posting-candidate.factor-paydown-allocation-mismatch",
+            "The submitted per-lot paydown allocation does not match the server allocation from the lots of record.",
+            "assetLotMutation.factorPaydown");
+
         return projection.PrincipalPaydown;
+    }
+
+    private static bool PayloadEquals<T>(T left, T right)
+        => System.Text.Json.JsonElement.DeepEquals(
+            System.Text.Json.JsonSerializer.SerializeToElement(left),
+            System.Text.Json.JsonSerializer.SerializeToElement(right));
+
+    /// <summary>
+    /// Binds a factor-paydown line to the durable accounts the atomic store will require: the
+    /// carrying credit adopts the paid-down lots' exact account (name and type must already agree),
+    /// and when that account is scoped to a financial account the cash debit and realized lines adopt
+    /// the same scope's cash, gain and loss accounts where the chart maps the same name and type.
+    /// </summary>
+    private static LedgerAccount BindFactorPaydownLineAccount(
+        LedgerAccount mapped,
+        GeneratedPostingLineDto line,
+        LedgerAccount carrying,
+        string currency)
+    {
+        if (mapped.AccountType == LedgerAccountType.Asset && line.Side == AccountingTemplateLineSideDto.Credit)
+        {
+            if (mapped.Name != carrying.Name || mapped.AccountType != carrying.AccountType)
+                throw new InvalidOperationException("The mapped carrying account must match the durable paid-down lots' carrying account.");
+            return carrying;
+        }
+
+        if (string.IsNullOrWhiteSpace(carrying.FinancialAccountId))
+            return mapped;
+        LedgerAccount[] scoped =
+        [
+            LedgerAccounts.CashAccount(carrying.FinancialAccountId),
+            LedgerAccounts.CashInCurrency(currency, carrying.FinancialAccountId),
+            LedgerAccounts.RealizedGainFor(carrying.FinancialAccountId),
+            LedgerAccounts.RealizedLossFor(carrying.FinancialAccountId)
+        ];
+        return scoped.FirstOrDefault(account => account.Name == mapped.Name && account.AccountType == mapped.AccountType) ?? mapped;
     }
 
     private static void ValidatePersistedInstrumentAssertions(
@@ -698,7 +829,14 @@ public sealed class AccountingPostingCandidateService :
         AddMismatch(issues, position.EffectiveFrom <= economicEvent.EffectiveDate && (position.EffectiveTo is null || position.EffectiveTo >= economicEvent.EffectiveDate), "posting-candidate.instrument-position-not-effective", "Persisted position is not effective on the economic-event date.", "bookPosition.effectiveFrom");
         AddMismatch(issues, role.EffectiveFrom <= economicEvent.EffectiveDate && (role.EffectiveTo is null || role.EffectiveTo >= economicEvent.EffectiveDate), "posting-candidate.instrument-role-not-effective", "Persisted holder role is not effective on the economic-event date.", "instrumentRole.effectiveFrom");
         AddMismatch(issues, lineage.ProjectionRunId == requestedLineage.ProjectionRunId && lineage.ProjectionEventId == requestedLineage.ProjectionEventId, "posting-candidate.instrument-persisted-lineage-mismatch", "Candidate projection identity must match persisted Asset Operations lineage.", "projectionLineage.projectionRunId");
-        AddMismatch(issues, EventsMatch(lineage.TriggerEvent, economicEvent), "posting-candidate.instrument-trigger-event-mismatch", "Persisted projection trigger must match the candidate economic event.", "projectionLineage.triggerEvent");
+        // The persisted factor lineage is triggered by the model's own event type; the candidate
+        // carries the same event retyped as the canonical corporate-action event. Every other fact
+        // of the trigger must still agree.
+        var comparableEvent = TextEquals(lineage.TriggerEvent.EventType, FactorPaydownProjectionService.EventType)
+            && TextEquals(economicEvent.EventType, AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.CorporateAction))
+                ? economicEvent with { EventType = lineage.TriggerEvent.EventType }
+                : economicEvent;
+        AddMismatch(issues, EventsMatch(lineage.TriggerEvent, comparableEvent), "posting-candidate.instrument-trigger-event-mismatch", "Persisted projection trigger must match the candidate economic event.", "projectionLineage.triggerEvent");
         var persistedEvidence = NormalizeEvidence(lineage.TriggerEvent.EvidenceLinks);
         var candidateEvidence = NormalizeEvidence(request.EvidenceLinks);
         AddMismatch(issues, persistedEvidence.Count > 0 && persistedEvidence.All(candidateEvidence.Contains), "posting-candidate.instrument-evidence-mismatch", "Candidate evidence must retain every source link used by the persisted projection.", "evidenceLinks");
@@ -1463,7 +1601,7 @@ public sealed class AccountingPostingCandidateService :
     /// no qualifying lots, or any such lot that never recorded its par conventions, yields a typed
     /// issue instead of a substituted quantity.
     /// </summary>
-    private async Task<decimal?> ResolveLotOfRecordHeldFaceAsync(
+    private async Task<(decimal HeldFace, IReadOnlyList<LedgerTaxLotRecord> Lots)?> ResolveLotOfRecordHeldFaceAsync(
         Guid ledgerBookId,
         Guid securityId,
         Guid positionId,
@@ -1543,13 +1681,14 @@ public sealed class AccountingPostingCandidateService :
             return null;
         }
 
-        return heldFace;
+        return (heldFace, lots);
     }
 
     private static bool IsFactorPaydownRequest(PostingRuleJournalCandidateRequestDto request)
         => TextEquals(request.SourceEventType, FactorPaydownProjectionService.EventType)
            || TextEquals(request.EconomicEvent?.EventType, FactorPaydownProjectionService.EventType)
-           || TextEquals(request.ProjectionLineage?.ModelKey, FactorPaydownProjectionService.ModelKey);
+           || TextEquals(request.ProjectionLineage?.ModelKey, FactorPaydownProjectionService.ModelKey)
+           || request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.FactorPaydown };
 
     private static void ValidateDimensionBook(
         Guid ledgerBookId,

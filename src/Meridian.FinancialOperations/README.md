@@ -290,6 +290,24 @@ batch to the atomic journal/lot store; ordinary journal append cannot consume th
 Corrections and distributions beyond remaining carrying basis remain blocked pending separate
 reviewed policy and implementation.
 
+MBS/ABS factor paydowns post the same way. `FactorPaydownLotInstructionService` loads the
+Security Master record, book position and the lots of record open in the scope as of the factor
+date, runs the registered `FactorPaydownProjectionService` over the lots' par face, allocates the
+principal across the lots with `OpenLotFactorPaydown.Allocate` (currency residual on the last lot)
+and prepares the canonical `AssetAccounting.CorporateAction` spine request whose
+`FactorPaydown` instruction, lineage and three-line projected effect (cash, carrying relief,
+realized result) travel through Projected and Drafted unchanged. The projector's `MbsFactorPaydown`
+type survives only as the lineage model key and trigger. `AccountingPostingCandidateService`
+accepts a factor-paydown candidate only under spine authority and only with the governed
+`FactorPaydown` lot mutation: it recomputes held face and principal from the lots of record, refuses
+a lot not at the position's prior factor, re-runs the allocation and refuses any client shift of
+principal or basis between lots, supplies the instruction's components to the rule's
+`LotMutationComponent` formulas, binds the carrying credit to the lots' exact account and the
+cash/gain/loss lines to that account's scope, and retains the instruction as
+`LotFactorPaydown`. The spine service rereads every paid-down lot and its carrying credit before
+drafting; posting dispatches a `FactorPaydown` batch to the atomic journal/lot store. A plain
+factor journal without the lot mutation is not posting authority.
+
 ## Purpose
 
 OFX duplicate account or currency tags cannot overwrite conflicting evidence. A row account may

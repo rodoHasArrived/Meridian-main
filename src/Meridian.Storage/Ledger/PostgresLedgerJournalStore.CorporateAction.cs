@@ -304,7 +304,10 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
             Version: target.Version, OriginatingMutationBatchId: command.MutationBatchId,
             SecurityId: target.SecurityId, BookPositionId: target.BookPositionId,
             OriginalFace: face ? target.OriginalQuantity : null, BookedFactor: target.Acquisition.FaceValueTerms?.BookedFactor,
-            ParBasis: target.Acquisition.FaceValueTerms?.ParBasis, Acquisition: target.Acquisition, BasisAdjustment: adjustment);
+            ParBasis: target.Acquisition.FaceValueTerms?.ParBasis, Acquisition: target.Acquisition, BasisAdjustment: adjustment,
+            // A successor inherits the paydown factor its predecessor holds; OpenLotSuccessors.Validate
+            // requires the reviewed target to state it, and the trigger admits it on a successor's birth.
+            CurrentFactor: target.CurrentFactor);
         if (!JsonElement.DeepEquals(JsonSerializer.SerializeToElement(result.ToOpenLot()), JsonSerializer.SerializeToElement(target)))
             throw new LedgerValidationException("Successor canonical target snapshot cannot be preserved exactly in the lot of record.");
         return result;
@@ -314,14 +317,6 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         NpgsqlConnection connection, NpgsqlTransaction transaction, AtomicTaxLotJournalCommand command,
         LedgerTaxLotRecord before, DateTimeOffset recordedAt, CancellationToken ct)
     {
-        // The successor is built from the canonical open-lot target, which carries no current
-        // factor, and re-books the predecessor's acquisition factor. Replacing a paid-down lot that
-        // way would silently reset its factor, so a predecessor that has absorbed a paydown is
-        // refused until the successor can inherit it.
-        if (before.CurrentFactor is not null)
-            throw new LedgerValidationException(
-                $"Lot '{before.LotId}' has absorbed a paydown (current factor {before.CurrentFactor}); a corporate-action successor cannot yet inherit it.");
-
         await using var update = connection.CreateCommand();
         update.Transaction = transaction;
         update.CommandText = $"""

@@ -34,6 +34,23 @@ public sealed partial class PostgresLedgerJournalStore
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct).ConfigureAwait(false);
         await EnsureBookWriteAuthorityAsync(connection, transaction, ledgerBookId, ct).ConfigureAwait(false);
+        var projected = await ListOpenTaxLotsByAssetScopeCoreAsync(connection, transaction, ledgerBookId, securityId,
+            bookPositionId, effectiveDate, ct).ConfigureAwait(false);
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return projected;
+    }
+
+    // The as-of scope read inside a caller's transaction: the factor-paydown lock step uses it to
+    // prove the instruction names every lot open in the scope on the paydown date.
+    private async Task<IReadOnlyList<LedgerTaxLotRecord>> ListOpenTaxLotsByAssetScopeCoreAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid ledgerBookId,
+        Guid securityId,
+        Guid bookPositionId,
+        DateOnly effectiveDate,
+        CancellationToken ct)
+    {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =
@@ -87,11 +104,9 @@ public sealed partial class PostgresLedgerJournalStore
         var mutations = await ReadDatedLotQuantitiesAsync(connection, transaction, ledgerBookId,
             lots.Select(static lot => lot.TaxLotRecordId).ToArray(), ct).ConfigureAwait(false);
         var histories = mutations.ToLookup(static mutation => mutation.TaxLotRecordId);
-        var projected = lots.Select(lot => HistoricalTaxLotQuantity.Project(
+        return lots.Select(lot => HistoricalTaxLotQuantity.Project(
                 lot, histories[lot.TaxLotRecordId].ToArray(), effectiveDate))
             .Where(static lot => lot.OpenQuantity > 0m).ToArray();
-        await transaction.CommitAsync(ct).ConfigureAwait(false);
-        return projected;
     }
 
     private async Task<IReadOnlyList<DatedTaxLotQuantityMutation>> ReadDatedLotQuantitiesAsync(
@@ -105,7 +120,8 @@ public sealed partial class PostgresLedgerJournalStore
             select m.tax_lot_record_id, m.mutation_batch_id, m.mutation_kind,
                    m.quantity_before, m.quantity_delta, m.quantity_after,
                    m.expected_version, m.result_version, j.metadata ->> 'effectiveDate',
-                   m.security_id, m.book_position_id, b.ledger_book_id, p.ledger_book_id
+                   m.security_id, m.book_position_id, b.ledger_book_id, p.ledger_book_id,
+                   (m.lot_snapshot_after ->> 'currentFactor')::numeric
             from {Qualified("tax_lot_mutations")} m
             left join {Qualified("atomic_tax_lot_posting_batches")} b on b.mutation_batch_id = m.mutation_batch_id
             left join {Qualified("journal_entries")} j on j.journal_entry_id = m.journal_entry_id
@@ -124,9 +140,12 @@ public sealed partial class PostgresLedgerJournalStore
                     CultureInfo.InvariantCulture, DateTimeStyles.None, out var effectiveDate) ||
                 !Enum.TryParse<AtomicTaxLotMutationKind>(reader.GetString(2), out var kind))
                 throw new LedgerValidationException("Historical lot quantity requires a scoped mutation and retained journal effective date.");
+            // Snapshots are web JSON (camelCase); a row written before the factor existed, or for a
+            // lot still at its booked factor, carries no currentFactor and reads null.
             mutations.Add(new(reader.GetGuid(0), reader.GetGuid(1), kind,
                 reader.GetDecimal(3), reader.GetDecimal(4), reader.GetDecimal(5),
-                reader.GetInt64(6), reader.GetInt64(7), effectiveDate, reader.GetGuid(9), reader.GetGuid(10)));
+                reader.GetInt64(6), reader.GetInt64(7), effectiveDate, reader.GetGuid(9), reader.GetGuid(10),
+                reader.IsDBNull(13) ? null : reader.GetDecimal(13)));
         }
         return mutations;
     }
