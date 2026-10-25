@@ -243,6 +243,14 @@ public static class OpenLotAmortization
                 && (schedule.ValueKind != JsonValueKind.Array || schedule.GetArrayLength() != 0))
                 throw new ArgumentException("Amortization cannot use nonempty or malformed principal, factor, coupon or leg schedules.");
         }
+        // Declared call and put schedules (readable from terms version 3, ADR-024) are optionality a
+        // bullet cannot honour; an empty list declares none, and a malformed one is not read as absent.
+        foreach (var name in new[] { "callSchedule", "putSchedule" })
+        {
+            if (FirstTerm(sources, [name]) is { } schedule && schedule.ValueKind != JsonValueKind.Null
+                && (schedule.ValueKind != JsonValueKind.Array || schedule.GetArrayLength() != 0))
+                throw new ArgumentException("Amortization does not support floating coupons, calls, puts or advance-refunding terms.");
+        }
         foreach (var name in new[] { "floatingIndex", "floatingRateIndex", "referenceIndex", "callDate", "preRefundDate", "mandatoryPutDate" })
         {
             if (FirstTerm(sources, [name]) is { } value && value.ValueKind != JsonValueKind.Null
