@@ -20,7 +20,8 @@ namespace Meridian.Tests.SecurityMaster;
 /// adapter, the structured cash-flow resolver, the obligation projection and the relational
 /// projection decoder. The stored blob and the columns derived from it are never changed. The mapping
 /// decoder also reads a version-3 payload, which a node reads before it writes it, as its version-2
-/// twin plus the scheduleConventions block it declares.
+/// twin plus the scheduleConventions block it declares, and a version-4 payload as that plus the
+/// callSchedule and putSchedule arrays it declares, in stored order.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class SecurityAssetClassTermsUpgradeWiringTests
@@ -57,10 +58,11 @@ public sealed class SecurityAssetClassTermsUpgradeWiringTests
         SecurityMasterMapping.ToRecord(Record(UnstampedText)).Kind.Should().Be(v2);
 
         // The guard still sees the stored payload before the hook, so a stamp above what the node
-        // reads (version 3 is readable ahead of write since 2026-10-25) is refused as before.
+        // reads (versions 3 and 4 are readable ahead of write since 2026-10-25) is refused as before.
         var newer = () => SecurityMasterMapping.ToRecord(
-            Record(V1Text.Replace("\"assetClassTermsVersion\":1", "\"assetClassTermsVersion\":4", StringComparison.Ordinal)));
-        newer.Should().Throw<InvalidOperationException>().WithMessage($"*{SecurityTermsEnvelope.AssetClassTermsVersionKey}*");
+            Record(V1Text.Replace("\"assetClassTermsVersion\":1", "\"assetClassTermsVersion\":5", StringComparison.Ordinal)));
+        newer.Should().Throw<InvalidOperationException>()
+            .WithMessage("Unsupported assetClassTermsVersion '5' for asset class 'StructuredCredit'; this node reads versions 1 through 4.");
     }
 
     // A StructuredCredit row stamped 3 by a node that writes version 3; this node reads it ahead of
@@ -125,6 +127,147 @@ public sealed class SecurityAssetClassTermsUpgradeWiringTests
 
         // Decoding is gated on the stamp: below version 3 the same block is not read.
         SecurityMasterMapping.ToRecord(Record(WithScheduleConventions(V2Text))).Kind.Should().Be(v2);
+    }
+
+    // A StructuredCredit row stamped 4 by a node that writes version 4; this node reads it ahead of
+    // writing it (ADR-024).
+    private static string V4Text => V1Text.Replace("\"assetClassTermsVersion\":1", "\"assetClassTermsVersion\":4", StringComparison.Ordinal);
+
+    // Both arrays are stored out of date order, so a decoder that sorted would fail: the flat terms
+    // keep stored order. Together the entries carry every call and put member.
+    private const string CallScheduleArray = """
+        [{"callDate":"2028-06-15","callEndDate":"2031-06-14","exerciseStyle":"Bermudan","exerciseFrequency":"Quarterly","callPrice":101.5,"priceBasis":"PercentOfPar","priceType":"Fixed","partialRedemption":"ProRata","minimumNoticeDays":10,"maximumNoticeDays":60,"noticeDayType":"Business"},{"callDate":"2026-06-15","callEndDate":"2028-06-14","exerciseStyle":"American","priceBasis":"PercentOfPar","priceType":"MakeWhole","makeWholeSpreadBps":25,"partialRedemption":"WholeOnly","minimumNoticeDays":30,"maximumNoticeDays":60,"noticeDayType":"Calendar"}]
+        """;
+
+    private const string PutScheduleArray = """
+        [{"putDate":"2029-06-15","putEndDate":"2030-06-15","exerciseStyle":"Bermudan","exerciseFrequency":"SemiAnnual","putPrice":100,"priceBasis":"PercentOfPar","minimumNoticeDays":15,"maximumNoticeDays":45,"noticeDayType":"Business"},{"putDate":"2027-06-15"}]
+        """;
+
+    private static string WithCallAndPutSchedules(string terms)
+    {
+        var node = JsonNode.Parse(terms)!.AsObject();
+        node["callSchedule"] = JsonNode.Parse(CallScheduleArray);
+        node["putSchedule"] = JsonNode.Parse(PutScheduleArray);
+        return node.ToJsonString();
+    }
+
+    private static CallPutSchedules DeclaredCallAndPutSchedules()
+        => new(
+            ListModule.OfSeq(new[]
+            {
+                new CallScheduleTerm(
+                    new DateOnly(2028, 6, 15),
+                    FSharpOption<DateOnly>.Some(new DateOnly(2031, 6, 14)),
+                    FSharpOption<string>.Some("Bermudan"),
+                    FSharpOption<string>.Some("Quarterly"),
+                    FSharpOption<decimal>.Some(101.5m),
+                    FSharpOption<string>.Some("PercentOfPar"),
+                    FSharpOption<string>.Some("Fixed"),
+                    FSharpOption<decimal>.None,
+                    FSharpOption<string>.Some("ProRata"),
+                    FSharpOption<int>.Some(10),
+                    FSharpOption<int>.Some(60),
+                    FSharpOption<string>.Some("Business")),
+                new CallScheduleTerm(
+                    new DateOnly(2026, 6, 15),
+                    FSharpOption<DateOnly>.Some(new DateOnly(2028, 6, 14)),
+                    FSharpOption<string>.Some("American"),
+                    FSharpOption<string>.None,
+                    FSharpOption<decimal>.None,
+                    FSharpOption<string>.Some("PercentOfPar"),
+                    FSharpOption<string>.Some("MakeWhole"),
+                    FSharpOption<decimal>.Some(25m),
+                    FSharpOption<string>.Some("WholeOnly"),
+                    FSharpOption<int>.Some(30),
+                    FSharpOption<int>.Some(60),
+                    FSharpOption<string>.Some("Calendar")),
+            }),
+            ListModule.OfSeq(new[]
+            {
+                new PutScheduleTerm(
+                    new DateOnly(2029, 6, 15),
+                    FSharpOption<DateOnly>.Some(new DateOnly(2030, 6, 15)),
+                    FSharpOption<string>.Some("Bermudan"),
+                    FSharpOption<string>.Some("SemiAnnual"),
+                    FSharpOption<decimal>.Some(100m),
+                    FSharpOption<string>.Some("PercentOfPar"),
+                    FSharpOption<int>.Some(15),
+                    FSharpOption<int>.Some(45),
+                    FSharpOption<string>.Some("Business")),
+                new PutScheduleTerm(
+                    new DateOnly(2027, 6, 15),
+                    FSharpOption<DateOnly>.None,
+                    FSharpOption<string>.None,
+                    FSharpOption<string>.None,
+                    FSharpOption<decimal>.None,
+                    FSharpOption<string>.None,
+                    FSharpOption<int>.None,
+                    FSharpOption<int>.None,
+                    FSharpOption<string>.None),
+            }));
+
+    // The same terms with only the call and put schedules replaced.
+    private static SecurityKind StructuredCreditWith(StructuredCreditTerms terms, CallPutSchedules schedules)
+        => SecurityKind.NewStructuredCredit(new StructuredCreditTerms(
+            terms.Tranche,
+            terms.PoolId,
+            terms.CollateralType,
+            terms.OriginalFace,
+            terms.CurrentFactor,
+            terms.CouponOrIndex,
+            terms.FactorSchedule,
+            terms.FactorScheduleEntries,
+            terms.Maturity,
+            terms.Kind,
+            terms.Seniority,
+            terms.AttachmentPoint,
+            terms.DetachmentPoint,
+            terms.WeightedAverageCoupon,
+            terms.WeightedAverageMaturityMonths,
+            terms.WeightedAverageLoanAgeMonths,
+            terms.ReinvestmentPeriodEnd,
+            terms.NonCallPeriodEnd,
+            terms.ScheduleConventions,
+            schedules));
+
+    [Fact]
+    public void Mapping_ReadsVersionFourAsVersionTwo_PlusTheBlockAndTheCallAndPutSchedulesItDeclares()
+    {
+        var v2 = SecurityMasterMapping.ToRecord(Record(V2Text)).Kind;
+        SecurityMasterMapping.ToRecord(Record(V4Text)).Kind
+            .Should().Be(v2, "version 4 adds only the optional callSchedule and putSchedule arrays to version 3's optional block");
+
+        // Version 3's block reads the same at stamp 4 (the version-3 test above pins its decode).
+        var withBlock = SecurityMasterMapping.ToRecord(Record(WithScheduleConventions(V3Text))).Kind;
+        var blockTerms = ((SecurityKind.StructuredCredit)withBlock).Item;
+        blockTerms.ScheduleConventions.Should().NotBe(ScheduleConventionsModule.Empty);
+        blockTerms.CallPutSchedules.Should().Be(CallPutSchedulesModule.Empty);
+        SecurityMasterMapping.ToRecord(Record(WithScheduleConventions(V4Text))).Kind.Should().Be(withBlock);
+
+        var schedules = DeclaredCallAndPutSchedules();
+        var decoded = SecurityMasterMapping.ToRecord(Record(WithCallAndPutSchedules(WithScheduleConventions(V4Text)))).Kind;
+        decoded.Should().Be(StructuredCreditWith(blockTerms, schedules));
+
+        var decodedSchedules = ((SecurityKind.StructuredCredit)decoded).Item.CallPutSchedules;
+        decodedSchedules.Calls.Select(static call => call.CallDate)
+            .Should().Equal(new[] { new DateOnly(2028, 6, 15), new DateOnly(2026, 6, 15) }, "the flat terms keep stored order");
+        decodedSchedules.Puts.Select(static put => put.PutDate)
+            .Should().Equal(new[] { new DateOnly(2029, 6, 15), new DateOnly(2027, 6, 15) }, "the flat terms keep stored order");
+
+        // The arrays decode without the block too, beside the version-2 terms.
+        SecurityMasterMapping.ToRecord(Record(WithCallAndPutSchedules(V4Text))).Kind
+            .Should().Be(StructuredCreditWith(((SecurityKind.StructuredCredit)v2).Item, schedules));
+    }
+
+    [Fact]
+    public void Mapping_DoesNotDecodeTheCallAndPutSchedules_BelowVersionFour()
+    {
+        // Decoding is gated on the stamp: at version 3 the block is read and the same arrays are not.
+        var withBlock = SecurityMasterMapping.ToRecord(Record(WithScheduleConventions(V3Text))).Kind;
+        var stampThree = SecurityMasterMapping.ToRecord(Record(WithCallAndPutSchedules(WithScheduleConventions(V3Text)))).Kind;
+
+        stampThree.Should().Be(withBlock);
+        ((SecurityKind.StructuredCredit)stampThree).Item.CallPutSchedules.Should().Be(CallPutSchedulesModule.Empty);
     }
 
     [Fact]

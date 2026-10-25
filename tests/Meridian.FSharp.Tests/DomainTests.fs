@@ -2124,8 +2124,9 @@ let private hasProperty (name: string) (element: JsonElement) =
 let private termsStamp (payload: JsonElement) =
     payload.GetProperty("assetClassTermsVersion").GetInt32()
 
-/// The block's members as the term schema declares them for the class (on a swap, per leg).
-let private schemaConventionMembers assetClass container =
+/// A container's element members as the term schema declares them for the class: the conventions
+/// block (on a swap, per leg) or a call or put schedule entry.
+let private schemaElementMembers assetClass container =
     Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema.ElementFields(assetClass, container)
     |> Seq.map (fun field -> field.Key)
     |> List.ofSeq
@@ -2170,7 +2171,7 @@ let ``ScheduleConventions.isEmpty is true only for the empty block`` () =
           "couponCashBasis", { ScheduleConventions.empty with CouponCashBasis = Some "DayCount" } ]
 
     // One flip per member the term schema declares for the block, so a new member needs a case here.
-    declaringOneMember |> List.map fst |> ordinal |> should equal (ordinal (schemaConventionMembers "Bond" "scheduleConventions"))
+    declaringOneMember |> List.map fst |> ordinal |> should equal (ordinal (schemaElementMembers "Bond" "scheduleConventions"))
     for memberName, conventions in declaringOneMember do
         (memberName, ScheduleConventions.isEmpty conventions) |> should equal (memberName, false)
 
@@ -2195,6 +2196,9 @@ let ``Flat writer stamps every class at its write version and omits scheduleConv
 
         // Below the block's version the key is absent, at the root and on every leg.
         (assetClass, hasProperty "scheduleConventions" payload) |> should equal (assetClass, false)
+        // So are the call and put schedules, which sit a version above the block.
+        (assetClass, hasProperty "callSchedule" payload, hasProperty "putSchedule" payload)
+        |> should equal (assetClass, false, false)
         match payload.TryGetProperty("legs") with
         | true, legs ->
             for leg in legs.EnumerateArray() do
@@ -2211,7 +2215,7 @@ let ``Flat writer keeps declared schedule conventions as the canonical block at 
         let block = payload.GetProperty("scheduleConventions")
         (assetClass, block.GetRawText()) |> should equal (assetClass, declaredConventionsJson)
         (assetClass, block.EnumerateObject() |> Seq.map (fun property -> property.Name) |> List.ofSeq)
-        |> should equal (assetClass, ordinal (schemaConventionMembers assetClass "scheduleConventions"))
+        |> should equal (assetClass, ordinal (schemaElementMembers assetClass "scheduleConventions"))
         // The node reads what it re-serializes.
         Meridian.Contracts.SecurityMaster.SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, payload)
 
@@ -2241,7 +2245,7 @@ let ``Flat writer stamps a swap with one declaring leg at version 2 and writes t
     let declaringBlock = legs.[0].GetProperty("scheduleConventions")
     declaringBlock.GetRawText() |> should equal declaredConventionsJson
     declaringBlock.EnumerateObject() |> Seq.map (fun property -> property.Name) |> List.ofSeq
-    |> should equal (ordinal (schemaConventionMembers "Swap" "legs.scheduleConventions"))
+    |> should equal (ordinal (schemaElementMembers "Swap" "legs.scheduleConventions"))
     legs.[1].GetProperty("scheduleConventions").ValueKind |> should equal JsonValueKind.Null
     // The leg's pay/receive direction stays beside the block's generation direction.
     legs.[0].GetProperty("direction").GetString() |> should equal "Pay"
@@ -2321,3 +2325,364 @@ let ``Reclassification proposal blocks a bond that declares schedule conventions
         reclassificationFor (agencyBond ScheduleConventions.empty)
         |> Option.defaultWith (fun () -> failwith "Expected a securitised bond to be a reclassification candidate")
     blockerCodes plain |> should not' (contain "structured_credit_schedule_conventions_unwritable")
+
+// ── Call and put schedules: read ahead of write (ADR-024, increment 4b) ─────────────────────────
+
+/// The kind with its declared call and put schedules replaced (bonds, deposits and structured credit).
+let private withCallPutSchedules (schedules: CallPutSchedules) (kind: SecurityKind) =
+    match kind with
+    | SecurityKind.Bond terms -> SecurityKind.Bond { terms with CallPutSchedules = schedules }
+    | SecurityKind.CertificateOfDeposit terms -> SecurityKind.CertificateOfDeposit { terms with CallPutSchedules = schedules }
+    | SecurityKind.StructuredCredit terms -> SecurityKind.StructuredCredit { terms with CallPutSchedules = schedules }
+    | other -> failwithf "'%s' declares no call or put schedules." (SecurityKind.assetClass other)
+
+let private callsOnly (calls: CallScheduleTerm list) = { CallPutSchedules.empty with Calls = calls }
+
+let private putsOnly (puts: PutScheduleTerm list) = { CallPutSchedules.empty with Puts = puts }
+
+let private firstCall = CallScheduleTerm.onDate (DateOnly(2029, 6, 15))
+
+let private firstPut = PutScheduleTerm.onDate (DateOnly(2030, 6, 15))
+
+/// The frozen canonical written entries of firstCall and firstPut: every member in ordinal order,
+/// unset ones null.
+let private firstCallJson =
+    """{"callDate":"2029-06-15","callEndDate":null,"callPrice":null,"exerciseFrequency":null,"exerciseStyle":null,"makeWholeSpreadBps":null,"maximumNoticeDays":null,"minimumNoticeDays":null,"noticeDayType":null,"partialRedemption":null,"priceBasis":null,"priceType":null}"""
+
+let private firstPutJson =
+    """{"exerciseFrequency":null,"exerciseStyle":null,"maximumNoticeDays":null,"minimumNoticeDays":null,"noticeDayType":null,"priceBasis":null,"putDate":"2030-06-15","putEndDate":null,"putPrice":null}"""
+
+let private economicCallFor (kind: SecurityKind) = (economicDefinitionFor kind).Terms.Call
+
+let private economicCallEntry date price isParCall callType =
+    ({ CallDt = date; CallPx = price; IsParCall = isParCall; CallType = callType } : CallScheduleEntry)
+
+let private economicPutEntry date price = ({ PutDt = date; PutPx = price } : PutScheduleEntry)
+
+/// A bond with the call scalars and the declared schedules.
+let private callableBond isCallable callDate schedules =
+    SecurityKind.Bond
+        { BondTerms.fixedRate (DateOnly(2034, 6, 15)) 4.5m (Some "30/360") (Some "ACME") with
+            IsCallable = isCallable
+            CallDate = callDate
+            CallPutSchedules = schedules }
+
+/// A certificate of deposit with the scalar callable date and the declared schedules.
+let private callableDeposit callableDate schedules =
+    match scheduleDeposit ScheduleConventions.empty with
+    | SecurityKind.CertificateOfDeposit terms ->
+        SecurityKind.CertificateOfDeposit { terms with CallableDate = callableDate; CallPutSchedules = schedules }
+    | other -> other
+
+[<Fact>]
+let ``CallPutSchedules.isEmpty is true only for the empty schedules and onDate states only the date`` () =
+    CallPutSchedules.isEmpty CallPutSchedules.empty |> should equal true
+    CallPutSchedules.empty |> should equal ({ Calls = []; Puts = [] } : CallPutSchedules)
+
+    // One entry of either kind, with nothing but its date, is a declaration.
+    CallPutSchedules.isEmpty (callsOnly [ firstCall ]) |> should equal false
+    CallPutSchedules.isEmpty (putsOnly [ firstPut ]) |> should equal false
+    CallPutSchedules.isEmpty ({ Calls = [ firstCall ]; Puts = [ firstPut ] } : CallPutSchedules) |> should equal false
+
+    CallScheduleTerm.onDate (DateOnly(2029, 6, 15))
+    |> should equal
+        ({ CallDate = DateOnly(2029, 6, 15)
+           CallEndDate = None
+           ExerciseStyle = None
+           ExerciseFrequency = None
+           CallPrice = None
+           PriceBasis = None
+           PriceType = None
+           MakeWholeSpreadBps = None
+           PartialRedemption = None
+           MinimumNoticeDays = None
+           MaximumNoticeDays = None
+           NoticeDayType = None } : CallScheduleTerm)
+    PutScheduleTerm.onDate (DateOnly(2030, 6, 15))
+    |> should equal
+        ({ PutDate = DateOnly(2030, 6, 15)
+           PutEndDate = None
+           ExerciseStyle = None
+           ExerciseFrequency = None
+           PutPrice = None
+           PriceBasis = None
+           MinimumNoticeDays = None
+           MaximumNoticeDays = None
+           NoticeDayType = None } : PutScheduleTerm)
+
+[<Fact>]
+let ``Flat writer stamps the highest version among the terms a record holds and writes both schedules from theirs`` () =
+    let oneCall = callsOnly [ firstCall ]
+    let onePut = putsOnly [ firstPut ]
+    let callJson = "[" + firstCallJson + "]"
+    let putJson = "[" + firstPutJson + "]"
+    // The kind, its stamp, its scheduleConventions text and its callSchedule and putSchedule texts
+    // (None: both keys absent).
+    let cases : (SecurityKind * int * string * (string * string) option) list =
+        [ scheduleBond declaredConventions, 2, declaredConventionsJson, None
+          scheduleBond ScheduleConventions.empty |> withCallPutSchedules oneCall, 3, "null", Some (callJson, "[]")
+          scheduleBond ScheduleConventions.empty |> withCallPutSchedules onePut, 3, "null", Some ("[]", putJson)
+          scheduleBond declaredConventions |> withCallPutSchedules oneCall, 3, declaredConventionsJson, Some (callJson, "[]")
+          scheduleDeposit declaredConventions, 2, declaredConventionsJson, None
+          scheduleDeposit ScheduleConventions.empty |> withCallPutSchedules oneCall, 3, "null", Some (callJson, "[]")
+          scheduleDeposit ScheduleConventions.empty |> withCallPutSchedules onePut, 3, "null", Some ("[]", putJson)
+          scheduleStructuredCredit declaredConventions, 3, declaredConventionsJson, None
+          scheduleStructuredCredit ScheduleConventions.empty |> withCallPutSchedules oneCall, 4, "null", Some (callJson, "[]")
+          scheduleStructuredCredit ScheduleConventions.empty |> withCallPutSchedules onePut, 4, "null", Some ("[]", putJson)
+          scheduleStructuredCredit declaredConventions |> withCallPutSchedules onePut, 4, declaredConventionsJson, Some ("[]", putJson) ]
+
+    for index, (kind, expectedStamp, expectedConventions, expectedSchedules) in List.indexed cases do
+        let assetClass, payload = flatTermsFor kind
+        let label = sprintf "case %d (%s)" index assetClass
+        (label, termsStamp payload) |> should equal (label, expectedStamp)
+        // The block's key is present from its version up, null when nothing is declared.
+        (label, payload.GetProperty("scheduleConventions").GetRawText()) |> should equal (label, expectedConventions)
+        match expectedSchedules with
+        | Some (calls, puts) ->
+            // From the schedules' version up both keys are present, [] when none is declared.
+            (label, payload.GetProperty("callSchedule").GetRawText(), payload.GetProperty("putSchedule").GetRawText())
+            |> should equal (label, calls, puts)
+        | None ->
+            (label, hasProperty "callSchedule" payload, hasProperty "putSchedule" payload) |> should equal (label, false, false)
+        // The node reads what it re-serializes.
+        Meridian.Contracts.SecurityMaster.SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, payload)
+
+[<Fact>]
+let ``Flat writer writes declared call and put entries in stored order with every member, unset ones as null`` () =
+    let laterCall =
+        ({ CallDate = DateOnly(2031, 6, 15)
+           CallEndDate = Some (DateOnly(2032, 6, 15))
+           ExerciseStyle = Some "Bermudan"
+           ExerciseFrequency = Some "SemiAnnual"
+           CallPrice = Some 101.25m
+           PriceBasis = Some "PercentOfPar"
+           PriceType = Some "Fixed"
+           MakeWholeSpreadBps = None
+           PartialRedemption = Some "ProRata"
+           MinimumNoticeDays = Some 30
+           MaximumNoticeDays = Some 60
+           NoticeDayType = Some "Business" } : CallScheduleTerm)
+    let earlierCall = { CallScheduleTerm.onDate (DateOnly(2029, 6, 15)) with PriceType = Some "MakeWhole"; MakeWholeSpreadBps = Some 25m }
+    let laterPut =
+        ({ PutDate = DateOnly(2032, 6, 15)
+           PutEndDate = Some (DateOnly(2032, 7, 15))
+           ExerciseStyle = Some "American"
+           ExerciseFrequency = None
+           PutPrice = Some 100m
+           PriceBasis = Some "PercentOfAccretedValue"
+           MinimumNoticeDays = Some 15
+           MaximumNoticeDays = Some 45
+           NoticeDayType = Some "Calendar" } : PutScheduleTerm)
+    let schedules : CallPutSchedules = { Calls = [ laterCall; earlierCall ]; Puts = [ laterPut; firstPut ] }
+
+    let assetClass, payload = flatTermsFor (scheduleBond ScheduleConventions.empty |> withCallPutSchedules schedules)
+
+    (assetClass, termsStamp payload) |> should equal ("Bond", 3)
+    // Entries keep the order they were declared in; the writer never sorts them by date.
+    payload.GetProperty("callSchedule").GetRawText()
+    |> should equal
+        """[{"callDate":"2031-06-15","callEndDate":"2032-06-15","callPrice":101.25,"exerciseFrequency":"SemiAnnual","exerciseStyle":"Bermudan","makeWholeSpreadBps":null,"maximumNoticeDays":60,"minimumNoticeDays":30,"noticeDayType":"Business","partialRedemption":"ProRata","priceBasis":"PercentOfPar","priceType":"Fixed"},{"callDate":"2029-06-15","callEndDate":null,"callPrice":null,"exerciseFrequency":null,"exerciseStyle":null,"makeWholeSpreadBps":25,"maximumNoticeDays":null,"minimumNoticeDays":null,"noticeDayType":null,"partialRedemption":null,"priceBasis":null,"priceType":"MakeWhole"}]"""
+    payload.GetProperty("putSchedule").GetRawText()
+    |> should equal (
+        """[{"exerciseFrequency":null,"exerciseStyle":"American","maximumNoticeDays":45,"minimumNoticeDays":15,"noticeDayType":"Calendar","priceBasis":"PercentOfAccretedValue","putDate":"2032-06-15","putEndDate":"2032-07-15","putPrice":100},"""
+        + firstPutJson + "]")
+
+[<Fact>]
+let ``Flat writer pins the whole bond payload with declared call and put schedules`` () =
+    let _, payload = flatTermsFor (scheduleBond ScheduleConventions.empty |> withCallPutSchedules { Calls = [ firstCall ]; Puts = [ firstPut ] })
+
+    payload.GetRawText()
+    |> should equal (
+        """{"callDate":null,"callSchedule":[""" + firstCallJson
+        + """],"capRate":null,"couponRate":4.5,"couponType":"Fixed","dayCount":"30/360","floatingIndex":null,"floorRate":null,"inflationBaseIndexValue":null,"inflationIndex":null,"inflationIndexRatio":null,"isCallable":false,"issueDate":null,"issuerName":"ACME","legalFinalMaturity":null,"mandatoryPutDate":null,"maturity":"2034-06-15","par":null,"paymentFrequency":null,"preRefundDate":null,"principalSchedule":[],"putSchedule":["""
+        + firstPutJson
+        + """],"scheduleConventions":null,"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":3,"seniority":null,"spreadBps":null,"stepSchedule":[],"subclass":"Corporate"}""")
+
+[<Fact>]
+let ``Flat writer pins the whole deposit payload, with callSchedule ordinally before callableDate`` () =
+    let call = CallScheduleTerm.onDate (DateOnly(2027, 9, 15))
+    let _, payload = flatTermsFor (callableDeposit (Some (DateOnly(2027, 3, 15))) (callsOnly [ call ]))
+
+    // 'S' (0x53) sorts before 'a' (0x61), so the array precedes the scalar callable date.
+    payload.GetRawText()
+    |> should equal
+        """{"callSchedule":[{"callDate":"2027-09-15","callEndDate":null,"callPrice":null,"exerciseFrequency":null,"exerciseStyle":null,"makeWholeSpreadBps":null,"maximumNoticeDays":null,"minimumNoticeDays":null,"noticeDayType":null,"partialRedemption":null,"priceBasis":null,"priceType":null}],"callableDate":"2027-03-15","couponRate":4.1,"dayCount":"ACT/360","issuerName":"First Bank","maturity":"2028-03-15","putSchedule":[],"scheduleConventions":null,"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":3}"""
+
+[<Fact>]
+let ``Flat writer writes exactly the registered call and put entry members, in ordinal order`` () =
+    let schedules : CallPutSchedules = { Calls = [ firstCall ]; Puts = [ firstPut ] }
+    for build in [ scheduleBond; scheduleDeposit; scheduleStructuredCredit ] do
+        let assetClass, payload = flatTermsFor (build ScheduleConventions.empty |> withCallPutSchedules schedules)
+        for container in [ "callSchedule"; "putSchedule" ] do
+            let written = payload.GetProperty(container).[0].EnumerateObject() |> Seq.map (fun property -> property.Name) |> List.ofSeq
+            // A member the schema registers but the writer drops (or the reverse) fails here.
+            (assetClass, container, written)
+            |> should equal (assetClass, container, ordinal (schemaElementMembers assetClass container))
+
+[<Fact>]
+let ``Economic call fill sorts declared entries, carries only Fixed percent-of-par prices and takes the first make-whole spread`` () =
+    let dated (year: int) (month: int) (day: int) = DateOnly(year, month, day)
+    let call date = CallScheduleTerm.onDate date
+    let put date = PutScheduleTerm.onDate date
+    // Stored out of date order; each comment names the economic entry the fill makes of it.
+    let calls =
+        [ // A later make-whole spread, first in stored order: not the spread the fill takes.
+          { call (dated 2033 6 15) with PriceType = Some "MakeWhole"; MakeWholeSpreadBps = Some 50m; ExerciseStyle = Some "European" }
+          // A fixed par price on a par basis: carried, and a par call.
+          { call (dated 2032 6 15) with CallPrice = Some 100m; PriceType = Some "Fixed"; PriceBasis = Some "PercentOfPar"; ExerciseStyle = Some "Bermudan" }
+          // No type or basis counts as Fixed on PercentOfPar: carried, not a par call.
+          { call (dated 2029 6 15) with CallPrice = Some 102.5m; ExerciseStyle = Some "European" }
+          // The earliest make-whole carries no spread; its floor price is not a call price.
+          { call (dated 2028 6 15) with CallPrice = Some 100m; PriceType = Some "MakeWhole"; ExerciseStyle = Some "American" }
+          // An accreted-value price is not a percent-of-par price.
+          { call (dated 2030 6 15) with CallPrice = Some 100m; PriceType = Some "Fixed"; PriceBasis = Some "PercentOfAccretedValue" }
+          // No type on a declared par basis counts as Fixed: carried, and a par call.
+          { call (dated 2035 6 15) with CallPrice = Some 100m; PriceBasis = Some "PercentOfPar" }
+          // The first make-whole by date that carries a spread.
+          { call (dated 2031 6 15) with PriceType = Some "MakeWhole"; MakeWholeSpreadBps = Some 25m }
+          // Same date as the 102.5 call and stored after it: the sort is stable.
+          { call (dated 2029 6 15) with CallPrice = Some 101m; PriceType = Some "Fixed"; PriceBasis = Some "PercentOfPar"; ExerciseStyle = Some "American" }
+          // A spread on a Fixed entry is not a make-whole spread.
+          { call (dated 2027 12 15) with CallPrice = Some 103m; PriceType = Some "Fixed"; MakeWholeSpreadBps = Some 10m }
+          // Undeclared spellings compare ordinally: neither a Fixed price nor a make-whole.
+          { call (dated 2034 1 15) with CallPrice = Some 100m; PriceType = Some "Makewhole"; MakeWholeSpreadBps = Some 75m; ExerciseStyle = Some "American" }
+          { call (dated 2034 3 15) with CallPrice = Some 100m; PriceType = Some "Fixed"; PriceBasis = Some "percentOfPar" } ]
+    let puts =
+        [ // An undeclared basis spelling compares ordinally: its price is not carried.
+          { put (dated 2032 6 15) with PutPrice = Some 100m; PriceBasis = Some "percentOfPar" }
+          { put (dated 2031 6 15) with PutPrice = Some 100m }
+          { put (dated 2029 6 15) with PutPrice = Some 99.5m; PriceBasis = Some "PercentOfAccretedValue" }
+          { put (dated 2030 6 15) with PutPrice = Some 101m; PriceBasis = Some "PercentOfPar" }
+          put (dated 2030 6 15) ]
+
+    economicCallFor (callableBond true (Some (dated 2030 1 15)) ({ Calls = calls; Puts = puts } : CallPutSchedules))
+    |> should equal (
+        Some ({ IsCallable = true
+                // The scalar call date, verbatim, although an earlier call is declared.
+                FirstCallDate = Some (dated 2030 1 15)
+                CallPrice = None
+                CallSchedule =
+                    [ economicCallEntry (dated 2027 12 15) (Some 103m) false None
+                      economicCallEntry (dated 2028 6 15) None false (Some "MakeWhole")
+                      economicCallEntry (dated 2029 6 15) (Some 102.5m) false (Some "European")
+                      economicCallEntry (dated 2029 6 15) (Some 101m) false (Some "American")
+                      economicCallEntry (dated 2030 6 15) None false None
+                      economicCallEntry (dated 2031 6 15) None false (Some "MakeWhole")
+                      economicCallEntry (dated 2032 6 15) (Some 100m) true (Some "Bermudan")
+                      economicCallEntry (dated 2033 6 15) None false (Some "MakeWhole")
+                      economicCallEntry (dated 2034 1 15) None false (Some "American")
+                      economicCallEntry (dated 2034 3 15) None false None
+                      economicCallEntry (dated 2035 6 15) (Some 100m) true None ]
+                MakeWholeSpreadBps = Some 25m
+                IsPuttable = true
+                PutSchedule =
+                    [ economicPutEntry (dated 2029 6 15) None
+                      economicPutEntry (dated 2030 6 15) (Some 101m)
+                      economicPutEntry (dated 2030 6 15) None
+                      economicPutEntry (dated 2031 6 15) (Some 100m)
+                      economicPutEntry (dated 2032 6 15) None ] } : EconomicCallTerms))
+
+[<Fact>]
+let ``Economic call fill keeps bond and deposit call scalars verbatim and fills structured credit only from declared schedules`` () =
+    let declaredCall = { CallScheduleTerm.onDate (DateOnly(2027, 9, 15)) with CallPrice = Some 100m }
+    let declaredPut = { PutScheduleTerm.onDate (DateOnly(2027, 12, 15)) with PutPrice = Some 100m }
+    let callEntry = economicCallEntry (DateOnly(2027, 9, 15)) (Some 100m) true None
+    let putEntry = economicPutEntry (DateOnly(2027, 12, 15)) (Some 100m)
+    let callTerms isCallable firstCallDate calls puts =
+        Some ({ IsCallable = isCallable; FirstCallDate = firstCallDate; CallPrice = None; CallSchedule = calls
+                MakeWholeSpreadBps = None; IsPuttable = not (List.isEmpty puts); PutSchedule = puts } : EconomicCallTerms)
+
+    // A bond's isCallable and callDate are never derived from its declared calls.
+    economicCallFor (callableBond false None (callsOnly [ declaredCall ]))
+    |> should equal (callTerms false None [ callEntry ] [])
+
+    // A mandatory put date alone is not a holder put; a declared put is.
+    let mandatoryPutBond schedules =
+        match callableBond false None schedules with
+        | SecurityKind.Bond terms -> SecurityKind.Bond { terms with MandatoryPutDate = Some (DateOnly(2030, 6, 15)) }
+        | other -> other
+    economicCallFor (mandatoryPutBond CallPutSchedules.empty) |> should equal (callTerms false None [] [])
+    economicCallFor (mandatoryPutBond (callsOnly [ declaredCall ])) |> should equal (callTerms false None [ callEntry ] [])
+    economicCallFor (mandatoryPutBond (putsOnly [ declaredPut ])) |> should equal (callTerms false None [] [ putEntry ])
+
+    // A deposit's callableDate alone sets IsCallable and FirstCallDate.
+    economicCallFor (callableDeposit (Some (DateOnly(2027, 3, 15))) ({ Calls = [ declaredCall ]; Puts = [ declaredPut ] } : CallPutSchedules))
+    |> should equal (callTerms true (Some (DateOnly(2027, 3, 15))) [ callEntry ] [ putEntry ])
+    economicCallFor (callableDeposit None (callsOnly [ declaredCall ]))
+    |> should equal (callTerms false None [ callEntry ] [])
+
+    // Structured credit has no call scalars: nothing declared leaves the module unset (conventions
+    // included), and a declared schedule fills only the lists, IsCallable meaning "calls declared".
+    // The non-call period never feeds the module.
+    let structuredCredit conventions schedules =
+        match scheduleStructuredCredit conventions |> withCallPutSchedules schedules with
+        | SecurityKind.StructuredCredit terms -> SecurityKind.StructuredCredit { terms with NonCallPeriodEnd = Some (DateOnly(2027, 6, 15)) }
+        | other -> other
+    economicCallFor (structuredCredit ScheduleConventions.empty CallPutSchedules.empty) |> should equal None
+    economicCallFor (structuredCredit declaredConventions CallPutSchedules.empty) |> should equal None
+    economicCallFor (structuredCredit ScheduleConventions.empty (callsOnly [ declaredCall ]))
+    |> should equal (callTerms true None [ callEntry ] [])
+    economicCallFor (structuredCredit ScheduleConventions.empty (putsOnly [ declaredPut ]))
+    |> should equal (callTerms false None [] [ putEntry ])
+    economicCallFor (structuredCredit declaredConventions ({ Calls = [ declaredCall ]; Puts = [ declaredPut ] } : CallPutSchedules))
+    |> should equal (callTerms true None [ callEntry ] [ putEntry ])
+
+[<Fact>]
+let ``Economic call fill reproduces the scalar-only call terms exactly when no schedule is declared`` () =
+    let scalarOnly isCallable firstCallDate =
+        Some ({ IsCallable = isCallable
+                FirstCallDate = firstCallDate
+                CallPrice = None
+                CallSchedule = []
+                MakeWholeSpreadBps = None
+                IsPuttable = false
+                PutSchedule = [] } : EconomicCallTerms)
+
+    economicCallFor (callableBond true (Some (DateOnly(2030, 1, 15))) CallPutSchedules.empty)
+    |> should equal (scalarOnly true (Some (DateOnly(2030, 1, 15))))
+    economicCallFor (scheduleBond ScheduleConventions.empty) |> should equal (scalarOnly false None)
+    economicCallFor (callableDeposit (Some (DateOnly(2027, 3, 15))) CallPutSchedules.empty)
+    |> should equal (scalarOnly true (Some (DateOnly(2027, 3, 15))))
+    economicCallFor (scheduleDeposit ScheduleConventions.empty) |> should equal (scalarOnly false None)
+    economicCallFor (scheduleStructuredCredit ScheduleConventions.empty) |> should equal None
+
+[<Fact>]
+let ``Reclassification proposal blocks a bond that declares call or put schedules`` () =
+    let agencyBond conventions schedules =
+        match securitizedBond BondSubclass.AgencyMbs (BondCouponStructure.Fixed(5.5m, None)) (Some 1000m) with
+        | SecurityKind.Bond terms -> SecurityKind.Bond { terms with ScheduleConventions = conventions; CallPutSchedules = schedules }
+        | other -> other
+    let proposalFor conventions schedules =
+        reclassificationFor (agencyBond conventions schedules)
+        |> Option.defaultWith (fun () -> failwith "Expected a securitised bond to be a reclassification candidate")
+    let messageOf code (proposal: SecurityMasterLegacyUpgrade.StructuredCreditReclassificationProposal) =
+        (proposal.Blockers |> List.find (fun blocker -> blocker.Code = code)).Message
+
+    let calls = proposalFor ScheduleConventions.empty (callsOnly [ firstCall ])
+    blockerCodes calls
+    |> should equal [
+        "structured_credit_call_put_schedules_unwritable"
+        "structured_credit_tranche_required"
+        "structured_credit_collateral_type_required" ]
+    messageOf "structured_credit_call_put_schedules_unwritable" calls
+    |> should equal "The bond declares callSchedule or putSchedule, StructuredCredit terms version 4 terms this node cannot write; reclassify from a node that writes StructuredCredit version 4."
+    calls.ProposedTerms |> should equal None
+    // The draft still reports what the bond carries.
+    calls.Draft.Kind |> should equal (Some StructuredCreditKind.AgencyMbs)
+
+    // Conventions and puts raise both blockers, the conventions one first, and 4a's text holds.
+    let both = proposalFor { ScheduleConventions.empty with StubPolicy = Some "Short" } (putsOnly [ firstPut ])
+    blockerCodes both
+    |> should equal [
+        "structured_credit_schedule_conventions_unwritable"
+        "structured_credit_call_put_schedules_unwritable"
+        "structured_credit_tranche_required"
+        "structured_credit_collateral_type_required" ]
+    messageOf "structured_credit_schedule_conventions_unwritable" both
+    |> should equal "The bond declares scheduleConventions, a StructuredCredit terms version 3 term this node cannot write; reclassify from a node that writes StructuredCredit version 3."
+    messageOf "structured_credit_call_put_schedules_unwritable" both
+    |> should equal "The bond declares callSchedule or putSchedule, StructuredCredit terms version 4 terms this node cannot write; reclassify from a node that writes StructuredCredit version 4."
+    both.ProposedTerms |> should equal None
+
+    let plain = proposalFor ScheduleConventions.empty CallPutSchedules.empty
+    blockerCodes plain |> should equal [ "structured_credit_tranche_required"; "structured_credit_collateral_type_required" ]

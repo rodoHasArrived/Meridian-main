@@ -20,13 +20,20 @@ namespace Meridian.Tests.SecurityMaster;
 /// field's <see cref="SecurityAssetTermField.SinceTermsVersion"/> must be the first version that lists
 /// it, each declared upgrade step must be legal for the manifest diff it spans, and the steps must be
 /// contiguous.</para>
+/// <para>To expand a class, raise its ReadableTermsVersion to n, tag each new field <c>.Since(n)</c> and
+/// declare the identity step from n-1. A class may read more than one version ahead of the one it
+/// writes: Bond writes version 1 and reads version 2 (the scheduleConventions block) and version 3 (the
+/// callSchedule and putSchedule arrays). Each readable-only version is reached through its own identity
+/// step and introduces its own fields, and the contract step later raises TermsVersion to meet it.</para>
 /// <para>A missing manifest, or one without the class's newest version, writes
 /// <c>&lt;AssetClass&gt;.received.json</c> beside the test binaries and fails. The received file holds
 /// the committed versions unchanged, followed by each missing version derived from the live schema
 /// and the fields' <c>.Since(n)</c> tags. Commit it as <c>&lt;AssetClass&gt;.json</c> only after review.
 /// Element shapes (a swap's legs), aliases, vocabularies and conventions are outside the manifests;
-/// the term-schema round-trip suites guard those, and the element-field guard below keeps a versioned
-/// element field inside the readable range.</para>
+/// the shapes of versioned containers are frozen by <c>versioned-containers.json</c> under
+/// <c>tests/fixtures/security-master/terms-element-shapes</c>. The term-schema round-trip suites guard
+/// the rest, and the element-field guard below keeps a versioned element field inside the readable
+/// range.</para>
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class SecurityAssetClassTermsHistoryTests
@@ -203,11 +210,11 @@ public sealed class SecurityAssetClassTermsHistoryTests
     }
 
     [Fact]
-    public void StructuredCreditVersionTwoFields_AreTheNineTypedTrancheTerms()
+    public void StructuredCreditVersions_TwoAddsTheTrancheTerms_ThreeTheBlock_FourTheSchedules()
     {
         var manifest = LoadCommittedManifests().Should().ContainKey("StructuredCredit").WhoseValue;
 
-        manifest.Versions.Select(static version => version.TermsVersion).Should().Equal(1, 2, 3);
+        manifest.Versions.Select(static version => version.TermsVersion).Should().Equal(1, 2, 3, 4);
         manifest.Versions[0].Fields.Select(Describe).Should().Equal(
             "collateralType:String:required",
             "couponOrIndex:String:required",
@@ -236,6 +243,10 @@ public sealed class SecurityAssetClassTermsHistoryTests
             .Should().Equal("scheduleConventions:Object:optional");
         manifest.Versions[1].Fields.Select(Describe).Except(manifest.Versions[2].Fields.Select(Describe))
             .Should().BeEmpty("version 3 adds the schedule conventions block and changes nothing version 2 declares");
+        manifest.Versions[3].Fields.Select(Describe).Except(manifest.Versions[2].Fields.Select(Describe))
+            .Should().Equal("callSchedule:Array:optional", "putSchedule:Array:optional");
+        manifest.Versions[2].Fields.Select(Describe).Except(manifest.Versions[3].Fields.Select(Describe))
+            .Should().BeEmpty("version 4 adds the call and put schedules and changes nothing version 3 declares");
     }
 
     [Theory]
@@ -246,7 +257,9 @@ public sealed class SecurityAssetClassTermsHistoryTests
     {
         var manifest = LoadCommittedManifests().Should().ContainKey(assetClass).WhoseValue;
 
-        manifest.Versions.Select(static version => version.TermsVersion).Should().Equal(1, 2);
+        // A bond and a certificate of deposit go on to read version 3 (VersionThree_AddsOnlyTheCallAndPutSchedules).
+        manifest.Versions.Select(static version => version.TermsVersion)
+            .Should().Equal(assetClass == "Swap" ? new[] { 1, 2 } : new[] { 1, 2, 3 });
         var added = manifest.Versions[1].Fields.Select(Describe).Except(manifest.Versions[0].Fields.Select(Describe)).ToArray();
         var removed = manifest.Versions[0].Fields.Select(Describe).Except(manifest.Versions[1].Fields.Select(Describe)).ToArray();
         removed.Should().BeEmpty();
@@ -262,6 +275,20 @@ public sealed class SecurityAssetClassTermsHistoryTests
         {
             added.Should().Equal("scheduleConventions:Object:optional");
         }
+    }
+
+    [Theory]
+    [InlineData("Bond")]
+    [InlineData("CertificateOfDeposit")]
+    public void VersionThree_AddsOnlyTheCallAndPutSchedules(string assetClass)
+    {
+        var manifest = LoadCommittedManifests().Should().ContainKey(assetClass).WhoseValue;
+
+        manifest.Versions.Select(static version => version.TermsVersion).Should().Equal(1, 2, 3);
+        manifest.Versions[2].Fields.Select(Describe).Except(manifest.Versions[1].Fields.Select(Describe))
+            .Should().Equal("callSchedule:Array:optional", "putSchedule:Array:optional");
+        manifest.Versions[1].Fields.Select(Describe).Except(manifest.Versions[2].Fields.Select(Describe))
+            .Should().BeEmpty("version 3 adds the call and put schedules and changes nothing version 2 declares");
     }
 
     [Fact]
@@ -300,9 +327,17 @@ public sealed class SecurityAssetClassTermsHistoryTests
         }
 
         var structuredCredit = SecurityAssetClassCatalog.GetOrDefault("StructuredCredit").TermsUpgrades;
-        structuredCredit.Should().HaveCount(2);
-        structuredCredit!.Select(static step => (step.FromVersion, step.ToVersion)).Should().Equal((1, 2), (2, 3));
+        structuredCredit.Should().HaveCount(3);
+        structuredCredit!.Select(static step => (step.FromVersion, step.ToVersion)).Should().Equal((1, 2), (2, 3), (3, 4));
         structuredCredit.Should().OnlyContain(static step => step.Kind == SecurityTermsUpgradeKind.Identity && step.Transform == null);
+
+        foreach (var assetClass in new[] { "Bond", "CertificateOfDeposit" })
+        {
+            var steps = SecurityAssetClassCatalog.GetOrDefault(assetClass).TermsUpgrades;
+            steps.Should().HaveCount(2, $"{assetClass} reads terms versions 1 through 3");
+            steps!.Select(static step => (step.FromVersion, step.ToVersion)).Should().Equal((1, 2), (2, 3));
+            steps.Should().OnlyContain(static step => step.Kind == SecurityTermsUpgradeKind.Identity && step.Transform == null);
+        }
     }
 
     [Fact]

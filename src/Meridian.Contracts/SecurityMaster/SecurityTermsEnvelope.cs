@@ -283,10 +283,21 @@ public static class SecurityTermsEnvelope
 
         if (declaredVersion > writes)
         {
+            // A flat payload can populate a term introduced above its own stamp; only a node that
+            // writes that term's version can apply it.
+            var needed = declaredVersion;
+            if (!IsProfileGovernedPayload(assetClass, payload))
+            {
+                foreach (var (_, field) in SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, payload, declaredVersion))
+                {
+                    needed = Math.Max(needed, field.SinceTermsVersion);
+                }
+            }
+
             reason =
                 $"{AssetClassTermsVersionKey} '{declaredVersion}' for asset class '{assetClass}' is readable but not writable on this node: " +
                 $"it reads versions {DefaultAssetClassTermsVersion} through {reads} and writes version {writes}. " +
-                $"Submit the terms at version {writes}, or apply the change from a node that writes version {declaredVersion}.";
+                $"Submit the terms at version {writes}, or apply the change from a node that writes version {needed}.";
             return true;
         }
 

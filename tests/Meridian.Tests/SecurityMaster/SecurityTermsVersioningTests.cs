@@ -154,10 +154,10 @@ public sealed class SecurityTermsVersioningTests
 
     private const string Maturity = "\"maturity\":\"2030-01-15\"";
 
-    private static string ReadableButNotWritable(string assetClass, int stamp, int reads, int writes)
+    private static string ReadableButNotWritable(string assetClass, int stamp, int reads, int writes, int? needs = null)
         => $"assetClassTermsVersion '{stamp}' for asset class '{assetClass}' is readable but not writable on this node: " +
            $"it reads versions 1 through {reads} and writes version {writes}. " +
-           $"Submit the terms at version {writes}, or apply the change from a node that writes version {stamp}.";
+           $"Submit the terms at version {writes}, or apply the change from a node that writes version {needs ?? stamp}.";
 
     private static string NotYetWritable(string assetClass, string path, int since, int writes)
         => $"'{path}' is an asset-class terms version {since} term of '{assetClass}'. This node reads it but writes " +
@@ -178,10 +178,10 @@ public sealed class SecurityTermsVersioningTests
     }
 
     [Theory]
-    [InlineData("Bond", 1, 2)]
-    [InlineData("CertificateOfDeposit", 1, 2)]
+    [InlineData("Bond", 1, 3)]
+    [InlineData("CertificateOfDeposit", 1, 3)]
     [InlineData("Swap", 1, 2)]
-    [InlineData("StructuredCredit", 2, 3)]
+    [InlineData("StructuredCredit", 2, 4)]
     [InlineData("Equity", 1, 1)]
     [InlineData("Option", 1, 1)]
     public void EnsureReadable_AcceptsEveryStampThroughWhatTheClassReads_AndRefusesTheNext(string assetClass, int writes, int reads)
@@ -205,11 +205,14 @@ public sealed class SecurityTermsVersioningTests
     [Theory]
     [InlineData("Bond", 1)]
     [InlineData("Bond", 2)]
+    [InlineData("Bond", 3)]
     [InlineData("CertificateOfDeposit", 1)]
     [InlineData("CertificateOfDeposit", 2)]
+    [InlineData("CertificateOfDeposit", 3)]
     [InlineData("Swap", 2)]
     [InlineData("StructuredCredit", 2)]
     [InlineData("StructuredCredit", 3)]
+    [InlineData("StructuredCredit", 4)]
     [InlineData("Equity", 1)]
     public void StampFlat_AtAVersionBetweenTheWriteAndReadVersions_IsTheExplicitVersionOverload_ByteForByte(string assetClass, int version)
     {
@@ -226,8 +229,9 @@ public sealed class SecurityTermsVersioningTests
     }
 
     [Theory]
-    [InlineData("Bond", 3, 1, 2)]
-    [InlineData("StructuredCredit", 1, 2, 3)]
+    [InlineData("Bond", 4, 1, 3)]
+    [InlineData("StructuredCredit", 1, 2, 4)]
+    [InlineData("StructuredCredit", 5, 2, 4)]
     [InlineData("Equity", 2, 1, 1)]
     public void StampFlat_OutsideTheWriteToReadRange_IsRefused(string assetClass, int version, int writes, int reads)
     {
@@ -250,23 +254,45 @@ public sealed class SecurityTermsVersioningTests
             .Should().Be(NotYetWritable("Swap", "legs[1].scheduleConventions", 2, 1));
         SecurityTermsEnvelope.DescribeNotYetWritable("StructuredCredit", "scheduleConventions", 3)
             .Should().Be(NotYetWritable("StructuredCredit", "scheduleConventions", 3, 2));
+        SecurityTermsEnvelope.DescribeNotYetWritable("Bond", "callSchedule", 3).Should().Be(
+            "'callSchedule' is an asset-class terms version 3 term of 'Bond'. This node reads it but writes " +
+            "assetClassTermsVersion 1, so a create, amend, import or field edit cannot set it yet. Leave it absent, null or empty (ADR-024).");
+        SecurityTermsEnvelope.DescribeNotYetWritable("CertificateOfDeposit", "putSchedule", 3)
+            .Should().Be(NotYetWritable("CertificateOfDeposit", "putSchedule", 3, 1));
+        SecurityTermsEnvelope.DescribeNotYetWritable("StructuredCredit", "callSchedule", 4)
+            .Should().Be(NotYetWritable("StructuredCredit", "callSchedule", 4, 2));
     }
 
     private const string SwapDates = "\"effectiveDate\":\"2026-01-15\",\"maturityDate\":\"2031-01-15\"";
+
+    // A StructuredCredit profile envelope carrying populated call and put schedules at its root and in
+    // its profileFields, each entry with an exercise cadence no coupon-frequency convention accepts.
+    private const string ProfileCallAndPutSchedules =
+        """ "customProfileId":"structured-credit-profile","callSchedule":[{"callDate":"2030-06-15","exerciseFrequency":"Fortnightly"}],"putSchedule":[{"putDate":"2029-06-15","exerciseFrequency":3}],"profileFields":{"tranche":"A-1","callSchedule":[{"callDate":"2030-06-15","exerciseFrequency":3}],"putSchedule":[{"putDate":"2029-06-15","exerciseFrequency":"Fortnightly"}]} """;
 
     public static TheoryData<string, string, string> RefusedWrites()
     {
         var data = new TheoryData<string, string, string>
         {
             // Stamped above the write version: refused whatever the payload carries.
-            { "Bond", Terms(2, Maturity).GetRawText(), ReadableButNotWritable("Bond", 2, 2, 1) },
-            { "CertificateOfDeposit", Terms(2, Maturity).GetRawText(), ReadableButNotWritable("CertificateOfDeposit", 2, 2, 1) },
+            { "Bond", Terms(2, Maturity).GetRawText(), ReadableButNotWritable("Bond", 2, 3, 1) },
+            { "CertificateOfDeposit", Terms(2, Maturity).GetRawText(), ReadableButNotWritable("CertificateOfDeposit", 2, 3, 1) },
             { "Swap", Terms(2, SwapDates).GetRawText(), ReadableButNotWritable("Swap", 2, 2, 1) },
-            { "StructuredCredit", Terms(3, Maturity).GetRawText(), ReadableButNotWritable("StructuredCredit", 3, 3, 2) },
+            { "StructuredCredit", Terms(3, Maturity).GetRawText(), ReadableButNotWritable("StructuredCredit", 3, 4, 2) },
             {
                 "Bond",
                 Terms(2, Maturity + """ ,"scheduleConventions":{"stubPolicy":"Long"} """).GetRawText(),
-                ReadableButNotWritable("Bond", 2, 2, 1)
+                ReadableButNotWritable("Bond", 2, 3, 1)
+            },
+
+            // The call and put schedule version: readable, so refused by stamp before any term is walked.
+            { "Bond", Terms(3, Maturity).GetRawText(), ReadableButNotWritable("Bond", 3, 3, 1) },
+            { "CertificateOfDeposit", Terms(3, Maturity).GetRawText(), ReadableButNotWritable("CertificateOfDeposit", 3, 3, 1) },
+            { "StructuredCredit", Terms(4, Maturity).GetRawText(), ReadableButNotWritable("StructuredCredit", 4, 4, 2) },
+            {
+                "Bond",
+                Terms(3, Maturity + """ ,"callSchedule":[{"callDate":"2030-06-15"}] """).GetRawText(),
+                ReadableButNotWritable("Bond", 3, 3, 1)
             },
 
             // At or below the write version, a populated block is refused; false, 0 and "" are values.
@@ -306,6 +332,43 @@ public sealed class SecurityTermsVersioningTests
                 NotYetWritable("StructuredCredit", "scheduleConventions", 3, 2)
             },
 
+            // A populated call or put schedule, at or below the write version.
+            {
+                "Bond",
+                Terms(null, Maturity + """ ,"callSchedule":[{"callDate":"2030-06-15"}] """).GetRawText(),
+                NotYetWritable("Bond", "callSchedule", 3, 1)
+            },
+            {
+                "CertificateOfDeposit",
+                Terms(1, Maturity + """ ,"putSchedule":[{"putDate":"2029-06-15"}] """).GetRawText(),
+                NotYetWritable("CertificateOfDeposit", "putSchedule", 3, 1)
+            },
+            {
+                "StructuredCredit",
+                Terms(2, """ "tranche":"A-1","callSchedule":[{"callDate":"2030-06-15"}] """).GetRawText(),
+                NotYetWritable("StructuredCredit", "callSchedule", 4, 2)
+            },
+
+            // A schedule's kind is not checked here: a string or a bare object is a populated value.
+            {
+                "Bond",
+                Terms(null, Maturity + """ ,"callSchedule":"x" """).GetRawText(),
+                NotYetWritable("Bond", "callSchedule", 3, 1)
+            },
+            {
+                "Bond",
+                Terms(1, Maturity + """ ,"callSchedule":{"callDate":"2030-06-15"} """).GetRawText(),
+                NotYetWritable("Bond", "callSchedule", 3, 1)
+            },
+
+            // Both versions populated: the reason names the first readable-only term in declared order,
+            // whatever order the payload spells them in.
+            {
+                "Bond",
+                Terms(1, Maturity + """ ,"callSchedule":[{"callDate":"2030-06-15"}],"scheduleConventions":{"stubPolicy":"Long"} """).GetRawText(),
+                NotYetWritable("Bond", "scheduleConventions", 2, 1)
+            },
+
             // The key matches case-insensitively, as the readers match it; the reason names the spelling.
             {
                 "Bond",
@@ -316,6 +379,16 @@ public sealed class SecurityTermsVersioningTests
                 "Bond",
                 Terms(1, Maturity + """ ,"scheduleConventions":null,"SCHEDULECONVENTIONS":{"rollConvention":"EOM"} """).GetRawText(),
                 NotYetWritable("Bond", "SCHEDULECONVENTIONS", 2, 1)
+            },
+            {
+                "Bond",
+                Terms(null, Maturity + """ ,"CallSchedule":[{"callDate":"2030-06-15"}] """).GetRawText(),
+                NotYetWritable("Bond", "CallSchedule", 3, 1)
+            },
+            {
+                "CertificateOfDeposit",
+                Terms(1, Maturity + """ ,"putSchedule":[],"PUTSCHEDULE":[{"putDate":"2029-06-15"}] """).GetRawText(),
+                NotYetWritable("CertificateOfDeposit", "PUTSCHEDULE", 3, 1)
             },
 
             // A swap carries the block per leg, under the legs container or either alias.
@@ -331,14 +404,60 @@ public sealed class SecurityTermsVersioningTests
                 Terms(null, Maturity + """ ,"profileFields":{},"scheduleConventions":{"rollConvention":"EOM"} """).GetRawText(),
                 NotYetWritable("Bond", "scheduleConventions", 2, 1)
             },
+            {
+                "Bond",
+                Terms(null, Maturity + """ ,"profileFields":{},"callSchedule":[{"callDate":"2030-06-15"}] """).GetRawText(),
+                NotYetWritable("Bond", "callSchedule", 3, 1)
+            },
 
             // A profile envelope keeps the stamp check: it is the one versioned check it gets.
             {
                 "StructuredCredit",
                 Terms(3, """ "customProfileId":"structured-credit-profile","profileFields":{"tranche":"A-1"} """).GetRawText(),
-                ReadableButNotWritable("StructuredCredit", 3, 3, 2)
+                ReadableButNotWritable("StructuredCredit", 3, 4, 2)
+            },
+            { "StructuredCredit", Terms(3, ProfileCallAndPutSchedules).GetRawText(), ReadableButNotWritable("StructuredCredit", 3, 4, 2) },
+            { "StructuredCredit", Terms(4, ProfileCallAndPutSchedules).GetRawText(), ReadableButNotWritable("StructuredCredit", 4, 4, 2) },
+
+            // A flat payload that populates a term introduced above its own stamp is still refused by
+            // its stamp, but only a node that writes that term's version can apply it.
+            {
+                "Bond",
+                Terms(2, Maturity + """ ,"callSchedule":[{"callDate":"2030-06-15"}] """).GetRawText(),
+                ReadableButNotWritable("Bond", 2, 3, 1, needs: 3)
+            },
+            {
+                "CertificateOfDeposit",
+                Terms(2, Maturity + """ ,"scheduleConventions":{"rollConvention":"EOM"},"PutSchedule":[{"putDate":"2029-06-15"}] """).GetRawText(),
+                ReadableButNotWritable("CertificateOfDeposit", 2, 3, 1, needs: 3)
+            },
+            {
+                "StructuredCredit",
+                Terms(3, """ "putSchedule":[{"putDate":"2029-06-15"}] """).GetRawText(),
+                ReadableButNotWritable("StructuredCredit", 3, 4, 2, needs: 4)
+            },
+            {
+                "Bond",
+                Terms(2, Maturity + """ ,"callSchedule":[],"putSchedule":[{}] """).GetRawText(),
+                ReadableButNotWritable("Bond", 2, 3, 1)
             },
         };
+
+        // An entry populated by any one member, without a date, is a populated schedule; false, 0 and ""
+        // are values.
+        foreach (var entry in new[]
+                 {
+                     """{"minimumNoticeDays":0}""",
+                     """{"partialRedemption":"WholeOnly"}""",
+                     """{"exerciseStyle":""}""",
+                     """{"callPrice":101}""",
+                 })
+        {
+            data.Add(
+                "Bond",
+                Terms(null, Maturity + $$""" ,"callSchedule":[{{entry}}] """).GetRawText(),
+                NotYetWritable("Bond", "callSchedule", 3, 1));
+        }
 
         foreach (var container in new[] { "legs", "swapLegs", "cashFlowLegs" })
         {
@@ -387,6 +506,20 @@ public sealed class SecurityTermsVersioningTests
         { "Swap", Terms(1, SwapDates + """ ,"swapLegs":[null,{"legType":"Fixed","scheduleConventions":{"paymentCalendars":[null]}}] """).GetRawText() },
         { "Bond", "[]" },
 
+        // The call and put schedules: null, [], null entries, empty entries and all-null entries are unset.
+        { "Bond", Terms(1, Maturity + """ ,"callSchedule":null,"putSchedule":null """).GetRawText() },
+        { "Bond", Terms(null, Maturity + """ ,"callSchedule":[],"putSchedule":[] """).GetRawText() },
+        { "Bond", Terms(1, Maturity + """ ,"callSchedule":[null],"putSchedule":[null,null] """).GetRawText() },
+        { "Bond", Terms(null, Maturity + """ ,"callSchedule":[{}],"putSchedule":[{},null] """).GetRawText() },
+        {
+            "Bond",
+            Terms(1, Maturity + """ ,"callSchedule":[{"callDate":null,"callEndDate":null,"exerciseStyle":null,"exerciseFrequency":null,"callPrice":null,"priceBasis":null,"priceType":null,"makeWholeSpreadBps":null,"partialRedemption":null,"minimumNoticeDays":null,"maximumNoticeDays":null,"noticeDayType":null}],"putSchedule":[{"putDate":null,"putEndDate":null,"exerciseStyle":null,"exerciseFrequency":null,"putPrice":null,"priceBasis":null,"minimumNoticeDays":null,"maximumNoticeDays":null,"noticeDayType":null}] """).GetRawText()
+        },
+        { "Bond", Terms(null, Maturity + """ ,"callSchedule":[{"exerciseFrequency":null}],"putSchedule":[{"exerciseFrequency":null}] """).GetRawText() },
+        { "Bond", Terms(null, Maturity + """ ,"CallSchedule":[],"PUTSCHEDULE":[{"putDate":null}] """).GetRawText() },
+        { "CertificateOfDeposit", Terms(1, Maturity + """ ,"callSchedule":[{}],"putSchedule":null """).GetRawText() },
+        { "StructuredCredit", Terms(2, """ "tranche":"A-1","callSchedule":[],"putSchedule":[{"exerciseFrequency":null}] """).GetRawText() },
+
         // A StructuredCredit profile envelope has no versioned class terms: neither its root nor its
         // profileFields block is walked, so neither is refused.
         {
@@ -397,6 +530,8 @@ public sealed class SecurityTermsVersioningTests
             "StructuredCredit",
             Terms(2, """ "profileFields":{"scheduleConventions":{"stubPolicy":"Long"}},"scheduleConventions":{"stubPolicy":"Long"} """).GetRawText()
         },
+        { "StructuredCredit", Terms(null, ProfileCallAndPutSchedules).GetRawText() },
+        { "StructuredCredit", Terms(2, ProfileCallAndPutSchedules).GetRawText() },
     };
 
     [Theory]
@@ -415,18 +550,20 @@ public sealed class SecurityTermsVersioningTests
     public void EnsureWritable_RunsTheReadGuardFirst()
     {
         // A stamp above what the node reads gets the read refusal, not the write reason.
-        var write = () => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms("Bond", Terms(3, Maturity));
+        var write = () => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms("Bond", Terms(4, Maturity));
 
         write.Should().Throw<InvalidOperationException>().Which.Message
-            .Should().Be("Unsupported assetClassTermsVersion '3' for asset class 'Bond'; this node reads versions 1 through 2.");
+            .Should().Be("Unsupported assetClassTermsVersion '4' for asset class 'Bond'; this node reads versions 1 through 3.");
     }
 
     public static TheoryData<string, string> StampsAboveWhatThisNodeReads() => new()
     {
-        { "Bond", Terms(3, Maturity).GetRawText() },
-        { "Bond", Terms(3, Maturity + """ ,"scheduleConventions":{"stubPolicy":"Long"} """).GetRawText() },
+        { "Bond", Terms(4, Maturity).GetRawText() },
+        { "Bond", Terms(4, Maturity + """ ,"scheduleConventions":{"stubPolicy":"Long"} """).GetRawText() },
+        { "Bond", Terms(4, Maturity + """ ,"callSchedule":[{"callDate":"2030-06-15"}] """).GetRawText() },
         { "Swap", Terms(3, SwapDates + """ ,"legs":[{"legType":"Fixed","scheduleConventions":{"stubPolicy":"Long"}}] """).GetRawText() },
-        { "StructuredCredit", Terms(4, """ "customProfileId":"structured-credit-profile","profileFields":{"tranche":"A-1"} """).GetRawText() },
+        { "StructuredCredit", Terms(5, """ "customProfileId":"structured-credit-profile","profileFields":{"tranche":"A-1"} """).GetRawText() },
+        { "StructuredCredit", Terms(5, ProfileCallAndPutSchedules).GetRawText() },
     };
 
     [Theory]
@@ -498,6 +635,129 @@ public sealed class SecurityTermsVersioningTests
 
         SecurityTermsEnvelope.CarriesProfileEnvelope(payload).Should().Be(carriesEnvelope);
         SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, payload).Should().Be(profileGoverned);
+    }
+
+    // ── Write-mode element conventions (ToCreateCommand) ────────────────────────────────────────
+
+    private static readonly DateTimeOffset CreateEffectiveFrom = new(2026, 8, 1, 0, 0, 0, TimeSpan.Zero);
+
+    private static CreateSecurityRequest CreateRequest(string assetClass, JsonElement assetSpecificTerms)
+        => new(
+            SecurityId: Guid.Parse("4a7e5c11-0000-4000-8000-0000000000b4"),
+            AssetClass: assetClass,
+            CommonTerms: JsonSerializer.SerializeToElement(new { displayName = $"{assetClass} terms versioning", currency = "USD" }),
+            AssetSpecificTerms: assetSpecificTerms,
+            Identifiers: [new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, $"VERSIONING-{assetClass}", true, CreateEffectiveFrom)],
+            EffectiveFrom: CreateEffectiveFrom,
+            SourceSystem: "terms-versioning-tests",
+            UpdatedBy: "terms-versioning-tests",
+            SourceRecordId: $"{assetClass}-terms-versioning",
+            Reason: "Readable-before-writable write path");
+
+    // A class's fully-populated writable payload with one readable-only schedule added at its root.
+    private static JsonElement WithSchedule(string assetClass, string key, string schedule)
+    {
+        var terms = JsonSerializer.SerializeToNode(SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass])!.AsObject();
+        terms[key] = JsonNode.Parse(schedule);
+        return Json(terms.ToJsonString());
+    }
+
+    public static TheoryData<string, string, string, string> FlatSchedulesWithAnUnschedulableExerciseCadence() => new()
+    {
+        {
+            "Bond", "callSchedule", """[{"callDate":"2030-06-15","exerciseFrequency":"Fortnightly"}]""",
+            NotYetWritable("Bond", "callSchedule", 3, 1)
+        },
+        {
+            "Bond", "callSchedule", """[{"callDate":"2030-06-15","exerciseFrequency":3}]""",
+            NotYetWritable("Bond", "callSchedule", 3, 1)
+        },
+        {
+            "Bond", "putSchedule", """[{"putDate":"2029-06-15","exerciseFrequency":"Fortnightly"}]""",
+            NotYetWritable("Bond", "putSchedule", 3, 1)
+        },
+        {
+            "CertificateOfDeposit", "callSchedule", """[{"callDate":"2026-12-30","exerciseFrequency":"Fortnightly"}]""",
+            NotYetWritable("CertificateOfDeposit", "callSchedule", 3, 1)
+        },
+        {
+            "StructuredCredit", "putSchedule", """[{"putDate":"2029-06-15","exerciseFrequency":"Fortnightly"}]""",
+            NotYetWritable("StructuredCredit", "putSchedule", 4, 2)
+        },
+    };
+
+    [Theory]
+    [MemberData(nameof(FlatSchedulesWithAnUnschedulableExerciseCadence))]
+    public void ToCreateCommand_RefusesAReadableOnlySchedule_BeforeAnyEntryConventionIsChecked(
+        string assetClass, string key, string schedule, string expected)
+    {
+        // The entry's exerciseFrequency carries the coupon-frequency convention, which refuses a
+        // fortnightly or numeric cadence. The schedule is not writable here at all, so the write guard
+        // refuses it first with the not-yet-writable reason, never the convention's.
+        var create = () => SecurityMasterMapping.ToCreateCommand(CreateRequest(assetClass, WithSchedule(assetClass, key, schedule)));
+
+        create.Should().Throw<InvalidOperationException>().Which.Message.Should().Be(expected);
+    }
+
+    // A decodable StructuredCredit profile envelope: its profileFields carry the class's required terms,
+    // and its root and its profileFields both carry a call and a put schedule whose every entry has the
+    // given exercise cadence (raw JSON).
+    private static JsonElement ProfileEnvelopeWithSchedules(int? stamp, string exerciseFrequency)
+    {
+        var calls = $$"""[{"callDate":"2030-06-15","exerciseFrequency":{{exerciseFrequency}}}]""";
+        var puts = $$"""[{"putDate":"2029-06-15","exerciseFrequency":{{exerciseFrequency}}}]""";
+        return Terms(
+            stamp,
+            $$""" "customProfileId":"structured-credit-profile","callSchedule":{{calls}},"putSchedule":{{puts}},"profileFields":{"tranche":"A-1","collateralType":"CLO","originalFace":1000000,"couponOrIndex":"SOFR","callSchedule":{{calls}},"putSchedule":{{puts}}} """);
+    }
+
+    [Theory]
+    [InlineData(null, "\"Fortnightly\"")]
+    [InlineData(null, "3")]
+    [InlineData(1, "\"Fortnightly\"")]
+    [InlineData(2, "\"Fortnightly\"")]
+    [InlineData(2, "3")]
+    public void ToCreateCommand_AcceptsAProfileEnvelopeWhoseSchedulesCarryAnUnschedulableExerciseCadence(int? stamp, string exerciseFrequency)
+    {
+        // The element-convention walk enforces only conventions this node writes, and never inside a
+        // versioned container of a profile envelope, so neither schedule's coupon-frequency convention
+        // is checked; and a profile envelope decodes only through the write version, so neither is read.
+        var command = SecurityMasterMapping.ToCreateCommand(
+            CreateRequest("StructuredCredit", ProfileEnvelopeWithSchedules(stamp, exerciseFrequency)));
+
+        var terms = ((Meridian.FSharp.Domain.SecurityKind.StructuredCredit)command.Kind).Item;
+        terms.Tranche.Should().Be("A-1", "the profileFields carry the class terms");
+        terms.CallPutSchedules.Calls.IsEmpty.Should().BeTrue("a profile envelope's call schedule is never decoded");
+        terms.CallPutSchedules.Puts.IsEmpty.Should().BeTrue("a profile envelope's put schedule is never decoded");
+    }
+
+    [Theory]
+    [InlineData(3, "\"Fortnightly\"")]
+    [InlineData(4, "3")]
+    public void ToCreateCommand_RefusesTheSameProfileEnvelopeStampedAboveTheWriteVersion_ByItsStamp(int stamp, string exerciseFrequency)
+    {
+        var create = () => SecurityMasterMapping.ToCreateCommand(
+            CreateRequest("StructuredCredit", ProfileEnvelopeWithSchedules(stamp, exerciseFrequency)));
+
+        create.Should().Throw<InvalidOperationException>().Which.Message
+            .Should().Be(ReadableButNotWritable("StructuredCredit", stamp, 4, 2));
+    }
+
+    [Theory]
+    [InlineData("paymentFrequency")]
+    [InlineData("frequency")]
+    public void ToCreateCommand_StillRefusesAnUnschedulableSwapLegCadence_WithTheCouponFrequencyReason(string key)
+    {
+        // Swap legs are a writable array, so their element conventions are still enforced on write.
+        var payload = Json($$"""
+            {"effectiveDate":"2026-01-15","maturityDate":"2031-01-15","legs":[{"legType":"Fixed","currency":"USD","fixedRate":0.04,"exchangesPrincipal":false,"{{key}}":"Fortnightly"}]}
+            """);
+
+        var create = () => SecurityMasterMapping.ToCreateCommand(CreateRequest("Swap", payload));
+
+        create.Should().Throw<InvalidOperationException>().Which.Message.Should().Be(
+            $"Value 'Fortnightly' is not a recognized coupon frequency (monthly or longer, or at maturity) for 'legs[].{key}' on asset class 'Swap'. " +
+            "Recognized values include: Monthly, BiMonthly, Quarterly, SemiAnnual, Annual, AtMaturity.");
     }
 
     // ── Lossless economic → flat bridge ─────────────────────────────────────────────────────────
