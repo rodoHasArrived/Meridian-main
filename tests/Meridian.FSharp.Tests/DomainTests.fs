@@ -211,6 +211,7 @@ let ``BondTerms callable bond preserves callDate`` () =
         PreRefundDate = None
         MandatoryPutDate = None
         PrincipalSchedule = []
+        ScheduleConventions = ScheduleConventions.empty
     }
     terms.IsCallable |> should equal true
     terms.CallDate |> should equal (Some callDate)
@@ -600,6 +601,7 @@ let private legacySwapLeg : SwapLeg = {
     ExchangesPrincipal = false
     NotionalSchedule = []
     ResetSchedule = []
+    ScheduleConventions = ScheduleConventions.empty
 }
 
 let private createSwapCommand legs =
@@ -781,6 +783,7 @@ let ``SecurityMasterSnapshotWrapper serializes floating bond coupon details`` ()
         PreRefundDate = None
         MandatoryPutDate = None
         PrincipalSchedule = []
+        ScheduleConventions = ScheduleConventions.empty
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.Bond bondTerms }
@@ -821,6 +824,7 @@ let private stepBondTerms = {
     PreRefundDate = None
     MandatoryPutDate = None
     PrincipalSchedule = []
+    ScheduleConventions = ScheduleConventions.empty
 }
 
 [<Fact>]
@@ -927,6 +931,7 @@ let ``SecurityMasterSnapshotWrapper serializes structured credit terms`` () =
         WeightedAverageLoanAgeMonths = Some 14
         ReinvestmentPeriodEnd = Some (DateOnly(2028, 6, 15))
         NonCallPeriodEnd = Some (DateOnly(2027, 6, 15))
+        ScheduleConventions = ScheduleConventions.empty
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -998,6 +1003,7 @@ let ``SecurityMasterLegacyUpgrade projects StructuredCredit maturity into the Ma
         WeightedAverageLoanAgeMonths = Some 36
         ReinvestmentPeriodEnd = None
         NonCallPeriodEnd = None
+        ScheduleConventions = ScheduleConventions.empty
     }
     let equityCommand = createEquityCreateCommand None
     let command = { equityCommand with Kind = SecurityKind.StructuredCredit terms }
@@ -1681,6 +1687,7 @@ let ``Structured credit factors above one are rejected`` () =
         WeightedAverageLoanAgeMonths = None
         ReinvestmentPeriodEnd = None
         NonCallPeriodEnd = None
+        ScheduleConventions = ScheduleConventions.empty
     }
 
     validationErrorCodes (SecurityKind.StructuredCredit { baseTerms with CurrentFactor = Some 1.5m })
@@ -1879,7 +1886,8 @@ let ``Legacy upgrade reads IO and PO strips from the tranche label as whole toke
                 CurrentFactor = None; CouponOrIndex = "5.5"; FactorSchedule = None; FactorScheduleEntries = []
                 Maturity = None; Kind = None; Seniority = None; AttachmentPoint = None; DetachmentPoint = None
                 WeightedAverageCoupon = None; WeightedAverageMaturityMonths = None; WeightedAverageLoanAgeMonths = None
-                ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None })
+                ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None
+                ScheduleConventions = ScheduleConventions.empty })
         definition.Terms.StructuredProduct |> Option.defaultWith (fun () -> failwith "Expected StructuredProduct term module")
 
     // "Senior" contains the letters "io"; it is not an interest-only strip.
@@ -1912,6 +1920,7 @@ let private securitizedBond subclass coupon par =
         PreRefundDate = None
         MandatoryPutDate = None
         PrincipalSchedule = []
+        ScheduleConventions = ScheduleConventions.empty
     }
 
 let private blockerCodes (proposal: SecurityMasterLegacyUpgrade.StructuredCreditReclassificationProposal) =
@@ -2040,3 +2049,265 @@ let ``Reclassification proposal reads envelope-less legacy custom rows read back
         "structured_credit_collateral_type_required"
         "structured_credit_original_face_required"
         "structured_credit_coupon_or_index_required" ]
+
+// ── Schedule conventions: read ahead of write (ADR-024, increment 4a) ───────────────────────────
+
+/// Every member declared, with accrualAdjusted=false beside a ModifiedFollowing convention (the
+/// economic accrual must keep the convention verbatim) and two payment calendars in unsorted order.
+let private declaredConventions =
+    { ScheduleConventions.empty with
+        BusinessDayConvention = Some "ModifiedFollowing"
+        AccrualAdjusted = Some false
+        PaymentCalendars = [ "USNY"; "GBLO" ]
+        PaymentLagBusinessDays = Some 2
+        RollConvention = Some "15"
+        EndOfMonthRule = Some false
+        FirstRegularDate = Some (DateOnly(2026, 12, 15))
+        LastRegularDate = Some (DateOnly(2034, 6, 15))
+        Direction = Some "Backward"
+        StubPolicy = Some "Short"
+        CouponRateUnit = Some "Percent"
+        CouponCashBasis = Some "Level" }
+
+/// The frozen canonical written form of declaredConventions: all twelve members, in ordinal order.
+let private declaredConventionsJson =
+    """{"accrualAdjusted":false,"businessDayConvention":"ModifiedFollowing","couponCashBasis":"Level","couponRateUnit":"Percent","direction":"Backward","endOfMonthRule":false,"firstRegularDate":"2026-12-15","lastRegularDate":"2034-06-15","paymentCalendars":["USNY","GBLO"],"paymentLagBusinessDays":2,"rollConvention":"15","stubPolicy":"Short"}"""
+
+let private scheduleBond conventions =
+    SecurityKind.Bond { BondTerms.fixedRate (DateOnly(2034, 6, 15)) 4.5m (Some "30/360") (Some "ACME") with ScheduleConventions = conventions }
+
+let private scheduleDeposit conventions =
+    SecurityKind.CertificateOfDeposit ({
+        IssuerName = "First Bank"
+        Maturity = DateOnly(2028, 3, 15)
+        CouponRate = Some 4.1m
+        CallableDate = None
+        DayCount = Some "ACT/360"
+        ScheduleConventions = conventions
+    } : CertificateOfDepositTerms)
+
+let private scheduleStructuredCredit conventions =
+    SecurityKind.StructuredCredit ({
+        Tranche = "A-1"; PoolId = None; CollateralType = "CLO"; OriginalFace = 1_000_000m
+        CurrentFactor = None; CouponOrIndex = "SOFR+250"; FactorSchedule = None; FactorScheduleEntries = []
+        Maturity = Some (DateOnly(2034, 6, 15)); Kind = Some StructuredCreditKind.Clo; Seniority = None
+        AttachmentPoint = None; DetachmentPoint = None; WeightedAverageCoupon = None
+        WeightedAverageMaturityMonths = None; WeightedAverageLoanAgeMonths = None
+        ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None
+        ScheduleConventions = conventions
+    } : StructuredCreditTerms)
+
+let private scheduleSwap legs =
+    SecurityKind.Swap { EffectiveDate = DateOnly(2026, 1, 15); MaturityDate = DateOnly(2031, 1, 15); Legs = legs }
+
+/// The asset class and the stamped flat terms the snapshot wrapper writes for a record of the kind.
+let private flatTermsFor (kind: SecurityKind) =
+    let wrapper = SecurityMasterSnapshotWrapper({ createSecurityRecord None with Kind = kind })
+    use document = JsonDocument.Parse(wrapper.AssetSpecificTermsJson)
+    wrapper.AssetClass, document.RootElement.Clone()
+
+let private hasProperty (name: string) (element: JsonElement) =
+    match element.TryGetProperty(name) with
+    | true, _ -> true
+    | _ -> false
+
+let private termsStamp (payload: JsonElement) =
+    payload.GetProperty("assetClassTermsVersion").GetInt32()
+
+/// The block's members as the term schema declares them for the class (on a swap, per leg).
+let private schemaConventionMembers assetClass container =
+    Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema.ElementFields(assetClass, container)
+    |> Seq.map (fun field -> field.Key)
+    |> List.ofSeq
+
+let private ordinal (keys: string list) =
+    keys |> List.sortWith (fun left right -> String.CompareOrdinal(left, right))
+
+/// The Accrual module a declared block fills: the convention and joint calendar, nothing else.
+let private conventionAccrual convention calendar =
+    Some ({ AccrualMethod = None; AccrualStartDate = None; ExDividendDays = None
+            BusinessDayConvention = convention; HolidayCalendar = calendar; DayCount = None } : AccrualTerms)
+
+[<Fact>]
+let ``ScheduleConventions.isEmpty is true only for the empty block`` () =
+    ScheduleConventions.isEmpty ScheduleConventions.empty |> should equal true
+
+    // A blank calendar entry or an empty-string convention is a declaration at the F# level: the
+    // C# reader must drop blank calendars and turn blank strings into None before they reach F#.
+    let blankCalendar = { ScheduleConventions.empty with PaymentCalendars = [ " " ] }
+    ScheduleConventions.isEmpty blankCalendar |> should equal false
+    ScheduleConventions.isEmpty { ScheduleConventions.empty with BusinessDayConvention = Some "" } |> should equal false
+    // So the writer stamps it at the block's version and writes the block, although the economic
+    // accrual reads nothing from it; changing blank handling has to update this pin on purpose.
+    let assetClass, payload = flatTermsFor (scheduleBond blankCalendar)
+    (assetClass, termsStamp payload) |> should equal ("Bond", 2)
+    payload.GetProperty("scheduleConventions").GetProperty("paymentCalendars").GetRawText() |> should equal """[" "]"""
+    (economicDefinitionFor (scheduleBond blankCalendar)).Terms.Accrual |> should equal None
+
+    // Declaring any one member, false and zero included, is a declaration.
+    let declaringOneMember =
+        [ "businessDayConvention", { ScheduleConventions.empty with BusinessDayConvention = Some "Following" }
+          "accrualAdjusted", { ScheduleConventions.empty with AccrualAdjusted = Some false }
+          "paymentCalendars", { ScheduleConventions.empty with PaymentCalendars = [ "USNY" ] }
+          "paymentLagBusinessDays", { ScheduleConventions.empty with PaymentLagBusinessDays = Some 0 }
+          "rollConvention", { ScheduleConventions.empty with RollConvention = Some "EndOfMonth" }
+          "endOfMonthRule", { ScheduleConventions.empty with EndOfMonthRule = Some false }
+          "firstRegularDate", { ScheduleConventions.empty with FirstRegularDate = Some (DateOnly(2026, 12, 15)) }
+          "lastRegularDate", { ScheduleConventions.empty with LastRegularDate = Some (DateOnly(2034, 6, 15)) }
+          "direction", { ScheduleConventions.empty with Direction = Some "Forward" }
+          "stubPolicy", { ScheduleConventions.empty with StubPolicy = Some "Short" }
+          "couponRateUnit", { ScheduleConventions.empty with CouponRateUnit = Some "Fraction" }
+          "couponCashBasis", { ScheduleConventions.empty with CouponCashBasis = Some "DayCount" } ]
+
+    // One flip per member the term schema declares for the block, so a new member needs a case here.
+    declaringOneMember |> List.map fst |> ordinal |> should equal (ordinal (schemaConventionMembers "Bond" "scheduleConventions"))
+    for memberName, conventions in declaringOneMember do
+        (memberName, ScheduleConventions.isEmpty conventions) |> should equal (memberName, false)
+
+[<Fact>]
+let ``Flat writer stamps every class at its write version and omits scheduleConventions when nothing is declared`` () =
+    // The registry table, plus the readable-ahead classes it does not carry and a swap with legs.
+    let kinds =
+        (registrySampleKinds |> List.map fst)
+        @ [ scheduleDeposit ScheduleConventions.empty
+            scheduleStructuredCredit ScheduleConventions.empty
+            scheduleSwap [ legacySwapLeg; { legacySwapLeg with LegType = "Floating"; FixedRate = None; Index = Some "SOFR" } ] ]
+
+    for kind in kinds do
+        let assetClass, payload = flatTermsFor kind
+        match kind with
+        | SecurityKind.CustomAsset _ ->
+            // A profile envelope is written verbatim, never stamped.
+            (assetClass, hasProperty "assetClassTermsVersion" payload) |> should equal (assetClass, false)
+        | _ ->
+            (assetClass, termsStamp payload)
+            |> should equal (assetClass, Meridian.Contracts.SecurityMaster.SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+
+        // Below the block's version the key is absent, at the root and on every leg.
+        (assetClass, hasProperty "scheduleConventions" payload) |> should equal (assetClass, false)
+        match payload.TryGetProperty("legs") with
+        | true, legs ->
+            for leg in legs.EnumerateArray() do
+                (assetClass, hasProperty "scheduleConventions" leg) |> should equal (assetClass, false)
+        | _ -> ()
+
+[<Fact>]
+let ``Flat writer keeps declared schedule conventions as the canonical block at the version that reads them`` () =
+    for kind, expectedStamp in [ scheduleBond declaredConventions, 2
+                                 scheduleDeposit declaredConventions, 2
+                                 scheduleStructuredCredit declaredConventions, 3 ] do
+        let assetClass, payload = flatTermsFor kind
+        (assetClass, termsStamp payload) |> should equal (assetClass, expectedStamp)
+        let block = payload.GetProperty("scheduleConventions")
+        (assetClass, block.GetRawText()) |> should equal (assetClass, declaredConventionsJson)
+        (assetClass, block.EnumerateObject() |> Seq.map (fun property -> property.Name) |> List.ofSeq)
+        |> should equal (assetClass, ordinal (schemaConventionMembers assetClass "scheduleConventions"))
+        // The node reads what it re-serializes.
+        Meridian.Contracts.SecurityMaster.SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, payload)
+
+[<Fact>]
+let ``Flat writer writes every schedule-convention member, unset ones as null or empty, when one is declared`` () =
+    let assetClass, payload = flatTermsFor (scheduleBond { ScheduleConventions.empty with StubPolicy = Some "Long" })
+
+    assetClass |> should equal "Bond"
+    termsStamp payload |> should equal 2
+    payload.GetProperty("scheduleConventions").GetRawText()
+    |> should equal
+        """{"accrualAdjusted":null,"businessDayConvention":null,"couponCashBasis":null,"couponRateUnit":null,"direction":null,"endOfMonthRule":null,"firstRegularDate":null,"lastRegularDate":null,"paymentCalendars":[],"paymentLagBusinessDays":null,"rollConvention":null,"stubPolicy":"Long"}"""
+
+[<Fact>]
+let ``Flat writer stamps a swap with one declaring leg at version 2 and writes the key on every leg`` () =
+    let declaringLeg = { legacySwapLeg with LegId = Some "fixed-leg"; Direction = Some "Pay"; ScheduleConventions = declaredConventions }
+    let plainLeg =
+        { legacySwapLeg with
+            LegId = Some "floating-leg"; LegType = "Floating"; Direction = Some "Receive"; Index = Some "SOFR"; FixedRate = None }
+    let assetClass, payload = flatTermsFor (scheduleSwap [ declaringLeg; plainLeg ])
+
+    assetClass |> should equal "Swap"
+    termsStamp payload |> should equal 2
+    // A swap carries the block per leg, never at the root.
+    hasProperty "scheduleConventions" payload |> should equal false
+    let legs = payload.GetProperty("legs")
+    let declaringBlock = legs.[0].GetProperty("scheduleConventions")
+    declaringBlock.GetRawText() |> should equal declaredConventionsJson
+    declaringBlock.EnumerateObject() |> Seq.map (fun property -> property.Name) |> List.ofSeq
+    |> should equal (ordinal (schemaConventionMembers "Swap" "legs.scheduleConventions"))
+    legs.[1].GetProperty("scheduleConventions").ValueKind |> should equal JsonValueKind.Null
+    // The leg's pay/receive direction stays beside the block's generation direction.
+    legs.[0].GetProperty("direction").GetString() |> should equal "Pay"
+    legs.[1].GetProperty("direction").GetString() |> should equal "Receive"
+    Meridian.Contracts.SecurityMaster.SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, payload)
+
+[<Fact>]
+let ``Economic accrual follows the frozen schedule-convention rules with no common-terms calendar fallback`` () =
+    let bondDefinition conventions = economicDefinitionFor (scheduleBond conventions)
+
+    // The record's common terms name NYSE; the accrual never falls back to it.
+    let full = bondDefinition declaredConventions
+    full.Common.HolidayCalendarId |> should equal (Some "NYSE")
+    // accrualAdjusted=false leaves the convention verbatim (it never turns into Unadjusted), and the
+    // payment calendars become one joint calendar id.
+    full.Terms.Accrual |> should equal (conventionAccrual (Some "ModifiedFollowing") (Some "GBLO+USNY"))
+
+    // Nothing that is not a business-day convention or a payment calendar fills the module.
+    (bondDefinition { declaredConventions with BusinessDayConvention = None; PaymentCalendars = [] }).Terms.Accrual
+    |> should equal None
+    (bondDefinition { ScheduleConventions.empty with PaymentCalendars = [ " "; "" ] }).Terms.Accrual |> should equal None
+    (bondDefinition ScheduleConventions.empty).Terms.Accrual |> should equal None
+
+    // A convention alone keeps its alias verbatim and names no calendar.
+    let conventionOnly = bondDefinition { ScheduleConventions.empty with BusinessDayConvention = Some "MF" }
+    conventionOnly.Terms.Accrual |> should equal (conventionAccrual (Some "MF") None)
+    conventionOnly.Common.HolidayCalendarId |> should equal (Some "NYSE")
+
+    // A single calendar is its own id, and it is the payment calendar, not the common one.
+    let calendarOnly = bondDefinition { ScheduleConventions.empty with PaymentCalendars = [ "GBLO" ] }
+    calendarOnly.Terms.Accrual |> should equal (conventionAccrual None (Some "GBLO"))
+    calendarOnly.Common.HolidayCalendarId |> should equal (Some "NYSE")
+
+    // Duplicate, case-variant and blank calendars join under BusinessDayCalendars.JointCalendarId.
+    let calendars = [ " usny "; "GBLO"; "USNY"; " " ]
+    let joint = Meridian.Contracts.Calendars.BusinessDayCalendars.JointCalendarId(calendars)
+    joint |> should equal "GBLO+usny"
+    (bondDefinition { ScheduleConventions.empty with PaymentCalendars = calendars }).Terms.Accrual
+    |> should equal (conventionAccrual None (Some joint))
+
+[<Fact>]
+let ``Economic accrual fills from declared conventions on bonds, deposits and structured credit but not swaps`` () =
+    let expected = conventionAccrual (Some "ModifiedFollowing") (Some "GBLO+USNY")
+    (economicDefinitionFor (scheduleDeposit declaredConventions)).Terms.Accrual |> should equal expected
+    (economicDefinitionFor (scheduleStructuredCredit declaredConventions)).Terms.Accrual |> should equal expected
+    (economicDefinitionFor (scheduleDeposit ScheduleConventions.empty)).Terms.Accrual |> should equal None
+    (economicDefinitionFor (scheduleStructuredCredit ScheduleConventions.empty)).Terms.Accrual |> should equal None
+
+    // A swap's conventions are per leg; the swap arm leaves the module unset.
+    (economicDefinitionFor (scheduleSwap [ { legacySwapLeg with ScheduleConventions = declaredConventions } ])).Terms.Accrual
+    |> should equal None
+
+[<Fact>]
+let ``Reclassification proposal blocks a bond that declares schedule conventions`` () =
+    let agencyBond conventions =
+        match securitizedBond BondSubclass.AgencyMbs (BondCouponStructure.Fixed(5.5m, None)) (Some 1000m) with
+        | SecurityKind.Bond terms -> SecurityKind.Bond { terms with ScheduleConventions = conventions }
+        | other -> other
+
+    let proposal =
+        reclassificationFor (agencyBond { ScheduleConventions.empty with StubPolicy = Some "Short" })
+        |> Option.defaultWith (fun () -> failwith "Expected a securitised bond to be a reclassification candidate")
+
+    blockerCodes proposal
+    |> should equal [
+        "structured_credit_schedule_conventions_unwritable"
+        "structured_credit_tranche_required"
+        "structured_credit_collateral_type_required" ]
+    (proposal.Blockers |> List.find (fun blocker -> blocker.Code = "structured_credit_schedule_conventions_unwritable")).Message
+    |> should equal "The bond declares scheduleConventions, a StructuredCredit terms version 3 term this node cannot write; reclassify from a node that writes StructuredCredit version 3."
+    proposal.ProposedTerms |> should equal None
+    // The draft still reports what the bond carries.
+    proposal.Draft.Kind |> should equal (Some StructuredCreditKind.AgencyMbs)
+    proposal.Draft.OriginalFace |> should equal (Some 1000m)
+
+    let plain =
+        reclassificationFor (agencyBond ScheduleConventions.empty)
+        |> Option.defaultWith (fun () -> failwith "Expected a securitised bond to be a reclassification candidate")
+    blockerCodes plain |> should not' (contain "structured_credit_schedule_conventions_unwritable")

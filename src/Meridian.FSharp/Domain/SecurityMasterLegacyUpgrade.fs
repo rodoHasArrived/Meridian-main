@@ -110,6 +110,27 @@ module SecurityMasterLegacyUpgrade =
         tranche.Split([| ' '; '-'; '_'; '/'; '.'; ','; ':'; '('; ')' |], StringSplitOptions.RemoveEmptyEntries)
         |> Array.exists (fun part -> String.Equals(part, token, StringComparison.OrdinalIgnoreCase))
 
+    /// The economic Accrual module a declared scheduleConventions block fills. These rules are frozen
+    /// with the block (ADR-024, 2026-10-25), so a node that reads the block and a node that writes it
+    /// produce the same economic terms: the module is filled only when the block names a business-day
+    /// convention or a payment calendar; the convention is kept verbatim (accrualAdjusted stays in the
+    /// flat block and never turns it into Unadjusted); the payment calendars become one joint calendar
+    /// id; and nothing falls back to the common terms' holiday calendar, which the economic record
+    /// already carries in its common terms.
+    let private accrualFromConventions (conventions: ScheduleConventions) : AccrualTerms option =
+        let calendar =
+            Meridian.Contracts.Calendars.BusinessDayCalendars.JointCalendarId(conventions.PaymentCalendars)
+            |> Option.ofObj
+        match conventions.BusinessDayConvention, calendar with
+        | None, None -> None
+        | convention, calendar ->
+            Some ({ AccrualMethod = None
+                    AccrualStartDate = None
+                    ExDividendDays = None
+                    BusinessDayConvention = convention
+                    HolidayCalendar = calendar
+                    DayCount = None } : AccrualTerms)
+
     let private termsFromKind (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity terms ->
@@ -220,6 +241,7 @@ module SecurityMasterLegacyUpgrade =
                             PaymentFrequency = terms.PaymentFrequency
                             DayCount = BondTerms.dayCount terms |> mapDayCount
                         }
+                    Accrual = accrualFromConventions terms.ScheduleConventions
                     // Call and issuer terms are carried like the other callable / issued classes
                     // (deposits, CDs), so the economic definition holds what the bond record holds.
                     Call =
@@ -312,6 +334,7 @@ module SecurityMasterLegacyUpgrade =
                             PaymentFrequency = None
                             DayCount = terms.DayCount |> mapDayCount
                         }
+                    Accrual = accrualFromConventions terms.ScheduleConventions
                     Call =
                         Some {
                             IsCallable = terms.CallableDate.IsSome
@@ -522,6 +545,7 @@ module SecurityMasterLegacyUpgrade =
                             PaymentFrequency = None
                             DayCount = None
                         }
+                    Accrual = accrualFromConventions terms.ScheduleConventions
                     FloatingRate =
                         Some {
                             ReferenceIndex = Some terms.CouponOrIndex
@@ -927,6 +951,7 @@ module SecurityMasterLegacyUpgrade =
                     WeightedAverageLoanAgeMonths = None
                     ReinvestmentPeriodEnd = None
                     NonCallPeriodEnd = None
+                    ScheduleConventions = ScheduleConventions.empty
                 } : StructuredCreditTerms)
             | _ -> None
         let sourceLabel =
@@ -943,6 +968,15 @@ module SecurityMasterLegacyUpgrade =
     let private proposeFromBond securityId (terms: BondTerms) =
         let kind, kindBlockers = splitResult (kindFromBondSubclass terms.Subclass)
         let couponOrIndex, couponBlockers = splitResult (couponOrIndexFromBond terms.Coupon)
+        // Declared schedule conventions are a StructuredCredit terms version 3 term, which this node
+        // reads but does not write (ADR-024, readable before writable): carrying them would write a
+        // version this node cannot, and dropping them would lose declared terms.
+        let conventionBlockers =
+            if ScheduleConventions.isEmpty terms.ScheduleConventions then []
+            else
+                [ blocker
+                      "structured_credit_schedule_conventions_unwritable"
+                      "The bond declares scheduleConventions, a StructuredCredit terms version 3 term this node cannot write; reclassify from a node that writes StructuredCredit version 3." ]
         let draft =
             { emptyDraft with
                 OriginalFace = terms.Par
@@ -950,7 +984,7 @@ module SecurityMasterLegacyUpgrade =
                 Maturity = Some terms.Maturity
                 Kind = kind
                 Seniority = terms.Seniority }
-        finish securityId (StructuredCreditReclassificationSource.SecuritizedBondSubclass terms.Subclass) draft (kindBlockers @ couponBlockers)
+        finish securityId (StructuredCreditReclassificationSource.SecuritizedBondSubclass terms.Subclass) draft (kindBlockers @ couponBlockers @ conventionBlockers)
 
     let private tryProperty (name: string) (element: JsonElement) =
         if element.ValueKind = JsonValueKind.Object then

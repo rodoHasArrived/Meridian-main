@@ -134,7 +134,10 @@ public sealed record SecurityAssetTermUiHint(
 /// <summary>
 /// The complete definition of one asset class: its behaviour descriptor, its term fields and the
 /// UI hints derived from them. Composed by <see cref="SecurityAssetClassRegistry"/> from the single
-/// descriptor table and the single term schema, so no surface keeps its own copy.
+/// descriptor table and the single term schema, so no surface keeps its own copy. The fields are the
+/// ones a node WRITES (<see cref="SecurityAssetTermsSchema.WritableFields"/>): a term this node only
+/// reads (ADR-024, readable before writable) is never offered to a create or edit form, a term block
+/// or a required-key check.
 /// </summary>
 public sealed record SecurityAssetClassDefinition(
     string AssetClass,
@@ -205,11 +208,13 @@ public static class SecurityAssetClassRegistry
         var definitions = new Dictionary<string, SecurityAssetClassDefinition>(StringComparer.OrdinalIgnoreCase);
         foreach (var descriptor in SecurityAssetClassCatalog.All)
         {
-            if (!SecurityAssetTermsSchema.TryGetFields(descriptor.AssetClass, out var fields))
+            if (!SecurityAssetTermsSchema.TryGetFields(descriptor.AssetClass, out _))
             {
                 throw new InvalidOperationException(
                     $"Asset class '{descriptor.AssetClass}' has a catalog descriptor but no term schema.");
             }
+
+            var fields = SecurityAssetTermsSchema.WritableFields(descriptor.AssetClass);
 
             definitions.Add(descriptor.AssetClass, new SecurityAssetClassDefinition(
                 descriptor.AssetClass,

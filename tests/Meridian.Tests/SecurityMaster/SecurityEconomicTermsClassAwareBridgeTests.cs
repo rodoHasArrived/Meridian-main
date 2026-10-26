@@ -2,6 +2,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.FSharp.SecurityMasterInterop;
 using Xunit;
 
 namespace Meridian.Tests.SecurityMaster;
@@ -284,4 +285,145 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Swap").Should().Contain("legs");
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Bond").Should().Contain("subclass");
     }
+
+    // ── Schedule conventions read ahead of write (ADR-024; Accrual rules frozen by ADR-025) ─────
+
+    // The economic terms each fully-populated payload bridges to without a block, as pinned at base
+    // by SecurityTermsWriteGoldenTests. The block may change only the accrual module.
+    private const string BondEconomicTerms =
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":"2025-06-15","maturityDate":"2035-06-15"},"coupon":{"couponType":"Floating","couponRate":null,"paymentFrequency":"Quarterly","dayCount":"ACT/360"},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"Meridian Capital Corp","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":{"factor":null,"factorDate":null,"weightedAvgCoupon":null,"weightedAvgMaturityMonths":null,"weightedAvgLoanAgeMos":null,"collateralType":null,"poolIdentifier":null,"trancheClass":null,"prepaymentAssumption":null,"averageLifeYears":null,"isInterestOnly":false,"isPrincipalOnly":false,"notionalBalance":null,"originator":null,"creditEnhancementPct":null,"factorScheduleReference":null}}""";
+
+    private const string CertificateOfDepositEconomicTerms =
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":null,"maturityDate":"2027-09-30"},"coupon":{"couponType":"Fixed","couponRate":4.4,"paymentFrequency":null,"dayCount":"ACT/365"},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2026-09-30","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"First Meridian Bank","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":null}""";
+
+    private const string StructuredCreditEconomicTerms =
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":null,"maturityDate":"2031-06-15"},"coupon":{"couponType":"SOFR\u002B250","couponRate":null,"paymentFrequency":null,"dayCount":null},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"MRDN-2026-1","institutionName":null,"issuerProgram":"CLO","leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":{"factor":0.8235,"factorDate":null,"weightedAvgCoupon":7.85,"weightedAvgMaturityMonths":58,"weightedAvgLoanAgeMos":14,"collateralType":"CLO","poolIdentifier":"MRDN-2026-1","trancheClass":"B","prepaymentAssumption":null,"averageLifeYears":null,"isInterestOnly":false,"isPrincipalOnly":false,"notionalBalance":10000000,"originator":null,"creditEnhancementPct":null,"factorScheduleReference":"See trustee report 2026-07"}}""";
+
+    private const string SwapEconomicTerms =
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":"2026-01-15","issueDate":"2026-01-15","maturityDate":"2031-01-15"},"coupon":null,"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":null,"equityBehavior":null,"fund":null,"structuredProduct":null}""";
+
+    private const string NullAccrual = "\"accrual\":null";
+
+    [Theory]
+    [InlineData("Bond")]
+    [InlineData("CertificateOfDeposit")]
+    [InlineData("StructuredCredit")]
+    public void UnrecoverableKeys_IncludeTheScheduleConventionsBlock(string assetClass)
+    {
+        // The economic document carries only the block's business-day convention and joint payment
+        // calendar (in Accrual), so the block as a whole is not recoverable on replay until a contract
+        // step maps it; a swap's leg blocks travel inside the already-unrecoverable legs.
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys(assetClass).Should().Contain("scheduleConventions");
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys(assetClass).Should().NotContain("scheduleConventions");
+    }
+
+    [Theory]
+    [InlineData("Bond", BondEconomicTerms, """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"ModifiedFollowing","holidayCalendar":"GBLO\u002BUSNY","dayCount":null}""")]
+    [InlineData("CertificateOfDeposit", CertificateOfDepositEconomicTerms, """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"Following","holidayCalendar":"USNY","dayCount":null}""")]
+    [InlineData("StructuredCredit", StructuredCreditEconomicTerms, """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"ModifiedFollowing","holidayCalendar":"GBLO\u002BUSNY","dayCount":null}""")]
+    [InlineData("Swap", SwapEconomicTerms, null)]
+    public void ReadableTwin_BridgesItsScheduleConventionsIntoTheAccrualModule(string assetClass, string economicTermsWithoutBlock, string? expectedAccrual)
+    {
+        // The frozen rules: the block fills Accrual on a bond, CD or structured credit only, with the
+        // convention verbatim and the payment calendars as one joint calendar id. A swap's legs carry
+        // their own blocks, and the swap has no Accrual module to fill.
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass)));
+
+        economic.EconomicTerms.GetRawText().Should().Be(WithAccrual(economicTermsWithoutBlock, expectedAccrual));
+    }
+
+    [Theory]
+    [InlineData(
+        """{"stubPolicy":"Long"}""",
+        null)]
+    [InlineData(
+        """{"accrualAdjusted":false,"businessDayConvention":"ModifiedFollowing"}""",
+        """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"ModifiedFollowing","holidayCalendar":null,"dayCount":null}""")]
+    [InlineData(
+        """{"paymentCalendars":["USNY"]}""",
+        """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":null,"holidayCalendar":"USNY","dayCount":null}""")]
+    [InlineData(
+        """{"businessDayConvention":"Following","paymentCalendars":["USNY","GBLO","usny","GBLO"]}""",
+        """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"Following","holidayCalendar":"GBLO\u002BUSNY","dayCount":null}""")]
+    public void BondScheduleConventions_FillAccrualUnderTheFrozenRules(string block, string? expectedAccrual)
+    {
+        // Only a convention or a calendar fills the module; accrualAdjusted=false keeps the convention
+        // verbatim rather than turning it into Unadjusted; duplicate and case-variant calendars collapse
+        // to one joint id, the first spelling kept and the ids sorted ordinally.
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", BondTwin(block)));
+
+        economic.EconomicTerms.GetRawText().Should().Be(WithAccrual(BondEconomicTerms, expectedAccrual));
+    }
+
+    [Fact]
+    public void BondScheduleConventions_PaymentCalendarsGovernTheAccrualCalendar_AndCommonTermsKeepTheirOwn()
+    {
+        // The security-level holiday calendar stays in the common terms; the block's payment
+        // calendars, not a merge of the two, are the accrual calendar.
+        var projection = SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", BondTwin("""{"paymentCalendars":["GBLO"]}""")) with
+        {
+            CommonTerms = JsonSerializer.SerializeToElement(new { displayName = "Legacy Bond", currency = "USD", holidayCalendarId = "USNY" })
+        };
+
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
+
+        economic.EconomicTerms.GetRawText().Should().Be(WithAccrual(
+            BondEconomicTerms,
+            """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":null,"holidayCalendar":"GBLO","dayCount":null}"""));
+
+        // Through the domain: the record decoded from the row, and the common terms it writes back,
+        // keep the security's own calendar rather than the block's.
+        var record = SecurityMasterMapping.ToRecord(projection);
+        record.Common.HolidayCalendarId.Should().NotBeNull("the common terms carry the security's holiday calendar");
+        record.Common.HolidayCalendarId!.Value.Should().Be("USNY", "the block's payment calendars never replace or merge into the common calendar");
+        using var writtenCommonTerms = JsonDocument.Parse(new SecurityMasterSnapshotWrapper(record).CommonTermsJson);
+        writtenCommonTerms.RootElement.GetProperty("holidayCalendarId").GetString().Should().Be("USNY");
+    }
+
+    [Fact]
+    public void BondScheduleConventions_WithoutPaymentCalendars_NeverFallBackToTheCommonTermsCalendar()
+    {
+        var projection = SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", BondTwin("""{"businessDayConvention":"Following"}""")) with
+        {
+            CommonTerms = JsonSerializer.SerializeToElement(new { displayName = "Legacy Bond", currency = "USD", holidayCalendarId = "USNY" })
+        };
+
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
+
+        economic.EconomicTerms.GetProperty("accrual").GetRawText().Should().Be(
+            """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"Following","holidayCalendar":null,"dayCount":null}""");
+    }
+
+    [Theory]
+    [InlineData("Bond")]
+    [InlineData("CertificateOfDeposit")]
+    [InlineData("StructuredCredit")]
+    public void ReplayWithoutLegacyTerms_FlattensAtTheWriteVersionWithoutTheBlock_AndRetainsTheAccrualVerbatim(string assetClass)
+    {
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass)));
+        var accrual = economic.EconomicTerms.GetProperty("accrual");
+        accrual.ValueKind.Should().Be(JsonValueKind.Object, "the twin's block fills the accrual module");
+
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
+
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(rebuilt).Should().BeTrue();
+        SecurityTermsEnvelope.ResolveAssetClassTermsVersion(rebuilt).Should().Be(
+            SecurityAssetClassCatalog.GetTermsVersion(assetClass),
+            "the bridge flattens at the version this node writes, never at a version it only reads");
+        rebuilt.EnumerateObject().Select(static property => property.Name)
+            .Should().NotContain(name => string.Equals(name, "scheduleConventions", StringComparison.OrdinalIgnoreCase));
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(rebuilt, out var retained).Should().BeTrue();
+        retained.GetProperty("accrual").GetRawText().Should().Be(accrual.GetRawText(), "the accrual travels verbatim in the retained economic terms");
+    }
+
+    private static JsonElement BondTwin(string block)
+        => SecurityAssetTermsSchemaRoundTripTests.ReadableTwin("Bond", SecurityAssetTermsSchemaRoundTripTests.FullPayloads["Bond"], [block]);
+
+    private static string WithAccrual(string economicTermsWithoutBlock, string? accrual)
+        => accrual is null
+            ? economicTermsWithoutBlock
+            : economicTermsWithoutBlock.Replace(NullAccrual, $"\"accrual\":{accrual}", StringComparison.Ordinal);
 }

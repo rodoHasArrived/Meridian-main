@@ -257,6 +257,55 @@ type PrincipalPaymentEntry = {
     Amount: decimal
 }
 
+/// The declared conventions the contractual schedule kernel (ADR-025) builds an instrument's periods
+/// with: the flat terms' <c>scheduleConventions</c> block (asset-class terms version 2 on bonds,
+/// certificates of deposit and swap legs, 3 on structured credit). A node reads it from payloads
+/// stamped at that version and does not write it until the contract step (ADR-024, readable before
+/// writable). Text members are kept verbatim, as the payload carries them;
+/// <c>ScheduleConventions.empty</c> means nothing is declared.
+type ScheduleConventions = {
+    BusinessDayConvention: string option
+    /// Whether accrual period boundaries are adjusted for business days (payment dates always are,
+    /// under <c>BusinessDayConvention</c>). None when the terms do not say.
+    AccrualAdjusted: bool option
+    /// The payment calendars by id, joined into one calendar when more than one is named.
+    PaymentCalendars: string list
+    PaymentLagBusinessDays: int option
+    RollConvention: string option
+    EndOfMonthRule: bool option
+    FirstRegularDate: DateOnly option
+    LastRegularDate: DateOnly option
+    /// Schedule generation direction: Forward or Backward.
+    Direction: string option
+    StubPolicy: string option
+    /// Whether a coupon rate is a percent or a fraction: Percent or Fraction.
+    CouponRateUnit: string option
+    /// How a regular coupon's cash amount is computed: Level (rate over frequency) or DayCount.
+    CouponCashBasis: string option
+}
+
+[<RequireQualifiedAccess>]
+module ScheduleConventions =
+    /// No convention declared: what every record carries until a node writes the block.
+    [<CompiledName("Empty")>]
+    let empty : ScheduleConventions =
+        { BusinessDayConvention = None
+          AccrualAdjusted = None
+          PaymentCalendars = []
+          PaymentLagBusinessDays = None
+          RollConvention = None
+          EndOfMonthRule = None
+          FirstRegularDate = None
+          LastRegularDate = None
+          Direction = None
+          StubPolicy = None
+          CouponRateUnit = None
+          CouponCashBasis = None }
+
+    /// Whether nothing is declared.
+    [<CompiledName("IsEmpty")>]
+    let isEmpty (conventions: ScheduleConventions) = conventions = empty
+
 type BondTerms = {
     Maturity: DateOnly
     IssueDate: DateOnly option
@@ -285,6 +334,8 @@ type BondTerms = {
     /// subclasses. Empty for bullet bonds. The BondSubclass taxonomy already names SinkingFund;
     /// this is the term data that lets cash-flow and amortization math act on it.
     PrincipalSchedule: PrincipalPaymentEntry list
+    /// Declared schedule conventions (asset-class terms version 2); empty until declared.
+    ScheduleConventions: ScheduleConventions
 }
 
 [<RequireQualifiedAccess>]
@@ -294,21 +345,24 @@ module BondTerms =
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.Corporate
           Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
-          PrincipalSchedule = [] }
+          PrincipalSchedule = []
+          ScheduleConventions = ScheduleConventions.empty }
 
     let floatingRate maturity index spreadBps issuerName =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None)
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.FloatingRate
           Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
-          PrincipalSchedule = [] }
+          PrincipalSchedule = []
+          ScheduleConventions = ScheduleConventions.empty }
 
     let zeroCoupon maturity issuerName =
         { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon
           IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None
           Subclass = BondSubclass.Corporate
           Par = None; PaymentFrequency = None; LegalFinalMaturity = None; PreRefundDate = None; MandatoryPutDate = None
-          PrincipalSchedule = [] }
+          PrincipalSchedule = []
+          ScheduleConventions = ScheduleConventions.empty }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with
@@ -368,6 +422,8 @@ type CertificateOfDepositTerms = {
     CouponRate: decimal option
     CallableDate: DateOnly option
     DayCount: string option
+    /// Declared schedule conventions (asset-class terms version 2); empty until declared.
+    ScheduleConventions: ScheduleConventions
 }
 
 type CommercialPaperTerms = {
@@ -445,6 +501,8 @@ type SwapLeg = {
     NotionalSchedule: SwapNotionalStep list
     /// Reset dates with their observed fixings for a floating leg; empty when not tracked.
     ResetSchedule: SwapResetEntry list
+    /// The leg's declared schedule conventions (asset-class terms version 2); empty until declared.
+    ScheduleConventions: ScheduleConventions
 }
 
 type SwapTerms = {
@@ -572,6 +630,8 @@ type StructuredCreditTerms = {
     ReinvestmentPeriodEnd: DateOnly option
     /// CLO: last day of the non-call period, before which the notes cannot be refinanced.
     NonCallPeriodEnd: DateOnly option
+    /// Declared schedule conventions (asset-class terms version 3); empty until declared.
+    ScheduleConventions: ScheduleConventions
 }
 
 type PrivateFundInterestTerms = {

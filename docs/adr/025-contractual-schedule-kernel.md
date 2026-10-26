@@ -365,4 +365,39 @@ This command verifies referenced files and directories exist; it does not valida
 
 ---
 
-*Last Updated: 2026-10-24*
+*Last Updated: 2026-10-25*
+
+## Applications
+
+- **Declared conventions arrive as versioned flat terms (2026-10-25).** Increment 4a adds the
+  optional `scheduleConventions` block to Bond, CertificateOfDeposit and StructuredCredit terms and
+  to each Swap leg. It is readable at the next terms version but not yet writable
+  ([ADR-024](024-terms-payload-format-and-version-policy.md), readable before writable), so no
+  record declares conventions through a write path yet, and decision 7's opt-in is still dormant.
+  The block's spellings and its mapping are frozen now, so every node reads the same row the same
+  way:
+  - **Mapping to `ScheduleSpec`.** `direction` (`Forward` or `Backward`) maps to `Direction`,
+    `stubPolicy` to `StubPolicy` and `rollConvention` to `Roll`. `firstRegularDate` and
+    `lastRegularDate` map to the members of the same name, and `paymentLagBusinessDays` to
+    `PaymentLagBusinessDays`. `businessDayConvention`, `accrualAdjusted` and `paymentCalendars`
+    build the accrual and payment adjustments, with the payment calendars joined under
+    `BusinessDayCalendars.JointCalendarId`. `endOfMonthRule` is recorded for the factory, which
+    decides how it combines with `rollConvention`. `couponRateUnit` (`Percent` or `Fraction`) and
+    `couponCashBasis` (`Level` or `DayCount`) are coupon-amount inputs, not schedule inputs.
+  - **Spellings.** `SecurityTermConventions` parses `businessDayConvention` (`Unadjusted`/`None`,
+    `Following`/`F`, `ModifiedFollowing`/`MF`, `Preceding`/`P`, `ModifiedPreceding`/`MP`),
+    `rollConvention` (`AnchorDay`, `EndOfMonth`/`EOM`, `Imm`, a day of the month from 1 to 31, or
+    `FixedDay(n)`) and `stubPolicy` (`Short`, `Long`, `RequireRegular`/`NoStub`). `NEAREST`, `FRN`
+    and positional stub spellings such as `ShortInitial` are refused. Named spellings match ignoring
+    case and separators, so `IMM` and `Modified-Following` are accepted too.
+  - **Economic `Accrual` fill.** The F# legacy upgrade fills the economic `Accrual` module from a
+    declared block for Bond, CertificateOfDeposit and StructuredCredit only, and only when the
+    block names a business-day convention or a non-blank payment calendar. The convention is kept
+    verbatim: `accrualAdjusted = false` stays in the flat block and does not turn it into
+    `Unadjusted`. The holiday calendar is the joint id of the payment calendars, with no fallback to
+    `commonTerms.holidayCalendarId`. A Swap leg's block fills nothing, because the economic swap
+    document has no per-leg accrual module.
+  - **Calendar precedence.** The block's `paymentCalendars` govern the schedule's payment calendar,
+    and `commonTerms.holidayCalendarId` stays the security-level calendar; the bond accrual
+    projection keeps reading it. Whether increment 5's `ScheduleSpecFactory` falls back to it when a
+    block names no payment calendar is increment 5's decision.
