@@ -1845,6 +1845,21 @@ markets Meridian's providers and seed data use and maps unambiguous exchange nam
 `Nasdaq`, `AMEX`, ...) to a MIC, leaving routing labels such as `SMART` unresolved; its `Codes` and
 `ExchangeNames` tables also drive the `securities.listing_mic` backfill.
 
+### OTC contract model: exposure, collateral and margin calls
+
+`OtcContracts.cs` models master agreements, collateral agreements (CSAs), netting sets and bilateral
+contracts behind `IOtcContractStore`, with `OtcContractRules` as the pure write rules.
+`OtcExposure.cs` adds the valuation seam `IOtcContractValuationSource` (one contract, one date, one
+currency, a signed mark from the fund's side or named blockers), the append-only
+`OtcExposureSnapshotDto` and `OtcExposureRules`: which contracts enter, close-out versus gross
+netting by master form, the two-sided credit support amount with the agreement's independent
+amount read as the fund's, haircut-adjusted holdings, the minimum-transfer test before rounding,
+and a reproducible payload digest. `OtcCollateral.cs` adds `OtcCollateralBalanceDto` (haircut
+copied from the agreement's eligible line, valued amount computed), `OtcMarginCallDto` (amount
+copied from a snapshot movement) and the lifecycle in `OtcMarginCallRules` behind
+`IOtcCollateralStore`; `IOtcExposureService` computes and records snapshots. The domain page is
+[Credit Support](../../docs/domain/credit-support.md).
+
 ### Security Master income, curves, factors and corporate-action terms
 
 `SecurityIncomeCashFlowProjector` builds the declared income schedule (dividends, special

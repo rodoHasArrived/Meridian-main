@@ -389,6 +389,14 @@ public static class UiApiRoutes
     public const string SecurityMasterOtcNettingSet = "/api/security-master/otc/netting-sets/{nettingSetId:guid}";
     public const string SecurityMasterOtcContracts = "/api/security-master/otc/contracts";
     public const string SecurityMasterOtcContract = "/api/security-master/otc/contracts/{contractId:guid}";
+    public const string SecurityMasterOtcNettingSetExposureSnapshots = "/api/security-master/otc/netting-sets/{nettingSetId:guid}/exposure-snapshots";
+    public const string SecurityMasterOtcExposureSnapshot = "/api/security-master/otc/exposure-snapshots/{snapshotId:guid}";
+    public const string SecurityMasterOtcCollateralBalances = "/api/security-master/otc/collateral-balances";
+    public const string SecurityMasterOtcCollateralAgreementBalances = "/api/security-master/otc/collateral-agreements/{collateralAgreementId:guid}/collateral-balances";
+    public const string SecurityMasterOtcMarginCalls = "/api/security-master/otc/margin-calls";
+    public const string SecurityMasterOtcMarginCall = "/api/security-master/otc/margin-calls/{callId:guid}";
+    public const string SecurityMasterOtcMarginCallTransition = "/api/security-master/otc/margin-calls/{callId:guid}/transition";
+    public const string SecurityMasterOtcNettingSetMarginCalls = "/api/security-master/otc/netting-sets/{nettingSetId:guid}/margin-calls";
     public const string SecurityMasterCorporateActionsIngest = "/api/security-master/corporate-actions/ingest";
     public const string SecurityMasterCorporateActionsInbox = "/api/security-master/corporate-actions/inbox";
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";

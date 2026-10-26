@@ -156,6 +156,22 @@ Migration `047_rate_option_and_note_terms_projections.sql` does the same for `sw
 `cap_floor_projection` and `structured_note_projection` (31 of 32 classes projected); strike and
 rate columns are signed because negative strikes are valid in negative-rate currencies.
 
+Security Master migration `050_otc_contracts.sql` creates the OTC contract model (master
+agreements, collateral agreements, netting sets, bilateral contracts) written by
+`PostgresOtcContractStore`. Migration `054_otc_exposure_and_collateral.sql` adds
+`otc_exposure_snapshots` (append-only: recomputing a date appends the next version under a unique
+`(netting_set_id, as_of_date, version)`, and a trigger rejects update and delete),
+`otc_collateral_balances` and `otc_margin_calls` (a partial unique index keeps one open call per
+netting set and mover); migration `055_security_governance_events_otc_collateral_stream.sql` admits
+the `OtcCollateral` governance stream. `PostgresOtcCollateralStore` serializes computations and
+calls per netting set with transaction-scoped advisory locks, resolves eligible collateral and
+currency against the agreement inside the write transaction, stores each snapshot's jsonb payload
+with a digest reproducible from the payload, and appends a governance event (snapshot recorded,
+balance recorded or amended with the changed fields, call issued, agreed, disputed, settled or
+cancelled with the replaced state) in the same transaction, naming the actor.
+`ISecurityGovernanceEventReader.GetForStreamAsync` pages a stream by global sequence for events
+that carry no security id.
+
 Security Master migration `042_security_master_terms_format_column.sql` promotes the terms-payload
 family to a queryable `securities.terms_format` column (ADR-024). The backfill never rewrites the
 payload: a declared `termsFormat` wins and an untagged row is classified by the same shape rule

@@ -325,7 +325,8 @@ public static class OtcContractRules
     public static bool IsClosed(OtcContractStatus status)
         => status is OtcContractStatus.Terminated or OtcContractStatus.Novated or OtcContractStatus.Matured;
 
-    private static string RequireCurrency(string? value)
+    /// <summary>A three-letter ISO currency code, upper-cased; shared with the collateral rules so both spell currency the same way.</summary>
+    internal static string RequireCurrency(string? value)
     {
         var currency = NormalizeOptional(value);
         if (currency is null || currency.Length != 3 || !currency.All(char.IsAsciiLetter))

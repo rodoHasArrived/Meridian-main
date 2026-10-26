@@ -16,6 +16,9 @@ public static class SecurityGovernanceStreams
 
     /// <summary>Stored market curves: definitions and published versions (migration 053). Events carry no security id; the curve id is in the payload.</summary>
     public const string Curves = "Curves";
+
+    /// <summary>OTC exposure snapshots, collateral balances and margin calls (migrations 054 and 055); events name a netting set, not a security.</summary>
+    public const string OtcCollateral = "OtcCollateral";
 }
 
 /// <summary>One recorded governance event.</summary>
@@ -38,7 +41,8 @@ public interface ISecurityGovernanceEventReader
     /// <summary>
     /// Events on one <paramref name="stream"/> with a global sequence after <paramref name="afterSequence"/>,
     /// oldest first, at most <paramref name="limit"/>. This is how streams whose subject is not a
-    /// security, such as <see cref="SecurityGovernanceStreams.Curves"/>, are read.
+    /// security, such as <see cref="SecurityGovernanceStreams.Curves"/> and
+    /// <see cref="SecurityGovernanceStreams.OtcCollateral"/>, are read.
     /// </summary>
     Task<IReadOnlyList<SecurityGovernanceEvent>> GetForStreamAsync(string stream, long afterSequence = 0, int limit = 500, CancellationToken ct = default);
 }
@@ -113,7 +117,8 @@ public sealed class PostgresSecurityGovernanceEventLog : ISecurityGovernanceEven
     public async Task<IReadOnlyList<SecurityGovernanceEvent>> GetForStreamAsync(string stream, long afterSequence = 0, int limit = 500, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(stream);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(limit);
+        if (limit is < 1 or > 5000)
+            throw new ArgumentOutOfRangeException(nameof(limit), limit, "A stream page holds between 1 and 5000 events.");
 
         await using var lease = await PostgresSecurityMasterMutation.OpenConnectionAsync(_options, ct).ConfigureAwait(false);
         await using var command = lease.Connection.CreateCommand();

@@ -41,6 +41,16 @@ Security Master override PATCH and decision endpoints return HTTP 409 when anoth
 advances the durable workbench generation. The governed workbench endpoints use their existing
 conflict response for the same condition. Operators must reload before retrying the edit or review.
 
+The OTC contract model is served by two `SecurityMasterEndpoints` partials.
+`SecurityMasterEndpoints.OtcContracts.cs` maps master agreements, collateral agreements, netting
+sets and contracts; `SecurityMasterEndpoints.OtcCollateral.cs` maps exposure snapshots (compute
+and append under `/otc/netting-sets/{id}/exposure-snapshots`, list and read), collateral balances
+and margin calls (issue, and one `/transition` route with an action enum for agree, dispute, settle
+and cancel). Reads need `ViewSecurityMaster`; writes need `ModifySecurityMaster`, pass the mutation
+rate limit, stamp the session actor over any body `UpdatedBy`, answer 400 on a rule failure and
+404 for an unknown netting set, snapshot or call. No browser or WPF screen consumes these routes
+yet; the workstation collateral exposure read model is unchanged.
+
 Trading readiness includes every supplied acceptance gate in aggregate status and evidence
 summaries, including broker execution reconciliation and portfolio recovery. Every non-ready
 acceptance gate contributes a live-operation blocker independently of aggregate status, so new

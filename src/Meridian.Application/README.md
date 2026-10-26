@@ -686,7 +686,14 @@ Core workstation host. Do not introduce a second listener or independent monitor
   instrument-kind mapping, the profile catalog contract,
   and seeded approved custom/private asset profile templates are owned by
   `Meridian.ReferenceData.SecurityMaster`; this folder consumes those reference-data contracts for
-  validation, governance, readiness, projection rebuilds, and endpoint composition. Profile-backed
+  validation, governance, readiness, projection rebuilds, and endpoint composition.
+  `SecurityMaster/Otc/` holds `OtcExposureService` (reads a netting set, values each open contract
+  through `IOtcContractValuationSource`, applies `OtcExposureRules.Compute` and appends the
+  snapshot) and `PricingStoreOtcContractValuationSource`, the default source, which marks a
+  contract from its instrument's percent-of-par golden-copy price as `sign(direction) × notional ×
+  price / 100` and reports a missing, stale, differently quoted or differently denominated price
+  as a named blocker; `StorageFeatureRegistration` registers it with `TryAddSingleton` so a host
+  can supply another source first. Profile-backed
   validation rules still enforce approved profile-version pinning, typed no-code field values,
   profile approval metadata, and identifier coverage. The C# to F# identifier seam preserves
   optional provider/source metadata without changing standard-identifier identity; a
