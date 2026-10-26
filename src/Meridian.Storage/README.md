@@ -508,6 +508,31 @@ the aggregate at that factor, so `FaceOutstanding` is the paid-down face. The as
 corporate-action successor fail closed on a paid-down lot until the paydown mutation dates the
 factor. Focused proof: `AtomicTaxLotJournalStoreTests.CurrentFactor`, `HistoricalTaxLotQuantityTests`.
 
+`V_ledger_053__atomic_lot_factor_paydown.sql` adds the governed `FactorPaydown` mutation that moves
+that factor. One batch restates every lot open in the (security, book position) scope as of the
+paydown date: `current_factor` is set to the new factor, open basis is relieved pro rata to the
+principal repaid (`basis x new / prior`, rounded once per lot in the lot's currency), and the
+difference between principal and relieved functional basis posts as realized gain or loss on the
+carrying account's exact scoped accounts. A partial paydown preserves quantity (face per 100 is
+factor-invariant); a new factor of zero is a full paydown that closes the lot (`open_quantity = 0`,
+`current_factor = 0`) so it leaves open-lot and as-of reads from that date while its receipt stays
+retained. The migration adds the nullable `factor_paydown_instruction`, widens the batch, mutation
+and `ck_tax_lots_current_factor` checks to strict supersets (`current_factor >= 0`) and replaces
+`protect_open_lot_current_factor` so a factor moves only through a `FactorPaydown` batch of the
+same book/security/position that restates the lot's basis in the same batch; a successor may open
+with its predecessor's factor. The serializable transaction locks Security Master and
+book-position authority, loads the instruction's lots in order, requires every lot at the prior
+factor with one shared carrying account, refuses a partial scope ("every lot open in the scope"),
+refuses a paydown preceding retained mutations, and asserts each lot after the CAS reproduces the
+reviewed projection. The journal must debit cash for the principal, credit the carrying account for
+the basis relieved (no line when nothing is relieved) and carry exactly one realized line when the
+difference is non-zero; journal-only append refuses the instruction. `HistoricalTaxLotQuantity`
+dates the factor from `lot_snapshot_after.currentFactor`, so an as-of read before the paydown
+returns the booked factor and full face, and a corporate-action successor inherits and may later
+pay down the factor it was born with. Later disposals relieve the reduced basis. Focused proof:
+`AtomicTaxLotJournalStoreTests.FactorPaydown`, `AtomicTaxLotJournalStoreTests.FactorPaydownPublication`,
+`AtomicTaxLotSuccessorMigrationTests.FactorPaydown`, `OpenLotFactorPaydownTests`.
+
 Durable disposal now uses the canonical decimal relief guard. Missing identity, quantity basis, or acquisition FX blocks relief and authoritative reporting until repaired. Reporting carries canonical lot evidence alongside retained disposal history; current market FX never substitutes for acquisition FX. Durable AverageCost posting remains refused until remaining-lot basis redistribution has its own atomic proof.
 
 ### Reviewed fund tenant backfill

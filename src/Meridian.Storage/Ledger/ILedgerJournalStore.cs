@@ -433,7 +433,10 @@ public enum AtomicTaxLotMutationKind
     BasisRedistribution = 2,
     Amortization = 3,
     CorporateAction = 4,
-    CapitalReturn = 5
+    CapitalReturn = 5,
+    // Every open face lot of one (security, position) scope restated to a lower paydown factor,
+    // its basis relieved pro rata; a new factor of zero closes the lots.
+    FactorPaydown = 6
 }
 
 public sealed record LedgerTaxLotDisposalSelection(
@@ -476,7 +479,9 @@ public sealed record AtomicTaxLotJournalCommand(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     OpenLotDirection Direction = OpenLotDirection.Long,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    AtomicLotReferenceVersions? ReferenceVersions = null)
+    AtomicLotReferenceVersions? ReferenceVersions = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null)
 {
     public static AtomicTaxLotJournalCommand Create(
         Guid mutationBatchId,
@@ -497,7 +502,8 @@ public sealed record AtomicTaxLotJournalCommand(
         Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? corporateAction = null,
         Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? capitalReturn = null,
         OpenLotDirection direction = OpenLotDirection.Long,
-        AtomicLotReferenceVersions? referenceVersions = null)
+        AtomicLotReferenceVersions? referenceVersions = null,
+        Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? factorPaydown = null)
     {
         var command = new AtomicTaxLotJournalCommand(
             mutationBatchId,
@@ -519,7 +525,8 @@ public sealed record AtomicTaxLotJournalCommand(
             corporateAction,
             capitalReturn,
             direction,
-            referenceVersions);
+            referenceVersions,
+            factorPaydown);
         return command.WithComputedFingerprint();
     }
 
@@ -569,4 +576,6 @@ public sealed record AtomicTaxLotJournalResult(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     Meridian.Contracts.Accounting.Lots.OpenLotSuccessorInstructionDto? CorporateAction = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null);
+    Meridian.Contracts.Accounting.Lots.OpenLotCapitalReturnInstructionDto? CapitalReturn = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto? FactorPaydown = null);
