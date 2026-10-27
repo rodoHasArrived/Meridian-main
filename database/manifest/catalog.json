@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "6b5de6d7a3b606941f193c2abd1a392c41a7d9730c5259a1e57cd046492621a5",
+  "database_fingerprint": "bf4dec81c4325a60e0797dff428872b3c6d2f653bb57eb64df7786117a624b95",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -20525,7 +20525,7 @@
       "object": "comment:table:security_master.security_curve_versions"
     },
     {
-      "fingerprint": "96592fe35603b6ba3a62fa84f1229cbed760e5ede7568fb2813e9067d1941e8f",
+      "fingerprint": "8988574d8f3c8fc8ad557cc607a92180799ecee76149308f0b1e39338dd1bf36",
       "object": "comment:table:security_master.security_curves"
     },
     {
@@ -26973,8 +26973,8 @@
       "object": "function:security_master.reject_security_alias_revision_mutation()"
     },
     {
-      "fingerprint": "4143cb0e592a4836a50783f36aa161dd6bc2b748eb6dd8817386ef9daddd1789",
-      "object": "function:security_master.reject_security_curve_version_mutation()"
+      "fingerprint": "d69e0393820e4fc13367a1f06fe94a9124bc530f8999b378f561b92fe48911a3",
+      "object": "function:security_master.reject_security_curve_mutation()"
     },
     {
       "fingerprint": "1e2b6992e7f6d3be838defbe9598445a1ca89b8ee60a9383e1eefa162e70fedc",
@@ -30253,7 +30253,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "4bb92639b58a09df35b98a859a1e8637af0541941413a7b810317d19cbe6b505",
+      "fingerprint": "6da705b788111ea56ef29b48dd206b1ba3d52d35f13a05ef3ec5e45046d94be3",
       "object": "schema:security_master"
     },
     {
@@ -31049,11 +31049,11 @@
       "object": "table:security_master.security_close_price_snapshots"
     },
     {
-      "fingerprint": "261dc1622e72efa5711b10c1449c4d929146fb6d0eee9c619b8a1397c24b9d86",
+      "fingerprint": "57d84d92a9572efa93d121a7a0e21af4dbe81f9f2e137a64cdef80721343d5b0",
       "object": "table:security_master.security_curve_versions"
     },
     {
-      "fingerprint": "36b36bca1d2c12f4ee0a50a1cc7098f258e530cd7f0df660ecb8a98737496719",
+      "fingerprint": "c1a2163612e6cc298b30e9d85bf675efad18f70c3758e10c7095924796276ed1",
       "object": "table:security_master.security_curves"
     },
     {
@@ -31437,12 +31437,20 @@
       "object": "trigger:security_master.security_close_price_snapshots.security_close_price_snapshots_no_truncate"
     },
     {
-      "fingerprint": "9180e3c5c2d6ee1bc40ab627619e13d111e2009c42c3a073a09e8bf803b5589f",
+      "fingerprint": "8df5fb5dff40f7abb285bf6f4166f982d587bdd77f62657f33c3c3c160dde22d",
       "object": "trigger:security_master.security_curve_versions.security_curve_versions_immutable"
     },
     {
-      "fingerprint": "cdc0c5cb10360c7e0fb4798a51531185c16a6d960b5d7fdf93d5df2ab5bc5b5d",
+      "fingerprint": "3f18c2c3a7b7425a863970f7df32f58970bef760c86c826e35ac0bdb257ff6c3",
       "object": "trigger:security_master.security_curve_versions.security_curve_versions_no_truncate"
+    },
+    {
+      "fingerprint": "859341de19b2fe7112ffa6cc8f3919def8cd37dc0c3142eb4b26bcc4c881dd1e",
+      "object": "trigger:security_master.security_curves.security_curves_no_truncate"
+    },
+    {
+      "fingerprint": "c52342b755bfa5e48f7c4181755041a937cb84ea42fad0ba42ba51c54523b86c",
+      "object": "trigger:security_master.security_curves.security_curves_write_once"
     },
     {
       "fingerprint": "b406ca337ee266facd364d02f5977378da53c3a449df3d3c528d24f1c638071c",
@@ -126176,8 +126184,8 @@
           "object_type": "table"
         },
         {
-          "comment": "Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, day count, interpolation and source.",
-          "fingerprint": "96592fe35603b6ba3a62fa84f1229cbed760e5ede7568fb2813e9067d1941e8f",
+          "comment": "Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, tenor, day count, interpolation and source.",
+          "fingerprint": "8988574d8f3c8fc8ad557cc607a92180799ecee76149308f0b1e39338dd1bf36",
           "object": "security_master.security_curves",
           "object_type": "table"
         },
@@ -130209,7 +130217,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "4bb92639b58a09df35b98a859a1e8637af0541941413a7b810317d19cbe6b505",
+      "fingerprint": "6da705b788111ea56ef29b48dd206b1ba3d52d35f13a05ef3ec5e45046d94be3",
       "foreign_tables": [],
       "functions": [
         {
@@ -130383,18 +130391,18 @@
             }
           ],
           "comment": null,
-          "definition_hash": "582a5cb43eb031ce88c5b582e5161de681518c0c09939b2ba908e38fc9e299c2",
-          "fingerprint": "4143cb0e592a4836a50783f36aa161dd6bc2b748eb6dd8817386ef9daddd1789",
+          "definition_hash": "536c88bc25bfc1d33c6b4614530cf5bf820f4bb392c770a412e55fac7d7eaf9a",
+          "fingerprint": "d69e0393820e4fc13367a1f06fe94a9124bc530f8999b378f561b92fe48911a3",
           "kind": "function",
           "language": "plpgsql",
-          "name": "reject_security_curve_version_mutation",
+          "name": "reject_security_curve_mutation",
           "owner": "meridian",
           "parallel_safety": "unsafe",
           "result_type": "trigger",
           "schema": "security_master",
           "security_definer": false,
           "security_labels": [],
-          "signature": "reject_security_curve_version_mutation()",
+          "signature": "reject_security_curve_mutation()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -163922,7 +163930,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "261dc1622e72efa5711b10c1449c4d929146fb6d0eee9c619b8a1397c24b9d86",
+          "fingerprint": "57d84d92a9572efa93d121a7a0e21af4dbe81f9f2e137a64cdef80721343d5b0",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -164059,16 +164067,16 @@
           "triggers": [
             {
               "comment": null,
-              "definition": "CREATE TRIGGER security_curve_versions_immutable BEFORE DELETE OR UPDATE ON security_master.security_curve_versions FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_curve_version_mutation()",
-              "definition_hash": "feebb6e6ce86768db557da1c3c95e7c66ad935523d94aac57efcd499dcd2be80",
+              "definition": "CREATE TRIGGER security_curve_versions_immutable BEFORE DELETE OR UPDATE ON security_master.security_curve_versions FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_curve_mutation()",
+              "definition_hash": "a016702ac07f6f9038aabd27fd76b8e5fbfd92b42c98471cb1dc99c7b78beb86",
               "enabled": "origin",
               "events": [
                 "delete",
                 "update"
               ],
-              "fingerprint": "9180e3c5c2d6ee1bc40ab627619e13d111e2009c42c3a073a09e8bf803b5589f",
+              "fingerprint": "8df5fb5dff40f7abb285bf6f4166f982d587bdd77f62657f33c3c3c160dde22d",
               "function_schema": "security_master",
-              "function_signature": "reject_security_curve_version_mutation()",
+              "function_signature": "reject_security_curve_mutation()",
               "level": "row",
               "name": "security_curve_versions_immutable",
               "relation": "security_curve_versions",
@@ -164077,15 +164085,15 @@
             },
             {
               "comment": null,
-              "definition": "CREATE TRIGGER security_curve_versions_no_truncate BEFORE TRUNCATE ON security_master.security_curve_versions FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_curve_version_mutation()",
-              "definition_hash": "d34794038c6cadec4ce5fa780c3107c3a2e21fc749c4f98fa7c31ac09aea0553",
+              "definition": "CREATE TRIGGER security_curve_versions_no_truncate BEFORE TRUNCATE ON security_master.security_curve_versions FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_curve_mutation()",
+              "definition_hash": "8fc9dc47196ddaa21b205c898b635662024481d51824ae505599cdae85ff97f6",
               "enabled": "origin",
               "events": [
                 "truncate"
               ],
-              "fingerprint": "cdc0c5cb10360c7e0fb4798a51531185c16a6d960b5d7fdf93d5df2ab5bc5b5d",
+              "fingerprint": "3f18c2c3a7b7425a863970f7df32f58970bef760c86c826e35ac0bdb257ff6c3",
               "function_schema": "security_master",
-              "function_signature": "reject_security_curve_version_mutation()",
+              "function_signature": "reject_security_curve_mutation()",
               "level": "statement",
               "name": "security_curve_versions_no_truncate",
               "relation": "security_curve_versions",
@@ -164333,7 +164341,7 @@
               "type_schema": "pg_catalog"
             }
           ],
-          "comment": "Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, day count, interpolation and source.",
+          "comment": "Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, tenor, day count, interpolation and source.",
           "constraints": [
             {
               "columns": [
@@ -164439,7 +164447,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "36b36bca1d2c12f4ee0a50a1cc7098f258e530cd7f0df660ecb8a98737496719",
+          "fingerprint": "c1a2163612e6cc298b30e9d85bf675efad18f70c3758e10c7095924796276ed1",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -164525,7 +164533,43 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_curves_no_truncate BEFORE TRUNCATE ON security_master.security_curves FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_curve_mutation()",
+              "definition_hash": "2d90ab4a140f6d78a5fc6cd4384fbb5bae99d035638fdf4da87f16de4b7c5e68",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "859341de19b2fe7112ffa6cc8f3919def8cd37dc0c3142eb4b26bcc4c881dd1e",
+              "function_schema": "security_master",
+              "function_signature": "reject_security_curve_mutation()",
+              "level": "statement",
+              "name": "security_curves_no_truncate",
+              "relation": "security_curves",
+              "schema": "security_master",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_curves_write_once BEFORE DELETE OR UPDATE ON security_master.security_curves FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_curve_mutation()",
+              "definition_hash": "fc1a0e62d496489e59db3dce4a16f34ef6f8d8aa34280d0fd04081f086813e47",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "c52342b755bfa5e48f7c4181755041a937cb84ea42fad0ba42ba51c54523b86c",
+              "function_schema": "security_master",
+              "function_signature": "reject_security_curve_mutation()",
+              "level": "row",
+              "name": "security_curves_write_once",
+              "relation": "security_curves",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -209966,7 +210010,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "261dc1622e72efa5711b10c1449c4d929146fb6d0eee9c619b8a1397c24b9d86",
+          "fingerprint": "57d84d92a9572efa93d121a7a0e21af4dbe81f9f2e137a64cdef80721343d5b0",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -210103,16 +210147,16 @@
           "triggers": [
             {
               "comment": null,
-              "definition": "CREATE TRIGGER security_curve_versions_immutable BEFORE DELETE OR UPDATE ON security_master.security_curve_versions FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_curve_version_mutation()",
-              "definition_hash": "feebb6e6ce86768db557da1c3c95e7c66ad935523d94aac57efcd499dcd2be80",
+              "definition": "CREATE TRIGGER security_curve_versions_immutable BEFORE DELETE OR UPDATE ON security_master.security_curve_versions FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_curve_mutation()",
+              "definition_hash": "a016702ac07f6f9038aabd27fd76b8e5fbfd92b42c98471cb1dc99c7b78beb86",
               "enabled": "origin",
               "events": [
                 "delete",
                 "update"
               ],
-              "fingerprint": "9180e3c5c2d6ee1bc40ab627619e13d111e2009c42c3a073a09e8bf803b5589f",
+              "fingerprint": "8df5fb5dff40f7abb285bf6f4166f982d587bdd77f62657f33c3c3c160dde22d",
               "function_schema": "security_master",
-              "function_signature": "reject_security_curve_version_mutation()",
+              "function_signature": "reject_security_curve_mutation()",
               "level": "row",
               "name": "security_curve_versions_immutable",
               "relation": "security_curve_versions",
@@ -210121,15 +210165,15 @@
             },
             {
               "comment": null,
-              "definition": "CREATE TRIGGER security_curve_versions_no_truncate BEFORE TRUNCATE ON security_master.security_curve_versions FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_curve_version_mutation()",
-              "definition_hash": "d34794038c6cadec4ce5fa780c3107c3a2e21fc749c4f98fa7c31ac09aea0553",
+              "definition": "CREATE TRIGGER security_curve_versions_no_truncate BEFORE TRUNCATE ON security_master.security_curve_versions FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_curve_mutation()",
+              "definition_hash": "8fc9dc47196ddaa21b205c898b635662024481d51824ae505599cdae85ff97f6",
               "enabled": "origin",
               "events": [
                 "truncate"
               ],
-              "fingerprint": "cdc0c5cb10360c7e0fb4798a51531185c16a6d960b5d7fdf93d5df2ab5bc5b5d",
+              "fingerprint": "3f18c2c3a7b7425a863970f7df32f58970bef760c86c826e35ac0bdb257ff6c3",
               "function_schema": "security_master",
-              "function_signature": "reject_security_curve_version_mutation()",
+              "function_signature": "reject_security_curve_mutation()",
               "level": "statement",
               "name": "security_curve_versions_no_truncate",
               "relation": "security_curve_versions",
@@ -210377,7 +210421,7 @@
               "type_schema": "pg_catalog"
             }
           ],
-          "comment": "Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, day count, interpolation and source.",
+          "comment": "Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, tenor, day count, interpolation and source.",
           "constraints": [
             {
               "columns": [
@@ -210483,7 +210527,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "36b36bca1d2c12f4ee0a50a1cc7098f258e530cd7f0df660ecb8a98737496719",
+          "fingerprint": "c1a2163612e6cc298b30e9d85bf675efad18f70c3758e10c7095924796276ed1",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -210569,7 +210613,43 @@
           "schema": "security_master",
           "security_labels": [],
           "sequence": null,
-          "triggers": []
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_curves_no_truncate BEFORE TRUNCATE ON security_master.security_curves FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_curve_mutation()",
+              "definition_hash": "2d90ab4a140f6d78a5fc6cd4384fbb5bae99d035638fdf4da87f16de4b7c5e68",
+              "enabled": "origin",
+              "events": [
+                "truncate"
+              ],
+              "fingerprint": "859341de19b2fe7112ffa6cc8f3919def8cd37dc0c3142eb4b26bcc4c881dd1e",
+              "function_schema": "security_master",
+              "function_signature": "reject_security_curve_mutation()",
+              "level": "statement",
+              "name": "security_curves_no_truncate",
+              "relation": "security_curves",
+              "schema": "security_master",
+              "timing": "before"
+            },
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_curves_write_once BEFORE DELETE OR UPDATE ON security_master.security_curves FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_curve_mutation()",
+              "definition_hash": "fc1a0e62d496489e59db3dce4a16f34ef6f8d8aa34280d0fd04081f086813e47",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "c52342b755bfa5e48f7c4181755041a937cb84ea42fad0ba42ba51c54523b86c",
+              "function_schema": "security_master",
+              "function_signature": "reject_security_curve_mutation()",
+              "level": "row",
+              "name": "security_curves_write_once",
+              "relation": "security_curves",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
         },
         {
           "acl": [
@@ -221521,16 +221601,16 @@
         },
         {
           "comment": null,
-          "definition": "CREATE TRIGGER security_curve_versions_immutable BEFORE DELETE OR UPDATE ON security_master.security_curve_versions FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_curve_version_mutation()",
-          "definition_hash": "feebb6e6ce86768db557da1c3c95e7c66ad935523d94aac57efcd499dcd2be80",
+          "definition": "CREATE TRIGGER security_curve_versions_immutable BEFORE DELETE OR UPDATE ON security_master.security_curve_versions FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_curve_mutation()",
+          "definition_hash": "a016702ac07f6f9038aabd27fd76b8e5fbfd92b42c98471cb1dc99c7b78beb86",
           "enabled": "origin",
           "events": [
             "delete",
             "update"
           ],
-          "fingerprint": "9180e3c5c2d6ee1bc40ab627619e13d111e2009c42c3a073a09e8bf803b5589f",
+          "fingerprint": "8df5fb5dff40f7abb285bf6f4166f982d587bdd77f62657f33c3c3c160dde22d",
           "function_schema": "security_master",
-          "function_signature": "reject_security_curve_version_mutation()",
+          "function_signature": "reject_security_curve_mutation()",
           "level": "row",
           "name": "security_curve_versions_immutable",
           "relation": "security_curve_versions",
@@ -221539,18 +221619,53 @@
         },
         {
           "comment": null,
-          "definition": "CREATE TRIGGER security_curve_versions_no_truncate BEFORE TRUNCATE ON security_master.security_curve_versions FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_curve_version_mutation()",
-          "definition_hash": "d34794038c6cadec4ce5fa780c3107c3a2e21fc749c4f98fa7c31ac09aea0553",
+          "definition": "CREATE TRIGGER security_curve_versions_no_truncate BEFORE TRUNCATE ON security_master.security_curve_versions FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_curve_mutation()",
+          "definition_hash": "8fc9dc47196ddaa21b205c898b635662024481d51824ae505599cdae85ff97f6",
           "enabled": "origin",
           "events": [
             "truncate"
           ],
-          "fingerprint": "cdc0c5cb10360c7e0fb4798a51531185c16a6d960b5d7fdf93d5df2ab5bc5b5d",
+          "fingerprint": "3f18c2c3a7b7425a863970f7df32f58970bef760c86c826e35ac0bdb257ff6c3",
           "function_schema": "security_master",
-          "function_signature": "reject_security_curve_version_mutation()",
+          "function_signature": "reject_security_curve_mutation()",
           "level": "statement",
           "name": "security_curve_versions_no_truncate",
           "relation": "security_curve_versions",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_curves_no_truncate BEFORE TRUNCATE ON security_master.security_curves FOR EACH STATEMENT EXECUTE FUNCTION security_master.reject_security_curve_mutation()",
+          "definition_hash": "2d90ab4a140f6d78a5fc6cd4384fbb5bae99d035638fdf4da87f16de4b7c5e68",
+          "enabled": "origin",
+          "events": [
+            "truncate"
+          ],
+          "fingerprint": "859341de19b2fe7112ffa6cc8f3919def8cd37dc0c3142eb4b26bcc4c881dd1e",
+          "function_schema": "security_master",
+          "function_signature": "reject_security_curve_mutation()",
+          "level": "statement",
+          "name": "security_curves_no_truncate",
+          "relation": "security_curves",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_curves_write_once BEFORE DELETE OR UPDATE ON security_master.security_curves FOR EACH ROW EXECUTE FUNCTION security_master.reject_security_curve_mutation()",
+          "definition_hash": "fc1a0e62d496489e59db3dce4a16f34ef6f8d8aa34280d0fd04081f086813e47",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "c52342b755bfa5e48f7c4181755041a937cb84ea42fad0ba42ba51c54523b86c",
+          "function_schema": "security_master",
+          "function_signature": "reject_security_curve_mutation()",
+          "level": "row",
+          "name": "security_curves_write_once",
+          "relation": "security_curves",
           "schema": "security_master",
           "timing": "before"
         },

@@ -3809,25 +3809,25 @@
     {
       "method": "GET",
       "path": "/api/security-master/curves/{curveId:guid}/versions",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:93",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:97",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/curves/{curveId:guid}/versions",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:117",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:125",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/curves/{curveId:guid}/versions/{version:long}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:141",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:160",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/{securityId:guid}/valuation",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:161",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:181",
       "documented": false
     },
     {

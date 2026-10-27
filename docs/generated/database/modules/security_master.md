@@ -4,7 +4,7 @@
 
 - Relations: 125
 - Functions/procedures: 9
-- Triggers: 18
+- Triggers: 20
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -1854,7 +1854,7 @@ erDiagram
 | `security_close_price_approvals` | table | 4 | `snapshot_id` | 1 | 1 | Immutable independent review receipt bound to the exact close price snapshot SHA-256. |
 | `security_close_price_snapshots` | table | 9 | `snapshot_id` | 1 | 4 | Immutable exact account/book/date price-set versions retaining selected receipts, quote units, overrides, source rows and blockers. |
 | `security_curve_versions` | table | 12 | `curve_version_id` | 1 | 5 | Append-only, immutable published versions of a stored curve: economic as-of, knowledge time, actor, dated points and a canonical content hash. |
-| `security_curves` | table | 12 | `curve_id` | 0 | 3 | Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, day count, interpolation and source. |
+| `security_curves` | table | 12 | `curve_id` | 0 | 3 | Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, tenor, day count, interpolation and source. |
 | `security_events` | table | 12 | `global_sequence` | 0 | 4 | - |
 | `security_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_field_provenance` | table | 10 | `security_id`, `field_path`, `origin` | 0 | 2 | - |

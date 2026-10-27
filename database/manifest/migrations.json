@@ -466,7 +466,7 @@
       "ordinal": 52,
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/052_security_curves.sql",
       "schema": "security_master",
-      "sha256": "83f0afc0bde1f4a96eb0f65689af75f394930e10db885aea5e4e37713ae149c5"
+      "sha256": "57a63d7e579e326d80dddb8eee93afa380401551da16a5500c507060d8eaf24a"
     },
     {
       "filename": "053_security_governance_events_curves_stream.sql",
@@ -1334,7 +1334,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "ca67f1224f3befddec44f409b2668ddaf9fb8991bb0df1ecdad4c7a2872dcfe5",
+  "fingerprint": "cec10fe67da56392d16ea4d391695464b82b5541a5186203d431ac7b4122ee58",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1728,7 +1728,7 @@
     {
       "category": "destructive_changes",
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/052_security_curves.sql",
-      "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only, immutable security_curve_versions table; no data is truncated and the migration creates only new tables, indexes, a function and triggers. PostgreSQL regression coverage attempts update, delete and truncate and verifies that every published curve version is retained.",
+      "reason": "Requires human schema/storage review. The lexical TRUNCATE matches declare BEFORE TRUNCATE triggers that reject truncation of the write-once security_curves table and the append-only, immutable security_curve_versions table; no data is truncated and the migration creates only new tables, indexes, a function and triggers. PostgreSQL regression coverage attempts update, delete and truncate on both tables and verifies that every curve definition and published curve version is retained.",
       "review_after": "2027-04-25",
       "rule_id": "migration-truncate"
     },

@@ -1,11 +1,11 @@
 {
   "total_files": 752,
-  "total_lines": 169500,
+  "total_lines": 169542,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 307,
-  "average_lines": 225.4,
+  "average_lines": 225.5,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1078,7 +1078,7 @@
     },
     {
       "path": "docs/adr/026-stored-curves-and-valuation-seam.md",
-      "line_count": 223,
+      "line_count": 234,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2198,7 +2198,7 @@
     },
     {
       "path": "docs/domain/market-curve.md",
-      "line_count": 113,
+      "line_count": 130,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5894,7 +5894,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1165,
+      "line_count": 1171,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5926,7 +5926,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1965,
+      "line_count": 1969,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6158,7 +6158,7 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1290,
+      "line_count": 1292,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6182,7 +6182,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 2838,
+      "line_count": 2840,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
