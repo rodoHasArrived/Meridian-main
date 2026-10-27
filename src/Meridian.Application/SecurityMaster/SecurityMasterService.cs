@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster;
 
-public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IDisposable
+public sealed partial class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender, IDisposable
 {
     /// <summary>
     /// Per-security amendment serialization from the conflict pre-check (which reads per-field
@@ -937,6 +937,7 @@ public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMas
         EnsureDeclaredVocabulariesRoundTripSafely(projection, assetSpecificTermsPatch);
         EnsureBondCouponPayloadRoundTripsSafely(projection, assetSpecificTermsPatch);
         EnsureCustomAssetEnvelopeRoundTripsSafely(projection, assetSpecificTermsPatch);
+        EnsureAheadOfWriteTermsRoundTripSafely(projection, assetSpecificTermsPatch);
     }
 
     /// <summary>

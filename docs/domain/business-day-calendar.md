@@ -48,6 +48,10 @@ coverage, `IsBusinessDay`), `HolidayBusinessDayCalendar`, `JointBusinessDayCalen
   date is a business day only if every member says so. The joint id is the members' ids sorted and
   joined with `+`; the joint hash is taken over the sorted id and hash pairs; coverage is the
   intersection of the members'. Joining a single calendar returns that calendar.
+  `BusinessDayCalendars.JointCalendarId` gives the same id from the ids alone, without resolving
+  any calendar: it drops blank ids, trims the rest and removes duplicates ignoring case before
+  sorting and joining, and returns a single id as itself. Terms that name payment calendars record
+  their joint calendar under this id.
 - **Conventions.** `Following` takes the date or the next business day; `Preceding` the date or the
   previous one. `ModifiedFollowing` follows unless that changes the month, then precedes;
   `ModifiedPreceding` precedes unless that changes the month, then follows. `Unadjusted` needs no

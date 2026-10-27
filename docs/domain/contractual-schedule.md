@@ -127,11 +127,20 @@ so the accrual start equals the unadjusted start and the payment date equals the
 
 Planned in sequence, each behind its own proof:
 
-- A per-class terms upgrade hook, then schedule terms declared on Bond, CertificateOfDeposit,
-  StructuredCredit and swap legs: business-day convention, payment calendars, payment lag, roll,
-  first and last regular dates, direction, stub policy, coupon unit and coupon cash basis, then
-  call and put schedules with notice periods. These arrive expand-then-contract under the terms
-  version policy of [ADR-024](../adr/024-terms-payload-format-and-version-policy.md).
+- Schedule terms declared on Bond, CertificateOfDeposit, StructuredCredit and swap legs arrive
+  expand-then-contract under the terms version policy of
+  [ADR-024](../adr/024-terms-payload-format-and-version-policy.md), through the per-class terms
+  upgrade hook that has landed. The `scheduleConventions` block (business-day convention, payment
+  calendars, payment lag, roll, first and last regular dates, direction, stub policy, coupon unit and
+  coupon cash basis) is readable at the next terms version of each class but not yet writable
+  (increment 4a). Call and put schedules with notice periods follow at the readable version after
+  that (increment 4b), and a later contract step makes both writable.
+- The block's spellings are frozen ([ADR-025](../adr/025-contractual-schedule-kernel.md#applications)):
+  `businessDayConvention` is `Unadjusted`, `Following`, `ModifiedFollowing`, `Preceding` or
+  `ModifiedPreceding` (with `None`, `F`, `MF`, `P` and `MP` accepted); `rollConvention` is
+  `AnchorDay`, `EndOfMonth`, `Imm` or a day of the month from 1 to 31; `stubPolicy` is `Short`,
+  `Long` or `RequireRegular`; `direction` is `Forward` or `Backward`; `couponRateUnit` is `Percent`
+  or `Fraction`; and `couponCashBasis` is `Level` or `DayCount`.
 - A file-backed calendar source and a declared mode in the Security Master cash-flow engine.
 - Stable asset-operations flow ids keyed by period, and a schedule book built from engine output in
   both the browser and WPF workstations.
@@ -139,8 +148,9 @@ Planned in sequence, each behind its own proof:
 - Direct-lending projections and servicing accrual on the kernel, behind opt-in engine and formula
   versions, and `FaceValueLot`'s coupon-date generators last.
 
-Calendar data governance, the default flip for records that declare nothing, and the coupon
-conventions for declared records are open decisions.
+Calendar data governance and the default flip for records that declare nothing are open
+decisions. The coupon vocabulary for declared records is fixed by `couponRateUnit` and
+`couponCashBasis`; how the cash-flow engine applies them is decided with the contract step.
 
 ## Implementation and regression references
 

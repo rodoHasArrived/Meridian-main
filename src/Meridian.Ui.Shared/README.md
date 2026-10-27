@@ -2738,14 +2738,16 @@ contract while keeping the contract multiplier in exposure totals.
 
 `/api/security-master/asset-classes` and `/api/security-master/asset-classes/{assetClass}`
 return the Security Master asset-class registry (fields, validation, projection, lot and
-cash-flow behaviour, editor hints) for schema-driven forms. Override decisions return 403 when the
+cash-flow behaviour, editor hints) for schema-driven forms. The registry lists only the terms a
+class writes; a term readable ahead of the write version (ADR-024) is not offered for editing. Override decisions return 403 when the
 reviewer staged the values being approved.
 
 Security Master also serves `GET /api/security-master/{securityId}/income-cash-flows`
 (declared dividends and distributions, with `from`/`to` pay-date bounds),
 `GET /api/security-master/{securityId}/factor-history`, and
 `PUT /api/security-master/{securityId}/terms/{blockKey}` (governed like the generic amend route;
-400 for an undeclared block or JSON kind).
+400 for an undeclared block or JSON kind, and 400 with the not-yet-writable reason for a block the
+class only reads, such as `scheduleConventions`).
 
 `POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance) builds the
 ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their proposed

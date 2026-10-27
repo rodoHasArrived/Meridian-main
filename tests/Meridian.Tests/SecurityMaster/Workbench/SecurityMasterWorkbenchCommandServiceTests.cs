@@ -10,7 +10,7 @@ using Moq;
 
 namespace Meridian.Tests.SecurityMaster.Workbench;
 
-public sealed class SecurityMasterWorkbenchCommandServiceTests
+public sealed partial class SecurityMasterWorkbenchCommandServiceTests
 {
     private static readonly Guid SecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 

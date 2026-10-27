@@ -46,7 +46,18 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   first call date, and issuer name in its maturity, coupon, call, and issuer modules, so a replay
   from economic terms alone keeps a callable bond callable.
 - `assetSpecificTermsJson` stamps flat terms with the shared terms-format envelope for every kind
-  except `CustomAsset`, whose profile owns its own document shape.
+  except `CustomAsset`, whose profile owns its own document shape. The stamp is the effective write
+  version: the class's write version, raised to the readable version of a `scheduleConventions`
+  block the record declares (ADR-024, readable before writable).
+- `BondTerms`, `CertificateOfDepositTerms`, `StructuredCreditTerms` and `SwapLeg` carry a
+  `ScheduleConventions` record (business-day convention, accrual adjustment, payment calendars,
+  payment lag, roll, end-of-month rule, regular dates, direction, stub policy, coupon rate unit and
+  coupon cash basis); `ScheduleConventions.empty` is the undeclared value. It is decoded only from
+  rows stamped at the block's readable version, and serialized only at that version: `null` when
+  nothing is declared, otherwise all twelve members in alphabetical order (on a swap, on every leg).
+  A declared business-day convention or payment calendar fills the economic `Accrual` module of a
+  bond, CertificateOfDeposit or StructuredCredit: the convention verbatim and the payment calendars
+  as one joint calendar id, with no fallback to the common terms' holiday calendar.
 - `StructuredProductTerms.FactorScheduleReference` carries the StructuredCredit record's free-text
   `factorSchedule` pointer as evidence lineage. The legacy upgrade no longer writes that pointer into
   the coupon payment frequency or the floating-rate reset frequency; both read `None` for
@@ -56,7 +67,9 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
   subclass, a CustomAsset whose `category` names a securitised product, or an envelope-less legacy
   custom row read back as OtherSecurity. It carries over par, coupon or index, maturity, seniority
   and the family the label implies; every required term the source lacks and every ambiguous label
-  (`MortgageBacked`, `MBS`) is a blocker, so `ProposedTerms` exists only when nothing blocks.
+  (`MortgageBacked`, `MBS`) is a blocker, so `ProposedTerms` exists only when nothing blocks. A bond
+  that declares schedule conventions is blocked with `structured_credit_schedule_conventions_unwritable`,
+  because they are a StructuredCredit terms version 3 term this node reads but cannot write.
 - `IdentifierKind` includes `LoanX` and `Clip` for syndicated-loan identifiers; interop maps
   them to the matching C# `SecurityIdentifierKind` values.
 - `SecurityTermModules` no longer carries `AccountingElections` or `Pci`. Amortization method,
