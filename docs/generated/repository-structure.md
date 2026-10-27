@@ -1368,6 +1368,7 @@ Meridian-main
 │   │   ├── 023-host-wide-provider-credential-ownership.md
 │   │   ├── 024-terms-payload-format-and-version-policy.md
 │   │   ├── 025-contractual-schedule-kernel.md
+│   │   ├── 026-stored-curves-and-valuation-seam.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
@@ -1769,8 +1770,10 @@ Meridian-main
 │   │   ├── business-day-calendar.md
 │   │   ├── contractual-schedule.md
 │   │   ├── corporate-action-case.md
+│   │   ├── credit-support.md
 │   │   ├── fund-event.md
 │   │   ├── intercompany-consolidation.md
+│   │   ├── market-curve.md
 │   │   ├── operational-evidence-graph.md
 │   │   ├── README.md
 │   │   ├── recurring-journal.md
@@ -1864,6 +1867,7 @@ Meridian-main
 │   │   │   │   ├── security-master-contracts-page-03.md
 │   │   │   │   ├── security-master-contracts-page-04.md
 │   │   │   │   ├── security-master-contracts-page-05.md
+│   │   │   │   ├── security-master-contracts-page-06.md
 │   │   │   │   └── security-master-contracts.md
 │   │   │   ├── diagrams
 │   │   │   │   ├── asset_operations.mmd
@@ -1888,6 +1892,7 @@ Meridian-main
 │   │   │   │   ├── contracts-security-master-contracts-page-03.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-04.mmd
 │   │   │   │   ├── contracts-security-master-contracts-page-05.mmd
+│   │   │   │   ├── contracts-security-master-contracts-page-06.mmd
 │   │   │   │   ├── fund_accounts.mmd
 │   │   │   │   ├── fund_structure.mmd
 │   │   │   │   ├── identity_access.mmd
@@ -4150,6 +4155,11 @@ Meridian-main
 │   │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
 │   │   │   │   ├── SecurityMasterCorporateActionCommandService.cs
 │   │   │   │   └── SecurityMasterTickerChangeService.cs
+│   │   │   ├── Curves
+│   │   │   │   └── StoredSecurityForwardCurveProvider.cs
+│   │   │   ├── Otc
+│   │   │   │   ├── OtcExposureService.cs
+│   │   │   │   └── PricingStoreOtcContractValuationSource.cs
 │   │   │   ├── Rebuild
 │   │   │   │   ├── IUflProjectionRebuilder.cs
 │   │   │   │   ├── SecurityMasterAggregateRebuilder.cs
@@ -4163,6 +4173,11 @@ Meridian-main
 │   │   │   │   ├── SecurityMasterOptionsValidator.cs
 │   │   │   │   ├── SecurityValidationGateService.cs
 │   │   │   │   └── SecurityValidationService.cs
+│   │   │   ├── Valuation
+│   │   │   │   ├── DiscountedCashFlowValuationModel.cs
+│   │   │   │   ├── QuotedPriceValuationModel.cs
+│   │   │   │   ├── SecurityValuationMarketValues.cs
+│   │   │   │   └── SecurityValuationService.cs
 │   │   │   ├── AlternativeAssetLotExtensions.cs
 │   │   │   ├── ApprovedFieldEditCanonicalMergeHandler.cs
 │   │   │   ├── CanonicalRegistryCoverageSource.cs
@@ -4397,6 +4412,7 @@ Meridian-main
 │   │   │       ├── OpenLotCapitalReturn.cs
 │   │   │       ├── OpenLotDirection.cs
 │   │   │       ├── OpenLotDto.cs
+│   │   │       ├── OpenLotFactorPaydown.cs
 │   │   │       ├── OpenLotSuccessors.cs
 │   │   │       └── OpenLotValidation.cs
 │   │   ├── AccountingSystem
@@ -4437,6 +4453,7 @@ Meridian-main
 │   │   │   ├── AssetOperationsDtos.cs
 │   │   │   ├── AssetOperationsReferenceDtos.cs
 │   │   │   ├── CorporateActionAccountingDtos.cs
+│   │   │   ├── FactorPaydownProjectionIdentity.cs
 │   │   │   ├── ICorporateActionRuleProfile.cs
 │   │   │   ├── InstrumentPositionDtos.cs
 │   │   │   ├── PortfolioCashLadderDtos.cs
@@ -4704,7 +4721,9 @@ Meridian-main
 │   │   │   ├── LotQuantity.cs
 │   │   │   ├── NotionalLot.cs
 │   │   │   ├── OperatorOverrides.cs
+│   │   │   ├── OtcCollateral.cs
 │   │   │   ├── OtcContracts.cs
+│   │   │   ├── OtcExposure.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
 │   │   │   ├── SecurityAssetClassRegistry.cs
 │   │   │   ├── SecurityAssetClassTermsUpgrade.cs
@@ -4717,6 +4736,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsFieldEditValidator.cs
 │   │   │   ├── SecurityAssetTermsSchema.cs
 │   │   │   ├── SecurityCommands.cs
+│   │   │   ├── SecurityCurves.cs
 │   │   │   ├── SecurityDtos.cs
 │   │   │   ├── SecurityEvents.cs
 │   │   │   ├── SecurityFactorHistory.cs
@@ -4743,6 +4763,7 @@ Meridian-main
 │   │   │   ├── SecurityTermsEnvelope.cs
 │   │   │   ├── SecurityUnderlyingGraph.cs
 │   │   │   ├── SecurityValidationDtos.cs
+│   │   │   ├── SecurityValuation.cs
 │   │   │   ├── StructuredCashFlowTerms.cs
 │   │   │   └── StructuredCashFlowTermsResolver.cs
 │   │   ├── Services
@@ -5270,6 +5291,8 @@ Meridian-main
 │   │   │   ├── AccountingPolicyService.cs
 │   │   │   ├── AccountingPostingCandidatePostService.CapitalReturn.cs
 │   │   │   ├── AccountingPostingCandidatePostService.cs
+│   │   │   ├── AccountingPostingCandidatePostService.FactorPaydown.cs
+│   │   │   ├── AccountingPostingCandidatePostService.JournalIntentBinding.cs
 │   │   │   ├── AccountingPostingCandidatePostService.ReferenceAuthority.cs
 │   │   │   ├── AccountingPostingCandidateService.cs
 │   │   │   ├── AssetAccountingCandidateCanonicalizer.cs
@@ -5277,6 +5300,7 @@ Meridian-main
 │   │   │   ├── CanonicalLotAmortizationService.cs
 │   │   │   ├── CanonicalLotCorporateActionService.CapitalReturn.cs
 │   │   │   ├── CanonicalLotCorporateActionService.cs
+│   │   │   ├── FactorPaydownLotInstructionService.cs
 │   │   │   ├── LedgerJournalConstruction.cs
 │   │   │   ├── SpineAcquisitionLotCompletion.cs
 │   │   │   └── SpineAcquisitionLotFacts.cs
@@ -6426,7 +6450,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_043__amortization_reversal_basis_restoration.sql
 │   │   │   │   ├── V_ledger_050__atomic_lot_capital_return.sql
 │   │   │   │   ├── V_ledger_051__tax_lot_account_case_insensitive_keys.sql
-│   │   │   │   └── V_ledger_052__tax_lot_current_factor.sql
+│   │   │   │   ├── V_ledger_052__tax_lot_current_factor.sql
+│   │   │   │   └── V_ledger_053__atomic_lot_factor_paydown.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -6462,6 +6487,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.CorporateAction.cs
 │   │   │   ├── PostgresLedgerJournalStore.cs
 │   │   │   ├── PostgresLedgerJournalStore.DiscreteLotRelief.cs
+│   │   │   ├── PostgresLedgerJournalStore.FactorPaydown.cs
 │   │   │   ├── PostgresLedgerJournalStore.HistoricalTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.LotReferenceAuthority.cs
 │   │   │   ├── PostgresLedgerJournalStore.OpenLotBackfill.cs
@@ -6608,7 +6634,11 @@ Meridian-main
 │   │   │   │   ├── 048_security_master_listing_mic.sql
 │   │   │   │   ├── 049_security_underlying_links.sql
 │   │   │   │   ├── 050_otc_contracts.sql
-│   │   │   │   └── 051_security_governance_events_underlying_graph_stream.sql
+│   │   │   │   ├── 051_security_governance_events_underlying_graph_stream.sql
+│   │   │   │   ├── 052_security_curves.sql
+│   │   │   │   ├── 053_security_governance_events_curves_stream.sql
+│   │   │   │   ├── 054_otc_exposure_and_collateral.sql
+│   │   │   │   └── 055_security_governance_events_otc_collateral_stream.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -6651,8 +6681,10 @@ Meridian-main
 │   │   │   ├── PostgresMoneyMarketFundReferenceProjectionStore.cs
 │   │   │   ├── PostgresOperatorOverridesStore.cs
 │   │   │   ├── PostgresOptionReferenceProjectionStore.cs
+│   │   │   ├── PostgresOtcCollateralStore.cs
 │   │   │   ├── PostgresOtcContractStore.cs
 │   │   │   ├── PostgresReferenceProjectionReader.cs
+│   │   │   ├── PostgresSecurityCurveStore.cs
 │   │   │   ├── PostgresSecurityFieldProvenanceStore.cs
 │   │   │   ├── PostgresSecurityMasterCashFlowStore.cs
 │   │   │   ├── PostgresSecurityMasterEventStore.cs
@@ -8173,6 +8205,8 @@ Meridian-main
 │   │   │   ├── SecureReportingDistributionEndpoints.cs
 │   │   │   ├── SecurityMasterEndpoints.CorporateActionOperations.cs
 │   │   │   ├── SecurityMasterEndpoints.cs
+│   │   │   ├── SecurityMasterEndpoints.Curves.cs
+│   │   │   ├── SecurityMasterEndpoints.OtcCollateral.cs
 │   │   │   ├── SecurityMasterEndpoints.OtcContracts.cs
 │   │   │   ├── StatusEndpoints.cs
 │   │   │   ├── StorageEndpoints.cs
@@ -10340,6 +10374,7 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.PreparedStart.cs
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
+│   │   │   ├── SecurityMasterCashFlowServiceTests.AsOf.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.ScheduleCharacterization.cs
 │   │   │   ├── StructuredCashFlowLedgerBridgeTests.cs
@@ -10384,6 +10419,7 @@ Meridian-main
 │   │   │   ├── OpenLotAmortizationContinuationTests.cs
 │   │   │   ├── OpenLotAmortizationPrecisionTests.cs
 │   │   │   ├── OpenLotCapitalReturnTests.cs
+│   │   │   ├── OpenLotFactorPaydownTests.cs
 │   │   │   ├── OpenLotSpinOffTests.cs
 │   │   │   ├── OpenLotSuccessorTests.CorporateActions.cs
 │   │   │   ├── OpenLotSuccessorTests.cs
@@ -10643,6 +10679,7 @@ Meridian-main
 │   │   │   │   ├── AccountingPolicyVersionBindingTests.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.ActorAttribution.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.cs
+│   │   │   │   ├── AccountingPostingCandidateServiceTests.FactorPaydown.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.HistoricalLots.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.RetainedEvidenceMerge.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.Successors.cs
@@ -10650,6 +10687,7 @@ Meridian-main
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.CapitalReturn.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.Direction.cs
+│   │   │   │   ├── AssetAccountingEventSpineServiceTests.FactorPaydown.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.ReferenceAuthority.cs
 │   │   │   │   └── AssetAccountingLifecycleSeparationTests.cs
 │   │   │   ├── OperationsContinuity
@@ -11143,10 +11181,12 @@ Meridian-main
 │   │   │   ├── CorporateActionTypeDescriptorCatalogTests.cs
 │   │   │   ├── DataVendorEntitlementServiceTests.cs
 │   │   │   ├── DayCountConventionsTests.cs
+│   │   │   ├── DiscountedCashFlowValuationModelTests.cs
 │   │   │   ├── FaceValueLotGoldenTests.cs
 │   │   │   ├── FaceValueLotOddPeriodTests.cs
 │   │   │   ├── FaceValueLotTests.cs
 │   │   │   ├── ForwardCurveCashFlowTests.cs
+│   │   │   ├── InMemorySecurityForwardCurveProvider.cs
 │   │   │   ├── KeyedGatePoolTests.cs
 │   │   │   ├── ListingIdentityTests.cs
 │   │   │   ├── ListingMicColumnTests.cs
@@ -11155,9 +11195,13 @@ Meridian-main
 │   │   │   ├── NullCorporateActionOperationsServiceTests.cs
 │   │   │   ├── NullOperatorOverridesStoreTests.cs
 │   │   │   ├── OperatorOverrideReviewRulesTests.cs
+│   │   │   ├── OtcCollateralMigrationTests.cs
+│   │   │   ├── OtcCollateralPostgresTests.cs
+│   │   │   ├── OtcCollateralRulesTests.cs
 │   │   │   ├── OtcContractRulesTests.cs
 │   │   │   ├── OtcContractsMigrationTests.cs
 │   │   │   ├── OtcContractsPostgresTests.cs
+│   │   │   ├── OtcExposureRulesTests.cs
 │   │   │   ├── PostgresOperatorOverridesStoreTests.cs
 │   │   │   ├── PostgresReferenceProjectionReaderTests.cs
 │   │   │   ├── PostgresSecurityMasterClosePriceTests.cs
@@ -11165,8 +11209,10 @@ Meridian-main
 │   │   │   ├── PostgresSecurityMasterPricingHistoryTests.cs
 │   │   │   ├── PostgresSecurityMasterRevisionStoreTests.cs
 │   │   │   ├── PostgresSecurityMasterStoreOptionalReadersTests.cs
+│   │   │   ├── PricingStoreOtcContractValuationSourceTests.cs
 │   │   │   ├── ProjectionFanOutPostgresTests.cs
 │   │   │   ├── ProjectionFanOutTests.cs
+│   │   │   ├── QuotedPriceValuationModelTests.cs
 │   │   │   ├── RegistryMigratedProjectionGoldenTests.cs
 │   │   │   ├── SchemaTermsValidationTests.cs
 │   │   │   ├── SecurityAccountingInstrumentClassTests.cs
@@ -11186,6 +11232,9 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsFieldEditValidatorTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaTests.cs
+│   │   │   ├── SecurityCurveRulesTests.cs
+│   │   │   ├── SecurityCurvesMigrationTests.cs
+│   │   │   ├── SecurityCurvesPostgresTests.cs
 │   │   │   ├── SecurityEconomicTermsClassAwareBridgeTests.cs
 │   │   │   ├── SecurityEconomicTermsV2BridgeCoverageTests.cs
 │   │   │   ├── SecurityEnrichmentTests.cs
@@ -11260,9 +11309,11 @@ Meridian-main
 │   │   │   ├── SecurityUnderlyingRoleCoverageTests.cs
 │   │   │   ├── SecurityValidationGateServiceTests.cs
 │   │   │   ├── SecurityValidationServiceTests.cs
+│   │   │   ├── SecurityValuationServiceTests.cs
 │   │   │   ├── SpecializedProjectionGoldenTests.cs
 │   │   │   ├── SwapLegRoundTripTests.cs
-│   │   │   └── UnitizedLotTests.cs
+│   │   │   ├── UnitizedLotTests.cs
+│   │   │   └── ValuationTestSecurities.cs
 │   │   ├── Serialization
 │   │   │   └── HighPerformanceJsonTests.cs
 │   │   ├── Services
@@ -11324,6 +11375,8 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.DeferralRecipients.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Direction.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.DirectWrites.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.FactorPaydown.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.FactorPaydownPublication.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HistoricalQuantity.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.HoldingPeriodEvidence.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.ProceedsAllocation.cs
@@ -11343,6 +11396,7 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalStoreTests.TaxResultHistory.cs
 │   │   │   ├── AtomicTaxLotSuccessorMigrationTests.CapitalReturn.cs
 │   │   │   ├── AtomicTaxLotSuccessorMigrationTests.cs
+│   │   │   ├── AtomicTaxLotSuccessorMigrationTests.FactorPaydown.cs
 │   │   │   ├── AuditChainProcessTests.cs
 │   │   │   ├── AuditChainServiceTests.cs
 │   │   │   ├── CanonicalDisposalTaxEconomicsTests.cs
@@ -11711,11 +11765,13 @@ Meridian-main
 │   │   │   ├── SecureReportingDistributionEndpointTests.cs
 │   │   │   ├── SecurityMasterAliasEndpointsTests.cs
 │   │   │   ├── SecurityMasterConvertibleEquityEndpointsTests.cs
+│   │   │   ├── SecurityMasterCurveEndpointsTests.cs
 │   │   │   ├── SecurityMasterExceptionCaseworkServiceTests.cs
 │   │   │   ├── SecurityMasterIngestStatusEndpointsTests.cs
 │   │   │   ├── SecurityMasterInstrumentPassportTests.cs
 │   │   │   ├── SecurityMasterLegacyConflictActionTests.cs
 │   │   │   ├── SecurityMasterOperatorOverrideDecisionEndpointsTests.cs
+│   │   │   ├── SecurityMasterOtcCollateralEndpointsTests.cs
 │   │   │   ├── SecurityMasterOtcContractEndpointsTests.cs
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
 │   │   │   ├── SecurityMasterReconciliationSlaPolicyProviderTests.cs
