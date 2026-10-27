@@ -67,7 +67,8 @@ public sealed record SecurityValuationBlockerDto(string Code, string Reason);
 /// The outcome of valuing a security. <paramref name="Price"/> is the per-unit quote in
 /// <paramref name="PriceUnit"/> when one exists; <paramref name="PresentValue"/> the model's PV on
 /// the projected principal or notional basis; <paramref name="ObservedAsOf"/> the oldest market
-/// input used. When <see cref="IsBlocked"/>, <paramref name="Price"/>, <paramref name="PresentValue"/>
+/// input used (the selected price's as-of for a quote; the earlier of the discount curve's as-of and
+/// every forward curve's as-of the projection read for discounted cash flow). When <see cref="IsBlocked"/>, <paramref name="Price"/>, <paramref name="PresentValue"/>
 /// and <paramref name="MarketValue"/> are null; zero is never substituted.
 /// </summary>
 public sealed record SecurityValuationResult(

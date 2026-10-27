@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace Meridian.Contracts.SecurityMaster;
 
 /// <summary>A projected index fixing for a reset date. Rates above 1 are read as percentages.</summary>
@@ -50,9 +52,54 @@ public sealed record SecurityForwardCurve(
         return ordered[^1].Rate;
     }
 
-    /// <summary>A short provenance label for projections: index, as-of date and source.</summary>
+    /// <summary>The prefix of every <see cref="Describe"/> label, and so of a curve-projected leg's <c>RateSource</c>.</summary>
+    public const string RateSourcePrefix = "forwardCurve:";
+
+    private const string AsOfFormat = "yyyy-MM-dd";
+
+    /// <summary>
+    /// A short provenance label for projections: <c>forwardCurve:{index}@{yyyy-MM-dd}</c>, then
+    /// <c> ({source})</c> when a source is known. The date is written in the invariant culture, so
+    /// <see cref="TryReadAsOf"/> reads it back on any host.
+    /// </summary>
     public string Describe()
-        => $"forwardCurve:{IndexName}@{AsOfDate:yyyy-MM-dd}" + (string.IsNullOrWhiteSpace(Source) ? string.Empty : $" ({Source})");
+        => RateSourcePrefix + IndexName + "@" + AsOfDate.ToString(AsOfFormat, CultureInfo.InvariantCulture)
+           + (string.IsNullOrWhiteSpace(Source) ? string.Empty : " (" + Source + ")");
+
+    /// <summary>
+    /// Reads the curve's as-of date back from a <see cref="Describe"/> label, such as a leg's
+    /// <c>RateSource</c>. The date is the first <c>@yyyy-MM-dd</c> that ends the label or is followed
+    /// by the <c> (source)</c> suffix, so an index name or source that itself contains <c>@</c> still
+    /// reads. False for any other label.
+    /// </summary>
+    public static bool TryReadAsOf(string? rateSource, out DateOnly asOf)
+    {
+        asOf = default;
+        if (rateSource is null || !rateSource.StartsWith(RateSourcePrefix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        for (var at = rateSource.IndexOf('@', RateSourcePrefix.Length); at >= 0; at = rateSource.IndexOf('@', at + 1))
+        {
+            var dateStart = at + 1;
+            if (dateStart + AsOfFormat.Length > rateSource.Length)
+            {
+                break;
+            }
+
+            var tail = rateSource.AsSpan(dateStart + AsOfFormat.Length);
+            var endsTheLabel = tail.IsEmpty || (tail.StartsWith(" (", StringComparison.Ordinal) && tail.EndsWith(")", StringComparison.Ordinal));
+            if (endsTheLabel && DateOnly.TryParseExact(
+                    rateSource.AsSpan(dateStart, AsOfFormat.Length), AsOfFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out asOf))
+            {
+                return true;
+            }
+        }
+
+        asOf = default;
+        return false;
+    }
 }
 
 /// <summary>

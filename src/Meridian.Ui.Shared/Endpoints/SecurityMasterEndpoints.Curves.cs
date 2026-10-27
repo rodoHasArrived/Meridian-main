@@ -89,7 +89,11 @@ public static partial class SecurityMasterEndpoints
         .Produces<SecurityCurveDefinitionDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
-        /// <summary>Lists a curve's versions; with <c>asOf</c> (and optionally <c>knownAt</c>) the single latest match, as a list of one or none.</summary>
+        /// <summary>
+        /// Lists a curve's versions. With <c>asOf</c> (and optionally <c>knownAt</c>) the single latest
+        /// match, as a list of one or none; with <c>knownAt</c> alone every version recorded on or
+        /// before the cutoff.
+        /// </summary>
         group.MapGet(UiApiRoutes.SecurityMasterCurveVersions, async (
             Guid curveId,
             DateOnly? asOf,
@@ -107,13 +111,17 @@ public static partial class SecurityMasterEndpoints
                 return Results.Json(match, jsonOptions);
             }
 
-            return Results.Json(await store.ListVersionsAsync(curveId, ct).ConfigureAwait(false), jsonOptions);
+            var versions = await store.ListVersionsAsync(curveId, ct).ConfigureAwait(false);
+            if (knownAt is { } cutoff)
+                versions = versions.Where(candidate => candidate.RecordedAt <= cutoff).ToList();
+
+            return Results.Json(versions, jsonOptions);
         })
         .WithName("ListSecurityMasterCurveVersions").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecurityCurveVersionDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
-        /// <summary>Publishes a version of the curve. Identical content for the same as-of returns the retained version.</summary>
+        /// <summary>Publishes a version of the curve. Identical content for the same as-of returns the retained version; an unknown curve is 404.</summary>
         group.MapPost(UiApiRoutes.SecurityMasterCurveVersions, async (
             Guid curveId,
             PublishSecurityCurveVersionRequest? request,
@@ -127,12 +135,23 @@ public static partial class SecurityMasterEndpoints
                     ["curveId"] = ["Request CurveId must match the route parameter."]
                 });
 
+            var authorizationResult = RequireSecurityMasterMutationPermission(context);
+            if (authorizationResult is not null)
+                return authorizationResult;
+
+            // An unknown curve answers as the reads do. A curve identity is never deleted, so one found
+            // here is still there when the store re-reads it under a row lock.
+            if (await store.GetDefinitionAsync(curveId, ct).ConfigureAwait(false) is null)
+                return Results.NotFound(new { error = $"Curve {curveId:D} is not defined." });
+
             return await RunCurveWriteAsync(context, () => store.PublishVersionAsync(request with { PublishedBy = ResolveActor(context) }, ct), jsonOptions).ConfigureAwait(false);
         })
         .WithName("PublishSecurityMasterCurveVersion").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityCurveVersionDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status429TooManyRequests)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
@@ -153,8 +172,9 @@ public static partial class SecurityMasterEndpoints
 
     /// <summary>
     /// Values a security as of a date with the model its request or asset class names. A read with
-    /// the same receipt side effect the golden-copy read has; blocked results are 200 with blockers.
-    /// Mapped only when an <see cref="ISecurityValuationService"/> is registered.
+    /// the same receipt side effect the golden-copy read has, so View suffices but the mutation rate
+    /// limit applies; blocked results are 200 with blockers. Mapped only when an
+    /// <see cref="ISecurityValuationService"/> is registered.
     /// </summary>
     private static void MapValuationEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
@@ -176,7 +196,9 @@ public static partial class SecurityMasterEndpoints
         .WithName("ValueSecurityMaster").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<SecurityValuationResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status404NotFound);
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status429TooManyRequests)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
     /// <summary>Runs a curve write: permission first, then the store; a rule failure is 400 and a write-once conflict 409.</summary>

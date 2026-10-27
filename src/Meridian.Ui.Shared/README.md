@@ -615,13 +615,15 @@ override account scope; other callers require account-scoped `ManageDirectLendin
 workstation drill-in projection. The Security Master alias upsert route accepts corrections to an
 existing alias ID as a new revision; re-pointing an alias at a different security returns 409.
 `SecurityMasterEndpoints.Curves.cs` maps the stored-curve routes (`/api/security-master/curves`,
-`/curves/{curveId}`, `/curves/{curveId}/versions` with optional `asOf` and `knownAt` returning the
-single latest match, and `/curves/{curveId}/versions/{version}`) only when an `ISecurityCurveStore`
-is registered, and `POST /api/security-master/{securityId}/valuation` only when an
-`ISecurityValuationService` is; definitions and versions are written with the session actor under
-Modify permission and the mutation rate limit (a rule failure is 400, a write-once key conflict 409),
-reads and valuation need View, a route/body id mismatch is 400, an unknown security 404, and a
-blocked valuation is 200 with its blockers. `FamilyOfficeReadService` composes the family-office
+`/curves/{curveId}`, `/curves/{curveId}/versions`, where `asOf` with an optional `knownAt` returns
+the single latest match and `knownAt` alone every version recorded on or before it, and
+`/curves/{curveId}/versions/{version}`) only when an `ISecurityCurveStore` is registered, and
+`POST /api/security-master/{securityId}/valuation` only when an `ISecurityValuationService` is;
+definitions and versions are written with the session actor under Modify permission and the
+mutation rate limit (a rule failure is 400, publishing to an unknown curve 404, a write-once key
+conflict 409), reads and valuation need View, valuation also takes the mutation rate limit because
+a quoted-price evaluation retains a selection receipt, a route/body id mismatch is 400, an unknown
+security 404, and a blocked valuation is 200 with its blockers. `FamilyOfficeReadService` composes the family-office
 workstation overview from fund-structure, fund-account, reconciliation, and strategy-run read
 services, and emits degraded guidance when linked accounts cannot provide balances, liabilities,
 reconciliation state, or evidence completeness. Workstation endpoint registration is split by domain through

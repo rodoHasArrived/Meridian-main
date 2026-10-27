@@ -89,6 +89,69 @@ public sealed class DiscountedCashFlowValuationModelTests
     }
 
     [Fact]
+    public async Task ADatedFactorScheduleThatDisagreesWithTheScalar_PricesOnTheFactorTheProjectionApplied()
+    {
+        // The schedule says 0.5 on 2025-12-01 (0.4 only from 2026-06-01); the undated scalar says
+        // 0.8. The walk applies 0.5, projecting two coupons of 25,000 and 500,000 of principal, so
+        // on a unit curve the PV of 550,000 is 110 per 100 of the 500,000 outstanding (not 68.75
+        // per 100 of the scalar's 800,000), and 500,000 par is worth 500,000 x 0.5 x 110 / 100.
+        var bond = ValuationTestSecurities.FactorScheduledBond();
+        var definition = ValuationTestSecurities.DiscountDefinition();
+        var version = ValuationTestSecurities.Version(definition, AsOfDate, ValuationTestSecurities.UnitDiscountPoints);
+        var model = Build(bond, Curves(definition, version));
+
+        var result = await model.ValueAsync(new SecurityValuationRequest(bond.SecurityId, AsOf, Quantity: 500_000m), bond, CancellationToken.None);
+
+        result.IsBlocked.Should().BeFalse(string.Join("; ", result.Blockers.Select(static b => b.Reason)));
+        result.PresentValue.Should().Be(550_000.00m, "25,000 + 25,000 + 500,000 on unit discount factors");
+        result.PriceUnit.Should().Be(SecurityPriceUnit.PercentOfPar);
+        result.Price.Should().Be(110m, "550,000 per 500,000 of outstanding face");
+        result.MarketValue.Should().Be(275_000.00m, "500,000 par x 0.5 x 110 / 100");
+    }
+
+    [Theory]
+    [InlineData(StructuredCashFlowStaleness.Stale, "CashFlowSourceStale")]
+    [InlineData(StructuredCashFlowStaleness.Unknown, "CashFlowSourceFreshnessUnknown")]
+    public async Task AStaleOrUndatedCashFlowSource_IsValued_AndSaysSo(StructuredCashFlowStaleness freshness, string diagnostic)
+    {
+        var bond = ValuationTestSecurities.Bond();
+        var definition = ValuationTestSecurities.DiscountDefinition();
+        var version = ValuationTestSecurities.Version(definition, AsOfDate, ValuationTestSecurities.BondDiscountPoints);
+        var model = Build(bond, Curves(definition, version), freshness: freshness);
+
+        var result = await model.ValueAsync(new SecurityValuationRequest(bond.SecurityId, AsOf), bond, CancellationToken.None);
+
+        result.IsBlocked.Should().BeFalse();
+        result.PresentValue.Should().Be(1_014_000.00m, "staleness is reported, not re-decided");
+        result.Diagnostics.Should().ContainSingle(d => d.StartsWith(diagnostic, StringComparison.Ordinal))
+            .Which.Should().Contain("SourceLastUpdatedUtc");
+    }
+
+    [Fact]
+    public async Task AFreshCashFlowSource_CarriesNoFreshnessDiagnostic()
+    {
+        var bond = ValuationTestSecurities.Bond();
+        var definition = ValuationTestSecurities.DiscountDefinition();
+        var model = Build(bond, Curves(definition, ValuationTestSecurities.Version(definition, AsOfDate, ValuationTestSecurities.BondDiscountPoints)));
+
+        var result = await model.ValueAsync(new SecurityValuationRequest(bond.SecurityId, AsOf), bond, CancellationToken.None);
+
+        result.Diagnostics.Should().NotContain(static d => d.StartsWith("CashFlowSource", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task AMaturedBond_HasNoProjectedFlows_AndBlocks()
+    {
+        var bond = ValuationTestSecurities.Bond();
+        var definition = ValuationTestSecurities.DiscountDefinition();
+        var model = Build(bond, Curves(definition, ValuationTestSecurities.Version(definition, AsOfDate, ValuationTestSecurities.BondDiscountPoints)));
+
+        var result = await model.ValueAsync(new SecurityValuationRequest(bond.SecurityId, new DateTimeOffset(2028, 6, 1, 0, 0, 0, TimeSpan.Zero)), bond, CancellationToken.None);
+
+        Blocked(result, "NoProjectedFlows").Reason.Should().Contain("no net cash flows");
+    }
+
+    [Fact]
     public async Task Swap_NetsTheLegsAndDiscounts_ToTheGoldenValue()
     {
         var swap = ValuationTestSecurities.FloatingSwap();
@@ -104,9 +167,33 @@ public sealed class DiscountedCashFlowValuationModelTests
         result.PriceUnit.Should().Be(SecurityPriceUnit.CurrencyPerUnit);
         result.MarketValue.Should().Be(-162.50m);
         result.Observability.Should().Be(SecurityValuationObservability.ObservableInputs);
-        result.Inputs.Should().ContainSingle(static input => input.Kind == "ForwardCurve")
-            .Which.Reference.Should().Be("forwardCurve:SOFR@2025-12-01 (test-curve)");
+        var forwardInput = result.Inputs.Should().ContainSingle(static input => input.Kind == "ForwardCurve").Subject;
+        forwardInput.Reference.Should().Be("forwardCurve:SOFR@2025-12-01 (test-curve)");
+        forwardInput.AsOf.Should().Be(new DateTimeOffset(2025, 12, 1, 0, 0, 0, TimeSpan.Zero));
+        result.ObservedAsOf.Should().Be(new DateTimeOffset(2025, 12, 1, 0, 0, 0, TimeSpan.Zero), "the forward curve dated 2025-12-01 is older than the 2026-01-01 discount curve");
         result.Diagnostics.Should().NotContain(static d => d.StartsWith("FloatingForecastFlatAtCurrentIndexRate", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task AForwardCurveLabelWithoutAReadableAsOf_Blocks()
+    {
+        // The projection's forward provenance is the only record of the forward curve's as-of; a
+        // label that does not carry one leaves the oldest market input unknown, so nothing is valued.
+        var swap = ValuationTestSecurities.FloatingSwap();
+        var definition = ValuationTestSecurities.DiscountDefinition();
+        var version = ValuationTestSecurities.Version(definition, AsOfDate, ValuationTestSecurities.SwapDiscountPoints);
+        var payment = new StructuredCashFlowScheduleEntry(new DateTimeOffset(2026, 4, 1, 0, 0, 0, TimeSpan.Zero), 0m, -8_125m, 1m);
+        var cashFlows = Substitute.For<ISecurityMasterCashFlowService>();
+        cashFlows.GetProjectionAsOfAsync(swap.SecurityId, StructuredCashFlowScenario.Base, AsOf, Arg.Any<CancellationToken>())
+            .Returns(new StructuredCashFlowProjectionDto(
+                swap.SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, StructuredCashFlowScenario.Base, AsOf, [payment],
+                StructuredCashFlowStaleness.Fresh, DateTimeOffset.UtcNow,
+                LegSchedules: [new StructuredCashFlowLegSchedule("pay-floating", CashFlowLegRateKind.Floating, CashFlowLegDirection.Pay, [payment], "forwardCurve:SOFR (undated)")]));
+        var model = new DiscountedCashFlowValuationModel(cashFlows, Curves(definition, version), NullLogger<DiscountedCashFlowValuationModel>.Instance);
+
+        var result = await model.ValueAsync(new SecurityValuationRequest(swap.SecurityId, AsOf), swap, CancellationToken.None);
+
+        Blocked(result, "UnsupportedInput").Reason.Should().Contain("pay-floating").And.Contain("as-of");
     }
 
     [Fact]
@@ -186,7 +273,7 @@ public sealed class DiscountedCashFlowValuationModelTests
         var pinned = ValuationTestSecurities.Version(definition, AsOfDate, ValuationTestSecurities.UnitDiscountPoints) with { Version = 1 };
         var latest = ValuationTestSecurities.Version(definition, AsOfDate, ValuationTestSecurities.BondDiscountPoints) with { Version = 2 };
         var curves = Curves(definition, latest);
-        curves.ListVersionsAsync(definition.CurveId, Arg.Any<CancellationToken>()).Returns(new[] { pinned, latest });
+        curves.GetVersionByIdAsync(definition.CurveId, pinned.CurveVersionId, Arg.Any<CancellationToken>()).Returns(pinned);
         var model = Build(bond, curves);
 
         var result = await model.ValueAsync(
@@ -195,6 +282,38 @@ public sealed class DiscountedCashFlowValuationModelTests
         result.IsBlocked.Should().BeFalse();
         result.PresentValue.Should().Be(1_100_000.00m, "undiscounted on the pinned unit curve");
         result.Inputs.Single(static input => input.Kind == "DiscountCurveVersion").Id.Should().Be(pinned.CurveVersionId);
+        await curves.Received(1).GetVersionByIdAsync(definition.CurveId, pinned.CurveVersionId, Arg.Any<CancellationToken>());
+        await curves.DidNotReceive().ListVersionsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+
+        var unknownVersion = Guid.NewGuid();
+        var missing = await model.ValueAsync(
+            new SecurityValuationRequest(bond.SecurityId, AsOf, Curves: [new SecurityValuationCurveInput("Discount", definition.CurveId, unknownVersion)]), bond, CancellationToken.None);
+        Blocked(missing, "NoDiscountCurve").Reason.Should().Contain(unknownVersion.ToString("D"));
+    }
+
+    [Fact]
+    public async Task APinnedVersionAfterTheValuationDateOrTheKnowledgeCutoff_IsUsedAsGiven_AndSaysSo()
+    {
+        // A pinned version bypasses the as-of and knowledge filters. One dated a month after the
+        // valuation date and recorded forty days after the cutoff still values, with both facts named.
+        var bond = ValuationTestSecurities.Bond();
+        var definition = ValuationTestSecurities.DiscountDefinition();
+        var curveAsOf = new DateOnly(2026, 2, 1);
+        var later = ValuationTestSecurities.Version(definition, curveAsOf, (curveAsOf, 1.00m), (new DateOnly(2028, 1, 1), 1.00m)) with { RecordedAt = AsOf.AddDays(40) };
+        var model = Build(bond, Curves(definition, later));
+
+        var result = await model.ValueAsync(
+            new SecurityValuationRequest(bond.SecurityId, AsOf, KnownAt: AsOf.AddDays(1), Curves: [new SecurityValuationCurveInput("Discount", definition.CurveId, later.CurveVersionId)]),
+            bond, CancellationToken.None);
+
+        result.IsBlocked.Should().BeFalse(string.Join("; ", result.Blockers.Select(static b => b.Reason)));
+        result.PresentValue.Should().Be(1_100_000.00m, "every factor on the pinned unit curve is 1");
+        result.ObservedAsOf.Should().Be(new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero));
+        result.Diagnostics.Should().ContainSingle(static d => d.StartsWith("DiscountCurveAsOfFollowsValuationDate", StringComparison.Ordinal))
+            .Which.Should().Contain("2026-02-01").And.Contain("2026-01-01");
+        result.Diagnostics.Should().ContainSingle(static d => d.StartsWith("DiscountCurveRecordedAfterKnownAt", StringComparison.Ordinal))
+            .Which.Should().Contain("2026-02-10");
+        result.Diagnostics.Should().NotContain(static d => d.StartsWith("DiscountCurveAsOfPrecedesValuationDate", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -279,6 +398,10 @@ public sealed class DiscountedCashFlowValuationModelTests
             store.GetDefinitionAsync(definition.CurveId, Arg.Any<CancellationToken>()).Returns(definition);
             store.GetLatestVersionAsOfAsync(definition.CurveId, Arg.Any<DateOnly>(), Arg.Any<DateTimeOffset?>(), Arg.Any<CancellationToken>()).Returns(version);
             store.ListVersionsAsync(definition.CurveId, Arg.Any<CancellationToken>()).Returns(version is null ? [] : new[] { version });
+            if (version is not null)
+            {
+                store.GetVersionByIdAsync(definition.CurveId, version.CurveVersionId, Arg.Any<CancellationToken>()).Returns(version);
+            }
         }
 
         store.ListDefinitionsAsync(Arg.Any<SecurityCurveKind?>(), Arg.Any<string?>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
@@ -293,12 +416,21 @@ public sealed class DiscountedCashFlowValuationModelTests
         SecurityDetailDto security,
         ISecurityCurveStore curves,
         ISecurityForwardCurveProvider? forwardCurves = null,
-        StructuredCashFlowSourceKind? source = StructuredCashFlowSourceKind.CalculatedBullet)
+        StructuredCashFlowSourceKind? source = StructuredCashFlowSourceKind.CalculatedBullet,
+        StructuredCashFlowStaleness freshness = StructuredCashFlowStaleness.Fresh)
     {
+        // The projection judges freshness on the wall clock: a source updated now is Fresh, one
+        // updated a month ago Stale, and one with no update time Unknown.
+        DateTimeOffset? lastUpdatedUtc = freshness switch
+        {
+            StructuredCashFlowStaleness.Fresh => DateTimeOffset.UtcNow,
+            StructuredCashFlowStaleness.Stale => DateTimeOffset.UtcNow.AddDays(-30),
+            _ => null
+        };
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
         store.GetSourceAsync(security.SecurityId, Arg.Any<CancellationToken>())
             .Returns(source is { } kind
-                ? new SecurityCashFlowSourceDto(security.SecurityId, kind, DateTimeOffset.UtcNow, false, null, null)
+                ? new SecurityCashFlowSourceDto(security.SecurityId, kind, lastUpdatedUtc, false, null, null)
                 : null);
         var query = Substitute.For<ISecurityMasterQueryService>();
         query.GetByIdAsync(security.SecurityId, Arg.Any<CancellationToken>()).Returns(security);

@@ -49,6 +49,40 @@ public sealed class QuotedPriceValuationModelTests
     }
 
     [Fact]
+    public async Task APercentOfParQuote_ScalesTheFaceByTheFactorInEffectOnTheValuationDate()
+    {
+        // The dated schedule says 0.5 on 2025-12-01 (0.4 only from 2026-06-01); the undated scalar
+        // says 0.8. The factor in effect on 2026-01-01 is the schedule's 0.5, not the scalar.
+        var bond = ValuationTestSecurities.FactorScheduledBond();
+        var pricing = Pricing(bond, new SecurityPriceGoldenCopyDto(
+            bond.SecurityId, 101.4m, SecurityPriceKind.MarketGoldenCopy, "BLOOMBERG", PriceAsOf, false, 1, [],
+            SecurityPriceUnit.PercentOfPar, ValuationTestSecurities.AsOf, PriceAsOf, KnownAt, Guid.NewGuid()));
+
+        var result = await new QuotedPriceValuationModel(pricing).ValueAsync(
+            new SecurityValuationRequest(bond.SecurityId, ValuationTestSecurities.AsOf, Quantity: 500_000m), bond, CancellationToken.None);
+
+        result.Price.Should().Be(101.4m);
+        result.MarketValue.Should().Be(253_500.00m, "500,000 par x 0.5 x 101.4 / 100");
+    }
+
+    [Fact]
+    public async Task AQuoteWithoutAUnit_HasNoMarketValue_AndSaysSo()
+    {
+        var bond = ValuationTestSecurities.Bond();
+        var pricing = Pricing(bond, new SecurityPriceGoldenCopyDto(
+            bond.SecurityId, 101.4m, SecurityPriceKind.MarketGoldenCopy, "BLOOMBERG", PriceAsOf, false, 1, [], SecurityPriceUnit.Unspecified));
+
+        var result = await new QuotedPriceValuationModel(pricing).ValueAsync(
+            new SecurityValuationRequest(bond.SecurityId, ValuationTestSecurities.AsOf, Quantity: 500_000m), bond, CancellationToken.None);
+
+        result.IsBlocked.Should().BeFalse();
+        result.Price.Should().Be(101.4m);
+        result.PriceUnit.Should().Be(SecurityPriceUnit.Unspecified);
+        result.MarketValue.Should().BeNull("zero is never substituted for a value that cannot be computed");
+        result.Diagnostics.Should().ContainSingle().Which.Should().StartWith("MarketValueUnavailable");
+    }
+
+    [Fact]
     public async Task ValuesUnitLotsPerUnit_AndReportsAStaleFallbackAsADiagnostic()
     {
         var equity = ValuationTestSecurities.Equity();

@@ -1891,16 +1891,20 @@ copied from a snapshot movement) and the lifecycle in `OtcMarginCallRules` behin
 dividends, fund distributions with a typed `distributionComponent`, returns of capital) from
 effective corporate actions and lists unschedulable distributions as gaps.
 `SecurityForwardCurve` and `ISecurityForwardCurveProvider` supply per-index forward fixings for
-floating legs. `SecurityCurves.cs` holds the stored-curve model behind that seam: a write-once
-`SecurityCurveDefinitionDto` (key, kind, currency, index, day count, interpolation, source),
+floating legs; `SecurityForwardCurve.Describe` writes the `forwardCurve:{index}@{yyyy-MM-dd}`
+provenance in the invariant culture and `TryReadAsOf` reads the as-of back. `SecurityCurves.cs`
+holds the stored-curve model behind that seam: a write-once
+`SecurityCurveDefinitionDto` (key, kind, currency, index, tenor, day count, interpolation, source),
 append-only `SecurityCurveVersionDto`s (economic as-of, knowledge time, actor, dated points and a
-canonical content hash), the `ISecurityCurveStore` contract, and `SecurityCurveRules`, the pure
+canonical content hash), the `ISecurityCurveStore` contract (including `GetVersionByIdAsync` for a
+pinned version), and `SecurityCurveRules`, the pure
 rules and arithmetic every store and model shares (normalization, `ContentSha256`, `ValueAt`,
 `DiscountFactorAt`, and `ToForwardCurve`, which adapts a Forward version to `SecurityForwardCurve`
 with the key, version and hash prefix in its source). `SecurityValuation.cs` is the valuation seam:
 `SecurityValuationRequest` (security, economic as-of, knowledge cutoff, account, quantity, pinned
 curves, model override), `SecurityValuationResult` (price with unit, present value, market value,
-observed as-of, observability, inputs, diagnostics, blockers; blocked results carry no number),
+observed as-of as the oldest market input, observability, inputs, diagnostics, blockers; blocked
+results carry no number),
 `ISecurityValuationModel` and `ISecurityValuationService`. `SecurityAssetClassDescriptor.DefaultValuationModel`
 names the model a class is valued with when a request names none (`DiscountedCashFlow` for Bond and
 Swap, `QuotedPrice` otherwise). `SecurityFactorHistoryProjector` merges the declared factor schedule, paydown

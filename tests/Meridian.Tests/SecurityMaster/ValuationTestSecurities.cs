@@ -51,6 +51,29 @@ internal static class ValuationTestSecurities
             currentFactor
         }, new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "123456780", true, AsOf.AddYears(-1)));
 
+    /// <summary>
+    /// The golden bond with a dated factor schedule that disagrees with its undated scalar: 0.6 from
+    /// 2025-06-01, 0.5 from 2025-12-01 and 0.4 from 2026-06-01, against a scalar current factor of
+    /// 0.8. On the 2026-01-01 valuation date the factor in effect is 0.5.
+    /// </summary>
+    public static SecurityDetailDto FactorScheduledBond(Guid? securityId = null)
+        => Detail(securityId ?? Guid.NewGuid(), "Bond", "Factor-scheduled bond", "USD", new
+        {
+            issueDate = AsOfDate,
+            maturityDate = new DateOnly(2028, 1, 1),
+            par = 1_000_000m,
+            couponRate = 5m,
+            paymentFrequency = "Annual",
+            dayCountConvention = "30/360",
+            currentFactor = 0.8m,
+            factorScheduleEntries = new object[]
+            {
+                new { asOfDate = new DateOnly(2025, 6, 1), factor = 0.6m },
+                new { asOfDate = new DateOnly(2025, 12, 1), factor = 0.5m },
+                new { asOfDate = new DateOnly(2026, 6, 1), factor = 0.4m }
+            }
+        }, new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "123456781", true, AsOf.AddYears(-1)));
+
     public static SecurityDetailDto Equity(Guid? securityId = null)
         => Detail(securityId ?? Guid.NewGuid(), "Equity", "Golden equity", "USD", new { shareClass = "Common" },
             new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "GLDN", true, AsOf.AddYears(-1)));

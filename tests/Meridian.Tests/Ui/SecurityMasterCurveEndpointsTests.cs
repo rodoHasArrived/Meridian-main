@@ -6,6 +6,10 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,6 +33,7 @@ public sealed class SecurityMasterCurveEndpointsTests
     {
         var definition = Definition();
         var store = Substitute.For<ISecurityCurveStore>();
+        store.GetDefinitionAsync(definition.CurveId, Arg.Any<CancellationToken>()).Returns(definition);
         PublishSecurityCurveVersionRequest? captured = null;
         store.PublishVersionAsync(Arg.Do<PublishSecurityCurveVersionRequest>(r => captured = r), Arg.Any<CancellationToken>())
             .Returns(call => Task.FromResult(Version(definition, 1)));
@@ -50,6 +55,38 @@ public sealed class SecurityMasterCurveEndpointsTests
         using var refused = await client.PostAsJsonAsync($"/api/security-master/curves/{definition.CurveId}/versions", request, Json);
         refused.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         (await refused.Content.ReadAsStringAsync()).Should().Contain("0.04, not 4");
+    }
+
+    [Fact]
+    public async Task Publish_ToAnUnknownCurve_IsNotFound_AndWritesNothing()
+    {
+        var store = Substitute.For<ISecurityCurveStore>();
+        store.GetDefinitionAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((SecurityCurveDefinitionDto?)null);
+        await using var app = await CreateAppAsync(store);
+        var client = app.GetTestClient();
+
+        var curveId = Guid.NewGuid();
+        var request = new PublishSecurityCurveVersionRequest(curveId, AsOf, [new SecurityCurvePointDto(AsOf, 1m)], "vendor");
+        using var missing = await client.PostAsJsonAsync($"/api/security-master/curves/{curveId}/versions", request, Json);
+
+        missing.StatusCode.Should().Be(HttpStatusCode.NotFound, "an unknown curve answers as the reads do, not as a rule failure");
+        (await missing.Content.ReadAsStringAsync()).Should().Contain("not defined");
+        await store.DidNotReceive().PublishVersionAsync(Arg.Any<PublishSecurityCurveVersionRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RouteMetadata_DeclaresPublishConflicts_AndRateLimitsValuation()
+    {
+        await using var app = await CreateAppAsync(Substitute.For<ISecurityCurveStore>(), Substitute.For<ISecurityValuationService>());
+        var endpoints = ((IEndpointRouteBuilder)app).DataSources.SelectMany(static source => source.Endpoints).ToList();
+
+        Endpoint Named(string name) => endpoints.Single(endpoint => endpoint.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName == name);
+
+        Named("PublishSecurityMasterCurveVersion").Metadata.GetOrderedMetadata<IProducesResponseTypeMetadata>()
+            .Select(static produces => produces.StatusCode).Should().Contain([StatusCodes.Status404NotFound, StatusCodes.Status409Conflict]);
+        var rateLimit = Named("ValueSecurityMaster").Metadata.GetMetadata<EnableRateLimitingAttribute>();
+        rateLimit.Should().NotBeNull("every quoted-price evaluation retains a selection receipt");
+        rateLimit!.PolicyName.Should().Be(UiEndpoints.MutationRateLimitPolicy);
     }
 
     [Fact]
@@ -101,6 +138,13 @@ public sealed class SecurityMasterCurveEndpointsTests
         (await client.GetFromJsonAsync<List<SecurityCurveVersionDto>>($"/api/security-master/curves/{definition.CurveId}/versions?asOf=2026-01-01", Json))
             .Should().ContainSingle().Which.Version.Should().Be(2, "the as-of read returns the single latest match");
         (await client.GetFromJsonAsync<List<SecurityCurveVersionDto>>($"/api/security-master/curves/{definition.CurveId}/versions?asOf=2025-12-31", Json)).Should().BeEmpty();
+
+        // knownAt alone lists every version recorded on or before the cutoff (v1 at 01:00, v2 at 02:00).
+        (await client.GetFromJsonAsync<List<SecurityCurveVersionDto>>($"/api/security-master/curves/{definition.CurveId}/versions?knownAt=2026-01-01T01:30:00Z", Json))
+            .Should().ContainSingle().Which.Version.Should().Be(1, "v2 was recorded after the knowledge cutoff");
+        (await client.GetFromJsonAsync<List<SecurityCurveVersionDto>>($"/api/security-master/curves/{definition.CurveId}/versions?knownAt=2026-01-01T02:00:00Z", Json))
+            .Should().HaveCount(2, "a version recorded exactly at the cutoff is known");
+        (await client.GetFromJsonAsync<List<SecurityCurveVersionDto>>($"/api/security-master/curves/{definition.CurveId}/versions?knownAt=2025-12-31T23:00:00Z", Json)).Should().BeEmpty();
         (await client.GetAsync($"/api/security-master/curves/{Guid.NewGuid()}/versions")).StatusCode.Should().Be(HttpStatusCode.NotFound);
 
         (await client.GetFromJsonAsync<SecurityCurveVersionDto>($"/api/security-master/curves/{definition.CurveId}/versions/1", Json))!.Version.Should().Be(1);
