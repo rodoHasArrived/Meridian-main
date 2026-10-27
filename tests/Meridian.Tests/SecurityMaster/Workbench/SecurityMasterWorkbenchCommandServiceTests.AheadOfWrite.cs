@@ -17,7 +17,11 @@ namespace Meridian.Tests.SecurityMaster.Workbench;
 /// above it. The approved merge would map those terms in Write mode and refuse them after approval,
 /// so the edit is refused at submission with the precise reason, before any override, draft revision
 /// or provenance row exists. Profile envelopes keep only their stamp check, so a profile-backed
-/// record whose envelope carries scheduleConventions still stages, publishes and merges.
+/// record whose envelope carries scheduleConventions still stages, publishes and merges. Increment 4b
+/// raises the readable versions (Bond and CertificateOfDeposit 3, StructuredCredit 4) for the
+/// callSchedule and putSchedule arrays and adds no gate: the same generic refusals cover a row or
+/// profile envelope stamped at the new readable version and a stray populated array, and a profile
+/// envelope's schedules stay the profile's own.
 /// </summary>
 public sealed partial class SecurityMasterWorkbenchCommandServiceTests
 {
@@ -27,6 +31,21 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         """{"customProfileId":"structured-credit-io-po","profileVersion":1,"profileFields":{"tranche":"A-1","poolId":"POOL-1","currentFactor":0.8,"originalFace":1000000,"couponOrIndex":"SOFR","factorSchedule":"trustee-report","collateralType":"CLO","scheduleConventions":{"businessDayConvention":"ModifiedFollowing","paymentCalendars":["USNY"],"stubPolicy":"Short"}},"profileApproval":{"approvedBy":"Meridian","approvedAtUtc":"2026-05-29T00:00:00Z","approvalReference":"MERIDIAN-SEED-APPROVAL"},"scheduleConventions":{"businessDayConvention":"Following","paymentCalendars":["GBLO","USNY"],"rollConvention":"EndOfMonth"}}""";
 
     private const string EditedProfileConventions = """{"businessDayConvention":"Preceding","stubPolicy":"Long"}""";
+
+    // Schedules a profile envelope carries as its own fields: versioned class terms are flat-codec-only,
+    // so neither the root nor the profileFields copies are StructuredCredit's version-4 arrays.
+    private const string ProfileCallSchedule =
+        """[{"callDate":"2028-06-15","callPrice":100,"priceBasis":"PercentOfPar","priceType":"Fixed"}]""";
+
+    private const string ProfilePutSchedule = """[{"putDate":"2029-06-15","putPrice":100}]""";
+
+    // Flat rows stamped by hand at their class's new readable version, each declaring a call schedule
+    // (no node writes these versions yet).
+    private const string CertificateOfDepositStampedThree =
+        """{"callSchedule":[{"callDate":"2026-09-30","callPrice":100,"priceBasis":"PercentOfPar","priceType":"Fixed"}],"callableDate":"2026-09-30","couponRate":4.4,"dayCount":"ACT/365","issuerName":"First Meridian Bank","maturity":"2027-09-30","putSchedule":[],"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":3}""";
+
+    private const string StructuredCreditStampedFour =
+        """{"attachmentPoint":0.12,"callSchedule":[{"callDate":"2028-06-15","callPrice":100,"priceBasis":"PercentOfPar","priceType":"Fixed"}],"collateralType":"CLO","couponOrIndex":"SOFR+250","currentFactor":0.8235,"detachmentPoint":0.20,"factorSchedule":"See trustee report 2026-07","maturity":"2031-06-15","originalFace":10000000,"poolId":"MRDN-2026-1","putSchedule":[{"putDate":"2029-12-15","putPrice":100}],"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":4,"seniority":"Mezzanine","structuredCreditKind":"Clo","tranche":"B"}""";
 
     private const string ReplacedProfileFields =
         """{"tranche":"A-2","poolId":"POOL-1","currentFactor":0.75,"originalFace":1000000,"couponOrIndex":"SOFR","factorSchedule":"trustee-report","collateralType":"CLO","scheduleConventions":{"businessDayConvention":"Preceding","paymentCalendars":["USNY"],"stubPolicy":"Long"}}""";
@@ -46,6 +65,70 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             .Should().ThrowAsync<ArgumentException>();
 
         refused.Which.Message.Should().Be($"{AheadOfWriteFixtures.BondWriteVersionReason} (Parameter 'request')");
+        await AssertNothingStagedAsync(harness);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UpdateSecurityField_OnABondStampedThreeDeclaringCallAndPutSchedules_IsRefusedAtSubmissionWithoutStaging(bool withBlock)
+    {
+        // A contract node wrote this row at version 3 with declared schedules. This node reads it
+        // (increment 4b) but writes version 1, so an edit of an unrelated version-1 term is refused by
+        // the stamp, with or without a block, before any override, draft or provenance row exists.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms("Bond", AheadOfWriteFixtures.BondTerms(
+            stamp: 3, withBlock, AheadOfWriteFixtures.PopulatedCallSchedule, AheadOfWriteFixtures.PopulatedPutSchedule));
+
+        var refused = await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(IssuerNameEdit()))
+            .Should().ThrowAsync<ArgumentException>();
+
+        refused.Which.Message.Should().Be($"{AheadOfWriteFixtures.BondStampThreeWriteVersionReason} (Parameter 'request')");
+        await AssertNothingStagedAsync(harness);
+    }
+
+    [Theory]
+    [InlineData("CertificateOfDeposit", CertificateOfDepositStampedThree, "assetSpecificTerms.issuerName", "First Meridian Bancorp",
+        AheadOfWriteFixtures.CertificateOfDepositStampThreeWriteVersionReason)]
+    [InlineData("StructuredCredit", StructuredCreditStampedFour, "assetSpecificTerms.tranche", "C",
+        AheadOfWriteFixtures.StructuredCreditStampFourWriteVersionReason)]
+    public async Task UpdateSecurityField_OnAFlatRowStampedAtItsNewReadableVersion_IsRefusedAtSubmissionWithoutStaging(
+        string assetClass, string terms, string fieldPath, string newValue, string writeVersionReason)
+    {
+        // The other two classes whose readable version 4b raises, through the same first-class gate as
+        // the bond above: the row reads here, but an edit of an unrelated term is refused by the stamp.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass(assetClass);
+        harness.SetProjectionAssetTerms(assetClass, AheadOfWriteFixtures.Parse(terms));
+
+        var refused = await harness.Service
+            .Invoking(s => s.UpdateSecurityFieldAsync(ProfileFieldEdit(fieldPath, newValue)))
+            .Should().ThrowAsync<ArgumentException>();
+
+        refused.Which.Message.Should().Be($"{writeVersionReason} (Parameter 'request')");
+        await AssertNothingStagedAsync(harness);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(null)]
+    public async Task UpdateSecurityField_OnABondCarryingAStrayCallScheduleBelowItsVersion_IsRefusedAsNotYetWritable(int? stamp)
+    {
+        // A row stamped 1 (or unstamped) carrying a populated callSchedule, which no writer emits.
+        // Before 4b the key was undeclared, so the edit staged and the merge dropped it; now it is a
+        // version-3 term this node reads but cannot write, so the edit names it instead of staging a
+        // revision the merge refuses (see the merge-handler twin).
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("Bond");
+        harness.SetProjectionAssetTerms(
+            "Bond", AheadOfWriteFixtures.BondTerms(stamp, withBlock: false, callSchedule: AheadOfWriteFixtures.StrayCallSchedule));
+
+        var refused = await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(IssuerNameEdit()))
+            .Should().ThrowAsync<ArgumentException>();
+
+        refused.Which.Message.Should().Be(
+            $"{AheadOfWriteFixtures.NotYetWritableReason("Bond", "callSchedule", sinceVersion: 3, writes: 1)} (Parameter 'request')");
         await AssertNothingStagedAsync(harness);
     }
 
@@ -246,6 +329,66 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Theory]
+    [InlineData("assetSpecificTerms.profileFields.callSchedule", ProfileCallSchedule)]
+    [InlineData("assetSpecificTerms.profileFields.putSchedule", ProfilePutSchedule)]
+    public async Task ProfileScheduleEdit_OnAProfileBackedStructuredCreditCarryingSchedules_StagesPublishesAndMergesVerbatim(
+        string fieldPath, string newValue)
+    {
+        // Increment 4b declares callSchedule and putSchedule on flat StructuredCredit terms at version
+        // 4 only. An unstamped profile envelope carrying them at its root and editing them inside
+        // profileFields keeps its stamp check alone, so the edit stages, publishes and merges, and the
+        // canonical amend seam writes the envelope as is, root schedules included.
+        var envelope = JsonNode.Parse(ProfileBackedStructuredCreditEnvelope)!.AsObject();
+        envelope["callSchedule"] = JsonNode.Parse(ProfileCallSchedule);
+        envelope["putSchedule"] = JsonNode.Parse(ProfilePutSchedule);
+        var catalog = StaticSecurityAssetProfileCatalog.CreateDefault();
+        var revisions = new InMemorySecurityMasterRevisionStore();
+        var mergeStore = new Mock<ISecurityMasterStore>(MockBehavior.Loose);
+        var canonical = new CanonicalAmendHarness(mergeStore, catalog);
+        var amender = new RecordingAmender(canonical.Service);
+        var merge = new ApprovedFieldEditCanonicalMergeHandler(
+            revisions, NullLogger<ApprovedFieldEditCanonicalMergeHandler>.Instance, mergeStore.Object, amender,
+            assetProfileCatalog: catalog);
+        var harness = new Harness(currentVersion: 3, handlers: [merge], assetProfileCatalog: catalog, revisions: revisions);
+        harness.SetPassportAssetClass("StructuredCredit");
+        harness.SetProjectionAssetTerms("StructuredCredit", AheadOfWriteFixtures.Parse(envelope.ToJsonString()));
+        // The pinned profile requires CUSIP coverage for the canonical write, so the stored record carries one.
+        var projection = (await harness.ProjectionStore.Object.GetProjectionAsync(SecurityId))! with
+        {
+            Identifiers =
+            [
+                new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "88160R101", false, DateTimeOffset.UtcNow.AddDays(-30)),
+                new SecurityIdentifierDto(SecurityIdentifierKind.InternalCode, "CUST-1", true, DateTimeOffset.UtcNow.AddDays(-30))
+            ]
+        };
+        harness.ProjectionStore.Setup(s => s.GetProjectionAsync(SecurityId, It.IsAny<CancellationToken>())).ReturnsAsync(projection);
+        mergeStore.Setup(s => s.GetProjectionAsync(SecurityId, It.IsAny<CancellationToken>())).ReturnsAsync(projection);
+
+        var staged = await harness.Service.UpdateSecurityFieldAsync(ProfileFieldEdit(fieldPath, newValue));
+
+        staged.State.Should().Be(SecurityMasterRevisionStateDto.Draft);
+        var revision = (await revisions.GetAsync(staged.RevisionId))!;
+        revision.FieldPath.Should().Be(fieldPath);
+        revision.FieldValue.Should().Be(newValue);
+        await revisions.TransitionAsync(
+            staged.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst");
+        await revisions.TransitionAsync(
+            staged.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
+
+        await harness.Service.PublishRevisionAsync(new PublishSecurityMasterRevisionRequest(
+            SecurityId, staged.RevisionId, "ops.analyst", "ops.reviewer"));
+
+        amender.Failures.Should().BeEmpty();
+        (await revisions.GetAsync(staged.RevisionId))!.State.Should().Be(SecurityMasterRevisionStateDto.Published);
+        var expected = envelope.DeepClone().AsObject();
+        expected["profileFields"]![fieldPath["assetSpecificTerms.profileFields.".Length..]] = JsonNode.Parse(newValue);
+        var persisted = canonical.Upserted.Should().ContainSingle("the approved profile edit merges into the canonical terms").Subject;
+        JsonNode.DeepEquals(JsonNode.Parse(persisted.AssetSpecificTerms.GetRawText()), expected)
+            .Should().BeTrue("the merged envelope persists verbatim, its root callSchedule and putSchedule included");
+        canonical.Appended.Should().ContainSingle();
+    }
+
+    [Theory]
     [InlineData("assetSpecificTerms.profileFields.tranche", "A-2")]
     [InlineData("assetSpecificTerms.profileFields.scheduleConventions", EditedProfileConventions)]
     [InlineData("assetSpecificTerms.profileFields", ReplacedProfileFields)]
@@ -290,10 +433,10 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
     }
 
     [Fact]
-    public async Task UpdateSecurityField_ProfileEnvelopeStampedAboveWhatThisNodeReads_IsRefusedWithTheReadReason()
+    public async Task UpdateSecurityField_ProfileEnvelopeStampedAtTheNewReadableVersion_IsRefusedWithTheWriteVersionReason()
     {
-        // Stamped 4, the envelope is not readable here at all, so the refusal must say so rather than
-        // call it readable but not writable.
+        // Stamped 4, the envelope became readable in 4b (it got the read refusal before), but it is
+        // still above the write version, so the edit is refused with the write-version reason.
         var harness = new Harness(currentVersion: 3);
         harness.SetPassportAssetClass("StructuredCredit");
         var stamped = JsonNode.Parse(ProfileBackedStructuredCreditEnvelope)!.AsObject();
@@ -304,9 +447,29 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             .Invoking(s => s.UpdateSecurityFieldAsync(ProfileFieldEdit("assetSpecificTerms.profileFields.tranche", "A-2")))
             .Should().ThrowAsync<ArgumentException>();
 
-        refused.Which.Message.Should()
-            .Contain("Unsupported assetClassTermsVersion '4' for asset class 'StructuredCredit'; this node reads versions 1 through 3.")
-            .And.NotContain("readable but not writable");
+        refused.Which.Message.Should().Be(AheadOfWriteFixtures.StructuredCreditStampFourWriteVersionReason);
+        await AssertNothingStagedAsync(harness);
+    }
+
+    [Fact]
+    public async Task UpdateSecurityField_ProfileEnvelopeStampedAboveWhatThisNodeReads_IsRefusedWithTheReadReason()
+    {
+        // Stamped 5, the envelope is not readable here at all, so the refusal must say so rather than
+        // call it readable but not writable.
+        var harness = new Harness(currentVersion: 3);
+        harness.SetPassportAssetClass("StructuredCredit");
+        var stamped = JsonNode.Parse(ProfileBackedStructuredCreditEnvelope)!.AsObject();
+        stamped[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 5;
+        harness.SetProjectionAssetTerms("StructuredCredit", AheadOfWriteFixtures.Parse(stamped.ToJsonString()));
+
+        var refused = await harness.Service
+            .Invoking(s => s.UpdateSecurityFieldAsync(ProfileFieldEdit("assetSpecificTerms.profileFields.tranche", "A-2")))
+            .Should().ThrowAsync<ArgumentException>();
+
+        refused.Which.Message.Should().Be(
+            $"The effective profileFields overlay for security '{SecurityId:D}' could not be reconstructed and validated " +
+            "against the resolved asset class 'StructuredCredit' (Unsupported assetClassTermsVersion '5' for asset class " +
+            "'StructuredCredit'; this node reads versions 1 through 4.); the namespace only accepts validated writes.");
         await AssertNothingStagedAsync(harness);
     }
 

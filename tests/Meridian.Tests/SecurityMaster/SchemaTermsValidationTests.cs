@@ -145,19 +145,33 @@ public sealed class SchemaTermsValidationTests
 
     private const string ScheduleConventionsPath = "assetSpecificTerms.scheduleConventions";
 
+    private static readonly string[] ReadableOnlyPaths =
+        [ScheduleConventionsPath, "assetSpecificTerms.callSchedule", "assetSpecificTerms.putSchedule"];
+
     [Theory]
     // Below the block's version the key is not a term of the class: an older or unstamped flat
     // payload never carries it, so a stray value is not reported against the schema.
-    [InlineData("Bond", null)]
-    [InlineData("Bond", 1)]
-    [InlineData("CertificateOfDeposit", null)]
-    [InlineData("CertificateOfDeposit", 1)]
-    [InlineData("StructuredCredit", null)]
-    [InlineData("StructuredCredit", 2)]
-    public void ReadableOnlyField_OnAFlatPayloadStampedBelowItsVersion_IsNotValidated(string assetClass, int? stamp)
+    [InlineData("Bond", "scheduleConventions", null)]
+    [InlineData("Bond", "scheduleConventions", 1)]
+    [InlineData("CertificateOfDeposit", "scheduleConventions", null)]
+    [InlineData("CertificateOfDeposit", "scheduleConventions", 1)]
+    [InlineData("StructuredCredit", "scheduleConventions", null)]
+    [InlineData("StructuredCredit", "scheduleConventions", 2)]
+    // The call and put schedules are terms of the next version, so a payload stamped at the block's
+    // version does not carry them either.
+    [InlineData("Bond", "callSchedule", null)]
+    [InlineData("Bond", "callSchedule", 1)]
+    [InlineData("Bond", "callSchedule", 2)]
+    [InlineData("Bond", "putSchedule", 2)]
+    [InlineData("CertificateOfDeposit", "callSchedule", 2)]
+    [InlineData("CertificateOfDeposit", "putSchedule", 2)]
+    [InlineData("StructuredCredit", "callSchedule", null)]
+    [InlineData("StructuredCredit", "callSchedule", 3)]
+    [InlineData("StructuredCredit", "putSchedule", 3)]
+    public void ReadableOnlyField_OnAFlatPayloadStampedBelowItsVersion_IsNotValidated(string assetClass, string key, int? stamp)
     {
         Registry.TryGetValidator(assetClass, out var validator).Should().BeTrue();
-        var terms = new Dictionary<string, object?> { ["scheduleConventions"] = "x" };
+        var terms = new Dictionary<string, object?> { [key] = "x" };
         if (stamp is { } version)
         {
             terms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = version;
@@ -165,12 +179,14 @@ public sealed class SchemaTermsValidationTests
 
         var issues = validator.Validate(Context(assetClass, terms));
 
-        issues.Should().NotContain(static issue => issue.AffectedFields.Contains(ScheduleConventionsPath, StringComparer.OrdinalIgnoreCase));
+        var path = $"assetSpecificTerms.{key}";
+        issues.Should().NotContain(issue => issue.AffectedFields.Contains(path, StringComparer.OrdinalIgnoreCase));
     }
 
     [Theory]
     [InlineData(null)]
     [InlineData(3)]
+    [InlineData(4)]
     public void ReadableOnlyField_OnAStructuredCreditProfileEnvelope_IsNotValidated(int? stamp)
     {
         // A profile envelope's terms belong to its approved profile: versioned class terms are never
@@ -181,8 +197,16 @@ public sealed class SchemaTermsValidationTests
             ["schemaVersion"] = 3,
             ["customProfileId"] = "structured-credit-v1",
             ["profileVersion"] = 1,
-            ["profileFields"] = new Dictionary<string, object?> { ["tranche"] = "A-1", ["scheduleConventions"] = "x" },
-            ["scheduleConventions"] = "x"
+            ["profileFields"] = new Dictionary<string, object?>
+            {
+                ["tranche"] = "A-1",
+                ["scheduleConventions"] = "x",
+                ["callSchedule"] = "x",
+                ["putSchedule"] = "x"
+            },
+            ["scheduleConventions"] = "x",
+            ["callSchedule"] = "x",
+            ["putSchedule"] = "x"
         };
         if (stamp is { } version)
         {
@@ -191,42 +215,86 @@ public sealed class SchemaTermsValidationTests
 
         var issues = validator.Validate(Context("StructuredCredit", terms));
 
-        issues.Should().NotContain(static issue => issue.AffectedFields.Contains(ScheduleConventionsPath, StringComparer.OrdinalIgnoreCase));
+        issues.Should().NotContain(static issue => issue.AffectedFields.Intersect(ReadableOnlyPaths, StringComparer.OrdinalIgnoreCase).Any());
     }
 
     [Theory]
-    [InlineData("Bond", 2)]
-    [InlineData("CertificateOfDeposit", 2)]
-    [InlineData("StructuredCredit", 3)]
-    public void ReadableOnlyField_OnAFlatPayloadStampedAtItsVersion_RejectsTheWrongJsonType(string assetClass, int stamp)
+    [InlineData("Bond", "scheduleConventions", 2, "object")]
+    [InlineData("CertificateOfDeposit", "scheduleConventions", 2, "object")]
+    [InlineData("StructuredCredit", "scheduleConventions", 3, "object")]
+    // At the class's read ceiling the block is still a term, and the call and put schedules join it.
+    [InlineData("Bond", "scheduleConventions", 3, "object")]
+    [InlineData("CertificateOfDeposit", "scheduleConventions", 3, "object")]
+    [InlineData("StructuredCredit", "scheduleConventions", 4, "object")]
+    [InlineData("Bond", "callSchedule", 3, "array")]
+    [InlineData("Bond", "putSchedule", 3, "array")]
+    [InlineData("CertificateOfDeposit", "callSchedule", 3, "array")]
+    [InlineData("CertificateOfDeposit", "putSchedule", 3, "array")]
+    [InlineData("StructuredCredit", "callSchedule", 4, "array")]
+    [InlineData("StructuredCredit", "putSchedule", 4, "array")]
+    public void ReadableOnlyField_OnAFlatPayloadStampedAtItsVersion_RejectsTheWrongJsonType(
+        string assetClass, string key, int stamp, string declaredType)
     {
-        // Where the decoder reads the block, the schema checks it like any other declared object.
+        // Where the decoder reads the term, the schema checks it like any other declared object or array.
         Registry.TryGetValidator(assetClass, out var validator).Should().BeTrue();
 
         var issues = validator.Validate(Context(assetClass, new Dictionary<string, object?>
         {
             [SecurityTermsEnvelope.AssetClassTermsVersionKey] = stamp,
-            ["scheduleConventions"] = "x"
+            [key] = "x"
         }));
 
-        var issue = issues.Should().ContainSingle(static candidate => candidate.AffectedFields.Contains(ScheduleConventionsPath)).Which;
+        var path = $"assetSpecificTerms.{key}";
+        var issue = issues.Should().ContainSingle(candidate => candidate.AffectedFields.Contains(path)).Which;
         issue.Code.Should().Be(SchemaTermsAssetClassValidator.TypeCode);
         issue.Severity.Should().Be(SecurityValidationSeverityDto.Error);
-        issue.Message.Should().Be("The term schema declares 'scheduleConventions' as object and the record carries a string.");
+        issue.Message.Should().Be($"The term schema declares '{key}' as {declaredType} and the record carries a string.");
     }
 
-    [Fact]
-    public void ReadableOnlyField_OnAFlatPayloadStampedAtItsVersion_AcceptsAnObject()
+    [Theory]
+    [InlineData("Bond", 2)]
+    [InlineData("Bond", 3)]
+    [InlineData("CertificateOfDeposit", 3)]
+    [InlineData("StructuredCredit", 4)]
+    public void ReadableOnlyField_OnAFlatPayloadStampedAtItsVersion_AcceptsAnObject(string assetClass, int stamp)
     {
-        Registry.TryGetValidator("Bond", out var validator).Should().BeTrue();
+        Registry.TryGetValidator(assetClass, out var validator).Should().BeTrue();
 
-        var issues = validator.Validate(Context("Bond", new Dictionary<string, object?>
+        var issues = validator.Validate(Context(assetClass, new Dictionary<string, object?>
         {
-            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = 2,
+            [SecurityTermsEnvelope.AssetClassTermsVersionKey] = stamp,
             ["scheduleConventions"] = new Dictionary<string, object?> { ["stubPolicy"] = "Short", ["paymentCalendars"] = new[] { "USNY" } }
         }));
 
         issues.Should().NotContain(static issue => issue.AffectedFields.Contains(ScheduleConventionsPath, StringComparer.OrdinalIgnoreCase));
+    }
+
+    [Theory]
+    [InlineData("Bond", 3)]
+    [InlineData("CertificateOfDeposit", 3)]
+    [InlineData("StructuredCredit", 4)]
+    public void ReadableOnlySchedules_OnAFlatPayloadStampedAtTheirVersion_AcceptAnEntryArray(string assetClass, int stamp)
+    {
+        // Only the top-level JSON kind is checked: an entry array, an empty array and null all pass.
+        Registry.TryGetValidator(assetClass, out var validator).Should().BeTrue();
+
+        foreach (var (callSchedule, putSchedule) in new (object?, object?)[]
+                 {
+                     (new[] { new Dictionary<string, object?> { ["callDate"] = "2030-06-15", ["callPrice"] = 101m } },
+                         new[] { new Dictionary<string, object?> { ["putDate"] = "2029-06-15" } }),
+                     (Array.Empty<object>(), Array.Empty<object>()),
+                     (null, null)
+                 })
+        {
+            var issues = validator.Validate(Context(assetClass, new Dictionary<string, object?>
+            {
+                [SecurityTermsEnvelope.AssetClassTermsVersionKey] = stamp,
+                ["callSchedule"] = callSchedule,
+                ["putSchedule"] = putSchedule
+            }));
+
+            issues.Should().NotContain(static issue => issue.AffectedFields.Intersect(ReadableOnlyPaths, StringComparer.OrdinalIgnoreCase).Any());
+        }
     }
 
     private static SecurityValidationContext Context(string assetClass, Dictionary<string, object?> terms)

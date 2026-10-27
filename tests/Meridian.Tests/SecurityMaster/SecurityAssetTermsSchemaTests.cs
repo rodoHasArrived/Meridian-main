@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
@@ -14,8 +15,9 @@ namespace Meridian.Tests.SecurityMaster;
 /// catalog-vs-projection gap stays explicit and enforced rather than accidental, and holds the
 /// Asset Operations classes to a stricter rule: a class whose declared capabilities include
 /// LedgerProjection cannot be written off as an intentional gap, only tracked on a shrinking
-/// backlog. Pins the readable-before-writable scheduleConventions block, the fields a node writes,
-/// and the walkers the write guard and the round-trip guard read versioned terms through.
+/// backlog. Pins the readable-before-writable scheduleConventions block and the callSchedule and
+/// putSchedule arrays with their frozen entry shapes, the fields a node writes, and the walkers the
+/// write guard and the round-trip guard read versioned terms through.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class SecurityAssetTermsSchemaTests
@@ -182,7 +184,7 @@ public sealed class SecurityAssetTermsSchemaTests
     [InlineData("Bond", 2)]
     [InlineData("CertificateOfDeposit", 2)]
     [InlineData("StructuredCredit", 3)]
-    public void ScheduleConventions_IsAnOptionalObjectIntroducedAtTheVersionTheClassReadsAhead(string assetClass, int since)
+    public void ScheduleConventions_IsAnOptionalObjectIntroducedAboveTheWriteVersion(string assetClass, int since)
     {
         var field = SecurityAssetTermsSchema.Field(assetClass, "scheduleConventions");
 
@@ -192,8 +194,161 @@ public sealed class SecurityAssetTermsSchemaTests
         field.Aliases.Should().BeEmpty();
         field.Convention.Should().Be(SecurityTermConventionKind.None);
         field.SinceTermsVersion.Should().Be(since);
-        SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass).Should().Be(since);
+        SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass).Should().BeGreaterThanOrEqualTo(since);
         SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().Be(since - 1, "the block is readable before it is writable");
+    }
+
+    // ── The callSchedule and putSchedule arrays (ADR-024 readable before writable, ADR-025) ──────
+
+    private static readonly string[] ScheduleReadAheadClasses = ["Bond", "CertificateOfDeposit", "StructuredCredit"];
+
+    // Every top-level term a read-ahead class declares above its write version.
+    private static readonly IReadOnlyList<string> ReadOnlyTermKeys = ["scheduleConventions", "callSchedule", "putSchedule"];
+
+    [Theory]
+    [InlineData("Bond", 3)]
+    [InlineData("CertificateOfDeposit", 3)]
+    [InlineData("StructuredCredit", 4)]
+    public void CallAndPutSchedules_AreOptionalArraysIntroducedAtTheNextReadableVersion(string assetClass, int since)
+    {
+        var block = SecurityAssetTermsSchema.Field(assetClass, "scheduleConventions")!;
+        var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
+        var reads = SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
+
+        foreach (var key in new[] { "callSchedule", "putSchedule" })
+        {
+            var field = SecurityAssetTermsSchema.Field(assetClass, key);
+
+            field.Should().NotBeNull(key);
+            field!.Key.Should().Be(key);
+            field.Type.Should().Be(SecurityAssetTermFieldType.Array, key);
+            field.Required.Should().BeFalse(key);
+            field.Aliases.Should().BeEmpty(key);
+            field.AllowedValues.Should().BeEmpty(key);
+            field.Convention.Should().Be(SecurityTermConventionKind.None, key);
+            field.SinceTermsVersion.Should().Be(since, key);
+            field.SinceTermsVersion.Should().BeGreaterThan(writes, $"{key} is readable before it is writable");
+            field.SinceTermsVersion.Should().BeLessThanOrEqualTo(reads, $"{assetClass} reads {key}");
+            field.SinceTermsVersion.Should().BeGreaterThan(block.SinceTermsVersion, $"{key} arrives at a later readable version than the block");
+        }
+
+        // Appended after the block, so every earlier refusal text and the order of populated terms hold.
+        SecurityAssetTermsSchema.Fields(assetClass).TakeLast(3).Select(static field => field.Key)
+            .Should().Equal(ReadOnlyTermKeys);
+    }
+
+    [Fact]
+    public void CallAndPutScheduleEntryShapes_ResolveUnderEveryReadAheadClass_CaseInsensitively_AndNowhereElse()
+    {
+        var call = SecurityAssetTermsSchema.ElementFields("Bond", "callSchedule");
+        var put = SecurityAssetTermsSchema.ElementFields("Bond", "putSchedule");
+        call.Should().HaveCount(12);
+        put.Should().HaveCount(9);
+
+        SecurityAssetTermsSchema.ElementFieldPaths
+            .Where(static path => path.EndsWith(".callSchedule", StringComparison.OrdinalIgnoreCase)
+                || path.EndsWith(".putSchedule", StringComparison.OrdinalIgnoreCase))
+            .Should().BeEquivalentTo(
+                ScheduleReadAheadClasses.SelectMany(static assetClass => new[] { $"{assetClass}.callSchedule", $"{assetClass}.putSchedule" }),
+                "no other class or element registers a call or put entry shape");
+        foreach (var assetClass in ScheduleReadAheadClasses)
+        {
+            SecurityAssetTermsSchema.ElementFields(assetClass, "callSchedule").Should().Equal(call, $"{assetClass} shares the call entry shape");
+            SecurityAssetTermsSchema.ElementFields(assetClass, "putSchedule").Should().Equal(put, $"{assetClass} shares the put entry shape");
+            SecurityAssetTermsSchema.ElementFields(assetClass.ToLowerInvariant(), "CALLSCHEDULE")
+                .Should().Equal(call, "registered paths resolve case-insensitively");
+            SecurityAssetTermsSchema.ElementFields(assetClass.ToUpperInvariant(), "putschedule")
+                .Should().Equal(put, "registered paths resolve case-insensitively");
+        }
+
+        SecurityAssetTermsSchema.ElementFields("Swap", "callSchedule").Should().BeEmpty();
+        SecurityAssetTermsSchema.ElementFields("Swap", "putSchedule").Should().BeEmpty();
+        SecurityAssetTermsSchema.ElementFields("Swap", "legs.callSchedule").Should().BeEmpty();
+        SecurityAssetTermsSchema.ElementFields("Equity", "callSchedule").Should().BeEmpty();
+        SecurityAssetTermsSchema.ElementFields("Equity", "putSchedule").Should().BeEmpty();
+    }
+
+    [Fact]
+    public void CallScheduleEntryShape_DeclaresTwelveOptionalUntaggedMembers()
+    {
+        var fields = SecurityAssetTermsSchema.ElementFields("Bond", "callSchedule");
+
+        fields.Select(static field => (field.Key, field.Type)).Should().Equal(
+            ("callDate", SecurityAssetTermFieldType.Date),
+            ("callEndDate", SecurityAssetTermFieldType.Date),
+            ("exerciseStyle", SecurityAssetTermFieldType.String),
+            ("exerciseFrequency", SecurityAssetTermFieldType.String),
+            ("callPrice", SecurityAssetTermFieldType.Decimal),
+            ("priceBasis", SecurityAssetTermFieldType.String),
+            ("priceType", SecurityAssetTermFieldType.String),
+            ("makeWholeSpreadBps", SecurityAssetTermFieldType.Decimal),
+            ("partialRedemption", SecurityAssetTermFieldType.String),
+            ("minimumNoticeDays", SecurityAssetTermFieldType.Integer),
+            ("maximumNoticeDays", SecurityAssetTermFieldType.Integer),
+            ("noticeDayType", SecurityAssetTermFieldType.String));
+
+        // The container carries the class's terms version itself, so its members are untagged.
+        fields.Should().OnlyContain(static field =>
+            !field.Required && field.SinceTermsVersion == 1 && field.Aliases.Count == 0
+            && field.UnderlyingRole == null && field.Escape == null && field.Role == SecurityAssetTermRole.Economic);
+        fields.Where(static field => field.Convention != SecurityTermConventionKind.None)
+            .Select(static field => (field.Key, field.Convention)).Should().Equal(
+                ("exerciseFrequency", SecurityTermConventionKind.CouponFrequency));
+        fields.Where(static field => field.IsDiscriminant)
+            .Select(static field => (field.Key, string.Join("|", field.AllowedValues), field.CarriesUndeclaredValueVerbatim)).Should().Equal(
+                ("exerciseStyle", "European|American|Bermudan", true),
+                ("priceBasis", "PercentOfPar|PercentOfAccretedValue", true),
+                ("priceType", "Fixed|MakeWhole", true),
+                ("partialRedemption", "WholeOnly|ProRata|ByLot", true),
+                ("noticeDayType", "Business|Calendar", true));
+        fields.Where(static field => field.CarriesUndeclaredValueVerbatim).Should().OnlyContain(static field => field.IsDiscriminant);
+    }
+
+    [Fact]
+    public void PutScheduleEntryShape_DeclaresNineOptionalUntaggedMembers_SharingTheNoticeMembers()
+    {
+        var fields = SecurityAssetTermsSchema.ElementFields("Bond", "putSchedule");
+
+        fields.Select(static field => (field.Key, field.Type)).Should().Equal(
+            ("putDate", SecurityAssetTermFieldType.Date),
+            ("putEndDate", SecurityAssetTermFieldType.Date),
+            ("exerciseStyle", SecurityAssetTermFieldType.String),
+            ("exerciseFrequency", SecurityAssetTermFieldType.String),
+            ("putPrice", SecurityAssetTermFieldType.Decimal),
+            ("priceBasis", SecurityAssetTermFieldType.String),
+            ("minimumNoticeDays", SecurityAssetTermFieldType.Integer),
+            ("maximumNoticeDays", SecurityAssetTermFieldType.Integer),
+            ("noticeDayType", SecurityAssetTermFieldType.String));
+
+        fields.Should().OnlyContain(static field =>
+            !field.Required && field.SinceTermsVersion == 1 && field.Aliases.Count == 0
+            && field.UnderlyingRole == null && field.Escape == null && field.Role == SecurityAssetTermRole.Economic);
+        fields.Where(static field => field.Convention != SecurityTermConventionKind.None)
+            .Select(static field => (field.Key, field.Convention)).Should().Equal(
+                ("exerciseFrequency", SecurityTermConventionKind.CouponFrequency));
+        fields.Where(static field => field.IsDiscriminant)
+            .Select(static field => (field.Key, string.Join("|", field.AllowedValues), field.CarriesUndeclaredValueVerbatim)).Should().Equal(
+                ("exerciseStyle", "European|American|Bermudan", true),
+                ("priceBasis", "PercentOfPar|PercentOfAccretedValue", true),
+                ("noticeDayType", "Business|Calendar", true));
+        fields.Where(static field => field.CarriesUndeclaredValueVerbatim).Should().OnlyContain(static field => field.IsDiscriminant);
+
+        // The notice members are one shared declaration, so a call and a put read notice identically.
+        var call = SecurityAssetTermsSchema.ElementFields("Bond", "callSchedule");
+        var callNotice = call.TakeLast(3).ToArray();
+        var putNotice = fields.TakeLast(3).ToArray();
+        putNotice.Select(static field => field.Key).Should().Equal("minimumNoticeDays", "maximumNoticeDays", "noticeDayType");
+        for (var index = 0; index < putNotice.Length; index++)
+        {
+            putNotice[index].Should().BeSameAs(callNotice[index], putNotice[index].Key);
+        }
+
+        // The members both entries declare have the same shape in each.
+        static (string, SecurityAssetTermFieldType, string, bool, SecurityTermConventionKind) Shape(SecurityAssetTermField field)
+            => (field.Key, field.Type, string.Join("|", field.AllowedValues), field.CarriesUndeclaredValueVerbatim, field.Convention);
+        string[] common = ["exerciseStyle", "exerciseFrequency", "priceBasis"];
+        fields.Where(field => common.Contains(field.Key)).Select(Shape)
+            .Should().Equal(call.Where(field => common.Contains(field.Key)).Select(Shape));
     }
 
     [Fact]
@@ -276,14 +431,19 @@ public sealed class SecurityAssetTermsSchemaTests
             var writable = SecurityAssetTermsSchema.WritableFields(assetClass);
 
             writable.Should().Equal(SecurityAssetTermsSchema.Fields(assetClass).Where(field => field.SinceTermsVersion <= writes), assetClass);
-            writable.Should().NotContain(static field => field.Key == "scheduleConventions", assetClass);
+            writable.Should().NotContain(static field => ReadOnlyTermKeys.Contains(field.Key), assetClass);
         }
 
-        SecurityAssetTermsSchema.WritableFields("Bond").Select(static field => field.Key).Should().Equal(
-            SecurityAssetTermsSchema.Fields("Bond").Select(static field => field.Key).Where(static key => key != "scheduleConventions"));
+        foreach (var assetClass in ScheduleReadAheadClasses)
+        {
+            SecurityAssetTermsSchema.WritableFields(assetClass).Select(static field => field.Key).Should().Equal(
+                SecurityAssetTermsSchema.Fields(assetClass).Select(static field => field.Key).Where(static key => !ReadOnlyTermKeys.Contains(key)),
+                assetClass);
+        }
+
         SecurityAssetTermsSchema.WritableFields("StructuredCredit").Select(static field => field.Key)
             .Should().Contain(["seniority", "nonCallPeriodEnd"], "the version-2 tranche terms are written at version 2")
-            .And.NotContain("scheduleConventions");
+            .And.NotContain(ReadOnlyTermKeys);
         SecurityAssetTermsSchema.WritableFields("Swap").Should().Equal(SecurityAssetTermsSchema.Fields("Swap"), "a swap's block lives on its legs");
         SecurityAssetTermsSchema.WritableFields("Equity").Should().Equal(SecurityAssetTermsSchema.Fields("Equity"));
         SecurityAssetTermsSchema.WritableFields("Nope").Should().BeEmpty();
@@ -296,12 +456,15 @@ public sealed class SecurityAssetTermsSchemaTests
     [InlineData("[null]", false)]
     [InlineData("[[],{}]", false)]
     [InlineData("""{"a":null,"b":[],"c":{"d":null}}""", false)]
+    [InlineData("""[{"callDate":null}]""", false)]
     [InlineData("false", true)]
     [InlineData("0", true)]
     [InlineData("\"\"", true)]
     [InlineData("[0]", true)]
     [InlineData("""{"a":null,"b":false}""", true)]
     [InlineData("""{"c":{"d":[null,"x"]}}""", true)]
+    [InlineData("""[{"callPrice":0}]""", true)]
+    [InlineData("""[{"exerciseStyle":""}]""", true)]
     public void IsPopulatedTermValue_TreatsNullEmptyAndAllNullAsUnset_AndEveryScalarAsAValue(string json, bool populated)
         => SecurityAssetTermsSchema.IsPopulatedTermValue(Json(json)).Should().Be(populated);
 
@@ -370,15 +533,23 @@ public sealed class SecurityAssetTermsSchemaTests
     public void PopulatedTermsAbove_ListsEveryTermAboveTheVersionInSchemaOrder()
     {
         const string Payload = """
-            {"tranche":"A-1","scheduleConventions":{"stubPolicy":"Long"},"attachmentPoint":0,"seniority":"Senior","weightedAverageCoupon":null}
+            {"tranche":"A-1","putSchedule":[{"putDate":"2029-06-15"}],"scheduleConventions":{"stubPolicy":"Long"},"attachmentPoint":0,"callSchedule":[{"callDate":"2030-06-15"}],"seniority":"Senior","weightedAverageCoupon":null}
             """;
 
         Populated("StructuredCredit", Payload, 1).Should().Equal(
             ("seniority", "seniority", 2),
             ("attachmentPoint", "attachmentPoint", 2),
-            ("scheduleConventions", "scheduleConventions", 3));
-        Populated("StructuredCredit", Payload, 2).Should().Equal(("scheduleConventions", "scheduleConventions", 3));
-        Populated("StructuredCredit", Payload, 3).Should().BeEmpty();
+            ("scheduleConventions", "scheduleConventions", 3),
+            ("callSchedule", "callSchedule", 4),
+            ("putSchedule", "putSchedule", 4));
+        Populated("StructuredCredit", Payload, 2).Should().Equal(
+            ("scheduleConventions", "scheduleConventions", 3),
+            ("callSchedule", "callSchedule", 4),
+            ("putSchedule", "putSchedule", 4));
+        Populated("StructuredCredit", Payload, 3).Should().Equal(
+            ("callSchedule", "callSchedule", 4),
+            ("putSchedule", "putSchedule", 4));
+        Populated("StructuredCredit", Payload, 4).Should().BeEmpty();
     }
 
     [Fact]
@@ -414,7 +585,7 @@ public sealed class SecurityAssetTermsSchemaTests
         Normalized("Bond", Payload, 1, out var conflicts).Should().Be(
             """{"scheduleConventions":{"businessDayConvention":"ModifiedFollowing","accrualAdjusted":false,"paymentCalendars":["GBLO","USNY"],"paymentLagBusinessDays":0,"stubPolicy":""}}""");
         conflicts.Should().BeEmpty();
-        Normalized("Bond", Payload, 2, out _).Should().Be("{}", "nothing in a Bond is above version 2");
+        Normalized("Bond", Payload, 2, out _).Should().Be("{}", "this payload carries no term above version 2");
     }
 
     [Theory]
@@ -479,5 +650,132 @@ public sealed class SecurityAssetTermsSchemaTests
                 out var conflicts)
             .Should().Be("{}");
         conflicts.Should().BeEmpty();
+    }
+
+    // ── The bounded walk: the round-trip guard compares only the terms up to a row's own stamp ──
+
+    private static string Normalized(string assetClass, string payload, int termsVersion, int throughVersion, out IReadOnlyList<string> conflicts)
+        => SecurityAssetTermsSchema.NormalizedTermsAbove(assetClass, Json(payload), termsVersion, throughVersion, out conflicts).ToJsonString();
+
+    // Payload order differs from schema order on purpose: the normalized form follows the schema.
+    private const string ReadAheadBond = """
+        {"maturity":"2030-01-15","putSchedule":[{"putDate":"2029-06-15","putPrice":100}],"callSchedule":[{"callDate":"2030-06-15","callPrice":101.5}],"scheduleConventions":{"stubPolicy":"Long"}}
+        """;
+
+    private const string CaseVariantCallSchedules = """
+        {"callSchedule":[{"callDate":"2030-06-15"}],"scheduleConventions":{"stubPolicy":"Long"},"CallSchedule":[{"callDate":"2031-06-15"}]}
+        """;
+
+    private const string ReadAheadTranche = """
+        {"tranche":"A-1","seniority":"Senior","callSchedule":[{"callDate":"2030-06-15"}],"scheduleConventions":{"stubPolicy":"Long"}}
+        """;
+
+    private const string ConflictingLegBlocks = """
+        {"legs":[{"legType":"Fixed","scheduleConventions":{"stubPolicy":"Long"},"ScheduleConventions":{"rollConvention":"EOM"}}]}
+        """;
+
+    [Fact]
+    public void NormalizedTermsAbove_Bounded_KeepsOnlyTheTermsInsideTheWindow_InSchemaOrder()
+    {
+        Normalized("Bond", ReadAheadBond, 1, 2, out var conflicts)
+            .Should().Be("""{"scheduleConventions":{"stubPolicy":"Long"}}""", "the arrays are above version 2");
+        conflicts.Should().BeEmpty();
+
+        Normalized("Bond", ReadAheadBond, 1, 3, out conflicts).Should().Be(
+            """{"scheduleConventions":{"stubPolicy":"Long"},"callSchedule":[{"callDate":"2030-06-15","callPrice":101.5}],"putSchedule":[{"putDate":"2029-06-15","putPrice":100}]}""");
+        conflicts.Should().BeEmpty();
+
+        Normalized("Bond", ReadAheadBond, 2, 3, out conflicts).Should().Be(
+            """{"callSchedule":[{"callDate":"2030-06-15","callPrice":101.5}],"putSchedule":[{"putDate":"2029-06-15","putPrice":100}]}""",
+            "the block is not above version 2");
+        conflicts.Should().BeEmpty();
+
+        Normalized("Bond", ReadAheadBond, 1, 1, out conflicts).Should().Be("{}", "an empty window keeps nothing");
+        conflicts.Should().BeEmpty();
+        Normalized("Bond", ReadAheadBond, 3, 3, out conflicts).Should().Be("{}");
+        conflicts.Should().BeEmpty();
+
+        // StructuredCredit reads one version further: the tranche terms at 2, the block at 3, the arrays at 4.
+        Normalized("StructuredCredit", ReadAheadTranche, 1, 2, out conflicts).Should().Be("""{"seniority":"Senior"}""");
+        conflicts.Should().BeEmpty();
+        Normalized("StructuredCredit", ReadAheadTranche, 2, 3, out conflicts).Should().Be("""{"scheduleConventions":{"stubPolicy":"Long"}}""");
+        conflicts.Should().BeEmpty();
+        Normalized("StructuredCredit", ReadAheadTranche, 3, 4, out conflicts).Should().Be("""{"callSchedule":[{"callDate":"2030-06-15"}]}""");
+        conflicts.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void NormalizedTermsAbove_TheUnboundedOverloadIsBoundedByIntMaxValue()
+    {
+        (string AssetClass, string Payload)[] cases =
+        [
+            ("Bond", ReadAheadBond),
+            ("Bond", CaseVariantCallSchedules),
+            ("StructuredCredit", ReadAheadTranche),
+            ("Swap", ConflictingLegBlocks)
+        ];
+
+        foreach (var (assetClass, payload) in cases)
+        {
+            for (var termsVersion = 1; termsVersion <= 4; termsVersion++)
+            {
+                Normalized(assetClass, payload, termsVersion, out var unboundedConflicts)
+                    .Should().Be(Normalized(assetClass, payload, termsVersion, int.MaxValue, out var boundedConflicts), $"{assetClass} above {termsVersion}");
+                unboundedConflicts.Should().Equal(boundedConflicts, $"{assetClass} above {termsVersion}");
+            }
+        }
+    }
+
+    [Fact]
+    public void NormalizedTermsAbove_Bounded_ReportsOnlyTheConflictsInsideTheWindow()
+    {
+        Normalized("Bond", CaseVariantCallSchedules, 1, 3, out var conflicts).Should().Be(
+            """{"scheduleConventions":{"stubPolicy":"Long"},"callSchedule":[{"callDate":"2030-06-15"}]}""",
+            "the first spelling is kept");
+        conflicts.Should().Equal("callSchedule");
+
+        Normalized("Bond", CaseVariantCallSchedules, 1, 2, out conflicts).Should().Be("""{"scheduleConventions":{"stubPolicy":"Long"}}""");
+        conflicts.Should().BeEmpty("a term above the window is an undeclared key of a row stamped 2, so its spellings cannot conflict");
+    }
+
+    [Fact]
+    public void NormalizedTermsAbove_Bounded_ExcludesASwapLegBlockAboveTheWindow()
+    {
+        Normalized("Swap", ConflictingLegBlocks, 1, 1, out var conflicts).Should().Be("{}");
+        conflicts.Should().BeEmpty();
+
+        Normalized("Swap", ConflictingLegBlocks, 1, 2, out conflicts).Should().Be("""{"legs[0].scheduleConventions":{"stubPolicy":"Long"}}""");
+        conflicts.Should().Equal("legs[0].scheduleConventions");
+    }
+
+    [Fact]
+    public void NormalizedTermsAbove_DropsUnsetScheduleEntries_AndKeepsTheStoredOrder()
+    {
+        const string Payload = """
+            {"callSchedule":[{"callDate":"2031-06-15","callPrice":101},{"callDate":null,"callPrice":null,"exerciseStyle":null},{"callDate":"2030-06-15","callPrice":102}],"putSchedule":[null,{},{"putDate":"2029-06-15"}]}
+            """;
+
+        Normalized("Bond", Payload, 1, out var conflicts).Should().Be(
+            """{"callSchedule":[{"callDate":"2031-06-15","callPrice":101},{"callDate":"2030-06-15","callPrice":102}],"putSchedule":[{"putDate":"2029-06-15"}]}""",
+            "an unset entry is dropped and the rest keep their stored order, unsorted");
+        conflicts.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void NormalizedTermsAbove_KeepsANumbersSpelling_AndItComparesByValue()
+    {
+        var normalized = new[] { "101.50", "1.015e2", "101.5" }
+            .Select(price => SecurityAssetTermsSchema.NormalizedTermsAbove(
+                "Bond", Json($$"""{"callSchedule":[{"callDate":"2030-06-15","callPrice":{{price}}}]}"""), 1, 3, out _))
+            .ToArray();
+
+        normalized[1].ToJsonString().Should().Be("""{"callSchedule":[{"callDate":"2030-06-15","callPrice":1.015e2}]}""");
+        JsonNode.DeepEquals(normalized[0], normalized[1]).Should().BeTrue();
+        JsonNode.DeepEquals(normalized[0], normalized[2]).Should().BeTrue();
+        JsonNode.DeepEquals(normalized[1], normalized[2]).Should().BeTrue();
+
+        var otherPrice = SecurityAssetTermsSchema.NormalizedTermsAbove(
+            "Bond", Json("""{"callSchedule":[{"callDate":"2030-06-15","callPrice":101.51}]}"""), 1, 3, out _);
+        JsonNode.DeepEquals(normalized[2], otherPrice).Should().BeFalse("a different price is a change");
     }
 }

@@ -1033,13 +1033,22 @@ mode (every create, amend, import, term-block amend and approved field-edit merg
 above the class's write version is refused with a reason naming the class, the stamp and the versions
 this node reads and writes, and one populating a term introduced above it with a reason naming the
 term, the class, the term's version and the write version; in Read mode such a term is decoded once the payload's
-own stamp reaches its version, and profile envelopes are decoded at the write version. Deactivate and
+own stamp reaches its version, and profile envelopes are decoded at the write version. The
+`callSchedule` and `putSchedule` readers are tolerant: they keep stored order, drop an entry that is
+not an object or lacks a parseable date (`callDate`, `putDate`), and read any other member that does
+not parse as unset. Deactivate and
 patch-less amend re-serialize a row stamped above the write version only when the re-serialized terms
-reproduce its versioned content (`SecurityAssetTermsSchema.NormalizedTermsAbove`); otherwise they are
-refused before anything is appended. The workbench refuses a field or profile-field edit at
+reproduce its versioned content up to the row's own stamp (`SecurityAssetTermsSchema.NormalizedTermsAbove`);
+otherwise they are refused before anything is appended, so any content those readers drop blocks the
+write instead of vanishing (an array element with no non-null content, such as a `null` or an
+all-null entry, is compacted away). A term introduced above the row's stamp is an undeclared key of
+that row, which the decode and validator gates already ignore, and is dropped as a node that reads
+no further would drop it. The workbench refuses a field or profile-field edit at
 submission when the record's or the edited terms are readable but not writable, including a root edit
 of a profile envelope stamped above the write version, so it does not stage a draft the merge would
 refuse for that reason, and the schema-terms validator checks a versioned field only when the payload's stamp reaches it.
+Element conventions are enforced on write only for array terms the class writes (`WritableFields`),
+and never on an array introduced above version 1 inside a profile envelope.
 
 The file-based Security Master bulk ingest (`--security-master-ingest <file.csv|file.json>`) is
 fail-closed on caller identity: the import runs only when a registered
@@ -1079,9 +1088,9 @@ valuation date on a stored Discount curve (pinned on the request or the one defi
 security's currency), refuses to extrapolate past the curve, and names the curve version, hash,
 forward provenance and terms version in its inputs. Market values use the F# `SecurityCalculations`
 functions. `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
-block (preferred terms, call schedules, swap legs) through the normal amend path and records
-`TermBlockAmended`. A block the class only reads (`scheduleConventions`) is refused with the
-not-yet-writable reason.
+block (preferred terms, step and principal schedules, swap legs) through the normal amend path and
+records `TermBlockAmended`. A block the class only reads (`scheduleConventions`, `callSchedule`,
+`putSchedule`) is refused with the not-yet-writable reason.
 
 ## API contract notes
 

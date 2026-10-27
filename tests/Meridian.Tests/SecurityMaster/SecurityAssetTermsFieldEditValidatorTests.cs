@@ -407,6 +407,60 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     }
 
     [Theory]
+    [InlineData("Bond", "callSchedule", 3, 1, """[{"callDate":"2030-06-15","callPrice":101}]""")]
+    [InlineData("Bond", "callSchedule", 3, 1, "[]")]
+    [InlineData("Bond", "callSchedule", 3, 1, null)]
+    [InlineData("Bond", "putSchedule", 3, 1, """[{"putDate":"2029-06-15"}]""")]
+    [InlineData("Bond", "putSchedule", 3, 1, "[]")]
+    [InlineData("Bond", "putSchedule", 3, 1, null)]
+    [InlineData("CertificateOfDeposit", "callSchedule", 3, 1, """[{"callDate":"2026-09-30","partialRedemption":"WholeOnly"}]""")]
+    [InlineData("CertificateOfDeposit", "callSchedule", 3, 1, "[]")]
+    [InlineData("CertificateOfDeposit", "callSchedule", 3, 1, null)]
+    [InlineData("CertificateOfDeposit", "putSchedule", 3, 1, """[{"putDate":"2026-09-30","putPrice":100}]""")]
+    [InlineData("CertificateOfDeposit", "putSchedule", 3, 1, "[]")]
+    [InlineData("CertificateOfDeposit", "putSchedule", 3, 1, null)]
+    [InlineData("StructuredCredit", "callSchedule", 4, 2, """[{"callDate":"2030-06-15","exerciseStyle":"Bermudan"}]""")]
+    [InlineData("StructuredCredit", "callSchedule", 4, 2, "[]")]
+    [InlineData("StructuredCredit", "callSchedule", 4, 2, null)]
+    [InlineData("StructuredCredit", "putSchedule", 4, 2, """[{"putDate":"2029-06-15"}]""")]
+    [InlineData("StructuredCredit", "putSchedule", 4, 2, "[]")]
+    [InlineData("StructuredCredit", "putSchedule", 4, 2, null)]
+    public void ReadableOnlyCallAndPutSchedules_AreRefused_ForASetAnEmptyArrayAndAClear(
+        string assetClass, string key, int since, int writes, string? value)
+    {
+        // The arrays are terms of the version above the block's (3, or 4 for StructuredCredit). An
+        // empty array and a clear mean unset, but the merge would still map the edit in Write mode, so
+        // they are refused like an entry array.
+        SecurityAssetTermsFieldEditValidator.TryValidate(
+                assetClass, $"assetSpecificTerms.{key}", value, out var canonicalPath, out var error)
+            .Should().BeFalse();
+        error.Should().Be(NotYetWritable(assetClass, key, since, writes));
+        canonicalPath.Should().Be($"assetSpecificTerms.{key}", "a refused edit passes its path through unchanged");
+    }
+
+    [Theory]
+    [InlineData("Bond", "assetSpecificTerms.callSchedule.0.callDate", "2030-06-15", "callSchedule", 3, 1)]
+    [InlineData("Bond", "assetSpecificTerms.callSchedule.0.callDate", null, "callSchedule", 3, 1)]
+    [InlineData("Bond", "assetSpecificTerms.putSchedule.0", """{"putDate":"2029-06-15"}""", "putSchedule", 3, 1)]
+    [InlineData("Bond", "assetSpecificTerms.CallSchedule", """[{"callDate":"2030-06-15"}]""", "callSchedule", 3, 1)]
+    [InlineData("CertificateOfDeposit", "assetSpecificTerms.callSchedule.0.callDate", "2026-09-30", "callSchedule", 3, 1)]
+    [InlineData("CertificateOfDeposit", "assetSpecificTerms.putSchedule.0", null, "putSchedule", 3, 1)]
+    [InlineData("CertificateOfDeposit", "assetSpecificTerms.CallSchedule", "[]", "callSchedule", 3, 1)]
+    [InlineData("StructuredCredit", "assetSpecificTerms.callSchedule.0.callDate", "2030-06-15", "callSchedule", 4, 2)]
+    [InlineData("StructuredCredit", "assetSpecificTerms.putSchedule.0", """{"putDate":"2029-06-15"}""", "putSchedule", 4, 2)]
+    [InlineData("StructuredCredit", "assetSpecificTerms.CallSchedule", null, "callSchedule", 4, 2)]
+    public void NestedOrCaseVariantEditOfAReadableOnlySchedule_IsRefused_NamingTheDeclaredArray(
+        string assetClass, string fieldPath, string? value, string key, int since, int writes)
+    {
+        // Every member of a readable-only container is refused: an element, a member of an element
+        // and a case variant of the key all name the declared array in the reason.
+        SecurityAssetTermsFieldEditValidator.TryValidate(assetClass, fieldPath, value, out var canonicalPath, out var error)
+            .Should().BeFalse();
+        error.Should().Be(NotYetWritable(assetClass, key, since, writes));
+        canonicalPath.Should().Be(fieldPath, "a refused edit passes its path through unchanged");
+    }
+
+    [Theory]
     [InlineData("assetSpecificTerms.profileFields.scheduleConventions.stubPolicy", "Short",
         "assetSpecificTerms.profileFields.scheduleConventions.stubPolicy")]
     [InlineData("assetSpecificTerms.profileFields.scheduleConventions", "{\"stubPolicy\":\"Short\"}",
@@ -414,12 +468,20 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
     [InlineData("assetSpecificTerms.profileFields",
         """{"tranche":"A-1","scheduleConventions":{"stubPolicy":"Short","rollConvention":"15"}}""",
         "assetSpecificTerms.profileFields")]
+    // The version 4 call and put schedules are no different inside a profile envelope.
+    [InlineData("assetSpecificTerms.profileFields.callSchedule", """[{"callDate":"2030-06-15","callPrice":101}]""",
+        "assetSpecificTerms.profileFields.callSchedule")]
+    [InlineData("assetSpecificTerms.profileFields.putSchedule.0.putDate", "2029-06-15",
+        "assetSpecificTerms.profileFields.putSchedule.0.putDate")]
+    [InlineData("assetSpecificTerms.profileFields",
+        """{"tranche":"A-1","callSchedule":[{"callDate":"2030-06-15"}],"putSchedule":[{"putDate":"2029-06-15"}]}""",
+        "assetSpecificTerms.profileFields")]
     public void StructuredCreditProfileFieldsScheduleConventions_IsStillAccepted(
         string fieldPath, string value, string expectedCanonicalPath)
     {
         // A profile envelope's fields belong to the approved profile, not to the class's terms
         // version: versioned class terms are never walked inside profileFields, so these edits stage
-        // exactly as they did before the class read version 3.
+        // exactly as they did before the class read versions 3 and 4.
         SecurityAssetTermsFieldEditValidator.TryValidate("StructuredCredit", fieldPath, value, out var canonicalPath, out var error)
             .Should().BeTrue(error);
         error.Should().BeNull();
@@ -437,6 +499,8 @@ public sealed class SecurityAssetTermsFieldEditValidatorTests
         error.Should().Be(
             $"'notATerm' is not a declared asset-specific term for asset class '{assetClass}'. " +
             $"Declared term fields: {string.Join(", ", SecurityAssetTermsSchema.WritableFields(assetClass).Select(static field => field.Key))}.");
-        error.Should().NotContain("scheduleConventions");
+        error.Should().NotContain("scheduleConventions")
+            .And.NotContain("callSchedule")
+            .And.NotContain("putSchedule");
     }
 }

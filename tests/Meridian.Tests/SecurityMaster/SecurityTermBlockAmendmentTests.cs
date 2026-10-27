@@ -133,38 +133,48 @@ public sealed class SecurityTermBlockAmendmentTests
     [Fact]
     public void For_OffersOnlyTheBlocksTheNodeWrites()
     {
-        // scheduleConventions is declared (the node reads it) but is above each class's write
-        // version, so it is not a block a term-block amendment can replace.
+        // scheduleConventions, callSchedule and putSchedule are declared (the node reads them) but are
+        // above each class's write version, so none is a block a term-block amendment can replace.
         SecurityTermBlocks.For("Bond").Select(static field => field.Key).Should().Equal("stepSchedule", "principalSchedule");
         SecurityTermBlocks.For("CertificateOfDeposit").Should().BeEmpty();
         SecurityTermBlocks.For("StructuredCredit").Select(static field => field.Key).Should().Equal("factorScheduleEntries");
         SecurityTermBlocks.For("Swap").Select(static field => field.Key).Should().Equal("legs");
         foreach (var assetClass in new[] { "Bond", "CertificateOfDeposit", "StructuredCredit" })
         {
-            SecurityAssetTermsSchema.Field(assetClass, "scheduleConventions").Should().NotBeNull(assetClass);
-            SecurityTermBlocks.For(assetClass).Should().NotContain(static field => field.Key == "scheduleConventions", assetClass);
+            foreach (var key in new[] { "scheduleConventions", "callSchedule", "putSchedule" })
+            {
+                SecurityAssetTermsSchema.Field(assetClass, key).Should().NotBeNull($"{assetClass}.{key}");
+                SecurityTermBlocks.For(assetClass).Should().NotContain(field => field.Key == key, $"{assetClass}.{key}");
+            }
         }
     }
 
     [Theory]
-    [InlineData("Bond", 2, 1)]
-    [InlineData("CertificateOfDeposit", 2, 1)]
-    [InlineData("StructuredCredit", 3, 2)]
-    public void BuildPatch_ReadableOnlyBlock_ThrowsTheNotYetWritableReason(string assetClass, int since, int writes)
+    [InlineData("Bond", "scheduleConventions", 2, 1, """{"stubPolicy":"Short","paymentCalendars":["USNY"]}""", "{}")]
+    [InlineData("CertificateOfDeposit", "scheduleConventions", 2, 1, """{"stubPolicy":"Short","paymentCalendars":["USNY"]}""", "{}")]
+    [InlineData("StructuredCredit", "scheduleConventions", 3, 2, """{"stubPolicy":"Short","paymentCalendars":["USNY"]}""", "{}")]
+    [InlineData("Bond", "callSchedule", 3, 1, """[{"callDate":"2030-06-15","callPrice":101}]""", "[]")]
+    [InlineData("Bond", "putSchedule", 3, 1, """[{"putDate":"2029-06-15"}]""", "[]")]
+    [InlineData("CertificateOfDeposit", "callSchedule", 3, 1, """[{"callDate":"2026-09-30"}]""", "[]")]
+    [InlineData("CertificateOfDeposit", "putSchedule", 3, 1, """[{"putDate":"2026-09-30"}]""", "[]")]
+    [InlineData("StructuredCredit", "callSchedule", 4, 2, """[{"callDate":"2030-06-15","callPrice":101}]""", "[]")]
+    [InlineData("StructuredCredit", "putSchedule", 4, 2, """[{"putDate":"2029-06-15"}]""", "[]")]
+    public void BuildPatch_ReadableOnlyBlock_ThrowsTheNotYetWritableReason(
+        string assetClass, string blockKey, int since, int writes, string populatedBlock, string emptyBlock)
     {
         var reason =
-            $"'scheduleConventions' is an asset-class terms version {since} term of '{assetClass}'. This node reads it but writes " +
+            $"'{blockKey}' is an asset-class terms version {since} term of '{assetClass}'. This node reads it but writes " +
             $"assetClassTermsVersion {writes}, so a create, amend, import or field edit cannot set it yet. " +
             "Leave it absent, null or empty (ADR-024).";
         var current = JsonSerializer.SerializeToElement(new { maturity = "2031-06-15" });
 
-        SecurityTermBlocks.TryDescribeReadableOnlyBlock(assetClass, "scheduleConventions", out var described).Should().BeTrue();
+        SecurityTermBlocks.TryDescribeReadableOnlyBlock(assetClass, blockKey, out var described).Should().BeTrue();
         described.Should().Be(reason);
 
         // A populated block, an empty one and a clear are all refused: the block is not writable at all.
-        foreach (var block in new[] { """{"stubPolicy":"Short","paymentCalendars":["USNY"]}""", "{}", "null" })
+        foreach (var block in new[] { populatedBlock, emptyBlock, "null" })
         {
-            var act = () => SecurityTermBlocks.BuildPatch(assetClass, current, "scheduleConventions", JsonDocument.Parse(block).RootElement.Clone());
+            var act = () => SecurityTermBlocks.BuildPatch(assetClass, current, blockKey, JsonDocument.Parse(block).RootElement.Clone());
 
             act.Should().Throw<ArgumentException>().WithMessage($"{reason} (Parameter 'blockKey')")
                 .Which.ParamName.Should().Be("blockKey");
@@ -180,6 +190,14 @@ public sealed class SecurityTermBlockAmendmentTests
     [InlineData("Bond", "principalSchedule")]
     [InlineData("Bond", "maturity")]
     [InlineData("Equity", "scheduleConventions")]
+    // The same holds for the call and put schedules: a case variant, and classes that declare neither.
+    [InlineData("Bond", "CallSchedule")]
+    [InlineData("CertificateOfDeposit", "PutSchedule")]
+    [InlineData("StructuredCredit", "CALLSCHEDULE")]
+    [InlineData("Swap", "callSchedule")]
+    [InlineData("Swap", "putSchedule")]
+    [InlineData("Equity", "callSchedule")]
+    [InlineData("Equity", "putSchedule")]
     public void TryDescribeReadableOnlyBlock_IsFalse_OutsideAReadableOnlyBlockKey(string assetClass, string blockKey)
     {
         SecurityTermBlocks.TryDescribeReadableOnlyBlock(assetClass, blockKey, out var reason).Should().BeFalse();
@@ -189,7 +207,8 @@ public sealed class SecurityTermBlockAmendmentTests
     [Theory]
     [InlineData("Bond", "ScheduleConventions", "stepSchedule, principalSchedule")]
     [InlineData("Swap", "scheduleConventions", "legs")]
-    [InlineData("CertificateOfDeposit", "callSchedule", "none")]
+    [InlineData("CertificateOfDeposit", "sinkingFundSchedule", "none")]
+    [InlineData("Bond", "CallSchedule", "stepSchedule, principalSchedule")]
     public void BuildPatch_UndeclaredBlock_KeepsTheDeclaredBlocksText_WithoutTheReadableOnlyBlock(
         string assetClass, string blockKey, string declaredBlocks)
     {

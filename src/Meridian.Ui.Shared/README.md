@@ -2747,7 +2747,7 @@ Security Master also serves `GET /api/security-master/{securityId}/income-cash-f
 `GET /api/security-master/{securityId}/factor-history`, and
 `PUT /api/security-master/{securityId}/terms/{blockKey}` (governed like the generic amend route;
 400 for an undeclared block or JSON kind, and 400 with the not-yet-writable reason for a block the
-class only reads, such as `scheduleConventions`).
+class only reads, such as `scheduleConventions`, `callSchedule` or `putSchedule`).
 
 `POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance) builds the
 ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their proposed

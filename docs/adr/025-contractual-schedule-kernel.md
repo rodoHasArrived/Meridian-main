@@ -401,3 +401,83 @@ This command verifies referenced files and directories exist; it does not valida
     and `commonTerms.holidayCalendarId` stays the security-level calendar; the bond accrual
     projection keeps reading it. Whether increment 5's `ScheduleSpecFactory` falls back to it when a
     block names no payment calendar is increment 5's decision.
+- **Declared call and put schedules arrive as versioned flat terms (2026-10-25).** Increment 4b
+  adds the optional `callSchedule` and `putSchedule` arrays to Bond and CertificateOfDeposit terms
+  at version 3 and to StructuredCredit terms at version 4. Like the block, they are readable but not
+  yet writable ([ADR-024](024-terms-payload-format-and-version-policy.md), readable before
+  writable), so no record declares a schedule through a write path yet. A call entry has twelve
+  members: `callDate`, `callEndDate`, `exerciseStyle` (`European`, `American` or `Bermudan`),
+  `exerciseFrequency` (a coupon-frequency spelling), `callPrice`, `priceBasis` (`PercentOfPar` or
+  `PercentOfAccretedValue`), `priceType` (`Fixed` or `MakeWhole`), `makeWholeSpreadBps`,
+  `partialRedemption` (`WholeOnly`, `ProRata` or `ByLot`), `minimumNoticeDays`,
+  `maximumNoticeDays` and `noticeDayType` (`Business` or `Calendar`). A put entry has nine:
+  `putDate`, `putEndDate`, `exerciseStyle`, `exerciseFrequency`, `putPrice`, `priceBasis` and the
+  three notice members. Every member is optional and its text is kept verbatim. Both member lists
+  are frozen once readable
+  (`tests/fixtures/security-master/terms-element-shapes/versioned-containers.json`), so a later
+  member needs a new container key at a new readable version, or the guard and reader change that
+  ADR-024 describes. The entries carry no make-whole benchmark, notice calendar or contingent call
+  or put terms (for example, tax and regulatory calls or a survivor's option); any of these can
+  arrive later as a top-level term at a new readable version. The meanings below are normative for
+  stored data and are frozen before any node writes an entry, so every node reads the same row the
+  same way:
+  - **Window.** An entry's window runs from its unadjusted `callDate` or `putDate` through its
+    `callEndDate` or `putEndDate`, inclusive. Without an end date it runs to the day before the
+    next entry of the same schedule, taking entries in ascending order of unadjusted start date
+    rather than stored order, or to the instrument's maturity for the last entry; without a
+    maturity the window cannot be resolved. Two entries of one schedule with the same start date
+    are invalid, and increment 5's write validation is to refuse them.
+  - **Exercise style.** `European` exercises on the start date only, `American` on any business
+    day in the window, and `Bermudan` on dates recurring at `exerciseFrequency` within the window
+    or, with no frequency, on the instrument's coupon payment dates within it. An absent
+    `exerciseStyle` is not stated and has no default. Under every style the earliest exercise date
+    is the start date.
+  - **Price.** `callPrice` or `putPrice` is a clean percentage of what `priceBasis` names (absent
+    means `PercentOfPar`), with accrued interest paid on top, and it applies throughout the
+    window. An absent `priceType` means `Fixed`; a put entry carries no price type. For a
+    `MakeWhole` entry, `callPrice` is the floor and `makeWholeSpreadBps` is the spread over the
+    indenture's benchmark. An absent price is not stated; it never means par.
+  - **Partial redemption.** `WholeOnly` allows a call of the whole outstanding amount only,
+    `ProRata` reduces every holding proportionally, and `ByLot` selects the bonds redeemed by lot.
+    Absent means not stated.
+  - **Notice.** The issuer's notice of a call, or the holder's election of a put, falls no later
+    than `minimumNoticeDays` and no earlier than `maximumNoticeDays` before the exercise date.
+    `Calendar` counts calendar days. `Business` counts business days on the block's
+    `paymentCalendars`, excluding the exercise date itself. Counts without a `noticeDayType`
+    cannot be resolved.
+  - **Scope and identity.** `putSchedule` holds holder-elective puts only; a mandatory tender stays
+    `mandatoryPutDate`. An entry is identified by its schedule key and its unadjusted start date,
+    and an entry without a start date is not a term.
+  - **Scalars and consumers.** Until increment 5 enforces consistency between the scalar call terms
+    and the schedules, the scalars stay authoritative for every current consumer. Increment 8 is
+    to consume the domain record's `CallPutSchedules`, never the economic module.
+  - **Economic `Call` fill.** The F# legacy upgrade fills the economic `Call` module (`call` in the
+    economic terms) for Bond, CertificateOfDeposit and StructuredCredit. A class's own scalar call
+    terms feed `firstCallDate` and `callPrice`, and feed `isCallable` where the class has one:
+    Bond's `isCallable` and `callDate` become `isCallable` and `firstCallDate`, and
+    CertificateOfDeposit is callable when `callableDate` is present, which is its first call date.
+    `callPrice` stays null, because no flat class carries a scalar call price. StructuredCredit has
+    no scalar call terms, and `nonCallPeriodEnd` never feeds the module: it stays null until a
+    schedule is declared, then takes `isCallable` from the declared calls and leaves `firstCallDate`
+    and `callPrice` null. The declared schedules feed the rest: `callSchedule` and `putSchedule`,
+    each sorted stably by date; `isPuttable`, set when a put is declared; and `makeWholeSpreadBps`,
+    the spread of the first `MakeWhole` entry in that order that carries one. An entry's price
+    (`callPx`, `putPx`) is carried only when it passes the price gate, a `Fixed` price on a
+    `PercentOfPar` basis, an absent `priceType` counting as `Fixed` and an absent `priceBasis` as
+    `PercentOfPar`, because the economic price is a percentage of par. `isParCall` marks a carried
+    price of exactly 100. `callType` is `MakeWhole` for a make-whole entry, otherwise the exercise
+    style verbatim. Every spelling is compared exactly and case-sensitively. The module therefore
+    drops the end dates, `exerciseFrequency`, `partialRedemption`, the notice members, a put's
+    exercise style and a make-whole call's, `priceBasis` and `priceType` beyond the price gate and
+    `callType`, every make-whole spread but the one it keeps, a spread on an entry that is not
+    `MakeWhole`, the stored order, and the price of any entry that fails the price gate (make-whole,
+    accreted-value or an unrecognized spelling). The retained economic-terms fold is unchanged: a
+    declared, non-empty list replaces the retained one, and an empty list is still filled from it.
+  - **Proposed for increment 8, not frozen.** Increment 8 adopts or amends these when it generates
+    exercise and notice dates: Bermudan dates from a `ScheduleSpec` generated `Forward`, with
+    `Roll` from the block's `rollConvention` (falling back to `AnchorDay`), `Short` stubs and the
+    same business-day adjustment as payment dates; the calendar for American windows and for
+    `Business` notice counts when the block names no payment calendar, decided together with
+    increment 5's calendar fallback; the business-day adjustment of exercise and notice dates; and
+    how the make-whole amount is computed, and how engines exclude or warn on `MakeWhole` entries
+    until a curve seam exists.
