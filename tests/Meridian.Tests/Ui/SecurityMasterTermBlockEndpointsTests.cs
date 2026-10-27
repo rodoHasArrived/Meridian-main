@@ -57,12 +57,49 @@ public sealed class SecurityMasterTermBlockEndpointsTests
     }
 
     [Theory]
+    [InlineData("Bond", "callSchedule", 3, 1, """[{"callDate":"2030-06-15","callPrice":101}]""")]
+    [InlineData("Bond", "callSchedule", 3, 1, "[]")]
+    [InlineData("Bond", "putSchedule", 3, 1, """[{"putDate":"2029-06-15"}]""")]
+    [InlineData("CertificateOfDeposit", "callSchedule", 3, 1, """[{"callDate":"2026-09-30"}]""")]
+    [InlineData("CertificateOfDeposit", "putSchedule", 3, 1, """[{"putDate":"2026-09-30"}]""")]
+    [InlineData("StructuredCredit", "callSchedule", 4, 2, """[{"callDate":"2030-06-15","callPrice":101}]""")]
+    [InlineData("StructuredCredit", "putSchedule", 4, 2, "[]")]
+    public async Task PutCallOrPutSchedule_OnAClassThatOnlyReadsIt_Returns400WithTheNotYetWritableReason(
+        string assetClass, string blockKey, int since, int writes, string block)
+    {
+        // The arrays are declared one version above scheduleConventions and, like it, are refused
+        // before the service is reached, whether the array carries entries or is empty.
+        var securityId = Guid.NewGuid();
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        var service = Substitute.For<ISecurityMasterService>();
+        queryService.GetByIdAsync(securityId, Arg.Any<CancellationToken>()).Returns(CreateDetail(securityId, assetClass));
+
+        await using var app = await CreateAppAsync(queryService, service);
+
+        using var response = await app.GetTestClient().PutAsJsonAsync(
+            $"/api/security-master/{securityId}/terms/{blockKey}",
+            BuildRequest(JsonDocument.Parse(block).RootElement.Clone()),
+            WebJson);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        using var problem = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        problem.RootElement.GetProperty("detail").GetString().Should().Be(
+            $"'{blockKey}' is an asset-class terms version {since} term of '{assetClass}'. This node reads it but writes " +
+            $"assetClassTermsVersion {writes}, so a create, amend, import or field edit cannot set it yet. " +
+            "Leave it absent, null or empty (ADR-024).");
+        await service.DidNotReceiveWithAnyArgs().AmendTermBlockAsync(default, default!, default!, default);
+    }
+
+    [Theory]
     // A block no class declares, a case variant of the readable-only key, the swap leg's element
     // field (a term inside legs, not a block of the class) and a class without the field.
-    [InlineData("Bond", "callSchedule")]
+    [InlineData("Bond", "sinkingFundSchedule")]
     [InlineData("Bond", "ScheduleConventions")]
     [InlineData("Swap", "scheduleConventions")]
     [InlineData("Equity", "scheduleConventions")]
+    // A case variant of a readable-only schedule, and a class that declares no schedule.
+    [InlineData("Bond", "CallSchedule")]
+    [InlineData("Swap", "putSchedule")]
     public async Task PutUndeclaredBlock_KeepsTheDeclaresNoTermBlockText(string assetClass, string blockKey)
     {
         var securityId = Guid.NewGuid();

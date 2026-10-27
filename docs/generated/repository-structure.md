@@ -9376,6 +9376,8 @@ Meridian-main
 │   │   │   │   └── face-value-lot-constant-yield.json
 │   │   │   └── KNOWN-DEFECTS.md
 │   │   ├── security-master
+│   │   │   ├── terms-element-shapes
+│   │   │   │   └── versioned-containers.json
 │   │   │   ├── terms-golden
 │   │   │   │   └── security-terms-write-golden.json
 │   │   │   └── terms-versions
@@ -11734,6 +11736,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterValidationEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchEndpointsTests.cs
 │   │   │   ├── SecurityMasterWorkbenchOptionsBindingTests.cs
+│   │   │   ├── SecurityMasterWorkbenchQueryServiceCallScheduleTests.cs
 │   │   │   ├── SpreadsheetFormulaGuardTests.cs
 │   │   │   ├── StatementImportEvidenceBridgeTests.cs
 │   │   │   ├── StatementReconciliationAuthorityCompositionTests.cs

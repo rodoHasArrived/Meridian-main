@@ -1379,6 +1379,11 @@ public sealed class SecurityValidationServiceTests
         { "CertificateOfDeposit", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":2,"issuerName":"First Meridian Bank","maturity":"2027-09-30","scheduleConventions":null}""" },
         { "Swap", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":2,"effectiveDate":"2026-01-15","maturityDate":"2031-01-15","legs":[{"legId":"fixed","legType":"Fixed","scheduleConventions":{"paymentCalendars":["USNY"]}}]}""" },
         { "CertificateOfDeposit", """{"schemaVersion":1,"issuerName":"First Meridian Bank","maturity":"2027-09-30"}""" },
+        // At each class's read ceiling, which also declares the call and put schedules: still above
+        // the write version, so not behind.
+        { "Bond", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":3,"maturity":"2031-06-15","isCallable":true,"callSchedule":[{"callDate":"2030-06-15","callPrice":101}],"putSchedule":[{"putDate":"2029-06-15"}]}""" },
+        { "CertificateOfDeposit", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":3,"issuerName":"First Meridian Bank","maturity":"2027-09-30","putSchedule":[{"putDate":"2026-09-30"}]}""" },
+        { "StructuredCredit", """{"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":4,"tranche":"A-1","callSchedule":[],"putSchedule":null}""" },
     };
 
     [Theory]

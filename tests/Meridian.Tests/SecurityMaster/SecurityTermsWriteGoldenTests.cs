@@ -18,6 +18,13 @@ namespace Meridian.Tests.SecurityMaster;
 /// stay identical: the terms the write path persists (Write-mode create, the F# writer and the
 /// stamp), the economic terms bridged from them, the asset-class registry DTOs both workstations
 /// build their forms from, the term blocks, and the validation reports.
+/// <para>Extended at 1e679876 (increment 4a as merged at 2537c8f8, plus the amortization refusal for
+/// declared call and put schedules) before increment 4b, with what a node that reads the
+/// scheduleConventions block does with stored rows: the validation reports of stored rows carrying
+/// stray <c>callSchedule</c> and <c>putSchedule</c> keys, and the terms a re-serialization (a
+/// deactivation or a patch-less amend) writes for increment 4a's readable twins, with their economic
+/// terms, and for the stray rows at stamps 1, 2 and 3. Increment 4b must leave every entry, old and
+/// new, unchanged.</para>
 /// </summary>
 /// <remarks>
 /// A missing or mismatched fixture writes <c>security-terms-write-golden.received.json</c> beside the
@@ -110,6 +117,52 @@ public sealed class SecurityTermsWriteGoldenTests
             }),
         };
 
+    // Increment 4a's readable twins, each at the version that introduced the scheduleConventions
+    // block. The versions are literal so the keys and what they pin never move.
+    private static readonly (string AssetClass, int Version)[] ReadableTwinVersions =
+    [
+        ("Bond", 2),
+        ("CertificateOfDeposit", 2),
+        ("StructuredCredit", 3),
+        ("Swap", 2),
+    ];
+
+    // The stored stray rows (see StoredOnlyCases) whose re-serialization is pinned: what a deactivation
+    // or a patch-less amend persists for each, the stray key dropped and the stamp kept or downgraded
+    // as increment 4a does.
+    private static readonly IReadOnlyDictionary<string, string> StrayRowRewrites =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Bond.v1StrayCallSchedule"] = "Bond.strayCallScheduleString",
+            ["Bond.v2StrayCallSchedule"] = "Bond.stampTwoStrayCallSchedule",
+            ["StructuredCredit.v3StrayCallSchedule"] = "StructuredCredit.stampThreeStrayCallSchedule",
+        };
+
+    private const string StrayCallSchedule = """[{"callDate":"2030-06-15","callPrice":101}]""";
+    private const string StrayPutSchedule = """[{"putDate":"2029-06-15"}]""";
+
+    // The unset spellings of the call and put schedules, as (callSchedule, putSchedule) pairs. This node
+    // does not declare the keys and drops them; a node that reads them finds nothing populated, so it
+    // refuses none of them and writes at its write version, without them.
+    private static readonly IReadOnlyDictionary<string, (string CallSchedule, string PutSchedule)> UnpopulatedCallAndPutSchedules =
+        new Dictionary<string, (string, string)>(StringComparer.Ordinal)
+        {
+            ["null"] = ("null", "null"),
+            ["empty"] = ("[]", "[]"),
+            ["nullEntry"] = ("[null]", "[null]"),
+            ["emptyEntry"] = ("[{}]", "[{}]"),
+            ["nullDate"] = ("""[{"callDate":null}]""", """[{"putDate":null}]"""),
+            ["nullExerciseFrequency"] = ("""[{"exerciseFrequency":null}]""", """[{"exerciseFrequency":null}]"""),
+            ["allNullEntry"] = (
+                """[{"callDate":null,"callEndDate":null,"exerciseStyle":null,"exerciseFrequency":null,"callPrice":null,"priceBasis":null,"priceType":null,"makeWholeSpreadBps":null,"partialRedemption":null,"minimumNoticeDays":null,"maximumNoticeDays":null,"noticeDayType":null}]""",
+                """[{"putDate":null,"putEndDate":null,"exerciseStyle":null,"exerciseFrequency":null,"putPrice":null,"priceBasis":null,"minimumNoticeDays":null,"maximumNoticeDays":null,"noticeDayType":null}]"""),
+        };
+
+    private static readonly Lazy<IReadOnlyDictionary<string, string>?> CommittedGolden = new(static () =>
+        LocateFixture() is { } path
+            ? JsonSerializer.Deserialize<SortedDictionary<string, string>>(File.ReadAllText(path))
+            : null);
+
     [Fact]
     public void WrittenAndReportedOutput_MatchesTheCommittedGolden()
     {
@@ -149,6 +202,49 @@ public sealed class SecurityTermsWriteGoldenTests
         }
     }
 
+    public static TheoryData<string, string> UnpopulatedCallAndPutScheduleCases()
+    {
+        var data = new TheoryData<string, string>();
+        foreach (var (name, (assetClass, _)) in AllPayloads())
+        {
+            if (assetClass is not ("Bond" or "CertificateOfDeposit" or "StructuredCredit"))
+            {
+                continue;
+            }
+
+            foreach (var spelling in UnpopulatedCallAndPutSchedules.Keys)
+            {
+                data.Add(name, spelling);
+            }
+        }
+
+        return data;
+    }
+
+    [Theory]
+    [MemberData(nameof(UnpopulatedCallAndPutScheduleCases))]
+    public void UnpopulatedCallAndPutSchedules_AreAcceptedByTheWritePath_AndWriteTheGoldenBytes(string payloadName, string spelling)
+    {
+        // Before increment 4b the keys are undeclared; 4b declares them above the write version. Either
+        // way a payload that carries them unset is accepted and writes exactly the bytes it writes
+        // without them.
+        var (assetClass, payload) = AllPayloads().Single(entry => entry.Key == payloadName).Value;
+        var (callSchedule, putSchedule) = UnpopulatedCallAndPutSchedules[spelling];
+        var terms = JsonSerializer.SerializeToNode(payload)!.AsObject();
+        terms["callSchedule"] = JsonNode.Parse(callSchedule);
+        terms["putSchedule"] = JsonNode.Parse(putSchedule);
+
+        var command = () => SecurityMasterMapping.ToCreateCommand(CreateRequest(assetClass, terms));
+        command.Should().NotThrow($"the '{payloadName}' payload with unset call and put schedules ({spelling}) is writable");
+
+        var golden = CommittedGolden.Value;
+        golden.Should().NotBeNull($"the golden fixture '{FixtureFileName}' must be committed under tests/fixtures/security-master/terms-golden/");
+        golden!.Should().ContainKey($"write.{payloadName}");
+        CreateSnapshot(assetClass, terms).AssetSpecificTermsJson.Should().Be(
+            golden[$"write.{payloadName}"],
+            $"unset call and put schedules ({spelling}) mean the terms are unset, so the '{payloadName}' write is its golden write");
+    }
+
     private static SortedDictionary<string, string> Compute()
     {
         var output = new SortedDictionary<string, string>(StringComparer.Ordinal);
@@ -166,10 +262,27 @@ public sealed class SecurityTermsWriteGoldenTests
             output[$"validation.{name}"] = DescribeIssues(validation.ValidateRecord(projection, [projection], Now));
         }
 
+        var storedOnly = new Dictionary<string, (string AssetClass, JsonElement Terms)>(StringComparer.Ordinal);
         foreach (var (name, (assetClass, terms)) in StoredOnlyCases())
         {
-            var projection = SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, terms) with { SecurityId = SecurityId };
+            storedOnly.Add(name, (assetClass, terms));
+            var projection = StoredProjection(assetClass, terms);
             output[$"validation.stored.{name}"] = DescribeIssues(validation.ValidateRecord(projection, [projection], Now));
+        }
+
+        // What a node that reads the block persists when it re-serializes a stored row: the projection
+        // straight into the Read-mode mapping, then the F# writer.
+        foreach (var (assetClass, version) in ReadableTwinVersions)
+        {
+            var projection = StoredProjection(assetClass, SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass, version));
+            output[$"readable.write.{assetClass}.v{version}"] = Rewrite(projection);
+            output[$"readable.economic.{assetClass}.v{version}"] = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection).EconomicTerms.GetRawText();
+        }
+
+        foreach (var (key, storedName) in StrayRowRewrites)
+        {
+            var (assetClass, terms) = storedOnly[storedName];
+            output[$"readable.write.{key}"] = Rewrite(StoredProjection(assetClass, terms));
         }
 
         output["registry.dtos"] = JsonSerializer.Serialize(SecurityAssetClassRegistry.All.Select(SecurityAssetClassRegistry.ToDto));
@@ -186,8 +299,9 @@ public sealed class SecurityTermsWriteGoldenTests
             .Select(static entry => new KeyValuePair<string, (string, object)>(entry.Key, (entry.Key, entry.Value)))
             .Concat(Variants);
 
-    // Stored rows no create would produce: a stray top-level key on a version-1 bond, and a
-    // profile-backed StructuredCredit envelope carrying extra root and profile keys.
+    // Stored rows no create would produce: stray top-level keys on bonds and a structured credit, at the
+    // write version and at the readable version of increment 4a's block, and profile-backed
+    // StructuredCredit envelopes carrying extra root and profile keys.
     private static IEnumerable<KeyValuePair<string, (string AssetClass, JsonElement Terms)>> StoredOnlyCases()
     {
         var bond = JsonNode.Parse(SerializeThroughDomainText("Bond", Variants["Bond.fixed"].Payload))!.AsObject();
@@ -213,7 +327,59 @@ public sealed class SecurityTermsWriteGoldenTests
             };
             yield return new($"StructuredCredit.profileEnvelopeScheduleConventions{name}", ("StructuredCredit", JsonSerializer.SerializeToElement(envelope)));
         }
+
+        // Stray call and put schedules, which increment 4b declares above the write version.
+        var bondCallString = JsonNode.Parse(SerializeThroughDomainText("Bond", Variants["Bond.fixed"].Payload))!.AsObject();
+        bondCallString["callSchedule"] = "x";
+        yield return new("Bond.strayCallScheduleString", ("Bond", JsonSerializer.SerializeToElement(bondCallString)));
+
+        var bondCallAndPut = JsonNode.Parse(SerializeThroughDomainText("Bond", Variants["Bond.fixed"].Payload))!.AsObject();
+        bondCallAndPut["callSchedule"] = JsonNode.Parse(StrayCallSchedule);
+        bondCallAndPut["putSchedule"] = JsonNode.Parse(StrayPutSchedule);
+        yield return new("Bond.strayCallAndPutArrays", ("Bond", JsonSerializer.SerializeToElement(bondCallAndPut)));
+
+        var bondWithBlock = JsonNode.Parse(SerializeThroughDomainText("Bond", Variants["Bond.fixed"].Payload))!.AsObject();
+        bondWithBlock["scheduleConventions"] = JsonNode.Parse(SecurityAssetTermsSchemaRoundTripTests.ReadableTwinBlocks["Bond"][0]);
+        var bondStampTwo = JsonNode.Parse(SecurityTermsEnvelope.StampFlat(bondWithBlock.ToJsonString(), "Bond", 2))!.AsObject();
+        bondStampTwo["callSchedule"] = JsonNode.Parse(StrayCallSchedule);
+        yield return new("Bond.stampTwoStrayCallSchedule", ("Bond", JsonSerializer.SerializeToElement(bondStampTwo)));
+
+        var structuredCreditWithBlock = JsonNode.Parse(SerializeThroughDomainText("StructuredCredit", SecurityAssetTermsSchemaRoundTripTests.FullPayloads["StructuredCredit"]))!.AsObject();
+        structuredCreditWithBlock["scheduleConventions"] = JsonNode.Parse(SecurityAssetTermsSchemaRoundTripTests.ReadableTwinBlocks["StructuredCredit"][0]);
+        var structuredCreditStampThree = JsonNode.Parse(SecurityTermsEnvelope.StampFlat(structuredCreditWithBlock.ToJsonString(), "StructuredCredit", 3))!.AsObject();
+        structuredCreditStampThree["callSchedule"] = "x";
+        yield return new("StructuredCredit.stampThreeStrayCallSchedule", ("StructuredCredit", JsonSerializer.SerializeToElement(structuredCreditStampThree)));
+
+        foreach (var (name, callSchedule, putSchedule) in new (string, JsonNode?, JsonNode?)[]
+                 {
+                     ("String", JsonValue.Create("x"), JsonValue.Create("x")),
+                     ("Array", JsonNode.Parse(StrayCallSchedule), JsonNode.Parse(StrayPutSchedule)),
+                 })
+        {
+            var envelope = new JsonObject
+            {
+                ["customProfileId"] = "structured-credit-profile",
+                ["callSchedule"] = callSchedule?.DeepClone(),
+                ["putSchedule"] = putSchedule?.DeepClone(),
+                ["profileFields"] = new JsonObject
+                {
+                    ["tranche"] = "A-1",
+                    ["collateralType"] = "CLO",
+                    ["callSchedule"] = callSchedule?.DeepClone(),
+                    ["putSchedule"] = putSchedule?.DeepClone(),
+                },
+            };
+            yield return new($"StructuredCredit.profileEnvelopeCallPut{name}", ("StructuredCredit", JsonSerializer.SerializeToElement(envelope)));
+        }
     }
+
+    private static SecurityProjectionRecord StoredProjection(string assetClass, JsonElement terms)
+        => SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, terms) with { SecurityId = SecurityId };
+
+    // The Read-mode mapping of a stored row, then the F# writer: what a deactivation or a patch-less
+    // amend re-serializes.
+    private static string Rewrite(SecurityProjectionRecord projection)
+        => new SecurityMasterSnapshotWrapper(SecurityMasterMapping.ToRecord(projection)).AssetSpecificTermsJson;
 
     private static string DescribeIssues(SecurityValidationReportDto report)
         => JsonSerializer.Serialize(report.Issues.Select(static issue => new

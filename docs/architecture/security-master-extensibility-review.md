@@ -6097,18 +6097,32 @@ PostgreSQL 16, with the governance-event and Security Master suites.
    regular dates, direction, stub policy, coupon unit and coupon cash basis) at the next terms
    version of Bond, CertificateOfDeposit, Swap legs and StructuredCredit (landed 2026-10-25, see
    below). 4b: call and put schedules with notice periods at the readable version after that,
-   because a committed readable version is never edited.
+   because a committed readable version is never edited: version 3 of Bond and
+   CertificateOfDeposit and version 4 of StructuredCredit (landed 2026-10-25, see below). The
+   fail-closed amortization refusal of declared call and put schedules ships beneath 4b in its
+   stack (PR #3272).
 5. Schedule terms, contract step: the terms versions rise, a file-backed calendar source is
    registered, one `ScheduleSpecFactory` maps resolved terms to specs by descriptor fact, and the
    Security Master engine follows declared conventions for declaring records. An unresolvable
-   calendar blocks the projection. Deploy precondition: every node runs increments 4a and 4b
-   first.
+   calendar blocks the projection. It also takes the write side that 4b leaves open: write
+   validation of call and put entries and their vocabularies, enforcing the window-end and notice
+   rules frozen in ADR-025; consistency between the scalar call terms and the schedules;
+   `ClassFlattenings` for the block and the arrays; and lifting both StructuredCredit
+   reclassification blockers by mapping the terms. The Write-mode element-convention walk must
+   keep skipping a versioned container of a profile envelope. Deploy precondition: every node runs
+   increments 4a and 4b first, and with them the amortization refusal beneath 4b (PR #3272).
 6. Asset-operations fixed-income flows of issue-dated bonds get stable ids from `SchedulePeriodId`
    and the `fixed-income-cash-flow-projection-v2` stamp, and declaring records get declared conventions in
    the cash ladder.
 7. The schedule book in both workstations is built from engine output.
 8. Declared call and put schedules drive new redemption scenarios, the cash ladder's early call, the
-   obligation timeline and the schedule book.
+   obligation timeline and the schedule book. Consumers read the domain record's
+   `CallPutSchedules`, never the economic `call` module, which drops end dates, notice terms and
+   other members. The bond reference payload must be rerouted, or a call and put child table added
+   to the projection registry, because the bond projection carries scalar call dates only. The
+   increment adopts or amends the increment-8 proposals recorded in ADR-025, and deliberately
+   changes the workbench lifecycle that 4b leaves in place, in which a declared schedule raises no
+   Call event.
 9. Credit-event and rate-fixing corporate-action types, kernel reset and fixing dates, and expected
    lifecycle events generated from the schedule.
 10. Direct-lending projections on the kernel: legacy parity first, then an opt-in `dl-engine-v2`.
@@ -6415,3 +6429,196 @@ And `TryGetWriteRefusal` leaves a stamp above what the node reads to the read gu
 names the newer version instead of calling the row readable. Findings that the skeptics refuted
 (the HTTP status of Write-mode refusals, and refusing clears on rows stamped above the write version)
 describe behaviour that predates this change.
+
+## Resolution pass — 2026-10-25 (priority 5, increment 4b)
+
+| Finding | What landed |
+| --- | --- |
+| Declared call and put schedules had no home in the terms (G5); the economic `call` module declares call and put lists, and every builder wrote them empty | ADR-024 decision 3's expand step again, at the readable version after 4a's, because a committed readable version is never edited. Bond and CertificateOfDeposit still write terms version 1 and now read through 3; StructuredCredit still writes 2 and reads through 4. Each new version adds only the optional `callSchedule` and `putSchedule` arrays, reached by an identity step from the version below, and the committed manifests gain it. Swap is unchanged. A call entry has twelve members (`callDate`, `callEndDate`, `exerciseStyle`, `exerciseFrequency`, `callPrice`, `priceBasis`, `priceType`, `makeWholeSpreadBps`, `partialRedemption`, `minimumNoticeDays`, `maximumNoticeDays` and `noticeDayType`) and a put entry nine (`putDate`, `putEndDate`, `exerciseStyle`, `exerciseFrequency`, `putPrice`, `priceBasis` and the three notice members), registered under six `ElementFieldsByPath` paths. Every member is optional, the vocabularies keep foreign spellings verbatim, and `exerciseFrequency` carries the `CouponFrequency` convention. What the members mean (the window, exercise style, price, partial redemption, notice, scope and identity) is frozen in [ADR-025](../adr/025-contractual-schedule-kernel.md#applications) before any node writes an entry. |
+| Nothing stopped the members of a readable container from changing after nodes had read it | `VersionedContainerShapes_AreFrozenOnceReadable` (`SecurityAssetClassTermsHistoryTests`) holds every container introduced above version 1 to its entry in `tests/fixtures/security-master/terms-element-shapes/versioned-containers.json`, member by member and in order: key, type, required flag, version, aliases, allowed values, verbatim flag, convention and underlying role. The fixture was committed on the base with 4a's four `scheduleConventions` shapes, and this change appends the six call and put paths. Version-1 containers (swap `legs`, an equity's `convertibleTerms`) are not frozen, because they may still gain versioned members. |
+| Nothing stopped a write path from setting the arrays | Increment 4a's guards refuse them with no logic change, because they key on each field's `Since`: `TryGetWriteRefusal` and `PopulatedTermsAbove`, the field-edit validator, `SecurityTermBlocks`, the registry's `WritableFields` and the workbench submission gates. `EnsureElementConventionsOnWrite` now walks only the array fields the node writes and skips a versioned container of a profile envelope (see the corrections below). |
+| A node that reads a newer row would drop the arrays when it re-serializes the row (deactivate, patch-less amend) | The F# `CallScheduleTerm`, `PutScheduleTerm` and `CallPutSchedules` types, carried in a trailing `CallPutSchedules` field of `BondTerms`, `CertificateOfDepositTerms` and `StructuredCreditTerms`. `SecurityMasterMapping` decodes them behind 4a's stamp gate with tolerant readers. The F# writer stamps the highest version among the versioned terms the record holds, or the write version when it holds none, and emits the arrays in their frozen form: from their version upward both keys are present, `[]` when nothing is declared, otherwise one object per entry in stored order with every member and null for an unset one. A drift guard fails the write if the schema stops declaring the two arrays together, above the block. `EnsureAheadOfWriteTermsRoundTripSafely` compares only the versioned terms above the write version and at or below the row's own stamp, through a new bounded `SecurityAssetTermsSchema.NormalizedTermsAbove` overload. |
+| Two nodes could derive different economic terms from the same declaring row | The economic `Call` fill is frozen in ADR-025 under one rule. Bond and CertificateOfDeposit take `isCallable` and `firstCallDate` from their scalar call terms as before, and `callPrice` stays null. The declared entries feed only the call and put lists (sorted stably by date), `isPuttable` and `makeWholeSpreadBps`. StructuredCredit has no scalar call terms: it gains a `call` module only when it declares an entry, with `isCallable` set when a call is declared and `firstCallDate` null. A bond that declares a schedule blocks its StructuredCredit reclassification (`structured_credit_call_put_schedules_unwritable`), because StructuredCredit cannot write the arrays yet. |
+| Amortization would treat a bond whose calls are declared only in a schedule as a plain bullet | `OpenLotAmortization` refuses a `callSchedule` or `putSchedule` holding anything but null or `[]`, read from `profileFields`, the root terms or the common terms (PR #3272, the base of this change's stack). |
+| Nothing proved the change byte-neutral for records that declare nothing, or for stored rows that carry stray keys | `SecurityTermsWriteGoldenTests` was extended on the stack base before any 4b edit, with 17 entries: the validation reports of stored rows carrying stray `callSchedule` and `putSchedule` keys (flat rows stamped 1, 2 and 3, and StructuredCredit profile envelopes), the terms and economic terms a re-serialization writes for 4a's readable twins, and the terms it writes for the flat stray rows. A new theory writes every Bond, CertificateOfDeposit and StructuredCredit payload with the arrays in each unset spelling and expects the golden bytes. This change does not edit the fixture. |
+
+**Corrections to the plan.**
+
+- **The round-trip guard needs an upper bound.** 4a's guard compared every versioned term above the
+  write version. Left unbounded once the arrays are declared, it would refuse deactivation of a
+  Bond stamped 2 that carries a stray populated `callSchedule`, because the stored side holds the
+  array and the re-serialized side never does, where 4a drops the key. A term above the row's
+  stamp is an undeclared key of that row, which the decode and validator gates already ignore, so
+  the guard now stops at the stamp. Every row 4a reads re-serializes as 4a re-serializes it, and
+  the stray-row goldens pin those bytes.
+- **A later entry member costs a new container key, so the entry shape is chosen for the engine.**
+  ADR-024 said an inner member could not be added without a new readable version. The element
+  guard requires the members of a versioned container to be untagged, so a new version cannot
+  introduce one: a member added later needs a new container key at a new readable version, or a
+  guard and reader change that versions members individually. ADR-024 now says so, for 4a's block
+  too, and the frozen-shape guard enforces it. The entry therefore carries now what increments 5
+  and 8 need to place exercise dates, notice deadlines and prices: the window end, the exercise
+  style, an explicit Bermudan frequency (CertificateOfDeposit and StructuredCredit have no coupon
+  frequency to fall back on), the price basis and type, the make-whole spread, the
+  partial-redemption method and the notice bounds with their day type. Terms left out of the entry
+  (a make-whole benchmark, a clean-up call threshold, contingent calls) can each arrive later as a
+  top-level key at a new readable version, which the history guards allow.
+- **Notice calendars are not an entry member.** The design carried a per-entry `noticeCalendars`
+  list. It is dropped: `Business` notice counts use the block's payment calendars, and a
+  top-level `noticeCalendars` term can arrive at a later readable version. Until then, a deal whose
+  trustee or clearing calendar differs from its payment calendars counts business-day notice on the
+  payment calendars.
+- **The amortization refusal is the base of the stack, not a free-standing companion.** It is a
+  consumer change, so it stays out of this diff, and as an unstacked companion with its own deploy
+  gate it would have been a third precondition that nothing tracked. This change is built on it, so
+  every build that contains 4b contains the refusal, and increment 5's precondition that every node
+  runs 4a and 4b covers it. When it deploys, a Bond, TreasuryBill or CommercialPaper row whose
+  `profileFields`, root terms or common terms already carry a `callSchedule` or `putSchedule`
+  holding anything but null or `[]` starts failing amortization closed, so such rows must be
+  counted (expect 0) and remediated before it deploys.
+- **Registering the entry shapes was not free of runtime effect.** The design said it was.
+  `EnsureElementConventionsOnWrite` walked every array field of the class at the payload root, with
+  no profile exit, and the write refusal checks a profile envelope by stamp only, returning before
+  it looks for populated arrays, so nothing refused the array before the walk reached it. A
+  profile-backed StructuredCredit whose root `callSchedule` entry carries `exerciseFrequency` 3 or
+  `"Fortnightly"` would have been refused on this build where 4a accepts it. The walk now covers
+  only `WritableFields` and skips a versioned container of a profile envelope. Either clause closes
+  the gap today; the second keeps ADR-024's flat-codec-only rule once increment 5 makes the arrays
+  writable.
+- **StructuredCredit's economic first call date stays null.** A draft mirrored the earliest declared
+  call into StructuredCredit's `firstCallDate` and `callPrice`. The workbench takes its Call
+  lifecycle event and next lifecycle date from `call.firstCallDate`, so that would have moved a
+  consumer for StructuredCredit alone at increment 5's first write, while Bond and
+  CertificateOfDeposit stay on their scalars. One rule now covers every class, and a declaring
+  StructuredCredit row gains no Call event before increment 8.
+- **Existing refusal texts change.** The read-guard, write-version and `StampFlat` texts compute the
+  read ceiling, so on the three classes they now say "reads versions 1 through 3" (1 through 4 for
+  StructuredCredit); a Bond write stamped 2 is now refused with "it reads versions 1 through 3 and
+  writes version 1". The round-trip guard's reason now ends "…that settle its versioned terms."
+  instead of "…that settle the block." The readable-but-not-writable stamp reason names, as the node
+  that could apply the change, the highest version among the stamp and the terms the payload
+  populates above it: a Bond stamped 2 that populates `callSchedule` is pointed at a node that writes
+  version 3, not 2, since a node writing 2 would still refuse the arrays. Tests and any external log
+  matcher pinned to the old texts must follow.
+- **Inbound refusals are not 400s on every route.** The design said a client that populates the
+  arrays gets a 400 with the reason. The term-block route does. A create or amend request throws
+  from the Write-mode mapping, and `MeridianApiExceptionHandler` answers 500, with the reason in the
+  server log, as 4a's Write-mode refusals already did.
+
+**Behaviour changes.**
+
+- **Records that declare nothing: none.** Every written payload, stamp, economic terms document,
+  registry DTO, term-block key and validation report is byte-identical, and so is every 4a-era row
+  stamped 2 (3 for StructuredCredit) that a node re-serializes (`SecurityTermsWriteGoldenTests`).
+  Swap is unchanged.
+- **Rows stamped 3 (4 for StructuredCredit) are now readable.** Before this change they were refused
+  on read, and nodes without this build still refuse them. A row that declares entries and
+  round-trips keeps its arrays and its stamp on re-serialization, with the entries in stored order
+  and all-null entries dropped.
+- **Populated arrays are refused where 4a dropped them.** A create, amend, import, term-block amend
+  or approved field-edit merge of a flat Bond, CertificateOfDeposit or StructuredCredit payload that
+  populates `callSchedule` or `putSchedule`, under any key casing, used to drop the undeclared key
+  and is now refused with the not-yet-writable reason naming version 3 (4 for StructuredCredit).
+  When a payload also populates the block, the reason names `scheduleConventions`. Absent, `null`,
+  `[]`, `[null]`, `[{}]` and entries whose members are all null are still accepted and ignored; an
+  entry with content but no date (`[{"callPrice":101}]`) is populated and is refused. Field edits of
+  either array get the not-yet-writable reason instead of the undeclared-key message, and
+  `PUT /terms/callSchedule` and `PUT /terms/putSchedule` answer 400 with it instead of the
+  undeclared-block text. A write stamped 3 (4 for StructuredCredit) gets the
+  readable-but-not-writable stamp reason instead of the read-guard refusal.
+- **New refusals on deactivation and patch-less amend.** A row stamped 3 (4 for StructuredCredit) is
+  refused when re-serializing would change either array: an unknown, mistyped or case-variant
+  member or key, a dateless entry that carries content, or an entry that is not an object. A stray
+  `callSchedule` on a Bond or CertificateOfDeposit stamped 1 or 2, or a StructuredCredit stamped 2
+  or 3, is still dropped as 4a drops it.
+- **Stamp downgrade, generalized.** A re-serialized row is emitted at the highest version among the
+  versioned terms it still holds, or at the write version when it holds none. A Bond stamped 3 that
+  holds only conventions (with empty or absent arrays) is emitted at 2, and one that holds nothing,
+  empty arrays included, at 1; a StructuredCredit stamped 4 is emitted at 3 or 2 in the same way.
+  The data is equal; a contract node shows only the informational BEHIND notice.
+- **Changed refusal texts.** On the three classes, as listed in the corrections above.
+- **Profile envelopes: unchanged.** A profile-backed StructuredCredit that carries the arrays at its
+  root or in `profileFields` is never refused, decoded, validated or convention-checked for them,
+  and they never reach the economic module; only its stamp is checked.
+- **Economic terms change only for declaring rows,** and none can exist before increment 5. Every
+  other row keeps today's literals: a Bond keeps `isPuttable` false with `mandatoryPutDate` set, and
+  a StructuredCredit keeps `"call":null` with `nonCallPeriodEnd` set. No consumer moves: the
+  scanners read top-level scalars one level deep, and the workbench lifecycle reads only
+  `call.firstCallDate`. An entry's `callDate` shares its name with Bond's top-level `callDate`, so a
+  future recursive reader must not search inside entries.
+- **Reclassification.** A Bond that declares a call or put schedule gets the new blocker and no
+  proposed terms, instead of a proposal that would drop the schedules. A Bond that declares only
+  conventions keeps 4a's blocker text unchanged.
+- **Contracts.** A new five-argument `SecurityAssetTermsSchema.NormalizedTermsAbove` overload with
+  an upper bound; the four-argument overload delegates to it unbounded. The three F# term records
+  gain a trailing field, so their constructors take one more argument. There is no
+  `SecurityTermConventionKind` member, DTO, migration, TypeScript or WPF change.
+
+**Deploy and rollback.** Roll every node forward to this build before any contract step raises a
+write version. Once a Bond or CertificateOfDeposit row stamped 3, or a StructuredCredit row stamped
+4, exists, no node may roll back below this build, because older nodes refuse those rows. While
+this build rolls out, a 4a node still accepts a populated array on write and drops it, and a node on
+this build refuses it; neither writes the arrays. During the contract rollout, the full-payload
+amends 4a lists (the WPF edit screen, `SecurityTermBlocks.BuildPatch` and the approved field-edit
+merge) are refused on expand-only nodes for rows stamped 3 (4 for StructuredCredit) as well, while
+deactivations and patch-less amends still work when the row re-serializes exactly; route edit
+traffic to contract nodes. Nothing needs draining: 4a's field-edit validator already refused
+`callSchedule` and `putSchedule` as undeclared keys, and no writer has emitted them.
+
+**Before deploying.** Two checks, both expected to find nothing; the query and the search scope are
+in the increment 4b entry of [ADR-024](../adr/024-terms-payload-format-and-version-policy.md#applications).
+The first counts stored Bond, CertificateOfDeposit and StructuredCredit rows that populate a
+top-level `callSchedule` or `putSchedule` under any casing, excluding StructuredCredit profile
+envelopes. On this build, such a row's full-payload amends that carry the key, its field-edit merges
+and its workbench submissions are refused, where 4a dropped the key; its deactivations and
+patch-less amends still drop the key: the round-trip guard skips rows stamped at or below the write
+version and, above it, compares only terms up to the row's own stamp. The second covers inbound
+traffic. No in-repo producer emits either key at the top level (the economic definition adapter
+writes those names only inside the economic `call` module), so search API request logs and
+retained import batches (JSON, CSV, EDGAR, WPF) for payloads that populate them, and notify the
+owners of any client that sends them.
+
+**Not yet landed.** Increments 5 to 12 of this priority, as listed in the first-increment section
+above; items 5 and 8 there now name what this increment leaves to them. Frozen here with the
+arrays: no per-entry notice calendars; `[]` as the empty written form; an absent `exerciseStyle`
+means not stated, and an absent `priceBasis` and `priceType` mean `PercentOfPar` and `Fixed`;
+mandatory tenders stay `mandatoryPutDate`, outside `putSchedule`; and the economic lists are filled
+now, so 4b and contract nodes emit the same economic terms from increment 5's first write. Open
+decisions: whether a make-whole benchmark, a StructuredCredit clean-up call threshold and notice
+calendars arrive as top-level keys at a later readable version, as recommended; the ADR-025
+increment-8 proposals (the Bermudan generation parameters, the calendar for American windows and
+`Business` notice counts when no payment calendar is declared, the business-day adjustment of
+exercise and notice dates, and the make-whole computation); and the 4a decisions still open, which
+are restamping instead of the downgrade (now across several versions), registry exposure of
+readable-only fields, increment 5's fallback to `commonTerms.holidayCalendarId`, renaming the inner
+`direction`, and whether a payload with `profileFields` but no `customProfileId` stays a profile
+envelope.
+
+**Validation.** The characterization goldens, the frozen 4a container shapes and the
+unset-spelling theory were committed on the stack base first and pass unchanged after the change.
+New suites: `SecurityMasterWorkbenchQueryServiceCallScheduleTests`, plus the version-3/4 readable
+twins and foreign rows, the bounded round-trip guard cases, and the profile-envelope create and
+deactivate pins in the existing partials. The versioning, upgrader, wiring, history, schema,
+registry, field-edit, term-block, schema-validation, validation-service, economic-bridge,
+reclassification, workbench, merge-handler and F# domain suites are extended, and the 4a tests that
+pinned the old readable versions are moved. The whole `Meridian.Tests` suite ran against a
+disposable PostgreSQL 16 with 21,746 passed, 455 skipped and 14 failed; every Security Master suite
+passed. The 14 failures are this container's: thirteen `UiServer` composition tests fail only when
+the PostgreSQL connection string is set and pass without it, and the isolated QuantScript worker
+behind one strategy-design test has exited early in every full run since increment 3. The whole
+`Meridian.FSharp.Tests` suite passed (525). Each of the seven planned mutations failed the guard it
+targets, and `VersionedContainerShapes_AreFrozenOnceReadable` was the only history guard to fail
+when a member was appended to the call entry. The format, file-size, inline SHA-256,
+duplicate-helper, test-skip and warning-suppression guards pass, schema-control `verify` reproduces
+the refreshed manifests, `validate-doc-hashes` is clean, the `verify-docs` lane passes and the
+generated-repair pre-check reports nothing to change.
+
+The tests were written in nine lanes, each critiqued by an independent reviewer, and the whole change
+then went through an adversarial review: five lenses, with two skeptics trying to refute each
+finding. That work changed the code in one place. The readable-but-not-writable stamp reason named
+the payload's own stamp as the version a node needs, which cannot work for a payload that also
+populates a term introduced above its stamp; it now names the highest of the two. The documentation
+check also corrected the F# entry docs, which had read an absent end date as a single exercise date.
+The one adversarial finding, that the entry readers parse dates with the node's culture, was refuted
+by both skeptics: the helper predates 4b, already reads 4a's dates, and no writer can store a
+non-ISO date.
