@@ -1878,11 +1878,15 @@ contracts behind `IOtcContractStore`, with `OtcContractRules` as the pure write 
 currency, a signed mark from the fund's side or named blockers), the append-only
 `OtcExposureSnapshotDto` and `OtcExposureRules`: which contracts enter, close-out versus gross
 netting by master form, the two-sided credit support amount with the agreement's independent
-amount read as the fund's, haircut-adjusted holdings, the minimum-transfer test before rounding,
-and a reproducible payload digest. `OtcCollateral.cs` adds `OtcCollateralBalanceDto` (haircut
-copied from the agreement's eligible line, valued amount computed), `OtcMarginCallDto` (amount
-copied from a snapshot movement) and the lifecycle in `OtcMarginCallRules` behind
-`IOtcCollateralStore`; `IOtcExposureService` computes and records snapshots. The domain page is
+amount read as the fund's, holdings adjusted by the agreement's current eligible-line haircut, the
+minimum-transfer test before rounding, the fail-closed blockers (among them an agreement shared
+with another netting set, a positive balance valued after the as-of date and a balance no longer
+eligible), null credit support sides when there is no agreement, and a reproducible payload
+digest. `OtcCollateral.cs` adds `OtcCollateralBalanceDto` (haircut copied from the agreement's
+eligible line when written, valued amount computed, valuation date required), `OtcMarginCallDto`
+(amount copied from a snapshot movement) and the lifecycle in `OtcMarginCallRules` behind
+`IOtcCollateralStore`, which also lists the netting sets that reference an agreement;
+`IOtcExposureService` computes and records snapshots. The domain page is
 [Credit Support](../../docs/domain/credit-support.md).
 
 ### Security Master income, curves, factors and corporate-action terms

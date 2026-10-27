@@ -5,10 +5,11 @@ namespace Meridian.Application.SecurityMaster.Otc;
 
 /// <summary>
 /// Computes and records a netting set's exposure: reads the netting set with its agreements and
-/// contracts, the collateral balances under its collateral agreement, values each contract that
-/// enters the exposure through the registered <see cref="IOtcContractValuationSource"/>, applies
-/// <see cref="OtcExposureRules.Compute"/> and appends the result as the next snapshot version for
-/// the date.
+/// contracts, the collateral balances under its collateral agreement and the netting sets that
+/// reference that agreement, values each contract that enters the exposure through the registered
+/// <see cref="IOtcContractValuationSource"/> at one knowledge time (the request's, else the
+/// computation instant the snapshot is stamped with), applies <see cref="OtcExposureRules.Compute"/>
+/// and appends the result as the next snapshot version for the date.
 /// </summary>
 public sealed class OtcExposureService : IOtcExposureService
 {
@@ -33,26 +34,36 @@ public sealed class OtcExposureService : IOtcExposureService
     {
         if (nettingSetId == Guid.Empty)
             throw new ArgumentException("An exposure computation names the netting set it values.", nameof(nettingSetId));
+        if (asOfDate == default)
+            throw new ArgumentException("An exposure computation states the date it values.", nameof(asOfDate));
         var computedBy = OtcCollateralRules.RequireActor(actor);
 
         var view = await _contracts.GetNettingSetAsync(nettingSetId, ct).ConfigureAwait(false);
         if (view is null)
             return null;
 
-        var currency = OtcExposureRules.ResolveCurrency(view);
-        var balances = view.CollateralAgreement is { } agreement
-            ? await _collateral.ListCollateralBalancesAsync(agreement.CollateralAgreementId, ct).ConfigureAwait(false)
-            : [];
+        var currency = OtcExposureRules.ResolveCurrency(view, asOfDate);
+        IReadOnlyList<OtcCollateralBalanceDto> balances = [];
+        IReadOnlyList<Guid> nettingSetsUnderAgreement = [];
+        if (view.CollateralAgreement is { } agreement)
+        {
+            balances = await _collateral.ListCollateralBalancesAsync(agreement.CollateralAgreementId, ct).ConfigureAwait(false);
+            nettingSetsUnderAgreement = await _collateral.ListNettingSetsUnderCollateralAgreementAsync(agreement.CollateralAgreementId, ct).ConfigureAwait(false);
+        }
 
+        // One knowledge time for every contract, so the snapshot's marks are mutually consistent:
+        // the caller's cutoff, else the instant the snapshot is stamped as computed.
+        var computedAt = DateTimeOffset.UtcNow;
+        var knowledgeTime = knowledgeAsOf ?? computedAt;
         var selected = OtcExposureRules.SelectContracts(view.Contracts, asOfDate);
         var valuations = new List<OtcContractValuationDto>(selected.Count);
         foreach (var contract in selected)
         {
             ct.ThrowIfCancellationRequested();
-            valuations.Add(await _valuation.ValueAsync(new OtcContractValuationRequest(contract, asOfDate, currency, knowledgeAsOf), ct).ConfigureAwait(false));
+            valuations.Add(await _valuation.ValueAsync(new OtcContractValuationRequest(contract, asOfDate, currency, knowledgeTime), ct).ConfigureAwait(false));
         }
 
-        var computed = OtcExposureRules.Compute(view, valuations, balances, asOfDate, computedBy, DateTimeOffset.UtcNow);
+        var computed = OtcExposureRules.Compute(view, valuations, balances, nettingSetsUnderAgreement, asOfDate, computedBy, computedAt);
         var stored = await _collateral.AppendExposureSnapshotAsync(computed, ct).ConfigureAwait(false);
         _logger.LogInformation(
             "Recorded OTC exposure snapshot {SnapshotId} version {Version} for netting set {NettingSetId} as of {AsOfDate}: {Status} on a {NettingBasis} basis, net exposure {NetExposure} {Currency}, {MovementCount} movement(s), {BlockerCount} blocker(s).",

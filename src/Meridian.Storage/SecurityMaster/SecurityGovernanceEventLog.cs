@@ -17,7 +17,7 @@ public static class SecurityGovernanceStreams
     /// <summary>Stored market curves: definitions and published versions (migration 053). Events carry no security id; the curve id is in the payload.</summary>
     public const string Curves = "Curves";
 
-    /// <summary>OTC exposure snapshots, collateral balances and margin calls (migrations 054 and 055); events name a netting set, not a security.</summary>
+    /// <summary>OTC exposure snapshots, collateral balances and margin calls (migrations 054 and 055); events carry no security id and name a netting set (snapshots, calls) or a collateral agreement (balances).</summary>
     public const string OtcCollateral = "OtcCollateral";
 }
 

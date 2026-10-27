@@ -84,6 +84,21 @@ public static class OtcValuationBlockerCodes
 
     /// <summary>The collateral agreement takes effect after the as-of date, so its thresholds and independent amount do not yet apply.</summary>
     public const string CollateralAgreementNotYetEffective = "CollateralAgreementNotYetEffective";
+
+    /// <summary>
+    /// The collateral agreement is also referenced by another netting set; its balances are not
+    /// allocated across netting sets, so crediting them to each would count the same collateral twice.
+    /// </summary>
+    public const string SharedCollateralAgreement = "SharedCollateralAgreement";
+
+    /// <summary>
+    /// A positive collateral balance is valued after the as-of date. Balances are current-state
+    /// records, so what was held on the earlier date is unknown.
+    /// </summary>
+    public const string CollateralValuationAfterAsOf = "CollateralValuationAfterAsOf";
+
+    /// <summary>A collateral balance's description is no longer an eligible-collateral line of the agreement, so no haircut applies to it.</summary>
+    public const string IneligibleCollateral = "IneligibleCollateral";
 }
 
 /// <summary>How the contracts in a netting set are combined into one exposure.</summary>
@@ -112,7 +127,10 @@ public sealed record OtcCollateralMovementDto(
     decimal Amount,
     string Currency);
 
-/// <summary>One collateral balance as the snapshot saw it, with the haircut applied.</summary>
+/// <summary>
+/// One collateral balance as the snapshot saw it, with the haircut applied: the haircut of the
+/// agreement's eligible-collateral line at computation time, not the one copied onto the balance.
+/// </summary>
 public sealed record OtcCollateralHeldLineDto(
     Guid BalanceId,
     OtcCollateralDirection Direction,
@@ -144,7 +162,8 @@ public sealed record OtcCreditSupportSideDto(
 /// <summary>
 /// The append-only valuation of one netting set on one date: the contracts valued, the netting
 /// basis, gross and net exposure, the collateral held on each side, the credit support each side's
-/// terms imply and the movements that follow. Recomputing a date appends the next version.
+/// terms imply and the movements that follow. Recomputing a date appends the next version. With no
+/// collateral agreement the snapshot reports exposures only and both credit support sides are null.
 /// </summary>
 public sealed record OtcExposureSnapshotDto(
     Guid SnapshotId,
@@ -164,8 +183,8 @@ public sealed record OtcExposureSnapshotDto(
     decimal GrossPositive,
     decimal GrossNegative,
     decimal NetExposure,
-    OtcCreditSupportSideDto FundAsSecuredParty,
-    OtcCreditSupportSideDto CounterpartyAsSecuredParty,
+    OtcCreditSupportSideDto? FundAsSecuredParty,
+    OtcCreditSupportSideDto? CounterpartyAsSecuredParty,
     IReadOnlyList<OtcCollateralHeldLineDto> CollateralHeld,
     IReadOnlyList<OtcCollateralMovementDto> Movements,
     IReadOnlyList<OtcValuationBlockerDto> Blockers,
@@ -182,7 +201,10 @@ public interface IOtcExposureService
     /// <summary>
     /// Values the netting set's open contracts as of <paramref name="asOfDate"/>, applies its
     /// credit support terms and appends the result as the next snapshot version for that date.
-    /// Returns null when the netting set does not exist.
+    /// Every contract is valued at one knowledge time: <paramref name="knowledgeAsOf"/>, else the
+    /// instant the snapshot is stamped as computed. Returns null when the netting set does not
+    /// exist; an empty netting set id, a default as-of date or a blank actor is an
+    /// <see cref="ArgumentException"/>.
     /// </summary>
     Task<OtcExposureSnapshotDto?> ComputeAsync(Guid nettingSetId, DateOnly asOfDate, string actor, DateTimeOffset? knowledgeAsOf = null, CancellationToken ct = default);
 }
@@ -220,14 +242,17 @@ public static class OtcExposureRules
 
     /// <summary>
     /// The currency the exposure is computed in: the collateral agreement's, or, with no collateral
-    /// agreement, the first contract's notional currency (exposures only).
+    /// agreement, the notional currency of the first contract that enters the exposure as of the
+    /// date (exposures only), so a closed or not-yet-traded contract cannot set it. When no contract
+    /// enters, the first contract's currency is used; nothing is valued in it.
     /// </summary>
-    public static string ResolveCurrency(OtcNettingSetViewDto view)
+    public static string ResolveCurrency(OtcNettingSetViewDto view, DateOnly asOfDate)
     {
         ArgumentNullException.ThrowIfNull(view);
         if (view.CollateralAgreement is { } csa)
             return csa.Currency;
-        return view.Contracts.FirstOrDefault()?.NotionalCurrency
+        var source = SelectContracts(view.Contracts, asOfDate).FirstOrDefault() ?? view.Contracts.FirstOrDefault();
+        return source?.NotionalCurrency
             ?? throw new ArgumentException("The netting set has no collateral agreement and no contracts, so there is no currency to compute exposure in.", nameof(view));
     }
 
@@ -284,16 +309,23 @@ public static class OtcExposureRules
     /// <summary>
     /// Computes the exposure snapshot for a netting set as of a date from the valuations of the
     /// contracts that enter it and the collateral balances under its collateral agreement. The
-    /// independent amount on the collateral agreement is read as the amount the fund posts. Any
-    /// unvalued contract, a missing or terminated collateral agreement or an open contract past its
-    /// termination date leaves the snapshot <see cref="OtcExposureSnapshotStatus.Incomplete"/>:
-    /// exposures are reported for what was valued and no movement is computed. The returned
+    /// independent amount on the collateral agreement is read as the amount the fund posts, and each
+    /// balance takes the haircut of the agreement's eligible-collateral line it is posted as. Any
+    /// unvalued contract, a missing, not-yet-effective, terminated or shared collateral agreement,
+    /// an open contract past its termination date, or a positive balance valued after the as-of
+    /// date or no longer eligible leaves the snapshot <see cref="OtcExposureSnapshotStatus.Incomplete"/>:
+    /// exposures are reported for what was valued and no movement is computed. With no collateral
+    /// agreement both credit support sides are null. <c>nettingSetsUnderAgreement</c> is every
+    /// netting set that references the collateral agreement, as the store reports it (empty with no
+    /// agreement); any netting set other than this one is a
+    /// <see cref="OtcValuationBlockerCodes.SharedCollateralAgreement"/> blocker. The returned
     /// snapshot carries no version and no digest; the store assigns both.
     /// </summary>
     public static OtcExposureSnapshotDto Compute(
         OtcNettingSetViewDto view,
         IReadOnlyList<OtcContractValuationDto> valuations,
         IReadOnlyList<OtcCollateralBalanceDto> balances,
+        IReadOnlyCollection<Guid> nettingSetsUnderAgreement,
         DateOnly asOfDate,
         string computedBy,
         DateTimeOffset computedAt)
@@ -301,10 +333,11 @@ public static class OtcExposureRules
         ArgumentNullException.ThrowIfNull(view);
         ArgumentNullException.ThrowIfNull(valuations);
         ArgumentNullException.ThrowIfNull(balances);
+        ArgumentNullException.ThrowIfNull(nettingSetsUnderAgreement);
         if (string.IsNullOrWhiteSpace(computedBy))
             throw new ArgumentException("An exposure snapshot names who computed it.", nameof(computedBy));
 
-        var currency = ResolveCurrency(view);
+        var currency = ResolveCurrency(view, asOfDate);
         var csa = view.CollateralAgreement;
         var blockers = new List<OtcValuationBlockerDto>();
         if (csa is null)
@@ -313,6 +346,17 @@ public static class OtcExposureRules
             blockers.Add(new OtcValuationBlockerDto(OtcValuationBlockerCodes.CollateralAgreementTerminated, $"Collateral agreement {csa.CollateralAgreementId:D} terminated on {csaTermination:yyyy-MM-dd}, before {asOfDate:yyyy-MM-dd}."));
         else if (csa.EffectiveDate > asOfDate)
             blockers.Add(new OtcValuationBlockerDto(OtcValuationBlockerCodes.CollateralAgreementNotYetEffective, $"Collateral agreement {csa.CollateralAgreementId:D} takes effect on {csa.EffectiveDate:yyyy-MM-dd}, after {asOfDate:yyyy-MM-dd}; its thresholds and independent amount do not yet apply."));
+
+        if (csa is not null)
+        {
+            var sharedWith = nettingSetsUnderAgreement
+                .Where(id => id != view.NettingSet.NettingSetId)
+                .Distinct()
+                .Order()
+                .ToArray();
+            if (sharedWith.Length > 0)
+                blockers.Add(new OtcValuationBlockerDto(OtcValuationBlockerCodes.SharedCollateralAgreement, $"Collateral agreement {csa.CollateralAgreementId:D} is also referenced by netting set(s) {string.Join(", ", sharedWith.Select(id => id.ToString("D")))}; credit support is not allocated across netting sets in this increment."));
+        }
 
         var selected = SelectContracts(view.Contracts, asOfDate);
         var byContract = valuations
@@ -355,54 +399,77 @@ public static class OtcExposureRules
         {
             foreach (var balance in balances)
             {
-                if (balance.CollateralAgreementId != csa.CollateralAgreementId || balance.Quantity <= 0m || balance.ValuedAsOf > asOfDate)
+                // A fully returned line, or one under another agreement, is not held collateral.
+                if (balance.CollateralAgreementId != csa.CollateralAgreementId || balance.Quantity <= 0m)
                     continue;
+
+                // Balances are current-state rows: a positive balance valued after the as-of date
+                // says nothing about what was held on that date, so it blocks rather than counting as zero.
+                if (balance.ValuedAsOf > asOfDate)
+                {
+                    blockers.Add(new OtcValuationBlockerDto(OtcValuationBlockerCodes.CollateralValuationAfterAsOf, $"Collateral balance {balance.BalanceId:D} ({balance.EligibleCollateralDescription}) is valued as of {balance.ValuedAsOf:yyyy-MM-dd}, after {asOfDate:yyyy-MM-dd}; what was held on {asOfDate:yyyy-MM-dd} is not recorded."));
+                    continue;
+                }
+
+                // The haircut is the agreement's current one for the line, not the copy on the balance.
+                if (OtcCollateralRules.FindEligible(csa, balance.EligibleCollateralDescription) is not { } eligible)
+                {
+                    blockers.Add(new OtcValuationBlockerDto(OtcValuationBlockerCodes.IneligibleCollateral, $"Collateral balance {balance.BalanceId:D} is posted as '{balance.EligibleCollateralDescription}', which is no longer eligible under collateral agreement {csa.CollateralAgreementId:D} version {csa.Version}."));
+                    continue;
+                }
+
                 held.Add(new OtcCollateralHeldLineDto(
                     balance.BalanceId,
                     balance.Direction,
                     balance.Kind,
                     balance.EligibleCollateralDescription,
                     balance.ValuedAmount,
-                    balance.HaircutPercent,
-                    HaircutAdjusted(balance.ValuedAmount, balance.HaircutPercent),
+                    eligible.HaircutPercent,
+                    HaircutAdjusted(balance.ValuedAmount, eligible.HaircutPercent),
                     balance.ValuedAsOf));
             }
         }
 
-        var heldByFund = held.Where(line => line.Direction == OtcCollateralDirection.Received).Sum(line => line.HaircutAdjusted);
-        var heldByCounterparty = held.Where(line => line.Direction == OtcCollateralDirection.Posted).Sum(line => line.HaircutAdjusted);
-        var independentAmountOurs = csa?.IndependentAmount ?? 0m;
-        const decimal independentAmountTheirs = 0m;
         var complete = allValued && blockers.Count == 0;
-
-        var fundSide = Side(
-            OtcMovementParty.Fund,
-            OtcMovementParty.Counterparty,
-            exposureFund,
-            independentAmountPledgor: independentAmountTheirs,
-            independentAmountSecuredParty: independentAmountOurs,
-            thresholdPledgor: csa?.ThresholdTheirs ?? 0m,
-            heldByFund,
-            csa,
-            currency,
-            complete);
-        var counterpartySide = Side(
-            OtcMovementParty.Counterparty,
-            OtcMovementParty.Fund,
-            exposureCounterparty,
-            independentAmountPledgor: independentAmountOurs,
-            independentAmountSecuredParty: independentAmountTheirs,
-            thresholdPledgor: csa?.ThresholdOurs ?? 0m,
-            heldByCounterparty,
-            csa,
-            currency,
-            complete);
-
+        OtcCreditSupportSideDto? fundSide = null, counterpartySide = null;
         var movements = new List<OtcCollateralMovementDto>(2);
-        if (fundSide.Movement is { } fundMovement)
-            movements.Add(fundMovement);
-        if (counterpartySide.Movement is { } counterpartyMovement)
-            movements.Add(counterpartyMovement);
+        if (csa is not null)
+        {
+            // With no collateral agreement there are no credit support terms to report: the sides
+            // stay null rather than being filled from zero thresholds.
+            var heldByFund = held.Where(line => line.Direction == OtcCollateralDirection.Received).Sum(line => line.HaircutAdjusted);
+            var heldByCounterparty = held.Where(line => line.Direction == OtcCollateralDirection.Posted).Sum(line => line.HaircutAdjusted);
+            var independentAmountOurs = csa.IndependentAmount ?? 0m;
+            const decimal independentAmountTheirs = 0m;
+
+            fundSide = Side(
+                OtcMovementParty.Fund,
+                OtcMovementParty.Counterparty,
+                exposureFund,
+                independentAmountPledgor: independentAmountTheirs,
+                independentAmountSecuredParty: independentAmountOurs,
+                thresholdPledgor: csa.ThresholdTheirs,
+                heldByFund,
+                csa,
+                currency,
+                complete);
+            counterpartySide = Side(
+                OtcMovementParty.Counterparty,
+                OtcMovementParty.Fund,
+                exposureCounterparty,
+                independentAmountPledgor: independentAmountOurs,
+                independentAmountSecuredParty: independentAmountTheirs,
+                thresholdPledgor: csa.ThresholdOurs,
+                heldByCounterparty,
+                csa,
+                currency,
+                complete);
+
+            if (fundSide.Movement is { } fundMovement)
+                movements.Add(fundMovement);
+            if (counterpartySide.Movement is { } counterpartyMovement)
+                movements.Add(counterpartyMovement);
+        }
 
         return new OtcExposureSnapshotDto(
             Guid.NewGuid(),
@@ -468,6 +535,20 @@ public static class OtcExposureRules
             return valuation with { MarkToMarket = null, Blockers = blockers };
         }
 
+        // A mark for another date or another instrument is not this contract's valuation.
+        if (valuation.AsOfDate != asOfDate || valuation.SecurityId != contract.SecurityId)
+        {
+            var mismatch = valuation.AsOfDate != asOfDate
+                ? $"The valuation source returned a mark as of {valuation.AsOfDate:yyyy-MM-dd} for a computation as of {asOfDate:yyyy-MM-dd}."
+                : $"The valuation source returned a mark for security {valuation.SecurityId:D}; the contract is on security {contract.SecurityId:D}.";
+            return valuation with
+            {
+                Status = OtcValuationStatus.Unvalued,
+                MarkToMarket = null,
+                Blockers = Blocker(OtcValuationBlockerCodes.MissingValuation, mismatch)
+            };
+        }
+
         if (valuation.MarkToMarket is null)
         {
             return valuation with
@@ -498,14 +579,14 @@ public static class OtcExposureRules
         decimal independentAmountSecuredParty,
         decimal thresholdPledgor,
         decimal held,
-        OtcCollateralAgreementDto? csa,
+        OtcCollateralAgreementDto csa,
         string currency,
         bool complete)
     {
         var creditSupport = CreditSupportAmount(exposure, independentAmountPledgor, independentAmountSecuredParty, thresholdPledgor);
         var deliveryRaw = creditSupport - held;
         var returnRaw = held - creditSupport;
-        var movement = complete && csa is not null
+        var movement = complete
             ? Movement(deliveryRaw, returnRaw, csa.MinimumTransferAmount, csa.RoundingAmount, pledgor, securedParty, currency)
             : null;
         return new OtcCreditSupportSideDto(

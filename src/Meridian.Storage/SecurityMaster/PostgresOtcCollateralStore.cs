@@ -276,6 +276,12 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
         return await ReadBalancesAsync(connection, null, "where collateral_agreement_id = @id", ("id", collateralAgreementId), ct).ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyList<Guid>> ListNettingSetsUnderCollateralAgreementAsync(Guid collateralAgreementId, CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        return await ReadNettingSetIdsUnderAgreementAsync(connection, null, collateralAgreementId, ct).ConfigureAwait(false);
+    }
+
     public async Task<OtcMarginCallDto> IssueMarginCallAsync(IssueOtcMarginCallRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -289,12 +295,18 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
         var snapshot = await ReadSnapshotAsync(connection, transaction, request.SnapshotId, ct).ConfigureAwait(false)
             ?? throw new ArgumentException($"The exposure snapshot {request.SnapshotId:D} does not exist.", nameof(request));
 
-        // Issues and transitions for one netting set are serialized under one lock, taken before
-        // any row lock, so the one-open-call-per-mover-and-kind rule is checked against a settled picture.
+        // The snapshot lock comes first so a concurrent recompute cannot append a later version
+        // between the latest-version check and this call's commit. Issues and transitions for one
+        // netting set are then serialized under the call lock, taken before any row lock, so the
+        // one-open-call-per-mover-and-kind rule is checked against a settled picture. Only this path
+        // takes both locks (an append takes the snapshot lock alone, a transition the call lock
+        // alone), always in this order, so there is no lock-order cycle.
+        await LockAsync(connection, transaction, "otc-exposure-snapshot:" + snapshot.NettingSetId.ToString("D"), ct).ConfigureAwait(false);
         await LockAsync(connection, transaction, "otc-margin-call:" + snapshot.NettingSetId.ToString("D"), ct).ConfigureAwait(false);
         var latest = await LatestVersionAsync(connection, transaction, snapshot.NettingSetId, snapshot.AsOfDate, ct).ConfigureAwait(false);
         if (latest != snapshot.Version)
             throw new ArgumentException($"Exposure snapshot {snapshot.SnapshotId:D} (version {snapshot.Version}) has been superseded by version {latest} for {snapshot.AsOfDate:yyyy-MM-dd}; issue the call from the latest snapshot.", nameof(request));
+        await RequireCurrentTermsAsync(connection, transaction, snapshot, ct).ConfigureAwait(false);
 
         var openCalls = await ReadCallsAsync(connection, transaction, $"where netting_set_id = @id and status in {OpenCallStatuses}", ("id", snapshot.NettingSetId), ct).ConfigureAwait(false);
         var call = OtcMarginCallRules.Issue(snapshot, request with { UpdatedBy = actor }, openCalls, DateTimeOffset.UtcNow);
@@ -527,6 +539,75 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
         command.Parameters.AddWithValue("id", id);
         if (await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is null)
             throw new ArgumentException($"The {noun} {id:D} does not exist.");
+    }
+
+    /// <summary>
+    /// Refuses a call from a snapshot computed under credit support terms that no longer stand: the
+    /// netting set now points at another collateral agreement (or none), the agreement has been
+    /// amended since, or another netting set now references it. The netting set and agreement rows
+    /// are share-locked, so an amendment of either waits for this call to commit (or this call for
+    /// the amendment); the contract store locks one such row per write, so no cycle can form.
+    /// </summary>
+    private async Task RequireCurrentTermsAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, OtcExposureSnapshotDto snapshot, CancellationToken ct)
+    {
+        Guid? currentAgreementId;
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = $"select collateral_agreement_id from {_options.Schema}.otc_netting_sets where netting_set_id = @id for share;";
+            command.Parameters.AddWithValue("id", snapshot.NettingSetId);
+            var value = await command.ExecuteScalarAsync(ct).ConfigureAwait(false)
+                ?? throw new ArgumentException($"The netting set {snapshot.NettingSetId:D} does not exist.");
+            currentAgreementId = value is Guid id ? id : null;
+        }
+
+        long? currentAgreementVersion = null;
+        if (currentAgreementId is { } agreementId)
+        {
+            await using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = $"select version from {_options.Schema}.otc_collateral_agreements where collateral_agreement_id = @id for share;";
+            command.Parameters.AddWithValue("id", agreementId);
+            currentAgreementVersion = await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is long version ? version : null;
+        }
+
+        if (currentAgreementId != snapshot.CollateralAgreementId || currentAgreementVersion != snapshot.CollateralAgreementVersion)
+        {
+            throw new ArgumentException(
+                $"Exposure snapshot {snapshot.SnapshotId:D} was computed under {Terms(snapshot.CollateralAgreementId, snapshot.CollateralAgreementVersion)}; " +
+                $"netting set {snapshot.NettingSetId:D} is now under {Terms(currentAgreementId, currentAgreementVersion)}. Recompute the snapshot before issuing a call.");
+        }
+
+        if (currentAgreementId is { } sharedAgreementId)
+        {
+            var others = (await ReadNettingSetIdsUnderAgreementAsync(connection, transaction, sharedAgreementId, ct).ConfigureAwait(false))
+                .Where(id => id != snapshot.NettingSetId)
+                .ToArray();
+            if (others.Length > 0)
+            {
+                throw new ArgumentException(
+                    $"Collateral agreement {sharedAgreementId:D} is also referenced by netting set(s) {string.Join(", ", others.Select(id => id.ToString("D")))}; " +
+                    "credit support is not allocated across netting sets in this increment, so no call is issued under it.");
+            }
+        }
+
+        static string Terms(Guid? agreementId, long? version)
+            => agreementId is { } id
+                ? $"collateral agreement {id:D} version {version?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "unknown"}"
+                : "no collateral agreement";
+    }
+
+    private async Task<IReadOnlyList<Guid>> ReadNettingSetIdsUnderAgreementAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction, Guid collateralAgreementId, CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"select netting_set_id from {_options.Schema}.otc_netting_sets where collateral_agreement_id = @id order by netting_set_id;";
+        command.Parameters.AddWithValue("id", collateralAgreementId);
+        var ids = new List<Guid>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            ids.Add(reader.GetGuid(0));
+        return ids;
     }
 
     private async Task<int> LatestVersionAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, Guid nettingSetId, DateOnly asOfDate, CancellationToken ct)

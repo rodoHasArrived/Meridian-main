@@ -46,10 +46,14 @@ The OTC contract model is served by two `SecurityMasterEndpoints` partials.
 sets and contracts; `SecurityMasterEndpoints.OtcCollateral.cs` maps exposure snapshots (compute
 and append under `/otc/netting-sets/{id}/exposure-snapshots`, list and read), collateral balances
 and margin calls (issue, and one `/transition` route with an action enum for agree, dispute, settle
-and cancel). Reads need `ViewSecurityMaster`; writes need `ModifySecurityMaster`, pass the mutation
-rate limit, stamp the session actor over any body `UpdatedBy`, answer 400 on a rule failure and
-404 for an unknown netting set, snapshot or call. No browser or WPF screen consumes these routes
-yet; the workstation collateral exposure read model is unchanged.
+and cancel). The collateral routes map only when `IOtcCollateralStore` and `IOtcExposureService`
+are registered, so a host without the Security Master database leaves them unavailable. Reads need
+`ViewSecurityMaster` and answer 404 for an unknown snapshot or call; writes need
+`ModifySecurityMaster`, pass the mutation rate limit, stamp the session actor over any body
+`UpdatedBy` and answer 400 on a rule failure. Computing a snapshot for an unknown netting set is a
+404; issuing from an unknown snapshot or transitioning an unknown call is a 400, because the store
+refuses it as a rule failure. No browser or WPF screen consumes these routes yet; the workstation
+collateral exposure read model is unchanged.
 
 Trading readiness includes every supplied acceptance gate in aggregate status and evidence
 summaries, including broker execution reconciliation and portfolio recovery. Every non-ready

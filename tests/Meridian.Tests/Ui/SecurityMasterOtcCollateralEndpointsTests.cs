@@ -16,8 +16,10 @@ namespace Meridian.Tests.Ui;
 
 /// <summary>
 /// The exposure, collateral balance and margin call routes: every write stamps the session actor
-/// and discards the body's, a rule failure is a 400, an unknown netting set, snapshot or call is a
-/// 404, and reads pass the store's answer through.
+/// and discards the body's and needs Modify permission, a rule failure is a 400, computing for an
+/// unknown netting set and reading an unknown snapshot or call are 404s, issuing from an unknown
+/// snapshot or moving an unknown call is a 400 (the store refuses it as a rule failure), reads pass
+/// the store's answer through, and a host without the collateral services maps none of the routes.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class SecurityMasterOtcCollateralEndpointsTests
@@ -129,6 +131,13 @@ public sealed class SecurityMasterOtcCollateralEndpointsTests
         (await client.GetFromJsonAsync<List<OtcMarginCallDto>>($"/api/security-master/otc/netting-sets/{nettingSetId}/margin-calls", Json)).Should().ContainSingle();
         (await client.GetAsync($"/api/security-master/otc/margin-calls/{Guid.NewGuid()}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
 
+        store.IssueMarginCallAsync(Arg.Any<IssueOtcMarginCallRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<OtcMarginCallDto>(new ArgumentException("The exposure snapshot does not exist.")));
+        using var issueRefused = await client.PostAsJsonAsync("/api/security-master/otc/margin-calls",
+            new IssueOtcMarginCallRequest(Guid.NewGuid(), OtcMovementKind.Delivery, OtcMovementParty.Fund, AsOf, null, null, null), Json);
+        issueRefused.StatusCode.Should().Be(HttpStatusCode.BadRequest, "an unknown snapshot is refused by the store as a rule failure");
+        (await issueRefused.Content.ReadAsStringAsync()).Should().Contain("does not exist");
+
         store.TransitionMarginCallAsync(Arg.Any<TransitionOtcMarginCallRequest>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<OtcMarginCallDto>(new ArgumentException("Call is Settled and can no longer change.")));
         using var refused = await client.PostAsJsonAsync($"/api/security-master/otc/margin-calls/{call.CallId}/transition",
@@ -139,7 +148,9 @@ public sealed class SecurityMasterOtcCollateralEndpointsTests
     [Fact]
     public async Task Writes_WithoutModifyPermission_AreForbidden()
     {
-        await using var app = await CreateAppAsync(Substitute.For<IOtcCollateralStore>(), Substitute.For<IOtcExposureService>(), UserPermission.ViewSecurityMaster);
+        var store = Substitute.For<IOtcCollateralStore>();
+        var exposure = Substitute.For<IOtcExposureService>();
+        await using var app = await CreateAppAsync(store, exposure, UserPermission.ViewSecurityMaster);
         var client = app.GetTestClient();
 
         (await client.PostAsJsonAsync("/api/security-master/otc/collateral-balances",
@@ -147,7 +158,33 @@ public sealed class SecurityMasterOtcCollateralEndpointsTests
             .StatusCode.Should().Be(HttpStatusCode.Forbidden);
         (await client.PostAsJsonAsync($"/api/security-master/otc/netting-sets/{Guid.NewGuid()}/exposure-snapshots", new ComputeOtcExposureSnapshotRequest(AsOf), Json))
             .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.PostAsJsonAsync("/api/security-master/otc/margin-calls",
+            new IssueOtcMarginCallRequest(Guid.NewGuid(), OtcMovementKind.Delivery, OtcMovementParty.Fund, AsOf), Json))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.PostAsJsonAsync($"/api/security-master/otc/margin-calls/{Guid.NewGuid()}/transition",
+            new TransitionOtcMarginCallRequest(Guid.NewGuid(), OtcMarginCallAction.Agree), Json))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
         (await client.GetAsync($"/api/security-master/otc/netting-sets/{Guid.NewGuid()}/margin-calls")).StatusCode.Should().Be(HttpStatusCode.OK, "reads need only view permission");
+
+        await store.DidNotReceiveWithAnyArgs().UpsertCollateralBalanceAsync(default!, default);
+        await store.DidNotReceiveWithAnyArgs().IssueMarginCallAsync(default!, default);
+        await store.DidNotReceiveWithAnyArgs().TransitionMarginCallAsync(default!, default);
+        await exposure.DidNotReceiveWithAnyArgs().ComputeAsync(default, default, default!, default, default);
+    }
+
+    [Fact]
+    public async Task AHostWithoutTheCollateralServices_MapsNoneOfTheRoutes()
+    {
+        await using var app = await CreateAppAsync(null, null);
+        var client = app.GetTestClient();
+
+        (await client.PostAsJsonAsync($"/api/security-master/otc/netting-sets/{Guid.NewGuid()}/exposure-snapshots", new ComputeOtcExposureSnapshotRequest(AsOf), Json))
+            .StatusCode.Should().Be(HttpStatusCode.NotFound, "the route is unavailable rather than a 500 from an unresolvable service");
+        (await client.GetAsync($"/api/security-master/otc/exposure-snapshots/{Guid.NewGuid()}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+        (await client.PostAsJsonAsync("/api/security-master/otc/margin-calls",
+            new IssueOtcMarginCallRequest(Guid.NewGuid(), OtcMovementKind.Delivery, OtcMovementParty.Fund, AsOf), Json))
+            .StatusCode.Should().Be(HttpStatusCode.NotFound);
+        (await client.GetAsync($"/api/security-master/otc/netting-sets/{Guid.NewGuid()}/margin-calls")).StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     private static OtcExposureSnapshotDto Snapshot(Guid nettingSetId)
@@ -168,15 +205,17 @@ public sealed class SecurityMasterOtcCollateralEndpointsTests
         => new(Guid.NewGuid(), nettingSetId, Guid.NewGuid(), Guid.NewGuid(), OtcMovementKind.Delivery, OtcMovementParty.Fund, "USD", 330_000m, null,
             OtcMarginCallStatus.Issued, AsOf, AsOf.AddDays(1), null, null, null, null, 1, "casey.doyle", DateTimeOffset.UtcNow);
 
-    private static async Task<WebApplication> CreateAppAsync(IOtcCollateralStore store, IOtcExposureService exposure, UserPermission permissions = UserPermission.ModifySecurityMaster)
+    private static async Task<WebApplication> CreateAppAsync(IOtcCollateralStore? store, IOtcExposureService? exposure, UserPermission permissions = UserPermission.ModifySecurityMaster)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(Substitute.For<ISecurityMasterQueryService>());
         builder.Services.AddSingleton(Substitute.For<ISecurityMasterService>());
         builder.Services.AddSingleton(Substitute.For<IOtcContractStore>());
-        builder.Services.AddSingleton(store);
-        builder.Services.AddSingleton(exposure);
+        if (store is not null)
+            builder.Services.AddSingleton(store);
+        if (exposure is not null)
+            builder.Services.AddSingleton(exposure);
 
         var app = builder.Build();
         app.Use(async (context, next) =>

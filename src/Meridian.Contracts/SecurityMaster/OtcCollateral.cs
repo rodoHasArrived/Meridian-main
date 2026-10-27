@@ -63,7 +63,9 @@ public enum OtcMarginCallAction
 /// <summary>
 /// Collateral posted or received under a collateral agreement: one eligible-collateral line,
 /// its quantity and unit value, the valued amount they multiply to, the haircut copied from the
-/// agreement and the date the valuation is good for. A zero quantity is a fully returned line.
+/// agreement when the balance was written and the date the valuation is good for. A zero quantity
+/// is a fully returned line. A snapshot applies the line's haircut as the agreement states it at
+/// computation time, so the copy here records what applied when the balance was written.
 /// </summary>
 public sealed record OtcCollateralBalanceDto(
     Guid BalanceId,
@@ -156,6 +158,12 @@ public interface IOtcCollateralStore
     Task<OtcCollateralBalanceDto> UpsertCollateralBalanceAsync(UpsertOtcCollateralBalanceRequest request, CancellationToken ct = default);
     Task<IReadOnlyList<OtcCollateralBalanceDto>> ListCollateralBalancesAsync(Guid collateralAgreementId, CancellationToken ct = default);
 
+    /// <summary>
+    /// The netting sets that reference a collateral agreement, in id order. More than one means the
+    /// agreement's balances would be credited to each, which a computation refuses to do.
+    /// </summary>
+    Task<IReadOnlyList<Guid>> ListNettingSetsUnderCollateralAgreementAsync(Guid collateralAgreementId, CancellationToken ct = default);
+
     Task<OtcMarginCallDto> IssueMarginCallAsync(IssueOtcMarginCallRequest request, CancellationToken ct = default);
     Task<OtcMarginCallDto> TransitionMarginCallAsync(TransitionOtcMarginCallRequest request, CancellationToken ct = default);
     Task<OtcMarginCallDto?> GetMarginCallAsync(Guid callId, CancellationToken ct = default);
@@ -187,6 +195,8 @@ public static class OtcCollateralRules
                 : "A recorded collateral quantity must be positive.", nameof(request));
         if (request.UnitValue <= 0m)
             throw new ArgumentException("A collateral unit value must be positive.", nameof(request));
+        if (request.ValuedAsOf == default)
+            throw new ArgumentException("A collateral balance states the date its valuation is good for.", nameof(request));
         if (request.SecurityId == Guid.Empty)
             throw new ArgumentException("A collateral security, when named, must be identified.", nameof(request));
         if (request.Kind == OtcCollateralKind.Cash)
@@ -212,8 +222,18 @@ public static class OtcCollateralRules
     {
         ArgumentNullException.ThrowIfNull(agreement);
         var wanted = NormalizeOptional(description) ?? throw new ArgumentException("A collateral balance names the eligible collateral it is posted as.", nameof(description));
-        return agreement.EligibleCollateral.FirstOrDefault(line => string.Equals(line.Description, wanted, StringComparison.OrdinalIgnoreCase))
+        return FindEligible(agreement, wanted)
             ?? throw new ArgumentException($"'{wanted}' is not eligible under this collateral agreement.", nameof(description));
+    }
+
+    /// <summary>The agreement's eligible-collateral line with this description regardless of case, or null when there is none.</summary>
+    public static OtcEligibleCollateralDto? FindEligible(OtcCollateralAgreementDto agreement, string? description)
+    {
+        ArgumentNullException.ThrowIfNull(agreement);
+        var wanted = NormalizeOptional(description);
+        return wanted is null
+            ? null
+            : agreement.EligibleCollateral.FirstOrDefault(line => string.Equals(line.Description, wanted, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>The valued amount of a balance: quantity times unit value, computed, never supplied.</summary>
@@ -226,7 +246,9 @@ public static class OtcCollateralRules
 
 /// <summary>
 /// The margin call lifecycle as pure functions. A call is issued from a complete, real snapshot
-/// and copies the movement's amount; it then moves Issued → Agreed | Disputed | Cancelled,
+/// (the store also requires it to be the latest version for its date and computed under the
+/// netting set's current, unshared collateral agreement version) and copies the movement's amount;
+/// it then moves Issued → Agreed | Disputed | Cancelled,
 /// Disputed → Agreed | Cancelled, Agreed → Settled | Cancelled, and Settled and Cancelled are
 /// terminal. Settlement does not move a balance; the operator records the resulting balance.
 /// </summary>
