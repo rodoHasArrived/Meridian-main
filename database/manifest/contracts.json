@@ -4385,7 +4385,7 @@
       ]
     }
   ],
-  "fingerprint": "1437bfda5c6641ba6a418641bc0091826bd0065b394d45f174876708035276e7",
+  "fingerprint": "74882140a0a7ada28a0a13445d124a0c7741b6851ece4ef8004d61e8556d8b02",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6413,7 +6413,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "fab99cb0cd3c188cd1f5f46469684f1b673e6fc086b619d1506b2c64c53d8ac3",
+      "fingerprint": "430bcf104b6378c8655e97b5b0d3738babc0fa21f27a6a99590a75a5d45436a3",
       "mapped_schemas": [
         "security_master"
       ],
@@ -220264,7 +220264,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "1e1a6f6fc81f6159b23ffe33232f1068429831ae785c5ae77a0e7c9edc87cc0a",
+      "fingerprint": "19d724f5bc13d2d7ea81e2ccc9a0145a7e24e666d83d86c95e02f97d36f37ea5",
       "full_name": "Meridian.Contracts.SecurityMaster.ComputeOtcExposureSnapshotRequest",
       "id": "Meridian.Contracts.SecurityMaster.ComputeOtcExposureSnapshotRequest",
       "kind": "record",
@@ -220283,7 +220283,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 177,
+          "source_line": 196,
           "type": "DateOnly"
         },
         {
@@ -220298,7 +220298,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset?",
-          "source_line": 177,
+          "source_line": 196,
           "type": "DateTimeOffset?"
         }
       ],
@@ -220308,12 +220308,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.ComputeOtcExposureSnapshotRequest",
       "references": [],
       "source": {
-        "line": 177,
+        "line": 196,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
       },
       "sources": [
         {
-          "line": 177,
+          "line": 196,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
         }
       ],
@@ -234032,7 +234032,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "68f57838b4077f660263713287473e7f1d917101ec0330124cd202a07155bba0",
+      "fingerprint": "6e554bf023e3864c868df338167a0b8bccf43cd9323664798407484ecb40e85b",
       "full_name": "Meridian.Contracts.SecurityMaster.IOtcCollateralStore",
       "id": "Meridian.Contracts.SecurityMaster.IOtcCollateralStore",
       "kind": "interface",
@@ -234046,12 +234046,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.IOtcCollateralStore",
       "references": [],
       "source": {
-        "line": 149,
+        "line": 151,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
       },
       "sources": [
         {
-          "line": 149,
+          "line": 151,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
         }
       ],
@@ -234146,7 +234146,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e908b5d7ed6f88aa4a73dcf5219b6b02d6309ef95718494a573788ae252bbd1a",
+      "fingerprint": "b0d7b484dbda2b299e940d753e24581ba68c5b533d21a9166346a07dae0ab557",
       "full_name": "Meridian.Contracts.SecurityMaster.IOtcExposureService",
       "id": "Meridian.Contracts.SecurityMaster.IOtcExposureService",
       "kind": "interface",
@@ -234160,12 +234160,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.IOtcExposureService",
       "references": [],
       "source": {
-        "line": 180,
+        "line": 199,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
       },
       "sources": [
         {
-          "line": 180,
+          "line": 199,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
         }
       ],
@@ -234792,7 +234792,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "90489cc27325d0ee396ee9f7e5282237690df2cc7194bfbc70088a4578695f66",
+      "fingerprint": "16b7c508f358992e5980e9a33b121234df7af0242dcb11a51fa55f71d0065b57",
       "full_name": "Meridian.Contracts.SecurityMaster.IssueOtcMarginCallRequest",
       "id": "Meridian.Contracts.SecurityMaster.IssueOtcMarginCallRequest",
       "kind": "record",
@@ -234812,7 +234812,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 134,
+          "source_line": 136,
           "type": "DateOnly?"
         },
         {
@@ -234826,7 +234826,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 133,
+          "source_line": 135,
           "type": "DateOnly"
         },
         {
@@ -234840,7 +234840,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcMovementKind",
-          "source_line": 131,
+          "source_line": 133,
           "type": "OtcMovementKind"
         },
         {
@@ -234854,7 +234854,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcMovementParty",
-          "source_line": 132,
+          "source_line": 134,
           "type": "OtcMovementParty"
         },
         {
@@ -234869,7 +234869,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 135,
+          "source_line": 137,
           "type": "string?"
         },
         {
@@ -234883,7 +234883,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 130,
+          "source_line": 132,
           "type": "Guid"
         },
         {
@@ -234898,7 +234898,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 136,
+          "source_line": 138,
           "type": "string?"
         }
       ],
@@ -234911,12 +234911,12 @@
         "Meridian.Contracts.SecurityMaster.OtcMovementParty"
       ],
       "source": {
-        "line": 129,
+        "line": 131,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
       },
       "sources": [
         {
-          "line": 129,
+          "line": 131,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
         }
       ],
@@ -236212,7 +236212,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "9b6f629c7de1f2c75859fe7a5bb269c3740e359e8a1a95bed5ab4168efd96445",
+      "fingerprint": "78b9331224efcf8bbd09cd6c3ac00e1f1e8b8457128ba8d300504175f63f4829",
       "full_name": "Meridian.Contracts.SecurityMaster.OtcCollateralBalanceDto",
       "id": "Meridian.Contracts.SecurityMaster.OtcCollateralBalanceDto",
       "kind": "record",
@@ -236231,7 +236231,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 69,
+          "source_line": 71,
           "type": "Guid"
         },
         {
@@ -236245,7 +236245,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 70,
+          "source_line": 72,
           "type": "Guid"
         },
         {
@@ -236259,7 +236259,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 75,
+          "source_line": 77,
           "type": "string"
         },
         {
@@ -236273,7 +236273,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcCollateralDirection",
-          "source_line": 71,
+          "source_line": 73,
           "type": "OtcCollateralDirection"
         },
         {
@@ -236287,7 +236287,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 73,
+          "source_line": 75,
           "type": "string"
         },
         {
@@ -236301,7 +236301,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 79,
+          "source_line": 81,
           "type": "decimal"
         },
         {
@@ -236315,7 +236315,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcCollateralKind",
-          "source_line": 72,
+          "source_line": 74,
           "type": "OtcCollateralKind"
         },
         {
@@ -236329,7 +236329,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 82,
+          "source_line": 84,
           "type": "string?"
         },
         {
@@ -236343,7 +236343,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 76,
+          "source_line": 78,
           "type": "decimal"
         },
         {
@@ -236357,7 +236357,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 81,
+          "source_line": 83,
           "type": "string?"
         },
         {
@@ -236371,7 +236371,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 74,
+          "source_line": 76,
           "type": "Guid?"
         },
         {
@@ -236385,7 +236385,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 77,
+          "source_line": 79,
           "type": "decimal"
         },
         {
@@ -236399,7 +236399,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 85,
+          "source_line": 87,
           "type": "DateTimeOffset"
         },
         {
@@ -236413,7 +236413,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 84,
+          "source_line": 86,
           "type": "string"
         },
         {
@@ -236427,7 +236427,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 78,
+          "source_line": 80,
           "type": "decimal"
         },
         {
@@ -236441,7 +236441,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 80,
+          "source_line": 82,
           "type": "DateOnly"
         },
         {
@@ -236455,7 +236455,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 83,
+          "source_line": 85,
           "type": "long"
         }
       ],
@@ -236468,12 +236468,12 @@
         "Meridian.Contracts.SecurityMaster.OtcCollateralKind"
       ],
       "source": {
-        "line": 68,
+        "line": 70,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
       },
       "sources": [
         {
-          "line": 68,
+          "line": 70,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
         }
       ],
@@ -236543,7 +236543,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "7a969a9efe4a562b15a0de987340180b5c93a7cdd1c440c439f762bd4ff69357",
+      "fingerprint": "268c1b852dd16964e329a37d37c1ebbb545a490321e239f99c6dc892fd742647",
       "full_name": "Meridian.Contracts.SecurityMaster.OtcCollateralHeldLineDto",
       "id": "Meridian.Contracts.SecurityMaster.OtcCollateralHeldLineDto",
       "kind": "record",
@@ -236562,7 +236562,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 117,
+          "source_line": 135,
           "type": "Guid"
         },
         {
@@ -236576,7 +236576,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 120,
+          "source_line": 138,
           "type": "string"
         },
         {
@@ -236590,7 +236590,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcCollateralDirection",
-          "source_line": 118,
+          "source_line": 136,
           "type": "OtcCollateralDirection"
         },
         {
@@ -236604,7 +236604,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 123,
+          "source_line": 141,
           "type": "decimal"
         },
         {
@@ -236618,7 +236618,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 122,
+          "source_line": 140,
           "type": "decimal"
         },
         {
@@ -236632,7 +236632,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcCollateralKind",
-          "source_line": 119,
+          "source_line": 137,
           "type": "OtcCollateralKind"
         },
         {
@@ -236646,7 +236646,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 121,
+          "source_line": 139,
           "type": "decimal"
         },
         {
@@ -236660,7 +236660,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 124,
+          "source_line": 142,
           "type": "DateOnly"
         }
       ],
@@ -236673,12 +236673,12 @@
         "Meridian.Contracts.SecurityMaster.OtcCollateralKind"
       ],
       "source": {
-        "line": 116,
+        "line": 134,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
       },
       "sources": [
         {
-          "line": 116,
+          "line": 134,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
         }
       ],
@@ -236699,7 +236699,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "ff3c4f07637d029af199e61a12cda0f62a57d51a98c368340d9669c3143a290b",
+      "fingerprint": "b992d44f6dcdb4fdede7224a5c5ca68a6ad54215567794c9627bd984d312cab9",
       "full_name": "Meridian.Contracts.SecurityMaster.OtcCollateralJsonContext",
       "id": "Meridian.Contracts.SecurityMaster.OtcCollateralJsonContext",
       "kind": "class",
@@ -236713,12 +236713,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.OtcCollateralJsonContext",
       "references": [],
       "source": {
-        "line": 373,
+        "line": 395,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
       },
       "sources": [
         {
-          "line": 373,
+          "line": 395,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
         }
       ],
@@ -236788,7 +236788,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "55ccecbce07d7dbfa0fc0a2270c64d22e0721fda6ce4a1e74e8c831be3842929",
+      "fingerprint": "fa112a0fd81c7ae1678431cfabc7646b842beb13efc0960cbf56f7c0eedd6efb",
       "full_name": "Meridian.Contracts.SecurityMaster.OtcCollateralMovementDto",
       "id": "Meridian.Contracts.SecurityMaster.OtcCollateralMovementDto",
       "kind": "record",
@@ -236807,7 +236807,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 112,
+          "source_line": 127,
           "type": "decimal"
         },
         {
@@ -236821,7 +236821,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 113,
+          "source_line": 128,
           "type": "string"
         },
         {
@@ -236835,7 +236835,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcMovementKind",
-          "source_line": 110,
+          "source_line": 125,
           "type": "OtcMovementKind"
         },
         {
@@ -236849,7 +236849,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcMovementParty",
-          "source_line": 111,
+          "source_line": 126,
           "type": "OtcMovementParty"
         }
       ],
@@ -236862,12 +236862,12 @@
         "Meridian.Contracts.SecurityMaster.OtcMovementParty"
       ],
       "source": {
-        "line": 109,
+        "line": 124,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
       },
       "sources": [
         {
-          "line": 109,
+          "line": 124,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
         }
       ],
@@ -236886,7 +236886,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "7337604b530a27d2c25360fb5ba1e1f5676b2abeebb1be43d1dfc90f1c9d9950",
+      "fingerprint": "7156be5ba6fff02f945d7da89f50b090f6240761f1ee20db8b931db6d4e0547a",
       "full_name": "Meridian.Contracts.SecurityMaster.OtcCollateralRules",
       "id": "Meridian.Contracts.SecurityMaster.OtcCollateralRules",
       "kind": "class",
@@ -236900,12 +236900,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.OtcCollateralRules",
       "references": [],
       "source": {
-        "line": 170,
+        "line": 178,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
       },
       "sources": [
         {
-          "line": 170,
+          "line": 178,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
         }
       ],
@@ -237670,7 +237670,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "9b937e9bf5bdaa9733fcc28db5081f40fdb4bc0d1d240dc234c89b513607e82e",
+      "fingerprint": "fefc5b076b3a82d8d6b9acafb5ebc67c4831e59122d3b65aa355a41ca71830a4",
       "full_name": "Meridian.Contracts.SecurityMaster.OtcCreditSupportSideDto",
       "id": "Meridian.Contracts.SecurityMaster.OtcCreditSupportSideDto",
       "kind": "record",
@@ -237689,7 +237689,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 138,
+          "source_line": 156,
           "type": "decimal"
         },
         {
@@ -237703,7 +237703,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 140,
+          "source_line": 158,
           "type": "decimal"
         },
         {
@@ -237717,7 +237717,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 134,
+          "source_line": 152,
           "type": "decimal"
         },
         {
@@ -237731,7 +237731,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 139,
+          "source_line": 157,
           "type": "decimal"
         },
         {
@@ -237745,7 +237745,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 135,
+          "source_line": 153,
           "type": "decimal"
         },
         {
@@ -237759,7 +237759,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 136,
+          "source_line": 154,
           "type": "decimal"
         },
         {
@@ -237773,7 +237773,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "OtcCollateralMovementDto?",
-          "source_line": 142,
+          "source_line": 160,
           "type": "OtcCollateralMovementDto?"
         },
         {
@@ -237787,7 +237787,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 141,
+          "source_line": 159,
           "type": "decimal"
         },
         {
@@ -237801,7 +237801,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcMovementParty",
-          "source_line": 133,
+          "source_line": 151,
           "type": "OtcMovementParty"
         },
         {
@@ -237815,7 +237815,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 137,
+          "source_line": 155,
           "type": "decimal"
         }
       ],
@@ -237828,12 +237828,12 @@
         "Meridian.Contracts.SecurityMaster.OtcMovementParty"
       ],
       "source": {
-        "line": 132,
+        "line": 150,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
       },
       "sources": [
         {
-          "line": 132,
+          "line": 150,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
         }
       ],
@@ -237933,7 +237933,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "e0be39c003db34e9c6eb593aa726074c59e106c2b8c64b5e79051e36287622bd",
+      "fingerprint": "cf7c880316bbd958fccdb4b1940675fb384b82433e60cccf70fe0781622af330",
       "full_name": "Meridian.Contracts.SecurityMaster.OtcExposureRules",
       "id": "Meridian.Contracts.SecurityMaster.OtcExposureRules",
       "kind": "class",
@@ -237947,12 +237947,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.OtcExposureRules",
       "references": [],
       "source": {
-        "line": 195,
+        "line": 217,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
       },
       "sources": [
         {
-          "line": 195,
+          "line": 217,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
         }
       ],
@@ -237971,7 +237971,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "f9319976c79afb80adf3e21da1a45392061c7031ed33fa47c086c806cd558bb1",
+      "fingerprint": "b32eea90409abc7ed3fd1d8585af23c24634ae88dc965aa47e6fcc71b9eecc8a",
       "full_name": "Meridian.Contracts.SecurityMaster.OtcExposureSnapshotDto",
       "id": "Meridian.Contracts.SecurityMaster.OtcExposureSnapshotDto",
       "kind": "record",
@@ -237990,7 +237990,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 154,
+          "source_line": 173,
           "type": "DateOnly"
         },
         {
@@ -238004,7 +238004,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OtcValuationBlockerDto>",
-          "source_line": 171,
+          "source_line": 190,
           "type": "IReadOnlyList<OtcValuationBlockerDto>"
         },
         {
@@ -238018,7 +238018,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 153,
+          "source_line": 172,
           "type": "Guid?"
         },
         {
@@ -238032,7 +238032,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "long?",
-          "source_line": 162,
+          "source_line": 181,
           "type": "long?"
         },
         {
@@ -238046,7 +238046,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OtcCollateralHeldLineDto>",
-          "source_line": 169,
+          "source_line": 188,
           "type": "IReadOnlyList<OtcCollateralHeldLineDto>"
         },
         {
@@ -238060,7 +238060,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 174,
+          "source_line": 193,
           "type": "DateTimeOffset"
         },
         {
@@ -238074,7 +238074,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 173,
+          "source_line": 192,
           "type": "string"
         },
         {
@@ -238088,7 +238088,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OtcContractValuationDto>",
-          "source_line": 163,
+          "source_line": 182,
           "type": "IReadOnlyList<OtcContractValuationDto>"
         },
         {
@@ -238099,11 +238099,11 @@
           "json_name": null,
           "key_type": null,
           "name": "CounterpartyAsSecuredParty",
-          "nullable": false,
+          "nullable": true,
           "origin": "positional_parameter",
-          "raw_type": "OtcCreditSupportSideDto",
-          "source_line": 168,
-          "type": "OtcCreditSupportSideDto"
+          "raw_type": "OtcCreditSupportSideDto?",
+          "source_line": 187,
+          "type": "OtcCreditSupportSideDto?"
         },
         {
           "collection": false,
@@ -238116,7 +238116,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 157,
+          "source_line": 176,
           "type": "string"
         },
         {
@@ -238127,11 +238127,11 @@
           "json_name": null,
           "key_type": null,
           "name": "FundAsSecuredParty",
-          "nullable": false,
+          "nullable": true,
           "origin": "positional_parameter",
-          "raw_type": "OtcCreditSupportSideDto",
-          "source_line": 167,
-          "type": "OtcCreditSupportSideDto"
+          "raw_type": "OtcCreditSupportSideDto?",
+          "source_line": 186,
+          "type": "OtcCreditSupportSideDto?"
         },
         {
           "collection": false,
@@ -238144,7 +238144,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 165,
+          "source_line": 184,
           "type": "decimal"
         },
         {
@@ -238158,7 +238158,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 164,
+          "source_line": 183,
           "type": "decimal"
         },
         {
@@ -238172,7 +238172,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 152,
+          "source_line": 171,
           "type": "Guid"
         },
         {
@@ -238186,7 +238186,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 161,
+          "source_line": 180,
           "type": "long"
         },
         {
@@ -238200,7 +238200,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OtcCollateralMovementDto>",
-          "source_line": 170,
+          "source_line": 189,
           "type": "IReadOnlyList<OtcCollateralMovementDto>"
         },
         {
@@ -238214,7 +238214,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 166,
+          "source_line": 185,
           "type": "decimal"
         },
         {
@@ -238228,7 +238228,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcNettingBasis",
-          "source_line": 158,
+          "source_line": 177,
           "type": "OtcNettingBasis"
         },
         {
@@ -238242,7 +238242,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 151,
+          "source_line": 170,
           "type": "Guid"
         },
         {
@@ -238256,7 +238256,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 172,
+          "source_line": 191,
           "type": "string"
         },
         {
@@ -238270,7 +238270,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DataProvenance",
-          "source_line": 160,
+          "source_line": 179,
           "type": "DataProvenance"
         },
         {
@@ -238284,7 +238284,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 156,
+          "source_line": 175,
           "type": "string"
         },
         {
@@ -238298,7 +238298,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 150,
+          "source_line": 169,
           "type": "Guid"
         },
         {
@@ -238312,7 +238312,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcExposureSnapshotStatus",
-          "source_line": 159,
+          "source_line": 178,
           "type": "OtcExposureSnapshotStatus"
         },
         {
@@ -238326,7 +238326,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 155,
+          "source_line": 174,
           "type": "int"
         }
       ],
@@ -238345,12 +238345,12 @@
         "Meridian.Contracts.SecurityMaster.OtcValuationBlockerDto"
       ],
       "source": {
-        "line": 149,
+        "line": 168,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
       },
       "sources": [
         {
-          "line": 149,
+          "line": 168,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
         }
       ],
@@ -238372,17 +238372,17 @@
         {
           "explicit_value": false,
           "name": "Complete",
-          "source_line": 104,
+          "source_line": 119,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Incomplete",
-          "source_line": 105,
+          "source_line": 120,
           "value": null
         }
       ],
-      "fingerprint": "cbe0596520c896a621d0f3b45d284196b9a1f1ed836f53fad6ed6c285d8ea0e5",
+      "fingerprint": "f45c5250f76083fe0922b9156d87f68cdab9998e4019014028deb2793ff2f8e8",
       "full_name": "Meridian.Contracts.SecurityMaster.OtcExposureSnapshotStatus",
       "id": "Meridian.Contracts.SecurityMaster.OtcExposureSnapshotStatus",
       "kind": "enum",
@@ -238396,12 +238396,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.OtcExposureSnapshotStatus",
       "references": [],
       "source": {
-        "line": 102,
+        "line": 117,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
       },
       "sources": [
         {
-          "line": 102,
+          "line": 117,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
         }
       ],
@@ -238483,7 +238483,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "10667d967be190d39e7e3776eaf1c4afe98363936598c1cd49dbfad22df07bab",
+      "fingerprint": "175e630ff866060992182962a054ff27440a0945cabc0f20a83a2a46df58f584",
       "full_name": "Meridian.Contracts.SecurityMaster.OtcMarginCallDto",
       "id": "Meridian.Contracts.SecurityMaster.OtcMarginCallDto",
       "kind": "record",
@@ -238502,7 +238502,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 116,
+          "source_line": 118,
           "type": "decimal?"
         },
         {
@@ -238516,7 +238516,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 115,
+          "source_line": 117,
           "type": "decimal"
         },
         {
@@ -238530,7 +238530,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 108,
+          "source_line": 110,
           "type": "Guid"
         },
         {
@@ -238544,7 +238544,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 110,
+          "source_line": 112,
           "type": "Guid"
         },
         {
@@ -238558,7 +238558,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 114,
+          "source_line": 116,
           "type": "string"
         },
         {
@@ -238572,7 +238572,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 120,
+          "source_line": 122,
           "type": "string?"
         },
         {
@@ -238586,7 +238586,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 119,
+          "source_line": 121,
           "type": "DateOnly?"
         },
         {
@@ -238600,7 +238600,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 118,
+          "source_line": 120,
           "type": "DateOnly"
         },
         {
@@ -238614,7 +238614,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcMovementKind",
-          "source_line": 112,
+          "source_line": 114,
           "type": "OtcMovementKind"
         },
         {
@@ -238628,7 +238628,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcMovementParty",
-          "source_line": 113,
+          "source_line": 115,
           "type": "OtcMovementParty"
         },
         {
@@ -238642,7 +238642,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 109,
+          "source_line": 111,
           "type": "Guid"
         },
         {
@@ -238656,7 +238656,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 123,
+          "source_line": 125,
           "type": "string?"
         },
         {
@@ -238670,7 +238670,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 122,
+          "source_line": 124,
           "type": "decimal?"
         },
         {
@@ -238684,7 +238684,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 121,
+          "source_line": 123,
           "type": "DateOnly?"
         },
         {
@@ -238698,7 +238698,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 111,
+          "source_line": 113,
           "type": "Guid"
         },
         {
@@ -238712,7 +238712,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcMarginCallStatus",
-          "source_line": 117,
+          "source_line": 119,
           "type": "OtcMarginCallStatus"
         },
         {
@@ -238726,7 +238726,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 126,
+          "source_line": 128,
           "type": "DateTimeOffset"
         },
         {
@@ -238740,7 +238740,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 125,
+          "source_line": 127,
           "type": "string"
         },
         {
@@ -238754,7 +238754,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 124,
+          "source_line": 126,
           "type": "long"
         }
       ],
@@ -238768,12 +238768,12 @@
         "Meridian.Contracts.SecurityMaster.OtcMovementParty"
       ],
       "source": {
-        "line": 107,
+        "line": 109,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
       },
       "sources": [
         {
-          "line": 107,
+          "line": 109,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
         }
       ],
@@ -238792,7 +238792,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "b4d93aade6e5f5845660ca2497dcb8f8ce554e2e978d77bdabf0f9eb1578a90b",
+      "fingerprint": "c4f10be4005941add4d61e48b8eef1b035d66c638906df2417d0224bf8de78e4",
       "full_name": "Meridian.Contracts.SecurityMaster.OtcMarginCallRules",
       "id": "Meridian.Contracts.SecurityMaster.OtcMarginCallRules",
       "kind": "class",
@@ -238806,12 +238806,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.OtcMarginCallRules",
       "references": [],
       "source": {
-        "line": 233,
+        "line": 255,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
       },
       "sources": [
         {
-          "line": 233,
+          "line": 255,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
         }
       ],
@@ -239282,17 +239282,17 @@
         {
           "explicit_value": false,
           "name": "CloseOutNet",
-          "source_line": 94,
+          "source_line": 109,
           "value": null
         },
         {
           "explicit_value": false,
           "name": "Gross",
-          "source_line": 97,
+          "source_line": 112,
           "value": null
         }
       ],
-      "fingerprint": "3138bfd1c43a24d8b31967c921673c5d69d2e0d4b1534c0c89f6ca49c271722c",
+      "fingerprint": "d758ac0eb104ea60b3b64affd688bc26ec8c0a0f8d1ba99475c31c96cc547ba9",
       "full_name": "Meridian.Contracts.SecurityMaster.OtcNettingBasis",
       "id": "Meridian.Contracts.SecurityMaster.OtcNettingBasis",
       "kind": "enum",
@@ -239306,12 +239306,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.OtcNettingBasis",
       "references": [],
       "source": {
-        "line": 91,
+        "line": 106,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
       },
       "sources": [
         {
-          "line": 91,
+          "line": 106,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcExposure.cs"
         }
       ],
@@ -263107,7 +263107,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "46c000b244611aa7ad6adadd416ff7488fb1a27cebf1d7bb8ccc4e98c81ac938",
+      "fingerprint": "9ab86434998eab7b045e6500cc281f7268faae56c8b7b15ae2a567341bd4b9df",
       "full_name": "Meridian.Contracts.SecurityMaster.TransitionOtcMarginCallRequest",
       "id": "Meridian.Contracts.SecurityMaster.TransitionOtcMarginCallRequest",
       "kind": "record",
@@ -263126,7 +263126,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcMarginCallAction",
-          "source_line": 141,
+          "source_line": 143,
           "type": "OtcMarginCallAction"
         },
         {
@@ -263141,7 +263141,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 142,
+          "source_line": 144,
           "type": "decimal?"
         },
         {
@@ -263155,7 +263155,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 140,
+          "source_line": 142,
           "type": "Guid"
         },
         {
@@ -263170,7 +263170,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 145,
+          "source_line": 147,
           "type": "string?"
         },
         {
@@ -263185,7 +263185,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 143,
+          "source_line": 145,
           "type": "string?"
         },
         {
@@ -263200,7 +263200,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "DateOnly?",
-          "source_line": 144,
+          "source_line": 146,
           "type": "DateOnly?"
         },
         {
@@ -263215,7 +263215,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 146,
+          "source_line": 148,
           "type": "string?"
         }
       ],
@@ -263227,12 +263227,12 @@
         "Meridian.Contracts.SecurityMaster.OtcMarginCallAction"
       ],
       "source": {
-        "line": 139,
+        "line": 141,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
       },
       "sources": [
         {
-          "line": 139,
+          "line": 141,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
         }
       ],
@@ -264196,7 +264196,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "60aa9435017f3c4054f9650f843b9d5c39d2e395eff6d1ec2c64d223095378b0",
+      "fingerprint": "08b921b1718c280ad7dc8e8f746ebecb31b6cb95585783814ff6b729526e9345",
       "full_name": "Meridian.Contracts.SecurityMaster.UpsertOtcCollateralBalanceRequest",
       "id": "Meridian.Contracts.SecurityMaster.UpsertOtcCollateralBalanceRequest",
       "kind": "record",
@@ -264215,7 +264215,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 89,
+          "source_line": 91,
           "type": "Guid?"
         },
         {
@@ -264229,7 +264229,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 90,
+          "source_line": 92,
           "type": "Guid"
         },
         {
@@ -264243,7 +264243,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 95,
+          "source_line": 97,
           "type": "string"
         },
         {
@@ -264257,7 +264257,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcCollateralDirection",
-          "source_line": 91,
+          "source_line": 93,
           "type": "OtcCollateralDirection"
         },
         {
@@ -264271,7 +264271,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 93,
+          "source_line": 95,
           "type": "string"
         },
         {
@@ -264285,7 +264285,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OtcCollateralKind",
-          "source_line": 92,
+          "source_line": 94,
           "type": "OtcCollateralKind"
         },
         {
@@ -264300,7 +264300,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 100,
+          "source_line": 102,
           "type": "string?"
         },
         {
@@ -264314,7 +264314,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 96,
+          "source_line": 98,
           "type": "decimal"
         },
         {
@@ -264329,7 +264329,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 99,
+          "source_line": 101,
           "type": "string?"
         },
         {
@@ -264343,7 +264343,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 94,
+          "source_line": 96,
           "type": "Guid?"
         },
         {
@@ -264357,7 +264357,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 97,
+          "source_line": 99,
           "type": "decimal"
         },
         {
@@ -264372,7 +264372,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 101,
+          "source_line": 103,
           "type": "string?"
         },
         {
@@ -264386,7 +264386,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 98,
+          "source_line": 100,
           "type": "DateOnly"
         }
       ],
@@ -264399,12 +264399,12 @@
         "Meridian.Contracts.SecurityMaster.OtcCollateralKind"
       ],
       "source": {
-        "line": 88,
+        "line": 90,
         "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
       },
       "sources": [
         {
-          "line": 88,
+          "line": 90,
           "path": "src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs"
         }
       ],

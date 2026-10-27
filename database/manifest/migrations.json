@@ -484,7 +484,7 @@
       "ordinal": 54,
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/054_otc_exposure_and_collateral.sql",
       "schema": "security_master",
-      "sha256": "fd9ec9dfb6d1e1cd3783ffe63b32831aa8685724a4f2ec87b5af67310cb71893"
+      "sha256": "48ff7b25729844166716cd3eae41d1bb0caebb035adc1ed9238e2066a70bab9e"
     },
     {
       "filename": "055_security_governance_events_otc_collateral_stream.sql",
@@ -493,7 +493,7 @@
       "ordinal": 55,
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/055_security_governance_events_otc_collateral_stream.sql",
       "schema": "security_master",
-      "sha256": "d3af9e9f932071e6a840e7592e877c949792e20fa248c0aea7dc086e03970e45"
+      "sha256": "d048f44b2107e03d26dd2873738226faf1733d87d728d7cff1e407ee6a9de9f0"
     },
     {
       "filename": "001_direct_lending.sql",
@@ -1334,7 +1334,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "cec10fe67da56392d16ea4d391695464b82b5541a5186203d431ac7b4122ee58",
+  "fingerprint": "28a2e181fc72a175114eba2628e597f067689cc94e874ff85ac1dcfc993b8c58",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {

@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "bf4dec81c4325a60e0797dff428872b3c6d2f653bb57eb64df7786117a624b95",
+  "database_fingerprint": "bccbde559fda3840e887a6be7fd86744aaedb6e85da4fc62e42381ae061e9888",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -19073,7 +19073,7 @@
       "object": "column:security_master.security_governance_events.payload_version"
     },
     {
-      "fingerprint": "e334339dbed467cc07d8990e657c8759a76685af8245e66dbe7dcee89542ae60",
+      "fingerprint": "765c66017fe131c5a3a81f2c943318102ed538d61bfbf704f9eda349045c2a05",
       "object": "column:security_master.security_governance_events.security_id"
     },
     {
@@ -20365,7 +20365,7 @@
       "object": "comment:column:security_master.security_events.payload_version"
     },
     {
-      "fingerprint": "cb926aeb34397cf30ec886222f5a86f3b09ef8dd6244092be3c1327de831d6f5",
+      "fingerprint": "bf2567b286f9d8bdf7c1686a3b2f6a23f0c5b5e835102db49ab6d4fb36aa06a1",
       "object": "comment:column:security_master.security_governance_events.security_id"
     },
     {
@@ -20477,7 +20477,7 @@
       "object": "comment:table:security_master.otc_exposure_snapshots"
     },
     {
-      "fingerprint": "5aecacae6895de219fb1dfb4401ebe9a56050c4ca67064013973d5c6446fc43b",
+      "fingerprint": "f5677c96338e6a59e706433764c4a93295d489c326637f8ee9cdf6a9875c9b49",
       "object": "comment:table:security_master.otc_margin_calls"
     },
     {
@@ -20529,7 +20529,7 @@
       "object": "comment:table:security_master.security_curves"
     },
     {
-      "fingerprint": "ce6d5da0b1a7f481b6097dda0d0549274595dd9518112b8e62aa1dba174a4b32",
+      "fingerprint": "8a7dff8fdaea18834824cd4cbe70c108f1408c0065625ac9d31d76947c2a9d9c",
       "object": "comment:table:security_master.security_governance_events"
     },
     {
@@ -30253,7 +30253,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "6da705b788111ea56ef29b48dd206b1ba3d52d35f13a05ef3ec5e45046d94be3",
+      "fingerprint": "9743ceb6af8422ae1901cf6913024010b8273b6c112874b03b5eac282d5cb107",
       "object": "schema:security_master"
     },
     {
@@ -30953,7 +30953,7 @@
       "object": "table:security_master.otc_exposure_snapshots"
     },
     {
-      "fingerprint": "c290bf1bf45be399ea5fba3ef7a7dcb1c746250ed45f04b561d799b1f80fa55a",
+      "fingerprint": "5b12669fbf5191796c475f27b9aac1f6934c7d9fa51d86941b1b793a55026455",
       "object": "table:security_master.otc_margin_calls"
     },
     {
@@ -31065,7 +31065,7 @@
       "object": "table:security_master.security_field_provenance"
     },
     {
-      "fingerprint": "3746b052361bf315e033d364ebcf82b86e7dc88474e3dcfe8deae46c518e97b0",
+      "fingerprint": "89e666eaeb93b2957f7443e7d6eef88908bab8d6a93f065f0b7023a1a966a5ae",
       "object": "table:security_master.security_governance_events"
     },
     {
@@ -125986,8 +125986,8 @@
           "object_type": "column"
         },
         {
-          "comment": "Affected security; null for batch-level events such as a projection rebuild batch, whose payload lists the securities, and for OTC collateral events, whose payload names the netting set or collateral agreement.",
-          "fingerprint": "cb926aeb34397cf30ec886222f5a86f3b09ef8dd6244092be3c1327de831d6f5",
+          "comment": "Affected security; null for batch-level events such as a projection rebuild batch, whose payload lists the securities, for stored-curve events (Curves), whose payload names the curve, and for OTC collateral events (OtcCollateral), whose payload names the netting set or collateral agreement.",
+          "fingerprint": "bf2567b286f9d8bdf7c1686a3b2f6a23f0c5b5e835102db49ab6d4fb36aa06a1",
           "object": "security_master.security_governance_events.security_id",
           "object_type": "column"
         },
@@ -126112,8 +126112,8 @@
           "object_type": "table"
         },
         {
-          "comment": "Margin calls issued from an exposure snapshot: one movement (delivery or return, by the fund or the counterparty) with its called, agreed and settled amounts and its lifecycle status. At most one call per netting set and mover is open at a time.",
-          "fingerprint": "5aecacae6895de219fb1dfb4401ebe9a56050c4ca67064013973d5c6446fc43b",
+          "comment": "Margin calls issued from an exposure snapshot: one movement (delivery or return, by the fund or the counterparty) with its called, agreed and settled amounts and its lifecycle status. At most one call per netting set, mover and movement kind is open at a time.",
+          "fingerprint": "f5677c96338e6a59e706433764c4a93295d489c326637f8ee9cdf6a9875c9b49",
           "object": "security_master.otc_margin_calls",
           "object_type": "table"
         },
@@ -126190,8 +126190,8 @@
           "object_type": "table"
         },
         {
-          "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links, stored curves, OTC collateral balances and margin calls), written in the same transaction as the state change.",
-          "fingerprint": "ce6d5da0b1a7f481b6097dda0d0549274595dd9518112b8e62aa1dba174a4b32",
+          "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links, stored curves, OTC exposure snapshots, collateral balances and margin calls), written in the same transaction as the state change.",
+          "fingerprint": "8a7dff8fdaea18834824cd4cbe70c108f1408c0065625ac9d31d76947c2a9d9c",
           "object": "security_master.security_governance_events",
           "object_type": "table"
         },
@@ -130217,7 +130217,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "6da705b788111ea56ef29b48dd206b1ba3d52d35f13a05ef3ec5e45046d94be3",
+      "fingerprint": "9743ceb6af8422ae1901cf6913024010b8273b6c112874b03b5eac282d5cb107",
       "foreign_tables": [],
       "functions": [
         {
@@ -155026,7 +155026,7 @@
               "type_schema": "pg_catalog"
             }
           ],
-          "comment": "Margin calls issued from an exposure snapshot: one movement (delivery or return, by the fund or the counterparty) with its called, agreed and settled amounts and its lifecycle status. At most one call per netting set and mover is open at a time.",
+          "comment": "Margin calls issued from an exposure snapshot: one movement (delivery or return, by the fund or the counterparty) with its called, agreed and settled amounts and its lifecycle status. At most one call per netting set, mover and movement kind is open at a time.",
           "constraints": [
             {
               "columns": [
@@ -155263,7 +155263,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c290bf1bf45be399ea5fba3ef7a7dcb1c746250ed45f04b561d799b1f80fa55a",
+          "fingerprint": "5b12669fbf5191796c475f27b9aac1f6934c7d9fa51d86941b1b793a55026455",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -165404,10 +165404,10 @@
             },
             {
               "collation": null,
-              "comment": "Affected security; null for batch-level events such as a projection rebuild batch, whose payload lists the securities, and for OTC collateral events, whose payload names the netting set or collateral agreement.",
+              "comment": "Affected security; null for batch-level events such as a projection rebuild batch, whose payload lists the securities, for stored-curve events (Curves), whose payload names the curve, and for OTC collateral events (OtcCollateral), whose payload names the netting set or collateral agreement.",
               "data_type": "uuid",
               "default": null,
-              "fingerprint": "e334339dbed467cc07d8990e657c8759a76685af8245e66dbe7dcee89542ae60",
+              "fingerprint": "765c66017fe131c5a3a81f2c943318102ed538d61bfbf704f9eda349045c2a05",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -165515,7 +165515,7 @@
               "type_schema": "pg_catalog"
             }
           ],
-          "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links, stored curves, OTC collateral balances and margin calls), written in the same transaction as the state change.",
+          "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links, stored curves, OTC exposure snapshots, collateral balances and margin calls), written in the same transaction as the state change.",
           "constraints": [
             {
               "columns": [
@@ -165580,7 +165580,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "3746b052361bf315e033d364ebcf82b86e7dc88474e3dcfe8deae46c518e97b0",
+          "fingerprint": "89e666eaeb93b2957f7443e7d6eef88908bab8d6a93f065f0b7023a1a966a5ae",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -201106,7 +201106,7 @@
               "type_schema": "pg_catalog"
             }
           ],
-          "comment": "Margin calls issued from an exposure snapshot: one movement (delivery or return, by the fund or the counterparty) with its called, agreed and settled amounts and its lifecycle status. At most one call per netting set and mover is open at a time.",
+          "comment": "Margin calls issued from an exposure snapshot: one movement (delivery or return, by the fund or the counterparty) with its called, agreed and settled amounts and its lifecycle status. At most one call per netting set, mover and movement kind is open at a time.",
           "constraints": [
             {
               "columns": [
@@ -201343,7 +201343,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c290bf1bf45be399ea5fba3ef7a7dcb1c746250ed45f04b561d799b1f80fa55a",
+          "fingerprint": "5b12669fbf5191796c475f27b9aac1f6934c7d9fa51d86941b1b793a55026455",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -211431,10 +211431,10 @@
             },
             {
               "collation": null,
-              "comment": "Affected security; null for batch-level events such as a projection rebuild batch, whose payload lists the securities, and for OTC collateral events, whose payload names the netting set or collateral agreement.",
+              "comment": "Affected security; null for batch-level events such as a projection rebuild batch, whose payload lists the securities, for stored-curve events (Curves), whose payload names the curve, and for OTC collateral events (OtcCollateral), whose payload names the netting set or collateral agreement.",
               "data_type": "uuid",
               "default": null,
-              "fingerprint": "e334339dbed467cc07d8990e657c8759a76685af8245e66dbe7dcee89542ae60",
+              "fingerprint": "765c66017fe131c5a3a81f2c943318102ed538d61bfbf704f9eda349045c2a05",
               "generated": null,
               "generated_expression": null,
               "identity": null,
@@ -211542,7 +211542,7 @@
               "type_schema": "pg_catalog"
             }
           ],
-          "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links, stored curves, OTC collateral balances and margin calls), written in the same transaction as the state change.",
+          "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links, stored curves, OTC exposure snapshots, collateral balances and margin calls), written in the same transaction as the state change.",
           "constraints": [
             {
               "columns": [
@@ -211607,7 +211607,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "3746b052361bf315e033d364ebcf82b86e7dc88474e3dcfe8deae46c518e97b0",
+          "fingerprint": "89e666eaeb93b2957f7443e7d6eef88908bab8d6a93f065f0b7023a1a966a5ae",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [

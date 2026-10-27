@@ -11212,6 +11212,7 @@ Meridian-main
 │   │   │   ├── OtcContractsMigrationTests.cs
 │   │   │   ├── OtcContractsPostgresTests.cs
 │   │   │   ├── OtcExposureRulesTests.cs
+│   │   │   ├── OtcExposureServiceTests.cs
 │   │   │   ├── PostgresOperatorOverridesStoreTests.cs
 │   │   │   ├── PostgresReferenceProjectionReaderTests.cs
 │   │   │   ├── PostgresSecurityMasterClosePriceTests.cs

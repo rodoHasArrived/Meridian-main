@@ -3833,55 +3833,55 @@
     {
       "method": "POST",
       "path": "/api/security-master/otc/netting-sets/{nettingSetId:guid}/exposure-snapshots",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:24",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:31",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/otc/netting-sets/{nettingSetId:guid}/exposure-snapshots",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:41",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:48",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/otc/exposure-snapshots/{snapshotId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:52",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:59",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/otc/collateral-balances",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:64",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:71",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/otc/collateral-agreements/{collateralAgreementId:guid}/collateral-balances",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:79",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:86",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/otc/margin-calls",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:88",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:95",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/otc/margin-calls/{callId:guid}/transition",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:103",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:110",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/otc/margin-calls/{callId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:119",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:126",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/otc/netting-sets/{nettingSetId:guid}/margin-calls",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:131",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:138",
       "documented": false
     },
     {

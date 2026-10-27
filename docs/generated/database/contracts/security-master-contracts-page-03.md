@@ -212,9 +212,9 @@ classDiagram
         +DateTimeOffset ComputedAt
         +string ComputedBy
         +IReadOnlyList~OtcContractValuationDto~ Contracts
-        +OtcCreditSupportSideDto CounterpartyAsSecuredParty
+        +OtcCreditSupportSideDto? CounterpartyAsSecuredParty
         +string Currency
-        +OtcCreditSupportSideDto FundAsSecuredParty
+        +OtcCreditSupportSideDto? FundAsSecuredParty
         +decimal GrossNegative
     }
     class Meridian_Contracts_SecurityMaster_OtcExposureSnapshotStatus["OtcExposureSnapshotStatus"] {
