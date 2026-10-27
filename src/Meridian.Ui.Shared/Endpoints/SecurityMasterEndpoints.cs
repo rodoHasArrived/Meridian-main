@@ -1426,7 +1426,7 @@ public static partial class SecurityMasterEndpoints
             MapStructuredCreditReclassificationEndpoints(group, jsonOptions);
 
         MapOtcContractEndpoints(group, jsonOptions);
-        MapOtcCollateralEndpoints(group, jsonOptions);
+        MapOtcCollateralEndpoints(app, group, jsonOptions);
         MapCurveAndValuationEndpoints(app, group, jsonOptions);
 
         if (app.Services.GetService<SecurityMasterExceptionCaseworkService>() is not null)

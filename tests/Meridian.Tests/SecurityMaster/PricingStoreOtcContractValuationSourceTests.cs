@@ -84,14 +84,20 @@ public sealed class PricingStoreOtcContractValuationSourceTests
     }
 
     [Fact]
-    public async Task AStaleFallback_IsAStaleInput()
+    public async Task AStaleFallback_IsAStaleInput_AndKeepsTheObservationAsInput()
     {
-        var source = new PricingStoreOtcContractValuationSource(Pricing(Price(1.25m, SecurityPriceUnit.PercentOfPar, stale: true)));
+        var receipt = Guid.NewGuid();
+        var source = new PricingStoreOtcContractValuationSource(Pricing(Price(1.25m, SecurityPriceUnit.PercentOfPar, stale: true, receipt: receipt)));
 
         var valuation = await source.ValueAsync(new OtcContractValuationRequest(Contract(OtcContractDirection.Buy, 10_000_000m), AsOf, "USD"));
 
         valuation.Status.Should().Be(OtcValuationStatus.Unvalued);
+        valuation.MarkToMarket.Should().BeNull();
         valuation.Blockers.Should().ContainSingle(b => b.Code == OtcValuationBlockerCodes.StaleInput);
+        var input = valuation.Inputs.Should().ContainSingle("the stale observation is evidence of why the contract is unvalued").Subject;
+        input.Kind.Should().Be("GoldenCopyPrice");
+        input.Source.Should().Be("vendor-a");
+        input.Reference.Should().Be(receipt.ToString("D"), "the selection receipt is kept so the refusal can be replayed");
     }
 
     [Fact]

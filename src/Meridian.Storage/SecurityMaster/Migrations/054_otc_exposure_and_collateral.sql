@@ -141,4 +141,4 @@ create unique index if not exists otc_margin_calls_one_open_per_side_idx
     where status in ('Issued', 'Agreed', 'Disputed');
 
 comment on table __SCHEMA__.otc_margin_calls is
-    'Margin calls issued from an exposure snapshot: one movement (delivery or return, by the fund or the counterparty) with its called, agreed and settled amounts and its lifecycle status. At most one call per netting set and mover is open at a time.';
+    'Margin calls issued from an exposure snapshot: one movement (delivery or return, by the fund or the counterparty) with its called, agreed and settled amounts and its lifecycle status. At most one call per netting set, mover and movement kind is open at a time.';

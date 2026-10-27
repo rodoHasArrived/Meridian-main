@@ -15,7 +15,8 @@ namespace Meridian.Tests.SecurityMaster;
 /// balances are recorded with the agreement's haircut and every write appends to the governance
 /// log; a computation appends a versioned, append-only snapshot whose digest is reproducible; a
 /// call copies the snapshot's movement, is agreed and settled with an event on each step, and is
-/// refused for a second open call, an incomplete snapshot or a superseded one.
+/// refused for a second open call, an incomplete snapshot, a superseded one, or one computed under
+/// collateral agreement terms that have since changed or become shared with another netting set.
 /// </summary>
 [Trait("Category", "Integration")]
 public sealed class OtcCollateralPostgresTests : IClassFixture<SecurityMasterDatabaseFixture>
@@ -94,7 +95,7 @@ public sealed class OtcCollateralPostgresTests : IClassFixture<SecurityMasterDat
         first.NetExposure.Should().Be(75_000m);
         first.GrossPositive.Should().Be(125_000m);
         first.GrossNegative.Should().Be(50_000m);
-        first.CounterpartyAsSecuredParty.Held.Should().Be(596_245m);
+        first.CounterpartyAsSecuredParty!.Held.Should().Be(596_245m);
         first.Movements.Should().ContainSingle().Which.Should().BeEquivalentTo(new OtcCollateralMovementDto(OtcMovementKind.Delivery, OtcMovementParty.Fund, 330_000m, "USD"));
         first.ComputedBy.Should().Be("casey");
         first.PayloadSha256.Should().HaveLength(64);
@@ -180,6 +181,65 @@ public sealed class OtcCollateralPostgresTests : IClassFixture<SecurityMasterDat
 
         var page = await log.GetForStreamAsync(SecurityGovernanceStreams.OtcCollateral, events[2].GlobalSequence, limit: 2);
         page.Select(e => e.GlobalSequence).Should().Equal(new[] { events[3].GlobalSequence, events[4].GlobalSequence }, "paging by sequence and limit");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task Calls_AreRefused_UnderAmendedOrSharedTerms_AndTheSnapshotAppliesTheCurrentHaircut()
+    {
+        var contracts = new PostgresOtcContractStore(_fixture.Options);
+        var collateral = new PostgresOtcCollateralStore(_fixture.Options);
+        var (nettingSet, csa, swapId) = await BuildFixtureAsync(contracts);
+        await collateral.UpsertCollateralBalanceAsync(new UpsertOtcCollateralBalanceRequest(
+            null, csa.CollateralAgreementId, OtcCollateralDirection.Posted, OtcCollateralKind.Cash, "USD cash", null, "USD", 400_000m, 1m, AsOf.AddDays(-1), null, null, "casey"));
+        var treasuries = await collateral.UpsertCollateralBalanceAsync(new UpsertOtcCollateralBalanceRequest(
+            null, csa.CollateralAgreementId, OtcCollateralDirection.Posted, OtcCollateralKind.Security, "US Treasuries", swapId, "USD", 2_000m, 100.125m, AsOf.AddDays(-1), null, null, "casey"));
+        var service = new OtcExposureService(contracts, collateral, new FixedPriceValuationSource(_ => 1.25m), NullLogger<OtcExposureService>.Instance);
+        (await collateral.ListNettingSetsUnderCollateralAgreementAsync(csa.CollateralAgreementId)).Should().Equal(nettingSet.NettingSetId);
+
+        var underOriginalTerms = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        underOriginalTerms.Status.Should().Be(OtcExposureSnapshotStatus.Complete);
+        underOriginalTerms.CollateralAgreementVersion.Should().Be(csa.Version);
+
+        // The agreement is amended (Treasuries haircut 2% → 5%): the old snapshot can no longer be called.
+        var amended = await contracts.UpsertCollateralAgreementAsync(new UpsertOtcCollateralAgreementRequest(
+            csa.CollateralAgreementId, csa.MasterAgreementId, "USD", 0m, 250_000m, 100_000m, 1_000_000m, 10_000m, "Daily",
+            [new OtcEligibleCollateralDto("USD cash", null, 0m), new OtcEligibleCollateralDto("US Treasuries", "Bond", 5m)],
+            new DateOnly(2024, 1, 15), null, "haircut amended", "casey"));
+        amended.Version.Should().Be(csa.Version + 1);
+        await collateral.Invoking(s => s.IssueMarginCallAsync(new IssueOtcMarginCallRequest(underOriginalTerms.SnapshotId, OtcMovementKind.Delivery, OtcMovementParty.Fund, AsOf, null, null, "casey")))
+            .Should().ThrowAsync<ArgumentException>().WithMessage($"*version {csa.Version}*now under*version {amended.Version}*Recompute the snapshot*");
+
+        // Recomputed under the amended terms, the held line takes the agreement's current haircut.
+        var underAmendedTerms = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        underAmendedTerms.Status.Should().Be(OtcExposureSnapshotStatus.Complete);
+        underAmendedTerms.CollateralAgreementVersion.Should().Be(amended.Version);
+        underAmendedTerms.CollateralHeld.Should().ContainSingle(line => line.BalanceId == treasuries.BalanceId)
+            .Which.HaircutPercent.Should().Be(5m, "the balance row still carries 2%, but the snapshot applies the amended line");
+        underAmendedTerms.CounterpartyAsSecuredParty!.Held.Should().Be(590_237.5m);
+        underAmendedTerms.Movements.Should().ContainSingle().Which.Amount.Should().Be(340_000m);
+
+        // A second netting set now references the same agreement: the call is refused and a recompute is blocked.
+        var sibling = await contracts.UpsertNettingSetAsync(new UpsertOtcNettingSetRequest(null, csa.MasterAgreementId, csa.CollateralAgreementId, "Big Bank ISDA (second set)", null, "casey"));
+        (await collateral.ListNettingSetsUnderCollateralAgreementAsync(csa.CollateralAgreementId)).Should().BeEquivalentTo(new[] { nettingSet.NettingSetId, sibling.NettingSetId });
+        await collateral.Invoking(s => s.IssueMarginCallAsync(new IssueOtcMarginCallRequest(underAmendedTerms.SnapshotId, OtcMovementKind.Delivery, OtcMovementParty.Fund, AsOf, null, null, "casey")))
+            .Should().ThrowAsync<ArgumentException>().WithMessage($"*{sibling.NettingSetId:D}*not allocated across netting sets*");
+        var shared = (await service.ComputeAsync(nettingSet.NettingSetId, AsOf, "casey"))!;
+        shared.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
+        shared.Blockers.Should().ContainSingle(b => b.Code == OtcValuationBlockerCodes.SharedCollateralAgreement);
+        shared.Movements.Should().BeEmpty();
+        (await collateral.ListMarginCallsAsync(nettingSet.NettingSetId)).Should().BeEmpty("every issue above was refused");
+
+        // A netting set with no agreement reports exposures only; its null credit support sides round-trip.
+        var bare = await contracts.UpsertNettingSetAsync(new UpsertOtcNettingSetRequest(null, csa.MasterAgreementId, null, "Big Bank uncollateralised", null, "casey"));
+        await contracts.UpsertContractAsync(new UpsertOtcContractRequest(
+            null, swapId, bare.NettingSetId, "BB-0003-" + swapId.ToString("N")[..6], OtcContractDirection.Buy, 1_000_000m, "USD", Trade, Trade.AddDays(2), Trade.AddYears(5), OtcContractStatus.Confirmed, null, null, "casey"));
+        var exposuresOnly = (await service.ComputeAsync(bare.NettingSetId, AsOf, "casey"))!;
+        exposuresOnly.FundAsSecuredParty.Should().BeNull();
+        exposuresOnly.CounterpartyAsSecuredParty.Should().BeNull();
+        exposuresOnly.NetExposure.Should().Be(12_500m);
+        var read = await collateral.GetExposureSnapshotAsync(exposuresOnly.SnapshotId);
+        read.Should().BeEquivalentTo(exposuresOnly, "null sides round-trip through jsonb");
+        OtcExposureRules.Digest(read!).Should().Be(exposuresOnly.PayloadSha256);
     }
 
     private async Task<(OtcNettingSetDto NettingSet, OtcCollateralAgreementDto Csa, Guid SwapId)> BuildFixtureAsync(PostgresOtcContractStore store)

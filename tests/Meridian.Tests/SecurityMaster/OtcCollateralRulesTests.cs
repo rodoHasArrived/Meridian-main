@@ -35,6 +35,11 @@ public sealed class OtcCollateralRulesTests
             .Should().Throw<ArgumentException>().WithMessage("*eligible collateral*");
         FluentActions.Invoking(() => OtcCollateralRules.Normalize(Valid() with { Currency = "US" }))
             .Should().Throw<ArgumentException>().WithMessage("*three-letter*");
+        FluentActions.Invoking(() => OtcCollateralRules.Normalize(Valid() with { ValuedAsOf = default }))
+            .Should().Throw<ArgumentException>("an omitted valuation date would otherwise count the balance as held on every date")
+            .WithMessage("*date its valuation is good for*");
+        FluentActions.Invoking(() => OtcCollateralRules.Normalize(Valid() with { BalanceId = Guid.NewGuid(), ValuedAsOf = default }))
+            .Should().Throw<ArgumentException>().WithMessage("*date its valuation is good for*");
     }
 
     [Fact]
@@ -84,6 +89,10 @@ public sealed class OtcCollateralRulesTests
             .Should().Throw<ArgumentException>().WithMessage("*not eligible*", "an agreement with no eligible lines refuses every posting");
         FluentActions.Invoking(() => OtcCollateralRules.ResolveEligible(csa, " "))
             .Should().Throw<ArgumentException>();
+
+        OtcCollateralRules.FindEligible(csa, "US TREASURIES")!.HaircutPercent.Should().Be(2m);
+        OtcCollateralRules.FindEligible(csa, "Equities").Should().BeNull("a lookup that misses returns nothing rather than throwing");
+        OtcCollateralRules.FindEligible(csa, " ").Should().BeNull();
     }
 
     [Fact]

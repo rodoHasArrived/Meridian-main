@@ -2,7 +2,7 @@
 
 **Status:** active guidance
 **Owner:** core-team
-**Reviewed:** 2026-10-25
+**Reviewed:** 2026-10-27
 
 ## Definition
 
@@ -33,7 +33,9 @@ Security Master governance log on the `OtcCollateral` stream in the same transac
 - Values each contract through `IOtcContractValuationSource`. The first source marks a contract
   from the golden-copy price of its [Security](security.md): a percent-of-par observation is the
   value per 100 of notional to the buyer, so the mark is `sign(direction) × notional × price / 100`.
-  Other sources plug into the same seam; no asset-class name is compared anywhere.
+  Other sources plug into the same seam; no asset-class name is compared anywhere. Every contract
+  in one snapshot is valued at one knowledge time: the request's cutoff, else the instant the
+  snapshot is stamped as computed.
 - A Collateral Balance may name the Security posted; a Margin Call cites the snapshot it was
   issued from and the collateral agreement it is called under.
 - Nothing here reaches the Ledger: a snapshot is a derived valuation record, not a ledger
@@ -44,11 +46,15 @@ Security Master governance log on the `OtcCollateral` stream in the same transac
 ## Business Rules
 
 - **Sign and currency.** Every amount is in the collateral agreement currency; a contract in another
-  currency is unvalued (`CurrencyMismatch`) because this increment does no FX. A mark is signed from
-  the fund's side: positive means the counterparty owes the fund.
+  currency is unvalued (`CurrencyMismatch`) because this increment does no FX. With no collateral
+  agreement the exposure is computed in the notional currency of the first contract that enters it
+  (a closed or not-yet-traded contract cannot set it). A mark is signed from the fund's side:
+  positive means the counterparty owes the fund. A mark the valuation source returns for another
+  date or another instrument is not folded in: the contract is unvalued (`MissingValuation`).
 - **Which contracts enter.** Open contracts (not terminated, novated or matured) traded on or before
   the as-of date, including `Pending` ones. An open contract past its termination date is a blocker
-  (`PastTermination`); nothing matures contracts automatically.
+  (`PastTermination`); nothing matures contracts automatically. A computation states its as-of date;
+  the default date is refused.
 - **Netting.** ISDA 1992, ISDA 2002, GMRA and GMSLA masters net on close-out: each side's exposure
   is the signed sum of marks. `Other` masters do not net (fail closed): each side's exposure is the
   sum of the marks in its favour. The basis is recorded on the snapshot.
@@ -56,27 +62,40 @@ Security Master governance log on the `OtcCollateral` stream in the same transac
   party as Pledgor, `CreditSupportAmount = max(0, X + IA_pledgor − IA_securedParty −
   Threshold_pledgor)`. The agreement's single independent amount is read as the amount the fund
   posts. `Held` is the haircut-adjusted value (`value × (1 − haircut / 100)`) of the balances the
-  Secured Party holds: balances received, for the fund; balances posted, for the counterparty.
+  Secured Party holds: balances received, for the fund; balances posted, for the counterparty. The
+  haircut is the one the agreement's eligible-collateral line (matched by description regardless of
+  case) carries at computation time, not the copy on the balance, and each held line reports the
+  haircut applied. Fully returned (zero-quantity) balances are not held collateral.
 - **Minimum transfer, then rounding.** A delivery (`CreditSupportAmount − Held`) or return
   (`Held − CreditSupportAmount`) is tested against the minimum transfer amount unrounded; a delivery
   then rounds up and a return rounds down to the rounding amount, and a return that rounds to zero
   is no movement. The Pledgor delivers; the Secured Party returns. A snapshot carries up to two
   movements, one per side.
 - **Fail closed.** Any unvalued contract, a missing, not-yet-effective or terminated collateral
-  agreement or an open contract past termination leaves the snapshot `Incomplete`: exposures are reported for what was
-  valued, no movement is computed and every reason is listed. A snapshot is never more real than
-  its least-real input; its provenance is reported, and a call is issued only from a `Complete`,
-  real snapshot.
+  agreement or an open contract past termination leaves the snapshot `Incomplete`: exposures are
+  reported for what was valued, no movement is computed and every reason is listed. So does a
+  collateral agreement that another netting set also references (`SharedCollateralAgreement`):
+  credit support is not allocated across netting sets in this increment, so the agreement's
+  balances are not credited to each in full. So does a positive balance under the agreement valued
+  after the as-of date (`CollateralValuationAfterAsOf`): balances are current-state records, so what
+  was held on an earlier date is not known, and a back-dated computation is not callable once a
+  balance has been revalued. So does a positive balance whose description is no longer one of the
+  agreement's eligible lines (`IneligibleCollateral`); it is not counted as held. With no collateral
+  agreement the snapshot reports exposures only: both credit support sides are null rather than
+  filled from zero thresholds. A snapshot is never more real than its least-real input; its
+  provenance is reported, and a call is issued only from a `Complete`, real snapshot.
 - **Balances.** A balance is posted as one of the agreement's eligible-collateral lines, matched by
   description regardless of case; the haircut is copied from that line and the valued amount is
   quantity × unit value, never supplied. Cash is valued at one unit per unit and names no
   security. A quantity is positive when recorded and may be zero when amended (fully returned).
-  The currency must equal the agreement's.
+  The currency must equal the agreement's, and the date the valuation is good for is required.
 - **Calls.** A call copies the amount and currency of the snapshot's movement for its kind and
   mover, is issued on or after the snapshot date, falls due on or after it is issued, and is
   refused while the netting set has another open call of the same kind for the same mover (a
-  party's delivery and its return are distinct obligations and may both be open) or when the
-  snapshot has been superseded by a later version for its date. Issued → Agreed | Disputed | Cancelled;
+  party's delivery and its return are distinct obligations and may both be open), when the
+  snapshot has been superseded by a later version for its date, or when the netting set's
+  collateral agreement is no longer the one, at the version, the snapshot was computed under, or is
+  now shared with another netting set (recompute the snapshot first). Issued → Agreed | Disputed | Cancelled;
   Disputed → Agreed | Cancelled; Agreed → Settled | Cancelled; Settled and Cancelled are terminal.
   Agreement defaults to the called amount, settlement to the agreed amount; a dispute or a
   cancellation states its reason; a settlement states its date.
@@ -118,6 +137,8 @@ at 100.125 with a 2% haircut (200,250 → 196,245), so the counterparty holds 59
 - Dispute amounts and tolerances, interest on late or cash collateral, substitution,
   rehypothecation, concentration limits, pricing of security collateral and staleness of
   collateral valuations.
+- Collateral balance history, so a back-dated computation can see what was held on its date, and
+  allocation of one collateral agreement's balances across the netting sets that share it.
 - Automatic maturing of contracts past termination, a netting-opinion flag on the master,
   maker-checker on calls, a dedicated collateral permission, a browser or WPF screen and the
   retirement of the workstation collateral read model.
@@ -132,7 +153,7 @@ at 100.125 with a 2% haircut (200,250 → 196,245), so the counterparty holds 59
   migrations `054_otc_exposure_and_collateral.sql` and
   `055_security_governance_events_otc_collateral_stream.sql`
 - [Endpoints](../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs)
-- Regression scope: `OtcExposureRulesTests`, `OtcCollateralRulesTests`,
+- Regression scope: `OtcExposureRulesTests`, `OtcExposureServiceTests`, `OtcCollateralRulesTests`,
   `OtcCollateralMigrationTests`, `PricingStoreOtcContractValuationSourceTests`,
   `OtcCollateralPostgresTests` (PostgreSQL) and `SecurityMasterOtcCollateralEndpointsTests`.
 

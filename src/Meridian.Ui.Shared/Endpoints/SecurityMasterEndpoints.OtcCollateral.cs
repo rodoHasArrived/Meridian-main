@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -16,10 +17,16 @@ public static partial class SecurityMasterEndpoints
     /// exposure is computed and recorded as an append-only snapshot, collateral posted or received
     /// under its collateral agreement is recorded as versioned balances, and a snapshot's movements
     /// are issued as margin calls that move through agreement, dispute, settlement or cancellation.
-    /// Every write stamps the session actor; a rule failure is a 400.
+    /// Every write stamps the session actor; a rule failure is a 400. Mapped only when an
+    /// <see cref="IOtcCollateralStore"/> and an <see cref="IOtcExposureService"/> are registered:
+    /// neither has a Null fallback in DI, so a host without the Security Master database leaves the
+    /// routes unavailable instead of failing each request.
     /// </summary>
-    private static void MapOtcCollateralEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    private static void MapOtcCollateralEndpoints(WebApplication app, RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
+        if (app.Services.GetService<IOtcCollateralStore>() is null || app.Services.GetService<IOtcExposureService>() is null)
+            return;
+
         /// <summary>Computes the netting set's exposure as of a date and appends it as the next snapshot version. 404 for an unknown netting set.</summary>
         group.MapPost(UiApiRoutes.SecurityMasterOtcNettingSetExposureSnapshots, async (
             Guid nettingSetId,
@@ -84,7 +91,7 @@ public static partial class SecurityMasterEndpoints
         .WithName("ListSecurityMasterOtcCollateralBalances").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<OtcCollateralBalanceDto>>(StatusCodes.Status200OK);
 
-        /// <summary>Issues a margin call for one movement of a complete snapshot; the amount is copied from the snapshot.</summary>
+        /// <summary>Issues a margin call for one movement of a complete snapshot; the amount is copied from the snapshot. An unknown snapshot is refused as a rule failure (400).</summary>
         group.MapPost(UiApiRoutes.SecurityMasterOtcMarginCalls, async (
             IssueOtcMarginCallRequest request,
             HttpContext context,
@@ -99,7 +106,7 @@ public static partial class SecurityMasterEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(RequireModifySecurityMasterPermission);
 
-        /// <summary>Agrees, disputes, settles or cancels a margin call. The route's call id wins over the body's.</summary>
+        /// <summary>Agrees, disputes, settles or cancels a margin call. The route's call id wins over the body's; an unknown call is refused as a rule failure (400).</summary>
         group.MapPost(UiApiRoutes.SecurityMasterOtcMarginCallTransition, async (
             Guid callId,
             TransitionOtcMarginCallRequest request,
