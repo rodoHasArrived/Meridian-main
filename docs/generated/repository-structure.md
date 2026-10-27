@@ -10208,6 +10208,7 @@ Meridian-main
 │   │   │   │   ├── ConsolidationPostingAuthorityCompositionTests.cs
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
 │   │   │   │   ├── DirectLendingStartupTests.cs
+│   │   │   │   ├── FactorPaydownLotInstructionCompositionTests.cs
 │   │   │   │   ├── HostStartupLifecycleTests.cs
 │   │   │   │   ├── HostTenantScopeCompositionTests.cs
 │   │   │   │   ├── HttpClientFeatureRegistrationTests.cs
@@ -11834,6 +11835,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.cs
 │   │   │   ├── WorkstationEndpointsTests.DataReadAuthorization.cs
 │   │   │   ├── WorkstationEndpointsTests.Extensibility.cs
+│   │   │   ├── WorkstationEndpointsTests.FactorPaydown.cs
 │   │   │   ├── WorkstationEndpointsTests.IBResults.cs
 │   │   │   ├── WorkstationEndpointsTests.Infrastructure.cs
 │   │   │   ├── WorkstationEndpointsTests.JournalAutomation.cs

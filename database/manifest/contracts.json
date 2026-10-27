@@ -4385,7 +4385,7 @@
       ]
     }
   ],
-  "fingerprint": "74882140a0a7ada28a0a13445d124a0c7741b6851ece4ef8004d61e8556d8b02",
+  "fingerprint": "498bb09e380d53ad46e01cf32bc3bbcb425c0a2ce4b1d7071595ac22e6bf27f0",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -4396,7 +4396,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "179bd6f573c3c11ddffbe5b6e9e022cdc33bb482d10f87024d47b119dc615dd6",
+      "fingerprint": "e156d922b6dd43dc9d8c8fd7a1b295872cc0ed7f49107c24f31af8e362e775ea",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Accounting.Lots",
       "object_ids": [
@@ -10774,7 +10774,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "2e139a68e7f5df41d04c344814e45b5e72386dc17ec6869e648eb3a855e397f9",
+      "fingerprint": "cf2baf88ba31687d4619bfae800df9cf01897c7c038277f8bcad3602c4714e8f",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydown",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydown",
       "kind": "class",
@@ -10786,12 +10786,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydown",
       "references": [],
       "source": {
-        "line": 41,
+        "line": 42,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotFactorPaydown.cs"
       },
       "sources": [
         {
-          "line": 41,
+          "line": 42,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotFactorPaydown.cs"
         }
       ],
@@ -10807,7 +10807,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "5bb47c732535df8950c359cd4b600d26779c4a50fe4697f84978c88997f8b730",
+      "fingerprint": "b7a734aa5fc696efe3a4b2f35ebe9c6915e0d69abc5671ca1dc01c83b80da3be",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownInstructionDto",
       "kind": "record",
@@ -10824,7 +10824,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 37,
+          "source_line": 38,
           "type": "string"
         },
         {
@@ -10838,7 +10838,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "EconomicEventReferenceDto",
-          "source_line": 29,
+          "source_line": 30,
           "type": "EconomicEventReferenceDto"
         },
         {
@@ -10852,7 +10852,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 32,
+          "source_line": 33,
           "type": "long"
         },
         {
@@ -10866,7 +10866,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 33,
+          "source_line": 34,
           "type": "string"
         },
         {
@@ -10880,7 +10880,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ProjectionLineageDto",
-          "source_line": 30,
+          "source_line": 31,
           "type": "ProjectionLineageDto"
         },
         {
@@ -10894,7 +10894,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OpenLotFactorPaydownLotDto>",
-          "source_line": 38,
+          "source_line": 39,
           "type": "IReadOnlyList<OpenLotFactorPaydownLotDto>"
         },
         {
@@ -10908,7 +10908,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 35,
+          "source_line": 36,
           "type": "decimal"
         },
         {
@@ -10922,7 +10922,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 36,
+          "source_line": 37,
           "type": "decimal"
         },
         {
@@ -10936,7 +10936,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 34,
+          "source_line": 35,
           "type": "decimal"
         },
         {
@@ -10950,7 +10950,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetAccountingEventScopeDto",
-          "source_line": 31,
+          "source_line": 32,
           "type": "AssetAccountingEventScopeDto"
         }
       ],
@@ -10965,12 +10965,12 @@
         "Meridian.Contracts.AssetOperations.ProjectionLineageDto"
       ],
       "source": {
-        "line": 28,
+        "line": 29,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotFactorPaydown.cs"
       },
       "sources": [
         {
-          "line": 28,
+          "line": 29,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotFactorPaydown.cs"
         }
       ],
@@ -10986,7 +10986,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "f16d6729115afacaa2e259d2a46b730b63b1a384fc707eb8196052d553ebb4a0",
+      "fingerprint": "20bc3174f68c9628fe28714b6d49e7e6dd266ca72211378b7dc44db533c929a3",
       "full_name": "Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownLotDto",
       "id": "Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydownLotDto",
       "kind": "record",
@@ -11003,7 +11003,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 15,
+          "source_line": 16,
           "type": "decimal"
         },
         {
@@ -11017,7 +11017,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OpenLotDto",
-          "source_line": 14,
+          "source_line": 15,
           "type": "OpenLotDto"
         },
         {
@@ -11031,7 +11031,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 18,
+          "source_line": 19,
           "type": "decimal"
         },
         {
@@ -11045,7 +11045,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 19,
+          "source_line": 20,
           "type": "int"
         },
         {
@@ -11059,7 +11059,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 16,
+          "source_line": 17,
           "type": "decimal"
         },
         {
@@ -11073,7 +11073,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 17,
+          "source_line": 18,
           "type": "decimal"
         }
       ],
@@ -11085,12 +11085,12 @@
         "Meridian.Contracts.Accounting.Lots.OpenLotDto"
       ],
       "source": {
-        "line": 13,
+        "line": 14,
         "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotFactorPaydown.cs"
       },
       "sources": [
         {
-          "line": 13,
+          "line": 14,
           "path": "src/Meridian.Contracts/Accounting/Lots/OpenLotFactorPaydown.cs"
         }
       ],

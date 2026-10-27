@@ -1087,7 +1087,7 @@
       "ordinal": null,
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_053__atomic_lot_factor_paydown.sql",
       "schema": "ledger",
-      "sha256": "98dc730d90da89a09f322ed254a1f7cf371e71fc1de49815f90fe5fd2503425f"
+      "sha256": "b9c89bdcb138c7de59d9b2e89e2f504a1be8d5102a31378796bbce7b59e8c32a"
     },
     {
       "filename": "001_fund_structure.sql",
@@ -1334,7 +1334,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "28a2e181fc72a175114eba2628e597f067689cc94e874ff85ac1dcfc993b8c58",
+  "fingerprint": "b800c22cd0404a8ecd28c594377e80bbf9ef9a73bbdf43e7cf1169ce4993ab53",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
