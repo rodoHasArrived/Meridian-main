@@ -299,7 +299,11 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalString(json, "deliveryLocationCode")),
                 GetOptionalBoolean(json, "isRollTarget") ?? false,
                 ToOption(GetOptionalInt(json, "rollWindowDays")))),
-            "Bond" => SecurityKind.NewBond(ToBondTerms(json, mode, ReadScheduleConventions(json, assetClass, decodeThrough))),
+            "Bond" => SecurityKind.NewBond(ToBondTerms(
+                json,
+                mode,
+                ReadScheduleConventions(json, assetClass, decodeThrough),
+                ReadCallPutSchedules(json, assetClass, decodeThrough))),
             "FxSpot" => SecurityKind.NewFxSpot(new FxSpotTerms(
                 GetRequiredString(json, "baseCurrency"),
                 GetRequiredString(json, "quoteCurrency"))),
@@ -321,7 +325,8 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDecimal(json, "couponRate")),
                 ToOption(GetOptionalDateOnly(json, "callableDate")),
                 ToOption(GetOptionalString(json, "dayCount")),
-                ReadScheduleConventions(json, assetClass, decodeThrough))),
+                ReadScheduleConventions(json, assetClass, decodeThrough),
+                ReadCallPutSchedules(json, assetClass, decodeThrough))),
             "CommercialPaper" => SecurityKind.NewCommercialPaper(new CommercialPaperTerms(
                 GetRequiredString(json, "issuerName"),
                 GetRequiredDateOnly(json, "maturity"),
@@ -391,8 +396,9 @@ internal static class SecurityMasterMapping
                 ToOption(GetOptionalDateOnly(terms, "reinvestmentPeriodEnd", mode)),
                 ToOption(GetOptionalDateOnly(terms, "nonCallPeriodEnd", mode)),
                 // From the root: a profile envelope's decode ceiling is the write version, so its
-                // profileFields never reach the block.
-                ReadScheduleConventions(json, assetClass, decodeThrough))),
+                // profileFields never reach the block or the schedules.
+                ReadScheduleConventions(json, assetClass, decodeThrough),
+                ReadCallPutSchedules(json, assetClass, decodeThrough))),
             "PrivateFundInterest" => SecurityKind.NewPrivateFundInterest(new PrivateFundInterestTerms(
                 GetRequiredString(terms, "gpSponsor"),
                 GetRequiredString(terms, "strategy"),
@@ -617,13 +623,21 @@ internal static class SecurityMasterMapping
     /// Typed conventions declared on the elements of an array term (the swap legs' payment
     /// frequency and day count) are enforced on write exactly like top-level ones; otherwise a leg
     /// could persist a cadence every typed reader and schedule would then misread. Every present
-    /// alias is checked, since readers differ in which spelling they prefer.
+    /// alias is checked, since readers differ in which spelling they prefer. Only conventions this
+    /// node writes are enforced, and never inside a versioned container of a profile envelope:
+    /// versioned class terms are flat-codec-only (ADR-024 decision 3, kept by the contract step).
     /// </summary>
     private static void EnsureElementConventionsOnWrite(string assetClass, JsonElement json)
     {
-        foreach (var arrayField in SecurityAssetTermsSchema.Fields(assetClass)
+        var profileGoverned = SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, json);
+        foreach (var arrayField in SecurityAssetTermsSchema.WritableFields(assetClass)
                      .Where(static field => field.Type == SecurityAssetTermFieldType.Array))
         {
+            if (profileGoverned && arrayField.SinceTermsVersion > SecurityTermsEnvelope.DefaultAssetClassTermsVersion)
+            {
+                continue;
+            }
+
             var conventionFields = SecurityAssetTermsSchema.ElementFields(assetClass, arrayField.Key)
                 .Where(static field => field.Convention != SecurityTermConventionKind.None)
                 .ToArray();
@@ -751,7 +765,11 @@ internal static class SecurityMasterMapping
     /// decode already apply. An absent <c>couponType</c> still means <c>Fixed</c> on both paths: it
     /// is the serializer's own spelling for a plain fixed coupon, not an unreadable value.
     /// </summary>
-    private static BondTerms ToBondTerms(JsonElement json, SecurityKindMappingMode mode, ScheduleConventions scheduleConventions)
+    private static BondTerms ToBondTerms(
+        JsonElement json,
+        SecurityKindMappingMode mode,
+        ScheduleConventions scheduleConventions,
+        CallPutSchedules callPutSchedules)
     {
         var couponType = GetOptionalString(json, "couponType") ?? "Fixed";
         BondCouponStructure coupon = couponType switch
@@ -802,10 +820,76 @@ internal static class SecurityMasterMapping
             ToOption(GetOptionalDateOnly(json, "preRefundDate")),
             ToOption(GetOptionalDateOnly(json, "mandatoryPutDate")),
             ToFSharpList(GetOptionalArrayItemsStrict(json, "principalSchedule").Select(ToPrincipalPaymentEntry)),
-            scheduleConventions);
+            scheduleConventions,
+            callPutSchedules);
     }
 
     private const string ScheduleConventionsKey = "scheduleConventions";
+    private const string CallScheduleKey = "callSchedule";
+    private const string PutScheduleKey = "putSchedule";
+
+    // The callSchedule and putSchedule arrays (ADR-024, readable before writable), behind the same stamp
+    // gate as the block: decoded only when the class declares them at or below decodeThrough. Entries
+    // are read tolerantly and verbatim; one that is not an object, or has no parseable date, is not a
+    // term and is dropped. SecurityMasterService refuses to re-serialize a row whose entries this
+    // cannot type, before anything could be dropped.
+    private static CallPutSchedules ReadCallPutSchedules(JsonElement container, string assetClass, int decodeThrough)
+    {
+        var calls = ReadEntries(container, SecurityAssetTermsSchema.Field(assetClass, CallScheduleKey), decodeThrough, ToCallScheduleTerm).ToArray();
+        var puts = ReadEntries(container, SecurityAssetTermsSchema.Field(assetClass, PutScheduleKey), decodeThrough, ToPutScheduleTerm).ToArray();
+        return calls.Length == 0 && puts.Length == 0
+            ? CallPutSchedulesModule.Empty
+            : new CallPutSchedules(ToFSharpList(calls), ToFSharpList(puts));
+    }
+
+    private static IEnumerable<T> ReadEntries<T>(
+        JsonElement container,
+        SecurityAssetTermField? field,
+        int decodeThrough,
+        Func<JsonElement, T?> read)
+        where T : class
+    {
+        if (field is null || field.SinceTermsVersion > decodeThrough)
+        {
+            return [];
+        }
+
+        return GetOptionalArrayItems(container, field.Key)
+            .Where(static entry => entry.ValueKind == JsonValueKind.Object)
+            .Select(read)
+            .OfType<T>();
+    }
+
+    private static CallScheduleTerm? ToCallScheduleTerm(JsonElement entry)
+        => GetOptionalDateOnly(entry, "callDate") is { } callDate
+            ? new CallScheduleTerm(
+                callDate,
+                ToOption(GetOptionalDateOnly(entry, "callEndDate")),
+                ToOption(GetOptionalString(entry, "exerciseStyle")),
+                ToOption(GetOptionalString(entry, "exerciseFrequency")),
+                ToOption(GetOptionalDecimal(entry, "callPrice")),
+                ToOption(GetOptionalString(entry, "priceBasis")),
+                ToOption(GetOptionalString(entry, "priceType")),
+                ToOption(GetOptionalDecimal(entry, "makeWholeSpreadBps")),
+                ToOption(GetOptionalString(entry, "partialRedemption")),
+                ToOption(GetOptionalInt(entry, "minimumNoticeDays")),
+                ToOption(GetOptionalInt(entry, "maximumNoticeDays")),
+                ToOption(GetOptionalString(entry, "noticeDayType")))
+            : null;
+
+    private static PutScheduleTerm? ToPutScheduleTerm(JsonElement entry)
+        => GetOptionalDateOnly(entry, "putDate") is { } putDate
+            ? new PutScheduleTerm(
+                putDate,
+                ToOption(GetOptionalDateOnly(entry, "putEndDate")),
+                ToOption(GetOptionalString(entry, "exerciseStyle")),
+                ToOption(GetOptionalString(entry, "exerciseFrequency")),
+                ToOption(GetOptionalDecimal(entry, "putPrice")),
+                ToOption(GetOptionalString(entry, "priceBasis")),
+                ToOption(GetOptionalInt(entry, "minimumNoticeDays")),
+                ToOption(GetOptionalInt(entry, "maximumNoticeDays")),
+                ToOption(GetOptionalString(entry, "noticeDayType")))
+            : null;
 
     private static ScheduleConventions ReadScheduleConventions(JsonElement container, string assetClass, int decodeThrough)
         => ReadScheduleConventions(container, SecurityAssetTermsSchema.Field(assetClass, ScheduleConventionsKey), decodeThrough);

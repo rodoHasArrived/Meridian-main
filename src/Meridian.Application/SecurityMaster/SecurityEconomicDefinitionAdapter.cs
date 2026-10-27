@@ -15,9 +15,10 @@ internal static class SecurityEconomicDefinitionAdapter
 
         // A projection rebuilt from an economic event that predates retained flat terms carries the
         // original economic document under retainedEconomicTerms. Fold it back so modules and fields
-        // the flat family cannot express (call and put schedules, redemption, issuer identity, fund
-        // and structured-product detail) are written into the next economic event instead of being
-        // erased by it. Values the flat revision does express always win.
+        // the flat family cannot express (call and put schedules a row does not declare, redemption,
+        // issuer identity, fund and structured-product detail) are written into the next economic
+        // event instead of being erased by it. Values the flat revision does express always win, so a
+        // declared, non-empty call or put list replaces the retained one.
         var economicTerms = BuildEconomicTermsJson(definition);
         if (SecurityTermsEnvelope.TryGetRetainedEconomicTerms(projection.AssetSpecificTerms, out var retained))
         {

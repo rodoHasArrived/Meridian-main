@@ -1,11 +1,11 @@
 {
   "total_files": 749,
-  "total_lines": 168078,
+  "total_lines": 168600,
   "orphaned_count": 250,
   "no_heading_count": 157,
   "stale_count": 0,
   "todo_count": 308,
-  "average_lines": 224.4,
+  "average_lines": 225.1,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1062,7 +1062,7 @@
     },
     {
       "path": "docs/adr/024-terms-payload-format-and-version-policy.md",
-      "line_count": 318,
+      "line_count": 467,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1070,7 +1070,7 @@
     },
     {
       "path": "docs/adr/025-contractual-schedule-kernel.md",
-      "line_count": 403,
+      "line_count": 483,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1646,7 +1646,7 @@
     },
     {
       "path": "docs/architecture/security-master-extensibility-review.md",
-      "line_count": 6417,
+      "line_count": 6624,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2150,7 +2150,7 @@
     },
     {
       "path": "docs/domain/contractual-schedule.md",
-      "line_count": 175,
+      "line_count": 200,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2878,7 +2878,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 12418,
+      "line_count": 12421,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5870,7 +5870,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1136,
+      "line_count": 1145,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5902,7 +5902,7 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 1910,
+      "line_count": 1921,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5998,7 +5998,7 @@
     },
     {
       "path": "src/Meridian.FSharp/README.md",
-      "line_count": 127,
+      "line_count": 165,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
