@@ -1,4 +1,5 @@
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Instruments.AssetOperations;
 
@@ -100,7 +101,9 @@ public sealed class FactorPaydownProjectionService : IFactorPaydownProjectionSer
                 "The factor-paydown economics exceed the supported decimal or version range."));
         }
 
-        var scale = CurrencyMinorUnits(request.Currency);
+        // The shared Contracts minor units, so the position principal rounds exactly as the per-lot
+        // allocation and the atomic store round it (CLF and UYW carry four decimals).
+        var scale = CurrencyMinorUnits.GetPrecision(request.Currency.Trim().ToUpperInvariant());
         var principal = decimal.Round(rawPrincipal, scale, MidpointRounding.AwayFromZero);
         if (rawPrincipal > 0m && principal <= 0m)
         {
@@ -225,12 +228,4 @@ public sealed class FactorPaydownProjectionService : IFactorPaydownProjectionSer
         => !string.IsNullOrWhiteSpace(currency) &&
            currency.Trim().Length == 3 &&
            currency.Trim().All(static character => character is >= 'A' and <= 'Z' or >= 'a' and <= 'z');
-
-    private static int CurrencyMinorUnits(string currency)
-        => currency.Trim().ToUpperInvariant() switch
-        {
-            "BHD" or "IQD" or "JOD" or "KWD" or "LYD" or "OMR" or "TND" => 3,
-            "BIF" or "CLP" or "DJF" or "GNF" or "ISK" or "JPY" or "KMF" or "KRW" or "PYG" or "RWF" or "UGX" or "UYI" or "VND" or "VUV" or "XAF" or "XOF" or "XPF" => 0,
-            _ => 2
-        };
 }

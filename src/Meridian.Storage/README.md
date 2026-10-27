@@ -516,36 +516,46 @@ after exact replay, so their lock order cannot oppose a backfill holding that bo
 reference versions, rollback and restart replay using real reference stores.
 
 `V_ledger_052__tax_lot_current_factor.sql` adds the nullable `current_factor` the lot of record
-holds after a paydown: null while the lot is still at its booked factor (every lot today), never
-stamped at acquisition so retained digests stay stable, and movable only by a governed decline
-(`ck_tax_lots_current_factor`, `protect_open_lot_current_factor`). `LedgerTaxLotRecord.CurrentFactor`
-is read at ordinal 26 on every lot path and `LedgerTaxLotFaceValueTerms.ToFaceValueLot` rehydrates
-the aggregate at that factor, so `FaceOutstanding` is the paid-down face. The as-of read and the
-corporate-action successor fail closed on a paid-down lot until the paydown mutation dates the
-factor. Focused proof: `AtomicTaxLotJournalStoreTests.CurrentFactor`, `HistoricalTaxLotQuantityTests`.
+holds after a paydown: null while the lot is still at its booked factor (every lot until a paydown
+posts), never stamped at acquisition so retained digests stay stable, and movable only by a
+governed decline (`ck_tax_lots_current_factor`, `protect_open_lot_current_factor`).
+`LedgerTaxLotRecord.CurrentFactor` is read at ordinal 26 on every lot path and
+`LedgerTaxLotFaceValueTerms.ToFaceValueLot` rehydrates the aggregate at that factor, so
+`FaceOutstanding` is the paid-down face. V052 alone had the as-of read and the corporate-action
+successor fail closed on a paid-down lot; V053 below replaced that guard with exact factor dating
+and successor inheritance. Focused proof: `AtomicTaxLotJournalStoreTests.CurrentFactor`,
+`HistoricalTaxLotQuantityTests`.
 
 `V_ledger_053__atomic_lot_factor_paydown.sql` adds the governed `FactorPaydown` mutation that moves
 that factor. One batch restates every lot open in the (security, book position) scope as of the
 paydown date: `current_factor` is set to the new factor, open basis is relieved pro rata to the
 principal repaid (`basis x new / prior`, rounded once per lot in the lot's currency), and the
 difference between principal and relieved functional basis posts as realized gain or loss on the
-carrying account's exact scoped accounts. A partial paydown preserves quantity (face per 100 is
+carrying account's exact scoped accounts. The position principal is the lots' held par face x
+(prior - new) rounded once and is spread across the lots by largest remainder, so across several
+lots the currency rounding of principal and basis is part of the realized result. A partial paydown preserves quantity (face per 100 is
 factor-invariant); a new factor of zero is a full paydown that closes the lot (`open_quantity = 0`,
 `current_factor = 0`) so it leaves open-lot and as-of reads from that date while its receipt stays
 retained. The migration adds the nullable `factor_paydown_instruction`, widens the batch, mutation
 and `ck_tax_lots_current_factor` checks to strict supersets (`current_factor >= 0`) and replaces
 `protect_open_lot_current_factor` so a factor moves only through a `FactorPaydown` batch of the
-same book/security/position that restates the lot's basis in the same batch; a successor may open
-with its predecessor's factor. The serializable transaction locks Security Master and
-book-position authority, loads the instruction's lots in order, requires every lot at the prior
-factor with one shared carrying account, refuses a partial scope ("every lot open in the scope"),
-refuses a paydown preceding retained mutations, and asserts each lot after the CAS reproduces the
-reviewed projection. The journal must debit cash for the principal, credit the carrying account for
+same book/security/position that restates the lot's basis in the same batch. A lot may open with a
+factor only when its birth batch is a `CorporateAction` batch of the same book; the trigger checks
+that birth batch and the typed store (`OpenLotSuccessors`) verifies the inherited value. The
+serializable transaction locks Security Master and book-position authority, loads the
+instruction's lots, requires every lot at the prior factor with one shared carrying account,
+refuses a partial scope ("every lot open in the scope") and lots not stated in the as-of read's
+acquired-date, lot-id order (the allocation's rounding depends on that order), refuses a paydown
+preceding retained mutations, and asserts each lot after the CAS reproduces the reviewed
+projection. The journal must debit cash for the principal, credit the carrying account for
 the basis relieved (no line when nothing is relieved) and carry exactly one realized line when the
 difference is non-zero; journal-only append refuses the instruction. `HistoricalTaxLotQuantity`
 dates the factor from `lot_snapshot_after.currentFactor`, so an as-of read before the paydown
 returns the booked factor and full face, and a corporate-action successor inherits and may later
-pay down the factor it was born with. Later disposals relieve the reduced basis. Focused proof:
+pay down the factor it was born with. Later disposals relieve the reduced basis. A paid-down lot
+is not amortized: `OpenLotAmortization.Project` refuses an expected lot that holds a
+`CurrentFactor`, and the amortization basis-history guard refuses a lot whose latest adjustment is
+a `FactorPaydown`, so its premium or discount is realized through paydowns and disposal. Focused proof:
 `AtomicTaxLotJournalStoreTests.FactorPaydown`, `AtomicTaxLotJournalStoreTests.FactorPaydownPublication`,
 `AtomicTaxLotSuccessorMigrationTests.FactorPaydown`, `OpenLotFactorPaydownTests`.
 

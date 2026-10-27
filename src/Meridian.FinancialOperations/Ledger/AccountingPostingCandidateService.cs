@@ -140,7 +140,9 @@ public sealed class AccountingPostingCandidateService :
                     request.CompanyId,
                     // A factor paydown's carrying relief and realized result are not derivable from
                     // the event amount; the governed instruction supplies them to the rule's formulas.
-                    LotMutationComponents: request.AssetLotMutation?.FactorPaydown is { } factorPaydownComponents
+                    // Keyed on the intent, like every other factor-paydown binding: a paydown payload
+                    // under another intent never reaches the rule's formulas.
+                    LotMutationComponents: request.AssetLotMutation is { Intent: AssetLotMutationIntentDto.FactorPaydown, FactorPaydown: { } factorPaydownComponents }
                         ? Meridian.Contracts.Accounting.Lots.OpenLotFactorPaydown.Components(factorPaydownComponents)
                         : null),
                 ct)

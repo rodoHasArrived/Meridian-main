@@ -156,6 +156,10 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         await fixture.Store.AppendAssetPostingAsync(await FactorPaydownCommandAsync(fixture, 0.90m, FirstPaydown));
         var command = await FactorPaydownCommandAsync(fixture, 0m, SecondPaydown);
         command.FactorPaydown!.PrincipalPaydown.Should().Be(900_000m, "par face 1,000,000 x 0.90");
+        // A second full paydown prepared from different factor evidence against the same lot before
+        // it closed: a valid instruction on its own, which the store must refuse once the lot is closed.
+        var rival = await FactorPaydownCommandAsync(fixture, 0m, SecondPaydown, sourceHash: new string('f', 64));
+        rival.SourceEventId.Should().NotBe(command.SourceEventId);
 
         var result = await fixture.Store.AppendAssetPostingAsync(command);
 
@@ -193,14 +197,25 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         (await restarted.GetTaxLotsByIdsAsync(fixture.BookId, [lot.TaxLotRecordId])).Should().ContainSingle().Which.CurrentFactor.Should().Be(0m);
         (await restarted.AppendAssetPostingAsync(command)).IsExactReplay.Should().BeTrue();
 
-        // Nothing is left to pay down: a further paydown finds no open lot in the scope.
-        var exhausted = () => FactorPaydownCommandAsync(fixture, 0m, SecondPaydown.AddDays(1));
-        await exhausted.Should().ThrowAsync<Exception>();
+        // Nothing is left to pay down. The lots of record yield no open lot to prepare from, the pure
+        // rules refuse the closed lot itself, and the store refuses the rival paydown prepared before
+        // the close: the lot's version, basis and factor changed, so nothing further is written.
+        (await restarted.ListOpenTaxLotsByAssetScopeAsync(fixture.BookId, lot.SecurityId, lot.BookPositionId, SecondPaydown.AddDays(1)))
+            .Should().BeEmpty();
+        var closedLot = (await restarted.GetTaxLotsByIdsAsync(fixture.BookId, [lot.TaxLotRecordId])).Single().ToOpenLot();
+        var allocateClosed = () => OpenLotFactorPaydown.Allocate([closedLot], 0.90m, 0m, 900_000m, "USD");
+        allocateClosed.Should().Throw<ArgumentException>();
+        var further = () => fixture.Restart().AppendAssetPostingAsync(rival);
+        await further.Should().ThrowAsync<LedgerValidationException>().WithMessage("*changed*");
+        (await fixture.Store.GetAtomicTaxLotPostingAsync(rival.MutationBatchId)).Should().BeNull();
+        (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Should().HaveCount(2);
+        (await fixture.Store.GetTaxLotsByIdsAsync(fixture.BookId, [lot.TaxLotRecordId])).Single()
+            .Should().BeEquivalentTo(closed);
     }
 
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
-    public async Task FactorPaydown_MultiLot_AllocatesResidualToLastLotAndRequiresOneCarryingAccount()
+    public async Task FactorPaydown_MultiLot_AllocatesInStoreOrderBooksRoundingAsRealizedAndRequiresOneCarryingAccount()
     {
         await using var fixture = await AmortFixture.CreateAsync(premium: true, factorPool: true);
         // A second piece of the same pool bought later at par: 1,000 of par face booked at 0.95.
@@ -210,7 +225,19 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         instruction.Lots.Should().HaveCount(2);
         instruction.PrincipalPaydown.Should().Be(33_366.33m, "(1,000,000 + 1,000) x 0.033333 rounded once at the position");
         instruction.Lots[0].Principal.Should().Be(33_333.00m);
-        instruction.Lots[1].Principal.Should().Be(33.33m, "the last lot absorbs the position residual");
+        instruction.Lots[1].Principal.Should().Be(33.33m, "33.333 truncates to 33.33 and the position rounding leaves no cent over");
+
+        // The same two lots stated in the reverse of the store's acquired-date, lot-id order are a
+        // self-consistent instruction, but the allocation's rounding depends on lot order, so the
+        // store refuses it before writing anything.
+        var reversed = await FactorPaydownCommandAsync(fixture, 0.916667m, FirstPaydown,
+            lots: (await fixture.Store.ListOpenTaxLotsByAssetScopeAsync(fixture.BookId, fixture.Lot.SecurityId,
+                fixture.Lot.BookPositionId, FirstPaydown)).Reverse().ToArray());
+        reversed.FactorPaydown!.Lots[0].ExpectedLot.TaxLotRecordId.Should().Be(second.TaxLotRecordId);
+        var outOfOrder = () => fixture.Restart().AppendAssetPostingAsync(reversed);
+        await outOfOrder.Should().ThrowAsync<LedgerValidationException>().WithMessage("*acquired-date, lot-id order*");
+        (await fixture.Store.GetByPeriodAsync(fixture.Period.PeriodId)).Should().BeEmpty();
+        (await fixture.Store.GetAtomicTaxLotPostingAsync(reversed.MutationBatchId)).Should().BeNull();
 
         var result = await fixture.Store.AppendAssetPostingAsync(command);
 
@@ -219,6 +246,13 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         result.MutatedLots.Should().OnlyContain(lot => lot.CurrentFactor == 0.916667m);
         result.Mutations.Sum(mutation => mutation.CostBasis).Should().Be(result.Journal.Entry.Lines.Single(line => line.Account == AmortAccount).Credit);
         result.MutatedLots.Single(lot => lot.TaxLotRecordId == second.TaxLotRecordId).ToOpenLot().OpenFunctionalCostBasis.Should().Be(916.67m);
+        // The premium lot relieves 964,250 - round(964,250 x 0.916667 / 0.95) = 33,832.99 and the par
+        // lot 950 - 916.67 = 33.33, so 33,866.32 of basis against 33,366.33 of principal: a 499.99
+        // realized loss, the 1.5% premium on 33,333 repaid (499.995) as rounded per lot.
+        OpenLotFactorPaydown.BasisRelieved(instruction).Functional.Should().Be(33_866.32m);
+        OpenLotFactorPaydown.RealizedResult(instruction).Should().Be(-499.99m);
+        result.Journal.Entry.Lines.Single(line => line.Account == LedgerAccounts.RealizedLoss).Debit.Should().Be(499.99m);
+        result.Journal.Entry.Lines.Should().NotContain(line => line.Account == LedgerAccounts.RealizedGain);
         (await fixture.Store.ListOpenTaxLotsByAssetScopeAsync(fixture.BookId, fixture.Lot.SecurityId, fixture.Lot.BookPositionId, FirstPaydown))
             .Should().HaveCount(2).And.OnlyContain(lot => lot.CurrentFactor == 0.916667m);
 

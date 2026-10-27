@@ -8,7 +8,8 @@ namespace Meridian.Contracts.Accounting.Lots;
 /// <summary>
 /// One open face lot's share of a reviewed factor paydown: the lot as it is expected to stand, the
 /// factor it is expected to hold, the principal it repays and the open bases it is left with.
-/// <see cref="Principal"/> is currency-rounded and the last ordinal carries the position residual.
+/// <see cref="Principal"/> is in currency minor units, allocated by largest remainder so the lots
+/// sum to the position principal exactly.
 /// </summary>
 public sealed record OpenLotFactorPaydownLotDto(
     OpenLotDto ExpectedLot,
@@ -49,11 +50,18 @@ public static class OpenLotFactorPaydown
     public const string RealizedLossComponent = "lot.realizedLoss";
 
     /// <summary>
-    /// Allocates one position-level principal across the open face lots in the order given. Each
-    /// lot repays par face × open share × (prior − new), rounded to the currency's minor units, with
-    /// the final lot absorbing the residual so the lots sum to the position principal exactly. Each
-    /// lot's open bases are relieved pro rata to the principal repaid, which for a lot at the prior
-    /// factor is the ratio new ÷ prior, so a full paydown leaves zero basis exactly.
+    /// Allocates one position-level principal across the open face lots in the order given (the
+    /// store's acquired-date, lot-id order). The position principal must be the lots' held par face
+    /// (par face × open share, summed) × (prior − new), rounded once to the currency's minor units
+    /// away from zero — the projector's own arithmetic — so the factors determine it exactly. Each
+    /// lot's raw share is par face × open share × (prior − new); every lot first takes its raw share
+    /// truncated to minor units, and the minor units left over go one each to the lots with the
+    /// largest truncated remainders, ties to the later lot (largest remainder). Every lot's
+    /// principal is therefore non-negative, never more than its raw share rounded up, and the lots
+    /// sum to the position principal exactly. Each lot's open bases are relieved pro rata to the
+    /// principal repaid, which for a lot at the prior factor is the ratio new ÷ prior, rounded per
+    /// lot, so a full paydown leaves zero basis exactly; across several lots the currency rounding
+    /// of principal and basis is recognised in the realized result.
     /// </summary>
     public static IReadOnlyList<OpenLotFactorPaydownLotDto> Allocate(
         IReadOnlyList<OpenLotDto> lots,
@@ -68,8 +76,11 @@ public static class OpenLotFactorPaydown
         Require(lots.Count > 0, "Factor paydown requires at least one open face lot.");
         Require(principalPaydown > 0m, "Factor paydown requires a positive position principal.");
         var precision = CurrencyMinorUnits.GetPrecision(currency);
-        var allocated = new OpenLotFactorPaydownLotDto[lots.Count];
-        var assigned = 0m;
+        var minorUnit = new decimal(1, 0, 0, false, (byte)precision);
+        var currents = new decimal[lots.Count];
+        var floors = new decimal[lots.Count];
+        var remainders = new decimal[lots.Count];
+        var heldParFace = 0m;
         var ids = new HashSet<Guid>();
         for (var index = 0; index < lots.Count; index++)
         {
@@ -83,15 +94,38 @@ public static class OpenLotFactorPaydown
             // to a factor of one, scaled by the share of the lot still open.
             var parFace = lot.OriginalQuantity / terms.BookedFactor;
             var openShare = lot.OpenQuantity / lot.OriginalQuantity;
+            heldParFace += parFace * openShare;
             var raw = parFace * openShare * (priorFactor - newFactor);
-            var principal = index == lots.Count - 1
-                ? principalPaydown - assigned
-                : decimal.Round(raw, precision, MidpointRounding.AwayFromZero);
-            Require(principal >= 0m, "Factor paydown principal cannot allocate a negative amount to a lot.");
+            currents[index] = current;
+            floors[index] = decimal.Round(raw, precision, MidpointRounding.ToZero);
+            remainders[index] = raw - floors[index];
+        }
+
+        // Held par face times the factor decline, rounded once, exactly as the projector derives the
+        // position principal. Without this tie a lot could absorb principal shifted onto it and the
+        // shift would post as realized gain or loss.
+        Require(principalPaydown == decimal.Round(heldParFace * (priorFactor - newFactor), precision, MidpointRounding.AwayFromZero),
+            "Factor paydown position principal must equal the lots' held par face x (prior - new) rounded once to the currency's minor units.");
+        // Largest remainder: the position rounding leaves at most one minor unit per lot with a
+        // fractional share, so each extra unit lifts a lot from its truncated share to its rounded-up
+        // share and no lot is ever pushed below zero or above its raw share rounded up.
+        var extraUnits = (principalPaydown - floors.Sum()) / minorUnit;
+        Require(extraUnits >= 0m && extraUnits == decimal.Truncate(extraUnits)
+            && extraUnits <= remainders.Count(static remainder => remainder > 0m),
+            "Factor paydown position principal cannot be allocated to the lots within one minor unit of each lot's raw share.");
+        var receivesUnit = Enumerable.Range(0, lots.Count)
+            .OrderByDescending(index => remainders[index])
+            .ThenByDescending(static index => index)
+            .Take((int)extraUnits)
+            .ToHashSet();
+        var allocated = new OpenLotFactorPaydownLotDto[lots.Count];
+        for (var index = 0; index < lots.Count; index++)
+        {
+            var lot = lots[index];
+            var principal = receivesUnit.Contains(index) ? floors[index] + minorUnit : floors[index];
             var transactionAfter = decimal.Round(lot.OpenTransactionCostBasis * newFactor / priorFactor, precision, MidpointRounding.AwayFromZero);
             var functionalAfter = decimal.Round(lot.OpenFunctionalCostBasis * newFactor / priorFactor, precision, MidpointRounding.AwayFromZero);
-            allocated[index] = new(lot, current, principal, transactionAfter, functionalAfter, index);
-            assigned += principal;
+            allocated[index] = new(lot, currents[index], principal, transactionAfter, functionalAfter, index);
         }
 
         return allocated;

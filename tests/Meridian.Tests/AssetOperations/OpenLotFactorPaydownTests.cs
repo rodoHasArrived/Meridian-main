@@ -13,7 +13,7 @@ namespace Meridian.Tests.AssetOperations;
 
 /// <summary>
 /// Pure rules of the reviewed factor paydown: pro-rata basis relief, the realized difference, the
-/// per-lot allocation with its currency residual, the full paydown that closes a lot, and the
+/// per-lot largest-remainder allocation tied to the factor decline, the full paydown that closes a lot, and the
 /// refusals that keep a client from shifting principal or basis between lots.
 /// </summary>
 public sealed class OpenLotFactorPaydownTests
@@ -104,12 +104,10 @@ public sealed class OpenLotFactorPaydownTests
     public void Allocate_MultiLot_AssignsCurrencyResidualToLastLot()
     {
         // Three par lots of 1,000 par face each paying 0.95 -> 0.916667 repay 33.333 apiece; the
-        // position principal is rounded once (99.999 -> 100.00) and the last lot absorbs the cent the
-        // first two rounded away, so the lots always sum to the position principal exactly.
-        var scope = FactorPaydownTestData.PremiumLot(pricePercentOfPar: 100m, originalFace: 950m);
-        var lots = Enumerable.Range(0, 3).Select(index => FactorPaydownTestData.PremiumLot(
-            scope.SecurityId, scope.BookPositionId, scope.LedgerBookId, pricePercentOfPar: 100m, originalFace: 950m,
-            lotId: $"pool-lot-{index}", acquired: scope.AcquiredDate.AddDays(index))).ToArray();
+        // position principal is rounded once (99.999 -> 100.00). Each lot takes 33.33 and the one
+        // cent left over goes to the largest remainder, a three-way tie broken toward the later lot,
+        // so the lots always sum to the position principal exactly.
+        var lots = FactorPaydownTestData.PoolLots([950m, 950m, 950m]);
         var instruction = FactorPaydownTestData.Build(lots, 0.95m, 0.916667m);
 
         instruction.PrincipalPaydown.Should().Be(100.00m);
@@ -117,8 +115,96 @@ public sealed class OpenLotFactorPaydownTests
         instruction.Lots.Select(static lot => lot.Ordinal).Should().Equal(0, 1, 2);
         instruction.Lots.Sum(static lot => lot.Principal).Should().Be(instruction.PrincipalPaydown);
         instruction.Lots.Should().OnlyContain(lot => lot.FunctionalBasisAfter == 916.67m);
+        // Basis is relieved per lot (950 - 916.67 = 33.33, three times = 99.99) while principal is
+        // rounded once at the position (100.00), so across lots the currency rounding is recognised
+        // in realized P&L even though every lot is at par: a one-cent realized gain.
+        OpenLotFactorPaydown.BasisRelieved(instruction).Functional.Should().Be(99.99m);
+        OpenLotFactorPaydown.RealizedResult(instruction).Should().Be(0.01m);
+        OpenLotFactorPaydown.Components(instruction)[OpenLotFactorPaydown.RealizedGainComponent].Should().Be(0.01m);
         OpenLotFactorPaydown.Project(instruction).Should().HaveCount(3)
             .And.OnlyContain(lot => lot.CurrentFactor == 0.916667m && lot.OpenQuantity == 950m);
+    }
+
+    [Fact]
+    public void Allocate_TinyMultiLotPaydown_LargestRemainderNeverAllocatesANegativeLot()
+    {
+        // Four fully open USD lots of 1,000 par face each paying 1 -> 0.999994 repay 0.006 apiece; the
+        // position principal is round(0.024) = 0.02. Rounding each lot away from zero and giving the
+        // last lot the residual would allocate 0.01, 0.01, 0.01 and -0.01. Largest remainder truncates
+        // every lot to 0.00 and gives the two cents to the largest remainders, a four-way tie broken
+        // toward the later lots.
+        var lots = FactorPaydownTestData.PoolLots([1_000m, 1_000m, 1_000m, 1_000m], bookedFactor: 1m);
+        var instruction = FactorPaydownTestData.Build(lots, 1m, 0.999994m);
+
+        instruction.PrincipalPaydown.Should().Be(0.02m);
+        instruction.Lots.Select(static lot => lot.Principal).Should().Equal(0.00m, 0.00m, 0.01m, 0.01m);
+        instruction.Lots.Should().OnlyContain(lot => lot.Principal >= 0m && lot.Principal <= 0.01m,
+            "no lot goes below zero or above its 0.006 share rounded up");
+        instruction.Lots.Sum(static lot => lot.Principal).Should().Be(0.02m);
+        OpenLotFactorPaydown.Project(instruction).Should().HaveCount(4)
+            .And.OnlyContain(lot => lot.CurrentFactor == 0.999994m);
+    }
+
+    [Theory]
+    [InlineData("0.916667")]
+    [InlineData("0.9")]
+    [InlineData("0.123457")]
+    [InlineData("0.000001")]
+    [InlineData("0")]
+    public void Allocate_NeverGivesALotLessThanItsTruncatedShareOrMoreThanItsShareRoundedUp(string newFactor)
+    {
+        // Lots of uneven par face and open share; one is half sold. Whatever the factor, every lot's
+        // principal sits between its raw share truncated and rounded up to the cent, and the lots sum
+        // to the position principal.
+        var lots = FactorPaydownTestData.PoolLots([950m, 1_900.95m, 7_125m, 33.25m]);
+        lots[1] = lots[1] with
+        {
+            OpenQuantity = lots[1].OriginalQuantity / 2m,
+            OpenTransactionCostBasis = lots[1].OpenTransactionCostBasis / 2m,
+            OpenFunctionalCostBasis = lots[1].OpenFunctionalCostBasis / 2m
+        };
+        var factor = decimal.Parse(newFactor, System.Globalization.CultureInfo.InvariantCulture);
+        var instruction = FactorPaydownTestData.Build(lots, 0.95m, factor);
+
+        foreach (var allocation in instruction.Lots)
+        {
+            var lot = allocation.ExpectedLot;
+            var raw = lot.OriginalQuantity / 0.95m * (lot.OpenQuantity / lot.OriginalQuantity) * (0.95m - factor);
+            allocation.Principal.Should().BeGreaterThanOrEqualTo(decimal.Round(raw, 2, MidpointRounding.ToZero));
+            allocation.Principal.Should().BeLessThanOrEqualTo(decimal.Round(raw, 2, MidpointRounding.ToPositiveInfinity));
+        }
+        instruction.Lots.Sum(static lot => lot.Principal).Should().Be(instruction.PrincipalPaydown);
+        OpenLotFactorPaydown.Project(instruction).Should().HaveCount(4);
+    }
+
+    [Fact]
+    public void Allocate_RefusesAPositionPrincipalNotTiedToTheFactorDecline()
+    {
+        // The factors determine the principal exactly: 1,000,000 of par face x 0.05. A principal off
+        // by any amount would otherwise be absorbed by the lots and posted as realized gain or loss
+        // against cash the pool never paid.
+        var lot = FactorPaydownTestData.PremiumLot();
+        OpenLotFactorPaydown.Allocate([lot], 0.95m, 0.90m, 50_000m, "USD").Single().Principal.Should().Be(50_000m);
+        foreach (var principal in new[] { 50_001m, 49_999.99m, 50_000.01m })
+        {
+            var allocate = () => OpenLotFactorPaydown.Allocate([lot], 0.95m, 0.90m, principal, "USD");
+            allocate.Should().Throw<ArgumentException>().WithMessage("*held par face x (prior - new)*");
+        }
+    }
+
+    [Fact]
+    public void Amortization_RefusesALotThatHoldsAPaydownFactor()
+    {
+        // A lot booked at factor 1 and since paid down is not amortized: its premium or discount is
+        // realized through the paydowns and the reduced basis at disposal.
+        var instruction = Meridian.Tests.Storage.AtomicTaxLotJournalStoreTests.AmortPureInstruction(
+            110m, 10m, BondAmortizationMethod.StraightLine, null);
+        OpenLotAmortization.Project(instruction);
+
+        var paidDown = instruction with { ExpectedLot = instruction.ExpectedLot with { CurrentFactor = 0.9m } };
+        var project = () => OpenLotAmortization.Project(paidDown);
+
+        project.Should().Throw<ArgumentException>().WithMessage("*paydown factor*");
     }
 
     [Theory]
@@ -130,6 +216,7 @@ public sealed class OpenLotFactorPaydownTests
     [InlineData("tampered-principal")]
     [InlineData("tampered-basis")]
     [InlineData("shifted-principal")]
+    [InlineData("shifted-position-principal")]
     [InlineData("wrong-event-type")]
     [InlineData("wrong-event-id")]
     [InlineData("wrong-model-key")]
@@ -170,6 +257,13 @@ public sealed class OpenLotFactorPaydownTests
             "tampered-principal" => instruction with { PrincipalPaydown = instruction.PrincipalPaydown + 1m },
             "tampered-basis" => instruction with { Lots = [lots[0] with { FunctionalBasisAfter = lots[0].FunctionalBasisAfter + 1m }, lots[1]] },
             "shifted-principal" => instruction with { Lots = [lots[0] with { Principal = lots[0].Principal + 1m }, lots[1] with { Principal = lots[1].Principal - 1m }] },
+            // The position principal and the last lot moved together: every per-lot comparison and
+            // the sum agree, so only the tie to the factor decline refuses it.
+            "shifted-position-principal" => instruction with
+            {
+                PrincipalPaydown = instruction.PrincipalPaydown + 1m,
+                Lots = [lots[0], lots[1] with { Principal = lots[1].Principal + 1m }]
+            },
             "wrong-event-type" => instruction with { EconomicEvent = instruction.EconomicEvent with { EventType = FactorPaydownProjectionService.EventType } },
             "wrong-event-id" => instruction with { EconomicEvent = instruction.EconomicEvent with { EventId = Guid.NewGuid() } },
             "wrong-model-key" => instruction with { Lineage = instruction.Lineage with { ModelKey = "client-selected-model" } },
@@ -299,6 +393,18 @@ internal static class FactorPaydownTestData
             new OpenLotAcquisitionDto(LotQuantityBasis.Face, "USD", "USD", 1m, basis, basis, acquiredDate,
                 new FaceValueAcquisitionTermsDto(100m, bookedFactor, BondAmortizationMethod.NoAmortization, null),
                 [AcquisitionEvidence(id, acquiredDate)]));
+    }
+
+    /// <summary>
+    /// Par lots of one pool, one per booked face given, acquired a day apart so the array order is
+    /// the store's acquired-date order.
+    /// </summary>
+    internal static OpenLotDto[] PoolLots(IReadOnlyList<decimal> bookedFaces, decimal bookedFactor = 0.95m)
+    {
+        var scope = PremiumLot(pricePercentOfPar: 100m, originalFace: bookedFaces[0], bookedFactor: bookedFactor);
+        return bookedFaces.Select((face, index) => PremiumLot(scope.SecurityId, scope.BookPositionId, scope.LedgerBookId,
+            pricePercentOfPar: 100m, originalFace: face, bookedFactor: bookedFactor, lotId: $"pool-lot-{index}",
+            acquired: scope.AcquiredDate.AddDays(index))).ToArray();
     }
 
     /// <summary>The factor row's content hash: the given one, or a deterministic stand-in for the security and date.</summary>

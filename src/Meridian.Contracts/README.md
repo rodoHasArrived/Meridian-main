@@ -259,11 +259,16 @@ MBS/ABS factor paydown over every lot open in one security/position scope: the c
 `AssetAccounting.CorporateAction` event whose identity is the projector's deterministic
 `FactorPaydownProjectionIdentity.EventId`, its lineage, the versioned scope, the prior and new
 factor, the position principal and the per-lot allocation (`OpenLotFactorPaydownLotDto`: expected
-lot, principal, both bases after relief, ordinal). `OpenLotFactorPaydown.Allocate` relieves each
-lot's basis pro rata (`basis x new / prior`, rounded once in the lot's currency) and assigns the
-currency residual of the position principal to the last lot; `Project` re-runs that allocation,
-requires equality and returns each lot at the new factor with its version advanced, closed when
-the new factor is zero. `RealizedResult` is principal less functional basis relieved;
+lot, expected current factor, principal, both bases after relief, ordinal).
+`OpenLotFactorPaydown.Allocate` requires the position principal to equal the lots' held par face x
+(prior - new) rounded once to `CurrencyMinorUnits`, spreads it by largest remainder (each lot's raw
+share truncated, the leftover minor units to the largest remainders, ties to the later lot in the
+given order), so every lot's principal is non-negative, at most its raw share rounded up, and the
+lots sum to the position exactly, and relieves each lot's basis pro rata (`basis x new / prior`,
+rounded once in the lot's currency), so across several lots the currency rounding is part of the
+realized result. `Project` re-runs that allocation, requires equality and returns each lot at the
+new factor with its version advanced, closed when the new factor is zero. `OpenLotAmortization`
+refuses a lot that holds a `CurrentFactor`. `RealizedResult` is principal less functional basis relieved;
 `Components` exposes principal, basis relieved and realized gain/loss to Rules Studio's
 `LotMutationComponent` formulas. Same-currency Long face lots only. `OpenLotDto.CurrentFactor`
 (omitted when null) and `FaceValueLot` now admit a factor of zero for a fully repaid pool; a

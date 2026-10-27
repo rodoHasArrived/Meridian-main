@@ -156,6 +156,10 @@ public sealed partial class PostgresLedgerJournalStore
             scope.SecurityId, scope.BookPositionId, effectiveDate, ct).ConfigureAwait(false);
         if (openAsOf.Count != lotIds.Length || openAsOf.Any(lot => !locked.ContainsKey(lot.TaxLotRecordId)))
             throw new LedgerValidationException("Factor paydown must restate every lot open in the scope as of its effective date; a partial scope leaves the position's factor split.");
+        // The allocation's rounding (largest remainder, ties to the later lot) depends on lot order,
+        // so the instruction must state the lots in the order the store reads them.
+        if (!openAsOf.Select(static lot => lot.TaxLotRecordId).SequenceEqual(lotIds))
+            throw new LedgerValidationException("Factor-paydown lots must be stated in the store's acquired-date, lot-id order so principal rounding lands on the same lots.");
         var histories = (await ReadDatedLotQuantitiesAsync(connection, transaction, command.LedgerBookId, lotIds, ct).ConfigureAwait(false))
             .ToLookup(static mutation => mutation.TaxLotRecordId);
         foreach (var lot in before)

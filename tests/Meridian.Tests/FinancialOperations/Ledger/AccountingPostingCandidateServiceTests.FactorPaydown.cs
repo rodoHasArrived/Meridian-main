@@ -117,6 +117,28 @@ public sealed partial class AccountingPostingCandidateServiceTests
             issue.Code == "posting-candidate.factor-paydown-lot-mutation-required" && issue.BlocksCandidate);
     }
 
+    [Theory]
+    [InlineData(AssetLotMutationIntentDto.None)]
+    [InlineData(AssetLotMutationIntentDto.CapitalReturn)]
+    [InlineData(AssetLotMutationIntentDto.CorporateAction)]
+    public async Task BuildCandidateAsync_MbsFactorPaydown_PayloadUnderAnotherIntentNeverFeedsTheRuleComponents(
+        AssetLotMutationIntentDto intent)
+    {
+        // The paydown's components reach the rule's formulas only under the FactorPaydown intent, like
+        // every other paydown binding; a payload under another intent resolves no component line.
+        var harness = await CreateAuthoritativeFactorHarnessAsync();
+        var mislabelled = AuthoritativeFactorHarness.LotMutation(harness.Instruction) with { Intent = intent };
+
+        var result = await harness.BuildAsync(harness.Request with { AssetLotMutation = mislabelled });
+
+        result.HasBlockingIssues.Should().BeTrue();
+        result.PostingCommand.Should().BeNull();
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "posting-candidate.factor-paydown-lot-mutation-required" && issue.BlocksCandidate);
+        result.DryRunResult.GeneratedPostingLines.Should().BeEmpty(
+            "client-supplied components under another intent never resolve the rule's lot-mutation lines");
+    }
+
     [Fact]
     public async Task BuildCandidateAsync_MbsFactorPaydown_GenericCandidateWithoutSpineAuthorityIsRefused()
     {
