@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "17db55a672501448a1bf7c1373348f2b34e14d81c70ecb30d894d2014e379c86",
-      "source_hash": "da3e78812b076c98d683511110cfa46d66d33e5cf0983e0c356cf0e1d51bf6b6"
+      "readme_hash": "9052edf868590a650fb0a59aef2cb10371aa9f2b48ea14bd2c0b7f8659747cf8",
+      "source_hash": "fe5af8c76a32f1ecee917364a654a2401b27014c7f4bd3cbbd347f42596f18b8"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "07d9390faa25b5e9037be3fc5ec954a96a1b77c608d8b41900f3fa1f60b25a22",
-      "source_hash": "d0c669165376b1368b6783259ded1f51940f4723fc765bdb285e3dca220c7fff"
+      "readme_hash": "888594fda454888aa57b9774f269c328f7f073a86ae42e28e1f46a44f603a526",
+      "source_hash": "443c0112ba86e19df43cac7e5031d72c45e4c4bf1482fbdb198797fc1e7cf49c"
     },
     {
       "id": "SRC-CORE",
@@ -149,8 +149,8 @@
       "id": "SRC-FSHARP",
       "path": "src/Meridian.FSharp",
       "readme": "src/Meridian.FSharp/README.md",
-      "readme_hash": "4fcdd6f71e64e7e85bac7023d8fd3b6c7f63036754507765f2415d90c2bfb4dd",
-      "source_hash": "3062e1c68a5bb1485dc1f7f33354f83511030d52cba3ac045b12f77dd88410ef"
+      "readme_hash": "234242153c9a1b2f449e34eeed1b4736b5c8988fdb5d832528ee49e5d78d4e81",
+      "source_hash": "350b3d20c6fdba599853d6d47a23560fe6554ca8e1b05807f3aed250268e9333"
     },
     {
       "id": "SRC-FSHARP-DIRECTLENDING",
@@ -282,7 +282,7 @@
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "bf1b2aa05cdb3519daa188d8bceeffe3439693d5895205c412dcc1a602dd3719",
+      "readme_hash": "30a73e2ed1757444768a4495d1398fb0a2133fe84a2e805e98513d059a8ecbe9",
       "source_hash": "e06f8452073574b58dcafde49ba2f0d4642584ff1ab04bd14bcf58e50ee53e39"
     },
     {
