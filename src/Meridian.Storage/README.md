@@ -94,12 +94,14 @@ amendment (with the replaced state) and removal of a declared underlying link, n
 in the same transaction as the change to `security_underlying_links`. Migration `052_security_curves.sql`
 adds stored market curves: `security_curves` (write-once identity, key unique ignoring case) and
 `security_curve_versions` (append-only versions with economic `as_of`, knowledge `recorded_at`,
-actor, jsonb points and a content hash; update, delete and truncate are refused by trigger).
+actor, jsonb points and a content hash); one reject function refuses update, delete and truncate on
+both tables by trigger (SQL state 23514).
 Migration `053_security_governance_events_curves_stream.sql` adds the `Curves` stream, and
 `PostgresSecurityCurveStore` appends `CurveDefined` and `CurveVersionPublished` (with a null
 `security_id` and the curve id in the payload) in the same transaction as each write; identical
-content for the same curve and as-of returns the retained version and writes nothing, and the latest
-version as of a date is read with the pricing lane's `as_of`/`recorded_at` predicate.
+content for the same curve and as-of returns the retained version and writes nothing, the latest
+version as of a date is read with the pricing lane's `as_of`/`recorded_at` predicate, and
+`GetVersionByIdAsync` reads one version on the primary key, guarded by its curve id.
 `ISecurityGovernanceEventReader.GetForStreamAsync` reads one stream by global sequence for subjects
 that are not securities. The event store and projection store join
 `PostgresSecurityMasterCanonicalWriteScope` when one is active. Equity, FxSpot, Future, Swap,

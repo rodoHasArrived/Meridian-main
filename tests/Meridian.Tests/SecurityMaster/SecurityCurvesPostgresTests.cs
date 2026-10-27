@@ -54,6 +54,9 @@ public sealed class SecurityCurvesPostgresTests : IClassFixture<SecurityMasterDa
         v1.SourcedAt.Should().Be(new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero));
         (await store.ListVersionsAsync(definition.CurveId)).Select(static v => v.Version).Should().Equal(1, 2);
         (await store.GetVersionAsync(definition.CurveId, 1)).Should().BeEquivalentTo(v1);
+        (await store.GetVersionByIdAsync(definition.CurveId, v1.CurveVersionId)).Should().BeEquivalentTo(v1);
+        (await store.GetVersionByIdAsync(Guid.NewGuid(), v1.CurveVersionId)).Should().BeNull("a version id resolves only under its own curve");
+        (await store.GetVersionByIdAsync(definition.CurveId, Guid.NewGuid())).Should().BeNull();
 
         (await store.GetLatestVersionAsOfAsync(definition.CurveId, June30))!.Version.Should().Be(2);
         (await store.GetLatestVersionAsOfAsync(definition.CurveId, June30.AddMonths(3)))!.Version.Should().Be(2);
@@ -93,25 +96,39 @@ public sealed class SecurityCurvesPostgresTests : IClassFixture<SecurityMasterDa
         var differentFacts = () => store.DefineAsync(new DefineSecurityCurveRequest(key, SecurityCurveKind.Forward, "EUR", "ESTR", "1D", "30/360", SecurityCurveInterpolation.Linear, "ecb", null, "casey"));
         await differentFacts.Should().ThrowAsync<InvalidOperationException>().WithMessage("*write-once*");
 
+        // A 30E/360 curve re-defined with the day-count name the store returned is the same identity.
+        var eurobondKey = UniqueKey("EUR-EURIBOR");
+        var eurobond = await store.DefineAsync(new DefineSecurityCurveRequest(eurobondKey, SecurityCurveKind.Forward, "EUR", "EURIBOR", "6M", "30E/360", SecurityCurveInterpolation.Linear, "emmi", null, "casey"));
+        eurobond.DayCount.Should().Be("ThirtyE360");
+        (await store.DefineAsync(new DefineSecurityCurveRequest(eurobondKey, SecurityCurveKind.Forward, "EUR", "EURIBOR", "6M", eurobond.DayCount, SecurityCurveInterpolation.Linear, "emmi", null, "jordan")))
+            .Should().BeEquivalentTo(eurobond, "the stored day-count name reads back as itself");
+
         var unknownCurve = () => store.PublishVersionAsync(new PublishSecurityCurveVersionRequest(Guid.NewGuid(), June30, [new(June30, 0.04m)], "ecb", null, "casey"));
         await unknownCurve.Should().ThrowAsync<ArgumentException>().WithMessage("*not defined*");
     }
 
     [SecurityMasterDatabaseFact]
-    public async Task Versions_RefuseUpdateDeleteAndTruncate()
+    public async Task CurvesAndVersions_RefuseUpdateDeleteAndTruncate()
     {
         var store = new PostgresSecurityCurveStore(_fixture.Options);
         var definition = await store.DefineAsync(new DefineSecurityCurveRequest(UniqueKey("GBP-SONIA"), SecurityCurveKind.Forward, "GBP", "SONIA", null, "ACT/365", SecurityCurveInterpolation.Linear, "boe", null, "casey"));
         var version = await store.PublishVersionAsync(new PublishSecurityCurveVersionRequest(definition.CurveId, June30, [new(June30, 0.05m)], "boe", null, "casey"));
+        // A curve without versions: its delete is refused by the guard, not by the versions' foreign key.
+        var bare = await store.DefineAsync(new DefineSecurityCurveRequest(UniqueKey("GBP-BARE"), SecurityCurveKind.Discount, "GBP", null, null, "ACT/365", SecurityCurveInterpolation.Linear, "boe", null, "casey"));
 
-        var table = $"{_fixture.Options.Schema}.security_curve_versions";
+        var versions = $"{_fixture.Options.Schema}.security_curve_versions";
+        var curves = $"{_fixture.Options.Schema}.security_curves";
         await using var connection = new NpgsqlConnection(_fixture.Options.ConnectionString);
         await connection.OpenAsync();
         foreach (var statement in new[]
                  {
-                     $"update {table} set published_by = 'tamper' where curve_version_id = '{version.CurveVersionId:D}';",
-                     $"delete from {table} where curve_version_id = '{version.CurveVersionId:D}';",
-                     $"truncate {table};"
+                     $"update {versions} set published_by = 'tamper' where curve_version_id = '{version.CurveVersionId:D}';",
+                     $"delete from {versions} where curve_version_id = '{version.CurveVersionId:D}';",
+                     $"truncate {versions};",
+                     $"update {curves} set currency = 'EUR' where curve_id = '{definition.CurveId:D}';",
+                     $"update {curves} set description = 'tamper' where curve_id = '{bare.CurveId:D}';",
+                     $"delete from {curves} where curve_id = '{bare.CurveId:D}';",
+                     $"truncate {curves} cascade;"
                  })
         {
             await using var command = new NpgsqlCommand(statement, connection);
@@ -120,6 +137,8 @@ public sealed class SecurityCurvesPostgresTests : IClassFixture<SecurityMasterDa
         }
 
         (await store.GetVersionAsync(definition.CurveId, 1)).Should().BeEquivalentTo(version);
+        (await store.GetDefinitionAsync(definition.CurveId)).Should().BeEquivalentTo(definition);
+        (await store.GetDefinitionAsync(bare.CurveId)).Should().BeEquivalentTo(bare);
     }
 
     [SecurityMasterDatabaseFact]
@@ -171,6 +190,7 @@ public sealed class SecurityCurvesPostgresTests : IClassFixture<SecurityMasterDa
         result.PriceUnit.Should().Be(SecurityPriceUnit.CurrencyPerUnit);
         result.MarketValue.Should().Be(-162.50m);
         result.Observability.Should().Be(SecurityValuationObservability.ObservableInputs);
+        result.ObservedAsOf.Should().Be(new DateTimeOffset(2025, 12, 1, 0, 0, 0, TimeSpan.Zero), "the forward version dated 2025-12-01 is the oldest market input");
         result.Inputs.Single(static i => i.Kind == "DiscountCurveVersion").Reference.Should().Be(discount.CurveKey);
         result.Inputs.Single(static i => i.Kind == "ForwardCurve").Reference
             .Should().Be($"forwardCurve:{indexName}@2025-12-01 ({forward.CurveKey} v1 {forwardVersion.ContentSha256[..12]})");

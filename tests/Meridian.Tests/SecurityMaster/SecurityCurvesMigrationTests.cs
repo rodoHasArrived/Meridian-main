@@ -28,7 +28,11 @@ public sealed class SecurityCurvesMigrationTests
         sql.Should().Contain("on __SCHEMA__.security_curve_versions (curve_id, as_of desc, version desc)", "the as-of read is indexed");
         sql.Should().Contain("before update or delete on __SCHEMA__.security_curve_versions");
         sql.Should().Contain("before truncate on __SCHEMA__.security_curve_versions");
-        sql.Should().Contain("for each statement execute function __SCHEMA__.reject_security_curve_version_mutation()");
+        sql.Should().Contain("before update or delete on __SCHEMA__.security_curves\n", "a curve's identity is write-once in the schema, not only in the store");
+        sql.Should().Contain("before truncate on __SCHEMA__.security_curves\n");
+        sql.Should().Contain("errcode = '23514'");
+        System.Text.RegularExpressions.Regex.Matches(sql, @"execute function __SCHEMA__\.reject_security_curve_mutation\(\);")
+            .Should().HaveCount(4, "one reject function guards update, delete and truncate on both tables");
         sql.Should().NotContain("drop ");
     }
 
@@ -52,6 +56,6 @@ public sealed class SecurityCurvesMigrationTests
         }
 
         directory.Should().NotBeNull();
-        return File.ReadAllText(Path.Combine(directory!.FullName, "src", "Meridian.Storage", "SecurityMaster", "Migrations", migrationFile));
+        return File.ReadAllText(Path.Combine(directory!.FullName, "src", "Meridian.Storage", "SecurityMaster", "Migrations", migrationFile)).ReplaceLineEndings("\n");
     }
 }

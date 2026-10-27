@@ -6,8 +6,9 @@ namespace Meridian.Storage.SecurityMaster;
 
 /// <summary>
 /// PostgreSQL store for stored market curves (<c>security_curves</c>, <c>security_curve_versions</c>,
-/// migration 052). A curve's identity is write-once; its versions are append-only and immutable,
-/// and every definition and publication appends to <c>security_governance_events</c> on the
+/// migration 052). A curve's identity is write-once and its versions are append-only and immutable:
+/// definitions of one key serialize under an advisory lock, and the schema refuses update, delete and
+/// truncate on both tables. Every definition and publication appends to <c>security_governance_events</c> on the
 /// <see cref="SecurityGovernanceStreams.Curves"/> stream in the same transaction as the write.
 /// </summary>
 public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
@@ -46,6 +47,7 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
                 throw new InvalidOperationException(
                     $"Curve key '{existing.CurveKey}' is already defined as {existing.Kind} {existing.Currency}" +
                     (existing.IndexName is null ? string.Empty : $" {existing.IndexName}") +
+                    (existing.Tenor is null ? string.Empty : $" {existing.Tenor}") +
                     $" ({existing.DayCount}, {existing.Interpolation}, source '{existing.Source}'); a curve key is write-once, define a new key.");
             }
 
@@ -256,6 +258,17 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
     {
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         return await ReadVersionAsync(connection, null, "v.curve_id = @id and v.version = @version", [("id", curveId), ("version", version)], ct).ConfigureAwait(false);
+    }
+
+    public async Task<SecurityCurveVersionDto?> GetVersionByIdAsync(Guid curveId, Guid curveVersionId, CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        // One lookup on the primary key; the curve_id guard keeps another curve's version id from resolving.
+        return await ReadVersionAsync(
+            connection, null,
+            "v.curve_version_id = @version_id and v.curve_id = @id",
+            [("version_id", curveVersionId), ("id", curveId)],
+            ct).ConfigureAwait(false);
     }
 
     public async Task<SecurityCurveVersionDto?> GetLatestVersionAsOfAsync(Guid curveId, DateOnly asOf, DateTimeOffset? knownAt = null, CancellationToken ct = default)

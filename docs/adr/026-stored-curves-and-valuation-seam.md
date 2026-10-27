@@ -32,10 +32,10 @@ a durable concept is built around.
 
 1. **Curves live in `security_master`, under the governance log.** Stored curves are two tables in
    the `security-master` migration set: `security_curves` (write-once identity: key, kind, currency,
-   index, day count, interpolation, source; migration 052) and `security_curve_versions`
+   index, tenor, day count, interpolation, source; migration 052) and `security_curve_versions`
    (append-only, immutable versions with economic `as_of`, knowledge `recorded_at`, `sourced_at`,
    actor, points as jsonb and a canonical content hash). Update, delete and truncate are refused by
-   trigger. Every definition and publication appends to `security_governance_events` on a new
+   trigger on both tables, with one reject function. Every definition and publication appends to `security_governance_events` on a new
    `Curves` stream (migration 053) in the same transaction; `ISecurityGovernanceEventReader`
    gains `GetForStreamAsync` to read streams whose subject is not a security.
 2. **Pure curve rules and arithmetic sit in Contracts.** `SecurityCurveRules` normalizes definitions
@@ -63,7 +63,9 @@ a durable concept is built around.
    staleness verdict without re-deciding it. `DiscountedCashFlowValuationModel` composes the
    base-scenario projection as of the valuation date with a stored Discount curve, discounting the
    net schedule and refusing to extrapolate past the curve. Market values use the F# market-value
-   functions.
+   functions with the factor applied once: the quoted model scales a percent-of-par quote by the
+   factor in effect on the valuation date, and the discounted model quotes per 100 of the outstanding
+   face its projection repays.
 6. **Model outputs never post.** A valuation is a rebuildable view over retained inputs (curve version
    ids and hashes, the selection receipt, the terms version). It does not become a raw price, a
    golden copy, a close-price line, a mark or a ledger entry; when blocked it carries no number.
@@ -90,8 +92,9 @@ a durable concept is built around.
 Every component above is implemented in the first increment. Not yet landed: a persisted valuation
 receipt, wiring into the ledger mark lane (`IMarkPriceSource`, the fair-value level mapping),
 per-request pinning of a forward version, a knowledge-time cutoff for curves inside the projection,
-an index master, interpolation beyond `Linear`, a definition flag admitting discount factors above
-1, the clean price and accrued interest split, non-base scenarios, and curve ingest from vendors.
+an index master, interpolation beyond `Linear`, a definition flag admitting negative rates (discount
+factors above 1 or rising between pillars, and negative forward fixings, which the projection would
+floor at zero), the clean price and accrued interest split, non-base scenarios, and curve ingest from vendors.
 Decision acceptance alone does not certify a release; the extensibility review's resolution pass
 records the validation that ran.
 
@@ -182,8 +185,13 @@ enter a close set is a separate decision for the pricing lane.
 public interface ISecurityCurveStore
 {
     Task<SecurityCurveDefinitionDto> DefineAsync(DefineSecurityCurveRequest request, CancellationToken ct = default);
+    Task<SecurityCurveDefinitionDto?> GetDefinitionAsync(Guid curveId, CancellationToken ct = default);
+    Task<IReadOnlyList<SecurityCurveDefinitionDto>> ListDefinitionsAsync(SecurityCurveKind? kind = null, string? currency = null, string? indexName = null, CancellationToken ct = default);
     Task<SecurityCurveVersionDto> PublishVersionAsync(PublishSecurityCurveVersionRequest request, CancellationToken ct = default);
+    Task<SecurityCurveVersionDto?> GetVersionAsync(Guid curveId, long version, CancellationToken ct = default);
+    Task<SecurityCurveVersionDto?> GetVersionByIdAsync(Guid curveId, Guid curveVersionId, CancellationToken ct = default);
     Task<SecurityCurveVersionDto?> GetLatestVersionAsOfAsync(Guid curveId, DateOnly asOf, DateTimeOffset? knownAt = null, CancellationToken ct = default);
+    Task<IReadOnlyList<SecurityCurveVersionDto>> ListVersionsAsync(Guid curveId, CancellationToken ct = default);
 }
 
 public interface ISecurityValuationService
@@ -194,13 +202,16 @@ public interface ISecurityValuationService
 
 ### Runtime Verification
 
-- `SecurityCurveRulesTests` pins every rule in the domain page and the `ValueAt` equivalence with
-  `SecurityForwardCurve.RateAt`.
-- `SecurityCurvesPostgresTests` proves append-only versions, bitemporal reads, idempotent republish,
-  refused mutation (SQL state 23514), the `Curves` stream and the golden swap through the real
-  stores.
+- `SecurityCurveRulesTests` pins the value, point, day-count and interpolation rules of the domain
+  page, the canonical hash, the `ValueAt` equivalence with `SecurityForwardCurve.RateAt` for
+  Forward curves, and the forward-curve label's invariant as-of.
+- `SecurityCurvesPostgresTests` proves the store and database rules: write-once identity,
+  append-only versions, bitemporal reads, idempotent republish, refused update, delete and truncate
+  on both tables (SQL state 23514), the by-id version read, the `Curves` stream and the golden swap
+  through the real stores. `SecurityCurvesMigrationTests` holds the migration text.
 - `DiscountedCashFlowValuationModelTests` and `QuotedPriceValuationModelTests` pin the golden
-  numbers and every blocker; `SecurityValuationServiceTests` pins catalog-fact dispatch.
+  numbers and each model's blocker codes; `SecurityValuationServiceTests` pins catalog-fact
+  dispatch and the `NoModel` blocker.
 - `SecurityAssetClassBehaviorFactsTests.DefaultValuationModel_DiscountedCashFlow_IsBondAndSwap` and
   the asset-class comparison ratchet hold the fact.
 - Verify paths in the Implementation Links table from the repository root:
@@ -220,4 +231,4 @@ This command verifies referenced files and directories exist; it does not valida
 
 ---
 
-*Last Updated: 2026-10-25*
+*Last Updated: 2026-10-27*

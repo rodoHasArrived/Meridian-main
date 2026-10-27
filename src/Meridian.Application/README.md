@@ -1073,12 +1073,17 @@ into `RateSource`; several definitions for one index are logged and leave the le
 `SecurityMaster/Valuation/` holds the valuation seam: `SecurityValuationService` loads the security
 and dispatches to the registered `ISecurityValuationModel` whose kind the request names or the
 catalog's `DefaultValuationModel` declares; `QuotedPriceValuationModel` composes the golden-copy
-as-of read (retaining a selection receipt, as that read does) and reports its staleness verdict as a
-diagnostic; `DiscountedCashFlowValuationModel` discounts the base-scenario projection as of the
-valuation date on a stored Discount curve (pinned on the request or the one definition in the
-security's currency), refuses to extrapolate past the curve, and names the curve version, hash,
-forward provenance and terms version in its inputs. Market values use the F# `SecurityCalculations`
-functions. `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
+as-of read (retaining a selection receipt, as that read does), reports its staleness verdict as a
+diagnostic and picks the market-value function by the price's quote unit, scaling a percent-of-par
+quote by the factor in effect on the valuation date; `DiscountedCashFlowValuationModel` discounts
+the base-scenario projection as of the valuation date on a stored Discount curve (pinned on the
+request by id and optionally by version id, or the one definition in the security's currency),
+refuses to extrapolate past the curve, quotes face-value lots per 100 of the outstanding face the
+projection repays from the valuation date, reports the oldest of the discount and forward curves'
+as-of dates as `ObservedAsOf`, reports a stale or undated cash-flow source and a pinned version
+dated after the valuation date or recorded after the knowledge cutoff as diagnostics, and names the
+curve version, hash, forward provenance and terms version in its inputs. Market values use the F#
+`SecurityCalculations` functions, with the paydown factor applied once. `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
 block (preferred terms, call schedules, swap legs) through the normal amend path and records
 `TermBlockAmended`. A block the class only reads (`scheduleConventions`) is refused with the
 not-yet-writable reason.

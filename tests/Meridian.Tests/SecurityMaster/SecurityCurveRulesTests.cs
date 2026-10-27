@@ -1,3 +1,4 @@
+using System.Globalization;
 using FluentAssertions;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
@@ -35,6 +36,24 @@ public sealed class SecurityCurveRulesTests
         Refuses(() => SecurityCurveRules.Normalize(Define(currency: "US")), "three-letter");
         Refuses(() => SecurityCurveRules.Normalize(Define(createdBy: " ")), "actor");
         Refuses(() => SecurityCurveRules.Normalize(Define(source: " ")), "source");
+        Refuses(() => SecurityCurveRules.Normalize(Define(dayCount: "Unknown")), "not a recognized convention");
+        Refuses(() => SecurityCurveRules.Normalize(Define(dayCount: "5")), "not a recognized convention");
+    }
+
+    [Fact]
+    public void Define_ReadsEveryStoredDayCountNameBackAsItself()
+    {
+        // The stored name is what GET returns and what an idempotent re-define sends back, so every
+        // convention's own name must normalize to itself (the market-spelling parser reads the 30E/360
+        // names as 30/360 US).
+        foreach (var convention in Enum.GetValues<DayCountConvention>().Where(static c => c != DayCountConvention.Unknown))
+        {
+            SecurityCurveRules.Normalize(Define(dayCount: convention.ToString())).DayCount.Should().Be(convention.ToString());
+            SecurityCurveRules.Normalize(Define(dayCount: " " + convention.ToString().ToLowerInvariant() + " ")).DayCount.Should().Be(convention.ToString(), "the name matches ignoring case and padding");
+        }
+
+        SecurityCurveRules.Normalize(Define(dayCount: "30E/360")).DayCount.Should().Be("ThirtyE360", "market spellings still parse");
+        SecurityCurveRules.Normalize(Define(dayCount: "30E/360 ISDA")).DayCount.Should().Be("ThirtyE360Isda");
     }
 
     [Fact]
@@ -60,9 +79,15 @@ public sealed class SecurityCurveRulesTests
         };
         Refuses(() => SecurityCurveRules.Normalize(withTenors, discount), "tenor label");
 
+        // A factor that rises from one pillar to the next encodes a negative forward rate, as a factor above 1 does.
+        Refuses(() => SecurityCurveRules.Normalize(Publish(discount, (AsOf, 1m), (new DateOnly(2027, 1, 1), 0.92m), (new DateOnly(2028, 1, 1), 0.96m)), discount), "never rise");
+        SecurityCurveRules.Normalize(Publish(discount, (AsOf, 1m), (new DateOnly(2027, 1, 1), 0.96m), (new DateOnly(2028, 1, 1), 0.96m)), discount)
+            .Points.Should().HaveCount(3, "a flat segment is a zero rate, not a negative one");
+
         var forward = Definition(SecurityCurveKind.Forward, "SOFR");
         Refuses(() => SecurityCurveRules.Normalize(Publish(forward, (AsOf, 4m)), forward), "publish 0.04, not 4");
-        SecurityCurveRules.Normalize(Publish(forward, (AsOf, 0.04m), (new DateOnly(2027, 1, 1), -0.001m)), forward).Points.Should().HaveCount(2, "fractions and negative rates are admitted");
+        Refuses(() => SecurityCurveRules.Normalize(Publish(forward, (AsOf, 0.04m), (new DateOnly(2027, 1, 1), -0.001m)), forward), "floors every rate at zero");
+        SecurityCurveRules.Normalize(Publish(forward, (AsOf, 0.04m), (new DateOnly(2027, 1, 1), 0m)), forward).Points.Should().HaveCount(2, "fractions and a zero rate are admitted");
 
         var inflation = Definition(SecurityCurveKind.Inflation, "CPI-U");
         Refuses(() => SecurityCurveRules.Normalize(Publish(inflation, (AsOf, 0m)), inflation), "positive");
@@ -128,6 +153,30 @@ public sealed class SecurityCurveRulesTests
     }
 
     [Fact]
+    public void ADiscountCurveWithoutAnAsOfPillar_IsLinearFromOneOnItsAsOf_ToTheFirstPillar()
+    {
+        // As of 2026-01-01 with a single pillar (2027-01-01, 0.96): a payment on 2026-07-02, 182 of
+        // 365 days along, discounts by 1 + (0.96 - 1) x 182 / 365, not by the first pillar's 0.96.
+        var definition = Definition(SecurityCurveKind.Discount);
+        var curve = ValuationTestSecurities.Version(definition, AsOf, (new DateOnly(2027, 1, 1), 0.96m));
+        var interpolated = 1m + ((0.96m - 1m) * (182m / 365m));
+
+        SecurityCurveRules.ValueAt(curve, SecurityCurveKind.Discount, new DateOnly(2026, 7, 2)).Should().Be(interpolated);
+        SecurityCurveRules.ValueAt(curve, SecurityCurveKind.Discount, AsOf).Should().Be(1m, "a discount factor is 1 on its as-of");
+        SecurityCurveRules.ValueAt(curve, SecurityCurveKind.Discount, AsOf.AddDays(-10)).Should().Be(1m);
+        SecurityCurveRules.ValueAt(curve, SecurityCurveKind.Discount, new DateOnly(2027, 1, 1)).Should().Be(0.96m);
+        SecurityCurveRules.ValueAt(curve, SecurityCurveKind.Forward, new DateOnly(2026, 7, 2)).Should().Be(0.96m, "a forward curve stays flat before its first pillar");
+
+        var factor = SecurityCurveRules.DiscountFactorAt(curve, AsOf, new DateOnly(2026, 7, 2));
+        factor.Should().Be(interpolated);
+        factor.Should().BeApproximately(0.98005m, 0.00001m).And.NotBe(0.96m);
+        SecurityCurveRules.DiscountFactorAt(curve, AsOf, new DateOnly(2027, 1, 1)).Should().Be(0.96m);
+
+        // Valuing inside the lead-in rebases on the interpolated factor at the valuation date.
+        SecurityCurveRules.DiscountFactorAt(curve, new DateOnly(2026, 7, 2), new DateOnly(2027, 1, 1)).Should().Be(0.96m / interpolated);
+    }
+
+    [Fact]
     public void ToForwardCurve_CarriesKeyVersionAndHashIntoTheProvenance_AndOnlyForForwardCurves()
     {
         var definition = Definition(SecurityCurveKind.Forward, "SOFR");
@@ -143,6 +192,42 @@ public sealed class SecurityCurveRulesTests
         var discount = Definition(SecurityCurveKind.Discount);
         Refuses(() => SecurityCurveRules.ToForwardCurve(ValuationTestSecurities.Version(discount, AsOf, (AsOf, 1m)), discount), "Only a Forward curve");
         Refuses(() => SecurityCurveRules.ToForwardCurve(version, Definition(SecurityCurveKind.Forward, "ESTR")), "does not belong");
+
+        SecurityForwardCurve.TryReadAsOf(curve.Describe(), out var asOf).Should().BeTrue();
+        asOf.Should().Be(AsOf);
+    }
+
+    [Fact]
+    public void ForwardCurveLabels_WriteAndReadTheirAsOfInTheInvariantCulture()
+    {
+        var curve = new SecurityForwardCurve("SOFR", new DateOnly(2025, 12, 1), [new(AsOf, 0.04m)], "USD-SOFR-3M v1 abc");
+        var original = CultureInfo.CurrentCulture;
+        try
+        {
+            // The Thai Buddhist calendar would write the year as 2568 under culture-sensitive formatting.
+            CultureInfo.CurrentCulture = new CultureInfo("th-TH");
+            curve.Describe().Should().Be("forwardCurve:SOFR@2025-12-01 (USD-SOFR-3M v1 abc)");
+            SecurityForwardCurve.TryReadAsOf(curve.Describe(), out var underThai).Should().BeTrue();
+            underThai.Should().Be(new DateOnly(2025, 12, 1));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = original;
+        }
+
+        Reads("forwardCurve:SOFR@2025-12-01", new DateOnly(2025, 12, 1));
+        Reads("forwardCurve:A@B@2025-12-01 (x)", new DateOnly(2025, 12, 1));
+        Reads("forwardCurve:SOFR@2025-12-01 (vendor@2020-01-01 v2)", new DateOnly(2025, 12, 1));
+        foreach (var label in new[] { null, "", "fixed", "flatForward:lastFixing", "forwardCurve:SOFR", "forwardCurve:SOFR@2025-13-01", "forwardCurve:SOFR@2025-12-01x", "forwardcurve:SOFR@2025-12-01" })
+        {
+            SecurityForwardCurve.TryReadAsOf(label, out _).Should().BeFalse(label ?? "null");
+        }
+
+        static void Reads(string label, DateOnly expected)
+        {
+            SecurityForwardCurve.TryReadAsOf(label, out var asOf).Should().BeTrue(label);
+            asOf.Should().Be(expected, label);
+        }
     }
 
     private static void Refuses(Action action, string because)

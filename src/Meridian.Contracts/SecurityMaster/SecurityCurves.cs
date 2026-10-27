@@ -10,10 +10,10 @@ namespace Meridian.Contracts.SecurityMaster;
 [JsonConverter(typeof(JsonStringEnumConverter<SecurityCurveKind>))]
 public enum SecurityCurveKind
 {
-    /// <summary>Discount factors in (0, 1]; a pillar on the as-of date is 1.</summary>
+    /// <summary>Discount factors in (0, 1] that never rise with time; a pillar on the as-of date is 1.</summary>
     Discount,
 
-    /// <summary>Projected annual fixings of one floating-rate index, stored as fractions (0.04, never 4).</summary>
+    /// <summary>Projected annual fixings of one floating-rate index, stored as non-negative fractions (0.04, never 4).</summary>
     Forward,
 
     /// <summary>Projected levels of one inflation index; always positive.</summary>
@@ -23,8 +23,10 @@ public enum SecurityCurveKind
 /// <summary>
 /// How a value between two pillars is read. <see cref="Linear"/> is linear in
 /// <see cref="DateOnly.DayNumber"/> on the stored value (the arithmetic of
-/// <see cref="SecurityForwardCurve.RateAt"/>): flat before the first pillar; after the last pillar
-/// Forward and Inflation curves hold flat and a Discount curve refuses.
+/// <see cref="SecurityForwardCurve.RateAt"/>). Before the first pillar Forward and Inflation curves
+/// hold flat, while a Discount curve is 1 on or before its as-of date and linear from (as-of, 1) to
+/// the first pillar; after the last pillar Forward and Inflation curves hold flat and a Discount
+/// curve refuses.
 /// </summary>
 [JsonConverter(typeof(JsonStringEnumConverter<SecurityCurveInterpolation>))]
 public enum SecurityCurveInterpolation
@@ -114,6 +116,9 @@ public interface ISecurityCurveStore
 
     Task<SecurityCurveVersionDto?> GetVersionAsync(Guid curveId, long version, CancellationToken ct = default);
 
+    /// <summary>The version with id <paramref name="curveVersionId"/> when it belongs to <paramref name="curveId"/>; null otherwise.</summary>
+    Task<SecurityCurveVersionDto?> GetVersionByIdAsync(Guid curveId, Guid curveVersionId, CancellationToken ct = default);
+
     /// <summary>The latest version whose as-of is on or before <paramref name="asOf"/> and that was recorded by <paramref name="knownAt"/> (now when null).</summary>
     Task<SecurityCurveVersionDto?> GetLatestVersionAsOfAsync(Guid curveId, DateOnly asOf, DateTimeOffset? knownAt = null, CancellationToken ct = default);
 
@@ -146,7 +151,7 @@ public static class SecurityCurveRules
         if (request.Kind != SecurityCurveKind.Discount && indexName is null)
             throw new ArgumentException("A forward or inflation curve must name its index.", nameof(request));
 
-        if (!DayCountConventions.TryParse(request.DayCount, out var dayCount))
+        if (!TryParseDayCount(request.DayCount, out var dayCount))
             throw new ArgumentException($"Day count '{request.DayCount}' is not a recognized convention.", nameof(request));
 
         return request with
@@ -195,6 +200,19 @@ public static class SecurityCurveRules
             RequireValueForKind(definition.Kind, point, request.AsOf);
         }
 
+        // A discount factor that rises from one pillar to the next encodes a negative forward rate,
+        // the same thing a factor above 1 does, so both are refused by the one rule.
+        if (definition.Kind == SecurityCurveKind.Discount)
+        {
+            for (var i = 1; i < points.Count; i++)
+            {
+                if (points[i].Value > points[i - 1].Value)
+                    throw new ArgumentException(
+                        $"Discount factors never rise with time; {points[i].Date:yyyy-MM-dd} carries {points[i].Value}, above {points[i - 1].Value} on {points[i - 1].Date:yyyy-MM-dd}, which encodes a negative rate.",
+                        nameof(request));
+            }
+        }
+
         return request with
         {
             Points = points,
@@ -225,10 +243,12 @@ public static class SecurityCurveRules
     }
 
     /// <summary>
-    /// The curve's value on <paramref name="date"/>: flat before the first pillar, linear in day
-    /// number between pillars, flat after the last pillar for Forward and Inflation curves and null
-    /// there for a Discount curve (a discount factor is never extrapolated). Null for a version with
-    /// no points.
+    /// The curve's value on <paramref name="date"/>: linear in day number between pillars; before
+    /// the first pillar flat for Forward and Inflation curves, while a Discount curve is 1 on or
+    /// before the version's as-of date and linear from (as-of, 1) to the first pillar (a discount
+    /// factor is 1 at its own as-of, so it is never held at the first pillar's value back to that
+    /// date); after the last pillar flat for Forward and Inflation curves and null for a Discount
+    /// curve (a discount factor is never extrapolated). Null for a version with no points.
     /// </summary>
     public static decimal? ValueAt(SecurityCurveVersionDto version, SecurityCurveKind kind, DateOnly date)
     {
@@ -237,6 +257,16 @@ public static class SecurityCurveRules
             return null;
 
         var ordered = version.Points.OrderBy(static point => point.Date).ToArray();
+        if (kind == SecurityCurveKind.Discount && date < ordered[0].Date)
+        {
+            if (date <= version.AsOf)
+                return 1m;
+
+            var lead = ordered[0].Date.DayNumber - version.AsOf.DayNumber;
+            var along = (decimal)(date.DayNumber - version.AsOf.DayNumber) / lead;
+            return 1m + ((ordered[0].Value - 1m) * along);
+        }
+
         if (date <= ordered[0].Date)
             return ordered[0].Value;
 
@@ -261,9 +291,9 @@ public static class SecurityCurveRules
     /// <summary>
     /// The factor that discounts a payment on <paramref name="paymentDate"/> to
     /// <paramref name="valuationDate"/> from a Discount curve: 1 for a payment on or before the
-    /// valuation date, otherwise the curve's value at the payment date rebased by its value at the
-    /// valuation date (1 when the valuation date is on or before the first pillar, so a curve whose
-    /// as-of precedes the valuation date still discounts to the valuation date). Null when the
+    /// valuation date, otherwise the curve's <see cref="ValueAt"/> at the payment date rebased by its
+    /// <see cref="ValueAt"/> at the valuation date (1 on or before the version's as-of, so a curve
+    /// whose as-of precedes the valuation date still discounts to the valuation date). Null when the
     /// payment lies beyond the last pillar.
     /// </summary>
     public static decimal? DiscountFactorAt(SecurityCurveVersionDto discount, DateOnly valuationDate, DateOnly paymentDate)
@@ -276,8 +306,7 @@ public static class SecurityCurveRules
         if (atPayment is null)
             return null;
 
-        var firstPillar = discount.Points.Min(static point => point.Date);
-        var atValuation = valuationDate <= firstPillar ? 1m : ValueAt(discount, SecurityCurveKind.Discount, valuationDate);
+        var atValuation = ValueAt(discount, SecurityCurveKind.Discount, valuationDate);
         if (atValuation is not > 0m)
             return null;
 
@@ -321,6 +350,12 @@ public static class SecurityCurveRules
             case SecurityCurveKind.Forward:
                 if (Math.Abs(point.Value) > 1m)
                     throw new ArgumentException($"Rates are stored as fractions; publish 0.04, not 4 ({point.Date:yyyy-MM-dd} carries {point.Value}).", nameof(point));
+                // The cash-flow projection floors every rate at zero, so a stored negative fixing
+                // would value a zero-floored leg while the curve claims otherwise.
+                if (point.Value < 0m)
+                    throw new ArgumentException(
+                        $"A forward rate is not negative: the cash-flow projection floors every rate at zero, so a stored negative curve would silently value a zero-floored leg ({point.Date:yyyy-MM-dd} carries {point.Value}).",
+                        nameof(point));
                 break;
             case SecurityCurveKind.Inflation:
                 if (point.Value <= 0m)
@@ -329,6 +364,24 @@ public static class SecurityCurveRules
             default:
                 throw new ArgumentException("A curve kind must be Discount, Forward or Inflation.", nameof(kind));
         }
+    }
+
+    // The stored name of every convention must read back as itself, so an exact convention name
+    // (ignoring case; never Unknown, never a number) is matched first. The market-spelling parser
+    // comes second: it reads "ThirtyE360" and "ThirtyE360Isda" as 30/360 US.
+    private static bool TryParseDayCount(string? raw, out DayCountConvention convention)
+    {
+        var trimmed = raw?.Trim();
+        foreach (var candidate in Enum.GetValues<DayCountConvention>())
+        {
+            if (candidate != DayCountConvention.Unknown && string.Equals(candidate.ToString(), trimmed, StringComparison.OrdinalIgnoreCase))
+            {
+                convention = candidate;
+                return true;
+            }
+        }
+
+        return DayCountConventions.TryParse(raw, out convention);
     }
 
     private static string RequireCurrency(string? value)

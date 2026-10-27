@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.Contracts.SecurityMaster;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +18,6 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
     public const string Version = "v1";
     public const string DiscountRole = "Discount";
 
-    private const string ForwardCurveRateSourcePrefix = "forwardCurve:";
     private const string FlatForwardRateSource = "flatForward:lastFixing";
     private const string FixedRateSource = "fixed";
 
@@ -85,6 +85,19 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
             return Blocked();
         }
 
+        // The ledger gate refuses to post from a stale or undated source; the valuation reports it.
+        switch (projection.Staleness)
+        {
+            case StructuredCashFlowStaleness.Stale:
+                diagnostics.Add(string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"CashFlowSourceStale: the cash-flow source was last updated {projection.SourceLastUpdatedUtc:O} (SourceLastUpdatedUtc), beyond the staleness threshold; the ledger gate would not post from it."));
+                break;
+            case StructuredCashFlowStaleness.Unknown:
+                diagnostics.Add("CashFlowSourceFreshnessUnknown: the cash-flow source carries no SourceLastUpdatedUtc, so its freshness cannot be assessed; the ledger gate would not post from it.");
+                break;
+        }
+
         if (projection.Schedule.Count == 0)
         {
             blockers.Add(new SecurityValuationBlockerDto("NoProjectedFlows", "The projection has no net cash flows on or after the valuation date (no remaining periods, or a multi-leg structure whose directions are unknown)."));
@@ -93,8 +106,10 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
 
         inputs.Add(new SecurityValuationInputDto("SecurityTerms", security.Version.ToString(), security.SecurityId, security.Version));
 
-        // 3. Where each floating leg's rates came from.
+        // 3. Where each floating leg's rates came from. The observed as-of is the oldest market input:
+        //    the discount curve's as-of, or an older forward curve's.
         var observability = SecurityValuationObservability.ObservableInputs;
+        var observedAsOf = version.AsOf;
         foreach (var leg in projection.LegSchedules ?? [])
         {
             if (leg.RateSource is null || string.Equals(leg.RateSource, FixedRateSource, StringComparison.Ordinal))
@@ -102,9 +117,21 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
                 continue;
             }
 
-            if (leg.RateSource.StartsWith(ForwardCurveRateSourcePrefix, StringComparison.Ordinal))
+            if (leg.RateSource.StartsWith(SecurityForwardCurve.RateSourcePrefix, StringComparison.Ordinal))
             {
-                inputs.Add(new SecurityValuationInputDto("ForwardCurve", leg.RateSource));
+                if (!SecurityForwardCurve.TryReadAsOf(leg.RateSource, out var forwardAsOf))
+                {
+                    blockers.Add(new SecurityValuationBlockerDto(
+                        "UnsupportedInput",
+                        $"Leg '{leg.LegId}' names forward-curve provenance '{leg.RateSource}' without a readable as-of date, so the oldest market input cannot be stated."));
+                    return Blocked();
+                }
+
+                inputs.Add(new SecurityValuationInputDto("ForwardCurve", leg.RateSource, AsOf: ToUtc(forwardAsOf)));
+                if (forwardAsOf < observedAsOf)
+                {
+                    observedAsOf = forwardAsOf;
+                }
             }
             else if (string.Equals(leg.RateSource, FlatForwardRateSource, StringComparison.Ordinal))
             {
@@ -137,28 +164,35 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
         // 5. A per-unit price on the projected basis.
         var descriptor = SecurityAssetClassCatalog.GetOrDefault(security.AssetClass);
         var terms = projection.TermsUsed;
-        decimal? basis;
         SecurityPriceUnit priceUnit;
-        decimal? price;
+        decimal? price = null;
+        decimal? quotedFactor = null;
         if (descriptor.UsesFaceValueLots)
         {
-            // The projection walks the outstanding face (principal x the paydown factor), so the
-            // percent-of-par price is quoted per 100 of outstanding face: the same factor the
-            // market-value helper applies to the quantity, so it is applied exactly once.
-            var factor = SecurityValuationMarketValues.ResolvedFactor(security);
-            var face = projection.IsNormalizedPer100 ? 100m : terms?.PrincipalFace;
-            basis = face is > 0m && factor > 0m ? face.Value * factor : null;
+            // The projection walks the outstanding face with whatever factor it selected (a dated
+            // schedule point, the scalar, completed contractual payments), so the outstanding face is
+            // read from the projection itself: the principal it repays from the valuation date. The
+            // percent-of-par price is per 100 of that face, and the market value scales the quantity
+            // by the same outstanding over the principal face, so the factor is applied exactly once.
+            var face = terms?.PrincipalFace;
+            var outstanding = projection.Schedule.Sum(static entry => entry.PrincipalAmount);
             priceUnit = SecurityPriceUnit.PercentOfPar;
-            price = basis is > 0m ? presentValue / basis.Value * 100m : null;
-            if (price is null && face is > 0m)
+            if (face is > 0m && outstanding > 0m)
             {
-                diagnostics.Add("NoPriceBasis: the pool is fully repaid (factor 0), so no per-unit price is derived; the present value stands on its own.");
+                price = presentValue / outstanding * 100m;
+                quotedFactor = outstanding / face.Value;
+            }
+            else if (face is > 0m)
+            {
+                diagnostics.Add(outstanding == 0m
+                    ? "NoPriceBasis: the projection repays no principal from the valuation date (the pool is fully repaid, factor 0), so no per-unit price is derived; the present value stands on its own."
+                    : string.Create(CultureInfo.InvariantCulture, $"NoPriceBasis: the projection's net principal from the valuation date is {outstanding}, not a positive outstanding face, so no per-unit price is derived; the present value stands on its own."));
                 priceUnit = SecurityPriceUnit.Unspecified;
             }
         }
         else
         {
-            basis = terms?.Legs?.FirstOrDefault()?.Notional ?? terms?.PrincipalFace;
+            var basis = terms?.Legs?.FirstOrDefault()?.Notional ?? terms?.PrincipalFace;
             priceUnit = SecurityPriceUnit.CurrencyPerUnit;
             price = basis is > 0m ? presentValue / basis.Value : null;
         }
@@ -169,12 +203,27 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
             priceUnit = SecurityPriceUnit.Unspecified;
         }
 
-        var marketValue = SecurityValuationMarketValues.Compute(security, request.Quantity, price, priceUnit, diagnostics);
+        var marketValue = SecurityValuationMarketValues.Compute(security, request.Quantity, price, priceUnit, asOfDate, diagnostics, quotedFactor);
 
-        // 6. Dates and the dirty-value caveat.
+        // 6. Dates and the dirty-value caveat. A pinned version bypasses the as-of and knowledge
+        //    filters, so a version dated after the valuation date or recorded after the knowledge
+        //    cutoff is used as given and said so.
         if (version.AsOf < asOfDate)
         {
             diagnostics.Add($"DiscountCurveAsOfPrecedesValuationDate: '{version.CurveKey}' v{version.Version} is dated {version.AsOf:yyyy-MM-dd} and was rebased to {asOfDate:yyyy-MM-dd}.");
+        }
+        else if (version.AsOf > asOfDate)
+        {
+            diagnostics.Add(string.Create(
+                CultureInfo.InvariantCulture,
+                $"DiscountCurveAsOfFollowsValuationDate: '{version.CurveKey}' v{version.Version} is dated {version.AsOf:yyyy-MM-dd}, after the valuation date {asOfDate:yyyy-MM-dd}; the pinned version was used as given and discounts at 1 up to its as-of."));
+        }
+
+        if (request.KnownAt is { } cutoff && version.RecordedAt > cutoff)
+        {
+            diagnostics.Add(string.Create(
+                CultureInfo.InvariantCulture,
+                $"DiscountCurveRecordedAfterKnownAt: '{version.CurveKey}' v{version.Version} was recorded at {version.RecordedAt:O}, after the knowledge cutoff {cutoff:O}; the pinned version was used as given."));
         }
 
         diagnostics.Add("DirtyValue: the present value includes the full next coupon; clean price and accrued interest are not separated.");
@@ -196,7 +245,7 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
             presentValue,
             request.Quantity,
             marketValue,
-            ToUtc(version.AsOf),
+            ToUtc(observedAsOf),
             observability,
             inputs,
             diagnostics,
@@ -278,8 +327,7 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
         SecurityCurveVersionDto? version;
         if (pinned?.CurveVersionId is { } pinnedVersionId)
         {
-            version = (await _curves.ListVersionsAsync(definition.CurveId, ct).ConfigureAwait(false))
-                .FirstOrDefault(candidate => candidate.CurveVersionId == pinnedVersionId);
+            version = await _curves.GetVersionByIdAsync(definition.CurveId, pinnedVersionId, ct).ConfigureAwait(false);
             if (version is null)
             {
                 blockers.Add(new SecurityValuationBlockerDto("NoDiscountCurve", $"Curve '{definition.CurveKey}' has no version {pinnedVersionId:D}."));

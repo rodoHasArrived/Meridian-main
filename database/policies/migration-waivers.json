@@ -129,7 +129,7 @@
     {
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/052_security_curves.sql",
       "rule_id": "migration-truncate",
-      "reason": "Requires human schema/storage review. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only, immutable security_curve_versions table; no data is truncated and the migration creates only new tables, indexes, a function and triggers. PostgreSQL regression coverage attempts update, delete and truncate and verifies that every published curve version is retained.",
+      "reason": "Requires human schema/storage review. The lexical TRUNCATE matches declare BEFORE TRUNCATE triggers that reject truncation of the write-once security_curves table and the append-only, immutable security_curve_versions table; no data is truncated and the migration creates only new tables, indexes, a function and triggers. PostgreSQL regression coverage attempts update, delete and truncate on both tables and verifies that every curve definition and published curve version is retained.",
       "review_after": "2027-04-25"
     },
     {
