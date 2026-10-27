@@ -6,11 +6,27 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class SecurityMasterEndpoints
 {
+    /// <summary>
+    /// Maps the curve routes only when an <see cref="ISecurityCurveStore"/> is registered and the
+    /// valuation route only when an <see cref="ISecurityValuationService"/> is. Neither has a Null
+    /// fallback in DI, so a host without the Security Master database simply leaves the routes
+    /// unavailable.
+    /// </summary>
+    private static void MapCurveAndValuationEndpoints(WebApplication app, RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        if (app.Services.GetService<ISecurityCurveStore>() is not null)
+            MapCurveEndpoints(group, jsonOptions);
+
+        if (app.Services.GetService<ISecurityValuationService>() is not null)
+            MapValuationEndpoints(group, jsonOptions);
+    }
+
     /// <summary>
     /// Stored market curves: write-once definitions and append-only published versions. Mapped only
     /// when an <see cref="ISecurityCurveStore"/> is registered; the actor on every write comes from
