@@ -25,8 +25,9 @@
 --   * protect_open_lot_current_factor is tightened by create or replace (the V052 trigger object is
 --     kept): a factor change must come from a FactorPaydown batch of the same book/security/position
 --     that restates the lot's basis in the same batch, a partial paydown preserves quantity, a full
---     paydown closes the lot, and a lot may open with a factor only as a corporate-action successor
---     inheriting its predecessor's paydown.
+--     paydown closes the lot, and a lot may open with a factor only when its birth batch is a
+--     CorporateAction batch of the same book. The database checks that birth batch only; that the
+--     opening factor equals the predecessor's is verified by the typed store (OpenLotSuccessors).
 --
 -- Every previously valid row stays valid; nothing is backfilled, dropped or rewritten. The batch
 -- row is inserted before the lot compare-and-swap in the same transaction, so the trigger's join on

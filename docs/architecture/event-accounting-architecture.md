@@ -133,8 +133,10 @@ The existing factor-paydown calculator remains one source-specific projection pr
 defines the boundary for other asset accounting event kinds. Compatibility bridges and backtesting
 adjusters may call projection calculators, but they do not establish production posting authority.
 A factor paydown posts as the canonical `AssetAccounting.CorporateAction` event carrying the
-governed `FactorPaydown` lot mutation: the projector's event is retyped to the canonical kind (its
-`MbsFactorPaydown` type survives only as the lineage model key and trigger), the per-lot
+governed `FactorPaydown` lot mutation: the projector's event is retyped to the canonical kind, and
+so is the trigger of the lineage it carries, which keeps the model key `mbs-factor-paydown` (the
+model's own `MbsFactorPaydown` event type stays on the projector's output and the persisted Asset
+Operations projection lineage, not on the spine event or its lineage), the per-lot
 instruction sets each open lot's current factor, relieves its basis pro rata to the principal repaid
 and recognises the difference as realized gain or loss, and Rules Studio resolves the journal's
 cash, carrying-relief and realized lines from the instruction's `LotMutationComponent` values rather

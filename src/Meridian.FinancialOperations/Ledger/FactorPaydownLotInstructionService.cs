@@ -50,15 +50,17 @@ public sealed record FactorPaydownPreparation(
 /// Prepares a reviewed factor paydown from the lots of record: loads the lots open in the scope as
 /// of the effective date, derives held face and the position principal through the registered
 /// projector, allocates principal and pro-rata basis relief per lot, and assembles the canonical
-/// corporate-action event, lineage, three-line projected effect and lot instruction the spine
-/// retains. It never approves or posts; the candidate service and the atomic store re-derive and
-/// re-lock everything here before anything is written.
+/// corporate-action event, lineage, two- or three-line projected effect and lot instruction the
+/// spine retains. It never approves or posts; the candidate service and the atomic store re-derive
+/// and re-lock everything here before anything is written. Hosts compose it like the amortization
+/// preview: a host without persistence still starts, and preparation refuses the missing authority
+/// before reading any source record.
 /// </summary>
 public sealed class FactorPaydownLotInstructionService(
-    ILedgerJournalStore lots,
-    ISecurityMasterStore securities,
-    IInstrumentPositionProjectionStore positions,
-    IFactorPaydownProjectionService projector)
+    ILedgerJournalStore? lots,
+    ISecurityMasterStore? securities,
+    IInstrumentPositionProjectionStore? positions,
+    IFactorPaydownProjectionService? projector)
 {
     public async Task<FactorPaydownPreparation> PrepareAsync(
         FactorPaydownPreparationRequest request,
@@ -67,15 +69,23 @@ public sealed class FactorPaydownLotInstructionService(
         CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        var lotStore = lots ?? throw new InvalidOperationException(
+            "Factor paydown cannot be prepared because no authoritative ledger journal store is configured.");
+        var securityStore = securities ?? throw new InvalidOperationException(
+            "Factor paydown cannot be prepared because no authoritative Security Master store is configured.");
+        var positionStore = positions ?? throw new InvalidOperationException(
+            "Factor paydown cannot be prepared because no authoritative book-position store is configured.");
+        var paydownProjector = projector ?? throw new InvalidOperationException(
+            "Factor paydown cannot be prepared because no factor-paydown projector is configured.");
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(request.FactorEvidence);
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
         var hash = Sha256Digest.Normalize(request.SourceContentHash)
             ?? throw new InvalidOperationException("Factor paydown requires a canonical SHA-256 source-content hash.");
 
-        var security = await securities.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false)
+        var security = await securityStore.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Factor paydown requires the authoritative Security Master projection.");
-        var position = await positions.GetBookPositionAsync(request.BookPositionId, ct).ConfigureAwait(false)
+        var position = await positionStore.GetBookPositionAsync(request.BookPositionId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Factor paydown requires the authoritative book position.");
         if (position.SecurityId != request.SecurityId || position.BookContext.LedgerBookId != request.LedgerBookId
             || position.Status != "Active" || position.PositionSide is not (BookPositionSides.Long or BookPositionSides.Asset))
@@ -84,7 +94,7 @@ public sealed class FactorPaydownLotInstructionService(
         if (!string.Equals(security.Currency, currency, StringComparison.Ordinal))
             throw new InvalidOperationException("Factor paydown supports same-currency positions only; a translated paydown requires explicit FX authority.");
 
-        var records = await lots.ListOpenTaxLotsByAssetScopeAsync(request.LedgerBookId, request.SecurityId,
+        var records = await lotStore.ListOpenTaxLotsByAssetScopeAsync(request.LedgerBookId, request.SecurityId,
             request.BookPositionId, request.EffectiveDate, ct).ConfigureAwait(false);
         if (records.Count == 0)
             throw new InvalidOperationException("The position holds no lot of record open on the paydown date.");
@@ -98,7 +108,7 @@ public sealed class FactorPaydownLotInstructionService(
             heldFace += face.ParFace * (record.OpenQuantity / record.OriginalQuantity);
         }
 
-        var projection = projector.Project(new FactorPaydownProjectionRequest(request.SecurityId, request.BookPositionId,
+        var projection = paydownProjector.Project(new FactorPaydownProjectionRequest(request.SecurityId, request.BookPositionId,
             position.Version, position.Version, heldFace, request.PriorFactor, request.NewFactor, currency,
             request.EffectiveDate, request.OccurredAtUtc, request.SourceDomain, request.SourceEntityId, hash,
             request.FactorEvidence.Select(static evidence => evidence.EvidenceUri).ToArray(), request.CorrelationId));
