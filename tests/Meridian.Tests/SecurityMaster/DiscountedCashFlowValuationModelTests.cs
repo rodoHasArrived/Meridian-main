@@ -50,6 +50,45 @@ public sealed class DiscountedCashFlowValuationModelTests
     }
 
     [Fact]
+    public async Task APaidDownBond_QuotesItsPricePerOutstandingFace_AndAppliesTheFactorOnce()
+    {
+        // Factor 0.8 on 1,000,000 par: the walk projects two coupons of 40,000 and 800,000 of
+        // principal on the 800,000 outstanding. On a unit discount curve the PV is 880,000, which is
+        // 110 per 100 of OUTSTANDING face, not 88 per 100 of par: the market value of 500,000 par is
+        // 500,000 x 0.8 x 110 / 100 = 440,000, the factor applied once.
+        var bond = ValuationTestSecurities.PaidDownBond(0.8m);
+        var definition = ValuationTestSecurities.DiscountDefinition();
+        var version = ValuationTestSecurities.Version(definition, AsOfDate, ValuationTestSecurities.UnitDiscountPoints);
+        var model = Build(bond, Curves(definition, version));
+
+        var result = await model.ValueAsync(new SecurityValuationRequest(bond.SecurityId, AsOf, Quantity: 500_000m), bond, CancellationToken.None);
+
+        result.IsBlocked.Should().BeFalse(string.Join("; ", result.Blockers.Select(static b => b.Reason)));
+        result.PresentValue.Should().Be(880_000.00m, "40,000 + 40,000 + 800,000 on unit discount factors");
+        result.PriceUnit.Should().Be(SecurityPriceUnit.PercentOfPar);
+        result.Price.Should().Be(110m, "880,000 per 800,000 of outstanding face");
+        result.MarketValue.Should().Be(440_000.00m, "500,000 par x 0.8 x 110 / 100");
+    }
+
+    [Fact]
+    public async Task AFullyRepaidBond_HasNoPriceBasis_AndSaysSo()
+    {
+        var bond = ValuationTestSecurities.PaidDownBond(0m);
+        var definition = ValuationTestSecurities.DiscountDefinition();
+        var version = ValuationTestSecurities.Version(definition, AsOfDate, ValuationTestSecurities.UnitDiscountPoints);
+        var model = Build(bond, Curves(definition, version));
+
+        var result = await model.ValueAsync(new SecurityValuationRequest(bond.SecurityId, AsOf, Quantity: 500_000m), bond, CancellationToken.None);
+
+        result.IsBlocked.Should().BeFalse(string.Join("; ", result.Blockers.Select(static b => b.Reason)));
+        result.PresentValue.Should().Be(0m);
+        result.Price.Should().BeNull();
+        result.PriceUnit.Should().Be(SecurityPriceUnit.Unspecified);
+        result.MarketValue.Should().BeNull();
+        result.Diagnostics.Should().ContainSingle(static d => d.StartsWith("NoPriceBasis", StringComparison.Ordinal)).Which.Should().Contain("fully repaid");
+    }
+
+    [Fact]
     public async Task Swap_NetsTheLegsAndDiscounts_ToTheGoldenValue()
     {
         var swap = ValuationTestSecurities.FloatingSwap();

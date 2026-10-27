@@ -81,6 +81,9 @@ public static class OtcValuationBlockerCodes
 
     /// <summary>The collateral agreement terminated before the as-of date.</summary>
     public const string CollateralAgreementTerminated = "CollateralAgreementTerminated";
+
+    /// <summary>The collateral agreement takes effect after the as-of date, so its thresholds and independent amount do not yet apply.</summary>
+    public const string CollateralAgreementNotYetEffective = "CollateralAgreementNotYetEffective";
 }
 
 /// <summary>How the contracts in a netting set are combined into one exposure.</summary>
@@ -308,6 +311,8 @@ public static class OtcExposureRules
             blockers.Add(new OtcValuationBlockerDto(OtcValuationBlockerCodes.NoCollateralAgreement, "The netting set has no collateral agreement; exposures are reported without credit support."));
         else if (csa.TerminationDate is { } csaTermination && csaTermination < asOfDate)
             blockers.Add(new OtcValuationBlockerDto(OtcValuationBlockerCodes.CollateralAgreementTerminated, $"Collateral agreement {csa.CollateralAgreementId:D} terminated on {csaTermination:yyyy-MM-dd}, before {asOfDate:yyyy-MM-dd}."));
+        else if (csa.EffectiveDate > asOfDate)
+            blockers.Add(new OtcValuationBlockerDto(OtcValuationBlockerCodes.CollateralAgreementNotYetEffective, $"Collateral agreement {csa.CollateralAgreementId:D} takes effect on {csa.EffectiveDate:yyyy-MM-dd}, after {asOfDate:yyyy-MM-dd}; its thresholds and independent amount do not yet apply."));
 
         var selected = SelectContracts(view.Contracts, asOfDate);
         var byContract = valuations

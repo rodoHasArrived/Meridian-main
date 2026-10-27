@@ -162,7 +162,7 @@ agreements, collateral agreements, netting sets, bilateral contracts) written by
 `otc_exposure_snapshots` (append-only: recomputing a date appends the next version under a unique
 `(netting_set_id, as_of_date, version)`, and a trigger rejects update and delete),
 `otc_collateral_balances` and `otc_margin_calls` (a partial unique index keeps one open call per
-netting set and mover); migration `055_security_governance_events_otc_collateral_stream.sql` admits
+netting set, mover and movement kind); migration `055_security_governance_events_otc_collateral_stream.sql` admits
 the `OtcCollateral` governance stream. `PostgresOtcCollateralStore` serializes computations and
 calls per netting set with transaction-scoped advisory locks, resolves eligible collateral and
 currency against the agreement inside the write transaction, stores each snapshot's jsonb payload

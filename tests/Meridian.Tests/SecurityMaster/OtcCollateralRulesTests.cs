@@ -138,11 +138,12 @@ public sealed class OtcCollateralRulesTests
 
         var open = OtcMarginCallRules.Issue(snapshot, Request(), [], DateTimeOffset.UtcNow);
         FluentActions.Invoking(() => OtcMarginCallRules.Issue(snapshot, Request(), [open], DateTimeOffset.UtcNow))
-            .Should().Throw<ArgumentException>().WithMessage("*already has an open call for the Fund*");
+            .Should().Throw<ArgumentException>().WithMessage("*already has an open Delivery call for the Fund*");
         FluentActions.Invoking(() => OtcMarginCallRules.Issue(snapshot, Request(), [open with { Status = OtcMarginCallStatus.Agreed }], DateTimeOffset.UtcNow))
             .Should().Throw<ArgumentException>("an agreed call is still open");
         OtcMarginCallRules.Issue(snapshot, Request(), [open with { Status = OtcMarginCallStatus.Settled }], DateTimeOffset.UtcNow).Should().NotBeNull("a settled call is closed");
         OtcMarginCallRules.Issue(snapshot, Request(), [open with { Mover = OtcMovementParty.Counterparty }], DateTimeOffset.UtcNow).Should().NotBeNull("the other mover's call does not block");
+        OtcMarginCallRules.Issue(snapshot, Request(), [open with { Kind = OtcMovementKind.Return }], DateTimeOffset.UtcNow).Should().NotBeNull("the same mover's open return is a distinct obligation and does not block its delivery");
         OtcMarginCallRules.Issue(snapshot, Request(), [open with { NettingSetId = Guid.NewGuid() }], DateTimeOffset.UtcNow).Should().NotBeNull("another netting set's call does not block");
     }
 

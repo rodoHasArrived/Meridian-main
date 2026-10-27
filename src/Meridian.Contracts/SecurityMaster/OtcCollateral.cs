@@ -259,8 +259,11 @@ public static class OtcMarginCallRules
             throw new ArgumentException("A call cannot be issued before the date its snapshot values.", nameof(request));
         if (request.DueOn is { } dueOn && dueOn < request.IssuedOn)
             throw new ArgumentException("A call cannot fall due before it is issued.", nameof(request));
-        if (openCalls.Any(call => call.NettingSetId == snapshot.NettingSetId && call.Mover == request.Mover && IsOpen(call.Status)))
-            throw new ArgumentException($"Netting set {snapshot.NettingSetId:D} already has an open call for the {request.Mover}; settle or cancel it first.", nameof(request));
+        // One open call per obligation: a mover's delivery and its return are distinct movements (both
+        // arise when an independent amount is in play), so each may be open at once; a second call for
+        // the same kind and mover is a duplicate.
+        if (openCalls.Any(call => call.NettingSetId == snapshot.NettingSetId && call.Mover == request.Mover && call.Kind == request.Kind && IsOpen(call.Status)))
+            throw new ArgumentException($"Netting set {snapshot.NettingSetId:D} already has an open {request.Kind} call for the {request.Mover}; settle or cancel it first.", nameof(request));
 
         return new OtcMarginCallDto(
             Guid.NewGuid(),

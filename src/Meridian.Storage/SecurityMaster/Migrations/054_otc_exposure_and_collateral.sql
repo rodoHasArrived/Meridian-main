@@ -137,7 +137,7 @@ create index if not exists otc_margin_calls_set_status_idx
     on __SCHEMA__.otc_margin_calls (netting_set_id, status);
 
 create unique index if not exists otc_margin_calls_one_open_per_side_idx
-    on __SCHEMA__.otc_margin_calls (netting_set_id, mover)
+    on __SCHEMA__.otc_margin_calls (netting_set_id, mover, movement_kind)
     where status in ('Issued', 'Agreed', 'Disputed');
 
 comment on table __SCHEMA__.otc_margin_calls is

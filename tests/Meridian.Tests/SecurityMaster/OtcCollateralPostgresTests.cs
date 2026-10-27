@@ -133,7 +133,7 @@ public sealed class OtcCollateralPostgresTests : IClassFixture<SecurityMasterDat
         (await collateral.GetMarginCallAsync(call.CallId)).Should().BeEquivalentTo(call, o => o.Excluding(c => c.UpdatedAt));
 
         await collateral.Invoking(s => s.IssueMarginCallAsync(new IssueOtcMarginCallRequest(second.SnapshotId, OtcMovementKind.Delivery, OtcMovementParty.Fund, AsOf, null, null, "casey")))
-            .Should().ThrowAsync<ArgumentException>().WithMessage("*already has an open call for the Fund*");
+            .Should().ThrowAsync<ArgumentException>().WithMessage("*already has an open Delivery call for the Fund*");
         await collateral.Invoking(s => s.IssueMarginCallAsync(new IssueOtcMarginCallRequest(first.SnapshotId, OtcMovementKind.Delivery, OtcMovementParty.Fund, AsOf, null, null, "casey")))
             .Should().ThrowAsync<ArgumentException>().WithMessage("*superseded by version 2*");
         await collateral.Invoking(s => s.IssueMarginCallAsync(new IssueOtcMarginCallRequest(Guid.NewGuid(), OtcMovementKind.Delivery, OtcMovementParty.Fund, AsOf, null, null, "casey")))

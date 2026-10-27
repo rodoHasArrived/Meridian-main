@@ -35,6 +35,22 @@ internal static class ValuationTestSecurities
         => Detail(securityId ?? Guid.NewGuid(), "Bond", "Golden bond", currency, BondTerms(maturity),
             new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "123456789", true, AsOf.AddYears(-1)));
 
+    /// <summary>
+    /// The golden bond paid down to <paramref name="currentFactor"/> of its 1,000,000 par: the walk
+    /// projects coupons and principal on the outstanding face (par x factor).
+    /// </summary>
+    public static SecurityDetailDto PaidDownBond(decimal currentFactor, Guid? securityId = null)
+        => Detail(securityId ?? Guid.NewGuid(), "Bond", "Paid-down bond", "USD", new
+        {
+            issueDate = AsOfDate,
+            maturityDate = new DateOnly(2028, 1, 1),
+            par = 1_000_000m,
+            couponRate = 5m,
+            paymentFrequency = "Annual",
+            dayCountConvention = "30/360",
+            currentFactor
+        }, new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "123456780", true, AsOf.AddYears(-1)));
+
     public static SecurityDetailDto Equity(Guid? securityId = null)
         => Detail(securityId ?? Guid.NewGuid(), "Equity", "Golden equity", "USD", new { shareClass = "Common" },
             new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, "GLDN", true, AsOf.AddYears(-1)));

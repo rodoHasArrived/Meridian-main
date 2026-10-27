@@ -211,6 +211,21 @@ public sealed class OtcExposureRulesTests
     }
 
     [Fact]
+    public void ACollateralAgreementNotYetInEffect_IsABlocker()
+    {
+        var view = View(OtcMasterAgreementType.Isda2002);
+        view = view with { CollateralAgreement = view.CollateralAgreement! with { EffectiveDate = AsOf.AddDays(1) } };
+
+        var snapshot = OtcExposureRules.Compute(view, [Valued(view.Contracts[0], 1.25m), Valued(view.Contracts[1], 1.25m)], Balances(400_000m), AsOf, "casey", DateTimeOffset.UtcNow);
+
+        snapshot.Status.Should().Be(OtcExposureSnapshotStatus.Incomplete);
+        snapshot.Blockers.Should().ContainSingle(b => b.Code == OtcValuationBlockerCodes.CollateralAgreementNotYetEffective)
+            .Which.Reason.Should().Contain("takes effect on");
+        snapshot.Movements.Should().BeEmpty("thresholds and the independent amount of an agreement not yet in force cannot call collateral");
+        snapshot.NetExposure.Should().Be(75_000m, "exposure is still reported for what was valued");
+    }
+
+    [Fact]
     public void Balances_EnterOnlyWhenValuedByTheDate_Positive_AndUnderTheAgreement()
     {
         var view = View(OtcMasterAgreementType.Isda2002);

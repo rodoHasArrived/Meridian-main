@@ -290,7 +290,7 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
             ?? throw new ArgumentException($"The exposure snapshot {request.SnapshotId:D} does not exist.", nameof(request));
 
         // Issues and transitions for one netting set are serialized under one lock, taken before
-        // any row lock, so the one-open-call-per-mover rule is checked against a settled picture.
+        // any row lock, so the one-open-call-per-mover-and-kind rule is checked against a settled picture.
         await LockAsync(connection, transaction, "otc-margin-call:" + snapshot.NettingSetId.ToString("D"), ct).ConfigureAwait(false);
         var latest = await LatestVersionAsync(connection, transaction, snapshot.NettingSetId, snapshot.AsOfDate, ct).ConfigureAwait(false);
         if (latest != snapshot.Version)

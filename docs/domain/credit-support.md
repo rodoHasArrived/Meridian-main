@@ -62,8 +62,8 @@ Security Master governance log on the `OtcCollateral` stream in the same transac
   then rounds up and a return rounds down to the rounding amount, and a return that rounds to zero
   is no movement. The Pledgor delivers; the Secured Party returns. A snapshot carries up to two
   movements, one per side.
-- **Fail closed.** Any unvalued contract, a missing or terminated collateral agreement or an open
-  contract past termination leaves the snapshot `Incomplete`: exposures are reported for what was
+- **Fail closed.** Any unvalued contract, a missing, not-yet-effective or terminated collateral
+  agreement or an open contract past termination leaves the snapshot `Incomplete`: exposures are reported for what was
   valued, no movement is computed and every reason is listed. A snapshot is never more real than
   its least-real input; its provenance is reported, and a call is issued only from a `Complete`,
   real snapshot.
@@ -74,8 +74,9 @@ Security Master governance log on the `OtcCollateral` stream in the same transac
   The currency must equal the agreement's.
 - **Calls.** A call copies the amount and currency of the snapshot's movement for its kind and
   mover, is issued on or after the snapshot date, falls due on or after it is issued, and is
-  refused while the netting set has another open call for the same mover or when the snapshot has
-  been superseded by a later version for its date. Issued → Agreed | Disputed | Cancelled;
+  refused while the netting set has another open call of the same kind for the same mover (a
+  party's delivery and its return are distinct obligations and may both be open) or when the
+  snapshot has been superseded by a later version for its date. Issued → Agreed | Disputed | Cancelled;
   Disputed → Agreed | Cancelled; Agreed → Settled | Cancelled; Settled and Cancelled are terminal.
   Agreement defaults to the called amount, settlement to the agreed amount; a dispute or a
   cancellation states its reason; a settlement states its date.

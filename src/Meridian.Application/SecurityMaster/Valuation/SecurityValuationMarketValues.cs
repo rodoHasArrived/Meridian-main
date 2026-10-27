@@ -11,6 +11,17 @@ namespace Meridian.Application.SecurityMaster.Valuation;
 /// </summary>
 internal static class SecurityValuationMarketValues
 {
+    /// <summary>
+    /// The paydown factor the market value applies to a face-value quantity: the resolved terms'
+    /// scalar current factor, or 1 when the terms carry none. A percent-of-par price must be quoted
+    /// per 100 of the face this factor produces, so the factor is applied exactly once.
+    /// </summary>
+    public static decimal ResolvedFactor(SecurityDetailDto security)
+    {
+        ArgumentNullException.ThrowIfNull(security);
+        return StructuredCashFlowTermsResolver.Resolve(security).CurrentFactor ?? 1m;
+    }
+
     public static decimal? Compute(
         SecurityDetailDto security,
         decimal? quantity,
@@ -28,8 +39,7 @@ internal static class SecurityValuationMarketValues
         switch (unit)
         {
             case SecurityPriceUnit.PercentOfPar:
-                var factor = StructuredCashFlowTermsResolver.Resolve(security).CurrentFactor ?? 1m;
-                return SecurityCalculations.bondMarketValue(units, factor, perUnit);
+                return SecurityCalculations.bondMarketValue(units, ResolvedFactor(security), perUnit);
             case SecurityPriceUnit.CurrencyPerUnit:
                 return SecurityCalculations.equityMarketValue(units, perUnit);
             default:

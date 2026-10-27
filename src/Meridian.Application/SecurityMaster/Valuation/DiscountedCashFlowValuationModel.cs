@@ -142,9 +142,19 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
         decimal? price;
         if (descriptor.UsesFaceValueLots)
         {
-            basis = projection.IsNormalizedPer100 ? 100m : terms?.PrincipalFace;
+            // The projection walks the outstanding face (principal x the paydown factor), so the
+            // percent-of-par price is quoted per 100 of outstanding face: the same factor the
+            // market-value helper applies to the quantity, so it is applied exactly once.
+            var factor = SecurityValuationMarketValues.ResolvedFactor(security);
+            var face = projection.IsNormalizedPer100 ? 100m : terms?.PrincipalFace;
+            basis = face is > 0m && factor > 0m ? face.Value * factor : null;
             priceUnit = SecurityPriceUnit.PercentOfPar;
             price = basis is > 0m ? presentValue / basis.Value * 100m : null;
+            if (price is null && face is > 0m)
+            {
+                diagnostics.Add("NoPriceBasis: the pool is fully repaid (factor 0), so no per-unit price is derived; the present value stands on its own.");
+                priceUnit = SecurityPriceUnit.Unspecified;
+            }
         }
         else
         {
@@ -153,7 +163,7 @@ public sealed class DiscountedCashFlowValuationModel : ISecurityValuationModel
             price = basis is > 0m ? presentValue / basis.Value : null;
         }
 
-        if (price is null)
+        if (price is null && priceUnit != SecurityPriceUnit.Unspecified)
         {
             diagnostics.Add("NoPriceBasis: the terms carry no principal face or leg notional, so no per-unit price is derived; the present value stands on its own.");
             priceUnit = SecurityPriceUnit.Unspecified;

@@ -4265,7 +4265,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "778bfb838868bb2e1446f0d72edfdc49fbd7a52d409d92ee726f03cb3cdbeb44",
+  "fingerprint": "4bb92639b58a09df35b98a859a1e8637af0541941413a7b810317d19cbe6b505",
   "foreign_tables": [],
   "functions": [
     {
@@ -29311,20 +29311,21 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "9b29f5738f5cfa00da0fed2c272ea0be97464711ee835f2b3fefca8e52250fa8",
+      "fingerprint": "c290bf1bf45be399ea5fba3ef7a7dcb1c746250ed45f04b561d799b1f80fa55a",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
         {
           "comment": null,
-          "definition": "CREATE UNIQUE INDEX otc_margin_calls_one_open_per_side_idx ON security_master.otc_margin_calls USING btree (netting_set_id, mover) WHERE (status = ANY (ARRAY['Issued'::text, 'Agreed'::text, 'Disputed'::text]))",
+          "definition": "CREATE UNIQUE INDEX otc_margin_calls_one_open_per_side_idx ON security_master.otc_margin_calls USING btree (netting_set_id, mover, movement_kind) WHERE (status = ANY (ARRAY['Issued'::text, 'Agreed'::text, 'Disputed'::text]))",
           "expression": null,
-          "fingerprint": "e06056ae4fda6aa75b233c1245e4bb1983b97871613d8d849c0ee75a417aa5aa",
+          "fingerprint": "9f5833e79469402a85d87c556b02b9567f51f4d270399e3a769919dfd1fb1b43",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
             "netting_set_id",
-            "mover"
+            "mover",
+            "movement_kind"
           ],
           "live": true,
           "method": "btree",
@@ -75354,20 +75355,21 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "9b29f5738f5cfa00da0fed2c272ea0be97464711ee835f2b3fefca8e52250fa8",
+      "fingerprint": "c290bf1bf45be399ea5fba3ef7a7dcb1c746250ed45f04b561d799b1f80fa55a",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
         {
           "comment": null,
-          "definition": "CREATE UNIQUE INDEX otc_margin_calls_one_open_per_side_idx ON security_master.otc_margin_calls USING btree (netting_set_id, mover) WHERE (status = ANY (ARRAY['Issued'::text, 'Agreed'::text, 'Disputed'::text]))",
+          "definition": "CREATE UNIQUE INDEX otc_margin_calls_one_open_per_side_idx ON security_master.otc_margin_calls USING btree (netting_set_id, mover, movement_kind) WHERE (status = ANY (ARRAY['Issued'::text, 'Agreed'::text, 'Disputed'::text]))",
           "expression": null,
-          "fingerprint": "e06056ae4fda6aa75b233c1245e4bb1983b97871613d8d849c0ee75a417aa5aa",
+          "fingerprint": "9f5833e79469402a85d87c556b02b9567f51f4d270399e3a769919dfd1fb1b43",
           "included_columns": [],
           "is_replica_identity": false,
           "key_columns": [
             "netting_set_id",
-            "mover"
+            "mover",
+            "movement_kind"
           ],
           "live": true,
           "method": "btree",
