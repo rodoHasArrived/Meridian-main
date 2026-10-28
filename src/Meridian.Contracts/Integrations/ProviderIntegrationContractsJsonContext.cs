@@ -3,6 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace Meridian.Contracts.Integrations;
 
+/// <summary>
+/// Provides source-generated JSON metadata for provider integration configuration, ingestion, and review contracts.
+/// </summary>
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     PropertyNameCaseInsensitive = true,

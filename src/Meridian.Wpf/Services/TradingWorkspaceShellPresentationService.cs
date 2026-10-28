@@ -7,6 +7,9 @@ using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Builds trading workspace context and actions from the active fund and trading state.
+/// </summary>
 public sealed class TradingWorkspaceShellPresentationService : IWorkspaceScopedService
 {
     private readonly StrategyRunWorkspaceService _runService;

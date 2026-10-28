@@ -2,6 +2,9 @@ using System.Collections.Generic;
 
 namespace Meridian.Contracts.SecurityMaster;
 
+/// <summary>
+/// Manages pricing hierarchies, raw price observations, and selected Security Master prices.
+/// </summary>
 public interface ISecurityMasterPricingService
 {
     Task<SecurityPricingHierarchyDto?> GetPricingHierarchyAsync(Guid securityId, string? accountId, CancellationToken ct = default);

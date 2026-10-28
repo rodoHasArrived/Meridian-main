@@ -1,5 +1,8 @@
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Queries bond reference projections, lifecycle facts, and accrual conventions by security identity.
+/// </summary>
 public interface IBondReferenceProjectionStore
 {
     Task<BondProjectionRow?> GetBondAsync(Guid securityId, CancellationToken ct = default);

@@ -5,6 +5,9 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Workstation.Controls;
 
+/// <summary>
+/// Carries the workstation command selected by the operator.
+/// </summary>
 public sealed class WorkstationCommandInvokedEventArgs : EventArgs
 {
     public WorkstationCommandInvokedEventArgs(WorkstationCommandModel command)
@@ -15,6 +18,9 @@ public sealed class WorkstationCommandInvokedEventArgs : EventArgs
     public WorkstationCommandModel Command { get; }
 }
 
+/// <summary>
+/// Displays grouped workstation commands and raises command invocation events.
+/// </summary>
 public partial class WorkstationCommandBarControl : UserControl
 {
     public static readonly DependencyProperty CommandGroupProperty =

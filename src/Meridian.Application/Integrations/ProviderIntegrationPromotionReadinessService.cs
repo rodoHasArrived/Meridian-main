@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Previews whether staged provider data meets the requirements for promotion.
+/// </summary>
 public sealed class ProviderIntegrationPromotionReadinessService
 {
     private const string PromotionTarget = "reconciliation-staging";

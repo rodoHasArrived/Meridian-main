@@ -1,5 +1,8 @@
 namespace Meridian.FinancialOperations.LedgerTextJournal;
 
+/// <summary>
+/// Parses ledger text journals and renders reports with supplied report options.
+/// </summary>
 public sealed class LedgerTextJournalReportService
 {
     public LedgerTextJournalDocument Parse(IReadOnlyList<string> lines)

@@ -2,6 +2,7 @@ using Meridian.Contracts.Configuration;
 
 namespace Meridian.DataIntegration.Credentials;
 
+/// <summary>Reads provider credential status and manages saved credentials through a credential vault.</summary>
 public interface IProviderCredentialStore
 {
     string VaultPath { get; }
@@ -39,6 +40,7 @@ public sealed record ProviderCredentialSaveRequest(
     string? Actor = null,
     IReadOnlyDictionary<string, string>? Metadata = null);
 
+/// <summary>Reports credential field names that are not accepted for the selected provider.</summary>
 public sealed class ProviderCredentialValidationException : Exception
 {
     public ProviderCredentialValidationException(string providerId, IReadOnlyList<string> unknownFields)
@@ -69,6 +71,7 @@ public sealed record ProviderCredentialVerificationUpdate(
     public string? ExpectedCredentialGeneration { get; init; }
 }
 
+/// <summary>Indicates that credentials changed concurrently and the operation must use the current connection.</summary>
 public sealed class ProviderCredentialConflictException()
     : InvalidOperationException("Provider credentials changed during the operation. Retry using the current connection.");
 

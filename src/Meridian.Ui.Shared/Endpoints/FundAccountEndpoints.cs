@@ -14,6 +14,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps fund-account management and brokerage synchronization operations with account-specific authorization.
+/// </summary>
 public static class FundAccountEndpoints
 {
     public static void MapFundAccountEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

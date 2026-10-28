@@ -3,6 +3,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Meridian.Ui.Shared.Extensibility;
 
+/// <summary>
+/// Registers extension catalogs and their configuration services.
+/// </summary>
 public static class ExtensibilityServiceCollectionExtensions
 {
     public static IServiceCollection AddExtensibilityCatalog(this IServiceCollection services)

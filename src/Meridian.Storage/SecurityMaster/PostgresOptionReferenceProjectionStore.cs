@@ -5,6 +5,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Reads option contract reference projections from PostgreSQL by symbol, chain, underlying, and expiry.
+/// </summary>
 public sealed class PostgresOptionReferenceProjectionStore : IOptionReferenceProjectionStore
 {
     private const string ContractColumns =

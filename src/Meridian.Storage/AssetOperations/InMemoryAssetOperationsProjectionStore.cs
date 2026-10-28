@@ -3,6 +3,9 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.Storage.AssetOperations;
 
+/// <summary>
+/// Maintains asset operations, accounting event, and instrument position projections in memory.
+/// </summary>
 public sealed partial class InMemoryAssetOperationsProjectionStore :
     IAssetOperationsProjectionStore,
     IInstrumentPositionProjectionStore,

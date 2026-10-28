@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps inbound OMS integration, diagnostics, synchronization, audit, and request-signing operations.
+/// </summary>
 public static class OmsIntegrationEndpoints
 {
     private const string KeyIdHeader = "X-Meridian-Key-Id";

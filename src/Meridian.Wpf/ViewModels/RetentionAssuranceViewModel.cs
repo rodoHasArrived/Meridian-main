@@ -712,6 +712,9 @@ public sealed class RetentionAssuranceViewModel : BindableBase
     }
 }
 
+/// <summary>
+/// Defines retention configuration persistence, policy validation, dry runs, and audited cleanup execution.
+/// </summary>
 public interface IRetentionAssuranceClient
 {
     RetentionConfiguration Configuration { get; }
@@ -728,6 +731,9 @@ public interface IRetentionAssuranceClient
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Presents a retention validation result with severity text and styling.
+/// </summary>
 public sealed class RetentionResultItem
 {
     public string Severity { get; set; } = string.Empty;

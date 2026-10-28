@@ -6,6 +6,9 @@ using Meridian.Wpf.Workstation.ViewModels.Base;
 
 namespace Meridian.Wpf.Workstation.ViewModels;
 
+/// <summary>
+/// Adapts workspace region state to the workstation state presentation model.
+/// </summary>
 public abstract class WorkspaceViewModelBase : Base.WorkspaceViewModelBase
 {
     private static readonly WorkstationStateModel DefaultLoadingState = WorkstationStateModel.Loading(
@@ -50,6 +53,9 @@ public abstract class WorkspaceViewModelBase : Base.WorkspaceViewModelBase
     }
 }
 
+/// <summary>
+/// Adds a bindable inspector presentation model to the detail-workspace selection base.
+/// </summary>
 public abstract class DetailWorkspaceViewModelBase : Base.DetailWorkspaceViewModelBase<InspectorPanelModel>
 {
     private InspectorPanelModel _inspector = new();
@@ -61,6 +67,9 @@ public abstract class DetailWorkspaceViewModelBase : Base.DetailWorkspaceViewMod
     }
 }
 
+/// <summary>
+/// Adds command-group presentation and adapted executable command descriptors to a workspace view model.
+/// </summary>
 public abstract class CommandHostViewModel : WorkspaceViewModelBase
 {
     private WorkstationCommandGroupModel _commandGroup = new();

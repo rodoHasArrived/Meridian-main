@@ -3,6 +3,9 @@ using ExecutionOrderSide = Meridian.Execution.Sdk.OrderSide;
 
 namespace Meridian.Infrastructure.Adapters.TradeStation;
 
+/// <summary>
+/// Maps TradeStation account, position, order, and fill payloads to canonical brokerage contracts.
+/// </summary>
 public static class TradeStationPayloadMappers
 {
     public static BrokerageExternalAccountDto MapAccount(TradeStationAccountPayload payload, DateTimeOffset retrievedAt)

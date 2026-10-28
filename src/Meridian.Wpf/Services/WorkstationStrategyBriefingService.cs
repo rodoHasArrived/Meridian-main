@@ -6,11 +6,17 @@ using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Defines access to the shared strategy briefing snapshot.
+/// </summary>
 public interface IWorkstationStrategyBriefingApiClient
 {
     Task<StrategyBriefingDto?> GetBriefingAsync(CancellationToken ct = default);
 }
 
+/// <summary>
+/// Loads the shared strategy briefing through the remote workstation client.
+/// </summary>
 public sealed class WorkstationStrategyBriefingApiClient : IWorkstationStrategyBriefingApiClient
 {
     private readonly ApiClientService _apiClient;
@@ -24,11 +30,17 @@ public sealed class WorkstationStrategyBriefingApiClient : IWorkstationStrategyB
         => (await _apiClient.GetWithResponseAsync<StrategyBriefingDto>(UiApiRoutes.WorkstationStrategyBriefing, ct).ConfigureAwait(false)).DataOrLoggedNull("Get strategy briefing");
 }
 
+/// <summary>
+/// Supplies the strategy briefing used to populate the desktop workspace.
+/// </summary>
 public interface IStrategyBriefingWorkspaceService
 {
     Task<StrategyBriefingDto> GetBriefingAsync(CancellationToken ct = default);
 }
 
+/// <summary>
+/// Adapts the strategy briefing API response to the desktop workspace service contract.
+/// </summary>
 public sealed class StrategyBriefingWorkspaceService : IStrategyBriefingWorkspaceService
 {
     private readonly IWorkstationStrategyBriefingApiClient _apiClient;

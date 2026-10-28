@@ -12,6 +12,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Serves retained evidence artifacts and maps evidence workflow operations with subject-scope authorization.
+/// </summary>
 public static class EvidenceEndpoints
 {
     public static WebApplication MapEvidenceEndpoints(

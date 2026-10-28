@@ -1,5 +1,8 @@
 namespace Meridian.Wpf.Workstation.ViewModels.Base;
 
+/// <summary>
+/// Exposes observable error presence, title, and message for reusable error presentation.
+/// </summary>
 public sealed class ErrorStateViewModel : Meridian.Wpf.ViewModels.BindableBase
 {
     private bool _hasError;

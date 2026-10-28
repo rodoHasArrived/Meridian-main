@@ -3,6 +3,9 @@ using Meridian.Contracts.FixedIncome;
 
 namespace Meridian.Contracts.Accounting.Lots;
 
+/// <summary>
+/// Validates open lot identity, quantities, cost basis, and supporting accounting facts.
+/// </summary>
 public static class OpenLotValidation
 {
     public static void Validate(OpenLotDto lot)

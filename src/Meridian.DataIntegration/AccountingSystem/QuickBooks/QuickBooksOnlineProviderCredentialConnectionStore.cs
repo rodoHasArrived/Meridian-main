@@ -5,6 +5,7 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.DataIntegration.AccountingSystem.QuickBooks;
 
+/// <summary>Adapts the provider credential vault to QuickBooks connection and token persistence operations.</summary>
 public sealed class QuickBooksOnlineProviderCredentialConnectionStore : IQuickBooksOnlineConnectionStore
 {
     public const string ClientIdField = "ClientId";

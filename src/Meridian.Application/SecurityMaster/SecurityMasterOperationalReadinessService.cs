@@ -31,6 +31,9 @@ public sealed record SecurityMasterOperationalEvidenceItem(
     string? EvidenceLink = null,
     string? Reason = null);
 
+/// <summary>
+/// Builds multi-asset operational readiness evidence from Security Master coverage.
+/// </summary>
 public interface ISecurityMasterOperationalReadinessService
 {
     Task<MultiAssetCoverageSummaryDto> GetReadinessAsync(
@@ -38,6 +41,9 @@ public interface ISecurityMasterOperationalReadinessService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Evaluates Security Master coverage for multi-asset operational readiness views.
+/// </summary>
 public sealed class SecurityMasterOperationalReadinessService : ISecurityMasterOperationalReadinessService
 {
     // Internal so the asset-class parity guards can hold these rows to the catalog.

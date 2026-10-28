@@ -36,11 +36,17 @@ internal sealed record ExecutionSimulationSummary(
     DateTimeOffset GeneratedAtUtc,
     string OutputDirectory);
 
+/// <summary>
+/// Defines historical-data execution simulation for a supplied simulation request.
+/// </summary>
 public interface IExecutionSimulationOrchestrator
 {
     Task<ExecutionSimulationResult> RunAsync(ExecutionSimulationRequest request, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Replays historical market data through execution simulation and produces fill results.
+/// </summary>
 public sealed class ExecutionSimulationOrchestrator(HistoricalDataQueryService queryService) : IExecutionSimulationOrchestrator
 {
     private static readonly JsonSerializerOptions Json = new()

@@ -13,6 +13,9 @@ public sealed record PaneLayout(
     int PaneCount,
     GridLength[] ColumnWidths);
 
+/// <summary>
+/// Provides named pane-layout presets with their column proportions and pane counts.
+/// </summary>
 public static class PaneLayouts
 {
     public static readonly PaneLayout Single = new(

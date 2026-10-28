@@ -2,6 +2,9 @@ using Meridian.Contracts.FundStructure;
 
 namespace Meridian.PortfolioRecords.Accounts;
 
+/// <summary>
+/// Defines account lifecycle updates, statement ingestion, reconciliation, and balance or sync snapshot recording.
+/// </summary>
 public interface IAccountManagementService
 {
     Task<AccountSummaryDto> CreateAccountAsync(CreateAccountRequest request, CancellationToken ct = default);

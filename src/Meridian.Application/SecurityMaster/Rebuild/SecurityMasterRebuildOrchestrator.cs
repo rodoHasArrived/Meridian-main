@@ -4,6 +4,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster.Rebuild;
 
+/// <summary>
+/// Coordinates rebuilding Security Master projections across the universe or one asset class.
+/// </summary>
 public sealed class SecurityMasterRebuildOrchestrator
 {
     private const string ProjectionName = "security_master_cache";

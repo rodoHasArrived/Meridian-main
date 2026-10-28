@@ -11,6 +11,9 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Builds storage assurance snapshots and coordinates previewed, idempotent maintenance actions.
+/// </summary>
 public sealed class StorageAssuranceService
 {
     private static readonly TimeSpan PreviewLifetime = TimeSpan.FromMinutes(15);

@@ -2,6 +2,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Features.Settings.Shell;
 
+/// <summary>
+/// Captures provider and credential counts, shell density, and retrieval time for settings readiness.
+/// </summary>
 public sealed class SettingsWorkspaceShellSnapshot
 {
     public int ProviderCount { get; init; }
@@ -21,6 +24,9 @@ public sealed class SettingsWorkspaceShellSnapshot
     public DateTimeOffset AsOfUtc { get; init; } = DateTimeOffset.UtcNow;
 }
 
+/// <summary>
+/// Carries settings context, commands, overview readiness, and operation and support presentation.
+/// </summary>
 public sealed class SettingsWorkspaceShellPresentation
 {
     public WorkspaceShellContextInput Context { get; init; } = new();

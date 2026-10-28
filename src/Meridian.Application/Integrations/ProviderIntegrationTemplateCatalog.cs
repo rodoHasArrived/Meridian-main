@@ -2,6 +2,9 @@ using Meridian.Contracts.Integrations;
 
 namespace Meridian.Application.Integrations;
 
+/// <summary>
+/// Supplies built-in integration manifests and their catalog descriptions.
+/// </summary>
 public sealed class ProviderIntegrationTemplateCatalog
 {
     private const string SeedAuthor = "meridian-system";

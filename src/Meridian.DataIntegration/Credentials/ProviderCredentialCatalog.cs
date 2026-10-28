@@ -4,6 +4,7 @@ using Meridian.Infrastructure.Adapters.Core;
 
 namespace Meridian.DataIntegration.Credentials;
 
+/// <summary>Defines supported providers, credential fields, environment choices, and provider alias normalization.</summary>
 public static class ProviderCredentialCatalog
 {
     private static readonly IReadOnlyList<ProviderCredentialCatalogEntry> Entries =

@@ -8,6 +8,9 @@ namespace Meridian.PortfolioRecords.FundAccounts;
 using Meridian.PortfolioRecords.Accounts;
 using static Meridian.Contracts.Text.TextPrimitives;
 
+/// <summary>
+/// Reports an account operation rejected by operational-status policy, including whether backfill was attempted.
+/// </summary>
 public sealed class AccountStatusPolicyException : InvalidOperationException
 {
     public AccountStatusPolicyException(AccountOperationalStatusDto status, string operation, bool backfillAttempted)

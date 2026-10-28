@@ -938,6 +938,9 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
 
     // ── Nested display models ─────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Presents a provider's health status, latency, and event activity.
+    /// </summary>
     public sealed class ProviderHealthItem
     {
         public string Name { get; set; } = string.Empty;
@@ -947,6 +950,9 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
         public string EventsText { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// Presents a system event's source, severity, message, and timestamp.
+    /// </summary>
     public sealed class SystemEventItem
     {
         public string Source { get; set; } = string.Empty;

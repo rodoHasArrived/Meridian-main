@@ -5,6 +5,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
+/// <summary>
+/// Validates, normalizes, and reconciles statement imports using the selected mapping profile.
+/// </summary>
 public sealed class StatementReconciliationService
 {
     private readonly StatementBreakClassifier _breakClassifier = new();
@@ -1083,6 +1086,9 @@ internal static class DateTimeOffsetBusinessDayExtensions
     }
 }
 
+/// <summary>
+/// Computes stable SHA-256 fingerprints for statement reconciliation evidence.
+/// </summary>
 public static class DeterministicFingerprint
 {
     public static string Compute(string value)

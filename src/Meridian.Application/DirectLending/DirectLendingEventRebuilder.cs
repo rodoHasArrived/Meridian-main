@@ -7,6 +7,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.Application.DirectLending;
 
+/// <summary>
+/// Reconstructs persisted loan state from retained direct-lending event history.
+/// </summary>
 public sealed class DirectLendingEventRebuilder
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);

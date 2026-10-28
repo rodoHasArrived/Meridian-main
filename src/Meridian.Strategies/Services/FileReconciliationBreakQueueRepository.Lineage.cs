@@ -4,6 +4,7 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Strategies.Services;
 
+/// <summary>Records retained statement observations used to track break occurrence continuity and source clearing.</summary>
 public interface IReconciliationBreakObservationRepository
 {
     Task ObserveCompletedRunAsync(ReconciliationCompletedRunObservation run, CancellationToken ct = default);

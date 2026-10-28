@@ -33,6 +33,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Meridian.Wpf.Features.Strategy;
 
+/// <summary>
+/// Registers strategy desktop services and contributes the feature's navigation pages and workspace metadata.
+/// </summary>
 public sealed class StrategyFeatureModule : IDesktopFeatureModule
 {
     private static readonly WorkspaceCapabilityDescriptor Capability = ShellNavigationCatalog.BuildStrategyCapability();

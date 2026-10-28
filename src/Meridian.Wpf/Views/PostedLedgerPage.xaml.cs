@@ -5,6 +5,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts trial-balance and profit-and-loss reporting derived from the posted journal.
+/// </summary>
 public partial class PostedLedgerPage : Page
 {
     private readonly PostedLedgerViewModel _viewModel;

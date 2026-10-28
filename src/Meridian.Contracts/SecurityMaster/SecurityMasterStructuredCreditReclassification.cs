@@ -53,6 +53,9 @@ public sealed record StructuredCreditReclassificationReportDto(
     int BlockedCount,
     IReadOnlyList<StructuredCreditReclassificationCandidateDto> Candidates);
 
+/// <summary>
+/// Builds a report of structured credit instruments requiring reference classification review.
+/// </summary>
 public interface ISecurityMasterStructuredCreditReclassificationService
 {
     /// <summary>Scans the active Security Master population and builds the reclassification report.</summary>

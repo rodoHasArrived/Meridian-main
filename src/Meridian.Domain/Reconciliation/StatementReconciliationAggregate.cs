@@ -1,5 +1,8 @@
 namespace Meridian.Domain.Reconciliation;
 
+/// <summary>
+/// Groups a statement batch with its normalized rows, match links, and reconciliation cases.
+/// </summary>
 public sealed class StatementReconciliationAggregate
 {
     public required StatementBatchMetadata Batch { get; init; }

@@ -11,6 +11,9 @@ using Meridian.Contracts.Services;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Coordinates environment draft and version selection, JSON editing, validation, and version comparison.
+/// </summary>
 public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
 {
     private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();

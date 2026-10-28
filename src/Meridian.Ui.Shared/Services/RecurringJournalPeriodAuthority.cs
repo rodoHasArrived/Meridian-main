@@ -8,6 +8,9 @@ namespace Meridian.Ui.Shared.Services;
 public sealed record RecurringJournalPeriodState(string PeriodId, long Version, bool IsOpen,
     string? LockOwner, string? ReopenPath, string? Blocker);
 
+/// <summary>
+/// Resolves the authoritative ledger period and book state for a recurring journal occurrence.
+/// </summary>
 public interface IRecurringJournalPeriodAuthority
 {
     Task<RecurringJournalPeriodState> ResolveAsync(RecurringJournalScope scope, DateOnly date, CancellationToken ct);

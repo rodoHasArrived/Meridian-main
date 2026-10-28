@@ -105,6 +105,9 @@ internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
     public int SelectedTabIndex { get => _selectedTabIndex; set => SetProperty(ref _selectedTabIndex, value); }
 }
 
+/// <summary>
+/// Presents a reconciliation candidate's source, amount, timestamp, status, and match explanation.
+/// </summary>
 public sealed class FundReconciliationMatchCandidateRow : BindableBase
 {
     private bool _isSelected;
@@ -140,6 +143,9 @@ public sealed class FundReconciliationMatchCandidateRow : BindableBase
     public bool IsSelected { get => _isSelected; set => SetProperty(ref _isSelected, value); }
 }
 
+/// <summary>
+/// Groups reconciliation breaks, runs, source rows, checks, exceptions, coverage, and audit detail for desktop binding.
+/// </summary>
 public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
 {
     public ObservableCollection<FundReconciliationBreakQueueRow> BreakQueueItems { get; } = [];

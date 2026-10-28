@@ -4,6 +4,9 @@ using CoreConfigStore = Meridian.Application.UI.ConfigStore;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Reads and updates persisted feature capability settings for the workstation.
+/// </summary>
 public sealed class FeatureCapabilitySettingsService
 {
     private readonly CoreConfigStore _configStore;

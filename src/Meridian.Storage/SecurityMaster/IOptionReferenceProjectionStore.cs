@@ -2,6 +2,9 @@ using Meridian.Contracts.Domain.Models;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Queries option contract reference projections by contract symbol, chain, underlying, and expiry.
+/// </summary>
 public interface IOptionReferenceProjectionStore
 {
     Task<OptionContractProjectionRow?> GetContractAsync(string contractSymbol, CancellationToken ct = default);

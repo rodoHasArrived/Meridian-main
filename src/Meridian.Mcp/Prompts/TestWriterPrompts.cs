@@ -1,5 +1,8 @@
 namespace Meridian.Mcp.Prompts;
 
+/// <summary>
+/// Builds MCP test-writing prompts with component-specific scaffolds and repository test conventions.
+/// </summary>
 [McpServerPromptType]
 public sealed class TestWriterPrompts(RepoPathService repo)
 {

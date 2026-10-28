@@ -9,6 +9,7 @@ using static Meridian.DataIntegration.AccountingSystem.AccountingProviderJson;
 
 namespace Meridian.DataIntegration.AccountingSystem;
 
+/// <summary>Imports read-only Xero accounting evidence and validates controlled exports using stored provider credentials.</summary>
 public sealed class XeroAccountingProvider(IProviderCredentialStore store, HttpClient client)
     : CredentialedAccountingProvider(store, client), IConnectionBoundAccountingProvider
 {

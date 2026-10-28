@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Identity;
 
+/// <summary>Loads authentication account configuration and manages persisted user account records.</summary>
 public interface IUserAccountStore
 {
     bool HasAccounts { get; }
@@ -41,6 +42,7 @@ public interface IUserAccountStore
         CancellationToken ct = default);
 }
 
+/// <summary>Persists user accounts and audit events with recoverable file-backed mutations.</summary>
 public sealed class FileUserAccountStore : IUserAccountStore
 {
     private const int MutationIntentVersion = 1;

@@ -76,6 +76,9 @@ public sealed record LiquidityWarning(string AccountId, string Currency, DateOnl
 
 public sealed record StpTransitionResult(string EntityId, string State, string? ExceptionReason, bool RoutedToBreakQueue);
 
+/// <summary>
+/// Defines cash synchronization validation, approval, settlement, and liquidity forecasting operations.
+/// </summary>
 public interface ICashSyncOrchestrationService
 {
     bool IsSyncWindowOpen(DateTimeOffset utcNow, RegionalSyncWindow window);
@@ -88,6 +91,9 @@ public interface ICashSyncOrchestrationService
     StpTransitionResult AdvanceStpState(string entityId, bool validated, bool approved, string? exceptionReason);
 }
 
+/// <summary>
+/// Evaluates regional cash sync windows and produces completeness, approval, settlement, and liquidity results.
+/// </summary>
 public sealed class CashSyncOrchestrationService : ICashSyncOrchestrationService
 {
     public bool IsSyncWindowOpen(DateTimeOffset utcNow, RegionalSyncWindow window)

@@ -7,6 +7,9 @@ public readonly record struct RuntimeReadinessCheckResult(
     LifecycleCheckStatus Status,
     string Message);
 
+/// <summary>
+/// Defines one named runtime readiness probe and its evaluation result.
+/// </summary>
 public interface IRuntimeReadinessCheck
 {
     string Id { get; }
@@ -16,11 +19,17 @@ public interface IRuntimeReadinessCheck
     ValueTask<RuntimeReadinessCheckResult> CheckAsync(CancellationToken ct);
 }
 
+/// <summary>
+/// Aggregates runtime readiness checks into a lifecycle snapshot.
+/// </summary>
 public interface IRuntimeReadinessService
 {
     ValueTask<RuntimeLifecycleSnapshotDto> EvaluateAsync(CancellationToken ct = default);
 }
 
+/// <summary>
+/// Adapts a readiness callback to a named runtime readiness check.
+/// </summary>
 public sealed class DelegateRuntimeReadinessCheck : IRuntimeReadinessCheck
 {
     private readonly Func<CancellationToken, ValueTask<RuntimeReadinessCheckResult>> _check;
@@ -48,6 +57,9 @@ public sealed class DelegateRuntimeReadinessCheck : IRuntimeReadinessCheck
     public ValueTask<RuntimeReadinessCheckResult> CheckAsync(CancellationToken ct) => _check(ct);
 }
 
+/// <summary>
+/// Evaluates registered readiness probes and builds the runtime lifecycle snapshot.
+/// </summary>
 public sealed class RuntimeReadinessService : IRuntimeReadinessService
 {
     private readonly IRuntimeLifecycleControlPlane _lifecycle;

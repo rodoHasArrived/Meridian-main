@@ -498,6 +498,9 @@ public sealed class ProviderRoutingService : ICapabilityRouter
     }
 }
 
+/// <summary>
+/// Exposes the provider-family adapters available to routing.
+/// </summary>
 public interface IProviderFamilyCatalogService
 {
     IReadOnlyList<IProviderFamilyAdapter> GetFamilies();

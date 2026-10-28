@@ -5,6 +5,9 @@ using Npgsql;
 
 namespace Meridian.Storage.SecurityMaster;
 
+/// <summary>
+/// Persists versioned security reconstruction snapshots in PostgreSQL.
+/// </summary>
 public sealed class PostgresSecurityMasterSnapshotStore : ISecurityMasterSnapshotStore
 {
     private readonly SecurityMasterOptions _options;

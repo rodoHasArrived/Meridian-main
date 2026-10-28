@@ -3,6 +3,9 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Presents lifecycle readiness and coordinates explicit restart and shutdown confirmation.
+/// </summary>
 public sealed class LifecycleControlViewModel : BindableBase
 {
     private static readonly Brush InfoBrush = CreateBrush(0x2F, 0x6F, 0x8F);

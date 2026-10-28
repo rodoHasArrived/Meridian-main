@@ -8,6 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>
+/// Maps environment-design draft discovery and editing operations to HTTP endpoints.
+/// </summary>
 public static class EnvironmentDesignerEndpoints
 {
     public static void MapEnvironmentDesignerEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)

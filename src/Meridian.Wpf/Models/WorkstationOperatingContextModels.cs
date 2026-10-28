@@ -21,6 +21,9 @@ public enum OperatingContextScopeKind : byte
     LedgerGroup
 }
 
+/// <summary>
+/// Converts operating-context scope kinds to their desktop display labels.
+/// </summary>
 public static class OperatingContextScopeKindExtensions
 {
     public static string ToDisplayName(this OperatingContextScopeKind scopeKind)
@@ -195,6 +198,9 @@ public sealed record WorkstationOperatingContext
         };
 }
 
+/// <summary>
+/// Carries the current and requested operating contexts before a context switch is applied.
+/// </summary>
 public sealed class WorkstationOperatingContextChangingEventArgs : EventArgs
 {
     public WorkstationOperatingContextChangingEventArgs(
@@ -210,6 +216,9 @@ public sealed class WorkstationOperatingContextChangingEventArgs : EventArgs
     public WorkstationOperatingContext NextContext { get; }
 }
 
+/// <summary>
+/// Carries the active operating context after a context switch.
+/// </summary>
 public sealed class WorkstationOperatingContextChangedEventArgs : EventArgs
 {
     public WorkstationOperatingContextChangedEventArgs(WorkstationOperatingContext context)

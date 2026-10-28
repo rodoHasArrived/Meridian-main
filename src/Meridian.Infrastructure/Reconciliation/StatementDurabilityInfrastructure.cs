@@ -66,12 +66,18 @@ public sealed record StatementRunProjectionAudit(
     public const string CaseKind = "case";
 }
 
+/// <summary>
+/// Loads and saves the retained match artifact for a statement reconciliation run.
+/// </summary>
 public interface IStatementRunMatchArtifactStore
 {
     Task<StatementRunMatchArtifact?> GetAsync(string runId, CancellationToken ct = default);
     Task SaveAsync(StatementRunMatchArtifact artifact, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Retains statement run match artifacts in memory and rejects inconsistent artifact replacement.
+/// </summary>
 public sealed class InMemoryStatementRunMatchArtifactStore : IStatementRunMatchArtifactStore
 {
     private readonly ConcurrentDictionary<string, StatementRunMatchArtifact> _artifacts =
@@ -138,6 +144,9 @@ public sealed class InMemoryStatementRunMatchArtifactStore : IStatementRunMatchA
     }
 }
 
+/// <summary>
+/// Persists statement run match artifacts as validated files under the data root.
+/// </summary>
 public sealed class FileStatementRunMatchArtifactStore : IStatementRunMatchArtifactStore
 {
     private readonly IAtomicFileWriter _atomicFileWriter;
@@ -277,6 +286,9 @@ internal sealed record StatementCaseworkCompletion(
     string EnvelopeHashSha256,
     DateTimeOffset CompletedAtUtc);
 
+/// <summary>
+/// Prepares, retrieves, and completes durable statement casework command envelopes.
+/// </summary>
 public interface IStatementCaseworkCommitStore
 {
     Task<StatementCaseworkCommitEnvelope?> GetAsync(string commandId, CancellationToken ct = default);
@@ -296,6 +308,9 @@ public interface IStatementCaseworkCommitStore
     Task CompleteAsync(string commandId, string inputHashSha256, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Retains statement casework command envelopes and completion state in files under the data root.
+/// </summary>
 public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitStore
 {
     private readonly IAtomicFileWriter _atomicFileWriter;
@@ -736,6 +751,9 @@ public sealed class FileStatementCaseworkCommitStore : IStatementCaseworkCommitS
 
 }
 
+/// <summary>
+/// Computes a deterministic fingerprint of a statement break casework update.
+/// </summary>
 public static class StatementBreakCaseworkFingerprint
 {
     public static string Compute(StatementBreakCaseworkUpdate update)
@@ -771,6 +789,9 @@ public static class StatementBreakCaseworkFingerprint
 
 }
 
+/// <summary>
+/// Computes content hashes for statement durability records and compares retained digests.
+/// </summary>
 public static class StatementDurabilityHashing
 {
     public static string Hash<T>(T value, JsonTypeInfo<T> typeInfo)

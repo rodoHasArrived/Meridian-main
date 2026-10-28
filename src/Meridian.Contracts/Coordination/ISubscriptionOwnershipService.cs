@@ -1,5 +1,8 @@
 namespace Meridian.Contracts.Coordination;
 
+/// <summary>
+/// Coordinates ownership of provider subscriptions by data kind and symbol.
+/// </summary>
 public interface ISubscriptionOwnershipService
 {
     Task<LeaseAcquireResult> TryAcquireAsync(

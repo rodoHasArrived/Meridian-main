@@ -2,6 +2,9 @@ using Meridian.Contracts.Futures;
 
 namespace Meridian.Instruments.Futures;
 
+/// <summary>
+/// Queries futures reference data by security identifier and supported asset-specific filters.
+/// </summary>
 public interface IFutureReferenceService
 {
     Task<FutureReferenceDto?> GetReferenceAsync(Guid securityId, CancellationToken ct = default);

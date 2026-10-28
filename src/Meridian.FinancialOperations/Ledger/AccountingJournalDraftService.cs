@@ -6,6 +6,9 @@ using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Ledger;
 
+/// <summary>
+/// Defines policy-bound journal drafting from accounting event and line requests.
+/// </summary>
 public interface IAccountingJournalDraftService
 {
     Task<AccountingJournalDraftResult> BuildDraftAsync(
@@ -65,6 +68,9 @@ public sealed record AccountingJournalDraftResult(
     IReadOnlyList<string> EvidenceLinks,
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues);
 
+/// <summary>
+/// Builds journal drafts using accounting policy and supplied line evidence.
+/// </summary>
 public sealed class AccountingJournalDraftService : IAccountingJournalDraftService
 {
     private readonly IAccountingPolicyService _accountingPolicyService;

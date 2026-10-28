@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Strategies.Services;
 
+/// <summary>Persists reconciliation break casework, source lineage, and close-scope coordination in integrity-checked files.</summary>
 public sealed partial class FileReconciliationBreakQueueRepository :
     IReconciliationBreakQueueRepository,
     IReconciliationBreakQueueAuthorityProbe

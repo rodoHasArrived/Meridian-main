@@ -3,6 +3,9 @@ using Meridian.Infrastructure.Etl.Sftp;
 
 namespace Meridian.Infrastructure.Etl;
 
+/// <summary>
+/// Publishes ETL output files through a capability-checked, credential-resolved SFTP connection.
+/// </summary>
 public sealed class SftpFilePublisher : ISftpFilePublisher
 {
     private readonly ISftpClientFactory _clientFactory;

@@ -2,6 +2,9 @@ using Meridian.Contracts.Workstation;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Builds report-writer dataset rows and field catalogs from supported reporting sources.
+/// </summary>
 public sealed class ReportWriterDatasetSourceService
 {
     private const int DefaultRecordLimit = 200;

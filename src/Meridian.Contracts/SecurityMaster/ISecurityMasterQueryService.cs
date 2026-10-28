@@ -1,5 +1,8 @@
 namespace Meridian.Contracts.SecurityMaster;
 
+/// <summary>
+/// Queries current and historical security details and resolves identifiers within Security Master.
+/// </summary>
 public interface ISecurityMasterQueryService :
     ISecurityIdentityQueryService,
     ISecurityTradingParametersQueryService,

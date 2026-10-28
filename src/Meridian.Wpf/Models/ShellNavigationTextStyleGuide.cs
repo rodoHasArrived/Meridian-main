@@ -1,5 +1,8 @@
 namespace Meridian.Wpf.Models;
 
+/// <summary>
+/// Defines preferred task verbs, prohibited jargon, and length limits for desktop navigation copy.
+/// </summary>
 public static class ShellNavigationTextStyleGuide
 {
     /// <summary>

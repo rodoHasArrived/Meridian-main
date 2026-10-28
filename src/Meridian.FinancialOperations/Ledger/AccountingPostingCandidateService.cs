@@ -8,6 +8,9 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.FinancialOperations.Ledger;
 
+/// <summary>
+/// Builds journal candidates from accounting events and posting rules for review.
+/// </summary>
 public interface IAccountingPostingCandidateService
 {
     Task<PostingRuleJournalCandidateResultDto> BuildCandidateAsync(
@@ -15,6 +18,9 @@ public interface IAccountingPostingCandidateService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Builds candidate journal writes and their associated accounting evidence.
+/// </summary>
 public interface IAccountingPostingCandidateWriteBuilder
 {
     Task<AccountingPostingCandidateWriteResult> BuildCandidateWriteAsync(
@@ -56,6 +62,9 @@ public sealed record AccountingPostingCandidateWriteResult(
     PostingRuleJournalCandidateResultDto Candidate,
     LedgerJournalEntryWrite? Write);
 
+/// <summary>
+/// Builds reviewable journal candidates and candidate writes from accounting-event evidence.
+/// </summary>
 public sealed partial class AccountingPostingCandidateService :
     IAccountingPostingCandidateService,
     IAccountingPostingCandidateWriteBuilder,

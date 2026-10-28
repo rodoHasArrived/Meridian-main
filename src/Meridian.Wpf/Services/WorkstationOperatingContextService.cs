@@ -9,6 +9,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Manages available operating contexts and persists the selected scope, window mode, and layout preset.
+/// </summary>
 public sealed partial class WorkstationOperatingContextService
 {
     private readonly FundContextService _fundContextService;

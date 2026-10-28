@@ -4,6 +4,9 @@ using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Defines security-master ingestion status and conflict discovery and resolution for desktop operators.
+/// </summary>
 public interface ISecurityMasterOperatorWorkflowClient
 {
     Task<SecurityMasterIngestStatusResponse?> GetIngestStatusAsync(CancellationToken ct = default);
@@ -18,6 +21,9 @@ public interface ISecurityMasterOperatorWorkflowClient
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Loads security-master ingestion status and conflicts and submits conflict resolutions through the shared client.
+/// </summary>
 public sealed class SecurityMasterOperatorWorkflowClient : ISecurityMasterOperatorWorkflowClient
 {
     public async Task<SecurityMasterIngestStatusResponse?> GetIngestStatusAsync(CancellationToken ct = default)

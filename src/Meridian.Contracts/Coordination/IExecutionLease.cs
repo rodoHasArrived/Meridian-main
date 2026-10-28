@@ -24,5 +24,8 @@ public sealed record ExecutionLeaseAcquireResult(IExecutionLease? Lease, string?
     public bool Acquired => Lease is not null;
 }
 
+/// <summary>
+/// Signals loss of execution ownership, after which the caller must stop producing side effects.
+/// </summary>
 public sealed class ExecutionLeaseLostException(string resourceId)
     : InvalidOperationException($"Execution ownership of '{resourceId}' was lost; no further side effects are permitted.");

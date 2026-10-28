@@ -5,6 +5,9 @@ using Meridian.Storage.SecurityMaster;
 
 namespace Meridian.Application.SecurityMaster.Validation;
 
+/// <summary>
+/// Validates individual security records and the Security Master universe.
+/// </summary>
 public interface ISecurityValidationService
 {
     Task<SecurityValidationReportDto> ValidateSecurityAsync(Guid securityId, CancellationToken ct = default);
@@ -15,6 +18,9 @@ public interface ISecurityValidationService
         DateTimeOffset? evaluatedAtUtc = null);
 }
 
+/// <summary>
+/// Runs record and universe validation using registered asset-class rules and reference evidence.
+/// </summary>
 public sealed class SecurityValidationService : ISecurityValidationService
 {
     private static readonly TimeSpan StaleReferenceDataAge = TimeSpan.FromDays(90);
@@ -831,6 +837,9 @@ public sealed class SecurityValidationService : ISecurityValidationService
     }
 }
 
+/// <summary>
+/// Returns blocking validation reports when the Security Master validation service is unavailable.
+/// </summary>
 public sealed class NullSecurityValidationService : ISecurityValidationService
 {
     public Task<SecurityValidationReportDto> ValidateSecurityAsync(Guid securityId, CancellationToken ct = default)

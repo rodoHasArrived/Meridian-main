@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Lists and retains artifacts produced by accounting migration runs.
+/// </summary>
 public interface IAccountingMigrationRunArtifactStore
 {
     Task<IReadOnlyList<AccountingMigrationRunArtifactDto>> ListAsync(
@@ -22,6 +25,9 @@ public interface IAccountingMigrationRunArtifactStore
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Stores accounting migration-run artifacts in process memory.
+/// </summary>
 public sealed class InMemoryAccountingMigrationRunArtifactStore : IAccountingMigrationRunArtifactStore
 {
     private readonly Dictionary<string, AccountingMigrationRunArtifactDto> _artifacts = new(StringComparer.OrdinalIgnoreCase);
@@ -79,6 +85,9 @@ public sealed class InMemoryAccountingMigrationRunArtifactStore : IAccountingMig
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
+/// <summary>
+/// Persists accounting migration-run artifacts and their evidence references to a snapshot file.
+/// </summary>
 public sealed class FileAccountingMigrationRunArtifactStore :
     JsonFileSnapshotStore<FileAccountingMigrationRunArtifactStore.AccountingMigrationRunArtifactSnapshot>,
     IAccountingMigrationRunArtifactStore

@@ -1,5 +1,8 @@
 namespace Meridian.Mcp.Prompts;
 
+/// <summary>
+/// Builds MCP code-review prompts using Meridian review lenses and repository guidance.
+/// </summary>
 [McpServerPromptType]
 public sealed class CodeReviewPrompts(RepoPathService repo)
 {

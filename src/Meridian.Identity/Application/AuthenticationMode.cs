@@ -8,6 +8,7 @@ public enum AuthenticationMode
     Required
 }
 
+/// <summary>Resolves the effective authentication requirement from configuration, environment, and packaged-build settings.</summary>
 public static class AuthenticationModeResolver
 {
     private const string AuthModeEnvVar = "MDC_AUTH_MODE";

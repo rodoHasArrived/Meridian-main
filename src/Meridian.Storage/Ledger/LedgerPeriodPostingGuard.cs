@@ -4,6 +4,9 @@ using Meridian.Ledger;
 
 namespace Meridian.Storage.Ledger;
 
+/// <summary>
+/// Rejects journal postings that violate the selected accounting period's scope, dates, or state.
+/// </summary>
 public static class LedgerPeriodPostingGuard
 {
     public static void Validate(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period)

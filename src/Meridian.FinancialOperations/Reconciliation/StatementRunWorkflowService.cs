@@ -7,6 +7,9 @@ using Meridian.Infrastructure.Reconciliation;
 
 namespace Meridian.FinancialOperations.Reconciliation;
 
+/// <summary>
+/// Coordinates retained statement-run processing, recovery, and reconciliation casework.
+/// </summary>
 public sealed class StatementRunWorkflowService(
     ICanonicalStatementStore importStore,
     IReconciliationCaseStore caseStore,
@@ -1361,6 +1364,9 @@ public enum StatementRunWorkflowFaultPoint
     CompletedCheckpointRetained
 }
 
+/// <summary>
+/// Exposes statement workflow fault points for controlled recovery testing.
+/// </summary>
 public interface IStatementRunWorkflowFaultInjector
 {
     Task OnPointAsync(

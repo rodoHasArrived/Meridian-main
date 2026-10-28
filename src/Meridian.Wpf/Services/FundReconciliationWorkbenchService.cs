@@ -5,6 +5,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
 
+/// <summary>
+/// Defines fund reconciliation snapshot and detail queries and operator review, resolution, and dismissal actions.
+/// </summary>
 public interface IFundReconciliationWorkbenchService
 {
     Task<FundReconciliationWorkbenchSnapshot> GetSnapshotAsync(string fundProfileId, CancellationToken ct = default);
@@ -38,6 +41,9 @@ public interface IFundReconciliationWorkbenchService
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Loads fund reconciliation queues and detail and submits operator review, resolution, and dismissal actions.
+/// </summary>
 public sealed class FundReconciliationWorkbenchService : IFundReconciliationWorkbenchService
 {
     private readonly ReconciliationReadService _reconciliationReadService;

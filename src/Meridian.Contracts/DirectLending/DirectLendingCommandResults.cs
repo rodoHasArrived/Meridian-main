@@ -24,6 +24,9 @@ public sealed record DirectLendingCommandResult<T>(
         new(default, new DirectLendingCommandError(code, message));
 }
 
+/// <summary>
+/// Exposes a structured direct lending command error as an exception.
+/// </summary>
 public sealed class DirectLendingCommandException : Exception
 {
     public DirectLendingCommandException(DirectLendingCommandError error)

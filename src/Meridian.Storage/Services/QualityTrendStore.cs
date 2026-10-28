@@ -8,6 +8,9 @@ using System.Threading;
 
 namespace Meridian.Storage.Services;
 
+/// <summary>
+/// Appends quality trend observations and queries a symbol's observations over an inclusive time range.
+/// </summary>
 public interface IQualityTrendStore
 {
     Task AppendAsync(QualityTrendPoint point, CancellationToken ct = default);
@@ -195,6 +198,9 @@ public sealed record QualityTrendPoint(
     public VerifiedOperationOutcome? Outcome { get; init; }
 }
 
+/// <summary>
+/// Computes a deterministic digest binding a quality evaluation to its inputs, rules, and scored results.
+/// </summary>
 public static class QualityTrendResultHash
 {
     public static string Compute(

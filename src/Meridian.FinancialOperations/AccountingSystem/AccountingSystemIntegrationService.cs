@@ -15,6 +15,10 @@ using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.AccountingSystem;
 
+/// <summary>
+/// Coordinates external general-ledger providers, mapping profiles, imports, and reconciliation
+/// evidence.
+/// </summary>
 public sealed partial class AccountingSystemIntegrationService
 {
     private const string DefaultProviderId = "quickbooks-fixture";

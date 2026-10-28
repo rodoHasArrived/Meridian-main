@@ -4,6 +4,9 @@ namespace Meridian.Infrastructure.Etl.Sftp;
 
 public sealed record SftpCredentialMaterial(string Username, string Password);
 
+/// <summary>
+/// Resolves the credentials referenced by ETL SFTP source and destination definitions.
+/// </summary>
 public interface ISftpCredentialResolver
 {
     ValueTask<SftpCredentialMaterial> ResolveAsync(EtlSourceDefinition source, CancellationToken ct = default);
@@ -20,6 +23,9 @@ public interface ISftpCredentialResolver
     ValueTask<SftpCredentialMaterial> ResolveAsync(EtlDestinationDefinition destination, CancellationToken ct = default);
 }
 
+/// <summary>
+/// Resolves SFTP usernames and passwords from literal configuration or environment references.
+/// </summary>
 public sealed class EnvironmentSftpCredentialResolver : ISftpCredentialResolver
 {
     public ValueTask<SftpCredentialMaterial> ResolveAsync(EtlSourceDefinition source, CancellationToken ct = default)
@@ -92,6 +98,9 @@ public sealed record SftpCapabilityStatus(
     bool Ready,
     IReadOnlyList<string> Issues);
 
+/// <summary>
+/// Evaluates whether the build and configuration support an ETL SFTP source or destination.
+/// </summary>
 public interface ISftpCapabilityService
 {
     /// <summary>Gets whether this build contains a real SFTP client rather than the disabled stub.</summary>
@@ -105,6 +114,9 @@ public interface ISftpCapabilityService
     SftpCapabilityStatus Evaluate(EtlDestinationDefinition destination);
 }
 
+/// <summary>
+/// Reports SFTP availability and validates source and destination connection requirements.
+/// </summary>
 public sealed class SftpCapabilityService : ISftpCapabilityService
 {
 #if SFTP

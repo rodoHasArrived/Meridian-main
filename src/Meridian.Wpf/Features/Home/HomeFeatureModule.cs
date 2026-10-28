@@ -10,6 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Features.Home;
 
+/// <summary>
+/// Registers home desktop services and contributes the feature's navigation pages and workspace metadata.
+/// </summary>
 public sealed class HomeFeatureModule : IDesktopFeatureModule
 {
     private static readonly IReadOnlyList<ShellPageDescriptor> Pages =

@@ -4,6 +4,9 @@ using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Views;
 
+/// <summary>
+/// Hosts market-data sample configuration, generation, and recent sample review.
+/// </summary>
 public partial class DataSamplingPage : Page
 {
     private readonly DataSamplingViewModel _viewModel = new();

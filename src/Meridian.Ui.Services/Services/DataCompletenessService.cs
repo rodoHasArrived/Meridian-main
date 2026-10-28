@@ -663,6 +663,9 @@ public sealed record CompletenessReport
     public long TotalActualEvents => Symbols.Sum(s => s.TotalEvents);
 }
 
+/// <summary>
+/// Accumulates daily trade, quote, depth, bar, and other event counts.
+/// </summary>
 public sealed class DayEventCount
 {
     public DateOnly Date { get; init; }

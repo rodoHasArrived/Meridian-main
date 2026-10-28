@@ -25,6 +25,9 @@ public sealed record WorkstationReconciliationActionResult(
         Outcome?.State == OperationTerminalState.CompletedWithWarnings;
 }
 
+/// <summary>
+/// Defines reconciliation queue, statement-run, case, detail, and operator-action calls for the desktop workstation.
+/// </summary>
 public interface IWorkstationReconciliationApiClient
 {
     Task<ReconciliationCalibrationSummaryDto?> GetCalibrationSummaryAsync(CancellationToken ct = default);
@@ -62,6 +65,9 @@ public interface IWorkstationReconciliationApiClient
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Adapts shared reconciliation queries and operator actions for desktop queue and detail views.
+/// </summary>
 public sealed class WorkstationReconciliationApiClient : IWorkstationReconciliationApiClient
 {
     private readonly Meridian.Ui.Services.ApiClientService _apiClient;

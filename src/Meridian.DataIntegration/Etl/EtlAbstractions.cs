@@ -6,6 +6,7 @@ using Meridian.Storage.Packaging;
 
 namespace Meridian.DataIntegration.Etl;
 
+/// <summary>Creates ETL jobs, retrieves their retained definitions, and executes configured runs.</summary>
 public interface IEtlJobService
 {
     Task<IngestionJob> CreateJobAsync(EtlJobDefinition definition, CancellationToken ct = default);
@@ -13,11 +14,13 @@ public interface IEtlJobService
     Task<EtlRunResult> RunAsync(string jobId, CancellationToken ct = default);
 }
 
+/// <summary>Exports artifacts for an ingestion job using its ETL delivery definition.</summary>
 public interface IEtlExportService
 {
     Task<EtlExportResult> ExportAsync(IngestionJob job, EtlJobDefinition definition, CancellationToken ct = default);
 }
 
+/// <summary>Coordinates ingestion job creation, state transitions, and checkpoint persistence for ETL runs.</summary>
 public interface IEtlIngestionJobCoordinator
 {
     Task<IngestionJob> CreateJobAsync(
@@ -43,6 +46,7 @@ public interface IEtlIngestionJobCoordinator
         CancellationToken ct = default);
 }
 
+/// <summary>Publishes normalized market events, exposes deduplication counts, and flushes pending writes.</summary>
 public interface IEtlEventPipeline
 {
     long DeduplicatedCount { get; }
@@ -50,6 +54,7 @@ public interface IEtlEventPipeline
     Task FlushAsync(CancellationToken ct = default);
 }
 
+/// <summary>Carries a normalized event or rejection details with the source record disposition and hash.</summary>
 public sealed class NormalizationOutcome
 {
     public required EtlRecordDisposition Disposition { get; init; }
@@ -59,6 +64,7 @@ public sealed class NormalizationOutcome
     public string? RecordHash { get; init; }
 }
 
+/// <summary>Summarizes a verified ETL run outcome, record counts, diagnostics, and optional export result.</summary>
 public sealed class EtlRunResult
 {
     public required VerifiedOperationOutcome Outcome { get; init; }
@@ -85,6 +91,7 @@ public enum EtlRunStatus
     Completed
 }
 
+/// <summary>Carries export success, artifact paths, optional package output, and failure details.</summary>
 public sealed class EtlExportResult
 {
     public bool Success { get; init; }

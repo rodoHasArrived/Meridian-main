@@ -2,6 +2,9 @@ using Meridian.Contracts.FundStructure;
 
 namespace Meridian.PortfolioRecords.Accounts;
 
+/// <summary>
+/// Queries account records, balances, statements, reconciliation results, sync history, and readiness snapshots.
+/// </summary>
 public interface IAccountQueryService
 {
     Task<AccountSummaryDto?> GetAccountAsync(Guid accountId, CancellationToken ct = default);

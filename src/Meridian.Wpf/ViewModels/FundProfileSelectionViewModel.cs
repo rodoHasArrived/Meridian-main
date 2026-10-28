@@ -6,6 +6,9 @@ using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
 
+/// <summary>
+/// Coordinates operating-context selection and fund-profile creation, deletion, and entry into the workstation.
+/// </summary>
 public sealed class FundProfileSelectionViewModel : BindableBase
 {
     private readonly FundContextService _fundContextService;

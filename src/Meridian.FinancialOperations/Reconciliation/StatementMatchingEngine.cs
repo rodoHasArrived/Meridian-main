@@ -1047,6 +1047,9 @@ public enum StatementMatchTier
     Unmatched
 }
 
+/// <summary>
+/// Exposes normalized statement item fields used by matching rules.
+/// </summary>
 public interface IStatementMatchItem
 {
     string MatchId { get; }

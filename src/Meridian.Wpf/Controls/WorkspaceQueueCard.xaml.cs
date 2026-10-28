@@ -6,6 +6,9 @@ using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Controls;
 
+/// <summary>
+/// Displays a queue summary with status styling and an optional action command.
+/// </summary>
 public partial class WorkspaceQueueCard : UserControl
 {
     public static readonly DependencyProperty TitleProperty =

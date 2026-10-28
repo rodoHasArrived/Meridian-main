@@ -172,6 +172,9 @@ public sealed record StatementCanonicalEvidenceArtifact(
     IReadOnlyList<BrokerageTaxLotSnapshotDto> TaxLots,
     IReadOnlyList<BrokerageBorrowPositionSnapshotDto> BorrowPositions);
 
+/// <summary>
+/// Parses a source statement document into normalized statement entities and parse issues.
+/// </summary>
 public interface IStatementConnector
 {
     StatementConnectorDescriptor Descriptor { get; }

@@ -6,6 +6,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
+/// <summary>
+/// Loads and saves financial-record explorer views within a tenant and explorer scope.
+/// </summary>
 public interface IFinancialRecordExplorerSavedViewStore
 {
     Task<IReadOnlyList<FinancialRecordExplorerSavedViewDto>> LoadAsync(
@@ -20,6 +23,9 @@ public interface IFinancialRecordExplorerSavedViewStore
         CancellationToken ct = default);
 }
 
+/// <summary>
+/// Persists tenant-scoped financial-record explorer saved views to disk.
+/// </summary>
 public sealed class FileFinancialRecordExplorerSavedViewStore
     : JsonFileSnapshotStore<FinancialRecordExplorerSavedViewSnapshot>, IFinancialRecordExplorerSavedViewStore
 {
