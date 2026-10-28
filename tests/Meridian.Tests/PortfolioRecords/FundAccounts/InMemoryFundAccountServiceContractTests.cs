@@ -1,3 +1,5 @@
+using FluentAssertions;
+using Meridian.Contracts.FundStructure;
 using Meridian.PortfolioRecords.FundAccounts;
 using Xunit;
 
@@ -11,6 +13,98 @@ namespace Meridian.Tests.PortfolioRecords.FundAccounts;
 public sealed class InMemoryFundAccountServiceContractTests : FundAccountServiceContractTests
 {
     protected override IFundAccountService CreateService() => new InMemoryFundAccountService();
+
+    [Theory]
+    [InlineData("genuine", true)]
+    [InlineData("name-only", false)]
+    [InlineData("wrong-line-id", false)]
+    [InlineData("wrong-batch-id", false)]
+    [InlineData("partial-batch", false)]
+    [InlineData("wrong-line-account", false)]
+    [InlineData("wrong-batch-account", false)]
+    [InlineData("wrong-stored-account", false)]
+    [InlineData("case-tied", false)]
+    [InlineData("unsupported-reference", false)]
+    [InlineData("separator-reference", false)]
+    [InlineData("missing-reference", false)]
+    [InlineData("balance", false)]
+    [InlineData("duplicate-batch", false)]
+    public async Task PersistedPlaidBatchFromBeforeFeeds_RequiresExactHistoricalProof(string condition, bool upgrade)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"meridian-fund-accounts-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        var path = Path.Combine(directory, "fund-accounts.json");
+        try
+        {
+            var original = new InMemoryFundAccountService(path);
+            var account = await original.CreateAccountAsync(MakeBankRequest());
+            HistoricalGuid("plaid-bank-line:txn-1").Should().Be(Guid.Parse("5d28c62f-8bb7-c575-9b7e-ec168ea31c9c"));
+            var asOf = new DateOnly(2026, 10, 28);
+            string[] references = condition == "case-tied" ? ["Txn-1", "txn-1"]
+                : condition == "unsupported-reference" ? ["txn-é"]
+                : condition == "separator-reference" ? ["txn|1"] : ["txn-1"];
+            var batchId = HistoricalGuid($"plaid-bank-batch:{account.AccountId:D}:{string.Join('|', references.Order(StringComparer.OrdinalIgnoreCase))}");
+            if (condition is "name-only" or "wrong-batch-id")
+                batchId = Guid.NewGuid();
+            var lines = references.Select(reference => new BankStatementLineDto(
+                condition is "name-only" or "wrong-line-id" ? Guid.NewGuid() : HistoricalGuid($"plaid-bank-line:{reference}"),
+                batchId, account.AccountId, asOf, asOf, -25.10m, "USD", "DEBIT", "Coffee",
+                condition == "missing-reference" ? null : reference, condition == "balance" ? 100m : null)).ToArray();
+            await original.IngestBankStatementAsync(new IngestBankStatementRequest(
+                batchId, account.AccountId, asOf, "Plaid", null, lines, "sync", IsBackfill: true));
+
+            // A malformed restored snapshot cannot acquire connector authority from the bank label.
+            var state = System.Text.Json.Nodes.JsonNode.Parse(await File.ReadAllTextAsync(path))!;
+            var retained = state["accounts"]![0]!;
+            if (condition == "partial-batch")
+                retained["bankBatches"]![0]!["lineCount"] = lines.Length + 1;
+            if (condition is "wrong-line-account" or "wrong-stored-account")
+                retained["bankLines"]![0]!["accountId"] = Guid.NewGuid().ToString();
+            if (condition is "wrong-batch-account" or "wrong-stored-account")
+                retained["bankBatches"]![0]!["accountId"] = condition == "wrong-stored-account"
+                    ? retained["bankLines"]![0]!["accountId"]!.GetValue<string>() : Guid.NewGuid().ToString();
+            if (condition == "wrong-stored-account")
+            {
+                var foreign = retained["bankBatches"]![0]!["accountId"]!.GetValue<string>();
+                batchId = HistoricalGuid($"plaid-bank-batch:{foreign}:{string.Join('|', references.Order(StringComparer.OrdinalIgnoreCase))}");
+                retained["bankBatches"]![0]!["batchId"] = batchId.ToString();
+                retained["bankLines"]![0]!["batchId"] = batchId.ToString();
+                lines = lines.Select(line => line with { BatchId = batchId }).ToArray();
+            }
+            if (condition == "duplicate-batch")
+                retained["bankBatches"]!.AsArray().Add(retained["bankBatches"]![0]!.DeepClone());
+            await File.WriteAllTextAsync(path, state.ToJsonString());
+
+            var reloaded = new InMemoryFundAccountService(path);
+            var restoredLines = await reloaded.GetBankStatementLinesAsync(account.AccountId);
+            restoredLines.Should().HaveCount(lines.Length, "raw retained records cannot disappear during authority review");
+            if (upgrade)
+                restoredLines.Should().OnlyContain(line => line.IsTransactionFeed == true);
+            else
+                restoredLines.Should().OnlyContain(line => line.IsTransactionFeed != true,
+                "reloading cannot assign feed authority to unproven retained records");
+            var redeliver = () => reloaded.IngestBankStatementAsync(new IngestBankStatementRequest(
+                batchId, account.AccountId, asOf, "Plaid", null,
+                lines.Select(line => line with { Amount = -27.10m, ClosingBalance = null }).ToArray(), "sync",
+                IsBackfill: true, IsTransactionFeed: true));
+            if (upgrade)
+            {
+                await redeliver.Should().NotThrowAsync("every retained identity proves this was a historical Plaid delivery");
+                (await reloaded.GetBankStatementLinesAsync(account.AccountId)).Should().ContainSingle()
+                    .Which.Amount.Should().Be(-27.10m);
+            }
+            else
+            {
+                await redeliver.Should().ThrowAsync<InvalidOperationException>("unproven statement authority must remain retained");
+            }
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    private static Guid HistoricalGuid(string value) => new(System.Security.Cryptography.MD5.HashData(System.Text.Encoding.UTF8.GetBytes(value)));
 
     [Fact]
     public Task CreateAccountAsync_NewAccount_ReturnsActiveSummaryAndIsReadable() => CreateAccountAsync_NewAccount_ReturnsActiveSummaryAndIsReadable_Core();
