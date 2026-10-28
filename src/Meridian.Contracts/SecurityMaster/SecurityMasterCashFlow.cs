@@ -178,6 +178,50 @@ public sealed record StructuredCashFlowLegSchedule(
     string? RateSource = null);
 
 /// <summary>
+/// One business-day calendar a declared schedule (ADR-025) was generated or measured with.
+/// </summary>
+/// <param name="CalendarId">The calendar id, or a joint id such as <c>GBLO+USNY</c>.</param>
+/// <param name="ContentHash">The calendar's content hash, naming exactly which holiday data was used.</param>
+/// <param name="Purpose">
+/// What the calendar was used for: a <c>ScheduleCalendarPurpose</c> name (<c>Accrual</c>,
+/// <c>EffectiveDate</c>, <c>TerminationDate</c> or <c>Payment</c>), or <c>DayCount</c> for the
+/// calendar Business/252 counts business days on. A string, because the endpoint options carry no
+/// string-enum converter.
+/// </param>
+public sealed record StructuredCashFlowCalendarEvidence(
+    string CalendarId,
+    string ContentHash,
+    string Purpose);
+
+/// <summary>
+/// The dates a calendar was asked about outside its declared coverage while a declared schedule was
+/// generated or measured: one row per calendar, from the first to the last such date. A gap is
+/// informational (ADR-025 decision 2): a holiday on those dates may be missing from the calendar data.
+/// </summary>
+/// <param name="CalendarId">The calendar id.</param>
+/// <param name="FirstDate">The first date asked outside coverage.</param>
+/// <param name="LastDate">The last date asked outside coverage.</param>
+public sealed record StructuredCashFlowCoverageGap(
+    string CalendarId,
+    DateOnly FirstDate,
+    DateOnly LastDate);
+
+/// <summary>
+/// How a projection's schedule was generated from declared schedule conventions (ADR-025): the kernel
+/// and mapping versions, the calendars used and any coverage gaps, so the schedule can be reproduced
+/// and its calendar data identified.
+/// </summary>
+/// <param name="KernelVersion">The contractual schedule kernel version that generated the periods.</param>
+/// <param name="DeclaredMappingVersion">The version of the mapping from the declared block to the kernel spec.</param>
+/// <param name="Calendars">Each distinct calendar, content hash and purpose used.</param>
+/// <param name="CoverageGaps">The calendars asked about dates outside their coverage; empty when none was.</param>
+public sealed record StructuredCashFlowScheduleEvidence(
+    string KernelVersion,
+    string DeclaredMappingVersion,
+    IReadOnlyList<StructuredCashFlowCalendarEvidence> Calendars,
+    IReadOnlyList<StructuredCashFlowCoverageGap> CoverageGaps);
+
+/// <summary>
 /// Full projected cash flow schedule for a security under one rate scenario.
 /// </summary>
 /// <remarks>
@@ -188,6 +232,9 @@ public sealed record StructuredCashFlowLegSchedule(
 /// <see cref="TermsUsed"/> carries the exact resolved terms the schedule was projected from, so
 /// downstream ledger math (day-count weighting, maturity clamping) reuses the same economics as the
 /// schedule itself instead of re-resolving terms and risking divergence.
+/// <see cref="ScheduleEvidence"/> is set only on a schedule generated from declared schedule
+/// conventions (ADR-025) and is omitted from JSON otherwise, so an undeclared projection keeps its wire
+/// shape; a projection carrying it is not postable to the ledger yet.
 /// </remarks>
 public sealed record StructuredCashFlowProjectionDto(
     Guid SecurityId,
@@ -201,7 +248,12 @@ public sealed record StructuredCashFlowProjectionDto(
     StructuredCashFlowTerms? TermsUsed = null,
     IReadOnlyList<StructuredCashFlowLegSchedule>? LegSchedules = null,
     string? BlockedReason = null,
-    bool IsNormalizedPer100 = false);
+    bool IsNormalizedPer100 = false)
+{
+    /// <summary>Calendar and kernel evidence for a declared projection; absent on legacy projections.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public StructuredCashFlowScheduleEvidence? ScheduleEvidence { get; init; }
+}
 
 /// <summary>
 /// One balanced ledger journal line projected from a structured cash flow accrual.

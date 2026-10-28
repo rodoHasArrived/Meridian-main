@@ -249,7 +249,7 @@ public static class OpenLotAmortization
         }
         // Declared call and put schedules (readable from terms version 3, ADR-024) are optionality a
         // bullet cannot honour; an empty list declares none, and a malformed one is not read as absent.
-        foreach (var name in new[] { "callSchedule", "putSchedule" })
+        foreach (var name in new[] { SecurityVersionedTerms.CallScheduleKey, SecurityVersionedTerms.PutScheduleKey })
         {
             if (AnyTerm(sources, name, static schedule => schedule.ValueKind != JsonValueKind.Null
                     && (schedule.ValueKind != JsonValueKind.Array || schedule.GetArrayLength() != 0)))
@@ -258,7 +258,7 @@ public static class OpenLotAmortization
         // A declared scheduleConventions block (ADR-024; writable from the contract step) moves payment
         // dates, stubs and the coupon unit, and the bullet coupon grid follows none of them. Unset
         // spellings declare nothing.
-        if (AnyTerm(sources, "scheduleConventions", SecurityAssetTermsSchema.IsPopulatedTermValue))
+        if (AnyTerm(sources, SecurityVersionedTerms.ScheduleConventionsKey, SecurityAssetTermsSchema.IsPopulatedTermValue))
             throw new ArgumentException("Amortization does not support declared schedule conventions; the bullet coupon grid follows none of them.");
         foreach (var name in new[] { "floatingIndex", "floatingRateIndex", "referenceIndex", "callDate", "preRefundDate", "mandatoryPutDate" })
         {

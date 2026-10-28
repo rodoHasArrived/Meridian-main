@@ -1,6 +1,8 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.SecurityMaster.Valuation;
+using Meridian.Contracts.Calendars;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -11,7 +13,8 @@ namespace Meridian.Tests.SecurityMaster;
 /// <summary>
 /// The discounted-cash-flow model on the hand-computed golden cases: the bond (PV 1,014,000.00,
 /// price 101.4000, market value 507,000.00), the swap (NPV -162.50; 0.00 undiscounted; +7,500 flat
-/// forward) and every blocker that stops a value being invented.
+/// forward), every blocker that stops a value being invented, and the schedule evidence a declared
+/// bond's projection carries into the inputs.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class DiscountedCashFlowValuationModelTests
@@ -47,6 +50,54 @@ public sealed class DiscountedCashFlowValuationModelTests
         curveInput.ContentSha256.Should().Be(version.ContentSha256);
         result.Inputs.Single(static input => input.Kind == "SecurityTerms").Version.Should().Be(bond.Version);
         result.Diagnostics.Should().ContainSingle(static d => d.StartsWith("DirtyValue", StringComparison.Ordinal));
+
+        // An undeclared projection carries no schedule evidence, so the inputs and diagnostics are
+        // exactly these, member for member.
+        result.Inputs.Should().Equal(
+            new SecurityValuationInputDto("DiscountCurveVersion", "USD-DISCOUNT-TEST", version.CurveVersionId, 1, version.ContentSha256, AsOf, version.RecordedAt),
+            new SecurityValuationInputDto("SecurityTerms", bond.Version.ToString(), bond.SecurityId, bond.Version));
+        result.Diagnostics.Should().Equal(DirtyValueDiagnostic);
+    }
+
+    [Fact]
+    public async Task ADeclaredBond_NamesItsScheduleEvidenceAsInputs_AndReportsTheCoverageGap()
+    {
+        // The golden bond declaring Modified Following payment dates on ZZTEST, whose coverage ends
+        // 2027-06-30: 2028-01-01 is a Saturday, so the final payment moves to Monday 2028-01-03 and the
+        // kernel asks ZZTEST about 2028-01-01 to 2028-01-03, outside its coverage. On a unit curve the
+        // PV is the undiscounted 50,000 + 50,000 + 1,000,000.
+        var calendar = new HolidayBusinessDayCalendar("ZZTEST", 1, coverage: new CalendarCoverage(null, new DateOnly(2027, 6, 30)));
+        var calendars = new StaticBusinessDayCalendarSource([calendar]);
+        var bond = DeclaredBond("""{"businessDayConvention":"ModifiedFollowing","accrualAdjusted":false,"paymentCalendars":["ZZTEST"]}""");
+        var definition = ValuationTestSecurities.DiscountDefinition();
+        var version = ValuationTestSecurities.Version(definition, AsOfDate, (AsOfDate, 1.00m), (new DateOnly(2029, 1, 1), 1.00m));
+        var model = Build(bond, Curves(definition, version), calendars: calendars);
+
+        var result = await model.ValueAsync(new SecurityValuationRequest(bond.SecurityId, AsOf, Quantity: 500_000m), bond, CancellationToken.None);
+
+        result.IsBlocked.Should().BeFalse(string.Join("; ", result.Blockers.Select(static b => b.Reason)));
+        result.PresentValue.Should().Be(1_100_000.00m, "50,000 + 50,000 + 1,000,000 on unit discount factors");
+        result.Price.Should().Be(110m);
+        result.MarketValue.Should().Be(550_000.00m, "500,000 face x 110 / 100");
+        result.Inputs.Should().Equal(
+            new SecurityValuationInputDto("DiscountCurveVersion", "USD-DISCOUNT-TEST", version.CurveVersionId, 1, version.ContentSha256, AsOf, version.RecordedAt),
+            new SecurityValuationInputDto("SecurityTerms", "1", bond.SecurityId, 1),
+            new SecurityValuationInputDto("ScheduleKernel", "contractual-schedule-kernel-v1"),
+            new SecurityValuationInputDto("DeclaredScheduleMapping", "security-master-declared-schedule-v1"),
+            new SecurityValuationInputDto("BusinessDayCalendar", "ZZTEST:Payment", ContentSha256: calendar.ContentHash));
+        result.Diagnostics.Should().Equal(
+            "CalendarCoverageGap: calendar 'ZZTEST' was asked about 2028-01-01 to 2028-01-03, outside its declared coverage; a holiday on those dates may be missing from the calendar data the schedule used.",
+            DirtyValueDiagnostic);
+
+        // The same bond declaring nothing projects on the legacy path and names no schedule evidence.
+        var undeclared = DeclaredBond(block: null);
+        var undeclaredResult = await Build(undeclared, Curves(definition, version), calendars: calendars)
+            .ValueAsync(new SecurityValuationRequest(undeclared.SecurityId, AsOf, Quantity: 500_000m), undeclared, CancellationToken.None);
+
+        undeclaredResult.IsBlocked.Should().BeFalse(string.Join("; ", undeclaredResult.Blockers.Select(static b => b.Reason)));
+        undeclaredResult.PresentValue.Should().Be(1_100_000.00m);
+        undeclaredResult.Inputs.Select(static input => input.Kind).Should().Equal("DiscountCurveVersion", "SecurityTerms");
+        undeclaredResult.Diagnostics.Should().Equal(DirtyValueDiagnostic);
     }
 
     [Fact]
@@ -366,6 +417,33 @@ public sealed class DiscountedCashFlowValuationModelTests
         Blocked(result, "UnsupportedInput").Reason.Should().Contain("Forward");
     }
 
+    private const string DirtyValueDiagnostic =
+        "DirtyValue: the present value includes the full next coupon; clean price and accrued interest are not separated.";
+
+    // The golden bond (par 1,000,000, 5% annual on 30/360, 2026-01-01 to 2028-01-01) as a flat Bond row
+    // stamped at its scheduleConventions version; a null block declares nothing.
+    private static SecurityDetailDto DeclaredBond(string? block)
+    {
+        var conventions = block is null ? string.Empty : ",\"scheduleConventions\":" + block;
+        var terms = JsonDocument.Parse(
+            "{\"assetClassTermsVersion\":2,\"issueDate\":\"2026-01-01\",\"maturity\":\"2028-01-01\",\"couponType\":\"Fixed\",\"couponRate\":5," +
+            "\"dayCount\":\"30/360\",\"isCallable\":false,\"issuerName\":\"ACME Corp\",\"subclass\":\"Corporate\",\"par\":1000000," +
+            "\"paymentFrequency\":\"Annual\"" + conventions + "}").RootElement.Clone();
+        return new SecurityDetailDto(
+            Guid.NewGuid(),
+            "Bond",
+            SecurityStatusDto.Active,
+            "Declared bond",
+            "USD",
+            JsonSerializer.SerializeToElement(new { displayName = "Declared bond", currency = "USD" }),
+            terms,
+            [new SecurityIdentifierDto(SecurityIdentifierKind.Cusip, "123456783", true, AsOf.AddYears(-1))],
+            [],
+            1,
+            AsOf.AddYears(-1),
+            null);
+    }
+
     private static SecurityValuationBlockerDto Blocked(SecurityValuationResult result, string code)
     {
         result.IsBlocked.Should().BeTrue();
@@ -417,7 +495,8 @@ public sealed class DiscountedCashFlowValuationModelTests
         ISecurityCurveStore curves,
         ISecurityForwardCurveProvider? forwardCurves = null,
         StructuredCashFlowSourceKind? source = StructuredCashFlowSourceKind.CalculatedBullet,
-        StructuredCashFlowStaleness freshness = StructuredCashFlowStaleness.Fresh)
+        StructuredCashFlowStaleness freshness = StructuredCashFlowStaleness.Fresh,
+        IBusinessDayCalendarSource? calendars = null)
     {
         // The projection judges freshness on the wall clock: a source updated now is Fresh, one
         // updated a month ago Stale, and one with no update time Unknown.
@@ -435,7 +514,7 @@ public sealed class DiscountedCashFlowValuationModelTests
         var query = Substitute.For<ISecurityMasterQueryService>();
         query.GetByIdAsync(security.SecurityId, Arg.Any<CancellationToken>()).Returns(security);
         var cashFlows = new SecurityMasterCashFlowService(
-            store, Array.Empty<IStructuredCashFlowProvider>(), query,
+            calendars, store, Array.Empty<IStructuredCashFlowProvider>(), query,
             NullLogger<SecurityMasterCashFlowService>.Instance, forwardCurves: forwardCurves);
         return new DiscountedCashFlowValuationModel(cashFlows, curves, NullLogger<DiscountedCashFlowValuationModel>.Instance);
     }

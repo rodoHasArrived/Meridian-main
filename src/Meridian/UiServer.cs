@@ -29,6 +29,7 @@ using Meridian.QuantScript;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Meridian.Storage.Calendars;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.Runtime;
 using Meridian.Ui.Services.Services.Integrations;
@@ -44,6 +45,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
+using Serilog.Extensions.Logging;
 
 namespace Meridian;
 
@@ -156,8 +158,7 @@ public sealed class UiServer : IAsyncDisposable
             _apiHostOptions = apiHostOptions ?? ApiHostOptions.FromConfiguration(builder.Configuration, port);
             var resolvedDataRoot = ResolvePersistentDataRoot(configPath);
 
-            // Minimize logging from ASP.NET Core
-            builder.Logging.SetMinimumLevel(LogLevel.Warning);
+            ConfigureLogging(builder.Logging, Serilog.Log.Logger);
             builder.WebHost.UseUrls(_apiHostOptions.Urls);
 
             // Allow reflection-based JSON binding for endpoint request types not covered by source-generated contexts.
@@ -827,6 +828,40 @@ public sealed class UiServer : IAsyncDisposable
     {
         var remoteIp = context.Connection.RemoteIpAddress;
         return remoteIp is null || IPAddress.IsLoopback(remoteIp);
+    }
+
+    /// <summary>
+    /// The log categories of the host-start inventory lines (ADR-025): the Security Master terms
+    /// capability line and the line for each loaded or refused business-day calendar file.
+    /// </summary>
+    internal static readonly IReadOnlyList<string> StartupInventoryLogCategories =
+    [
+        typeof(SecurityMasterTermsCapabilityHostedService).FullName!,
+        typeof(FileBusinessDayCalendarSource).FullName!
+    ];
+
+    /// <summary>
+    /// The host's logging. Every category stops below Warning through the default providers, as
+    /// before; the startup inventory categories alone also reach <paramref name="serilogLogger"/>, the
+    /// process's Serilog logger and its file sink, from Information, so the rollout can read the
+    /// capability and calendar lines from a workstation-mode host's log file.
+    /// </summary>
+    internal static void ConfigureLogging(ILoggingBuilder logging, Serilog.ILogger serilogLogger)
+    {
+        ArgumentNullException.ThrowIfNull(logging);
+        ArgumentNullException.ThrowIfNull(serilogLogger);
+
+        // Minimize logging from ASP.NET Core
+        logging.SetMinimumLevel(LogLevel.Warning);
+
+        // Provider-specific rules beat the global level and configured rules, so the Serilog provider
+        // receives these categories and nothing else; it never disposes the process logger.
+        Serilog.SerilogLoggingBuilderExtensions.AddSerilog(logging, serilogLogger, dispose: false);
+        logging.AddFilter<SerilogLoggerProvider>(category: null, LogLevel.None);
+        foreach (var category in StartupInventoryLogCategories)
+        {
+            logging.AddFilter<SerilogLoggerProvider>(category, LogLevel.Information);
+        }
     }
 
     internal static void ValidateAuthenticationTransportSecurity(IHostEnvironment environment, ApiHostOptions apiHostOptions)

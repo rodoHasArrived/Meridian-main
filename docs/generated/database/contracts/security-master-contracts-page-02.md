@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 2 of 6
 
-Objects 81-160 of 443. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 456. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -228,6 +228,20 @@ classDiagram
         +DateTimeOffset? ValidTo
         +decimal? Weight
     }
+    class Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal["DeclaredScheduleRefusal"] {
+        +DeclaredScheduleRefusalCode Code
+        +string Message
+    }
+    class Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode["DeclaredScheduleRefusalCode"] {
+    }
+    class Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution["DeclaredScheduleResolution"] {
+        +ScheduleConventionTerms Conventions
+        +DeclaredScheduleRefusal? Refusal
+        +ScheduleSpec? Spec
+        +DeclaredScheduleStatus Status
+    }
+    class Meridian_Contracts_SecurityMaster_DeclaredScheduleStatus["DeclaredScheduleStatus"] {
+    }
     class Meridian_Contracts_SecurityMaster_DefineSecurityCurveRequest["DefineSecurityCurveRequest"] {
         +string? CreatedBy
         +string Currency
@@ -440,14 +454,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterPricingService["ISecurityMasterPricingService"] {
     }
-    class Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService["ISecurityMasterQueryService"] {
-    }
-    class Meridian_Contracts_SecurityMaster_ISecurityMasterReportingQueryService["ISecurityMasterReportingQueryService"] {
-    }
-    class Meridian_Contracts_SecurityMaster_ISecurityMasterRuntimeStatus["ISecurityMasterRuntimeStatus"] {
-    }
-    class Meridian_Contracts_SecurityMaster_ISecurityMasterService["ISecurityMasterService"] {
-    }
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingCaseDto
     Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionProcessingOptionDto
     Meridian_Contracts_SecurityMaster_CorporateActionProviderEventIdentityDto --> Meridian_Contracts_SecurityMaster_CorporateActionProviderReleaseStatusDto
@@ -462,6 +468,9 @@ classDiagram
     Meridian_Contracts_SecurityMaster_DataVendorEntitlementDto --> Meridian_Contracts_SecurityMaster_DataVendorDataType
     Meridian_Contracts_SecurityMaster_DataVendorEntitlementDto --> Meridian_Contracts_SecurityMaster_DataVendorEntitlementStatus
     Meridian_Contracts_SecurityMaster_DayCountPeriodContext --> Meridian_Contracts_SecurityMaster_DayCountReferencePeriod
+    Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode
+    Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal
+    Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleStatus
     Meridian_Contracts_SecurityMaster_EdgarFactsRecord --> Meridian_Contracts_SecurityMaster_EdgarXbrlFact
     Meridian_Contracts_SecurityMaster_EdgarFilerRecord --> Meridian_Contracts_SecurityMaster_EdgarAddress
     Meridian_Contracts_SecurityMaster_EdgarFilerRecord --> Meridian_Contracts_SecurityMaster_EdgarFilingSummary
@@ -470,6 +479,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_EdgarSecurityDataRecord --> Meridian_Contracts_SecurityMaster_EdgarFundHolding
     Meridian_Contracts_SecurityMaster_ExchangeCorporateActionTerms --> Meridian_Contracts_SecurityMaster_CorporateActionTerms
     Meridian_Contracts_SecurityMaster_FaceValueLotFactorPaydown --> Meridian_Contracts_SecurityMaster_FaceValueLot
-    Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityCorporateActionsQueryService
-    Meridian_Contracts_SecurityMaster_ISecurityMasterQueryService --> Meridian_Contracts_SecurityMaster_ISecurityIdentityQueryService
 ```

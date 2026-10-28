@@ -223,23 +223,54 @@ public static class SecurityTermsEnvelope
     /// </summary>
     public static void EnsureReadableAsAssetSpecificTerms(string assetClass, JsonElement payload)
     {
+        if (TryGetReadRefusal(assetClass, payload, out var reason))
+        {
+            throw new InvalidOperationException(reason);
+        }
+    }
+
+    /// <summary>
+    /// Why <see cref="EnsureReadableAsAssetSpecificTerms"/> refuses a payload, without throwing: it
+    /// declares a format other than flat or custom profile, or its asset-class terms version is below 1
+    /// or above <see cref="SecurityAssetClassCatalog.GetReadsTermsThrough"/>. The format is checked
+    /// first, and the reason is the exact text the read guard throws.
+    /// </summary>
+    public static bool TryGetReadRefusal(string assetClass, JsonElement payload, [NotNullWhen(true)] out string? reason)
+        => TryGetFormatReadRefusal(assetClass, payload, out reason)
+           || TryGetVersionReadRefusal(assetClass, payload, out reason);
+
+    /// <summary>The format half of <see cref="TryGetReadRefusal"/>: a declared format that is not an asset-specific-terms format.</summary>
+    internal static bool TryGetFormatReadRefusal(string assetClass, JsonElement payload, [NotNullWhen(true)] out string? reason)
+    {
         var declaredFormat = GetDeclaredFormat(payload);
         if (declaredFormat is not null
             && declaredFormat is not (SecurityTermsFormats.Flat or SecurityTermsFormats.CustomProfile))
         {
-            throw new InvalidOperationException(
+            reason =
                 $"Terms payload for asset class '{assetClass}' declares {FormatKey} '{declaredFormat}', which is not an " +
-                "asset-specific-terms format; route it through SecurityAssetSpecificTermsUpcasterChain before reading.");
+                "asset-specific-terms format; route it through SecurityAssetSpecificTermsUpcasterChain before reading.";
+            return true;
         }
 
+        reason = null;
+        return false;
+    }
+
+    /// <summary>The stamp half of <see cref="TryGetReadRefusal"/>: an asset-class terms version this node does not read.</summary>
+    internal static bool TryGetVersionReadRefusal(string assetClass, JsonElement payload, [NotNullWhen(true)] out string? reason)
+    {
         var supported = SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
         var declaredVersion = ResolveAssetClassTermsVersion(payload);
         if (declaredVersion > supported || declaredVersion < DefaultAssetClassTermsVersion)
         {
-            throw new InvalidOperationException(
+            reason =
                 $"Unsupported {AssetClassTermsVersionKey} '{declaredVersion}' for asset class '{assetClass}'; " +
-                $"this node reads versions {DefaultAssetClassTermsVersion} through {supported}.");
+                $"this node reads versions {DefaultAssetClassTermsVersion} through {supported}.";
+            return true;
         }
+
+        reason = null;
+        return false;
     }
 
     /// <summary>

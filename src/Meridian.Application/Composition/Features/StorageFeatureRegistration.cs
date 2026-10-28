@@ -110,6 +110,10 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton(sp => new LocalTenantMigrationGate(
             sp.GetService<TenantScopeEnforcementOptions>() ?? TenantScopeEnforcementOptions.FailClosed));
         services.AddStatementReconciliationServices();
+        // Business-day calendars for declared schedule conventions (ADR-025): files under <dataRoot>/calendars,
+        // loaded once at host start; an unknown id never falls back to weekends only. The same extension
+        // logs the terms capability line; the WPF desktop calls it from its own composition root.
+        services.AddSecurityMasterTermsCapability(static sp => sp.GetRequiredService<StorageOptions>().RootPath);
 
         // StorageOptions - configured from AppConfig or defaults
         services.AddSingleton<StorageOptions>(sp =>
