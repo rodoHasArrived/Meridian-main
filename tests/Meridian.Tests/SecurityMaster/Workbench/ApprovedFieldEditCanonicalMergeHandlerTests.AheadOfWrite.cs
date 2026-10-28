@@ -14,7 +14,9 @@ namespace Meridian.Tests.SecurityMaster.Workbench;
 /// write version) fails at merge with the precise reason and persists nothing. That failure fails the
 /// publish fan-out, which leaves the revision Approved: the in-flight drain the 4a deploy notes call
 /// for, pinned end to end by the workbench publish tests. Unset leg blocks still merge, and nothing of
-/// them is persisted at the write version.
+/// them is persisted at the write version. Increment 4b adds the callSchedule and putSchedule arrays
+/// through the same Write-mode guard: a row stamped 3 fails by its stamp, and a stray populated array
+/// on a row stamped below its version fails by the array's path.
 /// </summary>
 public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
 {
@@ -88,6 +90,54 @@ public sealed partial class ApprovedFieldEditCanonicalMergeHandlerTests
 
         canonical.Appended.Should().BeEmpty();
         canonical.Upserted.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ApprovedEditOnABondStampedThreeDeclaringCallAndPutSchedules_FailsAtMergeWithTheWriteVersionReason()
+    {
+        // A row a newer node wrote at version 3 with declared schedules (stamped by hand here: no node
+        // writes version 3 yet). This node reads it since 4b but writes version 1, so merging an edit
+        // re-submits a stamp it cannot write; the stamp refuses it before the arrays are looked at.
+        SetProjection(
+            "Bond",
+            AheadOfWriteFixtures.BondTerms(
+                stamp: 3, withBlock: false, AheadOfWriteFixtures.PopulatedCallSchedule, AheadOfWriteFixtures.PopulatedPutSchedule));
+        var revisionId = await SeedApprovedFieldRevisionAsync("assetSpecificTerms.issuerName", "ACME Holdings");
+        var canonical = new CanonicalAmendHarness(_projectionStore);
+
+        // Dated inside the record's open window, so the stamp is the only thing that can refuse it.
+        var refused = await CreateCanonicalMergeHandler(canonical.Service)
+            .Invoking(h => h.HandleAsync(Event(revisionId, "assetSpecificTerms.issuerName") with { EffectiveFrom = DateTimeOffset.UtcNow }))
+            .Should().ThrowAsync<InvalidOperationException>("a failed merge fails the publish fan-out");
+        refused.Which.Message.Should().Be(AheadOfWriteFixtures.BondStampThreeWriteVersionReason);
+
+        canonical.Appended.Should().BeEmpty("the refused amendment appends no economic event");
+        canonical.Upserted.Should().BeEmpty("the refused amendment leaves the canonical projection untouched");
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(null)]
+    public async Task ApprovedEditOnABondCarryingAStrayCallSchedule_FailsAtMergeWithTheNotYetWritableReason(int? stamp)
+    {
+        // Approved before submission refused the row (a 4a node staged it, since the key was
+        // undeclared there): the merged document still carries the populated callSchedule, a version-3
+        // term this node reads but does not write, so the amend seam refuses it by its path instead of
+        // persisting it or dropping it.
+        SetProjection(
+            "Bond", AheadOfWriteFixtures.BondTerms(stamp, withBlock: false, callSchedule: AheadOfWriteFixtures.StrayCallSchedule));
+        var revisionId = await SeedApprovedFieldRevisionAsync("assetSpecificTerms.issuerName", "ACME Holdings");
+        var canonical = new CanonicalAmendHarness(_projectionStore);
+
+        // Dated inside the record's open window, so the array is the only thing that can refuse it.
+        var refused = await CreateCanonicalMergeHandler(canonical.Service)
+            .Invoking(h => h.HandleAsync(Event(revisionId, "assetSpecificTerms.issuerName") with { EffectiveFrom = DateTimeOffset.UtcNow }))
+            .Should().ThrowAsync<InvalidOperationException>("a failed merge fails the publish fan-out");
+        refused.Which.Message.Should().Be(
+            AheadOfWriteFixtures.NotYetWritableReason("Bond", "callSchedule", sinceVersion: 3, writes: 1));
+
+        canonical.Appended.Should().BeEmpty("the refused amendment appends no economic event");
+        canonical.Upserted.Should().BeEmpty("the refused amendment leaves the canonical projection untouched");
     }
 
     private ApprovedFieldEditCanonicalMergeHandler CreateCanonicalMergeHandler(ISecurityMasterAmender amender)

@@ -103,11 +103,37 @@ internal static class AheadOfWriteFixtures
 
     public const string BondWriteVersionReason =
         "assetClassTermsVersion '2' for asset class 'Bond' is readable but not writable on this node: it reads versions " +
-        "1 through 2 and writes version 1. Submit the terms at version 1, or apply the change from a node that writes version 2.";
+        "1 through 3 and writes version 1. Submit the terms at version 1, or apply the change from a node that writes version 2.";
+
+    public const string BondStampThreeWriteVersionReason =
+        "assetClassTermsVersion '3' for asset class 'Bond' is readable but not writable on this node: it reads versions " +
+        "1 through 3 and writes version 1. Submit the terms at version 1, or apply the change from a node that writes version 3.";
 
     public const string StructuredCreditWriteVersionReason =
         "assetClassTermsVersion '3' for asset class 'StructuredCredit' is readable but not writable on this node: it reads " +
-        "versions 1 through 3 and writes version 2. Submit the terms at version 2, or apply the change from a node that writes version 3.";
+        "versions 1 through 4 and writes version 2. Submit the terms at version 2, or apply the change from a node that writes version 3.";
+
+    public const string CertificateOfDepositStampThreeWriteVersionReason =
+        "assetClassTermsVersion '3' for asset class 'CertificateOfDeposit' is readable but not writable on this node: it " +
+        "reads versions 1 through 3 and writes version 1. Submit the terms at version 1, or apply the change from a node that writes version 3.";
+
+    public const string StructuredCreditStampFourWriteVersionReason =
+        "assetClassTermsVersion '4' for asset class 'StructuredCredit' is readable but not writable on this node: it reads " +
+        "versions 1 through 4 and writes version 2. Submit the terms at version 2, or apply the change from a node that writes version 4.";
+
+    // Declared call and put schedules for a row stamped 3 by hand: no node writes version 3 yet, and
+    // the entries are sparse ADR-025 entry shapes rather than the canonical written form, which
+    // carries every member. Two fixed calls at a percent of par and one holder put, all before the
+    // bond's 2030 maturity.
+    public const string PopulatedCallSchedule =
+        """[{"callDate":"2027-01-01","callPrice":102,"priceBasis":"PercentOfPar","priceType":"Fixed"},{"callDate":"2028-01-01","callPrice":100,"priceBasis":"PercentOfPar","priceType":"Fixed"}]""";
+
+    public const string PopulatedPutSchedule =
+        """[{"putDate":"2028-07-01","putPrice":100,"priceBasis":"PercentOfPar"}]""";
+
+    // A populated callSchedule on a row stamped below its version: no writer emits it, so only a
+    // hand-edited or imported row carries it.
+    public const string StrayCallSchedule = """[{"callDate":"2028-01-01","callPrice":101}]""";
 
     public static string NotYetWritableReason(string assetClass, string path, int sinceVersion, int writes)
         => $"'{path}' is an asset-class terms version {sinceVersion} term of '{assetClass}'. This node reads it but writes " +
@@ -116,9 +142,10 @@ internal static class AheadOfWriteFixtures
 
     /// <summary>
     /// The version-1 bond stamped <paramref name="stamp"/> (or unstamped when null), carrying the
-    /// populated block when <paramref name="withBlock"/> is set.
+    /// populated block when <paramref name="withBlock"/> is set, and the given raw
+    /// <c>callSchedule</c> and <c>putSchedule</c> arrays when they are not null.
     /// </summary>
-    public static JsonElement BondTerms(int? stamp, bool withBlock)
+    public static JsonElement BondTerms(int? stamp, bool withBlock, string? callSchedule = null, string? putSchedule = null)
     {
         var terms = JsonNode.Parse(BondAtWriteVersion)!.AsObject();
         if (stamp is int version)
@@ -133,6 +160,16 @@ internal static class AheadOfWriteFixtures
         if (withBlock)
         {
             terms["scheduleConventions"] = JsonNode.Parse(PopulatedBondBlock);
+        }
+
+        if (callSchedule is not null)
+        {
+            terms["callSchedule"] = JsonNode.Parse(callSchedule);
+        }
+
+        if (putSchedule is not null)
+        {
+            terms["putSchedule"] = JsonNode.Parse(putSchedule);
         }
 
         return Parse(terms.ToJsonString());

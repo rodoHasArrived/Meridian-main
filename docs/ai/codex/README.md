@@ -164,7 +164,7 @@ and should be used only when the user explicitly requests independent panel voic
 | `meridian-ledger-projection-replay-review` | Review ledger projection, replay ordering, rebuild, versioning, and report handoff risk |
 | `meridian-codex-skill-builder` | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs` | Maintain Meridian documentation with repo-grounded evidence |
-| `meridian-implementation-assurance` | Implement, certify, and improve changes with scope control, requirement-to-evidence traceability, explicit validation, and docs sync |
+| `meridian-implementation-assurance` | Implement, certify, and improve changes with acceptance evidence, risk-based checks, explicit verification gaps, and docs sync |
 | `meridian-provider-builder` | Build and extend provider integrations |
 | `meridian-repo-navigation` | Orient large-repo tasks before specialist work |
 | `meridian-roadmap-strategist` | Refresh roadmap, delivery-plan, and target-state docs |

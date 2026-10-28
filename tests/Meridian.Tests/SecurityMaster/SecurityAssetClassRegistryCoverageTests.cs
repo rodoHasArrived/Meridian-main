@@ -200,25 +200,34 @@ public sealed class SecurityAssetClassRegistryCoverageTests
     }
 
     [Theory]
-    [InlineData("Bond")]
-    [InlineData("CertificateOfDeposit")]
-    [InlineData("StructuredCredit")]
-    public void ReadAheadClasses_DeclareScheduleConventionsAboveTheWriteVersion_AndOfferNoOtherReadOnlyTerm(string assetClass)
+    [InlineData("Bond", 2, 3)]
+    [InlineData("CertificateOfDeposit", 2, 3)]
+    [InlineData("StructuredCredit", 3, 4)]
+    public void ReadAheadClasses_OfferNoTermIntroducedAboveTheWriteVersion(string assetClass, int blockSince, int scheduleSince)
     {
-        // The schema declares the block at the class's readable version, above what it writes ...
-        var declared = SecurityAssetTermsSchema.Field(assetClass, "scheduleConventions");
-        declared.Should().NotBeNull();
-        declared!.SinceTermsVersion.Should().Be(SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass));
-        declared.SinceTermsVersion.Should().BeGreaterThan(SecurityAssetClassCatalog.GetTermsVersion(assetClass));
+        // The schema declares exactly these terms above what the class writes, each within what it reads ...
+        var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
+        var reads = SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
+        var readOnly = SecurityAssetTermsSchema.Fields(assetClass)
+            .Where(field => field.SinceTermsVersion > writes)
+            .Select(static field => (field.Key, field.SinceTermsVersion))
+            .ToArray();
+        readOnly.Should().Equal(
+            ("scheduleConventions", blockSince),
+            ("callSchedule", scheduleSince),
+            ("putSchedule", scheduleSince));
+        readOnly.Should().OnlyContain(term => term.SinceTermsVersion > writes && term.SinceTermsVersion <= reads, assetClass);
 
-        // ... and it is the only declared term no write surface offers.
+        // ... and they are exactly the declared terms no write surface offers.
+        IReadOnlyList<string> readOnlyKeys = readOnly.Select(static term => term.Key).ToArray();
         var definition = SecurityAssetClassRegistry.Get(assetClass);
         SecurityAssetTermsSchema.Fields(assetClass).Select(static field => field.Key)
             .Except(definition.Fields.Select(static field => field.Key))
-            .Should().Equal("scheduleConventions");
-        definition.UiHints.Should().NotContain(static hint =>
-            hint.Key == "scheduleConventions" || hint.FieldPath == "assetSpecificTerms.scheduleConventions");
-        SecurityAssetClassRegistry.ToDto(definition).Fields.Should().NotContain(static field => field.Key == "scheduleConventions");
+            .Should().Equal(readOnlyKeys);
+        definition.UiHints.Should().NotContain(hint =>
+            readOnlyKeys.Contains(hint.Key) || readOnlyKeys.Any(key => hint.FieldPath == $"assetSpecificTerms.{key}"));
+        SecurityAssetClassRegistry.ToDto(definition).Fields.Should().NotContain(field =>
+            readOnlyKeys.Contains(field.Key) || readOnlyKeys.Any(key => field.FieldPath == $"assetSpecificTerms.{key}"));
     }
 
     [Fact]

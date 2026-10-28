@@ -6097,18 +6097,32 @@ PostgreSQL 16, with the governance-event and Security Master suites.
    regular dates, direction, stub policy, coupon unit and coupon cash basis) at the next terms
    version of Bond, CertificateOfDeposit, Swap legs and StructuredCredit (landed 2026-10-25, see
    below). 4b: call and put schedules with notice periods at the readable version after that,
-   because a committed readable version is never edited.
+   because a committed readable version is never edited: version 3 of Bond and
+   CertificateOfDeposit and version 4 of StructuredCredit (landed 2026-10-25, see below). The
+   fail-closed amortization refusal of declared call and put schedules ships beneath 4b in its
+   stack (PR #3272).
 5. Schedule terms, contract step: the terms versions rise, a file-backed calendar source is
    registered, one `ScheduleSpecFactory` maps resolved terms to specs by descriptor fact, and the
    Security Master engine follows declared conventions for declaring records. An unresolvable
-   calendar blocks the projection. Deploy precondition: every node runs increments 4a and 4b
-   first.
+   calendar blocks the projection. It also takes the write side that 4b leaves open: write
+   validation of call and put entries and their vocabularies, enforcing the window-end and notice
+   rules frozen in ADR-025; consistency between the scalar call terms and the schedules;
+   `ClassFlattenings` for the block and the arrays; and lifting both StructuredCredit
+   reclassification blockers by mapping the terms. The Write-mode element-convention walk must
+   keep skipping a versioned container of a profile envelope. Deploy precondition: every node runs
+   increments 4a and 4b first, and with them the amortization refusal beneath 4b (PR #3272).
 6. Asset-operations fixed-income flows of issue-dated bonds get stable ids from `SchedulePeriodId`
    and the `fixed-income-cash-flow-projection-v2` stamp, and declaring records get declared conventions in
    the cash ladder.
 7. The schedule book in both workstations is built from engine output.
 8. Declared call and put schedules drive new redemption scenarios, the cash ladder's early call, the
-   obligation timeline and the schedule book.
+   obligation timeline and the schedule book. Consumers read the domain record's
+   `CallPutSchedules`, never the economic `call` module, which drops end dates, notice terms and
+   other members. The bond reference payload must be rerouted, or a call and put child table added
+   to the projection registry, because the bond projection carries scalar call dates only. The
+   increment adopts or amends the increment-8 proposals recorded in ADR-025, and deliberately
+   changes the workbench lifecycle that 4b leaves in place, in which a declared schedule raises no
+   Call event.
 9. Credit-event and rate-fixing corporate-action types, kernel reset and fixing dates, and expected
    lifecycle events generated from the schedule.
 10. Direct-lending projections on the kernel: legacy parity first, then an opt-in `dl-engine-v2`.
@@ -6415,3 +6429,452 @@ And `TryGetWriteRefusal` leaves a stamp above what the node reads to the read gu
 names the newer version instead of calling the row readable. Findings that the skeptics refuted
 (the HTTP status of Write-mode refusals, and refusing clears on rows stamped above the write version)
 describe behaviour that predates this change.
+
+## Resolution pass — 2026-10-25 (priority 5, increment 4b)
+
+| Finding | What landed |
+| --- | --- |
+| Declared call and put schedules had no home in the terms (G5); the economic `call` module declares call and put lists, and every builder wrote them empty | ADR-024 decision 3's expand step again, at the readable version after 4a's, because a committed readable version is never edited. Bond and CertificateOfDeposit still write terms version 1 and now read through 3; StructuredCredit still writes 2 and reads through 4. Each new version adds only the optional `callSchedule` and `putSchedule` arrays, reached by an identity step from the version below, and the committed manifests gain it. Swap is unchanged. A call entry has twelve members (`callDate`, `callEndDate`, `exerciseStyle`, `exerciseFrequency`, `callPrice`, `priceBasis`, `priceType`, `makeWholeSpreadBps`, `partialRedemption`, `minimumNoticeDays`, `maximumNoticeDays` and `noticeDayType`) and a put entry nine (`putDate`, `putEndDate`, `exerciseStyle`, `exerciseFrequency`, `putPrice`, `priceBasis` and the three notice members), registered under six `ElementFieldsByPath` paths. Every member is optional, the vocabularies keep foreign spellings verbatim, and `exerciseFrequency` carries the `CouponFrequency` convention. What the members mean (the window, exercise style, price, partial redemption, notice, scope and identity) is frozen in [ADR-025](../adr/025-contractual-schedule-kernel.md#applications) before any node writes an entry. |
+| Nothing stopped the members of a readable container from changing after nodes had read it | `VersionedContainerShapes_AreFrozenOnceReadable` (`SecurityAssetClassTermsHistoryTests`) holds every container introduced above version 1 to its entry in `tests/fixtures/security-master/terms-element-shapes/versioned-containers.json`, member by member and in order: key, type, required flag, version, aliases, allowed values, verbatim flag, convention and underlying role. The fixture was committed on the base with 4a's four `scheduleConventions` shapes, and this change appends the six call and put paths. Version-1 containers (swap `legs`, an equity's `convertibleTerms`) are not frozen, because they may still gain versioned members. |
+| Nothing stopped a write path from setting the arrays | Increment 4a's guards refuse them with no logic change, because they key on each field's `Since`: `TryGetWriteRefusal` and `PopulatedTermsAbove`, the field-edit validator, `SecurityTermBlocks`, the registry's `WritableFields` and the workbench submission gates. `EnsureElementConventionsOnWrite` now walks only the array fields the node writes and skips a versioned container of a profile envelope (see the corrections below). |
+| A node that reads a newer row would drop the arrays when it re-serializes the row (deactivate, patch-less amend) | The F# `CallScheduleTerm`, `PutScheduleTerm` and `CallPutSchedules` types, carried in a trailing `CallPutSchedules` field of `BondTerms`, `CertificateOfDepositTerms` and `StructuredCreditTerms`. `SecurityMasterMapping` decodes them behind 4a's stamp gate with tolerant readers. The F# writer stamps the highest version among the versioned terms the record holds, or the write version when it holds none, and emits the arrays in their frozen form: from their version upward both keys are present, `[]` when nothing is declared, otherwise one object per entry in stored order with every member and null for an unset one. A drift guard fails the write if the schema stops declaring the two arrays together, above the block. `EnsureAheadOfWriteTermsRoundTripSafely` compares only the versioned terms above the write version and at or below the row's own stamp, through a new bounded `SecurityAssetTermsSchema.NormalizedTermsAbove` overload. |
+| Two nodes could derive different economic terms from the same declaring row | The economic `Call` fill is frozen in ADR-025 under one rule. Bond and CertificateOfDeposit take `isCallable` and `firstCallDate` from their scalar call terms as before, and `callPrice` stays null. The declared entries feed only the call and put lists (sorted stably by date), `isPuttable` and `makeWholeSpreadBps`. StructuredCredit has no scalar call terms: it gains a `call` module only when it declares an entry, with `isCallable` set when a call is declared and `firstCallDate` null. A bond that declares a schedule blocks its StructuredCredit reclassification (`structured_credit_call_put_schedules_unwritable`), because StructuredCredit cannot write the arrays yet. |
+| Amortization would treat a bond whose calls are declared only in a schedule as a plain bullet | `OpenLotAmortization` refuses a `callSchedule` or `putSchedule` holding anything but null or `[]`, read from `profileFields`, the root terms or the common terms (PR #3272, the base of this change's stack). |
+| Nothing proved the change byte-neutral for records that declare nothing, or for stored rows that carry stray keys | `SecurityTermsWriteGoldenTests` was extended on the stack base before any 4b edit, with 17 entries: the validation reports of stored rows carrying stray `callSchedule` and `putSchedule` keys (flat rows stamped 1, 2 and 3, and StructuredCredit profile envelopes), the terms and economic terms a re-serialization writes for 4a's readable twins, and the terms it writes for the flat stray rows. A new theory writes every Bond, CertificateOfDeposit and StructuredCredit payload with the arrays in each unset spelling and expects the golden bytes. This change does not edit the fixture. |
+
+**Corrections to the plan.**
+
+- **The round-trip guard needs an upper bound.** 4a's guard compared every versioned term above the
+  write version. Left unbounded once the arrays are declared, it would refuse deactivation of a
+  Bond stamped 2 that carries a stray populated `callSchedule`, because the stored side holds the
+  array and the re-serialized side never does, where 4a drops the key. A term above the row's
+  stamp is an undeclared key of that row, which the decode and validator gates already ignore, so
+  the guard now stops at the stamp. Every row 4a reads re-serializes as 4a re-serializes it, and
+  the stray-row goldens pin those bytes.
+- **A later entry member costs a new container key, so the entry shape is chosen for the engine.**
+  ADR-024 said an inner member could not be added without a new readable version. The element
+  guard requires the members of a versioned container to be untagged, so a new version cannot
+  introduce one: a member added later needs a new container key at a new readable version, or a
+  guard and reader change that versions members individually. ADR-024 now says so, for 4a's block
+  too, and the frozen-shape guard enforces it. The entry therefore carries now what increments 5
+  and 8 need to place exercise dates, notice deadlines and prices: the window end, the exercise
+  style, an explicit Bermudan frequency (CertificateOfDeposit and StructuredCredit have no coupon
+  frequency to fall back on), the price basis and type, the make-whole spread, the
+  partial-redemption method and the notice bounds with their day type. Terms left out of the entry
+  (a make-whole benchmark, a clean-up call threshold, contingent calls) can each arrive later as a
+  top-level key at a new readable version, which the history guards allow.
+- **Notice calendars are not an entry member.** The design carried a per-entry `noticeCalendars`
+  list. It is dropped: `Business` notice counts use the block's payment calendars, and a
+  top-level `noticeCalendars` term can arrive at a later readable version. Until then, a deal whose
+  trustee or clearing calendar differs from its payment calendars counts business-day notice on the
+  payment calendars.
+- **The amortization refusal is the base of the stack, not a free-standing companion.** It is a
+  consumer change, so it stays out of this diff, and as an unstacked companion with its own deploy
+  gate it would have been a third precondition that nothing tracked. This change is built on it, so
+  every build that contains 4b contains the refusal, and increment 5's precondition that every node
+  runs 4a and 4b covers it. When it deploys, a Bond, TreasuryBill or CommercialPaper row whose
+  `profileFields`, root terms or common terms already carry a `callSchedule` or `putSchedule`
+  holding anything but null or `[]` starts failing amortization closed, so such rows must be
+  counted (expect 0) and remediated before it deploys.
+- **Registering the entry shapes was not free of runtime effect.** The design said it was.
+  `EnsureElementConventionsOnWrite` walked every array field of the class at the payload root, with
+  no profile exit, and the write refusal checks a profile envelope by stamp only, returning before
+  it looks for populated arrays, so nothing refused the array before the walk reached it. A
+  profile-backed StructuredCredit whose root `callSchedule` entry carries `exerciseFrequency` 3 or
+  `"Fortnightly"` would have been refused on this build where 4a accepts it. The walk now covers
+  only `WritableFields` and skips a versioned container of a profile envelope. Either clause closes
+  the gap today; the second keeps ADR-024's flat-codec-only rule once increment 5 makes the arrays
+  writable.
+- **StructuredCredit's economic first call date stays null.** A draft mirrored the earliest declared
+  call into StructuredCredit's `firstCallDate` and `callPrice`. The workbench takes its Call
+  lifecycle event and next lifecycle date from `call.firstCallDate`, so that would have moved a
+  consumer for StructuredCredit alone at increment 5's first write, while Bond and
+  CertificateOfDeposit stay on their scalars. One rule now covers every class, and a declaring
+  StructuredCredit row gains no Call event before increment 8.
+- **Existing refusal texts change.** The read-guard, write-version and `StampFlat` texts compute the
+  read ceiling, so on the three classes they now say "reads versions 1 through 3" (1 through 4 for
+  StructuredCredit); a Bond write stamped 2 is now refused with "it reads versions 1 through 3 and
+  writes version 1". The round-trip guard's reason now ends "…that settle its versioned terms."
+  instead of "…that settle the block." The readable-but-not-writable stamp reason names, as the node
+  that could apply the change, the highest version among the stamp and the terms the payload
+  populates above it: a Bond stamped 2 that populates `callSchedule` is pointed at a node that writes
+  version 3, not 2, since a node writing 2 would still refuse the arrays. Tests and any external log
+  matcher pinned to the old texts must follow.
+- **Inbound refusals are not 400s on every route.** The design said a client that populates the
+  arrays gets a 400 with the reason. The term-block route does. A create or amend request throws
+  from the Write-mode mapping, and `MeridianApiExceptionHandler` answers 500, with the reason in the
+  server log, as 4a's Write-mode refusals already did.
+
+**Behaviour changes.**
+
+- **Records that declare nothing: none.** Every written payload, stamp, economic terms document,
+  registry DTO, term-block key and validation report is byte-identical, and so is every 4a-era row
+  stamped 2 (3 for StructuredCredit) that a node re-serializes (`SecurityTermsWriteGoldenTests`).
+  Swap is unchanged.
+- **Rows stamped 3 (4 for StructuredCredit) are now readable.** Before this change they were refused
+  on read, and nodes without this build still refuse them. A row that declares entries and
+  round-trips keeps its arrays and its stamp on re-serialization, with the entries in stored order
+  and all-null entries dropped.
+- **Populated arrays are refused where 4a dropped them.** A create, amend, import, term-block amend
+  or approved field-edit merge of a flat Bond, CertificateOfDeposit or StructuredCredit payload that
+  populates `callSchedule` or `putSchedule`, under any key casing, used to drop the undeclared key
+  and is now refused with the not-yet-writable reason naming version 3 (4 for StructuredCredit).
+  When a payload also populates the block, the reason names `scheduleConventions`. Absent, `null`,
+  `[]`, `[null]`, `[{}]` and entries whose members are all null are still accepted and ignored; an
+  entry with content but no date (`[{"callPrice":101}]`) is populated and is refused. Field edits of
+  either array get the not-yet-writable reason instead of the undeclared-key message, and
+  `PUT /terms/callSchedule` and `PUT /terms/putSchedule` answer 400 with it instead of the
+  undeclared-block text. A write stamped 3 (4 for StructuredCredit) gets the
+  readable-but-not-writable stamp reason instead of the read-guard refusal.
+- **New refusals on deactivation and patch-less amend.** A row stamped 3 (4 for StructuredCredit) is
+  refused when re-serializing would change either array: an unknown, mistyped or case-variant
+  member or key, a dateless entry that carries content, or an entry that is not an object. A stray
+  `callSchedule` on a Bond or CertificateOfDeposit stamped 1 or 2, or a StructuredCredit stamped 2
+  or 3, is still dropped as 4a drops it.
+- **Stamp downgrade, generalized.** A re-serialized row is emitted at the highest version among the
+  versioned terms it still holds, or at the write version when it holds none. A Bond stamped 3 that
+  holds only conventions (with empty or absent arrays) is emitted at 2, and one that holds nothing,
+  empty arrays included, at 1; a StructuredCredit stamped 4 is emitted at 3 or 2 in the same way.
+  The data is equal; a contract node shows only the informational BEHIND notice.
+- **Changed refusal texts.** On the three classes, as listed in the corrections above.
+- **Profile envelopes: unchanged.** A profile-backed StructuredCredit that carries the arrays at its
+  root or in `profileFields` is never refused, decoded, validated or convention-checked for them,
+  and they never reach the economic module; only its stamp is checked.
+- **Economic terms change only for declaring rows,** and none can exist before increment 5. Every
+  other row keeps today's literals: a Bond keeps `isPuttable` false with `mandatoryPutDate` set, and
+  a StructuredCredit keeps `"call":null` with `nonCallPeriodEnd` set. No consumer moves: the
+  scanners read top-level scalars one level deep, and the workbench lifecycle reads only
+  `call.firstCallDate`. An entry's `callDate` shares its name with Bond's top-level `callDate`, so a
+  future recursive reader must not search inside entries.
+- **Reclassification.** A Bond that declares a call or put schedule gets the new blocker and no
+  proposed terms, instead of a proposal that would drop the schedules. A Bond that declares only
+  conventions keeps 4a's blocker text unchanged.
+- **Contracts.** A new five-argument `SecurityAssetTermsSchema.NormalizedTermsAbove` overload with
+  an upper bound; the four-argument overload delegates to it unbounded. The three F# term records
+  gain a trailing field, so their constructors take one more argument. There is no
+  `SecurityTermConventionKind` member, DTO, migration, TypeScript or WPF change.
+
+**Deploy and rollback.** Roll every node forward to this build before any contract step raises a
+write version. Once a Bond or CertificateOfDeposit row stamped 3, or a StructuredCredit row stamped
+4, exists, no node may roll back below this build, because older nodes refuse those rows. While
+this build rolls out, a 4a node still accepts a populated array on write and drops it, and a node on
+this build refuses it; neither writes the arrays. During the contract rollout, the full-payload
+amends 4a lists (the WPF edit screen, `SecurityTermBlocks.BuildPatch` and the approved field-edit
+merge) are refused on expand-only nodes for rows stamped 3 (4 for StructuredCredit) as well, while
+deactivations and patch-less amends still work when the row re-serializes exactly; route edit
+traffic to contract nodes. Nothing needs draining: 4a's field-edit validator already refused
+`callSchedule` and `putSchedule` as undeclared keys, and no writer has emitted them.
+
+**Before deploying.** Two checks, both expected to find nothing; the query and the search scope are
+in the increment 4b entry of [ADR-024](../adr/024-terms-payload-format-and-version-policy.md#applications).
+The first counts stored Bond, CertificateOfDeposit and StructuredCredit rows that populate a
+top-level `callSchedule` or `putSchedule` under any casing, excluding StructuredCredit profile
+envelopes. On this build, such a row's full-payload amends that carry the key, its field-edit merges
+and its workbench submissions are refused, where 4a dropped the key; its deactivations and
+patch-less amends still drop the key: the round-trip guard skips rows stamped at or below the write
+version and, above it, compares only terms up to the row's own stamp. The second covers inbound
+traffic. No in-repo producer emits either key at the top level (the economic definition adapter
+writes those names only inside the economic `call` module), so search API request logs and
+retained import batches (JSON, CSV, EDGAR, WPF) for payloads that populate them, and notify the
+owners of any client that sends them.
+
+**Not yet landed.** Increments 5 to 12 of this priority, as listed in the first-increment section
+above; items 5 and 8 there now name what this increment leaves to them. Frozen here with the
+arrays: no per-entry notice calendars; `[]` as the empty written form; an absent `exerciseStyle`
+means not stated, and an absent `priceBasis` and `priceType` mean `PercentOfPar` and `Fixed`;
+mandatory tenders stay `mandatoryPutDate`, outside `putSchedule`; and the economic lists are filled
+now, so 4b and contract nodes emit the same economic terms from increment 5's first write. Open
+decisions: whether a make-whole benchmark, a StructuredCredit clean-up call threshold and notice
+calendars arrive as top-level keys at a later readable version, as recommended; the ADR-025
+increment-8 proposals (the Bermudan generation parameters, the calendar for American windows and
+`Business` notice counts when no payment calendar is declared, the business-day adjustment of
+exercise and notice dates, and the make-whole computation); and the 4a decisions still open, which
+are restamping instead of the downgrade (now across several versions), registry exposure of
+readable-only fields, increment 5's fallback to `commonTerms.holidayCalendarId`, renaming the inner
+`direction`, and whether a payload with `profileFields` but no `customProfileId` stays a profile
+envelope.
+
+**Validation.** The characterization goldens, the frozen 4a container shapes and the
+unset-spelling theory were committed on the stack base first and pass unchanged after the change.
+New suites: `SecurityMasterWorkbenchQueryServiceCallScheduleTests`, plus the version-3/4 readable
+twins and foreign rows, the bounded round-trip guard cases, and the profile-envelope create and
+deactivate pins in the existing partials. The versioning, upgrader, wiring, history, schema,
+registry, field-edit, term-block, schema-validation, validation-service, economic-bridge,
+reclassification, workbench, merge-handler and F# domain suites are extended, and the 4a tests that
+pinned the old readable versions are moved. The whole `Meridian.Tests` suite ran against a
+disposable PostgreSQL 16 with 21,746 passed, 455 skipped and 14 failed; every Security Master suite
+passed. The 14 failures are this container's: thirteen `UiServer` composition tests fail only when
+the PostgreSQL connection string is set and pass without it, and the isolated QuantScript worker
+behind one strategy-design test has exited early in every full run since increment 3. The whole
+`Meridian.FSharp.Tests` suite passed (525). Each of the seven planned mutations failed the guard it
+targets, and `VersionedContainerShapes_AreFrozenOnceReadable` was the only history guard to fail
+when a member was appended to the call entry. The format, file-size, inline SHA-256,
+duplicate-helper, test-skip and warning-suppression guards pass, schema-control `verify` reproduces
+the refreshed manifests, `validate-doc-hashes` is clean, the `verify-docs` lane passes and the
+generated-repair pre-check reports nothing to change.
+
+The tests were written in nine lanes, each critiqued by an independent reviewer, and the whole change
+then went through an adversarial review: five lenses, with two skeptics trying to refute each
+finding. That work changed the code in one place. The readable-but-not-writable stamp reason named
+the payload's own stamp as the version a node needs, which cannot work for a payload that also
+populates a term introduced above its stamp; it now names the highest of the two. The documentation
+check also corrected the F# entry docs, which had read an absent end date as a single exercise date.
+The one adversarial finding, that the entry readers parse dates with the node's culture, was refuted
+by both skeptics: the helper predates 4b, already reads 4a's dates, and no writer can store a
+non-ISO date.
+
+## Resolution pass — 2026-10-27 (priority 1, second increment: the current factor on the lot of record)
+
+| Finding | What landed |
+| --- | --- |
+| The ledger lot record persisted `BookedFactor` but no current factor, so a persisted lot rehydrated at its booked factor and the position's economic state was the only source of the current one | `tax_lots.current_factor` (migration `V_ledger_052`): nullable, null while the lot is at its booked factor (every lot until a paydown posts), never stamped at acquisition so retained fingerprints and snapshots stay byte-identical, and readable only through `LedgerTaxLotRecord.CurrentFactor` (ordinal 26 on all twelve lot column lists, serialized only when present). The database owns the invariant: `ck_tax_lots_current_factor` requires the acquisition and face terms and a value strictly below the booked factor (V053 admits zero), and `protect_open_lot_current_factor` refuses any removal, any increase and any change outside a versioned, new-batch mutation; V052 also refused a value on insert, which V053 narrows to the corporate-action birth below. `LedgerTaxLotFaceValueTerms.ToFaceValueLot` rehydrates the `FaceValueLot` at the recorded factor, so `FaceOutstanding` is the paid-down face, and `WithFaceValueTerms` refuses to open a lot below its booked factor. |
+| Nothing could move the factor; the MBS paydown projection posted principal against the position without touching the lots | The governed `FactorPaydown` lot mutation (migration `V_ledger_053`, [blueprint section](../engineering/blueprints/security-lot-convergence-blueprint.md)). `OpenLotFactorPaydown.Allocate` spreads one position-level principal across every open face lot of the (security, book position) scope. The position principal must equal the lots' held par face (par face × open share, summed) × (prior − new), rounded once to the currency's minor units, so the factors fix it; it is spread by largest remainder (each lot's raw share truncated to minor units, the leftover units one each to the largest remainders, ties to the later lot in the store's acquired-date, lot-id order), so every lot is non-negative, at most its raw share rounded up, and the lots sum to the position principal exactly. Each lot's open transaction and functional bases are relieved **pro rata to the principal repaid** (× new ÷ prior, rounded per lot), and the difference between principal and relieved basis is the premium or discount embedded in the repaid principal, recognised as realized gain or loss; across several lots that difference also carries the currency rounding (three par lots paying 0.95 → 0.916667 book a 0.01 gain). `Project` re-runs the allocation under lock, requires the stated per-lot amounts to agree, and returns each lot versioned, relieved, at the new factor and closed when the factor is zero. `PostgresLedgerJournalStore.FactorPaydown` writes the batch (`atomic_tax_lot_posting_batches.factor_paydown_instruction`, present exactly on `FactorPaydown` batches), one `tax_lot_mutations` row per lot with the before snapshot, the relieved basis as `cost_basis` and the quantity preserved (or the lot closed), and the compare-and-swap on each lot with the `BasisAdjustment` lineage. The trigger now admits exactly that shape: a factor moves only through a `FactorPaydown` batch of the same book, security and position that restates the lot's basis in the same batch; a partial paydown preserves quantity; a full paydown (factor 0) closes the lot; and a lot may open with a factor only when its birth batch is a `CorporateAction` batch of the same book — the database checks that birth batch, and the typed store (`OpenLotSuccessors`) verifies that the factor is the predecessor's. The store also refuses an instruction whose lots are not in its acquired-date, lot-id order, so the rounding always lands on the same lots. `HistoricalTaxLotQuantity` dates the factor, so an as-of read before the paydown reports the lot at its earlier factor. `FaceValueLot` admits a factor of zero as the fully repaid state. |
+| The paydown had no identity a posting could be held to | `FactorPaydownProjectionIdentity` (Contracts) is the projector's deterministic event id over security, position, effective date, prior and new factor and the retained source hash; `Project` refuses an instruction whose event or lineage does not carry it, so a paydown cannot be re-keyed or applied twice. `FactorPaydownLotInstructionService` (FinancialOperations) builds the instruction from the open lots of record and a run of the registered factor-paydown projector over their par face; it is composed in `LedgerFeatureRegistration` (nullable authorities, refusing a missing one before reading anything), but no operator route calls it yet. `AccountingPostingCandidateService` now requires the governed lot instruction for every factor-paydown candidate: it recomputes and allocates it under spine authority (`asset-authority-lineage-required`, `asset-authority-rule-pack-mismatch`, `instrument-factor-lineage-required`, `factor-paydown-lot-mutation-required`), feeds its components to the rule only under the `FactorPaydown` intent, and binds the carrying-value credit and the scoped cash, gain and loss lines; the spine projection and candidate endpoints give the embedded instruction's scope the server-resolved tenant and company; `AccountingPostingCandidatePostService` dispatches the `FactorPaydown` posting command through the atomic lot boundary. `AtomicTaxLotMutationKind.FactorPaydown`, `AssetLotMutationIntentDto.FactorPaydown`, the Rules Studio lot-mutation components (`lot.principal`, `lot.basisRelieved`, `lot.realizedGain`, `lot.realizedLoss`) and the dashboard's intent union name the new kind. |
+
+**Decisions recorded.**
+
+- **Pro-rata basis relief**, chosen by the owner over amortised-cost relief: the relieved basis follows the
+  principal repaid, and the embedded premium or discount is realized at each paydown rather than
+  deferred to maturity.
+- **A factor of zero is the fully repaid lot**: it stays retained with its acquisition facts, basis
+  adjustment and mutation receipt, and leaves open-lot and as-of reads after its paydown date.
+- **The column opens null**, not at the booked factor, so no retained snapshot, fingerprint or
+  fixture changes until a paydown is posted.
+
+**Behaviour changes.**
+
+- None for lots that have not been paid down: fingerprints, snapshots and as-of reads are unchanged, and
+  the twelve lot column lists read the new column by name.
+- `ApplyCorporateActionAsync` and the corporate-action successor now carry the predecessor's factor
+  instead of refusing a paid-down lot; `HistoricalTaxLotQuantity` dates the factor instead of refusing.
+- Migration `V_ledger_053` replaces five check constraints with strict supersets and rewrites the
+  trigger body by `create or replace`; both carry `migration-drop-table-member` waivers and reapply under
+  the ledger set's drift policy without rewriting a row.
+- A factor-paydown candidate requires the governed lot instruction; the generic `MbsFactorPaydown`
+  candidate path is closed.
+- `FactorPaydownProjectionService` rounds the position principal with Contracts `CurrencyMinorUnits`,
+  so CLF and UYW principals carry four decimals instead of two.
+- `OpenLotAmortization.Project` refuses a lot that holds a paydown factor; its premium or discount is
+  realized through paydowns and disposal rather than accreted.
+- The spine projection and candidate endpoints rewrite an embedded factor-paydown instruction's tenant
+  and company with the caller's (capital-return and successor projections keep their reviewed case
+  scope, which the spine compares against the rewritten request scope).
+
+**Not yet landed.** An operator surface that calls `FactorPaydownLotInstructionService` (it is
+composed in DI but unrouted); upward factor restatements (governed correction
+lineage), cross-currency lots and short positions keep their existing refusals; moving the Security
+Master's lot-of-record reads onto `SecurityLotModel` (the other half of the 2026-10-21 "still open")
+is unchanged.
+
+**Validation.** `AtomicTaxLotJournalStoreTests.CurrentFactor` (migration shape, fingerprint
+stability, admission refusals, and the Integration walk of every trigger rule against PostgreSQL),
+`AtomicTaxLotJournalStoreTests.FactorPaydown` and `.FactorPaydownPublication`,
+`AtomicTaxLotSuccessorMigrationTests.FactorPaydown` (populated through-052 upgrade, reapply and
+injected DDL failure), `OpenLotFactorPaydownTests`, `AccountingPostingCandidateServiceTests.FactorPaydown`,
+`AssetAccountingEventSpineServiceTests.FactorPaydown`, the extended `FaceValueLotTests`,
+`HistoricalTaxLotQuantityTests`, `FactorPaydownProjectionServiceTests`, `OpenLotSuccessorTests`,
+`FactorPaydownLotInstructionCompositionTests`, `WorkstationEndpointsTests.FactorPaydown` and the
+ledger storage, financial-operations and asset-operations
+suites against a disposable PostgreSQL 16.
+
+## Resolution pass — 2026-10-27 (G4, first increment: stored curves and the valuation seam)
+
+| Finding | What landed |
+| --- | --- |
+| Forward curves existed only in memory, with no publisher, no persistence and no version (G4) | Stored, versioned curves in `security_master` ([ADR-026](../adr/026-stored-curves-and-valuation-seam.md), [domain page](../domain/market-curve.md)). Migration 052 adds `security_curves` (write-once identity: key unique ignoring case, kind, currency, index, tenor, day count stored as the convention name, interpolation, source) and `security_curve_versions` (append-only versions with economic `as_of`, knowledge `recorded_at`, `sourced_at`, actor, jsonb points and a canonical SHA-256 over the as-of and sorted points); one reject function refuses update, delete and truncate on both tables by trigger, SQL state 23514. `PostgresSecurityCurveStore` serializes definitions of one key under an advisory lock and publishers of one curve under a row lock, returns the retained version for identical content on the same as-of without writing, reads the latest version as of a date with the pricing lane's `as_of <= @as_of and recorded_at <= @known_at` predicate, and reads one version by id on the primary key with the curve id as a guard (`GetVersionByIdAsync`). `SecurityCurveRules` in Contracts holds the rules (Forward values are non-negative fractions, not percents, because the projection floors every rate at zero; discount factors lie in (0, 1], are 1 on the as-of and never rise from one pillar to the next; positive inflation levels; points on or after the as-of, one per date, tenors unique; a day count matches an exact convention name before the market-spelling parser, so every stored name reads back as itself; actor required) and the arithmetic (`ValueAt` equals `SecurityForwardCurve.RateAt` on the same points for Forward curves, while a Discount curve is 1 on or before its as-of and linear from (as-of, 1) to its first pillar; `DiscountFactorAt` rebases to the valuation date with `ValueAt` and refuses past the last pillar; `ToForwardCurve` carries key, version and hash prefix into `RateSource`, whose as-of `SecurityForwardCurve.Describe` writes in the invariant culture and `TryReadAsOf` reads back). |
+| Curve writes were ungoverned | Migration 053 admits a `Curves` stream to `security_governance_events`; `CurveDefined` and `CurveVersionPublished` append in the same transaction as the write with the actor, a null `security_id` and the curve id, key, version, point count and hash in the payload. `ISecurityGovernanceEventReader.GetForStreamAsync(stream, afterSequence, limit)` reads a stream by global sequence over `ix_security_governance_events_stream_sequence`, the one reader the security-keyed log lacked. |
+| The production provider was empty and the projection read curves at the wall clock | `StoredSecurityForwardCurveProvider` (Application) replaces the in-memory registration: the one Forward definition for the index (trimmed, ignoring case) at its latest version dated on or before the as-of; none, no version, or several definitions leave the leg flat forward, ambiguity with a structured warning. `ISecurityMasterCashFlowService.GetProjectionAsOfAsync(securityId, scenario, asOf)` projects as of the requested date and reads curves as of that date; `GetProjectionAsync` delegates with `UtcNow`. `InMemorySecurityForwardCurveProvider` moved verbatim to `tests/Meridian.Tests/SecurityMaster/` as a test double. |
+| No interface said "value this security as of this date with these market inputs" | `SecurityValuation.cs` (Contracts): `SecurityValuationRequest` (economic as-of, knowledge cutoff, account scope, quantity, pinned curves, model override), `SecurityValuationResult` (price with unit, present value, market value, observed as-of as the oldest market input, observability, inputs, diagnostics, blockers; blocked results carry no number), `ISecurityValuationModel`, `ISecurityValuationService`. `SecurityAssetClassDescriptor.DefaultValuationModel` is the catalog fact the dispatcher reads: `DiscountedCashFlow` on Bond and Swap, `QuotedPrice` otherwise; `HasDeclaredBehaviorFacts` and the comparison ratchet's hint name it. `SecurityValuationService` dispatches on the fact or the request's override, returns null for an unknown security and a `NoModel` blocker when no model is registered. |
+| Nothing discounted a projected cash flow, and price selection was the only model | `QuotedPriceValuationModel` composes `GetGoldenCopyPriceAsOfAsync` (a receipt is retained per evaluation, as the golden-copy GET does), reports `IsStaleFallback` as a diagnostic rather than re-deciding staleness, and picks the market-value function by the selected price's quote unit: `bondMarketValue` for a percent-of-par quote, on the face scaled by the factor in effect on the valuation date (the latest factor-schedule point on or before it, else the scalar current factor unless its retained factor date is later, else 1: the factor the cash-flow projection selects); `equityMarketValue` for a currency-per-unit quote; a `MarketValueUnavailable` diagnostic and no market value for a quote without a unit. `DiscountedCashFlowValuationModel` resolves the discount curve (pinned by id and optionally by version id, else the one Discount definition in the security's currency), takes the base-scenario projection as of the valuation date, records each floating leg's provenance (`forwardCurve:` inputs with the forward curve's as-of; `flatForward:lastFixing` as the `FloatingForecastFlatAtCurrentIndexRate` diagnostic with `UnobservableInputs`), discounts the net schedule with `DiscountFactorAt`, and derives a percent-of-par price per 100 of the outstanding face the projection repays from the valuation date (the sum of its principal, so the factor the walk selected is the one priced, and the market value applies outstanding over principal face once) on face-value lots, or a per-notional price otherwise. `ObservedAsOf` is the earlier of the discount curve's as-of and every forward curve's as-of the projection read. Blockers: `NoDiscountCurve`, `AmbiguousDiscountCurve`, `CurrencyMismatch`, `UnsupportedInput` (including forward provenance without a readable as-of), `NoCashFlowSource`, `ProjectionBlocked`, `NoProjectedFlows`, `DiscountCurveCoverage`. Diagnostics name a stale or undated cash-flow source (`CashFlowSourceStale`, `CashFlowSourceFreshnessUnknown`), a pinned version dated after the valuation date or recorded after the knowledge cutoff (`DiscountCurveAsOfFollowsValuationDate`, `DiscountCurveRecordedAfterKnownAt`), a projection with no positive principal to price on (`NoPriceBasis`) and the dirty value. Golden cases reproduce: the bond at PV 1,014,000.00, price 101.4000, market value 507,000.00 on 500,000 face; the swap at NPV -162.50 (0.00 undiscounted) and +7,500 flat forward. |
+| No route published or read a curve | `SecurityMasterEndpoints.Curves.cs`: `GET/POST /api/security-master/curves`, `GET /curves/{curveId}`, `GET/POST /curves/{curveId}/versions` (`asOf`, with an optional `knownAt`, returns the single latest match; `knownAt` alone lists every version recorded on or before it), `GET /curves/{curveId}/versions/{version}`, and `POST /api/security-master/{securityId}/valuation`. Curve routes map only when `ISecurityCurveStore` is registered and the valuation route only when `ISecurityValuationService` is; writes take the session actor, Modify permission and the mutation rate limit (rule failure 400, publishing to an unknown curve 404, write-once conflict 409); reads and valuation need View, and valuation also takes the mutation rate limit because a quoted-price evaluation retains a selection receipt; blocked valuations are 200 with blockers. |
+
+**Corrections to the design.**
+
+- `SecurityCurveVersionDto` carries neither the kind nor the index name, so `ValueAt` takes the
+  kind and `ToForwardCurve` takes the definition beside the version; `DiscountFactorAt` is Discount
+  by construction.
+- A blank actor on a curve write is refused, as the design's test list asks; the cited
+  `OtcContractRules.Actor` maps blank to `unknown`, which a governed curve write must not record.
+- A pinned `CurveVersionId` is resolved through `GetVersionByIdAsync`, added to `ISecurityCurveStore`
+  for it, because `GetVersionAsync` is keyed by version number.
+- The provider-sourced projection path now receives the requested as-of as its factor date instead
+  of `UtcNow`; for `GetProjectionAsync` the two are the same instant.
+- The design's percent-of-par basis was the terms' principal face with no factor, so a paid-down
+  bond was priced on original face while the market value applied the factor again. The price is per
+  100 of the outstanding face read from the projection itself, which also keeps a dated factor
+  schedule that disagrees with the scalar current factor from being priced on the scalar.
+- `StructuredCashFlowTerms.FactorAsOf` returns the scalar current factor whatever its retained
+  `factorDate`, so a quoted valuation before that date scaled the face by a factor not yet in
+  effect while the projection left it unfactored. The quoted model now reads the scalar's date
+  through the projection's own `ReadScalarFactorDate`, so both models value the same outstanding
+  face.
+- The design's per-100 price for a bond without par or notional was unreachable: the projection
+  blocks every normalized-basis schedule, so the model's `IsNormalizedPer100` arm was removed and a
+  face-less bond keeps blocking with `ProjectionBlocked`.
+- The design set the observed as-of to the discount curve's as-of, assuming it was the oldest input;
+  it is now the earlier of that and every forward curve's as-of.
+- The design read a Discount curve flat before its first pillar, as a Forward curve is, so a version
+  without an as-of pillar discounted a payment just after its as-of by the whole first-pillar
+  factor; a Discount curve now runs linearly from 1 on its as-of to the first pillar.
+
+**Behaviour changes.**
+
+- None for existing callers: `GetProjectionAsync` keeps `UtcNow`, and a host whose curve tables are
+  empty projects flat forward exactly as before.
+- The forward-curve registration is the stored provider; the in-memory provider is no longer in
+  Contracts or DI. One public Contracts type moved to tests, so the generated contracts manifest
+  changes.
+- One method added to `ISecurityMasterCashFlowService` (`GetProjectionAsOfAsync`) and one to
+  `ISecurityGovernanceEventReader` (`GetForStreamAsync`); the Null cash-flow service returns null.
+- One optional parameter added to `SecurityAssetClassDescriptor` (`DefaultValuationModel`), so
+  `GetOrDefault("NotAClass")` still declares no fact.
+- Five route constants added to `UiApiRoutes`, mirrored in the generated TypeScript routes and the
+  workstation bundle.
+- Within this increment's own surface (nothing yet merged or applied), the review pass changed:
+  publish refuses negative Forward values and rising Discount factors; the day counts `ThirtyE360`
+  and `ThirtyE360Isda` are stored as themselves instead of `Thirty360`; `security_curves` refuses
+  update, delete and truncate; publishing to an unknown curve is 404 instead of 400; `knownAt`
+  without `asOf` filters the version list; the valuation route answers 429 under the mutation rate
+  limit; `SecurityForwardCurve.Describe` writes its date in the invariant culture.
+
+**Not yet landed.** No persisted valuation receipt or valuation table. No wiring into the ledger mark
+lane (`IMarkPriceSource`, `DailyMarkToMarketService`), no `FairValueLevel` mapping and no change to
+the landed `ValuationFreshnessPolicy` / `MarkFreshnessAssessmentDto`; the result carries
+`Observability` and `ObservedAsOf` for that lane. No model output is written as a raw price or
+selected through the hierarchy; `CalculatedPar` / `CalculatedStraightLine` untouched. Forward curves
+are chosen by index name through the provider; no per-request forward pinning, no knowledge-time
+cutoff for curves inside the projection, no index master. Only `Linear` interpolation; no negative
+rates (no discount factor above 1 or rising, no negative forward fixing) pending a definition flag
+and an unfloored projection; Base scenario only; no clean/accrued split; no vendor ingest; no
+browser or WPF screen.
+
+**Validation.** `SecurityCurveRulesTests`, `SecurityCurvesMigrationTests`,
+`SecurityValuationServiceTests`, `QuotedPriceValuationModelTests`,
+`DiscountedCashFlowValuationModelTests`, the two added `ForwardCurveCashFlowTests`, the
+`GetProjectionAsOfAsync` test in `SecurityMasterCashFlowServiceTests`,
+`SecurityAssetClassBehaviorFactsTests.DefaultValuationModel_DiscountedCashFlow_IsBondAndSwap`, the
+asset-class comparison ratchet, `SecurityCurvesPostgresTests` (Integration: bitemporal reads,
+idempotent republish, the by-id version read, an idempotent 30E/360 re-define, refused update,
+delete and truncate on both tables, the `Curves` stream, and the pinned swap at -162.50 with its
+2025-12-01 observed as-of through `PostgresSecurityMasterStore`,
+`PostgresSecurityMasterCashFlowStore`, `PostgresSecurityCurveStore` and
+`StoredSecurityForwardCurveProvider`) and `SecurityMasterCurveEndpointsTests`, against a disposable
+PostgreSQL 16, with the Security Master, ratchet and layer-boundary suites.
+
+## Resolution pass — 2026-10-27 (priority 4, third increment: exposure, collateral balances and margin calls on the contract model)
+
+| Finding | What landed |
+| --- | --- |
+| The contract model held the facts but did not value them; exposure, collateral balances and calls stayed with the workstation collateral exposure read model | Exposure snapshots, collateral balances and margin calls on the contract records (migrations 054 and 055, [domain page](../domain/credit-support.md)). `OtcExposureRules` (Contracts, pure) selects the open contracts of a netting set traded on or before the as-of, nets them when the master permits close-out netting (`Isda1992`, `Isda2002`, `Gmra`, `Gmsla`; `Other` is gross, fail closed), and computes the credit support amount each way in the ISDA 1994 form, `max(0, exposure + IA_pledgor − IA_securedParty − threshold_pledgor)`, against the collateral the secured party holds, adjusted by the haircut of the CSA's current eligible-collateral line for each balance; the minimum transfer amount is tested on the unrounded delivery or return, then rounded up for a delivery and down for a return. Any unvalued contract or snapshot-level blocker (`NoCollateralAgreement`, `CollateralAgreementNotYetEffective`, `CollateralAgreementTerminated`, `SharedCollateralAgreement`, `PastTermination`, `CurrencyMismatch`, `MissingValuation`, `CollateralValuationAfterAsOf`, `IneligibleCollateral`, `CollateralCurrencyMismatch`, …) makes the snapshot `Incomplete`: exposures are reported, no movement is computed; with no CSA both credit support sides are null (exposures only). `OtcExposureSnapshotDto` is append-only and versioned per (netting set, as-of date), carries every valuation, blocker, held collateral line and movement, and a SHA-256 over its canonical serialization (`otc_exposure_snapshots`, update and delete refused). `OtcCollateralBalanceDto` (`otc_collateral_balances`) records cash or securities posted or received under a CSA, with the haircut copied from the CSA's eligible-collateral line when written, the valued amount computed, never supplied, and a required valuation date. `OtcMarginCallDto` (`otc_margin_calls`) is issued only from a `Complete`, real-provenance snapshot of a date that has come (not after the current UTC date) that is the netting set's latest valuation (the latest version for its date, and no snapshot for a later date up to the current one) and whose every input still stands: the netting set's current master agreement and CSA at their current versions, no other netting set referencing that CSA, the netting set, each of its contracts and each balance under the CSA at the version the snapshot recorded, and no price observation or pricing hierarchy version for a valued security, bearing on the as-of date, recorded after the snapshot's knowledge time, which must not be earlier than its computation (`OtcExposureSnapshotDto.Inputs`, checked by `OtcMarginCallRules.RequireUnchangedInputs`); it copies the movement's amount and currency, and moves `Issued → Agreed | Disputed | Cancelled`, `Disputed → Agreed | Cancelled`, `Agreed → Settled | Cancelled`, one open call per netting set, mover and movement kind (a party's delivery and its return are distinct obligations) and one uncancelled call per snapshot movement (a settled movement is called again only from a recomputed snapshot), each enforced by rule and by a partial unique index. |
+| No valuation reached a contract | `IOtcContractValuationSource` (Contracts) values one contract as of a date in a stated currency, signed from the fund's side with `Direction` applied, or says why not. `PricingStoreOtcContractValuationSource` (Application, `otc-mtm-observed-price-v1`) reads the golden-copy price as of the date with the knowledge cutoff: a `PercentOfPar` observation is value per 100 of notional to the buyer, so `MarkToMarket = sign × Notional × price ÷ 100`; `CurrencyPerUnit` and `Unspecified` quotes are `UnitMismatch`, a stale fallback is `StaleInput`, no price is `MissingInput`, and a currency other than the CSA's is `CurrencyMismatch` before any receipt is retained. Provenance follows the selected source (a simulated origin is reported, and a call cannot be issued from it). A valued mark for another date or another instrument is not folded in (`MissingValuation`). `OtcExposureService` orchestrates netting set → CSA → balances and the netting sets that reference the CSA → valuations → `Compute` → append, stamping the actor; it refuses a default as-of date and one after the current UTC date before reading anything, and values every contract at one knowledge time (the request's cutoff, else the computation instant the snapshot is stamped with), which the snapshot records. |
+| Collateral and call writes were ungoverned | Migration 055 admits the `OtcCollateral` stream; `ExposureSnapshotRecorded`, `CollateralBalanceRecorded`, `CollateralBalanceAmended` (with the field changes), `MarginCallIssued`, `MarginCallAgreed`, `MarginCallDisputed`, `MarginCallSettled` and `MarginCallCancelled` append in the same transaction as the row with a non-blank actor and the netting set or CSA in the payload; `ISecurityGovernanceEventReader.GetForStreamAsync` reads them. |
+| No route exposed any of it | `SecurityMasterEndpoints.OtcCollateral.cs`: `POST/GET /api/security-master/otc/netting-sets/{id}/exposure-snapshots`, `GET /otc/exposure-snapshots/{snapshotId}`, `POST /otc/collateral-balances`, `GET /otc/collateral-agreements/{id}/collateral-balances`, `POST /otc/margin-calls`, `POST /otc/margin-calls/{callId}/transition`, `GET /otc/margin-calls/{callId}` and `GET /otc/netting-sets/{id}/margin-calls`; writes take the session actor, Modify permission and the mutation rate limit (rule failure 400; computing for an unknown netting set 404; issuing from an unknown snapshot or transitioning an unknown call 400, the store refusing it as a rule failure), reads need View (unknown snapshot or call 404). The routes map only when `IOtcCollateralStore` and `IOtcExposureService` are registered, so a host without the Security Master database leaves them unavailable rather than failing each request. |
+
+**Declared conventions.** The collateral agreement's single `IndependentAmount` is the amount the
+fund posts. A master of type `Other` does not net. All amounts are in the CSA currency; there is no FX
+in this increment. A `PercentOfPar` observation on a bilateral instrument is the value per 100 of
+notional to the buyer of that instrument as `OtcContractDirection` defines buying.
+
+**Corrections to the design.** The migration is split: 054 holds the tables and 055 the stream check,
+which lists every stream in force (`OperatorOverrides`, `Aliases`, `ProjectionRebuild`,
+`UnderlyingGraph`, `Curves`, `OtcCollateral`). `Compute` leaves the version and digest to the store,
+which assigns both under an advisory lock on the netting set. A `Cancel` reason is appended to the
+call's notes, the DTO carrying no cancel-reason field. Issuing from a superseded snapshot version, or
+from a snapshot when the netting set has one (of any status) for a later date no later than the
+current UTC date, is refused. A computation refuses an as-of date after the current UTC date
+(`OtcExposureRules.RequireNotFutureDated`, in the service before anything is read and in `Compute`),
+since an append-only snapshot of a date still to come would otherwise stand as the latest valuation
+and lock calls from real ones out until that date; the later-date check also ignores any snapshot
+dated after today, and a call is refused from such a snapshot itself, so a future-dated row stored
+earlier neither blocks nor is called. Each snapshot records the
+version of every record it was computed from: the netting set, every contract in it (closed and
+not-yet-traded ones too, since a status or trade-date change alters which contracts enter), every
+balance under the CSA (fully returned ones too) and the netting sets that reference the CSA, each
+list in id order and covered by the digest, together with the securities of the contracts valued and
+the knowledge time their market data was read at. A call is refused, naming what changed, once any
+record differs from what the store holds, or once a price observation in `security_raw_prices`
+(observed by the end of the as-of date) or a pricing hierarchy version for any account (in effect by
+then) is recorded for a valued security after `OtcMarginCallRules.MarketDataKnownAt` (the earlier of
+the knowledge time and the computation instant); a snapshot without recorded inputs is refused the
+same way, and a replay (knowledge time earlier than the computation, as when a caller supplies an
+earlier cutoff to reproduce what was known then) is refused outright: it is evidence, not a call.
+Price and hierarchy writers take no OTC lock, so that check sees what has committed when it runs.
+One gap remains: a recorded time is the writer's transaction start on the database clock, compared,
+as the valuation's own cutoff is, with a knowledge time on the application clock, so a write that
+began before the knowledge time and committed after the computation read its market data, or one
+that clock skew places before it, is neither valued nor detected. The
+issue takes, in this order and before any row lock, the netting set's snapshot lock, its call lock,
+its contracts lock and the CSA's balances lock; every contract write takes the contracts lock of each
+netting set it touches (two for a move, in id order) and every balance write the balances lock of its
+CSA, also before any row lock, so no contract or balance can be added, amended or moved while a call
+is being checked and issued. The issue then share-locks the netting set, master, contract and balance
+rows it reads and locks the CSA row for update, which also blocks a netting set from being created
+under, or re-pointed to, the CSA until the call commits. Every path takes its advisory locks in that
+one order before any row lock, an issue never waits on a contract or balance row (their writers hold
+the advisory lock it holds), and the agreement and netting set writers lock only the row they write
+before the key-share locks on the rows they reference, so no lock-order cycle can form. Concurrent
+amendments of one contract are now serialized too, so two can no longer write the same version. A
+snapshot-level blocker makes the snapshot `Incomplete`, not only an unvalued
+contract. With no CSA the computation currency is that of the first contract that enters the
+exposure, not of a closed or untraded one, and both credit support sides are null. A positive
+balance valued after the as-of date blocks (`CollateralValuationAfterAsOf`) instead of being
+silently left out: balances are current-state rows, so a back-dated snapshot cannot see what was
+held and is not callable once a balance has been revalued. Each held line applies, and reports,
+the CSA's current eligible-line haircut, and a balance no longer eligible blocks
+(`IneligibleCollateral`). A CSA referenced by more than one netting set blocks
+(`SharedCollateralAgreement`): credit support is not allocated across netting sets, and no unique
+index is added because migration 050 is already applied. A positive balance in a currency other
+than the computation currency blocks (`CollateralCurrencyMismatch`), since there is no FX. A call is
+refused when the netting set's master agreement, CSA or either version is no longer the one the
+snapshot was computed under, when the CSA is now shared, when the netting set, any of its contracts
+or any balance under the CSA has been added, amended, moved or removed since the computation, when
+market data for a valued security has been recorded since its knowledge time, when the snapshot is
+a replay, or when the netting set has been valued for a later date up to today (in each case
+recompute the snapshot and issue from the new one), when the snapshot is dated after today, or when
+the snapshot's movement was already called and not cancelled.
+
+**Behaviour changes.** None to existing surfaces: the workstation collateral exposure read model
+(`CollateralExposureService`, `GET /api/workstation/collateral/exposure`) is untouched and stays an
+unwired, producer-fed buffer keyed by counterparty spelling until a screen consumes the new records;
+retiring it is a later increment. `OtcContractRules.RequireCurrency` is shared; the CSA reader in
+`PostgresOtcContractStore` is a shared helper with the same three call sites.
+
+**Not yet landed.** Initial margin models and segregated IM; a directed or per-contract independent
+amount; FX; any valuation beyond an observed `PercentOfPar` price (the curves lane's models do not yet
+implement `IOtcContractValuationSource`); dispute amounts and tolerances; automatic balance movement on
+settlement, substitution, rehypothecation, interest on cash collateral, concentration limits and
+collateral pricing; a netting-opinion flag on the master; automatic maturing past `TerminationDate`;
+maker-checker on calls, a dedicated collateral permission and tenant scoping; governance events for
+the existing CSA, netting-set, master and contract upserts; collateral balance history (so a
+back-dated computation can see what was held) and allocation of one CSA's balances across the
+netting sets that share it; a browser or WPF screen. Two movements can
+coexist on one snapshot when both parties hold a credit support amount (an independent amount in
+play); each is called separately and both calls may be open at once.
+
+**Validation.** `OtcExposureRulesTests` (the design's worked cases A–H, netting, selection,
+rounding, the shared-CSA, after-as-of, ineligible and current-haircut collateral cases, mismatched
+marks, null sides with no CSA and their payload round trip, the recorded input versions in id order
+with closed, untraded, returned and blocked records included, the valued securities and knowledge
+time recorded, a future as-of date refused against the UTC date), `OtcExposureServiceTests` (Unit:
+the refusals, a future date among them before anything is read or valued, an unknown netting set,
+the no-CSA branch, one knowledge time and its record, the sharing fact reaching the rules, the
+records read becoming the recorded inputs), `OtcCollateralRulesTests` (balance normalization, call
+issue and the full transition matrix, a future-dated snapshot refused, unchanged inputs accepted in
+any order and each kind of change refused by name, later market data refused naming each record in a
+stable order, a replay refused, a snapshot without inputs or knowledge time refused,
+`GetForStreamAsync` guards), `OtcCollateralMigrationTests` (three tables, the single drop,
+the exact six-stream list), `PricingStoreOtcContractValuationSourceTests`,
+`SecurityMasterOtcCollateralEndpointsTests` (403 on every write, 400 on issue and transition, routes
+unmapped without the services) and `OtcCollateralPostgresTests` (Integration: balances and their
+events, two snapshot versions for one date, the refused update, the fund-delivers-330,000 call
+agreed and settled with its events in order, the refused second open call and the refused call
+from an `Incomplete` snapshot; a call refused after the CSA is amended and again once a second
+netting set shares it, the recomputed snapshot applying the amended haircut, and an exposures-only
+snapshot with null sides round-tripping; a call refused once collateral is received after the
+computation and the recomputed call following the new movement; calls refused after a contract is
+amended or booked, the netting set amended, or a later date valued; a call refused once a corrected
+price for the date or a pricing hierarchy is recorded after the computation (a price observed after
+the date is not counted), and from a replay; a future date refused at computation, and a stray
+future-dated snapshot neither blocking the call from the latest real one nor callable; and balance
+and contract writes and an issue waiting for each other's locks) against a disposable PostgreSQL 16, with the existing OTC
+contract, behaviour-facts, ratchet, layer-boundary and workstation collateral suites.

@@ -147,9 +147,9 @@ public static class SecurityTermsEnvelope
 
     /// <summary>
     /// <see cref="StampFlat(string, string)"/> at the version a writer's populated terms need: the
-    /// class's write version, or a readable version above it when the record carries a term only
-    /// that version declares (a row read from a node that writes the newer version). Throws when the
-    /// version is below the write version or above <see cref="SecurityAssetClassCatalog.GetReadsTermsThrough"/>.
+    /// class's write version, or, when the record carries terms introduced above it, the highest
+    /// readable version among them (a row read from a node that writes the newer version). Throws
+    /// when the version is below the write version or above <see cref="SecurityAssetClassCatalog.GetReadsTermsThrough"/>.
     /// </summary>
     public static string StampFlat(string json, string assetClass, int assetClassTermsVersion)
     {
@@ -283,10 +283,21 @@ public static class SecurityTermsEnvelope
 
         if (declaredVersion > writes)
         {
+            // A flat payload can populate a term introduced above its own stamp; only a node that
+            // writes that term's version can apply it.
+            var needed = declaredVersion;
+            if (!IsProfileGovernedPayload(assetClass, payload))
+            {
+                foreach (var (_, field) in SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, payload, declaredVersion))
+                {
+                    needed = Math.Max(needed, field.SinceTermsVersion);
+                }
+            }
+
             reason =
                 $"{AssetClassTermsVersionKey} '{declaredVersion}' for asset class '{assetClass}' is readable but not writable on this node: " +
                 $"it reads versions {DefaultAssetClassTermsVersion} through {reads} and writes version {writes}. " +
-                $"Submit the terms at version {writes}, or apply the change from a node that writes version {declaredVersion}.";
+                $"Submit the terms at version {writes}, or apply the change from a node that writes version {needed}.";
             return true;
         }
 

@@ -686,7 +686,16 @@ Core workstation host. Do not introduce a second listener or independent monitor
   instrument-kind mapping, the profile catalog contract,
   and seeded approved custom/private asset profile templates are owned by
   `Meridian.ReferenceData.SecurityMaster`; this folder consumes those reference-data contracts for
-  validation, governance, readiness, projection rebuilds, and endpoint composition. Profile-backed
+  validation, governance, readiness, projection rebuilds, and endpoint composition.
+  `SecurityMaster/Otc/` holds `OtcExposureService` (refuses a default as-of date, reads a netting
+  set, its agreement's balances and the netting sets that share the agreement, values each open
+  contract through `IOtcContractValuationSource` at one knowledge time, the request's or else the
+  computation instant, applies `OtcExposureRules.Compute` and appends the snapshot) and
+  `PricingStoreOtcContractValuationSource`, the default source, which marks a
+  contract from its instrument's percent-of-par golden-copy price as `sign(direction) × notional ×
+  price / 100` and reports a missing, stale, differently quoted or differently denominated price
+  as a named blocker; `StorageFeatureRegistration` registers it with `TryAddSingleton` so a host
+  can supply another source first. Profile-backed
   validation rules still enforce approved profile-version pinning, typed no-code field values,
   profile approval metadata, and identifier coverage. The C# to F# identifier seam preserves
   optional provider/source metadata without changing standard-identifier identity; a
@@ -1026,13 +1035,22 @@ mode (every create, amend, import, term-block amend and approved field-edit merg
 above the class's write version is refused with a reason naming the class, the stamp and the versions
 this node reads and writes, and one populating a term introduced above it with a reason naming the
 term, the class, the term's version and the write version; in Read mode such a term is decoded once the payload's
-own stamp reaches its version, and profile envelopes are decoded at the write version. Deactivate and
+own stamp reaches its version, and profile envelopes are decoded at the write version. The
+`callSchedule` and `putSchedule` readers are tolerant: they keep stored order, drop an entry that is
+not an object or lacks a parseable date (`callDate`, `putDate`), and read any other member that does
+not parse as unset. Deactivate and
 patch-less amend re-serialize a row stamped above the write version only when the re-serialized terms
-reproduce its versioned content (`SecurityAssetTermsSchema.NormalizedTermsAbove`); otherwise they are
-refused before anything is appended. The workbench refuses a field or profile-field edit at
+reproduce its versioned content up to the row's own stamp (`SecurityAssetTermsSchema.NormalizedTermsAbove`);
+otherwise they are refused before anything is appended, so any content those readers drop blocks the
+write instead of vanishing (an array element with no non-null content, such as a `null` or an
+all-null entry, is compacted away). A term introduced above the row's stamp is an undeclared key of
+that row, which the decode and validator gates already ignore, and is dropped as a node that reads
+no further would drop it. The workbench refuses a field or profile-field edit at
 submission when the record's or the edited terms are readable but not writable, including a root edit
 of a profile envelope stamped above the write version, so it does not stage a draft the merge would
 refuse for that reason, and the schema-terms validator checks a versioned field only when the payload's stamp reaches it.
+Element conventions are enforced on write only for array terms the class writes (`WritableFields`),
+and never on an array introduced above version 1 inside a profile envelope.
 
 The file-based Security Master bulk ingest (`--security-master-ingest <file.csv|file.json>`) is
 fail-closed on caller identity: the import runs only when a registered
@@ -1055,13 +1073,33 @@ lots with multiplier 100. Writes reject non-canonical values for typed term conv
 (day count, settlement method, option right).
 
 `SecurityMasterCashFlowService` projects floating legs from an `ISecurityForwardCurveProvider` when
-one is registered (the default is the in-process `InMemorySecurityForwardCurveProvider`): each
-future reset reads the index curve at its accrual start, the period already reset keeps the
-retained fixing, and each leg schedule records its `RateSource`. Without a curve, legs stay flat
-forward. `SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
-block (preferred terms, call schedules, swap legs) through the normal amend path and records
-`TermBlockAmended`. A block the class only reads (`scheduleConventions`) is refused with the
-not-yet-writable reason.
+one is registered: each future reset reads the index curve at its accrual start, the period already
+reset keeps the retained fixing, and each leg schedule records its `RateSource`. Without a curve,
+legs stay flat forward. The registered provider is `SecurityMaster/Curves/StoredSecurityForwardCurveProvider`,
+which reads the one stored Forward definition for the index (trimmed, ignoring case) at its latest
+version dated on or before the projection date and carries the curve key, version and hash prefix
+into `RateSource`; several definitions for one index are logged and leave the leg flat forward.
+`GetProjectionAsOfAsync` projects as of a requested date and reads curves as of that date;
+`GetProjectionAsync` is that method at `UtcNow`, so existing callers are unchanged.
+`SecurityMaster/Valuation/` holds the valuation seam: `SecurityValuationService` loads the security
+and dispatches to the registered `ISecurityValuationModel` whose kind the request names or the
+catalog's `DefaultValuationModel` declares; `QuotedPriceValuationModel` composes the golden-copy
+as-of read (retaining a selection receipt, as that read does), reports its staleness verdict as a
+diagnostic and picks the market-value function by the price's quote unit, scaling a percent-of-par
+quote by the factor in effect on the valuation date (the factor the projection selects, so a scalar
+current factor dated after the valuation date does not apply yet); `DiscountedCashFlowValuationModel` discounts
+the base-scenario projection as of the valuation date on a stored Discount curve (pinned on the
+request by id and optionally by version id, or the one definition in the security's currency),
+refuses to extrapolate past the curve, quotes face-value lots per 100 of the outstanding face the
+projection repays from the valuation date, reports the oldest of the discount and forward curves'
+as-of dates as `ObservedAsOf`, reports a stale or undated cash-flow source and a pinned version
+dated after the valuation date or recorded after the knowledge cutoff as diagnostics, and names the
+curve version, hash, forward provenance and terms version in its inputs. Market values use the F#
+`SecurityCalculations` functions, with the paydown factor applied once.
+`SecurityMasterService.AmendTermBlockAsync` replaces one registry-declared nested term
+block (preferred terms, step and principal schedules, swap legs) through the normal amend path and
+records `TermBlockAmended`. A block the class only reads (`scheduleConventions`, `callSchedule`,
+`putSchedule`) is refused with the not-yet-writable reason.
 
 ## API contract notes
 

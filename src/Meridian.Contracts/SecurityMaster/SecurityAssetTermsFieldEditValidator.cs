@@ -144,7 +144,8 @@ public static class SecurityAssetTermsFieldEditValidator
         // A term this node only reads (ADR-024, readable before writable) cannot be staged at all —
         // not set, not cleared and not edited beneath — because the merge would map it in Write mode
         // and refuse it after approval. The same holds for a readable-only field inside a declared
-        // array element or nested object (a swap leg's scheduleConventions).
+        // array element or nested object (a swap leg's scheduleConventions), and for every member of
+        // a readable-only container (callSchedule, putSchedule).
         if (TryRefuseReadableOnlyEdit(assetClass, field, nestedPath, newValue, out error))
         {
             return false;
