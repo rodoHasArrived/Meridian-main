@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-05
+**Reviewed:** 2026-10-28
 
 This README is the **single register for every planning document in the repository**: code-ready
 blueprints, working delivery plans, prioritization inputs, and domain-owned backlogs. Each plan has
@@ -52,6 +52,7 @@ remains in the [roadmap registry](../../roadmap/README.md) and
 
 | Plan | Home | Lane | State |
 |---|---|---|---|
+| [Security Master Review Remediation](../plans/security-master-review-remediation-plan.md) | `docs/engineering/plans/` | Security Master / audit | Draft; consolidates dated review evidence; domain-policy and migration approvals remain open |
 | [W9 Close-Out Delivery Plan (2026-08)](../../product/plans/w9-close-out-delivery-plan-2026-08.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-W9-CLOSEOUT-001`); sequences `W9-SAFETY-007`, `W9-GOV-008`, `W9-INGEST-009` |
 | [2026-07 First-Order Improvement Slate](../../product/plans/product-roadmap-priorities-2026-07.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-PRIORITY-SLATE-001`); ranked W9 rationale |
 | [2026-07 Depth Slate](../../product/plans/w10-depth-slate-2026-07.md) | `docs/product/plans/` | Program | Accepted planning input (`DEC-DEPTH-SLATE-001`); W10 rationale |
