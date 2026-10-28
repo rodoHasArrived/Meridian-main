@@ -1,0 +1,45 @@
+{
+  "assetClass": "PrivateCompanyEquity",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "costBasis",
+          "type": "Decimal",
+          "required": true
+        },
+        {
+          "key": "issuer",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "latestValuation",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "ownershipPercent",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "round",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "shareClass",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "transferRestrictions",
+          "type": "String",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

@@ -50,6 +50,24 @@ Gateways whose providers keep client and broker order IDs in separate lookup nam
 `IExplicitOrderCancellationGateway`. Callers label the namespace with
 `OrderCancellationIdentifier`; identifier shape is never used to guess whether a value is a broker
 ID, because a UUID-shaped client ID can otherwise target an unrelated broker order.
+`IExplicitOrderModificationGateway` applies the same namespace discipline to amendments.
+Each gateway's amendment path has one send boundary immediately before the call that can reach the
+venue. Any failure or cancellation before it (identity resolution, local validation, an operation
+conflict, a read-only lookup) raises `BrokerageRequestNotSentException` and discards local attempt
+state; the OMS releases reservations and rejects the amendment as never dispatched. Anything after
+the boundary stays dispatch-uncertain.
+`ExecutionReportType.CancelRejected` and `ModificationRejected` describe refused operations;
+their `OrderStatus` describes the actual order and does not imply terminal rejection. Report
+consumers retain cumulative fills and original client identity across broker replacements.
+`ModificationPending` retains an uncertain replacement attempt for reconciliation. Durable pending
+amendments preserve original and proposed terms, broker identities, and provider recovery evidence
+until authoritative reconciliation selects an outcome. Gateways implementing
+`IPreassignedReplacementReferenceGateway` honor `OrderModification.ReplacementClientOrderId`, and
+`PendingOrderAmendment.PriorChainBrokerOrderIds` names the replacement chain's earlier members. Reported order terms are explicitly marked
+as evidence; provisional prices and quantities cannot silently become confirmed terms. Snapshot
+averages set `FillPriceIsCumulativeAverage`; the OMS derives the executed increment's price before
+publishing accounting fills. Optional replacement and average fields preserve legacy payloads
+when absent.
 `IBrokerageOrderRecoveryGateway` adds authoritative lookup by retained client ID, including terminal
 orders. A null result means unresolved state and cannot authorize resubmission.
 `IBrokerageConnectionState` exposes an opaque connection generation and verified account/environment

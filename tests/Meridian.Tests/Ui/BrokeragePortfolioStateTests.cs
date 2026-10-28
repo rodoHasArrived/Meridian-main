@@ -3,6 +3,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Execution;
 using Meridian.Execution.Models;
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Meridian.Risk.Rules;
@@ -196,8 +197,26 @@ public sealed class BrokeragePortfolioStateTests
             app.Services.GetRequiredService<IPositionTracker>().Should().BeSameAs(portfolio);
             var oms = app.Services.GetRequiredService<IOrderManager>().Should().BeOfType<OrderManagementSystem>().Subject;
             var recoveryStore = app.Services.GetRequiredService<FileBrokerageOrderRecoveryStore>();
-            typeof(OrderManagementSystem).GetField("_recoveryStore", BindingFlags.Instance | BindingFlags.NonPublic)!
-                .GetValue(oms).Should().BeSameAs(recoveryStore);
+            var recoveryJournal = typeof(OrderManagementSystem)
+                .GetField("_recoveryJournal", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .GetValue(oms).Should().BeOfType<BrokerageOrderRecoveryJournal>().Subject;
+            var retainedOrder = new OrderState
+            {
+                OrderId = "recovery-wiring-probe",
+                Symbol = "SPY",
+                Side = OrderSide.Buy,
+                Type = Meridian.Execution.Sdk.OrderType.Limit,
+                Quantity = 1m,
+                LimitPrice = 100m,
+                Status = Meridian.Execution.Sdk.OrderStatus.PendingNew,
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+
+            // Verify the OMS journal writes through the configured store without submitting a broker order.
+            recoveryJournal.RetainDispatch(retainedOrder, brokerOrderId: null, aliases: []);
+            var retained = recoveryStore.Load().Should().ContainSingle().Which;
+            retained.State.Should().BeEquivalentTo(retainedOrder);
+            retained.RequiresRecovery.Should().BeTrue();
             recoveryStore.GatewayId.Should().Be("alpaca");
             app.Services.GetRequiredService<LiveBrokeragePortfolioSyncService>()
                 .GetStatus(Guid.NewGuid()).IsReady.Should().BeFalse();

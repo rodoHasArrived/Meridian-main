@@ -1,0 +1,60 @@
+{
+  "assetClass": "Option",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "exerciseStyle",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "expiry",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "isAdjusted",
+          "type": "Boolean",
+          "required": true
+        },
+        {
+          "key": "lastTradingDt",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "multiplier",
+          "type": "Decimal",
+          "required": true
+        },
+        {
+          "key": "optChainId",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "putCall",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "settlementType",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "strike",
+          "type": "Decimal",
+          "required": true
+        },
+        {
+          "key": "underlyingId",
+          "type": "Guid",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

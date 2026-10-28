@@ -268,25 +268,25 @@ public sealed class Camt053StatementConnector : IStatementConnector
                                 return Task.FromResult(EmptyResult(issues));
                             }
 
-                            var date = BalanceDate(balance);
-                            if (date is null)
-                            {
-                                issues.Add(StatementParseIssue.Warning("CAMT_BALANCE_NO_DATE", "Closing balance has no parseable date; skipped.", rowNumber + 1));
-                                continue;
-                            }
-
-                            rowNumber++;
                             var balanceAmount = TrySignedAmount(balance, accountCurrency, out var balanceValue, out var balanceCurrency);
+                            rowNumber++;
                             if (balanceAmount != CamtAmountResult.Ok)
                             {
                                 var (code, message) = balanceAmount == CamtAmountResult.BadCurrency
-                                    ? ("CAMT_BALANCE_BAD_CURRENCY", "Closing balance requires explicit three-letter amount or account currency.")
+                                    ? ("CAMT_BALANCE_BAD_CURRENCY", "Closing balance requires explicit recognized amount or account currency.")
                                     : balanceAmount == CamtAmountResult.BadDirection
                                     ? ("CAMT_BALANCE_BAD_DIRECTION",
                                         "Closing balance has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
                                     : ("CAMT_BALANCE_BAD_AMOUNT",
-                                        "Closing balance has a missing or non-numeric Amt; the statement cannot be reconciled.");
+                                        "Closing balance requires a non-negative decimal Amt without grouping separators; the statement cannot be reconciled.");
                                 issues.Add(StatementParseIssue.Error(code, message, rowNumber));
+                                continue;
+                            }
+
+                            var date = BalanceDate(balance);
+                            if (date is null)
+                            {
+                                issues.Add(StatementParseIssue.Warning("CAMT_BALANCE_NO_DATE", "Closing balance has no parseable date; skipped.", rowNumber));
                                 continue;
                             }
 
@@ -345,27 +345,27 @@ public sealed class Camt053StatementConnector : IStatementConnector
                                 continue;
                             }
 
+                            var entryAmount = TrySignedAmount(entry, accountCurrency, out var entryValue, out var entryCurrency);
+                            rowNumber++;
+                            if (entryAmount != CamtAmountResult.Ok)
+                            {
+                                var (code, message) = entryAmount == CamtAmountResult.BadCurrency
+                                    ? ("CAMT_ENTRY_BAD_CURRENCY", "Entry requires explicit recognized amount or account currency.")
+                                    : entryAmount == CamtAmountResult.BadDirection
+                                    ? ("CAMT_ENTRY_BAD_DIRECTION",
+                                        "Entry has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
+                                    : ("CAMT_ENTRY_BAD_AMOUNT",
+                                        "Entry requires a non-negative decimal Amt without grouping separators; the statement cannot be reconciled.");
+                                issues.Add(StatementParseIssue.Error(code, message, rowNumber));
+                                continue;
+                            }
+
                             var bookingDate = EntryDate(entry, "BookgDt");
                             var valueDate = EntryDate(entry, "ValDt");
                             var tradeDate = bookingDate ?? valueDate;
                             if (tradeDate is null)
                             {
-                                issues.Add(StatementParseIssue.Warning("CAMT_ENTRY_NO_DATE", "Entry has no parseable booking or value date; skipped.", rowNumber + 1));
-                                continue;
-                            }
-
-                            rowNumber++;
-                            var entryAmount = TrySignedAmount(entry, accountCurrency, out var entryValue, out var entryCurrency);
-                            if (entryAmount != CamtAmountResult.Ok)
-                            {
-                                var (code, message) = entryAmount == CamtAmountResult.BadCurrency
-                                    ? ("CAMT_ENTRY_BAD_CURRENCY", "Entry requires explicit three-letter amount or account currency.")
-                                    : entryAmount == CamtAmountResult.BadDirection
-                                    ? ("CAMT_ENTRY_BAD_DIRECTION",
-                                        "Entry has a missing or unrecognized CdtDbtInd (credit/debit direction); the statement cannot be reconciled.")
-                                    : ("CAMT_ENTRY_BAD_AMOUNT",
-                                        "Entry has a missing or non-numeric Amt; the statement cannot be reconciled.");
-                                issues.Add(StatementParseIssue.Error(code, message, rowNumber));
+                                issues.Add(StatementParseIssue.Warning("CAMT_ENTRY_NO_DATE", "Entry has no parseable booking or value date; skipped.", rowNumber));
                                 continue;
                             }
 
@@ -794,8 +794,12 @@ public sealed class Camt053StatementConnector : IStatementConnector
         var currencyAttribute = amountElement?.Attribute("Ccy");
         currency = currencyAttribute is null ? fallbackCurrency.Trim().ToUpperInvariant()
             : currencyAttribute.Value.Trim().ToUpperInvariant();
+        // Amt is an unsigned magnitude; CdtDbtInd owns its direction. NumberStyles.Number
+        // accepts grouping commas (even "1,25" as 125) and negative values that invert a debit.
         if (amountElement is null
-            || !decimal.TryParse(amountElement.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out var magnitude))
+            || !decimal.TryParse(amountElement.Value.Trim(), NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
+                CultureInfo.InvariantCulture, out var magnitude)
+            || magnitude < 0m)
         {
             return CamtAmountResult.BadAmount;
         }

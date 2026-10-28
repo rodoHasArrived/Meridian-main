@@ -31,7 +31,7 @@ public sealed partial class StatementReconciliationIntakeAuthority
 
         var checkpoint = await _runRecovery.GetAsync(import.ImportId, ct).ConfigureAwait(false);
         if (checkpoint is not { Stage: StatementRunRecoveryStage.Completed, Status: StatementRunRecoveryStatus.Completed })
-            return;
+            throw Failure("STATEMENT_LINEAGE_RECOVERY_INCOMPLETE", "Statement source publication requires completed recovery; retry after the retained run completes.");
         if (!HasVerifiedCompletion(checkpoint, canonical, artifact))
             throw Failure("STATEMENT_LINEAGE_CHECKPOINT_MISMATCH", "Source comparison requires the exact import and match artifacts bound to the completed run checkpoint.");
         if (!CanCompareSourceRun(artifact)
@@ -56,8 +56,9 @@ public sealed partial class StatementReconciliationIntakeAuthority
                 // never use a partial population to clear a previous observation.
                 return;
             }
-            inputs.Add(new ReconciliationBreakObservation(item.BreakId,
-                JsonSerializer.Serialize(new[] { subject, sourceBreak.BreakCode })));
+            // Classification and mapped comparison fields can change under another policy.
+            // The retained source subject alone identifies the continuing business observation.
+            inputs.Add(new ReconciliationBreakObservation(item.BreakId, subject));
         }
         await observations.ObserveCompletedRunAsync(new ReconciliationCompletedRunObservation(
             import.ImportId,
@@ -114,6 +115,6 @@ public sealed partial class StatementReconciliationIntakeAuthority
         if (activity is "cash" or "cashbalance")
             return JsonSerializer.Serialize(new[] { "cash", row.Currency });
         return string.IsNullOrWhiteSpace(row.ExternalTransactionId) ? null
-            : JsonSerializer.Serialize(new[] { "transaction", row.ExternalTransactionId, activity, row.Symbol, row.Currency });
+            : JsonSerializer.Serialize(new[] { "transaction", row.ExternalTransactionId });
     }
 }

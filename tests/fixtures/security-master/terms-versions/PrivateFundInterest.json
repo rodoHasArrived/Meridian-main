@@ -1,0 +1,50 @@
+{
+  "assetClass": "PrivateFundInterest",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "commitment",
+          "type": "Decimal",
+          "required": true
+        },
+        {
+          "key": "fundedAmount",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "gpSponsor",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "lockup",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "navDate",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "strategy",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "unfundedAmount",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "vintage",
+          "type": "Integer",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

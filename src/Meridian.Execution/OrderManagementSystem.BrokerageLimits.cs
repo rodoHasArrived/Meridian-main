@@ -1,4 +1,3 @@
-using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Sdk;
 
 namespace Meridian.Execution;
@@ -10,14 +9,15 @@ public sealed partial class OrderManagementSystem
     // this order or its open-order endpoint still returns an older snapshot.
     private async Task<string?> EvaluateBrokerageAdmissionLimitsAsync(OrderRequest request, CancellationToken ct)
     {
-        var notionalRefusal = EvaluateBrokerageNotionalLimit(request);
+        var notionalRefusal = _admissionPolicy.EvaluateBrokerageNotionalLimit(request);
         if (notionalRefusal is not null)
             return notionalRefusal;
 
         if (_brokerageConfiguration is not { MaxOpenOrders: > 0 } configuration)
             return null;
 
-        var workingOrders = GetOpenOrders();
+        var workingOrders = GetOpenOrders().Concat(GetAmendmentExposureReservations())
+            .DistinctBy(order => order.OrderId).ToList();
         var count = workingOrders.Count;
         if (count >= configuration.MaxOpenOrders)
             return $"Open order count exceeds configured maximum of {configuration.MaxOpenOrders}.";
@@ -45,8 +45,15 @@ public sealed partial class OrderManagementSystem
             var brokerIds = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var workingOrder in workingOrders)
             {
-                if (_orderBrokerIds.TryGetValue(workingOrder.OrderId, out var brokerId))
+                if (_brokerIdentities.TryGetActiveId(workingOrder.OrderId, out var brokerId))
                     brokerIds.TryAdd(brokerId, workingOrder.OrderId);
+            }
+            // A broker snapshot can still expose a predecessor after the replacement was
+            // acknowledged locally. Its retained identity belongs to the same working slot.
+            foreach (var alias in _brokerIdentities.GetAliasOwners())
+            {
+                if (clientIds.Contains(alias.Value))
+                    brokerIds.TryAdd(alias.Key, alias.Value);
             }
             var matchedClientIds = new HashSet<string>(StringComparer.Ordinal);
             foreach (var brokerOrder in brokerOrders)
@@ -56,7 +63,7 @@ public sealed partial class OrderManagementSystem
 
                 var matchingClientId = brokerIds.GetValueOrDefault(brokerOrder.OrderId);
                 if (matchingClientId is null && brokerOrder.ClientOrderId is { } clientId
-                    && clientIds.Contains(clientId) && !_orderBrokerIds.ContainsKey(clientId))
+                    && clientIds.Contains(clientId) && !_brokerIdentities.TryGetActiveId(clientId, out _))
                     matchingClientId = clientId;
 
                 // At most one broker row can overlap one local slot. Duplicate client ids
@@ -70,56 +77,5 @@ public sealed partial class OrderManagementSystem
         return count >= configuration.MaxOpenOrders
             ? $"Open order count exceeds configured maximum of {configuration.MaxOpenOrders}."
             : null;
-    }
-
-    private string? EvaluateBrokerageNotionalLimit(OrderRequest request)
-    {
-        if (_brokerageConfiguration is not { MaxOrderNotional: > 0m } configuration)
-            return null;
-
-        decimal? notional;
-        try
-        {
-            notional = ResolveBrokerageOrderNotional(request);
-        }
-        catch (OverflowException)
-        {
-            return $"Order notional exceeds configured maximum of {configuration.MaxOrderNotional}.";
-        }
-
-        if (notional is null or <= 0m)
-            return "Unable to evaluate order notional against the configured maximum without a positive price input.";
-
-        return notional > configuration.MaxOrderNotional
-            ? $"Order notional exceeds configured maximum of {configuration.MaxOrderNotional}."
-            : null;
-    }
-
-    private static decimal? ResolveBrokerageOrderNotional(OrderRequest request)
-    {
-        var faceValue = OrderSizingMetadata.UsesFaceValuePercentageOfPar(request.Metadata);
-        if (!faceValue && BrokerNotionalMetadata.TryRead(request.Metadata, request.Quantity) is { } routedNotional)
-            return routedNotional;
-
-        // The package's net limit does not establish the gross value of its individual
-        // legs. Without leg pricing this configuration limit cannot authorize the order.
-        if (request.Legs is { Count: > 0 })
-            return null;
-
-        var price = request.Type switch
-        {
-            OrderType.Limit or OrderType.StopLimit or OrderType.LimitOnOpen or OrderType.LimitOnClose => request.LimitPrice,
-            OrderType.StopMarket => request.StopPrice,
-            _ => request.LimitPrice ?? request.StopPrice
-        };
-        if (price is null or <= 0m)
-            return null;
-
-        var multiplier = faceValue ? 1m : ResolveContractMultiplier(request);
-        if (!faceValue && request.OptionContract is null
-            && SecurityIdentifierNormalizer.TryValidateFormat(SecurityIdentifierKind.OccOptionSymbol, request.Symbol, out _))
-            multiplier = 100m;
-
-        return Math.Abs(request.Quantity) * (faceValue ? price.Value / 100m : price.Value) * multiplier;
     }
 }

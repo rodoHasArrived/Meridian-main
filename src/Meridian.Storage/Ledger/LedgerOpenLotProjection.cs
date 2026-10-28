@@ -33,7 +33,12 @@ public static class LedgerOpenLotProjection
         var (openTransactionBasis, openFunctionalBasis) = ProjectOpenBasis(record, acquisition);
         var lot = new OpenLotDto(record.TaxLotRecordId, record.SecurityId, record.BookPositionId, record.LedgerBookId,
             record.LotId, record.AcquiredDate, record.OriginalQuantity * scale, record.OpenQuantity * scale,
-            openTransactionBasis, openFunctionalBasis, record.Version, acquisition);
+            openTransactionBasis, openFunctionalBasis, record.Version, acquisition)
+        {
+            // The factor the lot of record currently holds; absent while at its booked factor, so
+            // every canonical view of an un-paid-down lot serializes exactly as before.
+            CurrentFactor = record.CurrentFactor
+        };
         OpenLotValidation.Validate(lot);
         return lot;
     }

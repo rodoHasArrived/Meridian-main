@@ -115,7 +115,13 @@ public sealed class SecurityValidationService : ISecurityValidationService
 
         if (_assetClassValidators.TryGetValidator(record.AssetClass, out var assetClassValidator))
         {
-            issues.AddRange(assetClassValidator.Validate(new SecurityValidationContext(record, evaluatedAt)));
+            // The class rules read the terms at the class's current terms version (ADR-024), the way
+            // every decoder does; the schema and format rules above, and the terms-version notice,
+            // judge the stored payload. Identity steps keep the record as it is.
+            var termsRecord = SecurityAssetClassTermsUpgrader.TryUpgradeForRead(record.AssetClass, record.AssetSpecificTerms, out var upgradedTerms)
+                ? record with { AssetSpecificTerms = upgradedTerms }
+                : record;
+            issues.AddRange(assetClassValidator.Validate(new SecurityValidationContext(termsRecord, evaluatedAt)));
         }
         else
         {
@@ -226,11 +232,100 @@ public sealed class SecurityValidationService : ISecurityValidationService
                 $"Migrate the payload to schema version {supportedVersions} or extend the compatibility adapter before this record is used downstream."));
         }
 
+        issues.AddRange(ValidateTermsFormat(record));
+        issues.AddRange(ValidateAssetClassTermsVersion(record));
         return issues;
     }
 
+    /// <summary>
+    /// Every terms payload must declare its family (<see cref="SecurityTermsEnvelope.FormatKey"/>) so
+    /// readers never classify it by shape (ADR-024). A missing tag is a warning while the stored
+    /// backlog is being backfilled; a declared tag this node does not know is an error, because the
+    /// projection store refuses to persist it.
+    /// </summary>
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidateTermsFormat(SecurityProjectionRecord record)
+    {
+        if (record.AssetSpecificTerms.ValueKind != JsonValueKind.Object)
+        {
+            return [];
+        }
+
+        var declared = SecurityTermsEnvelope.GetDeclaredFormat(record.AssetSpecificTerms);
+        if (declared is null)
+        {
+            var inferred = SecurityTermsEnvelope.ResolveFormat(record.AssetSpecificTerms);
+            return
+            [
+                SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Warning,
+                    "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING",
+                    "Asset-specific terms format is missing",
+                    $"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey} is absent, so the payload family is inferred by shape as '{inferred}'; every stored payload should declare its family explicitly.",
+                    [$"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}"],
+                    $"Re-persist the payload through a writer that stamps {SecurityTermsEnvelope.FormatKey} = '{inferred}' (SecurityTermsEnvelope.StampFlat for flat terms).")
+            ];
+        }
+
+        if (!SecurityTermsFormats.IsKnown(declared))
+        {
+            return
+            [
+                SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_ASSET_SPECIFIC_TERMS_FORMAT_UNKNOWN",
+                    "Asset-specific terms format is unknown",
+                    $"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey} '{declared}' is not a terms format this node understands; the projection store refuses to persist it.",
+                    [$"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}"],
+                    $"Declare one of {string.Join(", ", SecurityTermsFormats.All)} or upgrade this node before the record is used downstream.")
+            ];
+        }
+
+        return [];
+    }
+
+    /// <summary>
+    /// An informational notice for a flat payload stamped (or, unstamped, read as) below its class's
+    /// current terms version: exactly the payloads <see cref="SecurityAssetClassTermsUpgrader"/> reads
+    /// through the class's upgrade steps, among those whose <c>schemaVersion</c> is an integer. It
+    /// measures the backlog of older per-class versions (ADR-024) and never blocks: the record reads
+    /// correctly, and workflow gates drop informational issues. "Current" is the version this node
+    /// writes; a payload stamped above it and within what the node reads is neither behind nor
+    /// reported.
+    /// </summary>
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidateAssetClassTermsVersion(SecurityProjectionRecord record)
+    {
+        if (!SecurityAssetClassTermsUpgrader.TryGetPendingUpgrade(
+                record.AssetClass,
+                record.AssetSpecificTerms,
+                out var declared,
+                out var current))
+        {
+            return [];
+        }
+
+        var key = SecurityTermsEnvelope.AssetClassTermsVersionKey;
+        var stamped = record.AssetSpecificTerms.TryGetProperty(key, out var stamp)
+                      && stamp.ValueKind == JsonValueKind.Number
+                      && stamp.TryGetInt32(out _);
+        var reading = $"the payload is read through the class's upgrade steps from version {declared} to {current}.";
+        var message = stamped
+            ? $"assetSpecificTerms.{key} is {declared}, but asset class '{record.AssetClass}' is at terms version {current}; {reading}"
+            : $"assetSpecificTerms.{key} is absent or not an integer, so the payload reads as version {declared}, but asset class '{record.AssetClass}' is at terms version {current}; {reading}";
+
+        return
+        [
+            SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Info,
+                "SM_ASSET_CLASS_TERMS_VERSION_BEHIND",
+                "Asset-class terms version is behind the current contract",
+                message,
+                [$"assetSpecificTerms.{key}"],
+                $"No action is needed to read the record. A governed amendment, or any writer that stamps {key} = {current} (SecurityTermsEnvelope.StampFlat), clears this notice.")
+        ];
+    }
+
     private static bool IsProfileBackedRecord(SecurityProjectionRecord record)
-        => string.Equals(record.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
+        => SecurityAssetClassCatalog.GetOrDefault(record.AssetClass).RequiresProfileReference
            || (record.AssetSpecificTerms.ValueKind == JsonValueKind.Object
                && record.AssetSpecificTerms.TryGetProperty("customProfileId", out var customProfileId)
                && customProfileId.ValueKind == JsonValueKind.String
@@ -335,8 +430,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
             }
 
             if (identifier.Kind == SecurityIdentifierKind.OccOptionSymbol
-                && !string.Equals(record.AssetClass, "Option", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(record.AssetClass, "Warrant", StringComparison.OrdinalIgnoreCase))
+                && !SecurityAssetClassCatalog.GetOrDefault(record.AssetClass).UsesOccOptionSymbols)
             {
                 issues.Add(SecurityValidationIssueFactory.Create(
                     SecurityValidationSeverityDto.Warning,

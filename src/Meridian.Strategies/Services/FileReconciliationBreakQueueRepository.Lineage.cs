@@ -58,7 +58,8 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
                 var legacyHash = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(
                     canonicalRun with { Scope = scope with { LineageSourceIdentity = null } }, _jsonOptions));
                 foreach (var receipt in receipts)
-                    if (!string.Equals(receipt.Reason, receipt.EventId == receiptId ? inputHash : legacyHash, StringComparison.Ordinal))
+                    if (!string.Equals(receipt.Reason, receipt.EventId == receiptId ? inputHash : legacyHash, StringComparison.Ordinal)
+                        && !SubjectUpgradeReplayMatches(receipt, canonicalRun, receipt.EventId != receiptId))
                         throw new InvalidOperationException("A completed source run cannot be rebound to different observations.");
                 return;
             }
@@ -213,16 +214,99 @@ public sealed partial class FileReconciliationBreakQueueRepository : IReconcilia
         return result;
     }
 
-    private static string ResolveLineageId(string identityScopeId, HashSet<string> legacyScopes,
+    private string ResolveLineageId(string identityScopeId, HashSet<string> legacyScopes,
         string subject, ReconciliationBreakQueueItem[] existing)
     {
         static string Key(string scope, string subjectId) => "lineage:" + Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new[] { scope, subjectId }));
         var canonical = Key(identityScopeId, subject);
         var candidates = legacyScopes.Select(scope => Key(scope, subject)).Append(canonical).ToHashSet(StringComparer.Ordinal);
+        var businessSubject = StatementBusinessSubject(subject);
+        if (businessSubject is not null)
+        {
+            // Older production receipts wrapped the source subject in its break classification;
+            // transaction subjects also included mutable mapped fields. Adopt only identities
+            // proven by retained, complete observations under this exact business scope.
+            foreach (var receipt in _auditEvents.Where(item => item.EventType == ObservationReceipt
+                         && item.Source is not null && (item.Source == identityScopeId || legacyScopes.Contains(item.Source))))
+            {
+                if (receipt.AfterPayload is null)
+                    continue;
+                var historicalRun = JsonSerializer.Deserialize<ReconciliationCompletedRunObservation>(receipt.AfterPayload, _jsonOptions);
+                if (historicalRun is not { Succeeded: true, CompletePopulation: true }
+                    || historicalRun.Breaks is null
+                    || !HasVerifiedSourceReceipt(receipt, historicalRun))
+                    continue;
+                foreach (var observation in historicalRun.Breaks.Where(item => StatementBusinessSubject(item.SourceSubjectId) == businessSubject))
+                {
+                    candidates.Add(Key(identityScopeId, observation.SourceSubjectId));
+                    foreach (var scope in legacyScopes)
+                        candidates.Add(Key(scope, observation.SourceSubjectId));
+                }
+            }
+        }
         var retained = existing.Select(item => item.Lineage!.LineageId).Where(candidates.Contains).Distinct(StringComparer.Ordinal).ToArray();
         if (retained.Length > 1)
             throw new InvalidOperationException("Historical policy forks require independent reconciliation review before lineage can be unified.");
         return retained.SingleOrDefault() ?? canonical;
+    }
+
+    private bool SubjectUpgradeReplayMatches(ReconciliationBreakQueueAuditEvent receipt,
+        ReconciliationCompletedRunObservation requested, bool legacyScope)
+    {
+        if (receipt.AfterPayload is null)
+            return false;
+        var original = JsonSerializer.Deserialize<ReconciliationCompletedRunObservation>(receipt.AfterPayload, _jsonOptions);
+        if (original?.Breaks is null
+            || !HasVerifiedSourceReceipt(receipt, original))
+            return false;
+        static ReconciliationCompletedRunObservation Normalize(ReconciliationCompletedRunObservation run)
+            => run with
+            {
+                Breaks = run.Breaks.Select(item => item with
+                { SourceSubjectId = StatementBusinessSubject(item.SourceSubjectId) ?? item.SourceSubjectId })
+                    .OrderBy(item => item.BreakId, StringComparer.Ordinal).ToArray()
+            };
+        var compatibleRequest = legacyScope
+            ? requested with { Scope = requested.Scope with { LineageSourceIdentity = null } }
+            : requested;
+        // Preserve the original receipt. Only a subject representation change is compatible;
+        // run, time, policy, access/accounting scope and break membership still compare exactly.
+        return JsonSerializer.Serialize(Normalize(original), _jsonOptions)
+            == JsonSerializer.Serialize(Normalize(compatibleRequest), _jsonOptions);
+    }
+
+    private bool HasVerifiedSourceReceipt(ReconciliationBreakQueueAuditEvent receipt, ReconciliationCompletedRunObservation run)
+    {
+        if (run.Scope is null)
+            return false;
+        var source = run.Scope.LineageSourceIdentity ?? run.Scope.SourceSystem;
+        var scopeId = (run.Scope.LineageSourceIdentity is null ? "comparison:" : "identity:")
+            + Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(ScopeParts(run.Scope, source)));
+        var receiptId = "source-run:" + Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new[] { scopeId, run.RunId }));
+        return receipt.Source == scopeId && receipt.EventId == receiptId && receipt.CorrelationId == run.RunId
+            && receipt.Reason == Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(run, _jsonOptions));
+    }
+
+    private static string? StatementBusinessSubject(string subject)
+    {
+        try
+        {
+            var parts = JsonSerializer.Deserialize<string[]>(subject);
+            if (parts is { Length: 2 } && parts[0]?.StartsWith("[", StringComparison.Ordinal) == true
+                && !string.IsNullOrWhiteSpace(parts[1]))
+                parts = JsonSerializer.Deserialize<string[]>(parts[0]);
+            if (parts is null || parts.Length == 0)
+                return null;
+            return parts[0] switch
+            {
+                "transaction" when (parts.Length is 2 or 5) && !string.IsNullOrWhiteSpace(parts[1])
+                    => JsonSerializer.Serialize(new[] { "transaction", parts[1] }),
+                "position" when parts.Length == 3 && !parts.Any(string.IsNullOrWhiteSpace) => JsonSerializer.Serialize(parts),
+                "cash" when parts.Length == 2 && !parts.Any(string.IsNullOrWhiteSpace) => JsonSerializer.Serialize(parts),
+                _ => null
+            };
+        }
+        catch (JsonException) { return null; }
     }
 
     private async Task RetainObservationAsync(ReconciliationBreakQueueItem before, ReconciliationBreakQueueItem after,

@@ -215,6 +215,16 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             return Task.FromResult(EmptyResult(document.MappingProfileId, issues));
         }
 
+        // IsComplete is independent of the issue list and defaults to false, so an incomplete or older
+        // snapshot that lists no issues is still not complete portfolio evidence.
+        if (snapshot.Portfolio is { } portfolio
+            && (!portfolio.IsComplete || portfolio.CompletenessIssues is { Count: > 0 }))
+        {
+            issues.Add(StatementParseIssue.Error(
+                "INCOMPLETE_PORTFOLIO", "The Alpaca portfolio reports incomplete financial evidence; refresh it before importing."));
+            return Task.FromResult(EmptyResult(document.MappingProfileId, issues));
+        }
+
         return ParseSnapshotAsync(document, snapshot, issues, ct);
     }
 
@@ -308,6 +318,21 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             foreach (var activity in richActivities)
             {
                 rowNumber++;
+                if (activity.Subtype == BrokerageActivitySubtype.TradeFill
+                    && (!activity.Quantity.HasValue || !activity.Price.HasValue))
+                {
+                    issues.Add(StatementParseIssue.Error("ALPACA_INVALID_AMOUNT",
+                        "Trade fills require explicit quantity and price evidence."));
+                    return EmptyResult(profileId, issues);
+                }
+                if (activity.Metadata?.TryGetValue("commission", out var commissionText) == true
+                    && !decimal.TryParse(commissionText?.Trim(), NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
+                        CultureInfo.InvariantCulture, out _))
+                {
+                    issues.Add(StatementParseIssue.Error("ALPACA_INVALID_AMOUNT",
+                        "Supplied commission requires an invariant decimal without grouping separators."));
+                    return EmptyResult(profileId, issues);
+                }
                 if (!TryRetain(MapRichActivity(account, activity, accountCurrency)))
                 {
                     return EmptyResult(profileId, issues);
@@ -319,6 +344,14 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
             foreach (var fill in snapshot.Activity?.Fills ?? [])
             {
                 rowNumber++;
+                // Quantity and Price are non-nullable, so an omitted JSON property arrives as zero.
+                // A fill always has a nonzero quantity and a positive price.
+                if (fill.Quantity == 0m || fill.Price <= 0m)
+                {
+                    issues.Add(StatementParseIssue.Error("ALPACA_INVALID_AMOUNT",
+                        "Trade fills require explicit quantity and price evidence."));
+                    return EmptyResult(profileId, issues);
+                }
                 var signedQuantity = fill.Side == OrderSide.Sell ? -Math.Abs(fill.Quantity) : Math.Abs(fill.Quantity);
                 if (!TryRetain(new StatementCanonicalRecord(
                     StatementRecordKind.Transaction,
@@ -514,7 +547,8 @@ public sealed class AlpacaActivityStatementConnector : IFetchingStatementConnect
 
         decimal? commission = null;
         if (activity.Metadata?.TryGetValue("commission", out var commissionText) == true &&
-            decimal.TryParse(commissionText, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsedCommission))
+            decimal.TryParse(commissionText?.Trim(), NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
+                CultureInfo.InvariantCulture, out var parsedCommission))
         {
             commission = parsedCommission;
         }

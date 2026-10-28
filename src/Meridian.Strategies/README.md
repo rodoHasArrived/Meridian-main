@@ -19,6 +19,11 @@ The source-lineage contract separates optional `IdentityScopeId` (business ident
 changes; absence clears only its current comparison policy. Verified legacy receipts preserve
 original lineage IDs, reject changed replays, and refuse ambiguous historical forks. Optional fields
 are omitted from legacy JSON. Source clearing never resolves governed casework.
+Source-subject upgrades use complete retained observation receipts in the exact business scope to
+adopt classification-wrapped historical identities. Transaction identity excludes mapped activity,
+symbol and currency; ambiguous historical classification forks still require independent review.
+An exact run replay may upgrade only that subject representation against its original retained
+receipt; changed run membership, time, comparison policy or authority scope remains refused.
 
 
 Portfolio position read models carry shared mark-freshness assessments. A position snapshot timestamp is not a mark observation date: when historical mark provenance is absent, the projection reports review required rather than treating the snapshot as current valuation evidence.
@@ -63,6 +68,8 @@ policy outcome names and legacy cell kinds remain compatibility inputs.
 ## Important workflows
 
 Use this module for strategy run evidence, promotion lineage, and research-to-paper continuity.
+Live-engine shutdown calls `IOrderManagementLifecycle.StopAsync` while its fill subscriptions
+remain active, so admitted orders and accounting handoffs drain before strategy consumers stop.
 Live and paper metrics retain the worst currency decline and worst percentage decline independently;
 Calmar and promotion gates use the percentage maximum even when a later, larger currency loss has a
 smaller percentage impact. Backtest metrics use the same convention and include initial capital as

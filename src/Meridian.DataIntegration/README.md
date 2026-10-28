@@ -68,12 +68,40 @@ Durable markers and sanitized recovery generations prevent deletion reversal;
 empty or missing primaries recover from the retained backup. Both audit surfaces append under the vault
 lock without copying accumulated history. Before appending, an incomplete final record is durably retained
 in a uniquely named `.partial-*` file, preserving every newline-terminated record in the original log.
-The service never writes plaintext OAuth JSON.
+Every provider-credential and OAuth mutation journals its audit record to
+`provider-credentials.audit.pending.jsonl` (atomic whole-file write, never secrets) in two phases: an
+`intent` line before the vault write, rewritten as `committed` after it, and removed only after the
+audit append is durable. An audit failure after the vault committed is therefore no longer ambiguous:
+the committed journal line is the marker, the next mutation and `ReplayPendingAuditAsync` (run at host
+start) append the owed records with a `replayedAt` stamp, and status reports `auditPending`. An
+`intent` still journaled after a crash is never taken as proof: replay verifies it against the vault
+(saved credential generation present, deleted key absent, verification timestamp recorded, OAuth key
+present or absent) and appends it only when the vault proves the mutation landed, discarding it with
+a warning otherwise; a vault write that throws removes its intent again. Every mutation stamps the vault with its
+own operation id as the publication marker, and an intent is proven only when the vault carries that
+marker and the kind-specific state matches: a pre-existing absence or an older token never proves an
+intent whose write did not land. The vault also retains publication receipts for every journaled
+record still owed, carried forward only when the vault already held them, so a later mutation cannot
+erase the proof an earlier deferred intent needs while the audit log stays unavailable. An OAuth save intent additionally carries a SHA-256 digest of the
+replacement token (never the token), so an older token under the same key cannot prove a rotation. Once the primary vault generation is published the
+mutation is committed even if the recovery-generation write or a journal write fails: such failures
+keep the record journaled as owed and surface only through the deferred contract, never as a failed
+mutation. Each journaled record carries
+a stable `operationId`, so a replay after a crash between the audit append and the journal cleanup
+recognises the record already in the log and does not append it twice. A journal line that is not a
+structurally valid entry is moved to `provider-credentials.audit.pending.jsonl.rejected` for review and
+never appended; the start-up replay logs and continues on any failure rather than refusing the host. Provider-credential saves, deletes and verification records return
+success in that case; OAuth token saves throw `ProviderCredentialAuditDeferredException` (an
+`IOException` with `VaultCommitted`) because their callers reconcile a running cache. A journal write
+failure refuses the mutation before the vault is touched. Legacy imports keep their retry-by-sidecar
+contract and do not journal. The service never writes plaintext OAuth JSON.
 Scoped readers use the same stable generation path, including backup recovery, without acquiring a
 writer lock or creating storage for an absent vault. Scoped deletion sanitizes recovery generations
 while retaining other owners and unassigned records. Scoped audit appends retain tenant, connection,
 external account and environment through incomplete-tail recovery.
-The existing non-Windows local key file remains a production-hardening gap; this does not certify PRD-002.
+The non-Windows local key file is reachable only outside the ADR-019 production envelope: production
+postures now fail closed off Windows in `ProductionServiceRegistrationPolicy`, so the key file is a
+documented scope-out, not a production path. This does not certify PRD-002.
 
 `IScopedOAuthTokenVault` isolates tokens by the same four ownership dimensions as provider secrets.
 Scoped token records retain and validate their provider and ownership context; legacy token enumeration

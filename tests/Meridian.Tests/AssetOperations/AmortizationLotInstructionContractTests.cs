@@ -93,6 +93,10 @@ public sealed class AmortizationLotInstructionContractTests
     [InlineData("factorScheduleEntries", "{}")]
     [InlineData("stepSchedule", "\"unresolved\"")]
     [InlineData("legs", "[{}]")]
+    [InlineData("callSchedule", "[{\"callDate\":\"2027-01-15\"}]")]
+    [InlineData("putSchedule", "[{\"putDate\":\"2027-01-15\"}]")]
+    [InlineData("putSchedule", "{}")]
+    [InlineData("callSchedule", "\"x\"")]
     public void UnsupportedOrMalformedReferenceTerms_BlockPosting(string name, string json)
     {
         var inputs = WithTerms(Inputs(), terms => terms[name] = JsonDocument.Parse(json).RootElement.Clone());
@@ -126,8 +130,101 @@ public sealed class AmortizationLotInstructionContractTests
         {
             terms["principalSchedule"] = JsonSerializer.SerializeToElement(Array.Empty<object>());
             terms["stepSchedule"] = JsonSerializer.SerializeToElement(Array.Empty<object>());
+            terms["callSchedule"] = JsonSerializer.SerializeToElement(Array.Empty<object>());
+            terms["putSchedule"] = JsonDocument.Parse("null").RootElement.Clone();
         });
         Validate(inputs).Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("callSchedule", "[{\"callDate\":\"2027-01-15\",\"callPrice\":101}]")]
+    [InlineData("putSchedule", "[{\"putDate\":\"2027-01-15\"}]")]
+    public void DeclaredCallOrPutSchedule_InGovernedProfileFields_BlocksPostingAsOptionality(string name, string json)
+    {
+        // A declared schedule is optionality the bullet cannot honour, wherever the term reader finds it.
+        var inputs = Inputs();
+        var security = inputs.Security with
+        {
+            AssetSpecificTerms = JsonSerializer.SerializeToElement(new Dictionary<string, Dictionary<string, JsonElement>>
+            {
+                ["profileFields"] = new() { [name] = JsonDocument.Parse(json).RootElement.Clone() }
+            })
+        };
+        inputs = inputs with
+        {
+            Security = security,
+            SecurityEvidence = inputs.SecurityEvidence with { ContentHashSha256 = OpenLotAmortization.SecurityHash(security) }
+        };
+        Validate(inputs).Should().Contain(issue => issue.Contains("calls, puts or advance-refunding terms"));
+    }
+
+    [Theory]
+    [InlineData("scheduleConventions")]
+    [InlineData("ScheduleConventions")]
+    [InlineData("scheduleconventions")]
+    public void DeclaredScheduleConventions_UnderAnyCasing_BlockPosting(string name)
+    {
+        // The bullet coupon grid follows no business-day convention, calendar, lag or stub rule.
+        var inputs = WithTerms(Inputs(), terms => terms[name] = Json("{\"businessDayConvention\":\"ModifiedFollowing\"}"));
+        Validate(inputs).Should().Contain(issue => issue.Contains("declared schedule conventions"));
+    }
+
+    [Theory]
+    [InlineData("\"ModifiedFollowing\"")]
+    [InlineData("[{\"businessDayConvention\":\"Following\"}]")]
+    [InlineData("false")]
+    public void PopulatedMalformedScheduleConventions_AreNotReadAsUnset(string json)
+        => Validate(WithTerms(Inputs(), terms => terms["scheduleConventions"] = Json(json)))
+            .Should().Contain(issue => issue.Contains("declared schedule conventions"));
+
+    [Theory]
+    [InlineData("null")]
+    [InlineData("{}")]
+    [InlineData("[]")]
+    [InlineData("{\"businessDayConvention\":null,\"paymentCalendars\":[]}")]
+    [InlineData("[{}]")]
+    [InlineData("[null]")]
+    public void UnsetScheduleConventions_DeclareNothing(string json)
+        => Validate(WithTerms(Inputs(), terms => terms["scheduleConventions"] = Json(json))).Should().BeEmpty();
+
+    [Fact]
+    public void DeclaredScheduleConventions_InGovernedProfileFields_BlockPosting()
+    {
+        var inputs = WithAssetSpecificTerms(Inputs(), new Dictionary<string, object>
+        {
+            ["profileFields"] = new Dictionary<string, JsonElement> { ["scheduleConventions"] = Json("{\"paymentLagBusinessDays\":2}") }
+        });
+        Validate(inputs).Should().Contain(issue => issue.Contains("declared schedule conventions"));
+    }
+
+    [Theory]
+    [InlineData("callSchedule", "[]", "[{\"callDate\":\"2027-01-15\",\"callPrice\":101}]", "calls, puts or advance-refunding terms")]
+    [InlineData("putSchedule", "null", "[{\"putDate\":\"2027-01-15\"}]", "calls, puts or advance-refunding terms")]
+    [InlineData("scheduleConventions", "{}", "{\"paymentLagBusinessDays\":2}", "declared schedule conventions")]
+    public void AnUnsetSpellingInAnEarlierSource_DoesNotHideADeclaredScheduleInALaterOne(
+        string name, string unset, string declared, string refusal)
+    {
+        // The asset-specific terms are read before the common terms, and the first spelling found used to
+        // stand for every source: an unset one there hid the declaration the common terms carry.
+        var inputs = WithAssetSpecificTerms(
+            WithTerms(Inputs(), terms => terms[name] = Json(declared)),
+            new Dictionary<string, object> { [name] = Json(unset) });
+        Validate(inputs).Should().Contain(issue => issue.Contains(refusal));
+    }
+
+    [Theory]
+    [InlineData("callSchedule", "[]", "[{\"callDate\":\"2027-01-15\",\"callPrice\":101}]", "calls, puts or advance-refunding terms")]
+    [InlineData("putSchedule", "null", "[{\"putDate\":\"2027-01-15\"}]", "calls, puts or advance-refunding terms")]
+    [InlineData("scheduleConventions", "{}", "{\"paymentLagBusinessDays\":2}", "declared schedule conventions")]
+    public void AnUnsetCaseVariantSpelling_DoesNotHideADeclaredScheduleInTheSameSource(
+        string name, string unset, string declared, string refusal)
+    {
+        var inputs = WithTerms(Inputs(), terms =>
+        {
+            terms[name.ToLowerInvariant()] = Json(unset);
+            terms[name] = Json(declared);
+        });
+        Validate(inputs).Should().Contain(issue => issue.Contains(refusal));
     }
 
     [Fact]
@@ -399,6 +496,19 @@ public sealed class AmortizationLotInstructionContractTests
             Instruction(inputs), Math.Abs(OpenLotAmortization.Project(valid).FunctionalMovement), valid.AsOfDate,
             (inputs.ExpectedLot?.Acquisition?.Evidence ?? valid.ExpectedLot.Acquisition.Evidence)
                 .Append(inputs.SecurityEvidence ?? valid.SecurityEvidence).ToArray());
+    }
+
+    private static JsonElement Json(string json) => JsonDocument.Parse(json).RootElement.Clone();
+
+    private static OpenLotAmortizationInstructionDto WithAssetSpecificTerms(OpenLotAmortizationInstructionDto inputs,
+        Dictionary<string, object> terms)
+    {
+        var security = inputs.Security with { AssetSpecificTerms = JsonSerializer.SerializeToElement(terms) };
+        return inputs with
+        {
+            Security = security,
+            SecurityEvidence = inputs.SecurityEvidence with { ContentHashSha256 = OpenLotAmortization.SecurityHash(security) }
+        };
     }
 
     private static OpenLotAmortizationInstructionDto WithTerms(OpenLotAmortizationInstructionDto inputs,

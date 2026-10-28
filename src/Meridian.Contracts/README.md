@@ -17,6 +17,13 @@ changes; absence clears only its current comparison policy. Verified legacy rece
 original lineage IDs, reject changed replays, and refuse ambiguous historical forks. Optional fields
 are omitted from legacy JSON. Source clearing never resolves governed casework.
 
+`SecurityMaster/ISecurityMasterQueryService.cs` is the single query contract for application,
+browser, WPF, reporting, and QuantScript consumers. The former Application interface has been
+removed; source consumers must import `Meridian.Contracts.SecurityMaster`. Configured and
+unconfigured hosts register this same contract once, so caller-supplied implementations also reach
+application validation and pricing consumers. Query signatures, retained-history semantics, and
+serialized payloads are unchanged.
+
 `LoanPortfolioSummaryDto.CurrencyTotals` carries separately denominated lending and collateral
 balances. `TotalCurrency` identifies a single-currency scalar summary; mixed-currency legacy
 scalar totals are `null`. These amounts do not imply an FX conversion. Loan currency and status
@@ -39,7 +46,12 @@ transaction snapshot. A later commit can change a repeated query with the same c
 
 `SecurityTermsEnvelope` stamps asset-specific terms with `termsFormat` (flat, economic or custom
 profile) and a per-asset-class `assetClassTermsVersion` taken from `SecurityAssetClassCatalog`.
-Terms newer than the declared class version fail loudly; economic modules a flat conversion cannot
+Each class writes its `TermsVersion` and reads through `ReadsTermsThrough`, which an expand step
+raises with `ReadableTermsVersion` (ADR-024, readable before writable). Terms stamped above the read
+ceiling fail loudly; terms stamped above the write version, or populating a term introduced above
+it, are read but refused on write (`EnsureWritableAsAssetSpecificTerms`, `TryGetWriteRefusal`; a
+write that declares a non-flat `termsFormat` is refused with what to submit), and
+profile envelopes are checked by stamp only. Economic modules a flat conversion cannot
 express travel under the reserved `retainedEconomicTerms` key and fold back on the next economic
 rebuild. Reserved envelope keys are rejected as user-editable term fields.
 `SecurityMasterEventEnvelope` carries `PayloadType`/`PayloadVersion`;
@@ -115,7 +127,7 @@ currency, observation/attempt/success timestamps, completeness and blocking reas
 account-scoped strategy runs. Existing execution-reconciliation DTOs remain the discrepancy source.
 Recovery requests carry only the local account ID; provider and external identity are server-resolved.
 
-Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. Unsupported structures and missing terms fail closed. Optional reversal inputs retain the original batch, journal and pre-posting lot snapshot; absent reversal fields preserve earlier wire fingerprints. Contract validation binds complete approved correction lineage and rejects disposal prices before drafting.
+Canonical amortization adds an optional `Amortization` input to lot instructions and basis adjustments, omitted when absent to preserve retained fingerprints. `OpenLotAmortization` binds reviewed canonical lot and versioned Security Master evidence, delegates shared straight-line/constant-yield kernels, and retains annual decimal yield and acquisition FX. Unsupported structures and missing terms fail closed, including any populated or malformed `callSchedule` or `putSchedule` (an empty list declares none) and any populated `scheduleConventions` value, a malformed string, number, boolean or populated array included (null, `{}`, `[]` and an object or array with no populated member declare nothing). These declared schedule terms are checked in every source the cash-flow resolver reads and under every casing, so an unset spelling in one source never hides a declared one in another. Optional reversal inputs retain the original batch, journal and pre-posting lot snapshot; absent reversal fields preserve earlier wire fingerprints. Contract validation binds complete approved correction lineage and rejects disposal prices before drafting.
 
 For a retained amortization reversal, current hash-bound reference evidence proves identity and
 currency while the original before/after snapshots determine the inverse. A known Inactive status
@@ -249,6 +261,28 @@ quantity, acquisition facts and holding date and refuses reductions beyond eithe
 Optional capital-return fields on the event spine, posting command and basis adjustment are
 omitted from historical JSON when absent.
 
+`OpenLotFactorPaydownInstructionDto` (`Accounting/Lots/OpenLotFactorPaydown.cs`) retains a reviewed
+MBS/ABS factor paydown over every lot open in one security/position scope: the canonical
+`AssetAccounting.CorporateAction` event whose identity is the projector's deterministic
+`FactorPaydownProjectionIdentity.EventId`, its lineage, the versioned scope, the prior and new
+factor, the position principal and the per-lot allocation (`OpenLotFactorPaydownLotDto`: expected
+lot, expected current factor, principal, both bases after relief, ordinal).
+`OpenLotFactorPaydown.Allocate` requires the position principal to equal the lots' held par face x
+(prior - new) rounded once to `CurrencyMinorUnits`, spreads it by largest remainder (each lot's raw
+share truncated, the leftover minor units to the largest remainders, ties to the later lot in the
+given order), so every lot's principal is non-negative, at most its raw share rounded up, and the
+lots sum to the position exactly, and relieves each lot's basis pro rata (`basis x new / prior`,
+rounded once in the lot's currency), so across several lots the currency rounding is part of the
+realized result. `Project` re-runs that allocation, requires equality and returns each lot at the
+new factor with its version advanced, closed when the new factor is zero. `OpenLotAmortization`
+refuses a lot that holds a `CurrentFactor`. `RealizedResult` is principal less functional basis relieved;
+`Components` exposes principal, basis relieved and realized gain/loss to Rules Studio's
+`LotMutationComponent` formulas. Same-currency Long face lots only. `OpenLotDto.CurrentFactor`
+(omitted when null) and `FaceValueLot` now admit a factor of zero for a fully repaid pool; a
+successor must inherit its predecessor's factor. Optional factor-paydown fields on the event spine,
+lot mutation, posting command and basis adjustment are omitted from JSON when absent, so retained
+fingerprints are unchanged.
+
 `AssetLotMutationInstructionDto.DisposalSalePrice` optionally retains the original disposal quote
 through governed drafting and posting. It is omitted from JSON when absent so existing retained
 event payloads keep their shape. Aggregate-only instructions do not claim an original quote.
@@ -282,6 +316,24 @@ dashboard, and WPF.
 `SecurityAssetTermsSchema.ElementFields("Swap", "legs")` declares the serialized swap-leg
 field names and types. Codec tests compare this nested contract with persisted terms and the
 cash-flow reader so a top-level `legs` array alone cannot conceal missing leg economics.
+`ElementFields` also declares the twelve-member `scheduleConventions` shape under
+`Bond.scheduleConventions`, `CertificateOfDeposit.scheduleConventions`,
+`StructuredCredit.scheduleConventions` and `Swap.legs.scheduleConventions`, and the shared
+twelve-member call entry and nine-member put entry under six paths: `callSchedule` and
+`putSchedule` on `Bond`, `CertificateOfDeposit` and `StructuredCredit`. The block and both arrays
+are tagged above each class's write version, so `WritableFields` (what the registry, term blocks and
+field edits offer) leaves them out, and `PopulatedTermsAbove` finds them in a payload. The members
+of a container introduced above version 1 are frozen once readable:
+`SecurityAssetClassTermsHistoryTests` compares each one with the committed
+`tests/fixtures/security-master/terms-element-shapes/versioned-containers.json` fixture, so a
+member added later needs a new container key at a new readable version.
+
+A term field that names something the instrument depends on declares its role with
+`LinksUnderlying` (`SecurityAssetTermField.UnderlyingRole`): an underlying, reference entity or
+obligation, index or collateral, at the top level or inside an element shape (a swap leg's `index`,
+`Equity.convertibleTerms.underlyingSecurityId`). `SecurityUnderlyingLinkDeriver` builds the derived
+underlying graph from those declarations alone, one link per field, and
+`SecurityUnderlyingRoleCoverageTests` fails on a reference-shaped field that declares no role.
 
 This module owns stable transport payloads, compatibility-safe DTOs, and shared schema objects.
 Consumers depend on contracts; contracts should not depend on host, UI, application orchestration,
@@ -355,6 +407,27 @@ accepts older numeric status payloads; persisted queue records already use text 
   Data vendor entitlement payloads carry optional client, account, fund-profile, security, and
   operator metadata scope so the shared Instrument Passport operating model can identify the
   most-specific applicable vendor/data-type control without browser-only or WPF-only rules.
+  `DayCountConventions` is the single day-count engine; its `TryFraction`/`Fraction` overloads
+  that take a `DayCountPeriodContext` (ICMA reference periods and frequency, termination date,
+  business-day predicate) refuse when a convention's context is missing instead of degrading.
+- `SecurityMaster/Schedules/` - the contractual schedule kernel (`ScheduleGenerator`, kernel
+  version `contractual-schedule-kernel-v1`). A pure, deterministic `ScheduleSpec` →
+  `ScheduleGenerationResult` generator: anchored or compounded grids, forward or backward
+  generation, anchor-day/fixed-day/end-of-month/IMM rolls, short/long/require-regular stub
+  policies, explicit first and last regular dates, business-day adjustment of accrual and payment
+  dates, and FpML-style payment lags. Every data problem is a typed `ScheduleFailure`, not an
+  exception. Each `SchedulePeriod` keeps its unadjusted dates (its identity and its ICMA reference
+  periods), adjusted accrual dates and payment date; `SchedulePeriodId` derives a deterministic
+  GUID from the unadjusted dates within a consumer-chosen scope and stream, and `ScheduleDayCount`
+  dispatches period day counts through `DayCountConventions`. `ScheduleSpec.IssueAnchoredForward`,
+  `CompoundedForward` and `BackwardFromTermination` name the legacy generator modes.
+- `Calendars/` - the business-day calendar seam: `IBusinessDayCalendar` (id, content hash,
+  coverage), `HolidayBusinessDayCalendar` (weekend mask plus holidays, versioned and
+  SHA-256 content-hashed through `Sha256Digest`), `JointBusinessDayCalendar`, the built-in
+  `BusinessDayCalendars.WeekendsOnly` (`WEEKENDS`) and the shared roll, add and count extensions,
+  `BusinessDayConvention` with `BusinessDayAdjustment`, and `IBusinessDayCalendarSource` with the
+  in-memory `StaticBusinessDayCalendarSource`. A source never falls back to weekends-only for an
+  unknown id. Calendars are pure: no clock and no I/O.
 - `Backfill/` - shared historical backfill run-result and per-symbol completeness signal payloads
   published under `Meridian.Contracts.Backfill`.
 - `Coordination/` - shared cluster lease, leadership, scheduled-work ownership, subscription
@@ -1149,7 +1222,15 @@ instead of accepting client-local JSON shapes.
 can distinguish profile-backed alternative assets from generic `OtherSecurity` fallback records.
 Alternative asset operations are represented as first-class Security Master asset classes for
 `StructuredCredit`, `PrivateFundInterest`, `PrivateCompanyEquity`, `RealEstateHolding`, and
-`CommitmentGuarantee`, while `DirectLoan` remains the private-credit class. The registry keeps
+`CommitmentGuarantee`, while `DirectLoan` remains the private-credit class. `StructuredCredit`
+carries typed tranche terms at asset-class terms version 2 (`structuredCreditKind` from the
+`structured-credit-kind` taxonomy, `seniority`, `attachmentPoint`/`detachmentPoint` as fractions
+of the deal balance, `weightedAverageCoupon`/`weightedAverageMaturityMonths`/
+`weightedAverageLoanAgeMonths`, and the CLO `reinvestmentPeriodEnd`/`nonCallPeriodEnd` dates); all
+are optional, so a version-1 payload reads unchanged, and the pool statistics bridge to the
+`structuredProduct` economic module. It reads through version 4: version 3 adds only the optional
+`scheduleConventions` block and version 4 only the optional `callSchedule` and `putSchedule`
+arrays, and neither is yet writable. The registry keeps
 `CustomAsset` as the governed compatibility and wide-capture fallback for profile-backed records
 that cannot yet be upgraded to one of those minimum first-class classes.
 `SecurityAssetPackRegistry` defines the additive asset-pack registry contract for wide capture and
@@ -1753,10 +1834,79 @@ W7 live-readiness gate.
 behaviour, projection kind, preferred identifiers, terms version, multiplier key), the term
 schema, validators and editor hints. `SecurityAssetClassRegistryCoverageTests` fails when an F#
 `SecurityKind` case has no definition. The registry backs `/api/security-master/asset-classes`.
-`SecurityTermConventions` types day count, settlement method and option right as canonical
-vocabularies. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
-one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `SecurityIdentifierKind` adds
-`LoanX` (`LX` plus six digits) and `Clip` (nine alphanumerics).
+The OTC derivative classes `FxForward` (deliverable forward: pair, notional, forward rate, trade
+and value dates, settlement method), `NonDeliverableForward` (adds the settlement currency, the
+fixing date and an operational fixing source) and `CreditDefaultSwap` (reference entity and
+obligation, `protectionSide` Buy/Sell, notional, `fixedCouponBps`, effective and maturity dates,
+payment-frequency and day-count conventions, seniority, restructuring clause, upfront points,
+recovery assumption, index name) are declarative classes in the `derivatives-fx` pack with
+registry-written projections from the day they were modeled; `Forward` left the pack's planned
+vocabulary. `Swaption` (payer/receiver, exercise style, strike rate, expiry, underlying swap dates,
+notional, fixed-leg conventions, settlement method) and `CapFloor` (Cap, Floor or Collar on a
+reference index with cap and floor strikes, notional, dates, reset and day-count conventions,
+premium) join the same pack; `StructuredNote` (issuer, reference asset, maturity, denomination,
+principal protection, participation, return cap, coupon, barrier) is a face-value class in the
+`fixed-income` pack, classified as issuer debt rather than a derivative.
+`SecurityTermConventions` types day count, settlement method, option right and payment frequency
+(`SecurityPaymentFrequency`, the one cadence vocabulary; the direct-lending `PaymentFrequency`
+enum maps onto it through `ToSecurityPaymentFrequency`) as canonical conventions: stored text
+stays verbatim, writes must name a recognized spelling, and the reference DTOs (future
+`SettlementMethod`, deposit and CD `DayCountConvention`, option `Right`, bond `PaymentCadence`
+and `DayCount`, swap-leg `PaymentCadence` and `DayCountConvention`) expose the typed value
+beside the raw text. Schedule-driving coupon cadences (bond `paymentFrequency`, swap-leg
+`paymentFrequency`) carry the narrower `CouponFrequency` convention: only cadences the cash-flow
+engines step in whole months, or `AtMaturity`, are accepted on write. Both schedulers read the
+cadence through `SecurityTermConventions.LegacyCouponPaymentsPerYear`, which takes
+`CouponPaymentsPerYear`'s answer for every spelling it recognizes and keeps the pre-convention
+reading (one payment a year, or a count clamped to 1 through 12) for anything else.
+The `BusinessDayConvention`, `RollConvention` and `StubPolicy` conventions parse the
+`scheduleConventions` block's spellings onto the schedule kernel's `BusinessDayConvention`,
+`ScheduleRoll` and `ScheduleStubPolicy` (`TryParseBusinessDayConvention`, `TryParseRollConvention`,
+`TryParseStubPolicy`). Conventions declared on the elements of an array the class writes (the swap
+legs today) are enforced on write like top-level ones, but never inside a versioned container of a
+profile envelope. Call and put entries declare `exerciseFrequency` with the `CouponFrequency`
+convention, which is enforced once the arrays are writable. Until a contract step raises the class's
+write version to a term's version, a flat payload that populates that term (the readable-only block,
+`callSchedule` or `putSchedule`) is refused on write altogether. Swap legs may carry optional `notionalSchedule` (`{effectiveDate, notional}` steps) and
+`resetSchedule` (`{resetDate, fixingRate}`) arrays; `StructuredCashFlowLeg.NotionalOn` and `FixingOn`
+let the leg scheduler accrue on the scheduled notional (paying step-downs as principal when the leg
+exchanges principal) and use a recorded fixing for a period that has already reset. `LotQuantity`/`IUnitizedLot` give execution, backtesting, ledger and face-value lots
+one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `CommitmentLot` (commitment,
+funded and unfunded amounts, recallable distributions, `Draw`) and `FundUnitLot` (units at an
+acquisition NAV) are the `Commitment` and `Units` cases the registry assigns to private fund
+interests, guarantees and funds. `SecurityIdentifierKind` adds
+`LoanX` (`LX` plus six digits), `Clip` (nine alphanumerics) and `ListingId`
+(`TICKER:MIC`, validated through `Meridian.Contracts.Domain.ListingId`). `Mic` is the
+format-validated ISO 10383 market code (four letters or digits); `MicReference` bundles the
+markets Meridian's providers and seed data use and maps unambiguous exchange names (`NYSE`,
+`Nasdaq`, `AMEX`, ...) to a MIC, leaving routing labels such as `SMART` unresolved; its `Codes` and
+`ExchangeNames` tables also drive the `securities.listing_mic` backfill.
+
+### OTC contract model: exposure, collateral and margin calls
+
+`OtcContracts.cs` models master agreements, collateral agreements (CSAs), netting sets and bilateral
+contracts behind `IOtcContractStore`, with `OtcContractRules` as the pure write rules.
+`OtcExposure.cs` adds the valuation seam `IOtcContractValuationSource` (one contract, one date, one
+currency, a signed mark from the fund's side or named blockers), the append-only
+`OtcExposureSnapshotDto` and `OtcExposureRules`: which contracts enter, close-out versus gross
+netting by master form, the two-sided credit support amount with the agreement's independent
+amount read as the fund's, holdings adjusted by the agreement's current eligible-line haircut, the
+minimum-transfer test before rounding, the fail-closed blockers (among them an agreement shared
+with another netting set, a positive balance valued after the as-of date and a balance no longer
+eligible), null credit support sides when there is no agreement, the refusal of an as-of date
+after the current UTC date (`RequireNotFutureDated`), what the computation read
+(`OtcExposureSnapshotInputsDto`: the netting set, each of its contracts, each balance under the
+agreement and the netting sets that reference it, each at a version, plus the securities valued
+and the knowledge time of their market data) and a reproducible payload digest.
+`OtcCollateral.cs` adds `OtcCollateralBalanceDto` (haircut copied from the agreement's
+eligible line when written, valued amount computed, valuation date required), `OtcMarginCallDto`
+(amount copied from a snapshot movement of a date that has come, refused by
+`OtcMarginCallRules.RequireUnchangedInputs` once any recorded input has changed, once market data
+for a valued security is recorded after `MarketDataKnownAt` (`OtcMarketDataRecordDto`), or when the
+snapshot replays an earlier knowledge time) and the lifecycle in `OtcMarginCallRules` behind
+`IOtcCollateralStore`, which also lists the netting sets that reference an agreement;
+`IOtcExposureService` computes and records snapshots. The domain page is
+[Credit Support](../../docs/domain/credit-support.md).
 
 ### Security Master income, curves, factors and corporate-action terms
 
@@ -1764,12 +1914,29 @@ one shape: decimal quantity, `SecurityLotUnitKind` and multiplier. `SecurityIden
 dividends, fund distributions with a typed `distributionComponent`, returns of capital) from
 effective corporate actions and lists unschedulable distributions as gaps.
 `SecurityForwardCurve` and `ISecurityForwardCurveProvider` supply per-index forward fixings for
-floating legs. `SecurityFactorHistoryProjector` merges the declared factor schedule, paydown
+floating legs; `SecurityForwardCurve.Describe` writes the `forwardCurve:{index}@{yyyy-MM-dd}`
+provenance in the invariant culture and `TryReadAsOf` reads the as-of back. `SecurityCurves.cs`
+holds the stored-curve model behind that seam: a write-once
+`SecurityCurveDefinitionDto` (key, kind, currency, index, tenor, day count, interpolation, source),
+append-only `SecurityCurveVersionDto`s (economic as-of, knowledge time, actor, dated points and a
+canonical content hash), the `ISecurityCurveStore` contract (including `GetVersionByIdAsync` for a
+pinned version), and `SecurityCurveRules`, the pure
+rules and arithmetic every store and model shares (normalization, `ContentSha256`, `ValueAt`,
+`DiscountFactorAt`, and `ToForwardCurve`, which adapts a Forward version to `SecurityForwardCurve`
+with the key, version and hash prefix in its source). `SecurityValuation.cs` is the valuation seam:
+`SecurityValuationRequest` (security, economic as-of, knowledge cutoff, account, quantity, pinned
+curves, model override), `SecurityValuationResult` (price with unit, present value, market value,
+observed as-of as the oldest market input, observability, inputs, diagnostics, blockers; blocked
+results carry no number),
+`ISecurityValuationModel` and `ISecurityValuationService`. `SecurityAssetClassDescriptor.DefaultValuationModel`
+names the model a class is valued with when a request names none (`DiscountedCashFlow` for Bond and
+Swap, `QuotedPrice` otherwise). `SecurityFactorHistoryProjector` merges the declared factor schedule, paydown
 factors and the dated scalar factor into one dated history with same-day conflicts.
 `CorporateActionTerms.From` reads a `CorporateActionDto` into its event family's typed terms
 (cash distribution, split, exchange, redemption, principal paydown and others); a coverage test
-holds every catalog event type to a family. `SecurityTermBlocks` lists each class's nested blocks
-from the registry. `SecurityAssetTermRole` marks operational fields (pricing sources) apart from
+holds every catalog event type to a family. `SecurityTermBlocks` lists each class's writable nested
+blocks from the registry; `BuildPatch` refuses a block the class only reads with the
+not-yet-writable reason (`TryDescribeReadableOnlyBlock`). `SecurityAssetTermRole` marks operational fields (pricing sources) apart from
 economics. `SecurityAssetTermFormModel` holds the schema-driven editor rules. The unused
 `BondAccountingElectionsDto` and `BondYieldAdjustmentMethod` are retired; accounting elections live
 on the lot.
@@ -1811,3 +1978,15 @@ a pending transaction can become visible later with an earlier recorded timestam
 exact evaluation using `receiptId` on the golden-copy endpoint, retaining the security/account
 scope. Unknown or differently scoped receipts return no result and never silently recompute.
 Mixed quote units have no percentage comparison.
+
+StructuredCredit's free-text `factorSchedule` is the trustee or servicer report pointer and is
+declared `Operational`: the paydown projector keeps it as evidence lineage, the economic bridge
+carries it as `structuredProduct.factorScheduleReference`, and no cash-flow or accounting math reads
+it. The dated `factorScheduleEntries` array is the schedule; a pointer with no entries raises the
+`SM_STRUCTURED_CREDIT_FACTOR_ENTRIES_MISSING` warning.
+
+`ISecurityMasterStructuredCreditReclassificationService` returns the ADR-022
+`StructuredCreditReclassificationReportDto`: one candidate per active securitised `Bond` or
+`CustomAsset` row with a `Ready` or `Blocked` disposition, the proposed `structuredCreditKind`, the
+derived asset-specific terms and the blocker codes the operator must clear. The report never applies
+a proposal.

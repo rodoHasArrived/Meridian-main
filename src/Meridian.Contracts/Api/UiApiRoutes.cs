@@ -378,6 +378,25 @@ public static class UiApiRoutes
     public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
     public const string SecurityMasterIncomeCashFlows = "/api/security-master/{securityId:guid}/income-cash-flows";
     public const string SecurityMasterFactorHistory = "/api/security-master/{securityId:guid}/factor-history";
+    public const string SecurityMasterUnderlyings = "/api/security-master/{securityId:guid}/underlyings";
+    public const string SecurityMasterUnderlyingLink = "/api/security-master/{securityId:guid}/underlyings/{linkId:guid}";
+    public const string SecurityMasterContracts = "/api/security-master/{securityId:guid}/contracts";
+    public const string SecurityMasterOtcMasterAgreements = "/api/security-master/otc/master-agreements";
+    public const string SecurityMasterOtcMasterAgreement = "/api/security-master/otc/master-agreements/{agreementId:guid}";
+    public const string SecurityMasterOtcCollateralAgreements = "/api/security-master/otc/collateral-agreements";
+    public const string SecurityMasterOtcCollateralAgreement = "/api/security-master/otc/collateral-agreements/{collateralAgreementId:guid}";
+    public const string SecurityMasterOtcNettingSets = "/api/security-master/otc/netting-sets";
+    public const string SecurityMasterOtcNettingSet = "/api/security-master/otc/netting-sets/{nettingSetId:guid}";
+    public const string SecurityMasterOtcContracts = "/api/security-master/otc/contracts";
+    public const string SecurityMasterOtcContract = "/api/security-master/otc/contracts/{contractId:guid}";
+    public const string SecurityMasterOtcNettingSetExposureSnapshots = "/api/security-master/otc/netting-sets/{nettingSetId:guid}/exposure-snapshots";
+    public const string SecurityMasterOtcExposureSnapshot = "/api/security-master/otc/exposure-snapshots/{snapshotId:guid}";
+    public const string SecurityMasterOtcCollateralBalances = "/api/security-master/otc/collateral-balances";
+    public const string SecurityMasterOtcCollateralAgreementBalances = "/api/security-master/otc/collateral-agreements/{collateralAgreementId:guid}/collateral-balances";
+    public const string SecurityMasterOtcMarginCalls = "/api/security-master/otc/margin-calls";
+    public const string SecurityMasterOtcMarginCall = "/api/security-master/otc/margin-calls/{callId:guid}";
+    public const string SecurityMasterOtcMarginCallTransition = "/api/security-master/otc/margin-calls/{callId:guid}/transition";
+    public const string SecurityMasterOtcNettingSetMarginCalls = "/api/security-master/otc/netting-sets/{nettingSetId:guid}/margin-calls";
     public const string SecurityMasterCorporateActionsIngest = "/api/security-master/corporate-actions/ingest";
     public const string SecurityMasterCorporateActionsInbox = "/api/security-master/corporate-actions/inbox";
     public const string SecurityMasterCorporateActionsInboxApply = "/api/security-master/corporate-actions/inbox/apply";
@@ -414,7 +433,7 @@ public static class UiApiRoutes
     public const string SecurityMasterIngestStatus = "/api/security-master/ingest/status";
     public const string SecurityMasterEdgarIngest = "/api/security-master/ingest/edgar";
 
-    // Pricing hierarchy & golden copy (Clearwater pricing model)
+    // Pricing hierarchy & golden copy
     public const string SecurityMasterPricingHierarchy = "/api/security-master/{securityId:guid}/pricing-hierarchy";
     public const string SecurityMasterPriceGoldenCopy = "/api/security-master/{securityId:guid}/price-golden-copy";
     public const string SecurityMasterPriceComparison = "/api/security-master/{securityId:guid}/price-comparison";
@@ -424,6 +443,13 @@ public static class UiApiRoutes
     public const string SecurityMasterCashFlowSource = "/api/security-master/{securityId:guid}/cashflow-source";
     public const string SecurityMasterCashFlowProjections = "/api/security-master/{securityId:guid}/cashflow-projections";
 
+    // Market curves and valuation (G4)
+    public const string SecurityMasterCurves = "/api/security-master/curves";
+    public const string SecurityMasterCurve = "/api/security-master/curves/{curveId:guid}";
+    public const string SecurityMasterCurveVersions = "/api/security-master/curves/{curveId:guid}/versions";
+    public const string SecurityMasterCurveVersion = "/api/security-master/curves/{curveId:guid}/versions/{version:long}";
+    public const string SecurityMasterValuation = "/api/security-master/{securityId:guid}/valuation";
+
     // Data vendor entitlements
     public const string DataVendorEntitlements = "/api/security-master/data-entitlements";
     public const string DataVendorEntitlementsExpiring = "/api/security-master/data-entitlements/expiring";
@@ -432,6 +458,9 @@ public static class UiApiRoutes
     // Data quality reports
     public const string SecurityMasterQualityReportRun = "/api/security-master/quality-report/run";
     public const string SecurityMasterQualityReportLatest = "/api/security-master/quality-report/latest";
+
+    // Structured-credit reclassification report (ADR-022, report first)
+    public const string SecurityMasterStructuredCreditReclassificationReport = "/api/security-master/structured-credit-reclassification/report";
 
     // Exception aging / SLA
     public const string SecurityMasterExceptionsAging = "/api/security-master/exceptions/aging";
@@ -862,6 +891,7 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationPostingRuleTestCases = "/api/ledger/accounting-configuration/posting-rules/test-cases";
     public const string LedgerAccountingConfigurationActivate = "/api/ledger/accounting-configuration/activate";
     public const string LedgerAccountingConfigurationAudit = "/api/ledger/accounting-configuration/audit";
+    public const string LedgerAuditIntegrity = "/api/ledger/audit-integrity";
     public const string LedgerCloseManagementPeriodPlan = "/api/ledger/close-management/period-plan/{workflowId:guid}";
     public const string LedgerCloseManagementPeriodPlanConfiguration = "/api/ledger/close-management/period-plan/configuration";
     public const string LedgerCloseManagementTemplates = "/api/ledger/close-management/templates";

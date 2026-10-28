@@ -12,6 +12,8 @@ last_reviewed: 2026-07-25
 # src/Meridian.Domain
 
 Statement requests and canonical imports retain optional executed mapping fingerprints. Null is omitted from JSON to preserve legacy checkpoint hashes; absent evidence is unknown, never agreement with a current mapping catalog.
+Converting a broker import request into a statement run retains that same executed mapping proof
+alongside the raw and canonical artifact identities.
 
 
 ## Purpose

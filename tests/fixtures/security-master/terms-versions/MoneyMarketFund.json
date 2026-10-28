@@ -1,0 +1,30 @@
+{
+  "assetClass": "MoneyMarketFund",
+  "versions": [
+    {
+      "termsVersion": 1,
+      "fields": [
+        {
+          "key": "fundFamily",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "liquidityFeeEligible",
+          "type": "Boolean",
+          "required": true
+        },
+        {
+          "key": "sweepEligible",
+          "type": "Boolean",
+          "required": true
+        },
+        {
+          "key": "weightedAverageMaturityDays",
+          "type": "Integer",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

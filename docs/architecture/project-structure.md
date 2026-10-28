@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-10-07
+**Reviewed:** 2026-10-28 (bounded source-owner and Security Master seam refresh)
 
 Meridian uses a standard repository layout organized around source projects,
 tests, automation, docs, design-system assets, and generated artifacts.
@@ -16,7 +16,7 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | `src/Meridian.LifecycleSupervisor/` | Active source code | Persistent per-user ownership of installed host/database startup, readiness, browser opening, and shutdown |
 | `src/Meridian.Setup/` | Active source code | Consumer executable payload installation, repair, and uninstall |
 | `src/Meridian.Application/` | Active source code | Application workflows, commands, orchestration, configuration |
-| `src/Meridian.Contracts/` | Active source code | Shared DTOs, API routes, workstation payloads, accounting/private-capital records, report-pack/report-writer contracts, and identity-facing payloads |
+| `src/Meridian.Contracts/` | Active source code | Shared DTOs, API routes, workstation payloads, accounting/private-capital records, Security Master typed schedules, open-lot factor-paydown instructions, report-pack/report-writer contracts, and identity-facing payloads |
 | `src/Meridian.Core/` | Active source code | Core config, exceptions, logging, serialization |
 | `src/Meridian.Domain/` | Active source code | Domain events, collectors, market abstractions |
 | `src/Meridian.Infrastructure*/` | Active source code | Provider and infrastructure adapters |
@@ -28,6 +28,9 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | `src/Meridian.Backtesting*/` | Active source code | Replay, backtesting, and strategy SDK support |
 | `src/Meridian.Identity/` | Active source code | Identity, scoped access, role profiles, fund-account authorization traversal, and company-scoped user account/profile state |
 | `src/Meridian.Ledger/`, `src/Meridian.FSharp.Ledger/` | Active source code | Ledger, accounting, private-capital fund-event reconstruction, capital-account subledger impact, and F# ledger domain support |
+| `src/Meridian.FinancialOperations/` | Active source code | Close, reconciliation, accounting-basis workflows, and governed ledger-instruction preparation, including the composed factor-paydown preparation service awaiting an operator route |
+| `src/Meridian.Instruments/` | Active source code | Instrument economics, Security Master-keyed Asset Operations, cash-flow projections, and factor-paydown projections |
+| `src/Meridian.ReferenceData/` | Active source code | Asset-class/instrument-kind mapping, profile catalog contracts, and seeded approved asset-profile templates |
 | `src/Meridian.Reporting/` | Active source code | Governed report packs, report-writer grid rendering, saved filters, formulas, lineage, publication, restatement, and report generation |
 | `src/Meridian.FSharp*/` | Active source code | F# domain models, operations, direct-lending, trading, and functional workflow support |
 | `src/Meridian.QuantScript/` | Active source code | QuantScript parsing, compilation, and charting support |
@@ -62,10 +65,9 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | `docs/prompts/` | Active documentation | Maintained prompt, agent, and automation guidance indexes |
 | `archive/docs/` | Historical reference only | Superseded docs-tree material retained for traceability |
 | `Meridian Design System/` | Active design-system assets | Local source of truth for visual foundations, previews, governance tests, and icons |
-| `archive/` | Historical reference only | Legacy superseded docs kept for traceability. Since the 2026-09-11 cleanup (`982eea2d`) only `archive/docs/summaries/` remains; `archive/code/` was removed, so `tests/scripts/test_archive_code_tombstones.py` skips until archived source tombstones are added again |
+| `archive/` | Historical reference only | Legacy superseded docs kept for traceability. Current documentation archives are `archive/docs/plans/` and `archive/docs/summaries/`; `archive/code/` was removed, so `tests/scripts/test_archive_code_tombstones.py` skips until archived source tombstones are added again |
 | `docs/generated/` | Generated documentation | Regenerate by script; do not hand edit generated sections |
 | `docs/docfx/api/` | Generated documentation | DocFX API metadata output; regenerate before publishing docs |
-| `wwwroot/workstation/` | Generated/build output currently tracked | Host-served web workstation bundle; review before replacing or deleting |
 | `src/Meridian.Ui/wwwroot/workstation/` | Generated/build output | Vite build output for the browser workstation |
 | `.artifacts/`, `artifacts/`, `.tools/`, `bin/`, `obj/`, `TestResults/`, `coverage/`, `node_modules/`, `src/Meridian.Ui/dashboard/artifacts/` | Generated/build output | Local outputs, publish products, caches, and restored dependencies that should not be committed |
 

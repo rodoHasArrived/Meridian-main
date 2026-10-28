@@ -10,7 +10,7 @@ public sealed partial class AccountingPostingCandidateServiceTests
     {
         var harness = await CreateAuthoritativeFactorHarnessAsync();
         harness.TaxLots.HistoryReadFailure = new LedgerValidationException("Missing retained disposal date.");
-        var result = await harness.Service.BuildCandidateAsync(harness.Request);
+        var result = await harness.BuildAsync();
         result.HasBlockingIssues.Should().BeTrue();
         result.Issues.Should().Contain(issue =>
             issue.Code == "posting-candidate.instrument-lot-history-unavailable" && issue.BlocksCandidate);

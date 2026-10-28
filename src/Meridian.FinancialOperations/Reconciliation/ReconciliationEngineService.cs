@@ -45,7 +45,7 @@ public sealed class ReconciliationEngineService
             runId, request.PortfolioId, request.AsOf);
 
         // 1. Resolve each security identifier against the Security Master.
-        var securityDetails = await ResolveSecuritiesAsync(request.SecurityIdentifiers, ct)
+        var securityDetails = await ResolveSecuritiesAsync(request.SecurityIdentifiers, request.AsOf, ct)
             .ConfigureAwait(false);
 
         // 2. Build portfolio-vs-ledger check candidates from the fund ledger.
@@ -108,6 +108,7 @@ public sealed class ReconciliationEngineService
 
     private async Task<IReadOnlyDictionary<string, SecurityDetailDto>> ResolveSecuritiesAsync(
         IEnumerable<SecurityLookupKey> keys,
+        DateTimeOffset asOfUtc,
         CancellationToken ct)
     {
         var results = new Dictionary<string, SecurityDetailDto>(StringComparer.OrdinalIgnoreCase);
@@ -117,8 +118,10 @@ public sealed class ReconciliationEngineService
             ct.ThrowIfCancellationRequested();
             try
             {
+                // Identifiers are resolved as of the reconciliation instant, so a ticker that moved
+                // between securities reconciles against the one that carried it then.
                 var detail = await _securityMaster
-                    .GetByIdentifierAsync(key.IdentifierKind, key.IdentifierValue, key.Provider, ct)
+                    .GetByIdentifierAsync(key.IdentifierKind, key.IdentifierValue, key.Provider, ct, asOfUtc)
                     .ConfigureAwait(false);
 
                 if (detail is not null)

@@ -64,43 +64,45 @@ public sealed class TemplateService
             return new ApplyTemplateResult(false, 0, 0, $"Template '{request.TemplateId}' not found");
         }
 
-        var cfg = _configStore.Load();
-        var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
-            .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
-
         var defaults = request.OverrideDefaults ?? template.Defaults;
-        var added = 0;
-        var skipped = 0;
 
-        if (request.ReplaceExisting)
+        var (added, skipped) = await _configStore.UpdateAsync(cfg =>
         {
-            existingSymbols.Clear();
-        }
+            var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
+                .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
 
-        foreach (var symbol in template.Symbols)
-        {
-            if (existingSymbols.ContainsKey(symbol))
+            var added = 0;
+            var skipped = 0;
+
+            if (request.ReplaceExisting)
             {
-                skipped++;
-                continue;
+                existingSymbols.Clear();
             }
 
-            var symbolConfig = new SymbolConfig(
-                Symbol: symbol,
-                SubscribeTrades: defaults.SubscribeTrades,
-                SubscribeDepth: defaults.SubscribeDepth,
-                DepthLevels: defaults.DepthLevels,
-                SecurityType: defaults.SecurityType,
-                Exchange: defaults.Exchange,
-                Currency: defaults.Currency
-            );
+            foreach (var symbol in template.Symbols)
+            {
+                if (existingSymbols.ContainsKey(symbol))
+                {
+                    skipped++;
+                    continue;
+                }
 
-            existingSymbols[symbol] = symbolConfig;
-            added++;
-        }
+                var symbolConfig = new SymbolConfig(
+                    Symbol: symbol,
+                    SubscribeTrades: defaults.SubscribeTrades,
+                    SubscribeDepth: defaults.SubscribeDepth,
+                    DepthLevels: defaults.DepthLevels,
+                    SecurityType: defaults.SecurityType,
+                    Exchange: defaults.Exchange,
+                    Currency: defaults.Currency
+                );
 
-        var next = cfg with { Symbols = existingSymbols.Values.ToArray() };
-        await _configStore.SaveAsync(next);
+                existingSymbols[symbol] = symbolConfig;
+                added++;
+            }
+
+            return (cfg with { Symbols = existingSymbols.Values.ToArray() }, (added, skipped));
+        }, ct);
 
         return new ApplyTemplateResult(true, added, skipped, $"Applied template '{template.Name}'");
     }

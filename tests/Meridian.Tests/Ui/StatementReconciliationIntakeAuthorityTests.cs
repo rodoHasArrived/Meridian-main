@@ -352,12 +352,58 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
     [Theory]
     [InlineData(StatementRunRecoveryStatus.Running)]
     [InlineData(StatementRunRecoveryStatus.Failed)]
-    public async Task Unfinished_recovery_does_not_establish_source_lineage(StatementRunRecoveryStatus status)
+    public async Task Unfinished_recovery_keeps_publication_retryable_until_completed(StatementRunRecoveryStatus status)
     {
         var harness = CreateHarness([Book(LedgerBookId)],
-            [Period(AccountingPeriodId, LedgerBookId, LedgerPeriodStatusDto.Open)], recoveryStatus: status);
-        await harness.Workflow.StartAsync(Command());
+            [Period(AccountingPeriodId, LedgerBookId, LedgerPeriodStatusDto.Open)], currentRecoveryStatus: () => status);
+        var first = await harness.Workflow.StartAsync(Command());
+        first.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.Failed);
+        first.Workflow.OperationsWorkflowId.Should().BeNull("an unfinished publication cannot be recorded as complete");
+        first.Workflow.FailureReason.Should().Be(
+            "Statement source publication requires completed recovery; retry after the retained run completes.");
         (await harness.Queue.GetAllAsync()).Should().OnlyContain(item => item.Lineage == null);
+
+        status = StatementRunRecoveryStatus.Completed;
+        var resumed = await harness.Workflow.ResumeAsync(first.Workflow.WorkflowId, TenantId, CompanyId);
+
+        resumed!.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);
+        resumed.Workflow.OperationsWorkflowId.Should().NotBeNull();
+        (await harness.Queue.GetAllAsync()).Should().ContainSingle().Which.Lineage.Should().NotBeNull();
+        harness.Imports.CommitCount.Should().Be(1, "publication resumes from the retained import");
+    }
+
+    [Fact]
+    public async Task Published_transaction_lineage_uses_source_identity_without_break_classification()
+    {
+        var row = new CanonicalStatementRow(StatementRunId, 1, ExternalAccountId, "CUSIP1", 1m, 2m, 2m,
+            "trade", PeriodEnd, "source-row")
+        { ExternalTransactionId = "transaction-1", Currency = "USD" };
+        var harness = CreateHarness([Book(LedgerBookId)],
+            [Period(AccountingPeriodId, LedgerBookId, LedgerPeriodStatusDto.Open)], canonicalRow: row);
+        await harness.Workflow.StartAsync(Command());
+        var published = (await harness.Queue.GetAllAsync()).Should().ContainSingle().Which;
+
+        // Independently observe the same source transaction under another comparison policy and
+        // classification. Its business lineage must match the authority's retained observation.
+        var expected = new FileReconciliationBreakQueueRepository(Path.Combine(_root, "reclassified"),
+            NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        var access = new ReconciliationBreakQueueScope(TenantId, CompanyId);
+        var reclassified = published with
+        {
+            BreakId = "reclassified-break",
+            SourceImportId = "reclassified-run",
+            SourceBreakId = "reclassified-source-break",
+            Lineage = null
+        };
+        await expected.CreateIfMissingAsync(access, reclassified);
+        await expected.ObserveCompletedRunAsync(new ReconciliationCompletedRunObservation("reclassified-run",
+            new ReconciliationRunObservationScope(TenantId, CompanyId, FundProfileId.ToString("D"),
+                FundAccountId.ToString("D"), LedgerBookId, AccountingPeriodId.ToString("D"), "changed-policy", ExternalAccountId)
+            { LineageSourceIdentity = SourceInstitution }, ObservedAt.AddMinutes(1), true, true,
+            [new ReconciliationBreakObservation(reclassified.BreakId,
+                StatementReconciliationIntakeAuthority.SourceSubject(row with { ActivityType = "fee", Symbol = "mapped", Currency = "EUR" })!)]));
+
+        (await expected.GetByIdAsync(reclassified.BreakId))!.Lineage!.LineageId.Should().Be(published.Lineage!.LineageId);
     }
 
     [Fact]
@@ -377,7 +423,9 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         IReadOnlyList<LedgerPeriodDto> periods,
         StatementBreakDto? statementBreak = null,
         StatementRunRecoveryStatus recoveryStatus = StatementRunRecoveryStatus.Completed,
-        bool corruptCompletion = false)
+        bool corruptCompletion = false,
+        Func<StatementRunRecoveryStatus>? currentRecoveryStatus = null,
+        CanonicalStatementRow? canonicalRow = null)
     {
         var dataRoot = Path.Combine(_root, Guid.NewGuid().ToString("N"));
         var accounts = new Mock<IAccountQueryService>(MockBehavior.Strict);
@@ -433,7 +481,7 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
             Path.Combine(dataRoot, "reconciliation-casework"),
             NullLogger<FileReconciliationBreakQueueRepository>.Instance);
         var canonicalResult = new BrokerStatementImportResult(statementRun.Import with { ExecutedMappingFingerprint = new string('b', 64) },
-            [new CanonicalStatementRow(StatementRunId, 1, ExternalAccountId, "", 0m, 0m, 125000m,
+            [canonicalRow ?? new CanonicalStatementRow(StatementRunId, 1, ExternalAccountId, "", 0m, 0m, 125000m,
                 "cash", PeriodEnd, "retained-source-row")]);
         var canonical = new Mock<ICanonicalStatementStore>(MockBehavior.Strict);
         canonical.Setup(store => store.GetImportAsync(StatementRunId, It.IsAny<CancellationToken>())).ReturnsAsync(canonicalResult);
@@ -447,9 +495,9 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         var matches = new Mock<IStatementRunMatchArtifactStore>(MockBehavior.Strict);
         matches.Setup(store => store.GetAsync(StatementRunId, It.IsAny<CancellationToken>())).ReturnsAsync(matchResult);
         var recovery = new Mock<IStatementRunRecoveryRepository>(MockBehavior.Strict);
-        recovery.Setup(store => store.GetAsync(StatementRunId, It.IsAny<CancellationToken>())).ReturnsAsync(
+        recovery.Setup(store => store.GetAsync(StatementRunId, It.IsAny<CancellationToken>())).ReturnsAsync(() =>
             new StatementRunRecoveryCheckpoint(1, StatementRunId, StatementRunId, "request", "input",
-                StatementRunRecoveryStage.Completed, recoveryStatus,
+                StatementRunRecoveryStage.Completed, currentRecoveryStatus?.Invoke() ?? recoveryStatus,
                 new StatementRunStageArtifact(StatementDurabilityHashing.Hash(canonicalResult), canonicalResult.Rows.Count),
                 new StatementRunStageArtifact(corruptCompletion ? new string('f', 64) : StatementDurabilityHashing.Hash(matchResult),
                     matchResult.MatchCount + matchResult.Breaks.Count), null, null, matchResult.MatchCount,

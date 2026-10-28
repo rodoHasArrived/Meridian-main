@@ -398,36 +398,38 @@ public sealed class WatchlistService
 
     private async Task SubscribeSymbolsAsync(string[] symbols, WatchlistDefaults defaults, CancellationToken ct)
     {
-        var cfg = _configStore.Load();
-        var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
-            .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
-
-        foreach (var symbol in symbols)
+        await _configStore.UpdateAsync(cfg =>
         {
-            var config = new SymbolConfig(
-                Symbol: symbol,
-                SubscribeTrades: defaults.SubscribeTrades,
-                SubscribeDepth: defaults.SubscribeDepth,
-                DepthLevels: defaults.DepthLevels,
-                SecurityType: defaults.SecurityType,
-                Exchange: defaults.Exchange,
-                Currency: defaults.Currency
-            );
-            existingSymbols[symbol] = config;
-        }
+            var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
+                .ToDictionary(s => s.Symbol, s => s, StringComparer.OrdinalIgnoreCase);
 
-        var next = cfg with { Symbols = existingSymbols.Values.ToArray() };
-        await _configStore.SaveAsync(next);
+            foreach (var symbol in symbols)
+            {
+                var config = new SymbolConfig(
+                    Symbol: symbol,
+                    SubscribeTrades: defaults.SubscribeTrades,
+                    SubscribeDepth: defaults.SubscribeDepth,
+                    DepthLevels: defaults.DepthLevels,
+                    SecurityType: defaults.SecurityType,
+                    Exchange: defaults.Exchange,
+                    Currency: defaults.Currency
+                );
+                existingSymbols[symbol] = config;
+            }
+
+            return cfg with { Symbols = existingSymbols.Values.ToArray() };
+        }, ct);
     }
 
     private async Task UnsubscribeSymbolsAsync(string[] symbols, CancellationToken ct)
     {
-        var cfg = _configStore.Load();
-        var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
-            .Where(s => !symbols.Contains(s.Symbol, StringComparer.OrdinalIgnoreCase))
-            .ToArray();
+        await _configStore.UpdateAsync(cfg =>
+        {
+            var existingSymbols = (cfg.Symbols ?? Array.Empty<SymbolConfig>())
+                .Where(s => !symbols.Contains(s.Symbol, StringComparer.OrdinalIgnoreCase))
+                .ToArray();
 
-        var next = cfg with { Symbols = existingSymbols };
-        await _configStore.SaveAsync(next);
+            return cfg with { Symbols = existingSymbols };
+        }, ct);
     }
 }

@@ -144,6 +144,7 @@ public sealed record BrokerStatementImportRequest(
         {
             CanonicalSourcePath = CanonicalSourcePath,
             CanonicalArtifactHash = CanonicalArtifactHash,
+            ExecutedMappingFingerprint = ExecutedMappingFingerprint,
             AccountingScope = AccountingScope
         };
 }

@@ -180,6 +180,74 @@ public sealed class FileReconciliationBreakQueueLineageTests : IDisposable
             PolicyRun("ambiguous", 4, "d", new ReconciliationBreakObservation("ambiguous", "cash"))));
     }
 
+    [Theory]
+    [InlineData("cash", "USD")]
+    [InlineData("position", "CUSIP1")]
+    [InlineData("transaction", "external-transaction-1")]
+    public async Task Classification_wrapped_subject_upgrade_retains_the_original_occurrence(string kind, string identity)
+    {
+        var oldParts = kind switch
+        {
+            "transaction" => new[] { kind, identity, "trade", "", "USD" },
+            "position" => new[] { kind, identity, "USD" },
+            _ => new[] { kind, identity }
+        };
+        var currentParts = kind == "transaction" ? new[] { kind, identity } : oldParts;
+        var oldSubject = System.Text.Json.JsonSerializer.Serialize(new[]
+        {
+            System.Text.Json.JsonSerializer.Serialize(oldParts), "TRANSACTION_UNMATCHED"
+        });
+        var repo = Repository();
+        await Add(repo, "legacy-subject");
+        var legacy = Run("legacy-subject", 0,
+            new ReconciliationBreakObservation("legacy-subject", oldSubject)) with
+        { Scope = _scope with { SourceSystem = LegacySource("a") } };
+        await repo.ObserveCompletedRunAsync(legacy);
+        var original = (await repo.GetByIdAsync("legacy-subject"))!.Lineage!;
+
+        await Add(repo, "new-subject");
+        await Repository().ObserveCompletedRunAsync(PolicyRun("new-subject", 2, "b",
+            new ReconciliationBreakObservation("new-subject", System.Text.Json.JsonSerializer.Serialize(currentParts))));
+
+        var current = (await Repository().GetByIdAsync("new-subject"))!.Lineage!;
+        current.LineageId.Should().Be(original.LineageId);
+        current.OccurrenceId.Should().Be(original.OccurrenceId);
+        current.FirstObservedAt.Should().Be(original.FirstObservedAt);
+        current.ObservationState.Should().Be("Aging");
+
+        var upgradedReplay = legacy with
+        {
+            Scope = legacy.Scope with { LineageSourceIdentity = "custodian" },
+            Breaks = [new ReconciliationBreakObservation("legacy-subject", System.Text.Json.JsonSerializer.Serialize(currentParts))]
+        };
+        await Repository().ObserveCompletedRunAsync(upgradedReplay);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Repository().ObserveCompletedRunAsync(
+            upgradedReplay with { ObservedAt = _start.AddDays(3) }));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Repository().ObserveCompletedRunAsync(
+            upgradedReplay with { Breaks = [new ReconciliationBreakObservation("legacy-subject", "different-source")] }));
+    }
+
+    [Fact]
+    public async Task Distinct_legacy_classification_forks_require_review_before_subject_upgrade()
+    {
+        var repo = Repository();
+        var source = System.Text.Json.JsonSerializer.Serialize(new[] { "transaction", "source-1", "trade", "symbol", "USD" });
+        foreach (var (id, policy, classification) in new[] { ("one", "a", "TRANSACTION_UNMATCHED"), ("two", "b", "TRANSACTION_CANDIDATE") })
+        {
+            await Add(repo, id);
+            await Repository().ObserveCompletedRunAsync(Run(id, policy == "a" ? 0 : 1,
+                new ReconciliationBreakObservation(id, System.Text.Json.JsonSerializer.Serialize(new[] { source, classification }))) with
+            { Scope = _scope with { SourceSystem = LegacySource(policy) } });
+        }
+        await Add(repo, "upgrade");
+
+        var attempt = () => Repository().ObserveCompletedRunAsync(PolicyRun("upgrade", 2, "c",
+            new ReconciliationBreakObservation("upgrade", System.Text.Json.JsonSerializer.Serialize(new[] { "transaction", "source-1" }))));
+
+        await attempt.Should().ThrowAsync<InvalidOperationException>().WithMessage("Historical policy forks*");
+        (await Repository().GetByIdAsync("upgrade"))!.Lineage.Should().BeNull();
+    }
+
     [Fact]
     public async Task Legacy_upgrade_replay_accepts_only_the_original_payload()
     {

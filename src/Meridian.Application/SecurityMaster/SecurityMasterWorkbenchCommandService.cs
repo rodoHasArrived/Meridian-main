@@ -1000,18 +1000,30 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         }
 
         if (projection is null
-            || string.Equals(projection.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(projection.AssetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase)
-            || (projection.AssetSpecificTerms is { ValueKind: JsonValueKind.Object } profileProbe
-                && profileProbe.TryGetProperty("customProfileId", out var profileId)
-                && profileId.ValueKind == JsonValueKind.String
-                && !string.IsNullOrWhiteSpace(profileId.GetString())))
+            || SecurityAssetClassCatalog.GetOrDefault(projection.AssetClass).RequiresGovernedProfile)
         {
+            return;
+        }
+
+        if (projection.AssetSpecificTerms is { ValueKind: JsonValueKind.Object } profileProbe
+            && profileProbe.TryGetProperty("customProfileId", out var profileId)
+            && profileId.ValueKind == JsonValueKind.String
+            && !string.IsNullOrWhiteSpace(profileId.GetString()))
+        {
+            // A profile envelope has no first-class kind to reconstruct, but the merge still maps it in
+            // Write mode: an envelope stamped above the class's write version (ADR-024, readable before
+            // writable) would stage an edit that fails at publish, so refuse it here.
+            if (SecurityTermsEnvelope.TryGetWriteRefusal(projection.AssetClass, profileProbe, out var envelopeRefusal))
+            {
+                throw new ArgumentException(envelopeRefusal, nameof(request));
+            }
+
             return;
         }
 
         var stagedOverrides = await TryGetStagedOverrideValuesAsync(request.SecurityId, ct).ConfigureAwait(false);
         Meridian.FSharp.Domain.SecurityKind kind;
+        JsonElement effectiveTerms;
         try
         {
             var envelope = System.Text.Json.Nodes.JsonNode.Parse(projection.AssetSpecificTerms.GetRawText())?.AsObject();
@@ -1044,7 +1056,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 ApplyFirstClassTermOverlay(envelope, projection.AssetClass, canonicalFieldPath, request.NewValue!);
             }
 
-            var effectiveTerms = JsonSerializer.SerializeToElement(envelope);
+            effectiveTerms = JsonSerializer.SerializeToElement(envelope);
             kind = SecurityMasterMapping.ToRecord(projection with { AssetSpecificTerms = effectiveTerms }).Kind;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
@@ -1061,6 +1073,14 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 "against the class's domain invariants. Migrate the record's retained terms to the canonical shape " +
                 "through a governed amendment and retry; the namespace only accepts validated writes.",
                 nameof(request));
+        }
+
+        // The read above accepts a row this node only reads (ADR-024, readable before writable); the
+        // merge maps the same terms in Write mode and would refuse them after approval, leaving the
+        // revision failing publish. Refuse at submission with the precise reason instead.
+        if (SecurityTermsEnvelope.TryGetWriteRefusal(projection.AssetClass, effectiveTerms, out var writeRefusal))
+        {
+            throw new ArgumentException(writeRefusal, nameof(request));
         }
 
         var invariantErrors = Meridian.FSharp.SecurityMasterInterop.SecurityMasterCommandFacade.ValidateKindInvariants(kind);
@@ -1609,8 +1629,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 // schedules. Clears still pass (they remove overlay junk), and genuine CustomAsset
                 // records keep dynamic pass-through.
                 if (!isClear
-                    && !string.Equals(currentProjection!.AssetClass, "CustomAsset", StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(currentProjection.AssetClass, "OtherSecurity", StringComparison.OrdinalIgnoreCase))
+                    && !SecurityAssetClassCatalog.GetOrDefault(currentProjection!.AssetClass).RequiresGovernedProfile)
                 {
                     throw new ArgumentException(
                         $"Path '{canonicalFieldPath}' edits beneath '{rootSegment}', which the pinned profile does not " +

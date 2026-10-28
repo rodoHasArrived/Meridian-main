@@ -12,6 +12,9 @@ last_reviewed: 2026-10-06
 # src/Meridian.Ui.Shared
 
 Source comparison requires a completed recovery checkpoint with matching run/import IDs, artifact hashes and counts, plus executed mapping proof shared by the import and match artifact. Failed or running recovery cannot clear observations. Named SLA calendars load once per host from DataRoot/reconciliation/sla-calendars.json; see the reconciliation operating procedure.
+An unfinished recovery refuses publication so the report workflow can retry after completion.
+Transaction lineage uses the retained external transaction identity; changed break classifications,
+mapped activity, symbols and currencies remain comparison evidence rather than forking its occurrence.
 
 Late-adjustment review requires the authenticated operator's built-in role or named role profile
 to match the review role retained on the adjustment's materiality policy, alongside ledger mutation
@@ -28,6 +31,7 @@ tenant assertions cannot establish authority. `AccountCashForecastEvidenceAdapte
 balance/flow/FX JSON from independently reviewed account Evidence Vault documents. It verifies
 original bytes, hashes, review provenance, version and every economic field before capture;
 unsupported inputs fail closed. File histories require explicit administrative provisioning.
+Corrupt or missing retained history and writer-lock timeouts in either file store return HTTP 503.
 See [bounded account oversight](../../docs/operators/account-oversight.md) for route and source
 format contracts. These seams do not grant accounting-close or payment authority.
 The browser receives exact decimal text through this HTTP transport without changing retained
@@ -35,11 +39,26 @@ domain digests. Scoped access context supplies current session capabilities; clo
 loads all exact account/book/date versions after durable evidence validation.
 Close-price capture accepts an optional stable request identity. Identical retries recover the
 retained snapshot before price evaluation; changing its immutable command conflicts. The HTTP
-actor remains session-derived on both initial capture and recovery.
+actor remains session-derived on both initial capture and recovery. When only the unconfigured
+`NullSecurityMasterPricingService` fallback is registered, close-price routes answer 503 instead of empty history.
 
 Security Master override PATCH and decision endpoints return HTTP 409 when another instance
 advances the durable workbench generation. The governed workbench endpoints use their existing
 conflict response for the same condition. Operators must reload before retrying the edit or review.
+
+The OTC contract model is served by two `SecurityMasterEndpoints` partials.
+`SecurityMasterEndpoints.OtcContracts.cs` maps master agreements, collateral agreements, netting
+sets and contracts; `SecurityMasterEndpoints.OtcCollateral.cs` maps exposure snapshots (compute
+and append under `/otc/netting-sets/{id}/exposure-snapshots`, list and read), collateral balances
+and margin calls (issue, and one `/transition` route with an action enum for agree, dispute, settle
+and cancel). The collateral routes map only when `IOtcCollateralStore` and `IOtcExposureService`
+are registered, so a host without the Security Master database leaves them unavailable. Reads need
+`ViewSecurityMaster` and answer 404 for an unknown snapshot or call; writes need
+`ModifySecurityMaster`, pass the mutation rate limit, stamp the session actor over any body
+`UpdatedBy` and answer 400 on a rule failure. Computing a snapshot for an unknown netting set is a
+404; issuing from an unknown snapshot or transitioning an unknown call is a 400, because the store
+refuses it as a rule failure. No browser or WPF screen consumes these routes yet; the workstation
+collateral exposure read model is unchanged.
 
 Trading readiness includes every supplied acceptance gate in aggregate status and evidence
 summaries, including broker execution reconciliation and portfolio recovery. Every non-ready
@@ -247,6 +266,14 @@ Period creation requires a resolved authenticated actor and overwrites any clien
 `CreatedBy` before calling the shared ledger service. The actor is retained in the same-transaction
 PostgreSQL ledger audit. `WorkstationEndpointsTests.LedgerAuditActor` exercises spoofed client
 attribution against the real period service and PostgreSQL store.
+`GET /api/ledger/audit-integrity` (`AdminMaintenance`) runs `AccountingAuditIntegrityService` over the
+composed accounting-action and ledger-event audit chains without appending, reporting each as
+`verified`, `broken`, `not-configured`, `unavailable`, or `not-started` (nothing chained yet; never counted as verified) with counts and break position only.
+A chain of either kind written under a newer schema is `unavailable`, not `broken`, and a ledger
+break still reports the genesis facts that predate chaining. One run is admitted per host at a
+time (a concurrent request gets 409) because the scan holds the same head locks appends take. The
+route carries no shared rate-limit policy, so unauthorized callers cannot drain the per-address
+mutation permits; only authorized callers reach the single-flight gate.
 Generated-candidate posting and manual journal lifecycle routes also require a resolved authenticated
 actor; permission alone cannot authorize use of a client-supplied posting identity.
 
@@ -595,7 +622,17 @@ override account scope; other callers require account-scoped `ManageDirectLendin
 `SecurityMasterWorkbenchQueryService` is published under
 `Meridian.Ui.Shared.Services` and composes Application Security Master services into the shared
 workstation drill-in projection. The Security Master alias upsert route accepts corrections to an
-existing alias ID as a new revision; re-pointing an alias at a different security returns 409. `FamilyOfficeReadService` composes the family-office
+existing alias ID as a new revision; re-pointing an alias at a different security returns 409.
+`SecurityMasterEndpoints.Curves.cs` maps the stored-curve routes (`/api/security-master/curves`,
+`/curves/{curveId}`, `/curves/{curveId}/versions`, where `asOf` with an optional `knownAt` returns
+the single latest match and `knownAt` alone every version recorded on or before it, and
+`/curves/{curveId}/versions/{version}`) only when an `ISecurityCurveStore` is registered, and
+`POST /api/security-master/{securityId}/valuation` only when an `ISecurityValuationService` is;
+definitions and versions are written with the session actor under Modify permission and the
+mutation rate limit (a rule failure is 400, publishing to an unknown curve 404, a write-once key
+conflict 409), reads and valuation need View, valuation also takes the mutation rate limit because
+a quoted-price evaluation retains a selection receipt, a route/body id mismatch is 400, an unknown
+security 404, and a blocked valuation is 200 with its blockers. `FamilyOfficeReadService` composes the family-office
 workstation overview from fund-structure, fund-account, reconciliation, and strategy-run read
 services, and emits degraded guidance when linked accounts cannot provide balances, liabilities,
 reconciliation state, or evidence completeness. Workstation endpoint registration is split by domain through
@@ -2324,7 +2361,7 @@ Security Master operator override store is registered, the passport also carries
 audit-history entries for the resolved instrument so controller review can see provider mapping
 confidence and governed override context in the same retained reconciliation record.
 The Security Master instrument passport reference-data workbench also consumes registered
-Clearwater pricing, cash-flow, vendor-entitlement, and data-quality services. Shared clients receive
+pricing, cash-flow, vendor-entitlement, and data-quality reference-data services. Shared clients receive
 sections for pricing hierarchy and stale fallback, cash-flow source governance, direct-client vendor
 contract evidence, retained quality-rule results, and independent review of manual creation,
 remapping, override, or critical-attribute changes instead of reconstructing those controls locally.
@@ -2712,14 +2749,43 @@ contract while keeping the contract multiplier in exposure totals.
 
 `/api/security-master/asset-classes` and `/api/security-master/asset-classes/{assetClass}`
 return the Security Master asset-class registry (fields, validation, projection, lot and
-cash-flow behaviour, editor hints) for schema-driven forms. Override decisions return 403 when the
+cash-flow behaviour, editor hints) for schema-driven forms. The registry lists only the terms a
+class writes; a term readable ahead of the write version (ADR-024) is not offered for editing. Override decisions return 403 when the
 reviewer staged the values being approved.
 
 Security Master also serves `GET /api/security-master/{securityId}/income-cash-flows`
 (declared dividends and distributions, with `from`/`to` pay-date bounds),
 `GET /api/security-master/{securityId}/factor-history`, and
 `PUT /api/security-master/{securityId}/terms/{blockKey}` (governed like the generic amend route;
-400 for an undeclared block or JSON kind).
+400 for an undeclared block or JSON kind, and 400 with the not-yet-writable reason for a block the
+class only reads, such as `scheduleConventions`, `callSchedule` or `putSchedule`).
+
+A refused write on the direct create and term-amendment routes (`POST /api/security-master`,
+`POST /api/security-master/amend`, the term-block `PUT`, and the preferred- and convertible-equity
+term `PATCH` routes including the legacy `/equities/{securityId}/preferred-terms` alias) answers 400
+with the refusal reason as the Problem Details `detail`. Refusals include terms this node reads but does
+not write (ADR-024), a missing or malformed term, an undeclared vocabulary value, an F# domain
+validation error (`[code] message`), a profile failing catalog validation, and a round-trip guard
+naming the repair. A refusal the stored record triggers answers 400 too, such as a patch-less amend
+of a row stamped above the write version whose re-serialization would change it, or stored terms the
+Write-mode mapping refuses on the term-block, preferred and convertible routes, which build the
+patch from the stored row. Only `SecurityMasterWriteRefusedException` is translated, by a filter
+applied per route (`SecurityMasterEndpoints.WriteRefusals.cs`). Undecodable stored rows, unknown
+securities, stale versions the F# validator rejects, duplicate creates and store failures keep their
+responses; `/amend` compares the version only there, so a stale amend whose patch is refused earlier
+answers 400 with that refusal. A stored asset class that matches no catalog class name in any casing
+answers 400 on `/amend` even when this node cannot decode the row, because the change belongs on a node that
+supports the class; that holds for a security rebuilt from its events, while a projection-only one
+the rebuild cannot decode answers 500. The preferred, convertible and legacy routes answer a class
+the catalog does not resolve 404 at their read-model probe, and the term-block route answers it with
+its pre-check's 400. A write
+that declares a non-flat `termsFormat` is told what to submit. Deactivate refusals still answer 500;
+no read route changes.
+
+`POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance) builds the
+ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their proposed
+`StructuredCredit` terms and blockers. It is mapped only when the Postgres-backed service is
+registered and it never writes; applying a proposal is a governed amendment.
 
 ## Diagrams
 
