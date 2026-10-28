@@ -17,6 +17,20 @@ public sealed record LedgerTaxLotReliefProjection(
 
     public bool IsBalanced => TotalDebits == TotalCredits;
 
+    /// <summary>Materializes the authoritative disposal with its exact investing cash attribution.</summary>
+    public JournalEntry ToJournalEntry(Guid journalId, DateTimeOffset timestamp, string description,
+        JournalEntryMetadata? metadata = null, LedgerLineDimensionSet? lineDimensions = null)
+    {
+        if (Lines.Any(line => !string.Equals(line.account.FinancialAccountId, Input.FinancialAccountId,
+                StringComparison.OrdinalIgnoreCase)))
+            throw new LedgerValidationException("Disposal journal accounts must retain the input financial-account scope.");
+        var lines = Lines.Select(line => new LedgerEntry(Guid.NewGuid(), journalId, timestamp,
+            line.account, line.debit, line.credit, description, lineDimensions)).ToArray();
+        return LedgerCashFlowAttribution.WithClassifiedActivity(
+            new JournalEntry(journalId, timestamp, description, lines, metadata),
+            LedgerCashFlowCategory.Investing, "Security disposal");
+    }
+
     /// <summary>
     /// The reference-data basis adjustments that were applied to the open lots before relief.
     /// Empty when the sale relieved lots at their recorded quantity and unit cost.

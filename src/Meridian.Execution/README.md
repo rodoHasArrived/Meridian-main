@@ -258,7 +258,11 @@ produces an audited rejection instead of a broker submit.
 Broker-backed readiness also includes open-order reconciliation: `BrokerageExecutionReconciliationService`
 compares broker-reported open orders with the OMS open-order ledger, treats missing client order IDs
 as untraceable breaks, and reports OMS/broker divergence before live operators rely on the gateway.
-Ledger posting from trade-fill events is explicit and Security Master gated. `AddBrokerageExecution`
+Ledger posting from trade-fill events is explicit and Security Master gated. `LedgerPostingConsumer`
+retains the trade journal's Investing cash category against its immutable line IDs. Sales report
+actual cash proceeds; realized gains/losses remain noncash adjustments, and commission journals
+remain separate Operating payments. Reversal preserves the retained category.
+`AddBrokerageExecution`
 injects an `ITradeEventPublisher` into the OMS only when one has been composed; the execution host
 does not infer an accounting book or period. A book-owning composition root can call
 `AddTradeFillLedgerPosting` with a ledger factory, exact posting scope, and caller-owned
